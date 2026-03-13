@@ -1,0 +1,10 @@
+{
+  "name": "@gina-haya/i18n",
+  "version": "0.0.1",
+  "private": true,
+  "main": "./locales",
+  "scripts": {
+    "build": "echo 'i18n: no build step needed'",
+    "validate": "node validate-keys.js"
+  }
+}

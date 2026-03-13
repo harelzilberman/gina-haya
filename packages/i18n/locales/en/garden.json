@@ -1,0 +1,29 @@
+{
+  "title": "My Garden",
+  "noGarden": "You don't have a garden yet. Let's start!",
+  "createGarden": "Create new garden",
+  "gardenName": "Garden name",
+  "location": "Region",
+  "soilType": {
+    "label": "Soil type",
+    "clay": "Clay",
+    "sandy": "Sandy",
+    "loam": "Loam",
+    "chalky": "Chalky",
+    "silty": "Silty",
+    "peaty": "Peaty",
+    "mixed": "Mixed"
+  },
+  "plants": {
+    "title": "My Plants",
+    "addPlant": "Add plant",
+    "search": "Search plants...",
+    "none": "No plants added yet"
+  },
+  "notes": "Notes",
+  "map": {
+    "title": "Garden Map",
+    "addBed": "Add bed",
+    "phase2": "Garden map is coming in Phase 2!"
+  }
+}

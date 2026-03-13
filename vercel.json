@@ -1,0 +1,6 @@
+{
+  "buildCommand":    "pnpm --filter @gina-haya/shared build && pnpm --filter @gina-haya/i18n build && pnpm --filter @gina-haya/web build",
+  "outputDirectory": "packages/web/dist",
+  "installCommand":  "pnpm install",
+  "framework":       null
+}

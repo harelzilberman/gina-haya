@@ -1,0 +1,39 @@
+{
+  "title": "Biodynamic Calendar",
+  "today": "Today",
+  "dayType": {
+    "fruit": "Fruit Day 🍅",
+    "root": "Root Day 🥕",
+    "flower": "Flower Day 🌸",
+    "leaf": "Leaf Day 🌿"
+  },
+  "moonPhase": {
+    "ascending": "Ascending Moon",
+    "descending": "Descending Moon",
+    "ascendingDesc": "The Earth breathes out — time to harvest and graft",
+    "descendingDesc": "The Earth breathes in — the best time to plant"
+  },
+  "nodeBlackout": {
+    "active": "⚫ Lunar Node Crossing — a rest day for the garden",
+    "endsAt": "Node crossing ends at {{time}}"
+  },
+  "perigee": {
+    "active": "⚠️ Moon at Perigee — be cautious with planting"
+  },
+  "plantingScore": {
+    "label": "Planting Score",
+    "outOf": "{{score}} / 10",
+    "excellent": "Excellent",
+    "good": "Good",
+    "moderate": "Moderate",
+    "poor": "Not recommended",
+    "blackout": "Blackout day"
+  },
+  "prep": {
+    "500recommended": "✅ Recommended time for BD 500 (4–7 PM)",
+    "501recommended": "✅ Recommended time for BD 501 (dawn–9 AM)"
+  },
+  "moonrise": "Moonrise",
+  "moonset": "Moonset",
+  "moonSign": "Moon Sign"
+}

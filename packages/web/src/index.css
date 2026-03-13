@@ -1,0 +1,27 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --color-sage:       #4A7C59;
+    --color-moon-gold:  #B7924A;
+    --color-navy:       #1B2A4A;
+    --color-cream:      #FDF6EC;
+    --color-score-green:  #4A7C59;
+    --color-score-yellow: #C8A040;
+    --color-score-orange: #C0622A;
+    --color-score-red:    #A33030;
+    --color-score-black:  #333333;
+  }
+
+  body {
+    font-family: 'Heebo', sans-serif;
+    background-color: var(--color-cream);
+  }
+}
+
+/* RTL-aware utilities */
+[dir='rtl'] .flip-rtl {
+  transform: scaleX(-1);
+}

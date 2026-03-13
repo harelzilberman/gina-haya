@@ -1,0 +1,12 @@
+{
+  "dailyTip": {
+    "subject": "Your daily garden tip — {{date}}",
+    "greeting": "Hello {{name}},"
+  },
+  "welcome": {
+    "subject": "Welcome to Gina Haya!"
+  },
+  "passwordReset": {
+    "subject": "Password reset — Gina Haya"
+  }
+}

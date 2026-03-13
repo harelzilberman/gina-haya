@@ -1,0 +1,12 @@
+{
+  "dailyTip": {
+    "subject": "הטיפ היומי מהגינה — {{date}}",
+    "greeting": "שלום {{name}},"
+  },
+  "welcome": {
+    "subject": "ברוכים הבאים לגינה חיה!"
+  },
+  "passwordReset": {
+    "subject": "איפוס סיסמה — גינה חיה"
+  }
+}

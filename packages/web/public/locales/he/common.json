@@ -1,0 +1,37 @@
+{
+  "nav": {
+    "calendar": "לוח שנה",
+    "garden": "הגינה שלי",
+    "moosh": "מוש",
+    "plants": "אנציקלופדיה",
+    "settings": "הגדרות",
+    "upgrade": "שדרוג"
+  },
+  "button": {
+    "save": "שמירה",
+    "cancel": "ביטול",
+    "delete": "מחיקה",
+    "upgrade": "שדרוג",
+    "continue": "המשך",
+    "back": "חזרה",
+    "close": "סגירה",
+    "confirm": "אישור"
+  },
+  "error": {
+    "generic": "משהו השתבש. אנא נסה שוב.",
+    "noNetwork": "אין חיבור לאינטרנט.",
+    "auth": "שגיאת התחברות. אנא התחבר מחדש.",
+    "notFound": "הדף לא נמצא."
+  },
+  "loading": "טוען...",
+  "language": {
+    "toggle": "EN",
+    "current": "עברית"
+  },
+  "tier": {
+    "free": "חינם",
+    "grower": "גנן מתחיל",
+    "gardener_pro": "גנן מקצועי",
+    "professional": "מקצוען"
+  }
+}

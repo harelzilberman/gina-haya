@@ -1,0 +1,27 @@
+{
+  "name": "gina-haya",
+  "private": true,
+  "scripts": {
+    "dev":        "pnpm --filter web dev & pnpm --filter api dev",
+    "dev:web":    "pnpm --filter web dev",
+    "dev:api":    "pnpm --filter api dev",
+    "build":      "pnpm --filter @gina-haya/shared build && pnpm --filter @gina-haya/i18n build && pnpm -r --filter !@gina-haya/shared --filter !@gina-haya/i18n build",
+    "type-check": "pnpm -r type-check",
+    "lint":       "pnpm -r lint",
+    "test":       "pnpm -r test",
+    "db:seed":    "tsx scripts/seed-calendar.ts",
+    "db:migrate": "pnpm --filter @gina-haya/api db:migrate"
+  },
+  "devDependencies": {
+    "@typescript-eslint/eslint-plugin": "^7.3.0",
+    "@typescript-eslint/parser": "^7.3.0",
+    "eslint": "^8.57.0",
+    "prettier": "^3.2.0",
+    "tsx": "^4.7.0",
+    "typescript": "^5.4.0"
+  },
+  "engines": {
+    "node": ">=20.0.0",
+    "pnpm": ">=9.0.0"
+  }
+}

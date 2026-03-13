@@ -1,0 +1,37 @@
+{
+  "nav": {
+    "calendar": "Calendar",
+    "garden": "My Garden",
+    "moosh": "Moosh",
+    "plants": "Encyclopedia",
+    "settings": "Settings",
+    "upgrade": "Upgrade"
+  },
+  "button": {
+    "save": "Save",
+    "cancel": "Cancel",
+    "delete": "Delete",
+    "upgrade": "Upgrade",
+    "continue": "Continue",
+    "back": "Back",
+    "close": "Close",
+    "confirm": "Confirm"
+  },
+  "error": {
+    "generic": "Something went wrong. Please try again.",
+    "noNetwork": "No internet connection.",
+    "auth": "Authentication error. Please log in again.",
+    "notFound": "Page not found."
+  },
+  "loading": "Loading...",
+  "language": {
+    "toggle": "עב",
+    "current": "English"
+  },
+  "tier": {
+    "free": "Free",
+    "grower": "Grower",
+    "gardener_pro": "Gardener Pro",
+    "professional": "Professional"
+  }
+}

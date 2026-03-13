@@ -1,0 +1,39 @@
+{
+  "title": "לוח הביודינמי",
+  "today": "היום",
+  "dayType": {
+    "fruit": "יום פרי 🍅",
+    "root": "יום שורש 🥕",
+    "flower": "יום פרח 🌸",
+    "leaf": "יום עלה 🌿"
+  },
+  "moonPhase": {
+    "ascending": "ירח עולה",
+    "descending": "ירח יורד",
+    "ascendingDesc": "הארץ נושמת החוצה — זמן לקצור ולהדביק",
+    "descendingDesc": "הארץ נושמת פנימה — הזמן הטוב ביותר לשתול"
+  },
+  "nodeBlackout": {
+    "active": "⚫ השפעת הצומת — יום מנוחה לגינה",
+    "endsAt": "הצומת מסתיים ב-{{time}}"
+  },
+  "perigee": {
+    "active": "⚠️ ירח בפריגיאה — היזהר בשתילה"
+  },
+  "plantingScore": {
+    "label": "ציון זריעה",
+    "outOf": "{{score}} מתוך 10",
+    "excellent": "מצוין",
+    "good": "טוב",
+    "moderate": "בינוני",
+    "poor": "לא מומלץ",
+    "blackout": "יום חסום"
+  },
+  "prep": {
+    "500recommended": "✅ זמן מומלץ למריחת BD 500 (16:00–19:00)",
+    "501recommended": "✅ זמן מומלץ למריחת BD 501 (עלות השחר–09:00)"
+  },
+  "moonrise": "זריחת הירח",
+  "moonset": "שקיעת הירח",
+  "moonSign": "מזל הירח"
+}

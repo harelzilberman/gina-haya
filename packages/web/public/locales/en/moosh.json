@@ -1,0 +1,14 @@
+{
+  "title": "Moosh Levanah",
+  "subtitle": "Your Biodynamic Expert",
+  "inputPlaceholder": "Ask Moosh...",
+  "sendButton": "Send",
+  "thinking": "Moosh is thinking...",
+  "disclaimer": "Moosh's advice is for informational purposes only. For serious issues, consult a professional.",
+  "rateLimit": {
+    "free": "You've reached your monthly question limit. Upgrade to Grower to continue.",
+    "grower": "You've reached your monthly question limit."
+  },
+  "greeting": "Shalom! I am Moosh Levanah. What's happening in your garden today?",
+  "calendarContext": "According to the biodynamic calendar, today is a {{dayType}}."
+}
