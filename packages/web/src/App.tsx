@@ -1,12 +1,10 @@
 import { useEffect } from 'react';
-import { Routes, Route } from 'react-router-dom';
+import { Routes, Route, Navigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-
-// Pages (to be created in Phase 1 build)
-// import { CalendarPage } from './pages/CalendarPage';
-// import { GardenPage } from './pages/GardenPage';
-// import { MooshPage } from './pages/MooshPage';
-// import { AuthPage } from './pages/AuthPage';
+import { LoginPage } from './pages/LoginPage';
+import { SignupPage } from './pages/SignupPage';
+import { ResetPasswordPage } from './pages/ResetPasswordPage';
+import { ProtectedRoute } from './components/auth/ProtectedRoute';
 
 export default function App() {
   const { i18n } = useTranslation();
@@ -21,8 +19,25 @@ export default function App() {
   return (
     <div className="min-h-screen bg-cream font-heebo">
       <Routes>
-        {/* Routes wired up during Phase 1 build */}
-        <Route path="/" element={<div className="p-8 text-center">🌱 Gina Haya — Scaffold ready. Phase 1 build begins here.</div>} />
+        {/* Public auth routes */}
+        <Route path="/login" element={<LoginPage />} />
+        <Route path="/signup" element={<SignupPage />} />
+        <Route path="/reset-password" element={<ResetPasswordPage />} />
+
+        {/* Protected app routes — wired up in Phase 2 */}
+        <Route
+          path="/"
+          element={
+            <ProtectedRoute>
+              <div className="p-8 text-center text-navy">
+                🌱 ברוכים הבאים לגינה חיה — Phase 2 build begins here.
+              </div>
+            </ProtectedRoute>
+          }
+        />
+
+        {/* Fallback */}
+        <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
     </div>
   );

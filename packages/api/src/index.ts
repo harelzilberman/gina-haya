@@ -1,6 +1,7 @@
 import express from 'express';
 import cors from 'cors';
 import { rateLimit } from 'express-rate-limit';
+import { authRouter } from './routes/auth';
 
 const app = express();
 const PORT = process.env.PORT || 3001;
@@ -27,17 +28,15 @@ app.get('/health', (_req, res) => {
   res.json({ status: 'ok', timestamp: new Date().toISOString() });
 });
 
-// Routes wired up during Phase 1 build:
-// import { authRouter }     from './routes/auth';
+app.use('/api/auth', authRouter);
+
+// Remaining routers wired up in Phase 2:
 // import { calendarRouter } from './routes/calendar';
 // import { mooshRouter }    from './routes/moosh';
 // import { gardenRouter }   from './routes/garden';
-// import { diagnosisRouter} from './routes/diagnosis';
-// app.use('/api/auth',      authRouter);
 // app.use('/api/calendar',  calendarRouter);
 // app.use('/api/moosh',     mooshRouter);
 // app.use('/api/garden',    gardenRouter);
-// app.use('/api/diagnosis', diagnosisRouter);
 
 app.listen(PORT, () => {
   console.log(`Gina Haya API running on http://localhost:${PORT}`);
