@@ -2,6 +2,8 @@ import express from 'express';
 import cors from 'cors';
 import { rateLimit } from 'express-rate-limit';
 import { authRouter } from './routes/auth';
+import { gardenRouter } from './routes/garden';
+import { plantsRouter } from './routes/plants';
 
 const app = express();
 const PORT = process.env.PORT || 3001;
@@ -15,9 +17,8 @@ app.use(cors({
   credentials: true,
 }));
 
-// Global rate limit — tighter limits applied per-route
 app.use(rateLimit({
-  windowMs: 15 * 60 * 1000, // 15 minutes
+  windowMs: 15 * 60 * 1000,
   max: 200,
   standardHeaders: true,
   legacyHeaders: false,
@@ -28,15 +29,15 @@ app.get('/health', (_req, res) => {
   res.json({ status: 'ok', timestamp: new Date().toISOString() });
 });
 
-app.use('/api/auth', authRouter);
+app.use('/api/auth',   authRouter);
+app.use('/api/garden', gardenRouter);
+app.use('/api/plants', plantsRouter);
 
 // Remaining routers wired up in Phase 2:
 // import { calendarRouter } from './routes/calendar';
 // import { mooshRouter }    from './routes/moosh';
-// import { gardenRouter }   from './routes/garden';
 // app.use('/api/calendar',  calendarRouter);
 // app.use('/api/moosh',     mooshRouter);
-// app.use('/api/garden',    gardenRouter);
 
 app.listen(PORT, () => {
   console.log(`Gina Haya API running on http://localhost:${PORT}`);

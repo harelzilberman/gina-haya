@@ -5,16 +5,29 @@ import { LoginPage } from './pages/LoginPage';
 import { SignupPage } from './pages/SignupPage';
 import { ResetPasswordPage } from './pages/ResetPasswordPage';
 import { ProtectedRoute } from './components/auth/ProtectedRoute';
+import { OnboardingWizard } from './components/auth/OnboardingWizard';
+import { useAuthStore } from './stores/authStore';
+import { useOnboardingStore } from './stores/onboardingStore';
 
 export default function App() {
   const { i18n } = useTranslation();
+  const { user, profile, isLoading } = useAuthStore();
+  const { isComplete } = useOnboardingStore();
 
-  // Central RTL/LTR management — all components inherit this
+  // Central RTL/LTR management
   useEffect(() => {
     const isRTL = i18n.language === 'he';
     document.documentElement.dir = isRTL ? 'rtl' : 'ltr';
     document.documentElement.lang = i18n.language;
   }, [i18n.language]);
+
+  // Show onboarding wizard if: authenticated, profile loaded, not yet complete
+  const showOnboarding =
+    !isLoading &&
+    !!user &&
+    profile !== null &&
+    profile.onboarding_complete === false &&
+    !isComplete;
 
   return (
     <div className="min-h-screen bg-cream font-heebo">
@@ -24,7 +37,7 @@ export default function App() {
         <Route path="/signup" element={<SignupPage />} />
         <Route path="/reset-password" element={<ResetPasswordPage />} />
 
-        {/* Protected app routes — wired up in Phase 2 */}
+        {/* Protected app routes */}
         <Route
           path="/"
           element={
@@ -36,9 +49,11 @@ export default function App() {
           }
         />
 
-        {/* Fallback */}
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
+
+      {/* Onboarding wizard — rendered as overlay on top of any page */}
+      {showOnboarding && <OnboardingWizard />}
     </div>
   );
 }
