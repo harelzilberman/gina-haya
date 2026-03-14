@@ -25,5 +25,31 @@
     "title": "Garden Map",
     "addBed": "Add bed",
     "phase2": "Garden map is coming in Phase 2!"
+  },
+  "encyclopedia": {
+    "title": "Encyclopedia",
+    "search": "Search plants...",
+    "noResults": "No plants found 🌱",
+    "clearFilters": "Clear filters",
+    "loading": "Loading plants...",
+    "addToGarden": "Add to my garden",
+    "addedToGarden": "Added to garden! 🌱",
+    "loginToAdd": "Log in to add to your garden",
+    "categories": {
+      "all": "All",
+      "vegetables": "Vegetables",
+      "herbs": "Herbs",
+      "fruit_trees": "Fruit trees",
+      "flowers": "Flowers"
+    },
+    "dayTypes": {
+      "fruit": "🍅 Fruit",
+      "root": "🥕 Root",
+      "flower": "🌸 Flower",
+      "leaf": "🌿 Leaf"
+    },
+    "sowingMonths": "Sowing months",
+    "latinName": "Latin name",
+    "bestDays": "Best days"
   }
 }

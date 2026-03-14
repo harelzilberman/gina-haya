@@ -25,5 +25,31 @@
     "title": "מפת הגינה",
     "addBed": "הוסף ערוגה",
     "phase2": "מפת הגינה תהיה זמינה בשלב הבא!"
+  },
+  "encyclopedia": {
+    "title": "אנציקלופדיה",
+    "search": "חפש צמח...",
+    "noResults": "לא נמצאו צמחים 🌱",
+    "clearFilters": "נקה סינון",
+    "loading": "טוען צמחים...",
+    "addToGarden": "הוסף לגינה שלי",
+    "addedToGarden": "נוסף לגינה! 🌱",
+    "loginToAdd": "התחבר כדי להוסיף לגינה שלך",
+    "categories": {
+      "all": "הכל",
+      "vegetables": "ירקות",
+      "herbs": "עשבי תיבול",
+      "fruit_trees": "פירות",
+      "flowers": "פרחים"
+    },
+    "dayTypes": {
+      "fruit": "🍅 פרי",
+      "root": "🥕 שורש",
+      "flower": "🌸 פרח",
+      "leaf": "🌿 עלה"
+    },
+    "sowingMonths": "חודשי זריעה",
+    "latinName": "שם לטיני",
+    "bestDays": "ימים מומלצים"
   }
 }

@@ -1,124 +1,214 @@
 import { create } from 'zustand';
-import type { User, Session } from '@supabase/supabase-js';
 import { supabase } from '../lib/supabase';
-import { api } from '../api/client';
+import type { User, Session } from '@supabase/supabase-js';
 
 interface UserProfile {
   id: string;
   email: string;
-  display_name: string;
+  display_name: string | null;
   language_preference: 'he' | 'en';
   subscription_tier: string;
   onboarding_complete: boolean;
+  daily_tip_email: boolean;
 }
 
 interface AuthState {
   user: User | null;
-  session: Session | null;
   profile: UserProfile | null;
+  session: Session | null;
   isLoading: boolean;
+  isAuthReady: boolean;
   error: string | null;
   signIn: (email: string, password: string) => Promise<void>;
-  signUp: (email: string, password: string, displayName: string) => Promise<void>;
+  signUp: (email: string, password: string, displayName?: string) => Promise<void>;
   signInWithGoogle: () => Promise<void>;
   signOut: () => Promise<void>;
   resetPassword: (email: string) => Promise<void>;
+  loadProfile: () => Promise<void>;
   markOnboardingComplete: () => void;
   clearError: () => void;
 }
 
-export const useAuthStore = create<AuthState>((set) => ({
+// Load profile using the user's own access token so RLS passes
+async function fetchProfile(userId: string, accessToken: string): Promise<UserProfile | null> {
+  const res = await fetch(
+    `${import.meta.env.VITE_SUPABASE_URL}/rest/v1/users?id=eq.${userId}&select=*`,
+    {
+      headers: {
+        'apikey': import.meta.env.VITE_SUPABASE_ANON_KEY,
+        'Authorization': `Bearer ${accessToken}`,
+        'Content-Type': 'application/json',
+      },
+    }
+  );
+  const data = await res.json();
+  if (Array.isArray(data) && data.length > 0) return data[0];
+  return null;
+}
+
+// Create profile row using the user's own access token
+async function createProfile(user: User, accessToken: string): Promise<UserProfile | null> {
+  const displayName =
+    user.user_metadata?.display_name ||
+    user.email?.split('@')[0] ||
+    'גנן';
+
+  const res = await fetch(
+    `${import.meta.env.VITE_SUPABASE_URL}/rest/v1/users`,
+    {
+      method: 'POST',
+      headers: {
+        'apikey': import.meta.env.VITE_SUPABASE_ANON_KEY,
+        'Authorization': `Bearer ${accessToken}`,
+        'Content-Type': 'application/json',
+        'Prefer': 'return=representation',
+      },
+      body: JSON.stringify({
+        id: user.id,
+        email: user.email,
+        display_name: displayName,
+        language_preference: 'he',
+        subscription_tier: 'free',
+        onboarding_complete: false,
+        daily_tip_email: true,
+      }),
+    }
+  );
+  const data = await res.json();
+  if (Array.isArray(data) && data.length > 0) return data[0];
+  return null;
+}
+
+async function loadOrCreateProfile(user: User, accessToken: string): Promise<UserProfile | null> {
+  let profile = await fetchProfile(user.id, accessToken);
+  if (!profile) {
+    profile = await createProfile(user, accessToken);
+  }
+  return profile;
+}
+
+export const useAuthStore = create<AuthState>((set, get) => ({
   user: null,
-  session: null,
   profile: null,
-  isLoading: true,
+  session: null,
+  isLoading: false,
+  isAuthReady: false,
   error: null,
 
   clearError: () => set({ error: null }),
 
-  markOnboardingComplete: () =>
-    set((s) => ({
-      profile: s.profile ? { ...s.profile, onboarding_complete: true } : null,
-    })),
+  markOnboardingComplete: () => {
+    const { profile } = get();
+    if (profile) {
+      set({ profile: { ...profile, onboarding_complete: true } });
+    }
+  },
+
+  loadProfile: async () => {
+    const { user, session } = get();
+    if (!user || !session?.access_token) return;
+    const profile = await loadOrCreateProfile(user, session.access_token);
+    set({ profile });
+  },
 
   signIn: async (email, password) => {
     set({ isLoading: true, error: null });
-    const { error } = await supabase.auth.signInWithPassword({ email, password });
-    if (error) set({ error: error.message, isLoading: false });
-    // session + profile set by onAuthStateChange
+    try {
+      const { data, error } = await supabase.auth.signInWithPassword({ email, password });
+      if (error) throw error;
+      set({ user: data.user, session: data.session });
+      if (data.session?.access_token) {
+        const profile = await loadOrCreateProfile(data.user, data.session.access_token);
+        set({ profile });
+      }
+    } catch (err: any) {
+      set({ error: err.message || 'Sign in failed' });
+    } finally {
+      set({ isLoading: false });
+    }
   },
 
   signUp: async (email, password, displayName) => {
     set({ isLoading: true, error: null });
-    const { data, error } = await supabase.auth.signUp({
-      email,
-      password,
-      options: { data: { display_name: displayName } },
-    });
-    if (error) {
-      set({ error: error.message, isLoading: false });
-      return;
-    }
-    if (data.session) {
-      try {
-        await api.post('/api/auth/profile', { displayName }, data.session.access_token);
-      } catch {
-        // non-fatal — trigger already created the row
+    try {
+      const { data, error } = await supabase.auth.signUp({
+        email,
+        password,
+        options: {
+          data: { display_name: displayName || email.split('@')[0] },
+        },
+      });
+      if (error) throw error;
+      set({ user: data.user, session: data.session });
+      if (data.user && data.session?.access_token) {
+        const profile = await loadOrCreateProfile(data.user, data.session.access_token);
+        set({ profile });
       }
+    } catch (err: any) {
+      set({ error: err.message || 'Sign up failed' });
+    } finally {
+      set({ isLoading: false });
     }
   },
 
   signInWithGoogle: async () => {
     set({ isLoading: true, error: null });
-    const { error } = await supabase.auth.signInWithOAuth({
-      provider: 'google',
-      options: { redirectTo: `${window.location.origin}/` },
-    });
-    if (error) set({ error: error.message, isLoading: false });
+    try {
+      const { error } = await supabase.auth.signInWithOAuth({
+        provider: 'google',
+        options: { redirectTo: `${window.location.origin}/` },
+      });
+      if (error) throw error;
+    } catch (err: any) {
+      set({ error: err.message || 'Google sign in failed' });
+      set({ isLoading: false });
+    }
   },
 
   signOut: async () => {
-    set({ isLoading: true, error: null });
     await supabase.auth.signOut();
-    set({ user: null, session: null, profile: null, isLoading: false });
+    set({ user: null, profile: null, session: null });
   },
 
   resetPassword: async (email) => {
     set({ isLoading: true, error: null });
-    const { error } = await supabase.auth.resetPasswordForEmail(email, {
-      redirectTo: `${window.location.origin}/reset-password`,
-    });
-    set({ isLoading: false });
-    if (error) set({ error: error.message });
+    try {
+      const { error } = await supabase.auth.resetPasswordForEmail(email, {
+        redirectTo: `${window.location.origin}/reset-password`,
+      });
+      if (error) throw error;
+    } catch (err: any) {
+      set({ error: err.message || 'Password reset failed' });
+    } finally {
+      set({ isLoading: false });
+    }
   },
 }));
 
-// ── Helpers ────────────────────────────────────────────────────────────────
-
-async function fetchProfile(token: string): Promise<UserProfile | null> {
-  try {
-    return await api.get<UserProfile>('/api/auth/me', token);
-  } catch {
-    return null;
-  }
-}
-
-// ── Bootstrap ──────────────────────────────────────────────────────────────
-
-supabase.auth.getSession().then(async ({ data: { session } }) => {
-  if (session?.user) {
-    const profile = await fetchProfile(session.access_token);
-    useAuthStore.setState({ user: session.user, session, profile, isLoading: false });
+// Auth state listener
+supabase.auth.onAuthStateChange(async (event, session) => {
+  useAuthStore.setState({
+    user: session?.user ?? null,
+    session: session,
+    isAuthReady: true,
+  });
+  if (session?.user && session.access_token) {
+    const profile = await loadOrCreateProfile(session.user, session.access_token);
+    useAuthStore.setState({ profile });
   } else {
-    useAuthStore.setState({ user: null, session: null, profile: null, isLoading: false });
+    useAuthStore.setState({ profile: null });
   }
 });
 
-supabase.auth.onAuthStateChange(async (_event, session) => {
-  if (session?.user) {
-    const profile = await fetchProfile(session.access_token);
-    useAuthStore.setState({ user: session.user, session, profile, isLoading: false });
-  } else {
-    useAuthStore.setState({ user: null, session: null, profile: null, isLoading: false });
+// Load session on startup
+supabase.auth.getSession().then(async ({ data: { session } }) => {
+  useAuthStore.setState({
+    user: session?.user ?? null,
+    session: session,
+    isAuthReady: true,
+  });
+  if (session?.user && session.access_token) {
+    const profile = await loadOrCreateProfile(session.user, session.access_token);
+    useAuthStore.setState({ profile });
   }
 });

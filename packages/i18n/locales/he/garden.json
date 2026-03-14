@@ -21,9 +21,46 @@
     "none": "עדיין לא הוספת צמחים"
   },
   "notes": "הערות",
+  "edit": "ערוך",
+  "editGarden": "עריכת הגינה",
+  "save": "שמור",
+  "cancel": "ביטול",
+  "remove": "הסר",
+  "savedSuccess": "הגינה עודכנה בהצלחה",
+  "saveError": "שגיאה בשמירה",
+  "plantRemoved": "הוסר מהגינה",
+  "removeError": "שגיאה בהסרת הצמח",
   "map": {
     "title": "מפת הגינה",
     "addBed": "הוסף ערוגה",
     "phase2": "מפת הגינה תהיה זמינה בשלב הבא!"
+  },
+  "encyclopedia": {
+    "title": "אנציקלופדיה",
+    "search": "חפש צמח...",
+    "noResults": "לא נמצאו צמחים 🌱",
+    "clearFilters": "נקה סינון",
+    "loading": "טוען צמחים...",
+    "addToGarden": "הוסף לגינה שלי",
+    "addedToGarden": "נוסף לגינה! 🌱",
+    "loginToAdd": "התחבר כדי להוסיף לגינה שלך",
+    "categories": {
+      "all": "הכל",
+      "vegetables": "ירקות",
+      "herbs": "עשבי תיבול",
+      "fruit_trees": "פירות",
+      "flowers": "פרחים"
+    },
+    "dayTypes": {
+      "fruit": "🍅 פרי",
+      "root": "🥕 שורש",
+      "flower": "🌸 פרח",
+      "leaf": "🌿 עלה"
+    },
+    "sowingMonths": "חודשי זריעה",
+    "harvestMonths": "חודשי קציר",
+    "dayTypeAffinity": "ימים מומלצים",
+    "latinName": "שם לטיני",
+    "bestDays": "ימים מומלצים"
   }
 }

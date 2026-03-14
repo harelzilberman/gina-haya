@@ -21,9 +21,46 @@
     "none": "No plants added yet"
   },
   "notes": "Notes",
+  "edit": "Edit",
+  "editGarden": "Edit garden",
+  "save": "Save",
+  "cancel": "Cancel",
+  "remove": "Remove",
+  "savedSuccess": "Garden updated successfully",
+  "saveError": "Failed to save",
+  "plantRemoved": "removed from garden",
+  "removeError": "Failed to remove plant",
   "map": {
     "title": "Garden Map",
     "addBed": "Add bed",
     "phase2": "Garden map is coming in Phase 2!"
+  },
+  "encyclopedia": {
+    "title": "Encyclopedia",
+    "search": "Search plants...",
+    "noResults": "No plants found 🌱",
+    "clearFilters": "Clear filters",
+    "loading": "Loading plants...",
+    "addToGarden": "Add to my garden",
+    "addedToGarden": "Added to garden! 🌱",
+    "loginToAdd": "Log in to add to your garden",
+    "categories": {
+      "all": "All",
+      "vegetables": "Vegetables",
+      "herbs": "Herbs",
+      "fruit_trees": "Fruit trees",
+      "flowers": "Flowers"
+    },
+    "dayTypes": {
+      "fruit": "🍅 Fruit",
+      "root": "🥕 Root",
+      "flower": "🌸 Flower",
+      "leaf": "🌿 Leaf"
+    },
+    "sowingMonths": "Sowing months",
+    "harvestMonths": "Harvest months",
+    "dayTypeAffinity": "Best days",
+    "latinName": "Latin name",
+    "bestDays": "Best days"
   }
 }

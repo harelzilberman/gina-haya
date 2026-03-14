@@ -1,10 +1,15 @@
+import 'dotenv/config';
 import { createClient } from '@supabase/supabase-js';
 
-const supabaseUrl = process.env.SUPABASE_URL!;
-const supabaseServiceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY!;
+const supabaseUrl = process.env.SUPABASE_URL;
+const supabaseServiceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
 
 if (!supabaseUrl || !supabaseServiceRoleKey) {
-  throw new Error('Missing Supabase environment variables. Check your .env file.');
+  throw new Error(
+    'Missing Supabase environment variables. Check packages/api/.env\n' +
+    'SUPABASE_URL: ' + (supabaseUrl ? '✓' : '✗ MISSING') + '\n' +
+    'SUPABASE_SERVICE_ROLE_KEY: ' + (supabaseServiceRoleKey ? '✓' : '✗ MISSING')
+  );
 }
 
 // Server-side client — uses service role key, bypasses RLS
