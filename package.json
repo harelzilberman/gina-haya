@@ -1,15 +1,16 @@
 {
   "name": "gina-haya",
   "private": true,
+  "packageManager": "pnpm@9.0.0",
   "scripts": {
-    "dev":        "pnpm --filter web dev & pnpm --filter api dev",
-    "dev:web":    "pnpm --filter web dev",
-    "dev:api":    "pnpm --filter api dev",
-    "build":      "pnpm --filter @gina-haya/shared build && pnpm --filter @gina-haya/i18n build && pnpm -r --filter !@gina-haya/shared --filter !@gina-haya/i18n build",
+    "dev": "pnpm --filter web dev & pnpm --filter api dev",
+    "dev:web": "pnpm --filter web dev",
+    "dev:api": "pnpm --filter api dev",
+    "build": "pnpm --filter @gina-haya/shared build && pnpm --filter @gina-haya/i18n build && pnpm -r --filter !@gina-haya/shared --filter !@gina-haya/i18n build",
     "type-check": "pnpm -r type-check",
-    "lint":       "pnpm -r lint",
-    "test":       "pnpm -r test",
-    "db:seed":    "tsx scripts/seed-calendar.ts",
+    "lint": "pnpm -r lint",
+    "test": "pnpm -r test",
+    "db:seed": "tsx scripts/seed-calendar.ts",
     "db:migrate": "pnpm --filter @gina-haya/api db:migrate"
   },
   "devDependencies": {
