@@ -1,7 +1,6 @@
 {
   "name": "gina-haya",
   "private": true,
-  "packageManager": "pnpm@9.0.0",
   "scripts": {
     "dev": "pnpm --filter web dev & pnpm --filter api dev",
     "dev:web": "pnpm --filter web dev",
@@ -20,9 +19,5 @@
     "prettier": "^3.2.0",
     "tsx": "^4.7.0",
     "typescript": "^5.4.0"
-  },
-  "engines": {
-    "node": ">=20.0.0",
-    "pnpm": ">=9.0.0"
   }
 }
