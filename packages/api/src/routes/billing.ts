@@ -1,10 +1,10 @@
 import 'dotenv/config';
-import { Router, type Request } from 'express';
+import { Router, type IRouter, type Request } from 'express';
 import Stripe from 'stripe';
 import { db } from '../db/client';
 import { verifyToken } from '../middleware/auth';
 
-export const billingRouter = Router();
+export const billingRouter: IRouter = Router();
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
   apiVersion: '2026-02-25.clover',

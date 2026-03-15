@@ -1,7 +1,7 @@
-import { Router } from 'express';
+import { Router, type IRouter } from 'express';
 import { db } from '../db/client';
 
-export const plantsRouter = Router();
+export const plantsRouter: IRouter = Router();
 
 // GET /api/plants?search=tomato&category=vegetables&lang=he
 plantsRouter.get('/', async (req, res) => {

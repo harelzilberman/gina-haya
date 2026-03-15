@@ -1,8 +1,8 @@
-import { Router } from 'express';
+import { Router, type IRouter } from 'express';
 import { db } from '../db/client';
 import { verifyToken } from '../middleware/auth';
 
-export const gardenRouter = Router();
+export const gardenRouter: IRouter = Router();
 
 // All garden routes require authentication
 gardenRouter.use(verifyToken);

@@ -1,11 +1,11 @@
-import { Router } from 'express';
+import { Router, type IRouter } from 'express';
 import { z } from 'zod';
 import jwt from 'jsonwebtoken';
 import { db } from '../db/client';
 import { verifyToken } from '../middleware/auth';
 import { sendDailyTipToAllUsers } from '../cron/daily-tip';
 
-export const emailRouter = Router();
+export const emailRouter: IRouter = Router();
 
 const JWT_SECRET = process.env.JWT_SECRET!;
 

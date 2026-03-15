@@ -1,15 +1,11 @@
 import 'dotenv/config';
-import express from 'express';
+import express, { Express } from 'express';
 import cors from 'cors';
 import { rateLimit } from 'express-rate-limit';
 
-const app = express();
+const app: Express = express();
 const PORT = process.env.PORT || 3001;
 
-// ── Middleware ──────────────────────────────────────────────────────────────
-// Raw body required for Stripe webhook signature verification — must come
-// before express.json() so the Buffer is preserved for that one route.
-app.use('/api/billing/webhook', express.raw({ type: 'application/json' }));
 app.use(express.json({ limit: '10mb' }));
 app.use(cors({
   origin: process.env.NODE_ENV === 'production'
@@ -25,11 +21,10 @@ app.use(rateLimit({
   legacyHeaders: false,
 }));
 
-// ── Health check ────────────────────────────────────────────────────────────
-import { healthcheck } from './middleware/healthcheck';
-app.get('/health', healthcheck);
+app.get('/health', (_req, res) => {
+  res.json({ status: 'ok', timestamp: new Date().toISOString() });
+});
 
-// ── Routes ──────────────────────────────────────────────────────────────────
 import { authRouter }    from './routes/auth';
 import { gardenRouter }  from './routes/garden';
 import { plantsRouter }  from './routes/plants';
@@ -37,8 +32,6 @@ import { calendarRouter } from './routes/calendar';
 import { mooshRouter }   from './routes/moosh';
 import { billingRouter } from './routes/billing';
 import { emailRouter }   from './routes/email';
-import cron from 'node-cron';
-import { sendDailyTipToAllUsers } from './cron/daily-tip';
 
 app.use('/api/auth',     authRouter);
 app.use('/api/garden',   gardenRouter);
@@ -48,10 +41,6 @@ app.use('/api/moosh',    mooshRouter);
 app.use('/api/billing',  billingRouter);
 app.use('/api/email',    emailRouter);
 
-// ── Cron: daily tip email at 06:00 Israel time (04:00 UTC) ──────────────────
-cron.schedule('0 4 * * *', sendDailyTipToAllUsers);
-
-// ── 404 handler ─────────────────────────────────────────────────────────────
 app.use((_req, res) => {
   res.status(404).json({ error: 'Not found' });
 });

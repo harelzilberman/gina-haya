@@ -1,12 +1,12 @@
 import 'dotenv/config';
-import { Router } from 'express';
+import { Router, type IRouter } from 'express';
 import { db } from '../db/client';
 import { verifyToken } from '../middleware/auth';
 import { askMoosh } from '../services/claude';
 import type { MooshMessage, MooshContext } from '@gina-haya/shared';
 import { todayInIsrael } from '@gina-haya/shared';
 
-export const mooshRouter = Router();
+export const mooshRouter: IRouter = Router();
 
 // All moosh routes require auth
 mooshRouter.use(verifyToken);

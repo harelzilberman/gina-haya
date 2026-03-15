@@ -1,8 +1,8 @@
-import { Router } from 'express';
+import { Router, type IRouter } from 'express';
 import { getCalendarDay, getCalendarRange } from '../db/queries/calendar';
 import { ISRAEL_TIMEZONE } from '@gina-haya/shared';
 
-export const calendarRouter = Router();
+export const calendarRouter: IRouter = Router();
 
 function todayISO(): string {
   return new Date().toLocaleDateString('en-CA', { timeZone: ISRAEL_TIMEZONE });

@@ -1,9 +1,9 @@
-import { Router } from 'express';
+import { Router, type IRouter } from 'express';
 import { z } from 'zod';
 import { db } from '../db/client';
 import { verifyToken } from '../middleware/auth';
 
-export const authRouter = Router();
+export const authRouter: IRouter = Router();
 
 authRouter.use(verifyToken);
 
