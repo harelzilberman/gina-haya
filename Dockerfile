@@ -1,6 +1,6 @@
 FROM node:20-alpine
 WORKDIR /app
-RUN npm install -g pnpm@8.15.0
+RUN npm install -g pnpm@latest
 COPY . .
 RUN pnpm install --no-frozen-lockfile
 RUN pnpm --filter @gina-haya/shared build
