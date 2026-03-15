@@ -4,7 +4,8 @@
       "Bash(cd \"D:\\\\harel\\\\claude\\\\gina-haya-main\\\\גינה חיה\\\\gina-haya\\\\gina-haya\" && pnpm approve-builds 2>&1)",
       "Bash(cd \"D:\\\\harel\\\\claude\\\\gina-haya-main\\\\גינה חיה\\\\gina-haya\\\\gina-haya\" && pnpm approve-builds --yes 2>&1 || echo \"SKIPPED\")",
       "Bash(cd \"D:\\\\harel\\\\claude\\\\gina-haya-main\\\\גינה חיה\\\\gina-haya\\\\gina-haya\" && pnpm --filter @gina-haya/api db:migrate 2>&1)",
-      "Bash(cd:*)"
+      "Bash(cd:*)",
+      "Bash(ls:*)"
     ]
   }
 }

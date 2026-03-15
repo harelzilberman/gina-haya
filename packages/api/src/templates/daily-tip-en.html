@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html dir="ltr" lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Your Daily Garden Tip from Gina Haya</title>
+</head>
+<body style="margin:0;padding:0;background-color:#FDF6EC;font-family:Arial,sans-serif;direction:ltr;text-align:left;">
+<table width="100%" cellpadding="0" cellspacing="0" border="0" style="background-color:#FDF6EC;">
+  <tr>
+    <td align="center" style="padding:24px 16px;">
+      <table width="600" cellpadding="0" cellspacing="0" border="0" style="max-width:600px;width:100%;background-color:#FDF6EC;font-family:Arial,sans-serif;">
+
+        <!-- HEADER -->
+        <tr>
+          <td style="background-color:#1B2A4A;padding:24px;text-align:center;border-radius:12px 12px 0 0;">
+            <div style="color:#FFFFFF;font-size:22px;font-weight:bold;font-family:Arial,sans-serif;margin-bottom:6px;">
+              &#x1F315; Moosh from Gina Haya
+            </div>
+            <div style="color:#B7924A;font-size:14px;font-family:Arial,sans-serif;">
+              A Living, Breathing Garden
+            </div>
+          </td>
+        </tr>
+
+        <!-- BODY -->
+        <tr>
+          <td style="background-color:#FFFFFF;padding:32px;border-right:1px solid #E8E0D4;border-left:1px solid #E8E0D4;">
+            <table width="100%" cellpadding="0" cellspacing="0" border="0">
+
+              <!-- DATE -->
+              <tr>
+                <td style="font-size:15px;color:#1B2A4A;font-family:Arial,sans-serif;padding-bottom:24px;text-align:left;border-bottom:1px solid #F0E8DC;">
+                  {{DATE}}
+                </td>
+              </tr>
+
+              <!-- PLANTING SCORE -->
+              <tr>
+                <td style="padding:24px 0;text-align:center;">
+                  <div style="display:inline-block;">
+                    <div style="width:80px;height:80px;border-radius:50%;background-color:{{SCORE_COLOUR}};margin:0 auto;display:table;">
+                      <div style="display:table-cell;vertical-align:middle;text-align:center;color:#FFFFFF;font-size:32px;font-weight:bold;font-family:Arial,sans-serif;">
+                        {{PLANTING_SCORE}}
+                      </div>
+                    </div>
+                    <div style="margin-top:10px;font-size:13px;color:#666666;font-family:Arial,sans-serif;text-align:center;">
+                      Today's Planting Score
+                    </div>
+                  </div>
+                </td>
+              </tr>
+
+              <!-- DAY TYPE BADGE -->
+              <tr>
+                <td style="padding-bottom:12px;text-align:left;">
+                  <span style="display:inline-block;background-color:#FDF6EC;border:1px solid #B7924A;border-radius:20px;padding:6px 16px;font-size:14px;color:#1B2A4A;font-family:Arial,sans-serif;">
+                    {{DAY_TYPE_EMOJI}} {{DAY_TYPE_EN}}
+                  </span>
+                </td>
+              </tr>
+
+              <!-- MOON DIRECTION -->
+              <tr>
+                <td style="padding-bottom:24px;font-size:14px;color:#555555;font-family:Arial,sans-serif;text-align:left;">
+                  &#x1F319; Moon: {{MOON_DIRECTION_EN}}
+                </td>
+              </tr>
+
+              <!-- MOOSH SUMMARY -->
+              <tr>
+                <td style="padding:16px;background-color:#FFFBF4;border-left:4px solid #B7924A;margin-bottom:24px;border-radius:4px 0 0 4px;">
+                  <div style="font-size:12px;font-weight:bold;color:#B7924A;font-family:Arial,sans-serif;margin-bottom:8px;text-align:left;">
+                    Moosh says:
+                  </div>
+                  <div style="font-size:14px;color:#333333;font-style:italic;font-family:Arial,sans-serif;line-height:1.6;text-align:left;">
+                    {{MOOSH_SUMMARY}}
+                  </div>
+                </td>
+              </tr>
+
+              <!-- SPACER -->
+              <tr><td style="height:24px;"></td></tr>
+
+              <!-- BD PREP 500 -->
+              {{PREP_500_ROW}}
+
+              <!-- BD PREP 501 -->
+              {{PREP_501_ROW}}
+
+              <!-- CTA BUTTON -->
+              <tr>
+                <td style="padding-top:28px;text-align:center;">
+                  <a href="{{APP_URL}}/calendar"
+                     style="display:inline-block;background-color:#4A7C59;color:#FFFFFF;font-family:Arial,sans-serif;font-size:15px;font-weight:bold;text-decoration:none;padding:14px 28px;border-radius:8px;">
+                    Open the full biodynamic calendar &rarr;
+                  </a>
+                </td>
+              </tr>
+
+            </table>
+          </td>
+        </tr>
+
+        <!-- FOOTER -->
+        <tr>
+          <td style="background-color:#F5F5F5;padding:16px;text-align:center;border-radius:0 0 12px 12px;border:1px solid #E0E0E0;border-top:none;">
+            <div style="font-size:12px;color:#888888;font-family:Arial,sans-serif;margin-bottom:6px;">
+              &copy; 2026 Gina Haya
+            </div>
+            <div style="font-size:12px;font-family:Arial,sans-serif;">
+              <a href="{{UNSUBSCRIBE_URL}}"
+                 style="color:#888888;text-decoration:underline;">
+                Unsubscribe
+              </a>
+            </div>
+          </td>
+        </tr>
+
+      </table>
+    </td>
+  </tr>
+</table>
+</body>
+</html>

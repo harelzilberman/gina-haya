@@ -26,9 +26,8 @@ app.use(rateLimit({
 }));
 
 // ── Health check ────────────────────────────────────────────────────────────
-app.get('/health', (_req, res) => {
-  res.json({ status: 'ok', timestamp: new Date().toISOString() });
-});
+import { healthcheck } from './middleware/healthcheck';
+app.get('/health', healthcheck);
 
 // ── Routes ──────────────────────────────────────────────────────────────────
 import { authRouter }    from './routes/auth';
@@ -37,6 +36,9 @@ import { plantsRouter }  from './routes/plants';
 import { calendarRouter } from './routes/calendar';
 import { mooshRouter }   from './routes/moosh';
 import { billingRouter } from './routes/billing';
+import { emailRouter }   from './routes/email';
+import cron from 'node-cron';
+import { sendDailyTipToAllUsers } from './cron/daily-tip';
 
 app.use('/api/auth',     authRouter);
 app.use('/api/garden',   gardenRouter);
@@ -44,6 +46,10 @@ app.use('/api/plants',   plantsRouter);
 app.use('/api/calendar', calendarRouter);
 app.use('/api/moosh',    mooshRouter);
 app.use('/api/billing',  billingRouter);
+app.use('/api/email',    emailRouter);
+
+// ── Cron: daily tip email at 06:00 Israel time (04:00 UTC) ──────────────────
+cron.schedule('0 4 * * *', sendDailyTipToAllUsers);
 
 // ── 404 handler ─────────────────────────────────────────────────────────────
 app.use((_req, res) => {

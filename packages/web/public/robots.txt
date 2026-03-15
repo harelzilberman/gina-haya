@@ -1,0 +1,7 @@
+User-agent: *
+Allow: /
+Disallow: /garden
+Disallow: /moosh
+Disallow: /settings
+Disallow: /billing
+Sitemap: https://gina-haya.com/sitemap.xml
