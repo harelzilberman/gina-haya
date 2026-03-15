@@ -6,19 +6,38 @@ import { useTier } from '../hooks/useTier';
 
 const API_BASE = import.meta.env.VITE_API_URL ?? 'http://localhost:3001';
 
+const EARTH  = '#142B16';
+const GOLD   = '#F5C840';
+const SAGE   = '#7DC084';
+const CLAY   = '#9B7A48';
+const PARCH  = '#EDE0C4';
+const FRANK  = '"Frank Ruhl Libre", Georgia, serif';
+const ASSIST = '"Assistant", "Heebo", sans-serif';
+const PLAYFAIR = '"Playfair Display", Georgia, serif';
+
+const NOISE_BG = `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='250' height='250'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.75' numOctaves='4' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='250' height='250' filter='url(%23n)' opacity='0.55'/%3E%3C/svg%3E")`;
+
 const TIER_NAMES: Record<string, string> = {
-  free:           'חינמי',
-  grower:         'גדל',
-  gardener_pro:   'גנן פרו',
-  professional:   'מקצועי',
+  free:         'חינמי',
+  grower:       'גדל',
+  gardener_pro: 'גנן פרו',
+  professional: 'מקצועי',
 };
 
 const TIER_FEATURES_HE: Record<string, string[]> = {
-  free: ['לוח ביודינמי יומי', 'אנציקלופדיית צמחים', 'גינה אחת', 'שיחה עם מוש (20/חודש)', 'פרסומות'],
-  grower: ['גישה מלאה לאפליקציה', '5 אבחנות צמחים / חודש', 'שיחה עם מוש (50/חודש)'],
+  free:         ['לוח ביודינמי יומי', 'אנציקלופדיית צמחים', 'גינה אחת', 'שיחה עם מוש (20/חודש)', 'פרסומות'],
+  grower:       ['גישה מלאה לאפליקציה', '5 אבחנות צמחים / חודש', 'שיחה עם מוש (50/חודש)'],
   gardener_pro: ['ללא פרסומות', 'אבחנות ללא הגבלה', 'שיחה עם מוש ללא הגבלה', 'גינות מרובות'],
   professional: ['לוח לקוחות', 'white-label', 'תמיכה מועדפת'],
 };
+
+const cardStyle = (highlight?: boolean): React.CSSProperties => ({
+  background:    'rgba(28,58,30,0.7)',
+  border:        highlight ? `2px solid ${GOLD}` : '1px solid rgba(125,192,132,0.15)',
+  borderRadius:  '16px',
+  padding:       '24px',
+  backdropFilter:'blur(8px)',
+});
 
 export function BillingPage() {
   const [searchParams] = useSearchParams();
@@ -28,10 +47,9 @@ export function BillingPage() {
   const { open: openUpgradeModal } = useUpgradeModalStore();
 
   const [showCancelConfirm, setShowCancelConfirm] = useState(false);
-  const [cancelling, setCancelling] = useState(false);
-  const [cancelledAt, setCancelledAt] = useState<string | null>(null);
+  const [cancelling,        setCancelling]        = useState(false);
+  const [cancelledAt,       setCancelledAt]       = useState<string | null>(null);
 
-  // Clear the status param from URL after showing the message
   useEffect(() => {
     if (status) {
       const url = new URL(window.location.href);
@@ -60,139 +78,229 @@ export function BillingPage() {
     }
   };
 
-  const tierName  = TIER_NAMES[tier] ?? tier;
-  const features  = TIER_FEATURES_HE[tier] ?? [];
-  const nextTier  = canUpgradeTo;
-  const nextName  = nextTier ? TIER_NAMES[nextTier] : null;
+  const tierName = TIER_NAMES[tier] ?? tier;
+  const features = TIER_FEATURES_HE[tier] ?? [];
+  const nextTier = canUpgradeTo;
+  const nextName = nextTier ? TIER_NAMES[nextTier] : null;
 
   return (
-    <div className="min-h-screen" style={{ backgroundColor: '#FDF6EC' }}>
-      <div className="max-w-2xl mx-auto px-4 py-6 flex flex-col gap-4">
-        {/* Status banners */}
-        {status === 'success' && (
-          <div
-            className="rounded-2xl px-5 py-4 text-sm font-medium"
-            style={{ backgroundColor: '#EAF4EE', color: '#4A7C59', border: '1px solid #4A7C59' }}
-          >
-            🎉 שדרוג הצליח! ברוך הבא לתוכנית {tierName}.
-          </div>
-        )}
-        {status === 'cancelled' && (
-          <div
-            className="rounded-2xl px-5 py-4 text-sm font-medium"
-            style={{ backgroundColor: '#FEF3E2', color: '#B7924A', border: '1px solid #B7924A' }}
-          >
-            אין בעיה — נשארת בתוכנית {tierName}. תוכל לשדרג מתי שתרצה.
-          </div>
-        )}
-        {cancelledAt && (
-          <div
-            className="rounded-2xl px-5 py-4 text-sm font-medium"
-            style={{ backgroundColor: '#FEF3E2', color: '#B7924A', border: '1px solid #B7924A' }}
-          >
-            המנוי יבוטל בתאריך {new Date(cancelledAt).toLocaleDateString('he-IL')}. ניתן להמשיך להשתמש עד אז.
-          </div>
-        )}
+    <>
+      {/* Noise */}
+      <div
+        aria-hidden="true"
+        style={{
+          position:        'fixed',
+          inset:           0,
+          zIndex:          9998,
+          pointerEvents:   'none',
+          backgroundImage: NOISE_BG,
+          backgroundRepeat:'repeat',
+          opacity:         0.28,
+        }}
+      />
 
-        {/* Current plan card */}
-        <div
-          className="bg-white rounded-2xl p-5 shadow-sm"
-          style={{ border: '2px solid #4A7C59' }}
-        >
-          <div className="flex items-start justify-between mb-3">
-            <div>
-              <p className="text-xs font-medium mb-0.5" style={{ color: '#6B7280' }}>התוכנית הנוכחית שלך</p>
-              <h2 className="text-xl font-bold" style={{ color: '#1B2A4A' }}>{tierName}</h2>
+      <div style={{ backgroundColor: EARTH, minHeight: '100vh', position: 'relative', zIndex: 0 }}>
+        <div style={{ maxWidth: '900px', margin: '0 auto', padding: '28px 16px 60px', display: 'flex', flexDirection: 'column', gap: '16px' }}>
+
+          {/* Page title */}
+          <h1 style={{
+            fontFamily: FRANK,
+            fontWeight: 700,
+            fontSize:   '2rem',
+            color:      GOLD,
+            margin:     '0 0 4px',
+            lineHeight: 1.1,
+          }}>
+            חיוב ותוכניות
+          </h1>
+
+          {/* Status banners */}
+          {status === 'success' && (
+            <div style={{
+              ...cardStyle(),
+              border:          '1px solid rgba(125,192,132,0.4)',
+              backgroundColor: 'rgba(74,128,80,0.15)',
+              fontFamily:      ASSIST,
+              fontSize:        '14px',
+              color:           SAGE,
+            }}>
+              🎉 שדרוג הצליח! ברוך הבא לתוכנית {tierName}.
             </div>
-            <span
-              className="text-lg font-bold"
-              style={{ color: monthlyPrice ? '#4A7C59' : '#9CA3AF' }}
-            >
-              {monthlyPrice ? `₪${monthlyPrice}/חודש` : 'חינם'}
-            </span>
-          </div>
+          )}
+          {status === 'cancelled' && (
+            <div style={{
+              ...cardStyle(),
+              border:          `1px solid ${CLAY}55`,
+              backgroundColor: 'rgba(155,122,72,0.15)',
+              fontFamily:      ASSIST,
+              fontSize:        '14px',
+              color:           `${PARCH}CC`,
+            }}>
+              אין בעיה — נשארת בתוכנית {tierName}. תוכל לשדרג מתי שתרצה.
+            </div>
+          )}
+          {cancelledAt && (
+            <div style={{
+              ...cardStyle(),
+              border:          `1px solid ${CLAY}55`,
+              backgroundColor: 'rgba(155,122,72,0.15)',
+              fontFamily:      ASSIST,
+              fontSize:        '14px',
+              color:           `${PARCH}CC`,
+            }}>
+              המנוי יבוטל בתאריך {new Date(cancelledAt).toLocaleDateString('he-IL')}. ניתן להמשיך להשתמש עד אז.
+            </div>
+          )}
 
-          <ul className="flex flex-col gap-1.5">
-            {features.map(f => (
-              <li key={f} className="flex items-start gap-2 text-sm" style={{ color: '#374151' }}>
-                <span style={{ color: '#4A7C59' }}>✓</span>
-                {f}
-              </li>
-            ))}
-          </ul>
-        </div>
-
-        {/* Upgrade section */}
-        {nextTier && (
-          <div
-            className="bg-white rounded-2xl p-5 shadow-sm"
-            style={{ border: '1px solid rgba(0,0,0,0.06)' }}
-          >
-            <h3 className="text-base font-bold mb-1" style={{ color: '#1B2A4A' }}>
-              שדרג ל{nextName}
-            </h3>
-            <p className="text-sm mb-3" style={{ color: '#6B7280' }}>
-              קבל גישה לתכונות מתקדמות ותמיכה מלאה
-            </p>
-            <button
-              onClick={() => openUpgradeModal('billing_page')}
-              className="w-full py-3 rounded-xl text-white font-semibold text-sm"
-              style={{ backgroundColor: '#4A7C59' }}
-            >
-              ראה את כל התוכניות
-            </button>
-          </div>
-        )}
-
-        {/* Cancel section */}
-        {tier !== 'free' && !cancelledAt && (
-          <div
-            className="bg-white rounded-2xl p-5 shadow-sm"
-            style={{ border: '1px solid rgba(0,0,0,0.06)' }}
-          >
-            <h3 className="text-base font-semibold mb-1" style={{ color: '#1B2A4A' }}>ביטול מנוי</h3>
-            <p className="text-sm mb-3" style={{ color: '#6B7280' }}>
-              ביטול ייכנס לתוקף בסוף תקופת החיוב הנוכחית.
-            </p>
-
-            {!showCancelConfirm ? (
-              <button
-                onClick={() => setShowCancelConfirm(true)}
-                className="text-sm px-4 py-2 rounded-lg font-medium"
-                style={{ backgroundColor: '#FEE2E2', color: '#DC2626' }}
-              >
-                בטל מנוי
-              </button>
-            ) : (
-              <div
-                className="rounded-xl p-4 flex flex-col gap-3"
-                style={{ backgroundColor: '#FEF2F2', border: '1px solid #FECACA' }}
-              >
-                <p className="text-sm font-medium" style={{ color: '#1B2A4A' }}>
-                  בטוח? המנוי יבוטל בסוף התקופה הנוכחית.
+          {/* Current plan */}
+          <div style={cardStyle(true)}>
+            <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', marginBottom: '16px' }}>
+              <div>
+                <p style={{ fontFamily: ASSIST, fontSize: '11px', fontWeight: 600, letterSpacing: '0.1em', textTransform: 'uppercase', color: `${PARCH}44`, margin: '0 0 4px' }}>
+                  התוכנית הנוכחית שלך
                 </p>
-                <div className="flex gap-2">
-                  <button
-                    onClick={() => setShowCancelConfirm(false)}
-                    className="flex-1 py-2 rounded-lg text-sm font-medium"
-                    style={{ backgroundColor: '#F3F4F6', color: '#374151' }}
-                  >
-                    לא, השאר אותי
-                  </button>
-                  <button
-                    onClick={handleCancel}
-                    disabled={cancelling}
-                    className="flex-1 py-2 rounded-lg text-sm font-semibold text-white transition-opacity"
-                    style={{ backgroundColor: '#DC2626', opacity: cancelling ? 0.7 : 1 }}
-                  >
-                    {cancelling ? '...' : 'כן, בטל'}
-                  </button>
-                </div>
+                <h2 style={{ fontFamily: FRANK, fontWeight: 700, fontSize: '26px', color: GOLD, margin: 0 }}>
+                  {tierName}
+                </h2>
               </div>
-            )}
+              <span style={{
+                fontFamily: PLAYFAIR,
+                fontStyle:  'italic',
+                fontSize:   '18px',
+                color:      monthlyPrice ? PARCH : `${PARCH}44`,
+              }}>
+                {monthlyPrice ? `₪${monthlyPrice}/חודש` : 'חינם'}
+              </span>
+            </div>
+            <ul style={{ display: 'flex', flexDirection: 'column', gap: '8px', margin: 0, padding: 0, listStyle: 'none' }}>
+              {features.map(f => (
+                <li key={f} style={{ display: 'flex', alignItems: 'flex-start', gap: '8px', fontFamily: ASSIST, fontSize: '13px', color: `${PARCH}CC` }}>
+                  <span style={{ color: SAGE, flexShrink: 0 }}>✓</span>
+                  {f}
+                </li>
+              ))}
+            </ul>
           </div>
-        )}
+
+          {/* Upgrade */}
+          {nextTier && (
+            <div style={cardStyle()}>
+              <h3 style={{ fontFamily: FRANK, fontWeight: 600, fontSize: '18px', color: PARCH, margin: '0 0 6px' }}>
+                שדרג ל{nextName}
+              </h3>
+              <p style={{ fontFamily: ASSIST, fontSize: '13px', color: `${PARCH}66`, margin: '0 0 16px' }}>
+                קבל גישה לתכונות מתקדמות ותמיכה מלאה
+              </p>
+              <button
+                onClick={() => openUpgradeModal('billing_page')}
+                style={{
+                  width:           '100%',
+                  padding:         '13px',
+                  borderRadius:    '8px',
+                  border:          'none',
+                  backgroundColor: GOLD,
+                  fontFamily:      FRANK,
+                  fontWeight:      600,
+                  fontSize:        '15px',
+                  color:           EARTH,
+                  cursor:          'pointer',
+                  transition:      'filter 0.2s',
+                }}
+                onMouseEnter={e => { (e.currentTarget as HTMLElement).style.filter = 'brightness(1.1)'; }}
+                onMouseLeave={e => { (e.currentTarget as HTMLElement).style.filter = 'none'; }}
+              >
+                ראה את כל התוכניות
+              </button>
+            </div>
+          )}
+
+          {/* Cancel */}
+          {tier !== 'free' && !cancelledAt && (
+            <div style={cardStyle()}>
+              <h3 style={{ fontFamily: FRANK, fontWeight: 600, fontSize: '16px', color: PARCH, margin: '0 0 6px' }}>
+                ביטול מנוי
+              </h3>
+              <p style={{ fontFamily: ASSIST, fontSize: '13px', color: `${PARCH}66`, margin: '0 0 14px' }}>
+                ביטול ייכנס לתוקף בסוף תקופת החיוב הנוכחית.
+              </p>
+
+              {!showCancelConfirm ? (
+                <button
+                  onClick={() => setShowCancelConfirm(true)}
+                  style={{
+                    fontFamily:      ASSIST,
+                    fontSize:        '13px',
+                    fontWeight:      500,
+                    padding:         '7px 18px',
+                    borderRadius:    '8px',
+                    border:          `1px solid ${CLAY}55`,
+                    backgroundColor: 'transparent',
+                    color:           CLAY,
+                    cursor:          'pointer',
+                    transition:      'background-color 0.15s',
+                  }}
+                  onMouseEnter={e => { (e.currentTarget as HTMLElement).style.backgroundColor = 'rgba(155,122,72,0.12)'; }}
+                  onMouseLeave={e => { (e.currentTarget as HTMLElement).style.backgroundColor = 'transparent'; }}
+                >
+                  בטל מנוי
+                </button>
+              ) : (
+                <div style={{
+                  padding:         '16px',
+                  borderRadius:    '10px',
+                  backgroundColor: 'rgba(192,57,43,0.1)',
+                  border:          '1px solid rgba(192,57,43,0.25)',
+                  display:         'flex',
+                  flexDirection:   'column',
+                  gap:             '12px',
+                }}>
+                  <p style={{ fontFamily: ASSIST, fontSize: '13px', color: PARCH, margin: 0 }}>
+                    בטוח? המנוי יבוטל בסוף התקופה הנוכחית.
+                  </p>
+                  <div style={{ display: 'flex', gap: '10px' }}>
+                    <button
+                      onClick={() => setShowCancelConfirm(false)}
+                      style={{
+                        flex:            1,
+                        padding:         '9px',
+                        borderRadius:    '8px',
+                        border:          '1px solid rgba(125,192,132,0.2)',
+                        backgroundColor: 'transparent',
+                        fontFamily:      ASSIST,
+                        fontSize:        '13px',
+                        color:           `${PARCH}77`,
+                        cursor:          'pointer',
+                      }}
+                    >
+                      לא, השאר אותי
+                    </button>
+                    <button
+                      onClick={handleCancel}
+                      disabled={cancelling}
+                      style={{
+                        flex:            1,
+                        padding:         '9px',
+                        borderRadius:    '8px',
+                        border:          'none',
+                        backgroundColor: '#C0372A',
+                        fontFamily:      FRANK,
+                        fontWeight:      600,
+                        fontSize:        '13px',
+                        color:           '#fff',
+                        cursor:          cancelling ? 'default' : 'pointer',
+                        opacity:         cancelling ? 0.7 : 1,
+                      }}
+                    >
+                      {cancelling ? '...' : 'כן, בטל'}
+                    </button>
+                  </div>
+                </div>
+              )}
+            </div>
+          )}
+
+        </div>
       </div>
-    </div>
+    </>
   );
 }

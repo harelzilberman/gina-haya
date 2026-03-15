@@ -5,7 +5,18 @@ interface Props {
   day: BiodynamicDay;
 }
 
-const MOON_GOLD = '#B7924A';
+const GOLD     = '#F5C840';
+const PARCH    = '#EDE0C4';
+const ASSIST   = '"Assistant", "Heebo", sans-serif';
+const PLAYFAIR = '"Playfair Display", Georgia, serif';
+
+const MOOSH_CSS = `
+@keyframes moosh-glow {
+  0%, 100% { box-shadow: 0 0 12px rgba(245,200,64,0.3), 0 0 4px rgba(245,200,64,0.15); }
+  50%       { box-shadow: 0 0 22px rgba(245,200,64,0.5), 0 0 8px rgba(245,200,64,0.25); }
+}
+.moosh-avatar { animation: moosh-glow 3s ease-in-out infinite; }
+`;
 
 const DEFAULT_SUMMARIES: Record<string, string> = {
   fruit:  'יום פרי — זמן טוב לעסוק בפירות ובגידולים הנושאים פרי.',
@@ -16,36 +27,72 @@ const DEFAULT_SUMMARIES: Record<string, string> = {
 
 export function MooshDailySummary({ day }: Props) {
   const { i18n } = useTranslation();
-  const isRTL = i18n.language === 'he';
 
   const summary = day.mooshDailySummary || DEFAULT_SUMMARIES[day.dayType] || 'שלום מהגינה!';
 
   return (
-    <div
-      className="bg-white rounded-2xl shadow-sm p-5 mb-4 flex gap-4 items-start"
-      style={{
-        borderRight: isRTL ? `4px solid ${MOON_GOLD}` : undefined,
-        borderLeft:  !isRTL ? `4px solid ${MOON_GOLD}` : undefined,
-      }}
-    >
-      {/* Moosh avatar */}
-      <div
-        className="flex-shrink-0 w-10 h-10 rounded-full flex items-center justify-center text-lg"
-        style={{ backgroundColor: MOON_GOLD }}
-        aria-hidden="true"
-      >
-        🌕
-      </div>
+    <>
+      <style>{MOOSH_CSS}</style>
 
-      {/* Text */}
-      <div>
-        <p className="text-xs font-bold mb-1" style={{ color: MOON_GOLD }}>
-          מוש אומר:
-        </p>
-        <p className="text-sm italic leading-relaxed" style={{ color: '#374151' }}>
-          {summary}
-        </p>
+      <div
+        style={{
+          display:         'flex',
+          gap:             '14px',
+          alignItems:      'flex-start',
+          padding:         '18px 18px 18px 16px',
+          marginBottom:    '12px',
+          background:      'linear-gradient(145deg, rgba(28,58,30,0.8) 0%, rgba(20,43,22,0.9) 100%)',
+          borderRadius:    '14px',
+          border:          '1px solid rgba(245,200,64,0.1)',
+          borderInlineStart: `3px solid ${GOLD}`,
+          backdropFilter:  'blur(8px)',
+        }}
+      >
+        {/* Moosh avatar */}
+        <div
+          className="moosh-avatar"
+          aria-hidden="true"
+          style={{
+            flexShrink:      0,
+            width:           '44px',
+            height:          '44px',
+            borderRadius:    '50%',
+            background:      `radial-gradient(circle at 40% 40%, #F5D060, ${GOLD}, #C8960A)`,
+            display:         'flex',
+            alignItems:      'center',
+            justifyContent:  'center',
+            fontSize:        '22px',
+            lineHeight:      1,
+          }}
+        >
+          🌕
+        </div>
+
+        {/* Text */}
+        <div style={{ flex: 1, minWidth: 0 }}>
+          <p style={{
+            fontFamily:   ASSIST,
+            fontSize:     '11px',
+            fontWeight:   700,
+            letterSpacing:'0.1em',
+            textTransform:'uppercase',
+            color:        GOLD,
+            margin:       '0 0 6px',
+          }}>
+            מוש אומר:
+          </p>
+          <p style={{
+            fontFamily:  PLAYFAIR,
+            fontStyle:   'italic',
+            fontSize:    '14px',
+            lineHeight:  1.7,
+            color:       `${PARCH}CC`,
+            margin:      0,
+          }}>
+            {summary}
+          </p>
+        </div>
       </div>
-    </div>
+    </>
   );
 }

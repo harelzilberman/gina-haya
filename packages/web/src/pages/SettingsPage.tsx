@@ -4,9 +4,17 @@ import { useAuthStore } from '../stores/authStore';
 import { useToastStore } from '../stores/toastStore';
 import { supabase } from '../lib/supabase';
 
+const EARTH  = '#142B16';
+const GOLD   = '#F5C840';
+const PARCH  = '#EDE0C4';
+const FRANK  = '"Frank Ruhl Libre", Georgia, serif';
+const ASSIST = '"Assistant", "Heebo", sans-serif';
+
+const NOISE_BG = `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='250' height='250'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.75' numOctaves='4' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='250' height='250' filter='url(%23n)' opacity='0.55'/%3E%3C/svg%3E")`;
+
 export function SettingsPage() {
   const { profile, session } = useAuthStore();
-  const { show: showToast } = useToastStore();
+  const { show: showToast }  = useToastStore();
 
   const [dailyTipEmail, setDailyTipEmail] = useState<boolean>(
     profile?.daily_tip_email ?? true
@@ -25,7 +33,6 @@ export function SettingsPage() {
         { dailyTipEmail, language },
         session.access_token
       );
-      // Reload profile to sync store
       const { data: { session: currentSession } } = await supabase.auth.getSession();
       if (currentSession) {
         useAuthStore.getState().loadProfile();
@@ -39,94 +46,181 @@ export function SettingsPage() {
   }
 
   return (
-    <div className="min-h-screen" style={{ backgroundColor: '#FDF6EC' }}>
-      <div className="max-w-lg mx-auto px-4 py-8">
-        <h1 className="text-xl font-bold mb-6" style={{ color: '#1B2A4A' }}>
-          ⚙️ הגדרות
-        </h1>
+    <>
+      {/* Noise */}
+      <div
+        aria-hidden="true"
+        style={{
+          position:        'fixed',
+          inset:           0,
+          zIndex:          9998,
+          pointerEvents:   'none',
+          backgroundImage: NOISE_BG,
+          backgroundRepeat:'repeat',
+          opacity:         0.28,
+        }}
+      />
 
-        <div
-          className="bg-white rounded-2xl shadow-sm p-6"
-          style={{ border: '1px solid rgba(74,124,89,0.2)' }}
-        >
-          <h2 className="text-base font-semibold mb-5" style={{ color: '#1B2A4A' }}>
-            העדפות מייל
-          </h2>
+      <div style={{ backgroundColor: EARTH, minHeight: '100vh', position: 'relative', zIndex: 0 }}>
+        <div style={{ maxWidth: '600px', margin: '0 auto', padding: '28px 16px 60px' }}>
 
-          {/* Daily tip toggle */}
-          <div className="flex items-center justify-between mb-6">
-            <div>
-              <div className="text-sm font-medium" style={{ color: '#1B2A4A' }}>
-                קבל טיפ יומי מהגינה במייל
+          {/* Page title */}
+          <h1 style={{
+            fontFamily:  FRANK,
+            fontWeight:  700,
+            fontSize:    '2rem',
+            color:       GOLD,
+            margin:      '0 0 24px',
+            lineHeight:  1.1,
+          }}>
+            הגדרות
+          </h1>
+
+          {/* Settings card */}
+          <div style={{
+            background:    'rgba(28,58,30,0.7)',
+            border:        '1px solid rgba(125,192,132,0.15)',
+            borderRadius:  '16px',
+            padding:       '28px 24px',
+            backdropFilter:'blur(8px)',
+          }}>
+
+            {/* Section label */}
+            <h2 style={{
+              fontFamily:  FRANK,
+              fontWeight:  600,
+              fontSize:    '16px',
+              color:       PARCH,
+              margin:      '0 0 24px',
+            }}>
+              העדפות מייל
+            </h2>
+
+            {/* Daily tip toggle */}
+            <div style={{
+              display:        'flex',
+              alignItems:     'center',
+              justifyContent: 'space-between',
+              gap:            '16px',
+              marginBottom:   '28px',
+            }}>
+              <div>
+                <div style={{ fontFamily: ASSIST, fontSize: '14px', fontWeight: 500, color: PARCH, marginBottom: '4px' }}>
+                  קבל טיפ יומי מהגינה במייל
+                </div>
+                <div style={{ fontFamily: ASSIST, fontSize: '12px', fontWeight: 300, color: `${PARCH}55` }}>
+                  מוש ישלח לך כל בוקר את נתוני היום הביודינמי
+                </div>
               </div>
-              <div className="text-xs mt-0.5" style={{ color: '#888888' }}>
-                מוש ישלח לך כל בוקר את נתוני היום הביודינמי
-              </div>
-            </div>
-            <button
-              role="switch"
-              aria-checked={dailyTipEmail}
-              onClick={() => setDailyTipEmail(v => !v)}
-              className="relative inline-flex h-6 w-11 flex-shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 focus:outline-none"
-              style={{
-                backgroundColor: dailyTipEmail ? '#4A7C59' : '#D1D5DB',
-              }}
-            >
-              <span
-                className="pointer-events-none inline-block h-5 w-5 rounded-full bg-white shadow transform transition-transform duration-200"
+
+              {/* Toggle switch */}
+              <button
+                role="switch"
+                aria-checked={dailyTipEmail}
+                onClick={() => setDailyTipEmail(v => !v)}
                 style={{
-                  transform: dailyTipEmail ? 'translateX(20px)' : 'translateX(0)',
+                  flexShrink:      0,
+                  position:        'relative',
+                  width:           '46px',
+                  height:          '26px',
+                  borderRadius:    '50px',
+                  border:          'none',
+                  backgroundColor: dailyTipEmail ? 'rgba(245,200,64,0.3)' : 'rgba(125,192,132,0.2)',
+                  cursor:          'pointer',
+                  transition:      'background-color 0.2s',
+                  padding:         0,
                 }}
-              />
+              >
+                <span style={{
+                  position:        'absolute',
+                  top:             '3px',
+                  left:            dailyTipEmail ? '23px' : '3px',
+                  width:           '20px',
+                  height:          '20px',
+                  borderRadius:    '50%',
+                  backgroundColor: dailyTipEmail ? GOLD : `${PARCH}80`,
+                  transition:      'left 0.2s, background-color 0.2s',
+                  boxShadow:       dailyTipEmail ? `0 0 6px rgba(245,200,64,0.5)` : 'none',
+                }} />
+              </button>
+            </div>
+
+            {/* Language selector — pill style */}
+            <div style={{ marginBottom: '32px' }}>
+              <div style={{ fontFamily: ASSIST, fontSize: '14px', fontWeight: 500, color: PARCH, marginBottom: '12px' }}>
+                שפת המייל
+              </div>
+              <div style={{ display: 'flex', gap: '8px' }}>
+                {(['he', 'en'] as const).map(lang => {
+                  const active = language === lang;
+                  return (
+                    <label
+                      key={lang}
+                      style={{
+                        display:         'flex',
+                        alignItems:      'center',
+                        justifyContent:  'center',
+                        padding:         '7px 22px',
+                        borderRadius:    '50px',
+                        border:          active ? 'none' : '1px solid rgba(125,192,132,0.3)',
+                        backgroundColor: active ? GOLD : 'transparent',
+                        color:           active ? EARTH : `${PARCH}88`,
+                        fontFamily:      FRANK,
+                        fontWeight:      600,
+                        fontSize:        '13px',
+                        cursor:          'pointer',
+                        transition:      'background-color 0.15s, color 0.15s',
+                        userSelect:      'none',
+                      }}
+                      onMouseEnter={e => {
+                        if (!active) (e.currentTarget as HTMLElement).style.borderColor = 'rgba(125,192,132,0.6)';
+                      }}
+                      onMouseLeave={e => {
+                        if (!active) (e.currentTarget as HTMLElement).style.borderColor = 'rgba(125,192,132,0.3)';
+                      }}
+                    >
+                      <input
+                        type="radio"
+                        name="language"
+                        value={lang}
+                        checked={language === lang}
+                        onChange={() => setLanguage(lang)}
+                        style={{ display: 'none' }}
+                      />
+                      {lang === 'he' ? 'עברית' : 'English'}
+                    </label>
+                  );
+                })}
+              </div>
+            </div>
+
+            {/* Save button */}
+            <button
+              onClick={handleSave}
+              disabled={isSaving}
+              style={{
+                width:           '100%',
+                padding:         '13px',
+                borderRadius:    '8px',
+                border:          'none',
+                backgroundColor: GOLD,
+                fontFamily:      FRANK,
+                fontWeight:      600,
+                fontSize:        '15px',
+                color:           EARTH,
+                cursor:          isSaving ? 'default' : 'pointer',
+                opacity:         isSaving ? 0.7 : 1,
+                transition:      'filter 0.2s',
+              }}
+              onMouseEnter={e => { if (!isSaving) (e.currentTarget as HTMLElement).style.filter = 'brightness(1.1)'; }}
+              onMouseLeave={e => { (e.currentTarget as HTMLElement).style.filter = 'none'; }}
+            >
+              {isSaving ? 'שומר...' : 'שמור הגדרות'}
             </button>
-          </div>
 
-          {/* Language selector */}
-          <div className="mb-8">
-            <div className="text-sm font-medium mb-3" style={{ color: '#1B2A4A' }}>
-              שפת המייל
-            </div>
-            <div className="flex gap-4">
-              <label className="flex items-center gap-2 cursor-pointer">
-                <input
-                  type="radio"
-                  name="language"
-                  value="he"
-                  checked={language === 'he'}
-                  onChange={() => setLanguage('he')}
-                  className="accent-green-700"
-                  style={{ accentColor: '#4A7C59' }}
-                />
-                <span className="text-sm" style={{ color: '#333333' }}>עברית</span>
-              </label>
-              <label className="flex items-center gap-2 cursor-pointer">
-                <input
-                  type="radio"
-                  name="language"
-                  value="en"
-                  checked={language === 'en'}
-                  onChange={() => setLanguage('en')}
-                  style={{ accentColor: '#4A7C59' }}
-                />
-                <span className="text-sm" style={{ color: '#333333' }}>English</span>
-              </label>
-            </div>
           </div>
-
-          {/* Save button */}
-          <button
-            onClick={handleSave}
-            disabled={isSaving}
-            className="w-full py-3 rounded-lg text-white text-sm font-semibold transition-opacity"
-            style={{
-              backgroundColor: '#4A7C59',
-              opacity: isSaving ? 0.6 : 1,
-            }}
-          >
-            {isSaving ? 'שומר...' : 'שמור הגדרות'}
-          </button>
         </div>
       </div>
-    </div>
+    </>
   );
 }

@@ -65,8 +65,8 @@ export default function App() {
     <div className="min-h-screen font-heebo flex flex-col" style={{ backgroundColor: '#FDF6EC' }}>
       <Navbar />
 
-      {/* pt-16 offsets the fixed navbar */}
-      <main className="flex-1 pt-16">
+      {/* pt-[52px] offsets the fixed 52px navbar */}
+      <main className="flex-1 pt-[52px]">
         <Routes>
           {/* Auth pages — no layout wrapper needed (they have their own) */}
           <Route path="/login" element={<LoginPage />} />

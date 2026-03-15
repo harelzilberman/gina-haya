@@ -3,10 +3,47 @@ import { Link, useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { useAuthStore } from '../../stores/authStore';
 
-const NAVY = '#1B2A4A';
-const SAGE = '#4A7C59';
-const MOON_GOLD = '#B7924A';
-const CREAM = '#FDF6EC';
+// ── Design tokens ──────────────────────────────────────────────────────────
+const GOLD       = '#F5C840';
+const PARCHMENT  = '#EDE0C4';
+const LEAF_GREEN = '#B0D8A8';
+const FOREST     = '#142B16';
+const FRANK      = '"Frank Ruhl Libre", Georgia, serif';
+const PLAYFAIR   = '"Playfair Display", Georgia, serif';
+const ASSISTANT  = '"Assistant", "Heebo", sans-serif';
+
+const NAVBAR_CSS = `
+.gina-nav-link {
+  position: relative;
+  text-decoration: none;
+  transition: color 0.2s ease-out;
+}
+.gina-nav-link::after {
+  content: '';
+  position: absolute;
+  bottom: -3px;
+  inset-inline-end: 0;
+  width: 0;
+  height: 1px;
+  background-color: ${GOLD};
+  transition: width 0.3s ease-out;
+}
+.gina-nav-link:hover {
+  color: ${GOLD} !important;
+}
+.gina-nav-link:hover::after {
+  width: 100%;
+}
+.gina-dropdown-item:hover {
+  background-color: rgba(245,200,64,0.08) !important;
+  color: ${GOLD} !important;
+}
+@media (max-width: 767px) {
+  .gina-desktop-nav     { display: none !important; }
+  .gina-desktop-actions { display: none !important; }
+  .gina-hamburger       { display: flex !important; }
+}
+`;
 
 export function Navbar() {
   const { i18n } = useTranslation();
@@ -15,7 +52,6 @@ export function Navbar() {
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
-
   const isHebrew = i18n.language === 'he';
 
   function toggleLanguage() {
@@ -24,7 +60,6 @@ export function Navbar() {
     localStorage.setItem('i18nextLng', next);
   }
 
-  // Close dropdown when clicking outside
   useEffect(() => {
     function handleClick(e: MouseEvent) {
       if (dropdownRef.current && !dropdownRef.current.contains(e.target as Node)) {
@@ -35,7 +70,6 @@ export function Navbar() {
     return () => document.removeEventListener('mousedown', handleClick);
   }, []);
 
-  // Initials from display name or email
   const initials = (() => {
     const name = profile?.display_name || user?.email || '';
     const parts = name.split(/[\s@]/);
@@ -50,160 +84,330 @@ export function Navbar() {
     navigate('/');
   }
 
-  const navLinks = user ? (
-    <>
-      <Link
-        to="/calendar"
-        className="text-sm font-medium transition-colors duration-200 hover:opacity-70"
-        style={{ color: NAVY }}
-        onClick={() => setMobileOpen(false)}
-      >
-        לוח שנה
-      </Link>
-      <Link
-        to="/plants"
-        className="text-sm font-medium transition-colors duration-200 hover:opacity-70"
-        style={{ color: NAVY }}
-        onClick={() => setMobileOpen(false)}
-      >
-        אנציקלופדיה
-      </Link>
-    </>
-  ) : null;
-
-  const langButton = (
+  const langToggle = (
     <button
       onClick={toggleLanguage}
-      className="text-sm font-medium px-3 py-1 rounded-md border transition-all duration-200 hover:opacity-70"
-      style={{ borderColor: SAGE, color: SAGE }}
+      style={{
+        fontFamily: ASSISTANT,
+        fontSize: '12px',
+        fontWeight: 600,
+        padding: '4px 11px',
+        borderRadius: '4px',
+        border: `1px solid rgba(245,200,64,0.35)`,
+        color: 'rgba(237,224,196,0.7)',
+        backgroundColor: 'rgba(245,200,64,0.06)',
+        cursor: 'pointer',
+        letterSpacing: '0.04em',
+        transition: 'border-color 0.2s, color 0.2s, background-color 0.2s',
+      }}
+      onMouseEnter={e => {
+        const el = e.currentTarget;
+        el.style.borderColor = GOLD;
+        el.style.color = GOLD;
+        el.style.backgroundColor = 'rgba(245,200,64,0.12)';
+      }}
+      onMouseLeave={e => {
+        const el = e.currentTarget;
+        el.style.borderColor = 'rgba(245,200,64,0.35)';
+        el.style.color = 'rgba(237,224,196,0.7)';
+        el.style.backgroundColor = 'rgba(245,200,64,0.06)';
+      }}
     >
       {isHebrew ? 'EN' : 'עב'}
     </button>
   );
 
   return (
-    <nav
-      className="fixed top-0 inset-x-0 z-50 h-16 flex items-center px-4 md:px-8 shadow-sm"
-      style={{ backgroundColor: '#ffffff', borderBottom: `1px solid ${SAGE}` }}
-    >
-      {/* Logo — right side in RTL */}
-      <Link
-        to="/"
-        className="text-xl font-bold shrink-0 transition-opacity duration-200 hover:opacity-80"
-        style={{ color: NAVY, fontFamily: 'Heebo, sans-serif' }}
+    <>
+      <style>{NAVBAR_CSS}</style>
+
+      <nav
+        style={{
+          position: 'fixed',
+          top: 0,
+          insetInlineStart: 0,
+          insetInlineEnd: 0,
+          zIndex: 50,
+          height: '52px',
+          display: 'flex',
+          alignItems: 'center',
+          padding: '0 28px',
+          background: 'linear-gradient(to bottom, rgba(20,43,22,0.97), rgba(20,43,22,0.85))',
+          backdropFilter: 'blur(10px)',
+          WebkitBackdropFilter: 'blur(10px)',
+          borderBottom: '1px solid rgba(245,200,64,0.1)',
+        }}
       >
-        🌱 גינה חיה
-      </Link>
+        {/* Logo */}
+        <Link
+          to="/"
+          style={{ textDecoration: 'none', flexShrink: 0, lineHeight: 1 }}
+        >
+          <div style={{
+            fontFamily: FRANK,
+            fontWeight: 700,
+            fontSize: '20px',
+            color: GOLD,
+            lineHeight: 1.1,
+          }}>
+            גינה חיה
+          </div>
+          <div style={{
+            fontFamily: PLAYFAIR,
+            fontStyle: 'italic',
+            fontSize: '11px',
+            color: LEAF_GREEN,
+            lineHeight: 1,
+            marginTop: '1px',
+          }}>
+            Gina Haya
+          </div>
+        </Link>
 
-      {/* Center nav links — desktop only */}
-      {user && (
-        <div className="hidden md:flex items-center gap-6 mx-auto">
-          {navLinks}
-        </div>
-      )}
-
-      {/* Left side (in RTL = end) — desktop */}
-      <div className="hidden md:flex items-center gap-3 ms-auto">
-        {langButton}
-
-        {!user ? (
-          <>
-            <Link
-              to="/login"
-              className="text-sm font-medium px-4 py-2 rounded-lg border transition-all duration-200 hover:opacity-70"
-              style={{ borderColor: NAVY, color: NAVY }}
-            >
-              כניסה
-            </Link>
-            <Link
-              to="/signup"
-              className="text-sm font-medium px-4 py-2 rounded-lg text-white transition-all duration-200 hover:opacity-80"
-              style={{ backgroundColor: SAGE }}
-            >
-              הרשמה
-            </Link>
-          </>
-        ) : (
-          <div className="relative" ref={dropdownRef}>
-            <button
-              onClick={() => setDropdownOpen(v => !v)}
-              className="w-9 h-9 rounded-full flex items-center justify-center text-sm font-bold text-white transition-all duration-200 hover:opacity-80 focus:outline-none"
-              style={{ backgroundColor: MOON_GOLD }}
-            >
-              {initials}
-            </button>
-
-            {dropdownOpen && (
-              <div
-                className="absolute top-11 end-0 w-48 rounded-xl shadow-lg py-1 z-50"
-                style={{ backgroundColor: '#ffffff', border: `1px solid #e5e7eb` }}
+        {/* Center nav links — desktop, logged-in only */}
+        {user && (
+          <div
+            className="gina-desktop-nav"
+            style={{ display: 'flex', alignItems: 'center', gap: '28px', margin: '0 auto' }}
+          >
+            {[
+              { label: 'לוח שנה', to: '/calendar' },
+              { label: 'אנציקלופדיה', to: '/plants' },
+            ].map(item => (
+              <Link
+                key={item.to}
+                to={item.to}
+                className="gina-nav-link"
+                onClick={() => setMobileOpen(false)}
+                style={{ fontFamily: ASSISTANT, fontSize: '14px', fontWeight: 400, color: PARCHMENT }}
               >
-                {[
-                  { label: 'הגינה שלי', to: '/garden' },
-                  { label: 'לוח שנה', to: '/calendar' },
-                  { label: 'מוש', to: '/moosh' },
-                  { label: 'הגדרות', to: '/settings' },
-                ].map(item => (
-                  <Link
-                    key={item.to}
-                    to={item.to}
-                    className="block px-4 py-2 text-sm transition-colors duration-200 hover:bg-gray-50"
-                    style={{ color: NAVY }}
-                    onClick={() => setDropdownOpen(false)}
-                  >
-                    {item.label}
-                  </Link>
-                ))}
-                <hr className="my-1 border-gray-100" />
-                <button
-                  onClick={handleSignOut}
-                  className="w-full text-start block px-4 py-2 text-sm transition-colors duration-200 hover:bg-gray-50"
-                  style={{ color: '#A33030' }}
-                >
-                  התנתקות
-                </button>
-              </div>
-            )}
+                {item.label}
+              </Link>
+            ))}
           </div>
         )}
-      </div>
 
-      {/* Mobile: hamburger */}
-      <button
-        className="md:hidden ms-auto p-2 text-xl"
-        style={{ color: NAVY }}
-        onClick={() => setMobileOpen(v => !v)}
-        aria-label="תפריט"
-      >
-        {mobileOpen ? '✕' : '☰'}
-      </button>
+        {/* Right side — desktop */}
+        <div
+          className="gina-desktop-actions"
+          style={{
+            display: 'flex',
+            alignItems: 'center',
+            gap: '10px',
+            marginInlineStart: user ? undefined : 'auto',
+          }}
+        >
+          {langToggle}
+
+          {!user ? (
+            <>
+              <Link
+                to="/login"
+                style={{
+                  fontFamily: ASSISTANT,
+                  fontSize: '13px',
+                  fontWeight: 400,
+                  color: PARCHMENT,
+                  textDecoration: 'none',
+                  padding: '5px 12px',
+                  borderRadius: '3px',
+                  transition: 'color 0.2s',
+                }}
+                onMouseEnter={e => { (e.currentTarget as HTMLElement).style.color = GOLD; }}
+                onMouseLeave={e => { (e.currentTarget as HTMLElement).style.color = PARCHMENT; }}
+              >
+                כניסה
+              </Link>
+              <Link
+                to="/signup"
+                style={{
+                  fontFamily: FRANK,
+                  fontWeight: 600,
+                  fontSize: '14px',
+                  color: FOREST,
+                  backgroundColor: GOLD,
+                  padding: '6px 18px',
+                  borderRadius: '3px',
+                  textDecoration: 'none',
+                  transition: 'filter 0.2s',
+                }}
+                onMouseEnter={e => { (e.currentTarget as HTMLElement).style.filter = 'brightness(1.1)'; }}
+                onMouseLeave={e => { (e.currentTarget as HTMLElement).style.filter = 'none'; }}
+              >
+                הרשמה
+              </Link>
+            </>
+          ) : (
+            <div style={{ position: 'relative' }} ref={dropdownRef}>
+              <button
+                onClick={() => setDropdownOpen(v => !v)}
+                style={{
+                  width: '34px',
+                  height: '34px',
+                  borderRadius: '50%',
+                  backgroundColor: GOLD,
+                  color: FOREST,
+                  fontFamily: FRANK,
+                  fontWeight: 700,
+                  fontSize: '13px',
+                  border: 'none',
+                  cursor: 'pointer',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  transition: 'filter 0.2s',
+                }}
+                onMouseEnter={e => { (e.currentTarget as HTMLElement).style.filter = 'brightness(1.1)'; }}
+                onMouseLeave={e => { (e.currentTarget as HTMLElement).style.filter = 'none'; }}
+              >
+                {initials}
+              </button>
+
+              {dropdownOpen && (
+                <div
+                  style={{
+                    position: 'absolute',
+                    top: '42px',
+                    insetInlineEnd: 0,
+                    width: '188px',
+                    background: 'linear-gradient(180deg, #1a3a1c 0%, #142B16 100%)',
+                    border: '1px solid rgba(245,200,64,0.15)',
+                    borderRadius: '6px',
+                    boxShadow: '0 12px 48px rgba(0,0,0,0.5)',
+                    padding: '6px 0',
+                    zIndex: 50,
+                  }}
+                >
+                  {[
+                    { label: 'הגינה שלי', to: '/garden' },
+                    { label: 'לוח שנה',   to: '/calendar' },
+                    { label: 'מוש',        to: '/moosh' },
+                    { label: 'הגדרות',     to: '/settings' },
+                  ].map(item => (
+                    <Link
+                      key={item.to}
+                      to={item.to}
+                      className="gina-dropdown-item"
+                      onClick={() => setDropdownOpen(false)}
+                      style={{
+                        display: 'block',
+                        padding: '9px 16px',
+                        fontFamily: ASSISTANT,
+                        fontSize: '14px',
+                        fontWeight: 400,
+                        color: PARCHMENT,
+                        textDecoration: 'none',
+                        transition: 'background-color 0.15s, color 0.15s',
+                      }}
+                    >
+                      {item.label}
+                    </Link>
+                  ))}
+                  <div style={{ height: '1px', backgroundColor: 'rgba(245,200,64,0.1)', margin: '4px 0' }} />
+                  <button
+                    onClick={handleSignOut}
+                    style={{
+                      display: 'block',
+                      width: '100%',
+                      textAlign: 'start',
+                      padding: '9px 16px',
+                      fontFamily: ASSISTANT,
+                      fontSize: '14px',
+                      fontWeight: 400,
+                      color: 'rgba(220,100,100,0.85)',
+                      backgroundColor: 'transparent',
+                      border: 'none',
+                      cursor: 'pointer',
+                      transition: 'color 0.15s',
+                    }}
+                    onMouseEnter={e => { (e.currentTarget as HTMLElement).style.color = '#e06060'; }}
+                    onMouseLeave={e => { (e.currentTarget as HTMLElement).style.color = 'rgba(220,100,100,0.85)'; }}
+                  >
+                    התנתקות
+                  </button>
+                </div>
+              )}
+            </div>
+          )}
+        </div>
+
+        {/* Mobile hamburger */}
+        <button
+          className="gina-hamburger"
+          onClick={() => setMobileOpen(v => !v)}
+          aria-label="תפריט"
+          style={{
+            display: 'none',
+            marginInlineStart: 'auto',
+            alignItems: 'center',
+            justifyContent: 'center',
+            width: '36px',
+            height: '36px',
+            fontSize: '20px',
+            color: GOLD,
+            background: 'none',
+            border: 'none',
+            cursor: 'pointer',
+          }}
+        >
+          {mobileOpen ? '✕' : '☰'}
+        </button>
+      </nav>
 
       {/* Mobile drawer */}
       {mobileOpen && (
         <div
-          className="md:hidden absolute top-16 inset-x-0 px-4 py-4 flex flex-col gap-3 shadow-md z-40"
-          style={{ backgroundColor: '#ffffff', borderTop: `1px solid ${SAGE}` }}
+          style={{
+            position: 'fixed',
+            top: '52px',
+            insetInlineStart: 0,
+            insetInlineEnd: 0,
+            zIndex: 49,
+            background: 'linear-gradient(180deg, rgba(20,43,22,0.98) 0%, rgba(12,28,14,0.98) 100%)',
+            backdropFilter: 'blur(10px)',
+            borderBottom: '1px solid rgba(245,200,64,0.1)',
+            padding: '16px 24px 20px',
+            display: 'flex',
+            flexDirection: 'column',
+            gap: '2px',
+          }}
         >
           {user && (
             <>
-              <Link to="/calendar" className="text-sm font-medium py-2" style={{ color: NAVY }} onClick={() => setMobileOpen(false)}>לוח שנה</Link>
-              <Link to="/plants" className="text-sm font-medium py-2" style={{ color: NAVY }} onClick={() => setMobileOpen(false)}>אנציקלופדיה</Link>
-              <Link to="/garden" className="text-sm font-medium py-2" style={{ color: NAVY }} onClick={() => setMobileOpen(false)}>הגינה שלי</Link>
-              <Link to="/moosh" className="text-sm font-medium py-2" style={{ color: NAVY }} onClick={() => setMobileOpen(false)}>מוש</Link>
-              <Link to="/settings" className="text-sm font-medium py-2" style={{ color: NAVY }} onClick={() => setMobileOpen(false)}>הגדרות</Link>
-              <hr className="border-gray-100" />
-              <button onClick={handleSignOut} className="text-sm font-medium py-2 text-start" style={{ color: '#A33030' }}>התנתקות</button>
+              {[
+                { label: 'לוח שנה', to: '/calendar' },
+                { label: 'אנציקלופדיה', to: '/plants' },
+                { label: 'הגינה שלי', to: '/garden' },
+                { label: 'מוש', to: '/moosh' },
+                { label: 'הגדרות', to: '/settings' },
+              ].map(item => (
+                <Link
+                  key={item.to}
+                  to={item.to}
+                  onClick={() => setMobileOpen(false)}
+                  style={{ fontFamily: ASSISTANT, fontSize: '16px', color: PARCHMENT, textDecoration: 'none', padding: '10px 0' }}
+                >
+                  {item.label}
+                </Link>
+              ))}
+              <div style={{ height: '1px', backgroundColor: 'rgba(245,200,64,0.1)', margin: '8px 0' }} />
+              <button
+                onClick={handleSignOut}
+                style={{ fontFamily: ASSISTANT, fontSize: '16px', color: 'rgba(220,100,100,0.85)', background: 'none', border: 'none', cursor: 'pointer', textAlign: 'start', padding: '10px 0' }}
+              >
+                התנתקות
+              </button>
             </>
           )}
           {!user && (
             <>
-              <Link to="/login" className="text-sm font-medium py-2" style={{ color: NAVY }} onClick={() => setMobileOpen(false)}>כניסה</Link>
-              <Link to="/signup" className="text-sm font-medium py-2" style={{ color: SAGE }} onClick={() => setMobileOpen(false)}>הרשמה</Link>
+              <Link to="/login" onClick={() => setMobileOpen(false)} style={{ fontFamily: ASSISTANT, fontSize: '16px', color: PARCHMENT, textDecoration: 'none', padding: '10px 0' }}>כניסה</Link>
+              <Link to="/signup" onClick={() => setMobileOpen(false)} style={{ fontFamily: FRANK, fontSize: '16px', fontWeight: 700, color: GOLD, textDecoration: 'none', padding: '10px 0' }}>הרשמה</Link>
             </>
           )}
-          <div className="pt-1">{langButton}</div>
+          <div style={{ paddingTop: '10px' }}>{langToggle}</div>
         </div>
       )}
-    </nav>
+    </>
   );
 }

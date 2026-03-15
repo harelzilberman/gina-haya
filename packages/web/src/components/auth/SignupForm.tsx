@@ -4,14 +4,30 @@ import { useTranslation } from 'react-i18next';
 import { useDirection } from '../../hooks/useDirection';
 import { useAuthStore } from '../../stores/authStore';
 
+const EARTH  = '#142B16';
+const GOLD   = '#F5C840';
+const SAGE   = '#7DC084';
+const PARCH  = '#EDE0C4';
+const FRANK  = '"Frank Ruhl Libre", Georgia, serif';
+const ASSIST = '"Assistant", "Heebo", sans-serif';
+
+const FORM_CSS = `
+.auth-signup-input::placeholder { color: rgba(237,224,196,0.3); }
+.auth-signup-input:focus {
+  border-color: rgba(245,200,64,0.5) !important;
+  outline: none;
+  box-shadow: 0 0 0 3px rgba(245,200,64,0.06);
+}
+`;
+
 export function SignupForm() {
   const { t } = useTranslation('auth');
   const { dir } = useDirection();
   const { signUp, signInWithGoogle, isLoading, error, clearError } = useAuthStore();
 
   const [displayName, setDisplayName] = useState('');
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
+  const [email,       setEmail]       = useState('');
+  const [password,    setPassword]    = useState('');
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -19,95 +35,166 @@ export function SignupForm() {
     await signUp(email, password, displayName);
   };
 
+  const inputStyle: React.CSSProperties = {
+    width:           '100%',
+    boxSizing:       'border-box',
+    backgroundColor: 'rgba(20,43,22,0.8)',
+    border:          '1px solid rgba(125,192,132,0.2)',
+    borderRadius:    '8px',
+    padding:         '12px 16px',
+    fontFamily:      ASSIST,
+    fontSize:        '14px',
+    color:           PARCH,
+    transition:      'border-color 0.2s, box-shadow 0.2s',
+  };
+
+  const labelStyle: React.CSSProperties = {
+    display:      'block',
+    fontFamily:   ASSIST,
+    fontWeight:   400,
+    fontSize:     '13px',
+    color:        `${PARCH}70`,
+    marginBottom: '6px',
+  };
+
   return (
-    <div dir={dir} className="w-full">
-      {error && (
-        <div className="mb-4 rounded-lg bg-red-50 border border-red-200 px-4 py-3 text-sm text-red-700">
-          {error}
-        </div>
-      )}
+    <>
+      <style>{FORM_CSS}</style>
 
-      <form onSubmit={handleSubmit} className="space-y-4">
-        <div>
-          <label className="block text-sm font-medium text-navy mb-1">
-            {t('signup.nameLabel')}
-          </label>
-          <input
-            type="text"
-            autoComplete="name"
-            value={displayName}
-            onChange={(e) => setDisplayName(e.target.value)}
-            placeholder={t('signup.namePlaceholder')}
-            className="w-full rounded-lg border border-sage/30 bg-white px-4 py-2.5 text-sm text-navy placeholder-gray-400 focus:border-sage focus:outline-none focus:ring-1 focus:ring-sage"
-          />
+      <div dir={dir} style={{ width: '100%' }}>
+        {error && (
+          <div style={{
+            marginBottom:    '16px',
+            borderRadius:    '8px',
+            padding:         '12px 14px',
+            backgroundColor: 'rgba(192,57,43,0.15)',
+            border:          '1px solid rgba(192,57,43,0.35)',
+            fontFamily:      ASSIST,
+            fontSize:        '13px',
+            color:           '#E07070',
+          }}>
+            {error}
+          </div>
+        )}
+
+        <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
+          <div>
+            <label style={labelStyle}>{t('signup.nameLabel')}</label>
+            <input
+              className="auth-signup-input"
+              type="text"
+              autoComplete="name"
+              value={displayName}
+              onChange={e => setDisplayName(e.target.value)}
+              placeholder={t('signup.namePlaceholder')}
+              style={inputStyle}
+            />
+          </div>
+
+          <div>
+            <label style={labelStyle}>{t('signup.emailLabel')}</label>
+            <input
+              className="auth-signup-input"
+              type="email"
+              autoComplete="email"
+              required
+              value={email}
+              onChange={e => setEmail(e.target.value)}
+              placeholder="your@email.com"
+              style={inputStyle}
+            />
+          </div>
+
+          <div>
+            <label style={labelStyle}>{t('signup.passwordLabel')}</label>
+            <input
+              className="auth-signup-input"
+              type="password"
+              autoComplete="new-password"
+              required
+              minLength={8}
+              value={password}
+              onChange={e => setPassword(e.target.value)}
+              style={inputStyle}
+            />
+          </div>
+
+          <button
+            type="submit"
+            disabled={isLoading}
+            style={{
+              width:           '100%',
+              padding:         '13px',
+              borderRadius:    '8px',
+              border:          'none',
+              backgroundColor: GOLD,
+              fontFamily:      FRANK,
+              fontWeight:      600,
+              fontSize:        '15px',
+              color:           EARTH,
+              cursor:          isLoading ? 'default' : 'pointer',
+              opacity:         isLoading ? 0.7 : 1,
+              transition:      'filter 0.2s',
+              marginTop:       '4px',
+            }}
+            onMouseEnter={e => { if (!isLoading) (e.currentTarget as HTMLElement).style.filter = 'brightness(1.1)'; }}
+            onMouseLeave={e => { (e.currentTarget as HTMLElement).style.filter = 'none'; }}
+          >
+            {isLoading ? '...' : t('signup.submitButton')}
+          </button>
+        </form>
+
+        {/* Divider */}
+        <div style={{ display: 'flex', alignItems: 'center', gap: '12px', margin: '20px 0' }}>
+          <div style={{ flex: 1, height: '1px', backgroundColor: 'rgba(125,192,132,0.15)' }} />
+          <span style={{ fontFamily: ASSIST, fontSize: '12px', color: `${PARCH}40` }}>או</span>
+          <div style={{ flex: 1, height: '1px', backgroundColor: 'rgba(125,192,132,0.15)' }} />
         </div>
 
-        <div>
-          <label className="block text-sm font-medium text-navy mb-1">
-            {t('signup.emailLabel')}
-          </label>
-          <input
-            type="email"
-            autoComplete="email"
-            required
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            placeholder="your@email.com"
-            className="w-full rounded-lg border border-sage/30 bg-white px-4 py-2.5 text-sm text-navy placeholder-gray-400 focus:border-sage focus:outline-none focus:ring-1 focus:ring-sage"
-          />
-        </div>
-
-        <div>
-          <label className="block text-sm font-medium text-navy mb-1">
-            {t('signup.passwordLabel')}
-          </label>
-          <input
-            type="password"
-            autoComplete="new-password"
-            required
-            minLength={8}
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            className="w-full rounded-lg border border-sage/30 bg-white px-4 py-2.5 text-sm text-navy placeholder-gray-400 focus:border-sage focus:outline-none focus:ring-1 focus:ring-sage"
-          />
-        </div>
-
+        {/* Google */}
         <button
-          type="submit"
+          type="button"
+          onClick={signInWithGoogle}
           disabled={isLoading}
-          className="w-full rounded-full bg-sage py-2.5 text-sm font-medium text-white transition hover:bg-sage/90 disabled:opacity-60"
+          style={{
+            width:           '100%',
+            display:         'flex',
+            alignItems:      'center',
+            justifyContent:  'center',
+            gap:             '10px',
+            padding:         '11px',
+            borderRadius:    '8px',
+            border:          '1px solid rgba(125,192,132,0.2)',
+            backgroundColor: 'rgba(28,58,30,0.6)',
+            fontFamily:      ASSIST,
+            fontSize:        '14px',
+            color:           PARCH,
+            cursor:          isLoading ? 'default' : 'pointer',
+            opacity:         isLoading ? 0.6 : 1,
+            transition:      'background-color 0.15s',
+          }}
+          onMouseEnter={e => { if (!isLoading) (e.currentTarget as HTMLElement).style.backgroundColor = 'rgba(28,58,30,0.9)'; }}
+          onMouseLeave={e => { (e.currentTarget as HTMLElement).style.backgroundColor = 'rgba(28,58,30,0.6)'; }}
         >
-          {isLoading ? '...' : t('signup.submitButton')}
+          <GoogleIcon />
+          {t('signup.googleButton')}
         </button>
-      </form>
 
-      <div className="my-5 flex items-center gap-3">
-        <div className="flex-1 h-px bg-sage/20" />
-        <span className="text-xs text-gray-400">או</span>
-        <div className="flex-1 h-px bg-sage/20" />
+        <p style={{ marginTop: '14px', textAlign: 'center', fontFamily: ASSIST, fontSize: '11px', color: `${PARCH}35` }}>
+          {t('signup.terms')}
+        </p>
+
+        <p style={{ marginTop: '12px', textAlign: 'center', fontFamily: ASSIST, fontSize: '13px', color: `${PARCH}55` }}>
+          {t('signup.hasAccount')}{' '}
+          <Link to="/login" style={{ color: SAGE, fontWeight: 500, textDecoration: 'none' }}
+            onMouseEnter={e => { (e.currentTarget as HTMLElement).style.color = GOLD; }}
+            onMouseLeave={e => { (e.currentTarget as HTMLElement).style.color = SAGE; }}
+          >
+            {t('signup.loginLink')}
+          </Link>
+        </p>
       </div>
-
-      <button
-        type="button"
-        onClick={signInWithGoogle}
-        disabled={isLoading}
-        className="w-full flex items-center justify-center gap-2 rounded-full border border-sage/40 bg-white py-2.5 text-sm font-medium text-navy transition hover:bg-cream disabled:opacity-60"
-      >
-        <GoogleIcon />
-        {t('signup.googleButton')}
-      </button>
-
-      <p className="mt-5 text-center text-xs text-gray-400">
-        {t('signup.terms')}
-      </p>
-
-      <p className="mt-4 text-center text-sm text-gray-500">
-        {t('signup.hasAccount')}{' '}
-        <Link to="/login" className="text-sage font-medium hover:underline">
-          {t('signup.loginLink')}
-        </Link>
-      </p>
-    </div>
+    </>
   );
 }
 

@@ -5,20 +5,43 @@ import { useTier } from '../../hooks/useTier';
 
 const API_BASE = import.meta.env.VITE_API_URL ?? 'http://localhost:3001';
 
+const EARTH    = '#142B16';
+const SOIL     = '#1C3A1E';
+const GOLD     = '#F5C840';
+const SAGE     = '#7DC084';
+const CLAY     = '#9B7A48';
+const PARCH    = '#EDE0C4';
+const FRANK    = '"Frank Ruhl Libre", Georgia, serif';
+const ASSIST   = '"Assistant", "Heebo", sans-serif';
+const PLAYFAIR = '"Playfair Display", Georgia, serif';
+
+const MODAL_CSS = `
+@keyframes upgrade-modal-in {
+  from { opacity: 0; transform: scale(0.96); }
+  to   { opacity: 1; transform: scale(1); }
+}
+.upgrade-modal-card {
+  animation: upgrade-modal-in 0.2s ease-out both;
+}
+.upgrade-modal-scroll::-webkit-scrollbar { width: 4px; }
+.upgrade-modal-scroll::-webkit-scrollbar-track { background: transparent; }
+.upgrade-modal-scroll::-webkit-scrollbar-thumb { background: rgba(125,192,132,0.2); border-radius: 2px; }
+`;
+
 type TierKey = 'free' | 'grower' | 'gardener_pro' | 'professional';
 
 const TIER_NAMES: Record<TierKey, string> = {
-  free:           'חינמי',
-  grower:         'גדל',
-  gardener_pro:   'גנן פרו',
-  professional:   'מקצועי',
+  free:         'חינמי',
+  grower:       'גדל',
+  gardener_pro: 'גנן פרו',
+  professional: 'מקצועי',
 };
 
 const TIER_PRICES_DISPLAY: Record<TierKey, string> = {
-  free:           'חינם',
-  grower:         '₪9 / חודש',
-  gardener_pro:   '₪14 / חודש',
-  professional:   '₪49 / חודש',
+  free:         'חינם',
+  grower:       '₪9 / חודש',
+  gardener_pro: '₪14 / חודש',
+  professional: '₪49 / חודש',
 };
 
 const TIER_FEATURES_LIST: Record<TierKey, string[]> = {
@@ -54,8 +77,8 @@ const TIER_FEATURES_LIST: Record<TierKey, string[]> = {
 const TIERS_ORDER: TierKey[] = ['free', 'grower', 'gardener_pro', 'professional'];
 
 export function UpgradeModal() {
-  const { close } = useUpgradeModalStore();
-  const { session } = useAuthStore();
+  const { close }           = useUpgradeModalStore();
+  const { session }         = useAuthStore();
   const { tier: currentTier } = useTier();
   const [loading, setLoading] = useState<string | null>(null);
 
@@ -67,7 +90,7 @@ export function UpgradeModal() {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          Authorization: `Bearer ${session.access_token}`,
+          Authorization:  `Bearer ${session.access_token}`,
         },
         body: JSON.stringify({ tier: targetTier }),
       });
@@ -83,130 +106,262 @@ export function UpgradeModal() {
   };
 
   return (
-    <div
-      className="fixed inset-0 z-[60] flex items-center justify-center p-4"
-      style={{ backgroundColor: 'rgba(0,0,0,0.6)' }}
-      onClick={(e) => { if (e.target === e.currentTarget) close(); }}
-    >
+    <>
+      <style>{MODAL_CSS}</style>
+
+      {/* Backdrop */}
       <div
-        className="w-full max-w-3xl bg-white rounded-2xl overflow-hidden shadow-2xl"
-        style={{ maxHeight: '90vh', overflowY: 'auto' }}
+        style={{
+          position:        'fixed',
+          inset:           0,
+          zIndex:          60,
+          display:         'flex',
+          alignItems:      'center',
+          justifyContent:  'center',
+          padding:         '16px',
+          backgroundColor: 'rgba(0,0,0,0.9)',
+        }}
+        onClick={e => { if (e.target === e.currentTarget) close(); }}
       >
-        {/* Header */}
         <div
-          className="flex items-center justify-between px-6 py-5"
-          style={{ borderBottom: '1px solid rgba(0,0,0,0.06)' }}
+          className="upgrade-modal-card upgrade-modal-scroll"
+          style={{
+            position:        'relative',
+            width:           '100%',
+            maxWidth:        '860px',
+            maxHeight:       '90vh',
+            overflowY:       'auto',
+            backgroundColor: SOIL,
+            border:          '1px solid rgba(245,200,64,0.2)',
+            borderRadius:    '16px',
+          }}
         >
-          <div>
-            <h2 className="text-xl font-bold" style={{ color: '#1B2A4A' }}>שדרג את התוכנית שלך</h2>
-            <p className="text-sm mt-0.5" style={{ color: '#6B7280' }}>בחר את התוכנית המתאימה לך</p>
+          {/* Header */}
+          <div style={{
+            display:      'flex',
+            alignItems:   'center',
+            justifyContent:'space-between',
+            padding:      '24px 28px 20px',
+            borderBottom: '1px solid rgba(125,192,132,0.1)',
+            position:     'sticky',
+            top:          0,
+            backgroundColor: SOIL,
+            zIndex:       1,
+          }}>
+            <div>
+              <h2 style={{
+                fontFamily: FRANK,
+                fontWeight: 700,
+                fontSize:   '22px',
+                color:      GOLD,
+                margin:     '0 0 4px',
+              }}>
+                שדרג את התוכנית שלך
+              </h2>
+              <p style={{
+                fontFamily: ASSIST,
+                fontSize:   '13px',
+                color:      `${PARCH}55`,
+                margin:     0,
+              }}>
+                בחר את התוכנית המתאימה לך
+              </p>
+            </div>
+            {/* Close — top-LEFT (RTL) */}
+            <button
+              onClick={close}
+              aria-label="סגור"
+              style={{
+                width:           '34px',
+                height:          '34px',
+                borderRadius:    '50%',
+                backgroundColor: 'rgba(245,200,64,0.1)',
+                border:          '1px solid rgba(245,200,64,0.25)',
+                color:           GOLD,
+                fontSize:        '18px',
+                cursor:          'pointer',
+                display:         'flex',
+                alignItems:      'center',
+                justifyContent:  'center',
+                transition:      'background-color 0.15s',
+                flexShrink:      0,
+              }}
+              onMouseEnter={e => { (e.currentTarget as HTMLElement).style.backgroundColor = 'rgba(245,200,64,0.2)'; }}
+              onMouseLeave={e => { (e.currentTarget as HTMLElement).style.backgroundColor = 'rgba(245,200,64,0.1)'; }}
+            >
+              ×
+            </button>
           </div>
-          <button
-            onClick={close}
-            className="w-9 h-9 rounded-full flex items-center justify-center text-lg"
-            style={{ backgroundColor: '#F3F4F6', color: '#6B7280' }}
-            aria-label="סגור"
-          >
-            ×
-          </button>
-        </div>
 
-        {/* Tier cards */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 p-6">
-          {TIERS_ORDER.map(tier => {
-            const isCurrent    = tier === currentTier;
-            const isPro        = tier === 'gardener_pro';
-            const isDowngrade  = TIERS_ORDER.indexOf(tier) < TIERS_ORDER.indexOf(currentTier);
+          {/* Tier cards grid */}
+          <div style={{
+            display:             'grid',
+            gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))',
+            gap:                 '14px',
+            padding:             '24px 28px',
+          }}>
+            {TIERS_ORDER.map(tier => {
+              const isCurrent   = tier === currentTier;
+              const isPro       = tier === 'gardener_pro';
+              const isDowngrade = TIERS_ORDER.indexOf(tier) < TIERS_ORDER.indexOf(currentTier);
 
-            const borderColour = isCurrent
-              ? '#4A7C59'
-              : isPro
-              ? '#B7924A'
-              : 'rgba(0,0,0,0.1)';
+              return (
+                <div
+                  key={tier}
+                  style={{
+                    position:        'relative',
+                    borderRadius:    '12px',
+                    padding:         '20px',
+                    display:         'flex',
+                    flexDirection:   'column',
+                    gap:             '12px',
+                    background:      'rgba(20,43,22,0.6)',
+                    border:          isCurrent
+                      ? `2px solid ${SAGE}88`
+                      : isPro
+                      ? `2px solid ${GOLD}`
+                      : '1px solid rgba(125,192,132,0.15)',
+                    transform:       isPro ? 'scale(1.02)' : 'none',
+                  }}
+                >
+                  {/* Badges */}
+                  {isPro && (
+                    <span style={{
+                      position:        'absolute',
+                      top:             '-12px',
+                      left:            '50%',
+                      transform:       'translateX(-50%)',
+                      fontFamily:      FRANK,
+                      fontWeight:      700,
+                      fontSize:        '11px',
+                      padding:         '3px 12px',
+                      borderRadius:    '50px',
+                      backgroundColor: GOLD,
+                      color:           EARTH,
+                      whiteSpace:      'nowrap',
+                    }}>
+                      הכי פופולרי
+                    </span>
+                  )}
+                  {isCurrent && (
+                    <span style={{
+                      position:        'absolute',
+                      top:             '-12px',
+                      left:            '50%',
+                      transform:       'translateX(-50%)',
+                      fontFamily:      ASSIST,
+                      fontWeight:      600,
+                      fontSize:        '11px',
+                      padding:         '3px 12px',
+                      borderRadius:    '50px',
+                      backgroundColor: 'rgba(74,128,80,0.3)',
+                      border:          `1px solid ${SAGE}44`,
+                      color:           SAGE,
+                      whiteSpace:      'nowrap',
+                    }}>
+                      התוכנית הנוכחית שלך
+                    </span>
+                  )}
 
-            return (
-              <div
-                key={tier}
-                className="relative rounded-2xl p-5 flex flex-col gap-3"
-                style={{
-                  border: `2px solid ${borderColour}`,
-                  backgroundColor: '#FFFFFF',
-                }}
-              >
-                {/* Badges */}
-                {isPro && (
-                  <span
-                    className="absolute -top-3 left-1/2 -translate-x-1/2 text-xs font-bold px-3 py-1 rounded-full text-white"
-                    style={{ backgroundColor: '#B7924A' }}
-                  >
-                    הכי פופולרי
-                  </span>
-                )}
-                {isCurrent && (
-                  <span
-                    className="absolute -top-3 left-1/2 -translate-x-1/2 text-xs font-semibold px-3 py-1 rounded-full"
-                    style={{ backgroundColor: '#EAF4EE', color: '#4A7C59', border: '1px solid #4A7C59' }}
-                  >
-                    התוכנית הנוכחית שלך
-                  </span>
-                )}
+                  {/* Name & price */}
+                  <div>
+                    <p style={{
+                      fontFamily: FRANK,
+                      fontWeight: 700,
+                      fontSize:   '16px',
+                      color:      isPro ? GOLD : PARCH,
+                      margin:     '0 0 4px',
+                    }}>
+                      {TIER_NAMES[tier]}
+                    </p>
+                    <p style={{
+                      fontFamily: PLAYFAIR,
+                      fontStyle:  'italic',
+                      fontSize:   '15px',
+                      color:      isPro ? GOLD : `${PARCH}BB`,
+                      margin:     0,
+                    }}>
+                      {TIER_PRICES_DISPLAY[tier]}
+                    </p>
+                  </div>
 
-                {/* Name & price */}
-                <div>
-                  <p className="text-base font-bold" style={{ color: '#1B2A4A' }}>
-                    {TIER_NAMES[tier]}
-                  </p>
-                  <p
-                    className="text-lg font-bold mt-0.5"
-                    style={{ color: isPro ? '#B7924A' : '#4A7C59' }}
-                  >
-                    {TIER_PRICES_DISPLAY[tier]}
-                  </p>
+                  {/* Features */}
+                  <ul style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: '7px', margin: 0, padding: 0, listStyle: 'none' }}>
+                    {TIER_FEATURES_LIST[tier].map(feature => (
+                      <li key={feature} style={{ display: 'flex', alignItems: 'flex-start', gap: '6px', fontFamily: ASSIST, fontSize: '12px', color: `${PARCH}AA` }}>
+                        <span style={{ color: SAGE, flexShrink: 0, marginTop: '1px' }}>✓</span>
+                        {feature}
+                      </li>
+                    ))}
+                  </ul>
+
+                  {/* CTA */}
+                  {tier === 'free' || isCurrent ? (
+                    <div style={{
+                      padding:         '10px',
+                      borderRadius:    '8px',
+                      textAlign:       'center',
+                      fontFamily:      ASSIST,
+                      fontSize:        '13px',
+                      color:           `${PARCH}44`,
+                      backgroundColor: 'rgba(255,255,255,0.03)',
+                      border:          '1px solid rgba(255,255,255,0.06)',
+                    }}>
+                      {isCurrent ? 'תוכנית נוכחית' : 'חינמי'}
+                    </div>
+                  ) : isDowngrade ? (
+                    <div style={{
+                      padding:         '10px',
+                      borderRadius:    '8px',
+                      textAlign:       'center',
+                      fontFamily:      ASSIST,
+                      fontSize:        '13px',
+                      color:           `${PARCH}33`,
+                      backgroundColor: 'rgba(255,255,255,0.03)',
+                    }}>
+                      לא זמין
+                    </div>
+                  ) : (
+                    <button
+                      onClick={() => handleUpgrade(tier)}
+                      disabled={loading === tier}
+                      style={{
+                        width:           '100%',
+                        padding:         '10px',
+                        borderRadius:    '8px',
+                        border:          isPro ? 'none' : `1px solid ${GOLD}55`,
+                        backgroundColor: isPro ? GOLD : 'transparent',
+                        fontFamily:      FRANK,
+                        fontWeight:      600,
+                        fontSize:        '13px',
+                        color:           isPro ? EARTH : GOLD,
+                        cursor:          loading === tier ? 'default' : 'pointer',
+                        opacity:         loading === tier ? 0.7 : 1,
+                        transition:      'filter 0.15s, background-color 0.15s',
+                      }}
+                      onMouseEnter={e => {
+                        if (loading !== tier) {
+                          const el = e.currentTarget as HTMLElement;
+                          if (isPro) el.style.filter = 'brightness(1.1)';
+                          else el.style.backgroundColor = 'rgba(245,200,64,0.1)';
+                        }
+                      }}
+                      onMouseLeave={e => {
+                        const el = e.currentTarget as HTMLElement;
+                        el.style.filter = 'none';
+                        if (!isPro) el.style.backgroundColor = 'transparent';
+                      }}
+                    >
+                      {loading === tier ? '...' : 'שדרג עכשיו'}
+                    </button>
+                  )}
                 </div>
+              );
+            })}
+          </div>
 
-                {/* Features */}
-                <ul className="flex flex-col gap-1.5 flex-1">
-                  {TIER_FEATURES_LIST[tier].map(feature => (
-                    <li key={feature} className="flex items-start gap-1.5 text-xs" style={{ color: '#374151' }}>
-                      <span className="mt-0.5 flex-shrink-0" style={{ color: '#4A7C59' }}>✓</span>
-                      {feature}
-                    </li>
-                  ))}
-                </ul>
-
-                {/* CTA */}
-                {tier === 'free' || isCurrent ? (
-                  <div
-                    className="w-full py-2.5 rounded-lg text-center text-sm font-medium"
-                    style={{ backgroundColor: '#F3F4F6', color: '#9CA3AF' }}
-                  >
-                    {isCurrent ? 'תוכנית נוכחית' : 'חינמי'}
-                  </div>
-                ) : isDowngrade ? (
-                  <div
-                    className="w-full py-2.5 rounded-lg text-center text-sm font-medium"
-                    style={{ backgroundColor: '#F3F4F6', color: '#9CA3AF' }}
-                  >
-                    לא זמין
-                  </div>
-                ) : (
-                  <button
-                    onClick={() => handleUpgrade(tier)}
-                    disabled={loading === tier}
-                    className="w-full py-2.5 rounded-lg text-white text-sm font-semibold transition-opacity"
-                    style={{
-                      backgroundColor: '#4A7C59',
-                      opacity: loading === tier ? 0.7 : 1,
-                    }}
-                  >
-                    {loading === tier ? '...' : 'שדרג עכשיו'}
-                  </button>
-                )}
-              </div>
-            );
-          })}
         </div>
       </div>
-    </div>
+    </>
   );
 }

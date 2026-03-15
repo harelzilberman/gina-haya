@@ -2,9 +2,25 @@ import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useAuthStore } from '../../stores/authStore';
 
+const EARTH  = '#142B16';
+const GOLD   = '#F5C840';
+const SAGE   = '#7DC084';
+const PARCH  = '#EDE0C4';
+const FRANK  = '"Frank Ruhl Libre", Georgia, serif';
+const ASSIST = '"Assistant", "Heebo", sans-serif';
+
+const FORM_CSS = `
+.auth-input::placeholder { color: rgba(237,224,196,0.3); }
+.auth-input:focus {
+  border-color: rgba(245,200,64,0.5) !important;
+  outline: none;
+  box-shadow: 0 0 0 3px rgba(245,200,64,0.06);
+}
+`;
+
 export function LoginForm() {
   const { signIn, signInWithGoogle, isLoading, error, clearError } = useAuthStore();
-  const [email, setEmail]       = useState('');
+  const [email,    setEmail]    = useState('');
   const [password, setPassword] = useState('');
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -13,68 +29,138 @@ export function LoginForm() {
     await signIn(email, password);
   };
 
+  const inputStyle: React.CSSProperties = {
+    width:           '100%',
+    boxSizing:       'border-box',
+    backgroundColor: 'rgba(20,43,22,0.8)',
+    border:          '1px solid rgba(125,192,132,0.2)',
+    borderRadius:    '8px',
+    padding:         '12px 16px',
+    fontFamily:      ASSIST,
+    fontSize:        '14px',
+    color:           PARCH,
+    transition:      'border-color 0.2s, box-shadow 0.2s',
+  };
+
   return (
-    <div>
+    <>
+      <style>{FORM_CSS}</style>
+
       {error && (
-        <div className="mb-4 rounded-lg px-4 py-3 text-sm"
-          style={{ backgroundColor: '#FEF2F2', border: '1px solid #FECACA', color: '#DC2626' }}>
+        <div style={{
+          marginBottom:    '16px',
+          borderRadius:    '8px',
+          padding:         '12px 14px',
+          backgroundColor: 'rgba(192,57,43,0.15)',
+          border:          '1px solid rgba(192,57,43,0.35)',
+          fontFamily:      ASSIST,
+          fontSize:        '13px',
+          color:           '#E07070',
+        }}>
           {error}
         </div>
       )}
 
-      <form onSubmit={handleSubmit}>
-        <div className="mb-4">
-          <label className="block text-sm font-medium mb-1" style={{ color: '#1B2A4A' }}>
+      <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '0' }}>
+        <div style={{ marginBottom: '14px' }}>
+          <label style={{
+            display:      'block',
+            fontFamily:   ASSIST,
+            fontWeight:   400,
+            fontSize:     '13px',
+            color:        `${PARCH}70`,
+            marginBottom: '6px',
+          }}>
             אימייל
           </label>
           <input
+            className="auth-input"
             type="email"
             required
             value={email}
             onChange={e => setEmail(e.target.value)}
             placeholder="your@email.com"
-            className="w-full rounded-lg px-4 py-2.5 text-sm focus:outline-none"
-            style={{ border: '1px solid rgba(74,124,89,0.3)', color: '#1B2A4A' }}
+            style={inputStyle}
           />
         </div>
 
-        <div className="mb-6">
-          <label className="block text-sm font-medium mb-1" style={{ color: '#1B2A4A' }}>
+        <div style={{ marginBottom: '22px' }}>
+          <label style={{
+            display:      'block',
+            fontFamily:   ASSIST,
+            fontWeight:   400,
+            fontSize:     '13px',
+            color:        `${PARCH}70`,
+            marginBottom: '6px',
+          }}>
             סיסמה
           </label>
           <input
+            className="auth-input"
             type="password"
             required
             minLength={6}
             value={password}
             onChange={e => setPassword(e.target.value)}
-            className="w-full rounded-lg px-4 py-2.5 text-sm focus:outline-none"
-            style={{ border: '1px solid rgba(74,124,89,0.3)', color: '#1B2A4A' }}
+            style={inputStyle}
           />
         </div>
 
         <button
           type="submit"
           disabled={isLoading}
-          className="w-full rounded-lg py-3 text-sm font-medium text-white transition"
-          style={{ backgroundColor: isLoading ? '#9CA3AF' : '#4A7C59' }}
+          style={{
+            width:           '100%',
+            padding:         '13px',
+            borderRadius:    '8px',
+            border:          'none',
+            backgroundColor: GOLD,
+            fontFamily:      FRANK,
+            fontWeight:      600,
+            fontSize:        '15px',
+            color:           EARTH,
+            cursor:          isLoading ? 'default' : 'pointer',
+            opacity:         isLoading ? 0.7 : 1,
+            transition:      'filter 0.2s',
+          }}
+          onMouseEnter={e => { if (!isLoading) (e.currentTarget as HTMLElement).style.filter = 'brightness(1.1)'; }}
+          onMouseLeave={e => { (e.currentTarget as HTMLElement).style.filter = 'none'; }}
         >
           {isLoading ? '...' : 'כניסה'}
         </button>
       </form>
 
-      <div className="my-4 flex items-center gap-3">
-        <div className="flex-1 h-px" style={{ backgroundColor: 'rgba(74,124,89,0.2)' }} />
-        <span className="text-xs" style={{ color: '#9CA3AF' }}>או</span>
-        <div className="flex-1 h-px" style={{ backgroundColor: 'rgba(74,124,89,0.2)' }} />
+      {/* Divider */}
+      <div style={{ display: 'flex', alignItems: 'center', gap: '12px', margin: '18px 0' }}>
+        <div style={{ flex: 1, height: '1px', backgroundColor: 'rgba(125,192,132,0.15)' }} />
+        <span style={{ fontFamily: ASSIST, fontSize: '12px', color: `${PARCH}40` }}>או</span>
+        <div style={{ flex: 1, height: '1px', backgroundColor: 'rgba(125,192,132,0.15)' }} />
       </div>
 
+      {/* Google */}
       <button
         type="button"
         onClick={signInWithGoogle}
         disabled={isLoading}
-        className="w-full flex items-center justify-center gap-2 rounded-lg py-2.5 text-sm font-medium transition"
-        style={{ border: '1px solid rgba(74,124,89,0.3)', color: '#1B2A4A', backgroundColor: 'white' }}
+        style={{
+          width:           '100%',
+          display:         'flex',
+          alignItems:      'center',
+          justifyContent:  'center',
+          gap:             '10px',
+          padding:         '11px',
+          borderRadius:    '8px',
+          border:          '1px solid rgba(125,192,132,0.2)',
+          backgroundColor: 'rgba(28,58,30,0.6)',
+          fontFamily:      ASSIST,
+          fontSize:        '14px',
+          color:           PARCH,
+          cursor:          isLoading ? 'default' : 'pointer',
+          opacity:         isLoading ? 0.6 : 1,
+          transition:      'background-color 0.15s',
+        }}
+        onMouseEnter={e => { if (!isLoading) (e.currentTarget as HTMLElement).style.backgroundColor = 'rgba(28,58,30,0.9)'; }}
+        onMouseLeave={e => { (e.currentTarget as HTMLElement).style.backgroundColor = 'rgba(28,58,30,0.6)'; }}
       >
         <svg width="18" height="18" viewBox="0 0 18 18" fill="none">
           <path d="M17.64 9.2c0-.637-.057-1.251-.164-1.84H9v3.481h4.844a4.14 4.14 0 0 1-1.796 2.716v2.259h2.908c1.702-1.567 2.684-3.875 2.684-6.615Z" fill="#4285F4"/>
@@ -85,18 +171,24 @@ export function LoginForm() {
         כניסה עם Google
       </button>
 
-      <p className="mt-5 text-center text-sm" style={{ color: '#6B7280' }}>
+      <p style={{ marginTop: '18px', textAlign: 'center', fontFamily: ASSIST, fontSize: '13px', color: `${PARCH}55` }}>
         אין לך חשבון?{' '}
-        <Link to="/signup" className="font-medium hover:underline" style={{ color: '#4A7C59' }}>
+        <Link to="/signup" style={{ color: SAGE, fontWeight: 500, textDecoration: 'none' }}
+          onMouseEnter={e => { (e.currentTarget as HTMLElement).style.color = GOLD; }}
+          onMouseLeave={e => { (e.currentTarget as HTMLElement).style.color = SAGE; }}
+        >
           הרשמה
         </Link>
       </p>
 
-      <p className="mt-2 text-center text-sm">
-        <Link to="/reset-password" className="hover:underline" style={{ color: '#9CA3AF' }}>
+      <p style={{ marginTop: '8px', textAlign: 'center', fontFamily: ASSIST, fontSize: '12px' }}>
+        <Link to="/reset-password" style={{ color: `${PARCH}40`, textDecoration: 'none' }}
+          onMouseEnter={e => { (e.currentTarget as HTMLElement).style.color = SAGE; }}
+          onMouseLeave={e => { (e.currentTarget as HTMLElement).style.color = `${PARCH}40`; }}
+        >
           שכחתי סיסמה
         </Link>
       </p>
-    </div>
+    </>
   );
 }
