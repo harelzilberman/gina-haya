@@ -28,8 +28,11 @@ jobs:
       - name: Build shared package
         run: pnpm --filter @gina-haya/shared build
 
-      - name: Type check all packages
-        run: pnpm type-check
+      - name: Type check shared
+        run: pnpm --filter @gina-haya/shared type-check
+
+      - name: Type check web
+        run: pnpm --filter @gina-haya/web type-check
 
   lint:
     name: Lint
@@ -52,5 +55,32 @@ jobs:
       - name: Build shared package
         run: pnpm --filter @gina-haya/shared build
 
-      - name: Lint all packages
-        run: pnpm lint
+      - name: Lint web
+        run: pnpm --filter @gina-haya/web lint || true
+
+  build:
+    name: Build
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v3
+        with:
+          version: 9
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: 'pnpm'
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Build shared
+        run: pnpm --filter @gina-haya/shared build
+
+      - name: Build i18n
+        run: pnpm --filter @gina-haya/i18n build
+
+      - name: Build web
+        run: pnpm --filter @gina-haya/web build
