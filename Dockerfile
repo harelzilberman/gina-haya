@@ -1,33 +1,9 @@
 FROM node:20-alpine
-
 WORKDIR /app
-ARG CACHEBUST=1
-# Install pnpm
 RUN npm install -g pnpm@8.15.0
-
-# Copy workspace config
-COPY pnpm-workspace.yaml ./
-COPY package.json ./
-COPY tsconfig.base.json ./
-
-# Copy only the packages we need (NOT web or i18n)
-COPY packages/shared ./packages/shared
-COPY packages/i18n ./packages/i18n
-COPY packages/api ./packages/api
-
-# Copy lockfile if it exists
-COPY pnpm-lock.yaml* ./
-
-# Install dependencies
+COPY . .
 RUN pnpm install --no-frozen-lockfile
-
-# Build shared then api
 RUN pnpm --filter @gina-haya/shared build
 RUN pnpm --filter @gina-haya/api build
-
 EXPOSE 3001
-
 CMD ["node", "packages/api/dist/index.js"]
-#   A P I   S e r v i c e 
- 
- 
