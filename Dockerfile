@@ -10,13 +10,16 @@ COPY pnpm-workspace.yaml ./
 COPY package.json ./
 COPY tsconfig.base.json ./
 
-# Copy only the packages we need
+# Copy only the packages we need (NOT web or i18n)
 COPY packages/shared ./packages/shared
 COPY packages/i18n ./packages/i18n
 COPY packages/api ./packages/api
 
+# Copy lockfile if it exists
+COPY pnpm-lock.yaml* ./
+
 # Install dependencies
-RUN pnpm install --frozen-lockfile
+RUN pnpm install --no-frozen-lockfile
 
 # Build shared then api
 RUN pnpm --filter @gina-haya/shared build
