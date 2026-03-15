@@ -1,0 +1,11 @@
+{
+  "build": {
+    "builder": "NIXPACKS",
+    "buildCommand": "pnpm install && pnpm --filter @gina-haya/shared build && pnpm --filter @gina-haya/api build"
+  },
+  "deploy": {
+    "startCommand": "node packages/api/dist/index.js",
+    "restartPolicyType": "ON_FAILURE",
+    "healthcheckPath": "/health"
+  }
+}
