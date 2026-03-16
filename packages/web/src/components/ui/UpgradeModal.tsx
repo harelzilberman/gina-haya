@@ -2,8 +2,7 @@ import { useState } from 'react';
 import { useUpgradeModalStore } from '../../stores/upgradeModalStore';
 import { useAuthStore } from '../../stores/authStore';
 import { useTier } from '../../hooks/useTier';
-
-const API_BASE = import.meta.env.VITE_API_URL ?? 'http://localhost:3001';
+import { api } from '../../api/client';
 
 const EARTH    = '#142B16';
 const SOIL     = '#1C3A1E';
@@ -86,15 +85,7 @@ export function UpgradeModal() {
     if (targetTier === 'free' || !session?.access_token) return;
     setLoading(targetTier);
     try {
-      const res = await fetch(`${API_BASE}/api/billing/create-checkout`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization:  `Bearer ${session.access_token}`,
-        },
-        body: JSON.stringify({ tier: targetTier }),
-      });
-      const data = await res.json();
+      const data = await api.post<{ checkoutUrl?: string }>('/api/billing/create-checkout', { tier: targetTier }, session.access_token);
       if (data.checkoutUrl) {
         window.location.href = data.checkoutUrl;
       }

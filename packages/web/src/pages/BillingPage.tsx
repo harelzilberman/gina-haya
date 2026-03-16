@@ -3,8 +3,7 @@ import { useSearchParams } from 'react-router-dom';
 import { useAuthStore } from '../stores/authStore';
 import { useUpgradeModalStore } from '../stores/upgradeModalStore';
 import { useTier } from '../hooks/useTier';
-
-const API_BASE = import.meta.env.VITE_API_URL ?? 'http://localhost:3001';
+import { api } from '../api/client';
 
 const EARTH  = '#142B16';
 const GOLD   = '#F5C840';
@@ -62,11 +61,7 @@ export function BillingPage() {
     if (!session?.access_token || cancelling) return;
     setCancelling(true);
     try {
-      const res = await fetch(`${API_BASE}/api/billing/cancel`, {
-        method: 'POST',
-        headers: { Authorization: `Bearer ${session.access_token}` },
-      });
-      const data = await res.json();
+      const data = await api.post<{ success: boolean; cancelAt: string }>('/api/billing/cancel', {}, session.access_token);
       if (data.success) {
         setCancelledAt(data.cancelAt);
         setShowCancelConfirm(false);

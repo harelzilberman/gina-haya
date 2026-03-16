@@ -1,7 +1,6 @@
 import { create } from 'zustand';
 import { useAuthStore } from './authStore';
-
-const API_BASE = import.meta.env.VITE_API_URL ?? 'http://localhost:3001';
+import { api } from '../api/client';
 
 export interface GardenPlant {
   id: string;
@@ -52,11 +51,7 @@ export const useGardenStore = create<GardenState>((set, get) => ({
     if (!token) return;
     set({ isLoading: true, error: null });
     try {
-      const res = await fetch(`${API_BASE}/api/garden`, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
-      if (!res.ok) throw new Error('Failed to load gardens');
-      const data: Garden[] = await res.json();
+      const data = await api.get<Garden[]>('/api/garden', token);
       set({ gardens: data, activeGarden: data[0] ?? null });
     } catch (err: any) {
       set({ error: err.message });
@@ -70,16 +65,7 @@ export const useGardenStore = create<GardenState>((set, get) => ({
   updateGarden: async (id, updates) => {
     const token = getToken();
     if (!token) throw new Error('Not authenticated');
-    const res = await fetch(`${API_BASE}/api/garden/${id}`, {
-      method: 'PATCH',
-      headers: {
-        'Content-Type': 'application/json',
-        Authorization: `Bearer ${token}`,
-      },
-      body: JSON.stringify(updates),
-    });
-    if (!res.ok) throw new Error('Failed to update garden');
-    const updated: Garden = await res.json();
+    const updated = await api.patch<Garden>(`/api/garden/${id}`, updates, token);
     set(state => ({
       gardens: state.gardens.map(g => g.id === id ? { ...g, ...updated } : g),
       activeGarden: state.activeGarden?.id === id
@@ -91,16 +77,7 @@ export const useGardenStore = create<GardenState>((set, get) => ({
   addPlant: async (gardenId, plantId, commonNameHe, commonNameEn) => {
     const token = getToken();
     if (!token) throw new Error('Not authenticated');
-    const res = await fetch(`${API_BASE}/api/garden/${gardenId}/plants`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        Authorization: `Bearer ${token}`,
-      },
-      body: JSON.stringify({ plantId, commonNameHe, commonNameEn }),
-    });
-    if (!res.ok) throw new Error('Failed to add plant');
-    const newPlant: GardenPlant = await res.json();
+    const newPlant = await api.post<GardenPlant>(`/api/garden/${gardenId}/plants`, { plantId, commonNameHe, commonNameEn }, token);
     set(state => {
       const merge = (g: Garden) => ({
         ...g,
@@ -130,11 +107,9 @@ export const useGardenStore = create<GardenState>((set, get) => ({
         ? filter(state.activeGarden)
         : state.activeGarden,
     }));
-    const res = await fetch(`${API_BASE}/api/garden/${gardenId}/plants/${plantId}`, {
-      method: 'DELETE',
-      headers: { Authorization: `Bearer ${token}` },
-    });
-    if (!res.ok) {
+    try {
+      await api.del(`/api/garden/${gardenId}/plants/${plantId}`, token);
+    } catch {
       // Revert by reloading
       get().loadGardens();
     }

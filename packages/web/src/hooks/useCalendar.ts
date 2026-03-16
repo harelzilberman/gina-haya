@@ -1,13 +1,6 @@
 import { useState, useEffect } from 'react';
 import type { BiodynamicDay } from '@gina-haya/shared';
-
-const API_BASE = import.meta.env.VITE_API_URL ?? 'http://localhost:3001';
-
-async function fetchJSON<T>(url: string): Promise<T> {
-  const res = await fetch(url);
-  if (!res.ok) throw new Error(`HTTP ${res.status}`);
-  return res.json();
-}
+import { api } from '../api/client';
 
 export function useToday() {
   const [day, setDay] = useState<BiodynamicDay | null>(null);
@@ -17,7 +10,7 @@ export function useToday() {
   useEffect(() => {
     setIsLoading(true);
     setError(null);
-    fetchJSON<BiodynamicDay>(`${API_BASE}/api/calendar/today`)
+    api.get<BiodynamicDay>('/api/calendar/today')
       .then(setDay)
       .catch(err => setError(err.message))
       .finally(() => setIsLoading(false));
@@ -34,7 +27,7 @@ export function useWeek() {
   useEffect(() => {
     setIsLoading(true);
     setError(null);
-    fetchJSON<BiodynamicDay[]>(`${API_BASE}/api/calendar/week`)
+    api.get<BiodynamicDay[]>('/api/calendar/week')
       .then(setDays)
       .catch(err => setError(err.message))
       .finally(() => setIsLoading(false));

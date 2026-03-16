@@ -1,7 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
-
-const API_BASE = import.meta.env.VITE_API_URL ?? 'http://localhost:3001';
+import { api } from '../api/client';
 
 export interface PlantSummary {
   id: string;
@@ -48,9 +47,7 @@ export function usePlants(filters: Filters = {}) {
         if (filters.search?.trim()) params.set('search', filters.search.trim());
         if (filters.category)       params.set('category', filters.category);
 
-        const res = await fetch(`${API_BASE}/api/plants?${params}`);
-        if (!res.ok) throw new Error(`HTTP ${res.status}`);
-        setPlants(await res.json());
+        setPlants(await api.get<PlantSummary[]>(`/api/plants?${params}`));
       } catch (err: any) {
         setError(err.message);
       } finally {
@@ -67,7 +64,5 @@ export function usePlants(filters: Filters = {}) {
 }
 
 export async function fetchPlantDetail(id: string): Promise<PlantDetail> {
-  const res = await fetch(`${API_BASE}/api/plants/${id}`);
-  if (!res.ok) throw new Error(`HTTP ${res.status}`);
-  return res.json();
+  return api.get<PlantDetail>(`/api/plants/${id}`);
 }

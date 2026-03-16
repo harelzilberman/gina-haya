@@ -1,8 +1,9 @@
 import { create } from 'zustand';
 import type { MooshMessage } from '@gina-haya/shared';
 import { useAuthStore } from './authStore';
+import { api } from '../api/client';
 
-const API_BASE = import.meta.env.VITE_API_URL ?? 'http://localhost:3001';
+const API_BASE = import.meta.env.VITE_API_URL || 'https://powerful-embrace-production-95ea.up.railway.app';
 
 function getToken(): string | null {
   return useAuthStore.getState().session?.access_token ?? null;
@@ -97,11 +98,7 @@ export const useMooshStore = create<MooshState>((set, get) => ({
     const token = getToken();
     if (!token) return;
     try {
-      const res = await fetch(`${API_BASE}/api/moosh/history`, {
-        headers: { 'Authorization': `Bearer ${token}` },
-      });
-      if (!res.ok) return;
-      const data: MooshMessage[] = await res.json();
+      const data = await api.get<MooshMessage[]>('/api/moosh/history', token);
       set({ messages: data });
     } catch {
       // silently ignore — chat still works without history
@@ -112,10 +109,7 @@ export const useMooshStore = create<MooshState>((set, get) => ({
     const token = getToken();
     if (!token) return;
     try {
-      await fetch(`${API_BASE}/api/moosh/history`, {
-        method: 'DELETE',
-        headers: { 'Authorization': `Bearer ${token}` },
-      });
+      await api.del('/api/moosh/history', token);
       set({ messages: [], usageThisMonth: 0, rateLimited: false });
     } catch {
       // silently ignore
