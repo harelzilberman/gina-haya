@@ -8,9 +8,13 @@ const PORT = process.env.PORT || 3001;
 
 app.use(express.json({ limit: '10mb' }));
 app.use(cors({
-  origin: process.env.NODE_ENV === 'production'
-    ? ['https://gina-haya.com', 'https://www.gina-haya.com']
-    : ['http://localhost:5173', 'http://127.0.0.1:5173'],
+    origin: process.env.NODE_ENV === 'production'
+        ? [
+            'https://gina-haya.com',
+            'https://www.gina-haya.com',
+            'https://gina-haya.vercel.app',
+        ]
+        : ['http://localhost:5173', 'http://127.0.0.1:5173'],
   credentials: true,
 }));
 
