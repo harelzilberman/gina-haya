@@ -1,0 +1,8 @@
+﻿node_modules
+.git
+.github
+packages/web
+dist
+*.log
+.env
+.env.local
