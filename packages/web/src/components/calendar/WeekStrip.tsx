@@ -1,7 +1,14 @@
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import type { BiodynamicDay } from '@gina-haya/shared';
-import { SCORE_COLOURS } from '@gina-haya/shared';
+
+const SCORE_COLOURS: Record<string, string> = {
+  green:  '#4A7C59',
+  yellow: '#C8A040',
+  orange: '#C0622A',
+  red:    '#A33030',
+  black:  '#333333',
+};
 
 interface Props {
   days:      BiodynamicDay[];
