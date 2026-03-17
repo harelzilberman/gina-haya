@@ -1,4 +1,5 @@
-const API_BASE = import.meta.env.VITE_API_URL || 'https://powerful-embrace-production-95ea.up.railway.app';
+const API_BASE = (import.meta.env.VITE_API_URL as string | undefined)?.replace(/\/$/, '')
+  || 'https://powerful-embrace-production-95ea.up.railway.app';
 
 async function request<T>(
   path: string,
@@ -11,7 +12,9 @@ async function request<T>(
   };
   if (token) headers['Authorization'] = `Bearer ${token}`;
 
-  const res = await fetch(`${API_BASE}${path}`, { ...fetchOptions, headers });
+  const url = `${API_BASE}${path}`;
+  const res = await fetch(url, { ...fetchOptions, headers });
+
   if (!res.ok) {
     const error = await res.json().catch(() => ({ message: 'Unknown error' }));
     throw new Error(error.message || `HTTP ${res.status}`);
