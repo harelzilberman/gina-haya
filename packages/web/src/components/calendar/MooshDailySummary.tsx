@@ -40,14 +40,13 @@ export function MooshDailySummary({ day }: Props) {
           display:           'flex',
           gap:               '14px',
           alignItems:        'flex-start',
-          paddingBlock:      '18px',
-          paddingInlineStart:'16px',
-          paddingInlineEnd:  '18px',
+          padding:           '18px 18px 18px 18px',
+          paddingRight:      '16px',
           marginBottom:      '12px',
           background:        'linear-gradient(145deg, rgba(28,58,30,0.8) 0%, rgba(20,43,22,0.9) 100%)',
           borderRadius:      '14px',
           border:            '1px solid rgba(245,200,64,0.1)',
-          borderInlineStart: `3px solid ${GOLD}`,
+          borderRight:       `3px solid ${GOLD}`,
           backdropFilter:    'blur(8px)',
         }}
       >

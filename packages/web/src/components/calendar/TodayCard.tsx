@@ -1,5 +1,4 @@
 import { useState, useEffect } from 'react';
-import { useTranslation } from 'react-i18next';
 import { useDirection } from '../../hooks/useDirection';
 import type { BiodynamicDay } from '@gina-haya/shared';
 
@@ -26,12 +25,10 @@ const DAY_TYPE_STYLES: Record<string, { bg: string; color: string; emoji: string
 const RING_R            = 60;
 const RING_CIRCUMFERENCE = 2 * Math.PI * RING_R;
 
-const GOLD     = '#F5C840';
-const PARCH    = '#EDE0C4';
-const FOREST_MID = '#1C3A1E';
-const FRANK    = '"Frank Ruhl Libre", Georgia, serif';
-const ASSIST   = '"Assistant", "Heebo", sans-serif';
-const PLAYFAIR = '"Playfair Display", Georgia, serif';
+const GOLD   = '#F5C840';
+const PARCH  = '#EDE0C4';
+const FRANK  = '"Frank Ruhl Libre", Georgia, serif';
+const ASSIST = '"Assistant", "Heebo", sans-serif';
 
 const CARD_CSS = `
 @keyframes tc-ring-in {
@@ -54,7 +51,6 @@ function HebrewDate({ dateStr }: { dateStr: string }) {
 }
 
 export function TodayCard({ day }: Props) {
-  const { t } = useTranslation('calendar');
   const { dir } = useDirection();
   const [mounted, setMounted] = useState(false);
 
@@ -165,7 +161,7 @@ export function TodayCard({ day }: Props) {
             color:        `${PARCH}44`,
             marginTop:    '4px',
           }}>
-            {t('plantingScore.label')}
+            ציון זריעה
           </p>
         </div>
 
@@ -219,8 +215,8 @@ export function TodayCard({ day }: Props) {
             </p>
             <p style={{ fontFamily: ASSIST, fontSize: '12px', color: `${PARCH}60`, margin: '3px 0 0', lineHeight: 1.4 }}>
               {day.ascendingDescending === 'ascending'
-                ? t('moonPhase.ascendingDesc')
-                : t('moonPhase.descendingDesc')}
+                ? 'הארץ נושמת החוצה — זמן לקציר ואיסוף'
+                : 'הארץ נושמת פנימה — הזמן הטוב ביותר לשתילה'}
             </p>
           </div>
         </div>
@@ -229,8 +225,8 @@ export function TodayCard({ day }: Props) {
         <div style={{
           display:         'flex',
           alignItems:      'center',
-          justifyContent:  'flex-end',
-          gap:             '8px',
+          justifyContent:  'space-between',
+          direction:       'rtl',
           padding:         '10px 14px',
           borderRadius:    '10px',
           backgroundColor: 'rgba(245,200,64,0.04)',
@@ -241,8 +237,7 @@ export function TodayCard({ day }: Props) {
           color:           `${PARCH}88`,
         }}>
           <span style={{ fontWeight: 600, color: PARCH }}>{day.moonSignHe}</span>
-          <span>{t('moonSign')}:</span>
-          <span style={{ fontSize: '15px' }}>🌙</span>
+          <span>🌙 מזל הירח:</span>
         </div>
 
         {/* BD prep pills */}
@@ -260,7 +255,7 @@ export function TodayCard({ day }: Props) {
                 backgroundColor: 'rgba(245,200,64,0.06)',
                 letterSpacing: '0.02em',
               }}>
-                {t('prep.500recommended')}
+                ✅ זמן מומלץ למריחת BD 500 (16:00–19:00)
               </span>
             )}
             {day.prep501Recommended && (
@@ -275,27 +270,12 @@ export function TodayCard({ day }: Props) {
                 backgroundColor: 'rgba(245,200,64,0.06)',
                 letterSpacing: '0.02em',
               }}>
-                {t('prep.501recommended')}
+                ✅ זמן מומלץ למריחת BD 501 (עלות השחר–09:00)
               </span>
             )}
           </div>
         )}
 
-        {/* Moosh quote */}
-        {day.mooshDailySummary && (
-          <div style={{
-            marginTop:         '16px',
-            paddingTop:        '14px',
-            borderTop:         '1px solid rgba(245,200,64,0.08)',
-            fontFamily:        PLAYFAIR,
-            fontStyle:         'italic',
-            fontSize:          '13px',
-            lineHeight:        1.65,
-            color:             `${PARCH}77`,
-          }}>
-            "{day.mooshDailySummary}"
-          </div>
-        )}
       </div>
     </>
   );
