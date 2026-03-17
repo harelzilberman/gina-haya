@@ -5,7 +5,6 @@ import { NodeBlackoutBanner }  from '../components/calendar/NodeBlackoutBanner';
 import { MooshDailySummary }   from '../components/calendar/MooshDailySummary';
 import { TodayCard }           from '../components/calendar/TodayCard';
 import { WeekStrip }           from '../components/calendar/WeekStrip';
-import { AdBanner }            from '../components/ui/AdBanner';
 
 const EARTH  = '#142B16';
 const GOLD   = '#F5C840';
@@ -145,7 +144,6 @@ export function CalendarPage() {
             </div>
           )}
 
-          <AdBanner />
         </div>
       </div>
     </>

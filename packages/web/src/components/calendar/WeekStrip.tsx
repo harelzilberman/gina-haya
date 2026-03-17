@@ -1,5 +1,4 @@
 import { useState } from 'react';
-import { useTranslation } from 'react-i18next';
 import type { BiodynamicDay } from '@gina-haya/shared';
 
 const SCORE_COLOURS: Record<string, string> = {
@@ -32,12 +31,10 @@ const DAY_TYPE_EMOJIS: Record<string, string> = {
   fruit: '🍅', root: '🥕', flower: '🌸', leaf: '🌿',
 };
 
-const WEEKDAY_HE = ['א׳', 'ב׳', 'ג׳', 'ד׳', 'ה׳', 'ו׳', 'ש׳'];
+const HE_DAYS = ['א', 'ב', 'ג', 'ד', 'ה', 'ו', 'ש'];
 
-function weekdayLabel(dateStr: string, lang: string): string {
-  const d = new Date(dateStr + 'T12:00:00');
-  if (lang === 'he') return WEEKDAY_HE[d.getDay()];
-  return d.toLocaleDateString('en-US', { weekday: 'short' }).slice(0, 2);
+function dayName(dateStr: string): string {
+  return HE_DAYS[new Date(dateStr + 'T12:00:00').getDay()];
 }
 
 function dayNum(dateStr: string): number {
@@ -45,7 +42,6 @@ function dayNum(dateStr: string): number {
 }
 
 export function WeekStrip({ days, todayDate }: Props) {
-  const { i18n } = useTranslation('calendar');
   const [openDate, setOpenDate] = useState<string | null>(null);
 
   if (days.length === 0) return null;
@@ -54,7 +50,7 @@ export function WeekStrip({ days, todayDate }: Props) {
     <>
       <style>{STRIP_CSS}</style>
 
-      <div style={{
+      <div dir="rtl" style={{
         background:   'linear-gradient(145deg, rgba(28,58,30,0.8) 0%, rgba(20,43,22,0.9) 100%)',
         border:       '1px solid rgba(245,200,64,0.1)',
         borderRadius: '14px',
@@ -79,6 +75,7 @@ export function WeekStrip({ days, todayDate }: Props) {
         {/* Scrollable pills row */}
         <div style={{
           display:         'flex',
+          direction:       'rtl',
           gap:             '8px',
           overflowX:       'auto',
           paddingBottom:   '4px',
@@ -136,7 +133,7 @@ export function WeekStrip({ days, todayDate }: Props) {
                     lineHeight: 1,
                     marginBottom:'4px',
                   }}>
-                    {weekdayLabel(day.date, i18n.language)}
+                    {dayName(day.date)}
                   </span>
 
                   {/* Day number */}
