@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
+import { useDirection } from '../../hooks/useDirection';
 import type { BiodynamicDay } from '@gina-haya/shared';
 
 const SCORE_COLOURS: Record<string, string> = {
@@ -54,6 +55,7 @@ function HebrewDate({ dateStr }: { dateStr: string }) {
 
 export function TodayCard({ day }: Props) {
   const { t } = useTranslation('calendar');
+  const { dir } = useDirection();
   const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
@@ -72,6 +74,7 @@ export function TodayCard({ day }: Props) {
       <style>{CARD_CSS}</style>
 
       <div
+        dir={dir}
         style={{
           background:    'linear-gradient(145deg, rgba(28,58,30,0.85) 0%, rgba(20,43,22,0.95) 100%)',
           border:        '1px solid rgba(245,200,64,0.12)',
@@ -210,7 +213,7 @@ export function TodayCard({ day }: Props) {
           }}>
             {arrowSymbol}
           </div>
-          <div>
+          <div style={{ flex: 1, textAlign: 'right' }}>
             <p style={{ fontFamily: ASSIST, fontSize: '13px', fontWeight: 600, color: PARCH, margin: 0 }}>
               {day.ascendingDescendingHe}
             </p>
@@ -226,6 +229,7 @@ export function TodayCard({ day }: Props) {
         <div style={{
           display:         'flex',
           alignItems:      'center',
+          justifyContent:  'flex-end',
           gap:             '8px',
           padding:         '10px 14px',
           borderRadius:    '10px',
@@ -236,14 +240,14 @@ export function TodayCard({ day }: Props) {
           fontSize:        '13px',
           color:           `${PARCH}88`,
         }}>
-          <span style={{ fontSize: '15px' }}>🌙</span>
-          <span>{t('moonSign')}:</span>
           <span style={{ fontWeight: 600, color: PARCH }}>{day.moonSignHe}</span>
+          <span>{t('moonSign')}:</span>
+          <span style={{ fontSize: '15px' }}>🌙</span>
         </div>
 
         {/* BD prep pills */}
         {(day.prep500Recommended || day.prep501Recommended) && (
-          <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px' }}>
+          <div style={{ display: 'flex', flexWrap: 'wrap', justifyContent: 'flex-end', gap: '8px' }}>
             {day.prep500Recommended && (
               <span style={{
                 fontFamily:    ASSIST,

@@ -1,4 +1,5 @@
 import { useTranslation } from 'react-i18next';
+import { useDirection } from '../hooks/useDirection';
 import { useToday, useWeek } from '../hooks/useCalendar';
 import { NodeBlackoutBanner }  from '../components/calendar/NodeBlackoutBanner';
 import { MooshDailySummary }   from '../components/calendar/MooshDailySummary';
@@ -55,6 +56,7 @@ function CalendarSkeleton() {
 
 export function CalendarPage() {
   const { t } = useTranslation('calendar');
+  const { dir } = useDirection();
   const { day, isLoading: dayLoading, error: dayError } = useToday();
   const { days, isLoading: weekLoading } = useWeek();
 
@@ -107,10 +109,10 @@ export function CalendarPage() {
         {/* Node blackout banner — full width, outside container */}
         {day.nodeActive && <NodeBlackoutBanner day={day} />}
 
-        <div style={{ maxWidth: '600px', margin: '0 auto', padding: '20px 16px 40px' }}>
+        <div dir={dir} style={{ maxWidth: '600px', margin: '0 auto', padding: '20px 16px 40px' }}>
 
           {/* Page header */}
-          <div className="cal-card-in" style={{ textAlign: 'center', marginBottom: '20px' }}>
+          <div className="cal-card-in" style={{ textAlign: 'right', marginBottom: '20px' }}>
             <p style={{
               fontFamily: ASSIST, fontSize: '12px', fontWeight: 600,
               letterSpacing: '0.14em', textTransform: 'uppercase' as const,
