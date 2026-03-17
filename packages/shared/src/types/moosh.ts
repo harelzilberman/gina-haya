@@ -22,6 +22,12 @@ export interface MooshContext {
     perigeeActive: boolean;
   };
   userLanguage: 'he' | 'en';
+  recentHarvests?: Array<{
+    plantNameHe: string;
+    harvestDate: string;
+    dayType: string;
+    plantingScore: number;
+  }> | null;
   weather?: {
     tempMax: number;
     tempMin: number;

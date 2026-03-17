@@ -11,6 +11,7 @@ import { PlantsPage } from './pages/PlantsPage';
 import { GardenPage } from './pages/GardenPage';
 import { BillingPage } from './pages/BillingPage';
 import { SettingsPage } from './pages/SettingsPage';
+import { HarvestPage } from './pages/HarvestPage';
 import { PrivacyPolicyPage } from './pages/PrivacyPolicyPage';
 import { ProtectedRoute } from './components/auth/ProtectedRoute';
 import { OnboardingWizard } from './components/auth/OnboardingWizard';
@@ -121,6 +122,14 @@ export default function App() {
             element={
               <ProtectedRoute>
                 <SettingsPage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/harvest"
+            element={
+              <ProtectedRoute>
+                <HarvestPage />
               </ProtectedRoute>
             }
           />

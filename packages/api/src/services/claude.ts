@@ -72,6 +72,26 @@ Today's biodynamic data:
 {{WEATHER_SECTION}}
 `;
 
+function buildHarvestSection(context: MooshContext): string {
+  const harvests = context.recentHarvests;
+  if (!harvests || harvests.length === 0) return '';
+
+  const isHe = context.userLanguage === 'he';
+  const lines = harvests.map(h => {
+    const dateParts = h.harvestDate.split('-');
+    const dateFormatted = dateParts.length === 3
+      ? `${dateParts[2]}.${dateParts[1]}.${dateParts[0]}`
+      : h.harvestDate;
+    const dayTypeHe: Record<string, string> = { fruit: 'יום פרי', root: 'יום שורש', flower: 'יום פרח', leaf: 'יום עלה' };
+    const dayLabel = isHe ? (dayTypeHe[h.dayType] ?? h.dayType) : h.dayType;
+    return `${h.plantNameHe} — ${dateFormatted} (${dayLabel}, ציון ${h.plantingScore})`;
+  });
+
+  return isHe
+    ? `\nקציר אחרון של המשתמש:\n${lines.join('\n')}`
+    : `\nUser's recent harvests:\n${lines.join('\n')}`;
+}
+
 function buildWeatherSection(context: MooshContext): string {
   const w = context.weather;
   if (!w) return '';
@@ -122,7 +142,7 @@ function buildSystemPrompt(context: MooshContext): string {
     .replace('{{PREP_500_TODAY}}', cal.prep500Recommended ? (context.userLanguage === 'he' ? 'כן' : 'Yes') : (context.userLanguage === 'he' ? 'לא' : 'No'))
     .replace('{{PREP_501_TODAY}}', cal.prep501Recommended ? (context.userLanguage === 'he' ? 'כן' : 'Yes') : (context.userLanguage === 'he' ? 'לא' : 'No'))
     .replace('{{PERIGEE_ACTIVE}}', cal.perigeeActive ? (context.userLanguage === 'he' ? 'כן' : 'Yes') : (context.userLanguage === 'he' ? 'לא' : 'No'))
-    .replace('{{WEATHER_SECTION}}', buildWeatherSection(context));
+    .replace('{{WEATHER_SECTION}}', buildWeatherSection(context) + buildHarvestSection(context));
 
   if (context.gardenName) {
     prompt += context.userLanguage === 'he'

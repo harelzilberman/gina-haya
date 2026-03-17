@@ -172,6 +172,7 @@ export function Navbar() {
           >
             {[
               { label: 'לוח שנה', to: '/calendar' },
+              { label: 'קציר', to: '/harvest' },
               { label: 'אנציקלופדיה', to: '/plants' },
             ].map(item => (
               <Link
@@ -281,6 +282,7 @@ export function Navbar() {
                   {[
                     { label: 'הגינה שלי', to: '/garden' },
                     { label: 'לוח שנה',   to: '/calendar' },
+                    { label: 'קציר',      to: '/harvest' },
                     { label: 'מוש',        to: '/moosh' },
                     { label: 'הגדרות',     to: '/settings' },
                   ].map(item => (
@@ -378,6 +380,7 @@ export function Navbar() {
                 { label: 'לוח שנה', to: '/calendar' },
                 { label: 'אנציקלופדיה', to: '/plants' },
                 { label: 'הגינה שלי', to: '/garden' },
+                { label: 'קציר', to: '/harvest' },
                 { label: 'מוש', to: '/moosh' },
                 { label: 'הגדרות', to: '/settings' },
               ].map(item => (
