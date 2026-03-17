@@ -3,6 +3,7 @@ import { Router, type IRouter } from 'express';
 import { db } from '../db/client';
 import { verifyToken } from '../middleware/auth';
 import { askMoosh } from '../services/claude';
+import { fetchWeatherForRegion } from '../services/weather';
 import type { MooshMessage, MooshContext } from '@gina-haya/shared';
 import { todayInIsrael } from '@gina-haya/shared';
 
@@ -138,7 +139,10 @@ mooshRouter.post('/chat', async (req: any, res) => {
       garden = data;
     }
 
-    // ── 5. Build Moosh context ────────────────────────────────────────────
+    // ── 5. Fetch weather ──────────────────────────────────────────────────
+    const weather = await fetchWeatherForRegion(garden?.location_region ?? null);
+
+    // ── 6. Build Moosh context ────────────────────────────────────────────
     const context: MooshContext = {
       gardenName: garden?.name || null,
       locationRegion: garden?.location_region || null,
@@ -170,9 +174,10 @@ mooshRouter.post('/chat', async (req: any, res) => {
         perigeeActive: false,
       },
       userLanguage: lang as 'he' | 'en',
+      weather: weather ?? null,
     };
 
-    // ── 6. Load conversation history ──────────────────────────────────────
+    // ── 7. Load conversation history ─────────────────────────────────────
     const { data: convRecord } = await db
       .from('moosh_conversations')
       .select('id, messages')
@@ -184,7 +189,7 @@ mooshRouter.post('/chat', async (req: any, res) => {
     const existingMessages: MooshMessage[] = convRecord?.messages || [];
     const last10Messages = existingMessages.slice(-10);
 
-    // ── 7. Call Claude API ────────────────────────────────────────────────
+    // ── 8. Call Claude API ────────────────────────────────────────────────
     const newUserMessage: MooshMessage = {
       role: 'user',
       content: message.trim(),
@@ -202,7 +207,7 @@ mooshRouter.post('/chat', async (req: any, res) => {
       timestamp: new Date().toISOString(),
     };
 
-    // ── 8. Save to DB ─────────────────────────────────────────────────────
+    // ── 9. Save to DB ─────────────────────────────────────────────────────
     const updatedMessages = [...existingMessages, newUserMessage, mooshMessage];
 
     if (convRecord?.id) {
@@ -223,7 +228,7 @@ mooshRouter.post('/chat', async (req: any, res) => {
         });
     }
 
-    // ── 9. Count usage ────────────────────────────────────────────────────
+    // ── 10. Count usage ───────────────────────────────────────────────────
     const startOfMonth = new Date();
     startOfMonth.setDate(1);
     startOfMonth.setHours(0, 0, 0, 0);

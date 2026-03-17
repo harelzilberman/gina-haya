@@ -50,6 +50,7 @@ const MOOSH_SYSTEM_PROMPT_HE = `\
 - BD 500 מומלץ היום: {{PREP_500_TODAY}}
 - BD 501 מומלץ היום: {{PREP_501_TODAY}}
 - ירח בפריגיאה: {{PERIGEE_ACTIVE}}
+{{WEATHER_SECTION}}
 `;
 
 const MOOSH_SYSTEM_PROMPT_EN = `\
@@ -68,7 +69,43 @@ Today's biodynamic data:
 - BD 500 recommended: {{PREP_500_TODAY}}
 - BD 501 recommended: {{PREP_501_TODAY}}
 - Moon at perigee: {{PERIGEE_ACTIVE}}
+{{WEATHER_SECTION}}
 `;
+
+function buildWeatherSection(context: MooshContext): string {
+  const w = context.weather;
+  if (!w) return '';
+
+  const isHe = context.userLanguage === 'he';
+  const rainToday     = w.willRainToday     ? (isHe ? 'כן' : 'Yes') : (isHe ? 'לא' : 'No');
+  const rainTomorrow  = w.willRainTomorrow  ? (isHe ? 'כן' : 'Yes') : (isHe ? 'לא' : 'No');
+  const desc          = isHe ? w.weatherDescriptionHe : w.weatherDescription;
+
+  if (isHe) {
+    return `
+מזג אוויר היום באזור ${w.locationRegion}:
+- טמפרטורה: ${w.tempCurrent}°C (מקסימום ${w.tempMax}°C, מינימום ${w.tempMin}°C)
+- ${desc}
+- לחות: ${w.humidity}%
+- רוח: ${w.windSpeed} קמ"ש
+- UV: ${w.uvIndex}
+- גשם היום: ${rainToday}
+- גשם מחר: ${rainTomorrow}
+- זריחה: ${w.sunrise} | שקיעה: ${w.sunset}
+- עליית ירח: ${w.moonrise} | שקיעת ירח: ${w.moonset}`;
+  } else {
+    return `
+Today's weather in ${w.locationRegion}:
+- Temperature: ${w.tempCurrent}°C (max ${w.tempMax}°C, min ${w.tempMin}°C)
+- ${desc}
+- Humidity: ${w.humidity}%
+- Wind: ${w.windSpeed} km/h
+- UV index: ${w.uvIndex}
+- Rain today: ${rainToday} | Rain tomorrow: ${rainTomorrow}
+- Sunrise: ${w.sunrise} | Sunset: ${w.sunset}
+- Moonrise: ${w.moonrise} | Moonset: ${w.moonset}`;
+  }
+}
 
 function buildSystemPrompt(context: MooshContext): string {
   const template = context.userLanguage === 'he' ? MOOSH_SYSTEM_PROMPT_HE : MOOSH_SYSTEM_PROMPT_EN;
@@ -84,7 +121,8 @@ function buildSystemPrompt(context: MooshContext): string {
     .replace('{{SCORE_COLOUR}}',   cal.scoreColour)
     .replace('{{PREP_500_TODAY}}', cal.prep500Recommended ? (context.userLanguage === 'he' ? 'כן' : 'Yes') : (context.userLanguage === 'he' ? 'לא' : 'No'))
     .replace('{{PREP_501_TODAY}}', cal.prep501Recommended ? (context.userLanguage === 'he' ? 'כן' : 'Yes') : (context.userLanguage === 'he' ? 'לא' : 'No'))
-    .replace('{{PERIGEE_ACTIVE}}', cal.perigeeActive ? (context.userLanguage === 'he' ? 'כן' : 'Yes') : (context.userLanguage === 'he' ? 'לא' : 'No'));
+    .replace('{{PERIGEE_ACTIVE}}', cal.perigeeActive ? (context.userLanguage === 'he' ? 'כן' : 'Yes') : (context.userLanguage === 'he' ? 'לא' : 'No'))
+    .replace('{{WEATHER_SECTION}}', buildWeatherSection(context));
 
   if (context.gardenName) {
     prompt += context.userLanguage === 'he'

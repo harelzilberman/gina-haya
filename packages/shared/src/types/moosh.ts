@@ -22,4 +22,22 @@ export interface MooshContext {
     perigeeActive: boolean;
   };
   userLanguage: 'he' | 'en';
+  weather?: {
+    tempMax: number;
+    tempMin: number;
+    tempCurrent: number;
+    humidity: number;
+    windSpeed: number;
+    uvIndex: number;
+    precipitationMm: number;
+    willRainToday: boolean;
+    willRainTomorrow: boolean;
+    sunrise: string;
+    sunset: string;
+    moonrise: string;
+    moonset: string;
+    weatherDescription: string;
+    weatherDescriptionHe: string;
+    locationRegion: string;
+  } | null;
 }
