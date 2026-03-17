@@ -1,6 +1,21 @@
 import { useAuthStore } from '../stores/authStore';
-import { TIER_FEATURES, TIER_PRICES } from '@gina-haya/shared';
+
 import type { SubscriptionTier } from '@gina-haya/shared';
+
+const TIER_FEATURES = {
+  free:         { appAccess: false, diagnosesPerMonth: 0,        adFree: false, multiGarden: false },
+  grower:       { appAccess: true,  diagnosesPerMonth: 5,        adFree: false, multiGarden: false },
+  gardener_pro: { appAccess: true,  diagnosesPerMonth: Infinity, adFree: true,  multiGarden: true  },
+  professional: { appAccess: true,  diagnosesPerMonth: Infinity, adFree: true,  multiGarden: true  },
+};
+
+const TIER_PRICES: Record<string, number | null> = {
+  free:           null,
+  grower:         9,
+  gardener_pro:   14,
+  professional:   49,
+};
+
 
 const TIER_ORDER: SubscriptionTier[] = ['free', 'grower', 'gardener_pro', 'professional'];
 
