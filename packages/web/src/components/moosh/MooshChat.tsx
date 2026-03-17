@@ -1,5 +1,6 @@
 import { useState, useRef, useEffect, KeyboardEvent } from 'react';
 import { useTranslation } from 'react-i18next';
+import { useDirection } from '../../hooks/useDirection';
 import type { MooshMessage } from '@gina-haya/shared';
 import { useMoosh } from '../../hooks/useMoosh';
 import { MooshGreeting } from './MooshGreeting';
@@ -141,6 +142,8 @@ function MessageBubble({ message, isRTL }: { message: MooshMessage; isRTL: boole
             padding:      '10px 14px',
             fontSize:     '14px',
             lineHeight:   1.65,
+            textAlign:    'right',
+            direction:    'rtl',
             ...(isUser ? userCorner : mooshCorner),
             ...(isUser
               ? {
@@ -174,8 +177,8 @@ function MessageBubble({ message, isRTL }: { message: MooshMessage; isRTL: boole
 
 // ── Main chat ─────────────────────────────────────────────────────────────────
 export function MooshChat() {
-  const { t, i18n } = useTranslation('moosh');
-  const isRTL = i18n.language === 'he';
+  const { t } = useTranslation('moosh');
+  const { dir, isRTL } = useDirection();
 
   const {
     messages,
@@ -224,7 +227,7 @@ export function MooshChat() {
     <>
       <style>{CHAT_CSS}</style>
 
-      <div style={{
+      <div dir={dir} style={{
         display:       'flex',
         flexDirection: 'column',
         backgroundColor: 'rgba(28,58,30,0.5)',
@@ -316,7 +319,7 @@ export function MooshChat() {
           <p style={{
             fontFamily: ASSIST,
             fontSize:   '12px',
-            textAlign:  'center',
+            textAlign:  'right',
             color:      '#E06060',
             padding:    '6px 16px 0',
             margin:     0,
@@ -330,7 +333,7 @@ export function MooshChat() {
           fontFamily:  ASSIST,
           fontWeight:  300,
           fontSize:    '11px',
-          textAlign:   'center',
+          textAlign:   'right',
           color:       `${PARCH}40`,
           padding:     '6px 16px 0',
           margin:      0,
@@ -375,7 +378,8 @@ export function MooshChat() {
                 lineHeight:  '1.5',
                 maxHeight:   '120px',
                 cursor:      rateLimited ? 'not-allowed' : 'text',
-                direction:   'inherit',
+                direction:   'rtl',
+                textAlign:   'right',
               }}
             />
             <button

@@ -1,5 +1,6 @@
 import { useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
+import { useDirection } from '../hooks/useDirection';
 import { MooshChat } from '../components/moosh/MooshChat';
 import { useMoosh } from '../hooks/useMoosh';
 import { useAuthStore } from '../stores/authStore';
@@ -14,6 +15,7 @@ const NOISE_BG = `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/s
 
 export function MooshPage() {
   const { t } = useTranslation('moosh');
+  const { dir } = useDirection();
   const { loadHistory, usageThisMonth, monthlyLimit } = useMoosh();
   const { profile } = useAuthStore();
 
@@ -42,10 +44,10 @@ export function MooshPage() {
       />
 
       <div style={{ backgroundColor: EARTH, minHeight: '100vh', position: 'relative', zIndex: 0 }}>
-        <div style={{ maxWidth: '700px', margin: '0 auto', padding: '28px 16px 40px' }}>
+        <div dir={dir} style={{ maxWidth: '700px', margin: '0 auto', padding: '28px 16px 40px' }}>
 
           {/* Page header */}
-          <div style={{ marginBottom: '20px' }}>
+          <div style={{ marginBottom: '20px', textAlign: 'right' }}>
             <h1 style={{
               fontFamily: FRANK,
               fontWeight: 700,
