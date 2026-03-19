@@ -58,6 +58,8 @@ export function Navbar() {
     const next = isHebrew ? 'en' : 'he';
     i18n.changeLanguage(next);
     localStorage.setItem('i18nextLng', next);
+    document.documentElement.dir = next === 'he' ? 'rtl' : 'ltr';
+    document.documentElement.lang = next;
   }
 
   useEffect(() => {

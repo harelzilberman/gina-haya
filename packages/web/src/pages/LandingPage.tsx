@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 
 // ── Design tokens ──────────────────────────────────────────────────────────
 const GOLD        = '#F5C840';
@@ -142,14 +143,23 @@ interface TodayPreview {
   dayType: string;
 }
 
-const DAY_TYPE_LABELS: Record<string, string> = {
+const DAY_TYPE_LABELS_HE: Record<string, string> = {
   fruit:  'יום פרי 🍅',
   flower: 'יום פרח 🌸',
   root:   'יום שורש 🥕',
   leaf:   'יום עלה 🥬',
 };
 
-const FEATURES = [
+const DAY_TYPE_LABELS_EN: Record<string, string> = {
+  fruit:  'Fruit Day 🍅',
+  flower: 'Flower Day 🌸',
+  root:   'Root Day 🥕',
+  leaf:   'Leaf Day 🥬',
+};
+
+interface Feature { icon: string; title: string; body: string; }
+
+const FEATURES_HE: Feature[] = [
   {
     icon: '🌕',
     title: 'לוח ביודינמי יומי',
@@ -167,13 +177,41 @@ const FEATURES = [
   },
 ];
 
-const PRICING = [
+const FEATURES_EN: Feature[] = [
+  {
+    icon: '🌕',
+    title: 'Daily Biodynamic Calendar',
+    body: 'Precise calendar combining Podolinsky and Thun methods. Daily sowing score, day type, moon direction.',
+  },
+  {
+    icon: '🤖',
+    title: 'Moosh Levana — Your Expert',
+    body: 'Biodynamic AI that knows your garden. Ask, get advice, grow better.',
+  },
+  {
+    icon: '🌿',
+    title: 'Plant Encyclopedia',
+    body: '100+ plants with biodynamic tips, recommended days, and an Israel sowing calendar.',
+  },
+];
+
+interface PricingPlan {
+  name: string;
+  price: string | null;
+  features: string[];
+  cta: string;
+  highlight: boolean;
+  badge: string;
+}
+
+const PRICING_HE: PricingPlan[] = [
   {
     name: 'חינם לתמיד',
     price: null,
     features: ['לוח ביודינמי בסיסי', '5 שאלות למוש בחודש', 'אנציקלופדיה בסיסית'],
     cta: 'התחל עכשיו',
     highlight: false,
+    badge: '',
   },
   {
     name: 'Grower',
@@ -181,6 +219,7 @@ const PRICING = [
     features: ['לוח ביודינמי מלא', '30 שאלות למוש', 'גינה אישית', 'התראות יומיות'],
     cta: 'בחר תוכנית',
     highlight: false,
+    badge: '',
   },
   {
     name: 'Gardener Pro',
@@ -188,6 +227,7 @@ const PRICING = [
     features: ['הכל ב-Grower', 'שאלות ללא הגבלה', 'דוחות חודשיים', 'תמיכה מועדפת'],
     cta: 'בחר תוכנית',
     highlight: true,
+    badge: 'הכי פופולרי',
   },
   {
     name: 'Professional',
@@ -195,11 +235,47 @@ const PRICING = [
     features: ['הכל ב-Pro', 'API גישה', 'לוגו מותאם אישית', 'תמיכה ייעודית'],
     cta: 'בחר תוכנית',
     highlight: false,
+    badge: '',
+  },
+];
+
+const PRICING_EN: PricingPlan[] = [
+  {
+    name: 'Free Forever',
+    price: null,
+    features: ['Basic biodynamic calendar', '5 Moosh questions/month', 'Basic encyclopedia'],
+    cta: 'Start Now',
+    highlight: false,
+    badge: '',
+  },
+  {
+    name: 'Grower',
+    price: '9',
+    features: ['Full biodynamic calendar', '30 Moosh questions', 'Personal garden', 'Daily alerts'],
+    cta: 'Choose Plan',
+    highlight: false,
+    badge: '',
+  },
+  {
+    name: 'Gardener Pro',
+    price: '14',
+    features: ['Everything in Grower', 'Unlimited questions', 'Monthly reports', 'Priority support'],
+    cta: 'Choose Plan',
+    highlight: true,
+    badge: 'Most Popular',
+  },
+  {
+    name: 'Professional',
+    price: '49',
+    features: ['Everything in Pro', 'API access', 'Custom logo', 'Dedicated support'],
+    cta: 'Choose Plan',
+    highlight: false,
+    badge: '',
   },
 ];
 
 // ── Live biodynamic card ───────────────────────────────────────────────────
-function TodayPreviewCard() {
+function TodayPreviewCard({ isHe }: { isHe: boolean }) {
   const [data, setData] = useState<TodayPreview | null>(null);
 
   useEffect(() => {
@@ -210,6 +286,8 @@ function TodayPreviewCard() {
   }, []);
 
   const preview = data ?? { score: 7, dayType: 'fruit' };
+
+  const dayLabels = isHe ? DAY_TYPE_LABELS_HE : DAY_TYPE_LABELS_EN;
 
   const hebrewDate = new Date().toLocaleDateString('he-IL', {
     weekday: 'long', month: 'long', day: 'numeric',
@@ -240,10 +318,10 @@ function TodayPreviewCard() {
         color: GOLD,
         marginBottom: '14px',
       }}>
-        היום בגינה שלך
+        {isHe ? 'היום בגינה שלך' : 'Today in Your Garden'}
       </p>
 
-      {/* Hebrew date */}
+      {/* Date */}
       <p style={{
         fontFamily: FRANK,
         fontSize: '13px',
@@ -262,7 +340,9 @@ function TodayPreviewCard() {
         marginBottom: '14px',
       }}>
         <span style={{ fontSize: '22px' }}>🌕</span>
-        <span style={{ fontFamily: ASSISTANT, fontSize: '13px', color: LEAF_GREEN }}>ירח מלא</span>
+        <span style={{ fontFamily: ASSISTANT, fontSize: '13px', color: LEAF_GREEN }}>
+          {isHe ? 'ירח מלא' : 'Full Moon'}
+        </span>
       </div>
 
       {/* Day type */}
@@ -276,7 +356,7 @@ function TodayPreviewCard() {
         marginBottom: '16px',
       }}>
         <span style={{ fontFamily: ASSISTANT, fontSize: '13px', color: SAGE_GRN }}>
-          {DAY_TYPE_LABELS[preview.dayType] ?? preview.dayType}
+          {dayLabels[preview.dayType] ?? preview.dayType}
         </span>
       </div>
 
@@ -332,6 +412,11 @@ function LunarWheel() {
 
 // ── Main component ─────────────────────────────────────────────────────────
 export function LandingPage() {
+  const { i18n } = useTranslation();
+  const isHe = i18n.language === 'he';
+  const features = isHe ? FEATURES_HE : FEATURES_EN;
+  const pricing  = isHe ? PRICING_HE  : PRICING_EN;
+
   // Set body background while on landing page
   useEffect(() => {
     const prev = document.body.style.backgroundColor;
@@ -431,7 +516,7 @@ export function LandingPage() {
                 marginBottom: '20px',
               }}
             >
-              לוח ביודינמי · מרץ 2026
+              {isHe ? 'לוח ביודינמי · מרץ 2026' : 'Biodynamic Calendar · March 2026'}
             </p>
 
             {/* Headline */}
@@ -444,7 +529,7 @@ export function LandingPage() {
                 lineHeight: 1.15,
                 color: PARCHMENT,
               }}>
-                הגינה שלך,
+                {isHe ? 'הגינה שלך' : 'Your Garden'}
               </span>
               <em style={{
                 display: 'block',
@@ -455,7 +540,7 @@ export function LandingPage() {
                 lineHeight: 1.15,
                 color: GOLD,
               }}>
-                מחוברת לשמים
+                {isHe ? 'חיה ונושמת' : 'Alive and Breathing'}
               </em>
             </h1>
 
@@ -472,7 +557,9 @@ export function LandingPage() {
                 marginBottom: '36px',
               }}
             >
-              לוח ביודינמי יומי, עצות מוש לבנה, וכל מה שצמחים שלך צריכים
+              {isHe
+                ? 'לוח ביודינמי יומי, עצות מוש לבנה, וכל מה שצמחים שלך צריכים'
+                : 'Daily biodynamic calendar, Moosh Levana\'s advice, and everything your plants need'}
             </p>
 
             {/* CTAs */}
@@ -497,7 +584,7 @@ export function LandingPage() {
                   letterSpacing: '0.02em',
                 }}
               >
-                התחל בחינם
+                {isHe ? 'התחל בחינם' : 'Start for Free'}
               </Link>
 
               <a
@@ -517,14 +604,14 @@ export function LandingPage() {
                   textDecoration: 'none',
                 }}
               >
-                ראה איך זה עובד
+                {isHe ? 'ראה איך זה עובד' : 'See How It Works'}
               </a>
             </div>
           </div>
 
           {/* Live card */}
           <div style={{ flex: '0 0 auto', display: 'flex', justifyContent: 'center' }}>
-            <TodayPreviewCard />
+            <TodayPreviewCard isHe={isHe} />
           </div>
         </div>
       </section>
@@ -546,7 +633,7 @@ export function LandingPage() {
                 color: GOLD,
                 marginBottom: '14px',
               }}>
-                מה מחכה לך
+                {isHe ? 'מה מחכה לך' : 'What Awaits You'}
               </p>
               <h2 style={{
                 fontFamily: FRANK,
@@ -555,15 +642,25 @@ export function LandingPage() {
                 color: PARCHMENT,
                 lineHeight: 1.3,
               }}>
-                כל מה שגינה{' '}
-                <em style={{ fontStyle: 'normal', color: GOLD }}>ביודינמית</em>{' '}
-                צריכה
+                {isHe ? (
+                  <>
+                    כל מה שגינה{' '}
+                    <em style={{ fontStyle: 'normal', color: GOLD }}>ביודינמית</em>{' '}
+                    צריכה
+                  </>
+                ) : (
+                  <>
+                    Everything a{' '}
+                    <em style={{ fontStyle: 'normal', color: GOLD }}>Biodynamic</em>{' '}
+                    Garden Needs
+                  </>
+                )}
               </h2>
             </div>
           </Reveal>
 
           <div style={{ display: 'flex', flexDirection: 'row', gap: '24px', flexWrap: 'wrap' }}>
-            {FEATURES.map((f, i) => (
+            {features.map((f, i) => (
               <Reveal key={f.title} delay={i * 120} style={{ flex: '1 1 260px' }}>
                 <div
                   className="lp-feat-card"
@@ -648,10 +745,10 @@ export function LandingPage() {
                   color: GOLD,
                   marginBottom: '4px',
                 }}>
-                  מוש לבנה
+                  {isHe ? 'מוש לבנה' : 'Moosh Levana'}
                 </p>
                 <p style={{ fontFamily: ASSISTANT, fontSize: '13px', color: LEAF_GREEN }}>
-                  סבא הירח שלך
+                  {isHe ? 'סבא הירח שלך' : 'Your Moon Elder'}
                 </p>
               </div>
 
@@ -666,7 +763,7 @@ export function LandingPage() {
                   lineHeight: 1.3,
                   fontWeight: 400,
                 }}>
-                  שלום! אני מוש לבנה
+                  {isHe ? 'שלום! אני מוש לבנה' : 'Hello! I am Moosh Levana'}
                 </h2>
                 <p style={{
                   fontFamily: ASSISTANT,
@@ -676,7 +773,9 @@ export function LandingPage() {
                   color: `${PARCHMENT}CC`,
                   marginBottom: '28px',
                 }}>
-                  גדלתי בגליל וחקרתי חקלאות ביודינמית למעלה מ-20 שנה. עבדתי בחוות ביודינמיות בארץ ובפרובנס, ולמדתי מהאדמה, מהירח, ומהצמחים עצמם. עכשיו אני כאן כדי לעזור לגינה שלך לפרוח.
+                  {isHe
+                    ? 'גדלתי בגליל וחקרתי חקלאות ביודינמית למעלה מ-20 שנה. עבדתי בחוות ביודינמיות בארץ ובפרובנס, ולמדתי מהאדמה, מהירח, ומהצמחים עצמם. עכשיו אני כאן כדי לעזור לגינה שלך לפרוח.'
+                    : 'I grew up in the Galilee and studied biodynamic farming for over 20 years. I worked on biodynamic farms in Israel and Provence, learning from the soil, the moon, and the plants themselves. Now I\'m here to help your garden flourish.'}
                 </p>
 
                 {/* Chat bubble */}
@@ -694,7 +793,9 @@ export function LandingPage() {
                     lineHeight: 1.75,
                     color: `${PARCHMENT}DD`,
                   }}>
-                    היום הוא יום פרי 🍅 — הזמן המושלם לשתול עגבניות ופלפלים. הירח יורד, הארץ נושמת פנימה.
+                    {isHe
+                      ? 'היום הוא יום פרי 🍅 — הזמן המושלם לשתול עגבניות ופלפלים. הירח יורד, הארץ נושמת פנימה.'
+                      : 'Today is a Fruit Day 🍅 — the perfect time to plant tomatoes and peppers. The moon is descending, the earth breathes inward.'}
                   </p>
                 </div>
               </div>
@@ -717,7 +818,7 @@ export function LandingPage() {
                 color: GOLD,
                 marginBottom: '14px',
               }}>
-                תמחור
+                {isHe ? 'תמחור' : 'Pricing'}
               </p>
               <h2 style={{
                 fontFamily: FRANK,
@@ -725,7 +826,7 @@ export function LandingPage() {
                 fontSize: 'clamp(26px, 3.5vw, 40px)',
                 color: PARCHMENT,
               }}>
-                בחר את התוכנית שלך
+                {isHe ? 'בחר את התוכנית שלך' : 'Choose Your Plan'}
               </h2>
             </div>
           </Reveal>
@@ -738,7 +839,7 @@ export function LandingPage() {
             paddingBottom: '8px',
             alignItems: 'flex-start',
           }}>
-            {PRICING.map((plan, i) => (
+            {pricing.map((plan, i) => (
               <Reveal
                 key={plan.name}
                 delay={i * 80}
@@ -769,7 +870,7 @@ export function LandingPage() {
                     boxSizing: 'border-box',
                   }}
                 >
-                  {plan.highlight && (
+                  {plan.highlight && plan.badge && (
                     <div style={{
                       position: 'absolute',
                       top: '-14px',
@@ -784,7 +885,7 @@ export function LandingPage() {
                       borderRadius: '100px',
                       whiteSpace: 'nowrap',
                     }}>
-                      הכי פופולרי
+                      {plan.badge}
                     </div>
                   )}
 
@@ -826,7 +927,7 @@ export function LandingPage() {
                           color: `${PARCHMENT}66`,
                           marginInlineStart: '4px',
                         }}>
-                          /חודש
+                          {isHe ? '/חודש' : '/mo'}
                         </span>
                       </div>
                     ) : (
@@ -836,7 +937,7 @@ export function LandingPage() {
                         fontSize: '36px',
                         color: SAGE_GRN,
                       }}>
-                        חינם
+                        {isHe ? 'חינם' : 'Free'}
                       </span>
                     )}
                   </div>
@@ -941,9 +1042,19 @@ export function LandingPage() {
               lineHeight: 1.5,
               marginBottom: '16px',
             }}>
-              "הגינה מחכה לך.
-              <br />
-              היא תמיד שם."
+              {isHe ? (
+                <>
+                  "הגינה מחכה לך.
+                  <br />
+                  היא תמיד שם."
+                </>
+              ) : (
+                <>
+                  "The garden is waiting for you.
+                  <br />
+                  It is always there."
+                </>
+              )}
             </p>
             <p style={{
               fontFamily: ASSISTANT,
@@ -952,7 +1063,7 @@ export function LandingPage() {
               color: `${PARCHMENT}66`,
               marginBottom: '48px',
             }}>
-              — מוש לבנה
+              — {isHe ? 'מוש לבנה' : 'Moosh Levana'}
             </p>
             <Link
               to="/signup"
@@ -971,7 +1082,7 @@ export function LandingPage() {
                 letterSpacing: '0.02em',
               }}
             >
-              התחל עכשיו — בחינם
+              {isHe ? 'התחל עכשיו — בחינם' : 'Start Now — Free'}
             </Link>
           </Reveal>
         </div>
