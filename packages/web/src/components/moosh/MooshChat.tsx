@@ -61,7 +61,7 @@ function TypingDots() {
             borderRadius:    '16px',
             padding:         '10px 16px',
           }}
-          aria-label="מוש חושב"
+          aria-label={isRTL ? 'מוש חושב' : 'Moosh is thinking'}
         >
           <div style={{ display: 'flex', gap: '4px', alignItems: 'center', height: '16px' }}>
             {[0, 150, 300].map(delay => (
@@ -142,8 +142,8 @@ function MessageBubble({ message, isRTL }: { message: MooshMessage; isRTL: boole
             padding:      '10px 14px',
             fontSize:     '14px',
             lineHeight:   1.65,
-            textAlign:    'right',
-            direction:    'rtl',
+            textAlign:    isRTL ? 'right' : 'left',
+            direction:    isRTL ? 'rtl' : 'ltr',
             ...(isUser ? userCorner : mooshCorner),
             ...(isUser
               ? {
@@ -319,7 +319,7 @@ export function MooshChat() {
           <p style={{
             fontFamily: ASSIST,
             fontSize:   '12px',
-            textAlign:  'right',
+            textAlign:  isRTL ? 'right' : 'left',
             color:      '#E06060',
             padding:    '6px 16px 0',
             margin:     0,
@@ -333,7 +333,7 @@ export function MooshChat() {
           fontFamily:  ASSIST,
           fontWeight:  300,
           fontSize:    '11px',
-          textAlign:   'right',
+          textAlign:   isRTL ? 'right' : 'left',
           color:       `${PARCH}40`,
           padding:     '6px 16px 0',
           margin:      0,
@@ -378,8 +378,8 @@ export function MooshChat() {
                 lineHeight:  '1.5',
                 maxHeight:   '120px',
                 cursor:      rateLimited ? 'not-allowed' : 'text',
-                direction:   'rtl',
-                textAlign:   'right',
+                direction:   isRTL ? 'rtl' : 'ltr',
+                textAlign:   isRTL ? 'right' : 'left',
               }}
             />
             <button

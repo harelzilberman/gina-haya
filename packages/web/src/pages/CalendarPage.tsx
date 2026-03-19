@@ -54,8 +54,9 @@ function CalendarSkeleton() {
 }
 
 export function CalendarPage() {
-  const { t } = useTranslation('calendar');
+  const { t, i18n } = useTranslation('calendar');
   const { dir } = useDirection();
+  const isHe = i18n.language === 'he';
   const { day, isLoading: dayLoading, error: dayError } = useToday();
   const { days, isLoading: weekLoading } = useWeek();
 
@@ -76,7 +77,7 @@ export function CalendarPage() {
           style={{ backgroundColor: EARTH, minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
         >
           <p style={{ fontFamily: ASSIST, fontSize: '16px', color: 'rgba(237,224,196,0.7)' }}>
-            {dayError || 'אין נתונים זמינים להיום'}
+            {dayError || (isHe ? 'אין נתונים זמינים להיום' : 'No data available for today')}
           </p>
         </div>
       </>
@@ -84,7 +85,7 @@ export function CalendarPage() {
   }
 
   const todayISO = new Date().toLocaleDateString('en-CA', { timeZone: 'Asia/Jerusalem' });
-  const hebrewDate = new Date().toLocaleDateString('he-IL', {
+  const formattedDate = new Date().toLocaleDateString(isHe ? 'he-IL' : 'en-US', {
     weekday: 'long', month: 'long', day: 'numeric',
   });
 
@@ -111,13 +112,13 @@ export function CalendarPage() {
         <div dir={dir} style={{ maxWidth: '600px', margin: '0 auto', padding: '20px 16px 40px' }}>
 
           {/* Page header */}
-          <div className="cal-card-in" style={{ textAlign: 'right', marginBottom: '20px' }}>
+          <div className="cal-card-in" style={{ textAlign: dir === 'rtl' ? 'right' : 'left', marginBottom: '20px' }}>
             <p style={{
               fontFamily: ASSIST, fontSize: '12px', fontWeight: 600,
               letterSpacing: '0.14em', textTransform: 'uppercase' as const,
               color: `${PARCH}66`, marginBottom: '6px',
             }}>
-              {hebrewDate}
+              {formattedDate}
             </p>
             <h1 style={{
               fontFamily: FRANK, fontWeight: 700, fontSize: '2rem',

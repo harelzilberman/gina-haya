@@ -46,7 +46,7 @@ const NAVBAR_CSS = `
 `;
 
 export function Navbar() {
-  const { i18n } = useTranslation();
+  const { t, i18n } = useTranslation('common');
   const { user, profile, signOut } = useAuthStore();
   const navigate = useNavigate();
   const [dropdownOpen, setDropdownOpen] = useState(false);
@@ -57,7 +57,7 @@ export function Navbar() {
   function toggleLanguage() {
     const next = isHebrew ? 'en' : 'he';
     i18n.changeLanguage(next);
-    localStorage.setItem('i18nextLng', next);
+    localStorage.setItem('gina-haya-lang', next);
     document.documentElement.dir = next === 'he' ? 'rtl' : 'ltr';
     document.documentElement.lang = next;
   }
@@ -173,10 +173,10 @@ export function Navbar() {
             style={{ display: 'flex', alignItems: 'center', gap: '28px', margin: '0 auto' }}
           >
             {[
-              { label: 'לוח שנה', to: '/calendar' },
-              { label: 'קציר', to: '/harvest' },
-              { label: 'מעקב', to: '/tracker' },
-              { label: 'אנציקלופדיה', to: '/plants' },
+              { label: t('nav.calendar'), to: '/calendar' },
+              { label: t('nav.harvest'), to: '/harvest' },
+              { label: t('nav.tracker'), to: '/tracker' },
+              { label: t('nav.plants'), to: '/plants' },
             ].map(item => (
               <Link
                 key={item.to}
@@ -220,7 +220,7 @@ export function Navbar() {
                 onMouseEnter={e => { (e.currentTarget as HTMLElement).style.color = GOLD; }}
                 onMouseLeave={e => { (e.currentTarget as HTMLElement).style.color = PARCHMENT; }}
               >
-                כניסה
+                {t('nav.login')}
               </Link>
               <Link
                 to="/signup"
@@ -238,7 +238,7 @@ export function Navbar() {
                 onMouseEnter={e => { (e.currentTarget as HTMLElement).style.filter = 'brightness(1.1)'; }}
                 onMouseLeave={e => { (e.currentTarget as HTMLElement).style.filter = 'none'; }}
               >
-                הרשמה
+                {t('nav.signup')}
               </Link>
             </>
           ) : (
@@ -283,12 +283,12 @@ export function Navbar() {
                   }}
                 >
                   {[
-                    { label: 'הגינה שלי', to: '/garden' },
-                    { label: 'לוח שנה',   to: '/calendar' },
-                    { label: 'קציר',      to: '/harvest' },
-                    { label: 'מעקב',      to: '/tracker' },
-                    { label: 'מוש',        to: '/moosh' },
-                    { label: 'הגדרות',     to: '/settings' },
+                    { label: t('nav.garden'),    to: '/garden' },
+                    { label: t('nav.calendar'), to: '/calendar' },
+                    { label: t('nav.harvest'),  to: '/harvest' },
+                    { label: t('nav.tracker'),  to: '/tracker' },
+                    { label: t('nav.moosh'),    to: '/moosh' },
+                    { label: t('nav.settings'), to: '/settings' },
                   ].map(item => (
                     <Link
                       key={item.to}
@@ -329,7 +329,7 @@ export function Navbar() {
                     onMouseEnter={e => { (e.currentTarget as HTMLElement).style.color = '#e06060'; }}
                     onMouseLeave={e => { (e.currentTarget as HTMLElement).style.color = 'rgba(220,100,100,0.85)'; }}
                   >
-                    התנתקות
+                    {t('nav.signout')}
                   </button>
                 </div>
               )}
@@ -381,13 +381,13 @@ export function Navbar() {
           {user && (
             <>
               {[
-                { label: 'לוח שנה', to: '/calendar' },
-                { label: 'אנציקלופדיה', to: '/plants' },
-                { label: 'הגינה שלי', to: '/garden' },
-                { label: 'קציר', to: '/harvest' },
-                { label: 'מעקב', to: '/tracker' },
-                { label: 'מוש', to: '/moosh' },
-                { label: 'הגדרות', to: '/settings' },
+                { label: t('nav.calendar'), to: '/calendar' },
+                { label: t('nav.plants'),   to: '/plants' },
+                { label: t('nav.garden'),   to: '/garden' },
+                { label: t('nav.harvest'),  to: '/harvest' },
+                { label: t('nav.tracker'),  to: '/tracker' },
+                { label: t('nav.moosh'),    to: '/moosh' },
+                { label: t('nav.settings'), to: '/settings' },
               ].map(item => (
                 <Link
                   key={item.to}
@@ -403,14 +403,14 @@ export function Navbar() {
                 onClick={handleSignOut}
                 style={{ fontFamily: ASSISTANT, fontSize: '16px', color: 'rgba(220,100,100,0.85)', background: 'none', border: 'none', cursor: 'pointer', textAlign: 'start', padding: '10px 0' }}
               >
-                התנתקות
+                {t('nav.signout')}
               </button>
             </>
           )}
           {!user && (
             <>
-              <Link to="/login" onClick={() => setMobileOpen(false)} style={{ fontFamily: ASSISTANT, fontSize: '16px', color: PARCHMENT, textDecoration: 'none', padding: '10px 0' }}>כניסה</Link>
-              <Link to="/signup" onClick={() => setMobileOpen(false)} style={{ fontFamily: FRANK, fontSize: '16px', fontWeight: 700, color: GOLD, textDecoration: 'none', padding: '10px 0' }}>הרשמה</Link>
+              <Link to="/login" onClick={() => setMobileOpen(false)} style={{ fontFamily: ASSISTANT, fontSize: '16px', color: PARCHMENT, textDecoration: 'none', padding: '10px 0' }}>{t('nav.login')}</Link>
+              <Link to="/signup" onClick={() => setMobileOpen(false)} style={{ fontFamily: FRANK, fontSize: '16px', fontWeight: 700, color: GOLD, textDecoration: 'none', padding: '10px 0' }}>{t('nav.signup')}</Link>
             </>
           )}
           <div style={{ paddingTop: '10px' }}>{langToggle}</div>

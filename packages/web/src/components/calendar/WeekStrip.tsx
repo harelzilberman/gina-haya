@@ -1,4 +1,6 @@
 import { useState } from 'react';
+import { useTranslation } from 'react-i18next';
+import { useDirection } from '../../hooks/useDirection';
 import type { BiodynamicDay } from '@gina-haya/shared';
 
 const SCORE_COLOURS: Record<string, string> = {
@@ -32,9 +34,11 @@ const DAY_TYPE_EMOJIS: Record<string, string> = {
 };
 
 const HE_DAYS = ['א', 'ב', 'ג', 'ד', 'ה', 'ו', 'ש'];
+const EN_DAYS = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
 
-function dayName(dateStr: string): string {
-  return HE_DAYS[new Date(dateStr + 'T12:00:00').getDay()];
+function dayName(dateStr: string, isHe: boolean): string {
+  const idx = new Date(dateStr + 'T12:00:00').getDay();
+  return isHe ? HE_DAYS[idx] : EN_DAYS[idx];
 }
 
 function dayNum(dateStr: string): number {
@@ -42,6 +46,9 @@ function dayNum(dateStr: string): number {
 }
 
 export function WeekStrip({ days, todayDate }: Props) {
+  const { i18n } = useTranslation();
+  const { dir } = useDirection();
+  const isHe = i18n.language === 'he';
   const [openDate, setOpenDate] = useState<string | null>(null);
 
   if (days.length === 0) return null;
@@ -50,7 +57,7 @@ export function WeekStrip({ days, todayDate }: Props) {
     <>
       <style>{STRIP_CSS}</style>
 
-      <div dir="rtl" style={{
+      <div dir={dir} style={{
         background:   'linear-gradient(145deg, rgba(28,58,30,0.8) 0%, rgba(20,43,22,0.9) 100%)',
         border:       '1px solid rgba(245,200,64,0.1)',
         borderRadius: '14px',
@@ -69,13 +76,13 @@ export function WeekStrip({ days, todayDate }: Props) {
           margin:       '0 0 12px',
           paddingInlineStart: '2px',
         }}>
-          השבוע
+          {isHe ? 'השבוע' : 'This Week'}
         </p>
 
         {/* Scrollable pills row */}
         <div style={{
           display:         'flex',
-          direction:       'rtl',
+          direction:       dir as 'rtl' | 'ltr',
           gap:             '8px',
           overflowX:       'auto',
           paddingBottom:   '4px',
@@ -133,7 +140,7 @@ export function WeekStrip({ days, todayDate }: Props) {
                     lineHeight: 1,
                     marginBottom:'4px',
                   }}>
-                    {dayName(day.date)}
+                    {dayName(day.date, isHe)}
                   </span>
 
                   {/* Day number */}
@@ -150,7 +157,7 @@ export function WeekStrip({ days, todayDate }: Props) {
 
                   {/* Score dot */}
                   <div
-                    aria-label={`ציון ${day.plantingScore}`}
+                    aria-label={`${isHe ? 'ציון' : 'Score'} ${day.plantingScore}`}
                     style={{
                       width:        '8px',
                       height:       '8px',
@@ -205,7 +212,7 @@ export function WeekStrip({ days, todayDate }: Props) {
                       color:      PARCH,
                       margin:     '0 0 6px',
                     }}>
-                      {DAY_TYPE_EMOJIS[day.dayType]} {day.dayTypeHe}
+                      {DAY_TYPE_EMOJIS[day.dayType]} {isHe ? day.dayTypeHe : day.dayType.charAt(0).toUpperCase() + day.dayType.slice(1)}
                     </p>
                     <p style={{
                       fontFamily: ASSIST,
@@ -213,7 +220,7 @@ export function WeekStrip({ days, todayDate }: Props) {
                       color:      `${PARCH}77`,
                       margin:     '0 0 4px',
                     }}>
-                      ציון:{' '}
+                      {isHe ? 'ציון:' : 'Score:'}{' '}
                       <span style={{ color: scoreColour, fontWeight: 700 }}>
                         {day.plantingScore}
                       </span>
@@ -221,12 +228,12 @@ export function WeekStrip({ days, todayDate }: Props) {
                     </p>
                     {day.nodeActive && (
                       <p style={{ fontFamily: ASSIST, fontSize: '12px', color: '#E06060', margin: '4px 0 0' }}>
-                        ⚫ יום צומת
+                        ⚫ {isHe ? 'יום צומת' : 'Node Day'}
                       </p>
                     )}
                     {day.perigeeActive && (
                       <p style={{ fontFamily: ASSIST, fontSize: '12px', color: '#D4A040', margin: '4px 0 0' }}>
-                        ⚠️ פריגיאה
+                        ⚠️ {isHe ? 'פריגיאה' : 'Perigee'}
                       </p>
                     )}
                   </div>

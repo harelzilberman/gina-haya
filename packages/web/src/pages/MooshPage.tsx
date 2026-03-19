@@ -14,8 +14,9 @@ const ASSIST = '"Assistant", "Heebo", sans-serif';
 const NOISE_BG = `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='250' height='250'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.75' numOctaves='4' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='250' height='250' filter='url(%23n)' opacity='0.55'/%3E%3C/svg%3E")`;
 
 export function MooshPage() {
-  const { t } = useTranslation('moosh');
+  const { t, i18n } = useTranslation('moosh');
   const { dir } = useDirection();
+  const isHe = i18n.language === 'he';
   const { loadHistory, usageThisMonth, monthlyLimit } = useMoosh();
   const { profile } = useAuthStore();
 
@@ -47,7 +48,7 @@ export function MooshPage() {
         <div dir={dir} style={{ maxWidth: '700px', margin: '0 auto', padding: '28px 16px 40px' }}>
 
           {/* Page header */}
-          <div style={{ marginBottom: '20px', textAlign: 'right' }}>
+          <div style={{ marginBottom: '20px', textAlign: dir === 'rtl' ? 'right' : 'left' }}>
             <h1 style={{
               fontFamily: FRANK,
               fontWeight: 700,

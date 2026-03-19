@@ -1,3 +1,4 @@
+import { useTranslation } from 'react-i18next';
 import { useDirection } from '../../hooks/useDirection';
 import type { BiodynamicDay } from '@gina-haya/shared';
 
@@ -18,17 +19,27 @@ const MOOSH_CSS = `
 .moosh-avatar { animation: moosh-glow 3s ease-in-out infinite; }
 `;
 
-const DEFAULT_SUMMARIES: Record<string, string> = {
+const DEFAULT_SUMMARIES_HE: Record<string, string> = {
   fruit:  'יום פרי — זמן טוב לעסוק בפירות ובגידולים הנושאים פרי.',
   root:   'יום שורש — הגינה מזמינה אתכם לטפל בשורשים ובפקעות.',
   flower: 'יום פרח — אנרגיה מיוחדת לצמחי נוי ולתבלינים.',
   leaf:   'יום עלה — עסקו בגידולי עלים ובצמחיית ירוק.',
 };
 
-export function MooshDailySummary({ day }: Props) {
-  const { dir } = useDirection();
+const DEFAULT_SUMMARIES_EN: Record<string, string> = {
+  fruit:  'Fruit Day — a good time to tend to fruits and fruiting crops.',
+  root:   'Root Day — the garden invites you to care for roots and tubers.',
+  flower: 'Flower Day — special energy for ornamental plants and herbs.',
+  leaf:   'Leaf Day — focus on leafy crops and green foliage.',
+};
 
-  const summary = day.mooshDailySummary || DEFAULT_SUMMARIES[day.dayType] || 'שלום מהגינה!';
+export function MooshDailySummary({ day }: Props) {
+  const { i18n } = useTranslation();
+  const { dir } = useDirection();
+  const isHe = i18n.language === 'he';
+
+  const defaults = isHe ? DEFAULT_SUMMARIES_HE : DEFAULT_SUMMARIES_EN;
+  const summary = day.mooshDailySummary || defaults[day.dayType] || (isHe ? 'שלום מהגינה!' : 'Hello from the garden!');
 
   return (
     <>
@@ -71,7 +82,7 @@ export function MooshDailySummary({ day }: Props) {
         </div>
 
         {/* Text */}
-        <div style={{ flex: 1, minWidth: 0, textAlign: 'right' }}>
+        <div style={{ flex: 1, minWidth: 0, textAlign: dir === 'rtl' ? 'right' : 'left' }}>
           <p style={{
             fontFamily:   ASSIST,
             fontSize:     '11px',
@@ -81,7 +92,7 @@ export function MooshDailySummary({ day }: Props) {
             color:        GOLD,
             margin:       '0 0 6px',
           }}>
-            מוש אומר:
+            {isHe ? 'מוש אומר:' : 'Moosh says:'}
           </p>
           <p style={{
             fontFamily:  PLAYFAIR,

@@ -17,14 +17,14 @@ const BANNER_CSS = `
 `;
 
 export function NodeBlackoutBanner({ day }: Props) {
-  const { t } = useTranslation('calendar');
+  const { t, i18n } = useTranslation('calendar');
 
   if (!day.nodeActive) return null;
 
   let endTime: string | null = null;
   if (day.nodeBlackoutEnd) {
     try {
-      endTime = new Date(day.nodeBlackoutEnd).toLocaleTimeString('he-IL', {
+      endTime = new Date(day.nodeBlackoutEnd).toLocaleTimeString(i18n.language === 'he' ? 'he-IL' : 'en-US', {
         hour:     '2-digit',
         minute:   '2-digit',
         timeZone: 'Asia/Jerusalem',
