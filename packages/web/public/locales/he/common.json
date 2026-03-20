@@ -5,7 +5,12 @@
     "moosh": "מוש",
     "plants": "אנציקלופדיה",
     "settings": "הגדרות",
-    "upgrade": "שדרוג"
+    "upgrade": "שדרוג",
+    "harvest": "קציר",
+    "tracker": "מעקב גידול",
+    "login": "כניסה",
+    "signup": "הרשמה",
+    "signout": "התנתקות"
   },
   "button": {
     "save": "שמירה",

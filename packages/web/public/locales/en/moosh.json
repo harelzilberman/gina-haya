@@ -10,5 +10,7 @@
     "grower": "You've reached your monthly question limit."
   },
   "greeting": "Shalom! I am Moosh Levanah. What's happening in your garden today?",
-  "calendarContext": "According to the biodynamic calendar, today is a {{dayType}}."
+  "calendarContext": "According to the biodynamic calendar, today is a {{dayType}}.",
+  "usageCounter": "{{used}} / {{limit}} messages this month",
+  "upgrade": "Upgrade"
 }

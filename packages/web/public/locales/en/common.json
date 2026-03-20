@@ -5,7 +5,12 @@
     "moosh": "Moosh",
     "plants": "Encyclopedia",
     "settings": "Settings",
-    "upgrade": "Upgrade"
+    "upgrade": "Upgrade",
+    "harvest": "Harvest",
+    "tracker": "Growth Tracker",
+    "login": "Login",
+    "signup": "Sign Up",
+    "signout": "Sign Out"
   },
   "button": {
     "save": "Save",

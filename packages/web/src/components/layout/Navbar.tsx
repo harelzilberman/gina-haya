@@ -2,6 +2,7 @@ import { useState, useRef, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { useAuthStore } from '../../stores/authStore';
+import { useDirection } from '../../hooks/useDirection';
 
 // ── Design tokens ──────────────────────────────────────────────────────────
 const GOLD       = '#F5C840';
@@ -47,6 +48,7 @@ const NAVBAR_CSS = `
 
 export function Navbar() {
   const { t, i18n } = useTranslation('common');
+  const { dir } = useDirection();
   const { user, profile, signOut } = useAuthStore();
   const navigate = useNavigate();
   const [dropdownOpen, setDropdownOpen] = useState(false);
@@ -124,6 +126,7 @@ export function Navbar() {
       <style>{NAVBAR_CSS}</style>
 
       <nav
+        dir={dir}
         style={{
           position: 'fixed',
           top: 0,
@@ -170,7 +173,7 @@ export function Navbar() {
         {user && (
           <div
             className="gina-desktop-nav"
-            style={{ display: 'flex', alignItems: 'center', gap: '28px', margin: '0 auto' }}
+            style={{ flex: '1 1 auto', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '28px' }}
           >
             {[
               { label: t('nav.calendar'), to: '/calendar' },
@@ -191,10 +194,11 @@ export function Navbar() {
           </div>
         )}
 
-        {/* Right side — desktop */}
+        {/* End side — desktop (right in LTR, left in RTL) */}
         <div
           className="gina-desktop-actions"
           style={{
+            flexShrink: 0,
             display: 'flex',
             alignItems: 'center',
             gap: '10px',

@@ -10,5 +10,7 @@
     "grower": "הגעת למכסת השאלות החודשית שלך."
   },
   "greeting": "שלום! אני מוש לבנה. מה קורה בגינה שלך היום?",
-  "calendarContext": "על פי לוח הביודינמי, היום הוא {{dayType}}."
+  "calendarContext": "על פי לוח הביודינמי, היום הוא {{dayType}}.",
+  "usageCounter": "{{used}} / {{limit}} שאלות החודש",
+  "upgrade": "שדרג"
 }
