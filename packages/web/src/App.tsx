@@ -11,7 +11,6 @@ import { PlantsPage } from './pages/PlantsPage';
 import { GardenPage } from './pages/GardenPage';
 import { BillingPage } from './pages/BillingPage';
 import { SettingsPage } from './pages/SettingsPage';
-import { HarvestPage } from './pages/HarvestPage';
 import { TrackerPage } from './pages/TrackerPage';
 import { PrivacyPolicyPage } from './pages/PrivacyPolicyPage';
 import { ProtectedRoute } from './components/auth/ProtectedRoute';
@@ -67,8 +66,8 @@ export default function App() {
     <div className="min-h-screen font-heebo flex flex-col" style={{ backgroundColor: '#FDF6EC' }}>
       <Navbar />
 
-      {/* pt-[52px] offsets the fixed 52px navbar */}
-      <main className="flex-1 pt-[52px]">
+      {/* pt-[72px] offsets the fixed 64px navbar with 8px breathing room */}
+      <main className="flex-1" style={{ paddingTop: '72px' }}>
         <Routes>
           {/* Auth pages — no layout wrapper needed (they have their own) */}
           <Route path="/login" element={<LoginPage />} />
@@ -123,14 +122,6 @@ export default function App() {
             element={
               <ProtectedRoute>
                 <SettingsPage />
-              </ProtectedRoute>
-            }
-          />
-          <Route
-            path="/harvest"
-            element={
-              <ProtectedRoute>
-                <HarvestPage />
               </ProtectedRoute>
             }
           />

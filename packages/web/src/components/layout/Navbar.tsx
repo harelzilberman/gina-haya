@@ -133,7 +133,7 @@ export function Navbar() {
           insetInlineStart: 0,
           insetInlineEnd: 0,
           zIndex: 50,
-          height: '52px',
+          height: '64px',
           display: 'flex',
           alignItems: 'center',
           padding: '0 28px',
@@ -177,7 +177,6 @@ export function Navbar() {
           >
             {[
               { label: t('nav.calendar'), to: '/calendar' },
-              { label: t('nav.harvest'), to: '/harvest' },
               { label: t('nav.tracker'), to: '/tracker' },
               { label: t('nav.plants'), to: '/plants' },
             ].map(item => (
@@ -289,7 +288,6 @@ export function Navbar() {
                   {[
                     { label: t('nav.garden'),    to: '/garden' },
                     { label: t('nav.calendar'), to: '/calendar' },
-                    { label: t('nav.harvest'),  to: '/harvest' },
                     { label: t('nav.tracker'),  to: '/tracker' },
                     { label: t('nav.moosh'),    to: '/moosh' },
                     { label: t('nav.settings'), to: '/settings' },
@@ -388,7 +386,6 @@ export function Navbar() {
                 { label: t('nav.calendar'), to: '/calendar' },
                 { label: t('nav.plants'),   to: '/plants' },
                 { label: t('nav.garden'),   to: '/garden' },
-                { label: t('nav.harvest'),  to: '/harvest' },
                 { label: t('nav.tracker'),  to: '/tracker' },
                 { label: t('nav.moosh'),    to: '/moosh' },
                 { label: t('nav.settings'), to: '/settings' },
