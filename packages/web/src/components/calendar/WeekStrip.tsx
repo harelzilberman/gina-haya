@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { createPortal } from 'react-dom';
 import { useTranslation } from 'react-i18next';
 import { useDirection } from '../../hooks/useDirection';
 import type { BiodynamicDay } from '@gina-haya/shared';
@@ -196,11 +197,12 @@ export function WeekStrip({ days, todayDate }: Props) {
       </div>
 
       {/* Day detail modal */}
-      {selectedDay && (
+      {selectedDay && createPortal(
         <DayDetailModal
           day={selectedDay}
           onClose={() => setSelectedDay(null)}
-        />
+        />,
+        document.body
       )}
     </>
   );
