@@ -31,9 +31,10 @@ interface Props {
   isToday: boolean;
   isExpanded: boolean;
   onToggle: () => void;
+  forceExpanded?: boolean;
 }
 
-export function DayPlanCard({ day, isToday, isExpanded, onToggle }: Props) {
+export function DayPlanCard({ day, isToday, isExpanded, onToggle, forceExpanded }: Props) {
   const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
@@ -58,6 +59,7 @@ export function DayPlanCard({ day, isToday, isExpanded, onToggle }: Props) {
   return (
     <div
       dir="rtl"
+      className="day-plan-card"
       style={{
         background:    cardBg,
         border:        `1px solid ${borderColour}`,
@@ -102,7 +104,7 @@ export function DayPlanCard({ day, isToday, isExpanded, onToggle }: Props) {
                 היום
               </span>
             )}
-            <span style={{ fontFamily: FRANK, fontSize: '17px', fontWeight: 700, color: isToday ? GOLD : PARCH }}>
+            <span className="day-header" style={{ fontFamily: FRANK, fontSize: '17px', fontWeight: 700, color: isToday ? GOLD : PARCH }}>
               יום {day.dayOfWeek}
             </span>
             <span style={{ fontFamily: ASSIST, fontSize: '13px', color: `${PARCH}66` }}>
@@ -129,7 +131,7 @@ export function DayPlanCard({ day, isToday, isExpanded, onToggle }: Props) {
 
         {/* Left: score ring + chevron */}
         <div style={{ display: 'flex', alignItems: 'center', gap: '10px', flexShrink: 0 }}>
-          <svg width="52" height="52" viewBox="0 0 52 52" aria-label={`ציון ${day.plantingScore}`}>
+          <svg className="score-circle" width="52" height="52" viewBox="0 0 52 52" aria-label={`ציון ${day.plantingScore}`}>
             <circle cx="26" cy="26" r={SMALL_R} fill="none" stroke="rgba(255,255,255,0.06)" strokeWidth="5" />
             <circle
               cx="26" cy="26" r={SMALL_R}
@@ -172,11 +174,14 @@ export function DayPlanCard({ day, isToday, isExpanded, onToggle }: Props) {
       </button>
 
       {/* ── Expandable body ── */}
-      <div style={{
-        maxHeight:  isExpanded ? '700px' : '0',
-        overflow:   'hidden',
-        transition: 'max-height 0.3s ease',
-      }}>
+      <div
+        className="day-card-content"
+        style={{
+          maxHeight:  (isExpanded || forceExpanded) ? '700px' : '0',
+          overflow:   'hidden',
+          transition: 'max-height 0.3s ease',
+        }}
+      >
         <div style={{ padding: '0 16px 16px' }}>
           {/* Node blackout banner */}
           {day.nodeActive && (
@@ -237,14 +242,16 @@ export function DayPlanCard({ day, isToday, isExpanded, onToggle }: Props) {
 
           {/* Avoid actions */}
           {day.avoidActions.length > 0 && (
-            <Section title="להימנע מ...">
-              {day.avoidActions.map((action, i) => (
-                <div key={i} style={{ display: 'flex', alignItems: 'flex-start', gap: '8px', marginBottom: '6px' }}>
-                  <span style={{ color: 'rgba(220,100,100,0.7)', fontSize: '13px', flexShrink: 0, marginTop: '1px' }}>✗</span>
-                  <span style={{ fontFamily: ASSIST, fontSize: '13px', color: `${PARCH}88` }}>{action}</span>
-                </div>
-              ))}
-            </Section>
+            <div className="avoid-section">
+              <Section title="להימנע מ...">
+                {day.avoidActions.map((action, i) => (
+                  <div key={i} style={{ display: 'flex', alignItems: 'flex-start', gap: '8px', marginBottom: '6px' }}>
+                    <span style={{ color: 'rgba(220,100,100,0.7)', fontSize: '13px', flexShrink: 0, marginTop: '1px' }}>✗</span>
+                    <span style={{ fontFamily: ASSIST, fontSize: '13px', color: `${PARCH}88` }}>{action}</span>
+                  </div>
+                ))}
+              </Section>
+            </div>
           )}
 
           {/* BD prep pills */}
@@ -303,7 +310,7 @@ export function DayPlanCard({ day, isToday, isExpanded, onToggle }: Props) {
 
           {/* Moosh tip */}
           {day.mooshTip && (
-            <div style={{
+            <div className="moosh-tip" style={{
               padding:            '12px 14px',
               borderRadius:       '8px',
               backgroundColor:    'rgba(245,200,64,0.04)',

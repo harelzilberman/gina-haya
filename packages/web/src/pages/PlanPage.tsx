@@ -21,8 +21,34 @@ const PLAN_CSS = `
   to   { opacity: 1; transform: translateY(0); }
 }
 @media print {
-  .plan-no-print { display: none !important; }
-  body { background: white !important; color: black !important; }
+  nav, footer, button, .no-print { display: none !important; }
+  .print-only { display: block !important; }
+
+  body, * { background: white !important; color: #1a1a1a !important; }
+  * { box-shadow: none !important; }
+
+  .day-card-content {
+    display: block !important;
+    max-height: none !important;
+    overflow: visible !important;
+  }
+
+  .day-plan-card {
+    page-break-inside: avoid;
+    border: 1px solid #ccc !important;
+    border-radius: 4px !important;
+    margin-bottom: 8px !important;
+    padding: 8px 12px !important;
+  }
+
+  .score-circle { display: none !important; }
+  .moosh-tip    { display: none !important; }
+
+  .day-header { font-size: 13px !important; font-weight: bold !important; }
+
+  p, li, span { font-size: 11px !important; line-height: 1.4 !important; }
+
+  @page { margin: 1cm; }
 }
 `;
 
@@ -161,6 +187,15 @@ export function PlanPage() {
 
   // Expanded day state — today is open by default
   const [expandedDay, setExpandedDay] = useState<string | null>(today);
+  const [allExpanded, setAllExpanded] = useState(false);
+
+  function handlePrint() {
+    setAllExpanded(true);
+    setTimeout(() => {
+      window.print();
+      setTimeout(() => setAllExpanded(false), 1000);
+    }, 300);
+  }
 
   const isGardenLoading = !gardenCheckStarted || gardenStore.isLoading;
 
@@ -216,6 +251,15 @@ export function PlanPage() {
         padding:   '0 16px',
         animation: 'plan-fade-in 0.4s ease-out both',
       }}>
+        {/* Print-only header (hidden on screen) */}
+        <div className="print-only" style={{ display: 'none' }}>
+          <h1 style={{ fontSize: '18px', marginBottom: '4px' }}>תכנית שבועית — גינה חיה</h1>
+          <p style={{ fontSize: '12px', color: '#666' }}>
+            שבוע {plan.weekStart} — {plan.weekEnd} | הודפס: {new Date().toLocaleDateString('he-IL')}
+          </p>
+          <hr style={{ margin: '8px 0' }} />
+        </div>
+
         {/* Header */}
         <WeeklyPlanHeader plan={plan} />
 
@@ -229,14 +273,16 @@ export function PlanPage() {
             day={day}
             isToday={day.date === today}
             isExpanded={expandedDay === day.date}
+            forceExpanded={allExpanded}
             onToggle={() => setExpandedDay(prev => prev === day.date ? null : day.date)}
           />
         ))}
 
         {/* PDF / Print button */}
-        <div className="plan-no-print" style={{ textAlign: 'center', marginTop: '32px' }}>
+        <div className="no-print" style={{ textAlign: 'center', marginTop: '32px' }}>
           <button
-            onClick={() => window.print()}
+            onClick={handlePrint}
+            title="מדפיס בפורמט קומפקטי — שומר על הטבע 🌱"
             style={{
               fontFamily:    ASSIST,
               fontSize:      '14px',
@@ -258,7 +304,7 @@ export function PlanPage() {
               (e.currentTarget as HTMLElement).style.borderColor = 'rgba(245,200,64,0.25)';
             }}
           >
-            🖨 הורד תכנית PDF
+            הורד תכנית PDF 📄
           </button>
         </div>
       </div>
