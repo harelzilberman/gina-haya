@@ -27,10 +27,10 @@ const DEFAULT_SUMMARIES_HE: Record<string, string> = {
 };
 
 const DEFAULT_SUMMARIES_EN: Record<string, string> = {
-  fruit:  'Fruit Day — a good time to tend to fruits and fruiting crops.',
-  root:   'Root Day — the garden invites you to care for roots and tubers.',
-  flower: 'Flower Day — special energy for ornamental plants and herbs.',
-  leaf:   'Leaf Day — focus on leafy crops and green foliage.',
+  fruit:  'Today is a Fruit day — ideal for planting tomatoes, cucumbers and peppers.',
+  root:   'Today is a Root day — great for carrots, beets and onions.',
+  flower: 'Today is a Flower day — perfect for flowers and aromatic herbs.',
+  leaf:   'Today is a Leaf day — good time to prune and harvest leafy vegetables.',
 };
 
 export function MooshDailySummary({ day }: Props) {
@@ -38,8 +38,9 @@ export function MooshDailySummary({ day }: Props) {
   const { dir } = useDirection();
   const isHe = i18n.language === 'he';
 
-  const defaults = isHe ? DEFAULT_SUMMARIES_HE : DEFAULT_SUMMARIES_EN;
-  const summary = day.mooshDailySummary || defaults[day.dayType] || (isHe ? 'שלום מהגינה!' : 'Hello from the garden!');
+  const summary = isHe
+    ? (day.mooshDailySummary || DEFAULT_SUMMARIES_HE[day.dayType] || 'שלום מהגינה!')
+    : (DEFAULT_SUMMARIES_EN[day.dayType] || 'Hello from the garden!');
 
   return (
     <>

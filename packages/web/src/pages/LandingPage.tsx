@@ -39,11 +39,16 @@ const LP_CSS = `
   from { opacity: 0; transform: translateY(20px); }
   to   { opacity: 1; transform: translateY(0); }
 }
-.lp-eyebrow { animation: lp-fade-up 0.7s ease-out both; }
-.lp-h1      { animation: lp-fade-up 0.7s ease-out 0.12s both; }
-.lp-sub     { animation: lp-fade-up 0.7s ease-out 0.24s both; }
-.lp-ctas    { animation: lp-fade-up 0.7s ease-out 0.36s both; }
-.lp-card    { animation: lp-fade-up 0.7s ease-out 0.5s both; }
+@keyframes heroReveal {
+  from { opacity: 0; transform: translateY(16px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+.lp-eyebrow    { animation: lp-fade-up 0.7s ease-out both; }
+.lp-sub        { animation: lp-fade-up 0.7s ease-out 0.24s both; }
+.lp-ctas       { animation: lp-fade-up 0.7s ease-out 0.36s both; }
+.lp-card       { animation: lp-fade-up 0.7s ease-out 0.5s both; }
+.lp-hero-line1 { animation: heroReveal 0.8s ease forwards; }
+.lp-hero-line2 { animation: heroReveal 0.8s ease 0.3s forwards; opacity: 0; }
 .lp-orb-1   { animation: lp-float   8s ease-in-out infinite; }
 .lp-orb-2   { animation: lp-float-r 9s ease-in-out infinite; animation-delay: -3s; }
 .lp-orb-3   { animation: lp-float   10s ease-in-out infinite; animation-delay: -5s; }
@@ -289,9 +294,10 @@ function TodayPreviewCard({ isHe }: { isHe: boolean }) {
 
   const dayLabels = isHe ? DAY_TYPE_LABELS_HE : DAY_TYPE_LABELS_EN;
 
-  const hebrewDate = new Date().toLocaleDateString('he-IL', {
-    weekday: 'long', month: 'long', day: 'numeric',
-  });
+  const dateFormatted = new Date().toLocaleDateString(
+    isHe ? 'he-IL' : 'en-US',
+    { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric', timeZone: 'Asia/Jerusalem' },
+  );
 
   return (
     <div
@@ -328,7 +334,7 @@ function TodayPreviewCard({ isHe }: { isHe: boolean }) {
         color: `${PARCHMENT}99`,
         marginBottom: '16px',
       }}>
-        {hebrewDate}
+        {dateFormatted}
       </p>
 
       {/* Moon phase */}
@@ -520,26 +526,39 @@ export function LandingPage() {
             </p>
 
             {/* Headline */}
-            <h1 className="lp-h1" style={{ marginBottom: '20px' }}>
-              <span style={{
-                display: 'block',
-                fontFamily: FRANK,
-                fontWeight: 700,
-                fontSize: 'clamp(36px, 5.5vw, 72px)',
-                lineHeight: 1.15,
-                color: PARCHMENT,
-              }}>
+            <h1 style={{
+              marginBottom: '20px',
+              border: '1px solid rgba(245,200,64,0.4)',
+              borderRadius: '4px',
+              padding: '16px 20px',
+            }}>
+              <span
+                className="lp-hero-line1"
+                style={{
+                  display: 'block',
+                  fontFamily: FRANK,
+                  fontWeight: 700,
+                  fontSize: 'clamp(36px, 5.5vw, 88px)',
+                  lineHeight: 1.15,
+                  color: PARCHMENT,
+                  textShadow: '0 2px 40px rgba(0,0,0,0.5)',
+                }}
+              >
                 {isHe ? 'הגינה שלך' : 'Your Garden'}
               </span>
-              <em style={{
-                display: 'block',
-                fontFamily: PLAYFAIR,
-                fontStyle: 'italic',
-                fontWeight: 400,
-                fontSize: 'clamp(36px, 5.5vw, 72px)',
-                lineHeight: 1.15,
-                color: GOLD,
-              }}>
+              <em
+                className="lp-hero-line2"
+                style={{
+                  display: 'block',
+                  fontFamily: PLAYFAIR,
+                  fontStyle: 'italic',
+                  fontWeight: 400,
+                  fontSize: 'clamp(38px, 6vw, 96px)',
+                  lineHeight: 1.15,
+                  color: GOLD,
+                  textShadow: '0 2px 40px rgba(0,0,0,0.5)',
+                }}
+              >
                 {isHe ? 'חיה ונושמת' : 'Alive and Breathing'}
               </em>
             </h1>
@@ -558,8 +577,8 @@ export function LandingPage() {
               }}
             >
               {isHe
-                ? 'לוח ביודינמי יומי, עצות מוש לבנה, וכל מה שצמחים שלך צריכים'
-                : 'Daily biodynamic calendar, Moosh Levana\'s advice, and everything your plants need'}
+                ? 'הביאו את חוכמת החקלאות הביודינמית לגינה הביתית שלכם. לוחות ירח, תכנון חכם, וניתוח מבוסס בינה מלאכותית — לכל גנן, בכל רמה.'
+                : 'Bring the wisdom of biodynamic agriculture to your home garden. Moon calendars, smart planning, and AI-powered analysis — for every gardener, at every level.'}
             </p>
 
             {/* CTAs */}

@@ -55,7 +55,7 @@ export function Footer() {
             lineHeight: 1.65,
             maxWidth: '180px',
           }}>
-            לוח ביודינמי יומי לגינאים בישראל. גדל בהרמוניה עם הירח.
+            {isHebrew ? 'גינה חיה ונושמת' : 'Your Garden, Alive and Breathing'}
           </p>
         </div>
 
@@ -70,13 +70,13 @@ export function Footer() {
             color: `${PARCHMENT}44`,
             marginBottom: '16px',
           }}>
-            פלטפורמה
+            {isHebrew ? 'פלטפורמה' : 'Platform'}
           </p>
           <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
             {[
-              { label: 'לוח שנה ביודינמי', to: '/calendar' },
-              { label: 'אנציקלופדיה',      to: '/plants' },
-              { label: 'מוש לבנה',          to: '/moosh' },
+              { label: isHebrew ? 'לוח שנה ביודינמי' : 'Calendar', to: '/calendar' },
+              { label: isHebrew ? 'אנציקלופדיה'      : 'Encyclopedia', to: '/plants' },
+              { label: isHebrew ? 'מוש לבנה'          : 'Growth Tracker', to: '/moosh' },
             ].map(item => (
               <Link
                 key={item.to}
@@ -110,12 +110,12 @@ export function Footer() {
             color: `${PARCHMENT}44`,
             marginBottom: '16px',
           }}>
-            חברה
+            {isHebrew ? 'חברה' : 'Company'}
           </p>
           <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
             {[
-              { label: 'מדיניות פרטיות', to: '/privacy' },
-              { label: 'צור קשר', href: 'mailto:hello@gina-haya.com' },
+              { label: isHebrew ? 'מדיניות פרטיות' : 'Privacy Policy', to: '/privacy' },
+              { label: isHebrew ? 'צור קשר' : 'Contact', href: 'mailto:hello@gina-haya.com' },
             ].map(item => (
               item.to ? (
                 <Link
