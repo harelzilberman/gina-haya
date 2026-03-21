@@ -6,7 +6,9 @@
       "Bash(cd \"D:\\\\harel\\\\claude\\\\gina-haya-main\\\\גינה חיה\\\\gina-haya\\\\gina-haya\" && pnpm --filter @gina-haya/api db:migrate 2>&1)",
       "Bash(cd:*)",
       "Bash(ls:*)",
-      "Bash(find:*)"
+      "Bash(find:*)",
+      "Bash(npx tsc:*)",
+      "Bash(npm run:*)"
     ]
   }
 }

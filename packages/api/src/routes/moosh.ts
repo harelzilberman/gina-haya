@@ -157,6 +157,26 @@ mooshRouter.post('/chat', async (req: any, res) => {
       plantingScore:  h.planting_score,
     }));
 
+    // ── 5c. Fetch garden map ──────────────────────────────────────────────
+    const { data: mapRow } = await db
+      .from('garden_maps')
+      .select('width_m, height_m, beds')
+      .eq('user_id', userId)
+      .order('updated_at', { ascending: false })
+      .limit(1)
+      .single();
+
+    const gardenMap = mapRow
+      ? {
+          widthM:  mapRow.width_m,
+          heightM: mapRow.height_m,
+          beds: ((mapRow.beds as any[]) ?? []).map((b: any) => ({
+            name:   b.name || 'ערוגה',
+            plants: (b.plants as any[] ?? []).map((p: any) => p.nameHe || p.plantId),
+          })),
+        }
+      : null;
+
     // ── 6. Build Moosh context ────────────────────────────────────────────
     const context: MooshContext = {
       gardenName: garden?.name || null,
@@ -191,6 +211,7 @@ mooshRouter.post('/chat', async (req: any, res) => {
       userLanguage: lang as 'he' | 'en',
       weather: weather ?? null,
       recentHarvests: recentHarvests.length > 0 ? recentHarvests : null,
+      gardenMap: gardenMap ?? null,
     };
 
     // ── 7. Load conversation history ─────────────────────────────────────

@@ -13,6 +13,7 @@ import { BillingPage } from './pages/BillingPage';
 import { SettingsPage } from './pages/SettingsPage';
 import { TrackerPage } from './pages/TrackerPage';
 import { PlanPage } from './pages/PlanPage';
+import { MapPage }  from './pages/MapPage';
 import { PrivacyPolicyPage } from './pages/PrivacyPolicyPage';
 import { ProtectedRoute } from './components/auth/ProtectedRoute';
 import { OnboardingWizard } from './components/auth/OnboardingWizard';
@@ -139,6 +140,14 @@ export default function App() {
             element={
               <ProtectedRoute>
                 <PlanPage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/map"
+            element={
+              <ProtectedRoute>
+                <MapPage />
               </ProtectedRoute>
             }
           />

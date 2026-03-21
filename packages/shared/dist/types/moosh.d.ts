@@ -21,6 +21,14 @@ export interface MooshContext {
         perigeeActive: boolean;
     };
     userLanguage: 'he' | 'en';
+    gardenMap?: {
+        widthM: number;
+        heightM: number;
+        beds: Array<{
+            name: string;
+            plants: string[];
+        }>;
+    } | null;
     recentHarvests?: Array<{
         plantNameHe: string;
         harvestDate: string;

@@ -160,6 +160,18 @@ function buildSystemPrompt(context: MooshContext): string {
       : `\nPlants in garden: ${context.plants.join(', ')}`;
   }
 
+  if (context.gardenMap) {
+    const { widthM, heightM, beds } = context.gardenMap;
+    const bedSummaries = beds.map(b =>
+      b.plants.length > 0
+        ? `${b.name} (${b.plants.join(', ')})`
+        : b.name
+    ).join(' | ');
+    prompt += context.userLanguage === 'he'
+      ? `\nמפת גינה: ${widthM}×${heightM} מ'. ערוגות: ${bedSummaries || 'אין עדיין'}`
+      : `\nGarden map: ${widthM}×${heightM} m. Beds: ${bedSummaries || 'none yet'}`;
+  }
+
   return prompt;
 }
 
