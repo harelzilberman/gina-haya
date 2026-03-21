@@ -35,9 +35,35 @@ const PLAN_CSS = `
 }
 @media print {
   @page {
-    size: A4 landscape;
-    margin: 1cm;
+    size: A4 portrait;
+    margin: 1.2cm 1cm;
   }
+
+  html, body {
+    height: auto !important;
+    overflow: visible !important;
+  }
+
+  * {
+    page-break-before: avoid !important;
+    page-break-after: avoid !important;
+  }
+
+  #weekly-plan-print table {
+    page-break-inside: auto;
+  }
+
+  #weekly-plan-print tr {
+    page-break-inside: avoid;
+    page-break-after: auto;
+  }
+
+  body > *:not(#weekly-plan-print) {
+    display: none !important;
+    height: 0 !important;
+    overflow: hidden !important;
+  }
+
   body * { visibility: hidden; }
   #weekly-plan-print, #weekly-plan-print * { visibility: visible; }
   #weekly-plan-print {
@@ -130,7 +156,7 @@ function NoGardenPrompt({ onNavigate }: { onNavigate: () => void }) {
       <h2 style={{ fontFamily: FRANK, fontSize: '22px', color: GOLD, margin: '0 0 10px' }}>
         צור גינה תחילה
       </h2>
-      <p style={{ fontFamily: ASSIST, fontSize: '14px', color: `${PARCH}88`, margin: '0 0 28px', maxWidth: '300px', lineHeight: 1.6 }}>
+      <p style={{ fontFamily: ASSIST, fontSize: '14px', color: `${PARCH}88`, margin: '0 0 28px', maxWidth: '300px', lineHeight: 1.4 }}>
         כדי שמוש יוכל להכין תכנית שבועית מותאמת אישית, עליך קודם להגדיר את הגינה שלך
       </p>
       <button
@@ -308,18 +334,18 @@ export function PlanPage() {
         </div>
 
         {/* 7-column plan table */}
-        <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '10px', tableLayout: 'fixed' }}>
+        <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '8px', tableLayout: 'fixed' }}>
           <thead>
             {/* Row 1: Day names */}
             <tr style={{ background: '#1C3A1E', color: '#F5C840' }}>
               {plan.days.map(day => (
                 <th key={day.date} style={{
-                  padding:     '6px 8px',
+                  padding:     '5px 6px',
                   textAlign:   'right',
-                  width:       '14.28%',
+                  width:       'calc(100% / 7)',
                   fontWeight:  day.date === today ? 'bold' : 'normal',
                   borderLeft:  '1px solid #2d4f2f',
-                  fontSize:    day.date === today ? '11px' : '10px',
+                  fontSize:    day.date === today ? '9px' : '8px',
                 }}>
                   {day.dayOfWeek}{day.date === today ? ' ★' : ''}
                 </th>
@@ -330,7 +356,7 @@ export function PlanPage() {
             <tr style={{ fontSize: '9px' }}>
               {plan.days.map(day => (
                 <td key={day.date} style={{
-                  padding:    '3px 6px',
+                  padding:    '3px 4px',
                   textAlign:  'right',
                   borderLeft: '1px solid #e0e0e0',
                   background: day.nodeActive ? '#fff0f0' : day.date === today ? '#fffdf0' : '#f5f5f5',
@@ -348,7 +374,7 @@ export function PlanPage() {
                   fontSize:   '18px',
                   fontWeight: 'bold',
                   color:      PRINT_SCORE_COLOURS[day.scoreColour] ?? '#4A7C59',
-                  padding:    '4px 4px',
+                  padding:    '3px 4px',
                   borderLeft: '1px solid #e0e0e0',
                   background: day.nodeActive ? '#fff0f0' : day.date === today ? '#fffdf0' : 'white',
                 }}>
@@ -363,7 +389,7 @@ export function PlanPage() {
             <tr>
               {plan.days.map(day => (
                 <td key={day.date} style={{
-                  padding:    '3px 6px',
+                  padding:    '3px 4px',
                   fontSize:   '9px',
                   borderLeft: '1px solid #e0e0e0',
                   background: day.nodeActive ? '#fff0f0' : day.date === today ? '#fffdf0' : '#fafafa',
@@ -378,11 +404,11 @@ export function PlanPage() {
               {plan.days.map(day => (
                 <td key={day.date} style={{
                   verticalAlign: 'top',
-                  padding:       '4px 6px',
+                  padding:       '3px 4px',
                   borderLeft:    '1px solid #e0e0e0',
                   background:    day.nodeActive ? '#fff0f0' : day.date === today ? '#fffdf0' : 'white',
                 }}>
-                  <ul style={{ margin: 0, padding: 0, listStyle: 'none', fontSize: '9px', lineHeight: 1.6 }}>
+                  <ul style={{ margin: 0, padding: 0, listStyle: 'none', fontSize: '9px', lineHeight: 1.4 }}>
                     {day.recommendedActions.map((action, i) => (
                       <li key={i}>✓ {action}</li>
                     ))}
@@ -396,7 +422,7 @@ export function PlanPage() {
               {plan.days.map(day => (
                 <td key={day.date} style={{
                   verticalAlign: 'top',
-                  padding:       '4px 6px',
+                  padding:       '3px 4px',
                   fontSize:      '9px',
                   borderLeft:    '1px solid #e0e0e0',
                   background:    day.nodeActive ? '#fff0f0' : day.date === today ? '#fffdf0' : '#fafafa',
@@ -414,7 +440,7 @@ export function PlanPage() {
                 <td key={day.date} style={{
                   fontSize:   '9px',
                   color:      '#4A7C59',
-                  padding:    '3px 6px',
+                  padding:    '3px 4px',
                   borderLeft: '1px solid #e0e0e0',
                   background: (day.prep500 || day.prep501)
                     ? '#f0fff0'
@@ -435,7 +461,7 @@ export function PlanPage() {
                   fontStyle:     'italic',
                   color:         '#666',
                   verticalAlign: 'top',
-                  padding:       '4px 6px',
+                  padding:       '3px 4px',
                   borderLeft:    '1px solid #e0e0e0',
                   background:    day.nodeActive ? '#fff0f0' : '#fffdf0',
                 }}>
