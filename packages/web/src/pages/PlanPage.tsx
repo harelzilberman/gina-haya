@@ -11,6 +11,19 @@ const PARCH  = '#EDE0C4';
 const FRANK  = '"Frank Ruhl Libre", Georgia, serif';
 const ASSIST = '"Assistant", "Heebo", sans-serif';
 
+const PRINT_SCORE_COLOURS: Record<string, string> = {
+  green:  '#4A7C59',
+  yellow: '#C8A040',
+  orange: '#C0622A',
+  red:    '#A33030',
+  black:  '#555555',
+};
+
+function shortDate(dateStr: string): string {
+  const [, m, d] = dateStr.split('-');
+  return `${parseInt(d)}/${parseInt(m)}`;
+}
+
 const PLAN_CSS = `
 @keyframes plan-moon-pulse {
   0%, 100% { opacity: 0.8; transform: scale(1); }
@@ -21,34 +34,18 @@ const PLAN_CSS = `
   to   { opacity: 1; transform: translateY(0); }
 }
 @media print {
-  nav, footer, button, .no-print { display: none !important; }
-  .print-only { display: block !important; }
-
-  body, * { background: white !important; color: #1a1a1a !important; }
-  * { box-shadow: none !important; }
-
-  .day-card-content {
-    display: block !important;
-    max-height: none !important;
-    overflow: visible !important;
+  @page {
+    size: A4 landscape;
+    margin: 1cm;
   }
-
-  .day-plan-card {
-    page-break-inside: avoid;
-    border: 1px solid #ccc !important;
-    border-radius: 4px !important;
-    margin-bottom: 8px !important;
-    padding: 8px 12px !important;
+  body * { visibility: hidden; }
+  #weekly-plan-print, #weekly-plan-print * { visibility: visible; }
+  #weekly-plan-print {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
   }
-
-  .score-circle { display: none !important; }
-  .moosh-tip    { display: none !important; }
-
-  .day-header { font-size: 13px !important; font-weight: bold !important; }
-
-  p, li, span { font-size: 11px !important; line-height: 1.4 !important; }
-
-  @page { margin: 1cm; }
 }
 `;
 
@@ -187,14 +184,14 @@ export function PlanPage() {
 
   // Expanded day state — today is open by default
   const [expandedDay, setExpandedDay] = useState<string | null>(today);
-  const [allExpanded, setAllExpanded] = useState(false);
 
   function handlePrint() {
-    setAllExpanded(true);
+    const printDiv = document.getElementById('weekly-plan-print');
+    if (printDiv) printDiv.style.display = 'block';
+    window.print();
     setTimeout(() => {
-      window.print();
-      setTimeout(() => setAllExpanded(false), 1000);
-    }, 300);
+      if (printDiv) printDiv.style.display = 'none';
+    }, 1000);
   }
 
   const isGardenLoading = !gardenCheckStarted || gardenStore.isLoading;
@@ -251,15 +248,6 @@ export function PlanPage() {
         padding:   '0 16px',
         animation: 'plan-fade-in 0.4s ease-out both',
       }}>
-        {/* Print-only header (hidden on screen) */}
-        <div className="print-only" style={{ display: 'none' }}>
-          <h1 style={{ fontSize: '18px', marginBottom: '4px' }}>תכנית שבועית — גינה חיה</h1>
-          <p style={{ fontSize: '12px', color: '#666' }}>
-            שבוע {plan.weekStart} — {plan.weekEnd} | הודפס: {new Date().toLocaleDateString('he-IL')}
-          </p>
-          <hr style={{ margin: '8px 0' }} />
-        </div>
-
         {/* Header */}
         <WeeklyPlanHeader plan={plan} />
 
@@ -273,13 +261,12 @@ export function PlanPage() {
             day={day}
             isToday={day.date === today}
             isExpanded={expandedDay === day.date}
-            forceExpanded={allExpanded}
             onToggle={() => setExpandedDay(prev => prev === day.date ? null : day.date)}
           />
         ))}
 
         {/* PDF / Print button */}
-        <div className="no-print" style={{ textAlign: 'center', marginTop: '32px' }}>
+        <div style={{ textAlign: 'center', marginTop: '32px' }}>
           <button
             onClick={handlePrint}
             title="מדפיס בפורמט קומפקטי — שומר על הטבע 🌱"
@@ -306,6 +293,170 @@ export function PlanPage() {
           >
             הורד תכנית PDF 📄
           </button>
+        </div>
+      </div>
+
+      {/* ── Hidden print table — replaces screen UI when printing ── */}
+      <div id="weekly-plan-print" style={{ display: 'none', fontFamily: 'Arial, sans-serif', direction: 'rtl' }}>
+
+        {/* Print header */}
+        <div style={{ fontSize: '11px', marginBottom: '8px', borderBottom: '2px solid #1C3A1E', paddingBottom: '6px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+          <span style={{ color: '#999', fontSize: '9px' }}>{new Date().toLocaleDateString('he-IL')}</span>
+          <strong style={{ fontSize: '12px' }}>
+            גינה חיה | תכנית שבועית | {plan.weekStart} — {plan.weekEnd}
+          </strong>
+        </div>
+
+        {/* 7-column plan table */}
+        <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '10px', tableLayout: 'fixed' }}>
+          <thead>
+            {/* Row 1: Day names */}
+            <tr style={{ background: '#1C3A1E', color: '#F5C840' }}>
+              {plan.days.map(day => (
+                <th key={day.date} style={{
+                  padding:     '6px 8px',
+                  textAlign:   'right',
+                  width:       '14.28%',
+                  fontWeight:  day.date === today ? 'bold' : 'normal',
+                  borderLeft:  '1px solid #2d4f2f',
+                  fontSize:    day.date === today ? '11px' : '10px',
+                }}>
+                  {day.dayOfWeek}{day.date === today ? ' ★' : ''}
+                </th>
+              ))}
+            </tr>
+
+            {/* Row 2: Date + type */}
+            <tr style={{ fontSize: '9px' }}>
+              {plan.days.map(day => (
+                <td key={day.date} style={{
+                  padding:    '3px 6px',
+                  textAlign:  'right',
+                  borderLeft: '1px solid #e0e0e0',
+                  background: day.nodeActive ? '#fff0f0' : day.date === today ? '#fffdf0' : '#f5f5f5',
+                }}>
+                  {shortDate(day.date)} · {day.dayTypeHe} {day.dayTypeEmoji}
+                </td>
+              ))}
+            </tr>
+
+            {/* Row 3: Planting score */}
+            <tr>
+              {plan.days.map(day => (
+                <td key={day.date} style={{
+                  textAlign:  'center',
+                  fontSize:   '18px',
+                  fontWeight: 'bold',
+                  color:      PRINT_SCORE_COLOURS[day.scoreColour] ?? '#4A7C59',
+                  padding:    '4px 4px',
+                  borderLeft: '1px solid #e0e0e0',
+                  background: day.nodeActive ? '#fff0f0' : day.date === today ? '#fffdf0' : 'white',
+                }}>
+                  {day.nodeActive ? '⚫' : day.plantingScore}
+                </td>
+              ))}
+            </tr>
+          </thead>
+
+          <tbody>
+            {/* Row 4: Moon direction */}
+            <tr>
+              {plan.days.map(day => (
+                <td key={day.date} style={{
+                  padding:    '3px 6px',
+                  fontSize:   '9px',
+                  borderLeft: '1px solid #e0e0e0',
+                  background: day.nodeActive ? '#fff0f0' : day.date === today ? '#fffdf0' : '#fafafa',
+                }}>
+                  {day.moonDirection === 'ascending' ? '↑' : '↓'} {day.moonDirectionHe}
+                </td>
+              ))}
+            </tr>
+
+            {/* Row 5: Recommended actions */}
+            <tr>
+              {plan.days.map(day => (
+                <td key={day.date} style={{
+                  verticalAlign: 'top',
+                  padding:       '4px 6px',
+                  borderLeft:    '1px solid #e0e0e0',
+                  background:    day.nodeActive ? '#fff0f0' : day.date === today ? '#fffdf0' : 'white',
+                }}>
+                  <ul style={{ margin: 0, padding: 0, listStyle: 'none', fontSize: '9px', lineHeight: 1.6 }}>
+                    {day.recommendedActions.map((action, i) => (
+                      <li key={i}>✓ {action}</li>
+                    ))}
+                  </ul>
+                </td>
+              ))}
+            </tr>
+
+            {/* Row 6: Recommended plants */}
+            <tr>
+              {plan.days.map(day => (
+                <td key={day.date} style={{
+                  verticalAlign: 'top',
+                  padding:       '4px 6px',
+                  fontSize:      '9px',
+                  borderLeft:    '1px solid #e0e0e0',
+                  background:    day.nodeActive ? '#fff0f0' : day.date === today ? '#fffdf0' : '#fafafa',
+                }}>
+                  {day.recommendedPlants.length > 0
+                    ? `צמחים: ${day.recommendedPlants.join(', ')}`
+                    : ''}
+                </td>
+              ))}
+            </tr>
+
+            {/* Row 7: BD preparations */}
+            <tr>
+              {plan.days.map(day => (
+                <td key={day.date} style={{
+                  fontSize:   '9px',
+                  color:      '#4A7C59',
+                  padding:    '3px 6px',
+                  borderLeft: '1px solid #e0e0e0',
+                  background: (day.prep500 || day.prep501)
+                    ? '#f0fff0'
+                    : day.nodeActive ? '#fff0f0'
+                    : day.date === today ? '#fffdf0' : 'white',
+                }}>
+                  {day.prep500 && 'BD 500 ✓ '}
+                  {day.prep501 && 'BD 501 ✓'}
+                </td>
+              ))}
+            </tr>
+
+            {/* Row 8: Moosh tip */}
+            <tr>
+              {plan.days.map(day => (
+                <td key={day.date} style={{
+                  fontSize:      '9px',
+                  fontStyle:     'italic',
+                  color:         '#666',
+                  verticalAlign: 'top',
+                  padding:       '4px 6px',
+                  borderLeft:    '1px solid #e0e0e0',
+                  background:    day.nodeActive ? '#fff0f0' : '#fffdf0',
+                }}>
+                  {day.mooshTip ? `מוש: ${day.mooshTip}` : ''}
+                </td>
+              ))}
+            </tr>
+          </tbody>
+        </table>
+
+        {/* Weekly tasks */}
+        {plan.gardenTasks.length > 0 && (
+          <div style={{ marginTop: '12px', fontSize: '9px' }}>
+            <strong>משימות שבועיות: </strong>
+            {plan.gardenTasks.join(' • ')}
+          </div>
+        )}
+
+        {/* Footer */}
+        <div style={{ marginTop: '8px', fontSize: '8px', color: '#999', textAlign: 'center' }}>
+          גינה חיה ונושמת — gina-haya.com | הדפס בתבונה 🌱
         </div>
       </div>
     </div>
