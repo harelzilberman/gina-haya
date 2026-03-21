@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useDirection } from '../../hooks/useDirection';
 import type { BiodynamicDay } from '@gina-haya/shared';
+import { DayDetailModal } from './DayDetailModal';
 
 const SCORE_COLOURS: Record<string, string> = {
   green:  '#4A7C59',
@@ -49,7 +50,7 @@ export function WeekStrip({ days, todayDate }: Props) {
   const { i18n } = useTranslation();
   const { dir } = useDirection();
   const isHe = i18n.language === 'he';
-  const [openDate, setOpenDate] = useState<string | null>(null);
+  const [selectedDay, setSelectedDay] = useState<BiodynamicDay | null>(null);
 
   if (days.length === 0) return null;
 
@@ -90,159 +91,117 @@ export function WeekStrip({ days, todayDate }: Props) {
           msOverflowStyle: 'none',
         }}>
           {days.map((day, idx) => {
-            const isToday     = day.date === todayDate;
-            const isOpen      = openDate === day.date;
-            const scoreColour = SCORE_COLOURS[day.scoreColour];
+            const isToday      = day.date === todayDate;
+            const isSelected   = selectedDay?.date === day.date;
+            const scoreColour  = SCORE_COLOURS[day.scoreColour];
+
+            const borderColour = isToday || isSelected
+              ? `${GOLD}88`
+              : 'rgba(245,200,64,0.1)';
+            const bgColour = isToday
+              ? 'rgba(245,200,64,0.1)'
+              : isSelected
+                ? 'rgba(245,200,64,0.07)'
+                : 'rgba(255,255,255,0.03)';
 
             return (
-              <div key={day.date} style={{ position: 'relative', flexShrink: 0 }}>
-                <button
-                  className="ws-pill"
-                  onClick={() => setOpenDate(isOpen ? null : day.date)}
-                  aria-expanded={isOpen}
+              <button
+                key={day.date}
+                className="ws-pill"
+                onClick={() => setSelectedDay(day)}
+                style={{
+                  animationDelay:  `${idx * 40}ms`,
+                  display:         'flex',
+                  flexDirection:   'column',
+                  alignItems:      'center',
+                  padding:         '8px 12px',
+                  borderRadius:    '10px',
+                  border:          `1.5px solid ${borderColour}`,
+                  backgroundColor: bgColour,
+                  minWidth:        '50px',
+                  cursor:          'pointer',
+                  transition:      'background-color 0.15s, border-color 0.15s, transform 0.1s',
+                  outline:         'none',
+                  transform:       isSelected ? 'scale(0.98)' : 'scale(1)',
+                  flexShrink:      0,
+                }}
+                onMouseEnter={e => {
+                  if (!isToday && !isSelected) {
+                    (e.currentTarget as HTMLElement).style.backgroundColor = 'rgba(245,200,64,0.06)';
+                    (e.currentTarget as HTMLElement).style.borderColor = 'rgba(245,200,64,0.35)';
+                  }
+                }}
+                onMouseLeave={e => {
+                  if (!isToday && !isSelected) {
+                    (e.currentTarget as HTMLElement).style.backgroundColor = 'rgba(255,255,255,0.03)';
+                    (e.currentTarget as HTMLElement).style.borderColor = 'rgba(245,200,64,0.1)';
+                  }
+                }}
+              >
+                {/* Weekday */}
+                <span style={{
+                  fontFamily:   ASSIST,
+                  fontSize:     '10px',
+                  fontWeight:   500,
+                  color:        isToday ? `${GOLD}99` : `${PARCH}44`,
+                  lineHeight:   1,
+                  marginBottom: '4px',
+                }}>
+                  {dayName(day.date, isHe)}
+                </span>
+
+                {/* Day number */}
+                <span style={{
+                  fontFamily:   ASSIST,
+                  fontSize:     '18px',
+                  fontWeight:   700,
+                  color:        isToday ? GOLD : `${PARCH}CC`,
+                  lineHeight:   1,
+                  marginBottom: '5px',
+                }}>
+                  {dayNum(day.date)}
+                </span>
+
+                {/* Score dot */}
+                <div
+                  aria-label={`${isHe ? 'ציון' : 'Score'} ${day.plantingScore}`}
                   style={{
-                    animationDelay:  `${idx * 40}ms`,
-                    display:         'flex',
-                    flexDirection:   'column',
-                    alignItems:      'center',
-                    padding:         '8px 12px',
-                    borderRadius:    '10px',
-                    border:          isToday
-                      ? `1.5px solid ${GOLD}88`
-                      : '1.5px solid rgba(245,200,64,0.1)',
-                    backgroundColor: isToday
-                      ? 'rgba(245,200,64,0.1)'
-                      : 'rgba(255,255,255,0.03)',
-                    minWidth:        '50px',
-                    cursor:          'pointer',
-                    transition:      'background-color 0.15s, border-color 0.15s',
-                    outline:         'none',
+                    width:           '8px',
+                    height:          '8px',
+                    borderRadius:    '50%',
+                    backgroundColor: scoreColour,
+                    boxShadow:       `0 0 5px ${scoreColour}88`,
                   }}
-                  onMouseEnter={e => {
-                    if (!isToday) {
-                      (e.currentTarget as HTMLElement).style.backgroundColor = 'rgba(245,200,64,0.06)';
-                      (e.currentTarget as HTMLElement).style.borderColor = 'rgba(245,200,64,0.25)';
-                    }
-                  }}
-                  onMouseLeave={e => {
-                    if (!isToday) {
-                      (e.currentTarget as HTMLElement).style.backgroundColor = 'rgba(255,255,255,0.03)';
-                      (e.currentTarget as HTMLElement).style.borderColor = 'rgba(245,200,64,0.1)';
-                    }
-                  }}
-                >
-                  {/* Weekday */}
-                  <span style={{
-                    fontFamily: ASSIST,
-                    fontSize:   '10px',
-                    fontWeight: 500,
-                    color:      isToday ? `${GOLD}99` : `${PARCH}44`,
-                    lineHeight: 1,
-                    marginBottom:'4px',
-                  }}>
-                    {dayName(day.date, isHe)}
-                  </span>
+                />
 
-                  {/* Day number */}
-                  <span style={{
-                    fontFamily: ASSIST,
-                    fontSize:   '18px',
-                    fontWeight: 700,
-                    color:      isToday ? GOLD : `${PARCH}CC`,
-                    lineHeight: 1,
-                    marginBottom:'5px',
-                  }}>
-                    {dayNum(day.date)}
-                  </span>
-
-                  {/* Score dot */}
-                  <div
-                    aria-label={`${isHe ? 'ציון' : 'Score'} ${day.plantingScore}`}
-                    style={{
-                      width:        '8px',
-                      height:       '8px',
-                      borderRadius: '50%',
-                      backgroundColor: scoreColour,
-                      boxShadow:    `0 0 5px ${scoreColour}88`,
-                    }}
-                  />
-
-                  {/* Day type emoji */}
-                  <span style={{ fontSize: '13px', lineHeight: 1, marginTop: '4px' }}>
-                    {DAY_TYPE_EMOJIS[day.dayType] ?? '🌱'}
-                  </span>
-                </button>
-
-                {/* Dark popover — appears above pill */}
-                {isOpen && (
-                  <div
-                    style={{
-                      position:        'absolute',
-                      bottom:          'calc(100% + 8px)',
-                      left:            '50%',
-                      transform:       'translateX(-50%)',
-                      zIndex:          30,
-                      width:           '148px',
-                      background:      'linear-gradient(180deg, #1a3a1c 0%, #0e2410 100%)',
-                      border:          `1px solid ${GOLD}33`,
-                      borderRadius:    '10px',
-                      boxShadow:       '0 8px 32px rgba(0,0,0,0.6)',
-                      padding:         '10px 12px',
-                    }}
-                  >
-                    {/* Caret */}
-                    <div style={{
-                      position:    'absolute',
-                      bottom:      '-5px',
-                      left:        '50%',
-                      transform:   'translateX(-50%)',
-                      width:       '8px',
-                      height:      '8px',
-                      background:  '#0e2410',
-                      border:      `1px solid ${GOLD}33`,
-                      borderTop:   'none',
-                      borderInlineStart: 'none',
-                      rotate:      '45deg',
-                    }} />
-
-                    <p style={{
-                      fontFamily: ASSIST,
-                      fontSize:   '13px',
-                      fontWeight: 600,
-                      color:      PARCH,
-                      margin:     '0 0 6px',
-                    }}>
-                      {DAY_TYPE_EMOJIS[day.dayType]} {isHe ? day.dayTypeHe : day.dayType.charAt(0).toUpperCase() + day.dayType.slice(1)}
-                    </p>
-                    <p style={{
-                      fontFamily: ASSIST,
-                      fontSize:   '12px',
-                      color:      `${PARCH}77`,
-                      margin:     '0 0 4px',
-                    }}>
-                      {isHe ? 'ציון:' : 'Score:'}{' '}
-                      <span style={{ color: scoreColour, fontWeight: 700 }}>
-                        {day.plantingScore}
-                      </span>
-                      {' '}/ 10
-                    </p>
-                    {day.nodeActive && (
-                      <p style={{ fontFamily: ASSIST, fontSize: '12px', color: '#E06060', margin: '4px 0 0' }}>
-                        ⚫ {isHe ? 'יום צומת' : 'Node Day'}
-                      </p>
-                    )}
-                    {day.perigeeActive && (
-                      <p style={{ fontFamily: ASSIST, fontSize: '12px', color: '#D4A040', margin: '4px 0 0' }}>
-                        ⚠️ {isHe ? 'פריגיאה' : 'Perigee'}
-                      </p>
-                    )}
-                  </div>
-                )}
-              </div>
+                {/* Day type emoji */}
+                <span style={{ fontSize: '13px', lineHeight: 1, marginTop: '4px' }}>
+                  {DAY_TYPE_EMOJIS[day.dayType] ?? '🌱'}
+                </span>
+              </button>
             );
           })}
         </div>
+
+        {/* Hint text */}
+        <p style={{
+          fontFamily: ASSIST,
+          fontSize:   '11px',
+          color:      `${PARCH}40`,
+          textAlign:  'center',
+          margin:     '10px 0 0',
+        }}>
+          {isHe ? 'לחץ על יום לפרטים' : 'Tap a day for details'}
+        </p>
       </div>
+
+      {/* Day detail modal */}
+      {selectedDay && (
+        <DayDetailModal
+          day={selectedDay}
+          onClose={() => setSelectedDay(null)}
+        />
+      )}
     </>
   );
 }
