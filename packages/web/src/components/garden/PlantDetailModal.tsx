@@ -48,13 +48,167 @@ const MODAL_CSS = `
   from { opacity: 0; transform: scale(0.95); }
   to   { opacity: 1; transform: scale(1); }
 }
+@keyframes photo-shimmer {
+  0%   { background-position: -400px 0; }
+  100% { background-position:  400px 0; }
+}
 .plant-modal-card {
   animation: modal-scale-in 0.2s ease-out both;
 }
 .plant-modal-scroll::-webkit-scrollbar { width: 4px; }
 .plant-modal-scroll::-webkit-scrollbar-track { background: rgba(255,255,255,0.03); }
 .plant-modal-scroll::-webkit-scrollbar-thumb { background: rgba(125,192,132,0.2); border-radius: 2px; }
+.plant-photo-shimmer {
+  background: linear-gradient(90deg, rgba(20,43,22,0.7) 25%, rgba(40,75,42,0.85) 50%, rgba(20,43,22,0.7) 75%);
+  background-size: 800px 100%;
+  animation: photo-shimmer 1.5s ease-in-out infinite;
+  border-radius: 8px;
+}
 `;
+
+// ── Photo gallery ─────────────────────────────────────────────────────────────
+function getPhotoUrls(plantNameEn: string) {
+  const search = encodeURIComponent(plantNameEn.toLowerCase() + ' plant');
+  return [
+    `https://source.unsplash.com/400x300/?${search}&sig=1`,
+    `https://source.unsplash.com/400x300/?${search}&sig=2`,
+    `https://source.unsplash.com/400x300/?${search}&sig=3`,
+  ];
+}
+
+function PlantPhotoGallery({
+  nameEn,
+  categoryEmoji,
+  isHe,
+}: {
+  nameEn: string;
+  categoryEmoji: string;
+  isHe: boolean;
+}) {
+  const [lightbox, setLightbox]   = useState<string | null>(null);
+  const [loaded,   setLoaded]     = useState<Record<number, boolean>>({});
+  const [errored,  setErrored]    = useState<Record<number, boolean>>({});
+  const urls = getPhotoUrls(nameEn);
+
+  return (
+    <>
+      {/* Lightbox */}
+      {lightbox && (
+        <div
+          onClick={() => setLightbox(null)}
+          style={{
+            position:        'fixed',
+            inset:           0,
+            zIndex:          9999,
+            backgroundColor: 'rgba(0,0,0,0.92)',
+            display:         'flex',
+            alignItems:      'center',
+            justifyContent:  'center',
+          }}
+        >
+          <button
+            onClick={() => setLightbox(null)}
+            aria-label="Close"
+            style={{
+              position:        'absolute',
+              top:             '20px',
+              right:           '20px',
+              background:      'none',
+              border:          'none',
+              color:           '#fff',
+              fontSize:        '28px',
+              cursor:          'pointer',
+              lineHeight:      1,
+              padding:         '4px 8px',
+              opacity:         0.8,
+            }}
+            onMouseEnter={e => { (e.currentTarget as HTMLElement).style.opacity = '1'; }}
+            onMouseLeave={e => { (e.currentTarget as HTMLElement).style.opacity = '0.8'; }}
+          >
+            ✕
+          </button>
+          <img
+            src={lightbox}
+            onClick={e => e.stopPropagation()}
+            alt=""
+            style={{
+              maxWidth:    '90vw',
+              maxHeight:   '85vh',
+              objectFit:   'contain',
+              borderRadius:'4px',
+            }}
+          />
+        </div>
+      )}
+
+      {/* Label */}
+      <p style={{
+        fontFamily: FRANK,
+        fontSize:   '12px',
+        fontWeight: 400,
+        color:      `${PARCH}50`,
+        margin:     '0 0 8px',
+      }}>
+        {isHe ? 'תמונות' : 'Photos'}
+      </p>
+
+      {/* Photos row */}
+      <div style={{ display: 'flex', gap: '8px', marginBottom: '20px' }}>
+        {urls.map((url, i) => (
+          <div
+            key={i}
+            onClick={() => { if (!errored[i]) setLightbox(url); }}
+            style={{
+              position:     'relative',
+              width:        '32%',
+              height:       '120px',
+              borderRadius: '8px',
+              overflow:     'hidden',
+              cursor:       errored[i] ? 'default' : 'pointer',
+              flexShrink:   0,
+              backgroundColor: 'rgba(20,43,22,0.7)',
+            }}
+          >
+            {/* Shimmer while loading */}
+            {!loaded[i] && !errored[i] && (
+              <div className="plant-photo-shimmer" style={{ position: 'absolute', inset: 0 }} />
+            )}
+            {/* Error placeholder */}
+            {errored[i] && (
+              <div style={{
+                position:       'absolute',
+                inset:          0,
+                display:        'flex',
+                alignItems:     'center',
+                justifyContent: 'center',
+                fontSize:       '36px',
+              }}>
+                {categoryEmoji}
+              </div>
+            )}
+            {/* Photo */}
+            {!errored[i] && (
+              <img
+                src={url}
+                alt=""
+                onLoad={() =>  setLoaded(p  => ({ ...p, [i]: true }))}
+                onError={() => setErrored(p => ({ ...p, [i]: true }))}
+                style={{
+                  width:     '100%',
+                  height:    '100%',
+                  objectFit: 'cover',
+                  opacity:   loaded[i] ? 1 : 0,
+                  transition:'opacity 0.3s ease',
+                  display:   'block',
+                }}
+              />
+            )}
+          </div>
+        ))}
+      </div>
+    </>
+  );
+}
 
 // ── Month strip ───────────────────────────────────────────────────────────────
 function MonthStrip({
@@ -290,6 +444,15 @@ export function PlantDetailModal({ plant, onClose }: Props) {
 
           {/* Divider */}
           <div style={{ height: '1px', backgroundColor: 'rgba(125,192,132,0.1)', marginBottom: '20px' }} />
+
+          {/* Photo gallery */}
+          {plant.common_name_en && (
+            <PlantPhotoGallery
+              nameEn={plant.common_name_en}
+              categoryEmoji={categoryEmoji}
+              isHe={isHe}
+            />
+          )}
 
           {/* Description */}
           {description && (

@@ -35,25 +35,22 @@ const LP_CSS = `
   0%, 100% { transform: scale(1);     box-shadow: 0 0 40px rgba(245,200,64,0.25); }
   50%       { transform: scale(1.025); box-shadow: 0 0 64px rgba(245,200,64,0.45); }
 }
-@keyframes lp-fade-up {
-  from { opacity: 0; transform: translateY(20px); }
-  to   { opacity: 1; transform: translateY(0); }
-}
-@keyframes heroReveal {
-  from { opacity: 0; transform: translateY(16px); }
-  to   { opacity: 1; transform: translateY(0); }
-}
-.lp-eyebrow    { animation: lp-fade-up 0.7s ease-out both; }
-.lp-sub        { animation: lp-fade-up 0.7s ease-out 0.24s both; }
-.lp-ctas       { animation: lp-fade-up 0.7s ease-out 0.36s both; }
-.lp-card       { animation: lp-fade-up 0.7s ease-out 0.5s both; }
-.lp-hero-line1 { animation: heroReveal 0.8s ease forwards; }
-.lp-hero-line2 { animation: heroReveal 0.8s ease 0.3s forwards; opacity: 0; }
-.lp-orb-1   { animation: lp-float   8s ease-in-out infinite; }
-.lp-orb-2   { animation: lp-float-r 9s ease-in-out infinite; animation-delay: -3s; }
-.lp-orb-3   { animation: lp-float   10s ease-in-out infinite; animation-delay: -5s; }
-.lp-wheel   { animation: lp-rotate  60s linear infinite; }
-.lp-moosh   { animation: lp-pulse-moosh 3s ease-in-out infinite; }
+@keyframes fadeUp  { from { opacity:0; transform:translateY(24px); } to { opacity:1; transform:translateY(0); } }
+@keyframes fadeIn  { from { opacity:0; } to { opacity:1; } }
+@keyframes scaleIn { from { opacity:0; transform:scale(0.95); } to { opacity:1; transform:scale(1); } }
+.animate-ready { opacity: 0; transform: translateY(32px); transition: opacity 0.7s ease, transform 0.7s ease; }
+.animate-done  { opacity: 1 !important; transform: translateY(0) !important; }
+.lp-eyebrow    { opacity: 0; animation: fadeIn  0.6s ease 0.1s forwards; }
+.lp-hero-line1 { opacity: 0; animation: fadeUp  0.8s ease 0.2s forwards; }
+.lp-hero-line2 { opacity: 0; animation: fadeUp  0.8s ease 0.4s forwards; }
+.lp-sub        { opacity: 0; animation: fadeUp  0.6s ease 0.6s forwards; }
+.lp-ctas       { opacity: 0; animation: fadeUp  0.6s ease 0.8s forwards; }
+.lp-card       { opacity: 0; animation: scaleIn 0.8s ease 0.5s forwards; }
+.lp-orb-1      { opacity: 0; animation: fadeIn 2s ease 0.3s forwards, lp-float   8s ease-in-out 0s  infinite; }
+.lp-orb-2      { opacity: 0; animation: fadeIn 2s ease 0.3s forwards, lp-float-r 9s ease-in-out -3s infinite; }
+.lp-orb-3      { opacity: 0; animation: fadeIn 2s ease 0.3s forwards, lp-float  10s ease-in-out -5s infinite; }
+.lp-wheel      { animation: lp-rotate  60s linear infinite; }
+.lp-moosh      { animation: lp-pulse-moosh 3s ease-in-out infinite; }
 
 .lp-feat-card {
   border: 1px solid rgba(125,192,132,0.2);
@@ -98,7 +95,7 @@ function scoreColor(score: number) {
   return '#A33030';
 }
 
-function useScrollReveal(threshold = 0.12) {
+function useScrollReveal(threshold = 0.15) {
   const ref = useRef<HTMLDivElement>(null);
   const [visible, setVisible] = useState(false);
   useEffect(() => {
@@ -129,11 +126,9 @@ function Reveal({
   return (
     <div
       ref={ref}
-      className={className}
+      className={`animate-ready${visible ? ' animate-done' : ''}${className ? ` ${className}` : ''}`}
       style={{
-        opacity: visible ? 1 : 0,
-        transform: visible ? 'translateY(0)' : 'translateY(20px)',
-        transition: `opacity 0.65s ease-out ${delay}ms, transform 0.65s ease-out ${delay}ms`,
+        transitionDelay: delay ? `${delay}ms` : undefined,
         ...style,
       }}
     >
@@ -728,22 +723,21 @@ export function LandingPage() {
       {/* ══ MOOSH INTRODUCTION ════════════════════════════════════════════ */}
       <section style={{ backgroundColor: FOREST, padding: '80px 0' }}>
         <div style={{ maxWidth: '960px', margin: '0 auto', padding: '0 28px' }}>
-          <Reveal>
-            <div style={{
+          <div style={{
+            display: 'flex',
+            flexDirection: 'row',
+            alignItems: 'center',
+            gap: '56px',
+            flexWrap: 'wrap',
+          }}>
+            {/* Avatar column */}
+            <Reveal style={{
+              flex: '0 0 auto',
               display: 'flex',
-              flexDirection: 'row',
+              flexDirection: 'column',
               alignItems: 'center',
-              gap: '56px',
-              flexWrap: 'wrap',
+              textAlign: 'center',
             }}>
-              {/* Avatar column */}
-              <div style={{
-                flex: '0 0 auto',
-                display: 'flex',
-                flexDirection: 'column',
-                alignItems: 'center',
-                textAlign: 'center',
-              }}>
                 <div
                   className="lp-moosh"
                   style={{
@@ -769,10 +763,10 @@ export function LandingPage() {
                 <p style={{ fontFamily: ASSISTANT, fontSize: '13px', color: LEAF_GREEN }}>
                   {isHe ? 'סבא הירח שלך' : 'Your Moon Elder'}
                 </p>
-              </div>
+              </Reveal>
 
               {/* Description */}
-              <div style={{ flex: '1 1 300px' }}>
+              <Reveal delay={200} style={{ flex: '1 1 300px' }}>
                 <h2 style={{
                   fontFamily: FRANK,
                   fontStyle: 'italic',
@@ -817,9 +811,8 @@ export function LandingPage() {
                       : 'Today is a Fruit Day 🍅 — the perfect time to plant tomatoes and peppers. The moon is descending, the earth breathes inward.'}
                   </p>
                 </div>
-              </div>
-            </div>
-          </Reveal>
+              </Reveal>
+          </div>
         </div>
       </section>
 

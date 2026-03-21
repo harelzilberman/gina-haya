@@ -20,7 +20,7 @@ const CAL_CSS = `
   100% { background-position:  600px 0; }
 }
 @keyframes cal-fade-in {
-  from { opacity: 0; transform: translateY(10px); }
+  from { opacity: 0; transform: translateY(20px); }
   to   { opacity: 1; transform: translateY(0); }
 }
 .cal-skeleton {
@@ -129,18 +129,18 @@ export function CalendarPage() {
           </div>
 
           {/* Moosh daily summary */}
-          <div className="cal-card-in" style={{ animationDelay: '60ms' }}>
+          <div className="cal-card-in" style={{ animationDelay: '100ms' }}>
             <MooshDailySummary day={day} />
           </div>
 
           {/* Today hero card */}
-          <div className="cal-card-in" style={{ animationDelay: '120ms' }}>
+          <div className="cal-card-in" style={{ animationDelay: '200ms' }}>
             <TodayCard day={day} />
           </div>
 
           {/* Week strip */}
           {!weekLoading && days.length > 0 && (
-            <div className="cal-card-in" style={{ animationDelay: '200ms' }}>
+            <div className="cal-card-in" style={{ animationDelay: '300ms' }}>
               <WeekStrip days={days} todayDate={todayISO} />
             </div>
           )}
