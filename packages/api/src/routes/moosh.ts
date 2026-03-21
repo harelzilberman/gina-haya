@@ -160,22 +160,30 @@ mooshRouter.post('/chat', async (req: any, res) => {
     // ── 5c. Fetch garden map ──────────────────────────────────────────────
     const { data: mapRow } = await db
       .from('garden_maps')
-      .select('width_m, height_m, beds')
+      .select('map_data, north_angle')
       .eq('user_id', userId)
       .order('updated_at', { ascending: false })
       .limit(1)
       .single();
 
-    const gardenMap = mapRow
-      ? {
-          widthM:  mapRow.width_m,
-          heightM: mapRow.height_m,
-          beds: ((mapRow.beds as any[]) ?? []).map((b: any) => ({
-            name:   b.name || 'ערוגה',
-            plants: (b.plants as any[] ?? []).map((p: any) => p.nameHe || p.plantId),
-          })),
-        }
-      : null;
+    let gardenMap: any = null;
+    if (mapRow) {
+      const md = mapRow.map_data as { objects: any[]; plants: any[] } | null;
+      const objs   = md?.objects ?? [];
+      const plants = md?.plants ?? [];
+      const beds  = objs.filter((o: any) => ['bed','raised','pot'].includes(o.type));
+      const trees = objs.filter((o: any) => o.type === 'tree');
+      gardenMap = {
+        hasMap:      true,
+        northAngle:  mapRow.north_angle ?? 0,
+        objectCount: objs.length,
+        bedCount:    beds.length,
+        treeCount:   trees.length,
+        fruitTrees:  trees.filter((t: any) => t.isFruitTree).map((t: any) => t.fruitTreeName || 'עץ פרי'),
+        plantCount:  plants.length,
+        plantNames:  plants.map((p: any) => p.plantNameHe).filter(Boolean),
+      };
+    }
 
     // ── 6. Build Moosh context ────────────────────────────────────────────
     const context: MooshContext = {

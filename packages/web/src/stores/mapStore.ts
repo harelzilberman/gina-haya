@@ -4,81 +4,121 @@ import { api } from '../api/client';
 
 // ── Types ────────────────────────────────────────────────────────────────────
 
-export interface PlantInBed {
-  instanceId: string;
-  plantId: string;
-  nameHe: string;
-  emoji: string;
-  spacingCm: number;
+export interface MapObject {
+  id: string;
+  type: string;
+  shapeType: 'polygon' | 'rect' | 'circle';
+  /** polygon: [[x,y],...] | rect: [[x,y,w,h]] | circle: [[cx,cy,r]] */
+  points: number[][];
+  label: string;
+  isFruitTree: boolean;
+  fruitTreeName: string;
 }
 
-export interface Bed {
+export interface PlantMarker {
   id: string;
-  name: string;
-  /** position in garden-units (1 unit = 10 cm, so 10 = 1 m) */
+  plantNameHe: string;
+  plantNameEn: string;
+  emoji: string;
   x: number;
   y: number;
-  w: number;
-  h: number;
-  color: string;
-  plants: PlantInBed[];
+  spacing: number;
 }
 
 export interface MapData {
-  /** garden width in full meters */
-  widthM: number;
-  /** garden height in full meters */
-  heightM: number;
-  beds: Bed[];
+  objects: MapObject[];
+  plants: PlantMarker[];
 }
 
-interface MapStore {
+export interface WizardStatus {
+  runsUsedThisMonth: number;
+  limit: number | null;
+  canRun: boolean;
+}
+
+export type MapTool = 'select' | 'polygon' | 'rect' | 'circle' | 'plant' | 'delete';
+
+interface ActivePlant {
+  nameHe: string;
+  nameEn: string;
+  emoji: string;
+  spacing: number;
+}
+
+interface MapState {
   mapId: string | null;
-  map: MapData;
-  selectedBedId: string | null;
+  mapData: MapData;
+  northAngle: number;
   isLoading: boolean;
   isSaving: boolean;
   isDirty: boolean;
+  selectedTool: MapTool;
+  activePlant: ActivePlant | null;
+  selectedObjectId: string | null;
+  showSunZones: boolean;
+  wizardStatus: WizardStatus | null;
+  history: MapData[];
   error: string | null;
 
+  // Map lifecycle
   loadMap: () => Promise<void>;
   saveMap: () => Promise<void>;
+  createMap: (gardenId?: string) => Promise<void>;
 
-  addBed: (bed: Omit<Bed, 'id' | 'plants'>) => string;
-  updateBed: (id: string, updates: Partial<Omit<Bed, 'id' | 'plants'>>) => void;
-  deleteBed: (id: string) => void;
-  selectBed: (id: string | null) => void;
+  // Tools
+  setTool: (tool: MapTool) => void;
+  setActivePlant: (plant: ActivePlant | null) => void;
+  selectObject: (id: string | null) => void;
+  toggleSunZones: () => void;
+  setNorthAngle: (angle: number) => void;
 
-  addPlantToBed: (bedId: string, plant: Omit<PlantInBed, 'instanceId'>) => void;
-  removePlantFromBed: (bedId: string, instanceId: string) => void;
+  // Objects
+  addObject: (obj: Omit<MapObject, 'id'>) => string;
+  updateObject: (id: string, changes: Partial<MapObject>) => void;
+  deleteObject: (id: string) => void;
 
-  setMapSize: (widthM: number, heightM: number) => void;
+  // Plants
+  addPlant: (plant: Omit<PlantMarker, 'id'>) => void;
+  removePlant: (id: string) => void;
+
+  // Undo
+  undo: () => void;
+
+  // Wizard
+  loadWizardStatus: () => Promise<void>;
 }
 
-// ── Debounced auto-save ──────────────────────────────────────────────────────
+// ── Debounced save ────────────────────────────────────────────────────────────
 
 let _saveTimer: ReturnType<typeof setTimeout> | null = null;
 
 function scheduleSave() {
   if (_saveTimer) clearTimeout(_saveTimer);
-  _saveTimer = setTimeout(() => useMapStore.getState().saveMap(), 1500);
+  _saveTimer = setTimeout(() => useMapStore.getState().saveMap(), 800);
 }
 
 function getToken() {
   return useAuthStore.getState().session?.access_token;
 }
 
+const EMPTY_MAP: MapData = { objects: [], plants: [] };
+const MAX_HISTORY = 20;
+
 // ── Store ────────────────────────────────────────────────────────────────────
 
-const DEFAULT_MAP: MapData = { widthM: 10, heightM: 8, beds: [] };
-
-export const useMapStore = create<MapStore>((set, get) => ({
+export const useMapStore = create<MapState>((set, get) => ({
   mapId: null,
-  map: DEFAULT_MAP,
-  selectedBedId: null,
+  mapData: EMPTY_MAP,
+  northAngle: 0,
   isLoading: false,
   isSaving: false,
   isDirty: false,
+  selectedTool: 'select',
+  activePlant: null,
+  selectedObjectId: null,
+  showSunZones: false,
+  wizardStatus: null,
+  history: [],
   error: null,
 
   // ── loadMap ──────────────────────────────────────────────────────────────
@@ -88,13 +128,14 @@ export const useMapStore = create<MapStore>((set, get) => ({
     set({ isLoading: true, error: null });
     try {
       const data = await api.get<any>('/api/map', token);
+      if (!data.exists) {
+        set({ isLoading: false });
+        return;
+      }
       set({
-        mapId: data.id ?? null,
-        map: {
-          widthM:  data.width_m  ?? 10,
-          heightM: data.height_m ?? 8,
-          beds:    (data.beds    ?? []) as Bed[],
-        },
+        mapId: data.id,
+        mapData: data.map_data ?? EMPTY_MAP,
+        northAngle: data.north_angle ?? 0,
         isLoading: false,
         isDirty: false,
       });
@@ -107,93 +148,123 @@ export const useMapStore = create<MapStore>((set, get) => ({
   async saveMap() {
     const token = getToken();
     if (!token) return;
-    const { map, mapId } = get();
+    const { mapId, mapData, northAngle } = get();
     set({ isSaving: true });
     try {
-      const saved = await api.post<any>('/api/map', {
-        id:       mapId ?? undefined,
-        width_m:  map.widthM,
-        height_m: map.heightM,
-        beds:     map.beds,
-      }, token);
-      set({ isSaving: false, isDirty: false, mapId: saved.id ?? mapId });
+      let saved: any;
+      if (mapId) {
+        saved = await api.patch<any>(`/api/map/${mapId}`, { mapData, northAngle }, token);
+      } else {
+        saved = await api.post<any>('/api/map', { mapData, northAngle }, token);
+        set({ mapId: saved.id });
+      }
+      set({ isSaving: false, isDirty: false });
     } catch (err: any) {
       set({ isSaving: false, error: err.message });
     }
   },
 
-  // ── addBed ───────────────────────────────────────────────────────────────
-  addBed(bed) {
-    const newBed: Bed = { ...bed, id: crypto.randomUUID(), plants: [] };
-    set(s => ({ map: { ...s.map, beds: [...s.map.beds, newBed] }, isDirty: true }));
-    scheduleSave();
-    return newBed.id;
+  // ── createMap ────────────────────────────────────────────────────────────
+  async createMap(gardenId) {
+    const token = getToken();
+    if (!token) return;
+    set({ isLoading: true, error: null });
+    try {
+      const saved = await api.post<any>('/api/map', {
+        gardenId, mapData: EMPTY_MAP, northAngle: 0,
+      }, token);
+      set({ mapId: saved.id, mapData: EMPTY_MAP, northAngle: 0, isLoading: false, isDirty: false });
+    } catch (err: any) {
+      set({ isLoading: false, error: err.message });
+    }
   },
 
-  // ── updateBed ────────────────────────────────────────────────────────────
-  updateBed(id, updates) {
+  // ── Tool controls ─────────────────────────────────────────────────────────
+  setTool(tool) { set({ selectedTool: tool, selectedObjectId: null }); },
+  setActivePlant(plant) { set({ activePlant: plant }); },
+  selectObject(id) { set({ selectedObjectId: id }); },
+  toggleSunZones() { set(s => ({ showSunZones: !s.showSunZones })); },
+  setNorthAngle(angle) {
+    set({ northAngle: ((angle % 360) + 360) % 360, isDirty: true });
+    scheduleSave();
+  },
+
+  // ── Mutation helpers ───────────────────────────────────────────────────────
+  addObject(obj) {
+    const newObj: MapObject = { ...obj, id: crypto.randomUUID() };
+    set(s => {
+      const history = [s.mapData, ...s.history].slice(0, MAX_HISTORY);
+      return {
+        mapData: { ...s.mapData, objects: [...s.mapData.objects, newObj] },
+        history,
+        isDirty: true,
+      };
+    });
+    scheduleSave();
+    return newObj.id;
+  },
+
+  updateObject(id, changes) {
     set(s => ({
-      map: {
-        ...s.map,
-        beds: s.map.beds.map(b => (b.id === id ? { ...b, ...updates } : b)),
+      mapData: {
+        ...s.mapData,
+        objects: s.mapData.objects.map(o => o.id === id ? { ...o, ...changes } : o),
       },
       isDirty: true,
     }));
     scheduleSave();
   },
 
-  // ── deleteBed ────────────────────────────────────────────────────────────
-  deleteBed(id) {
+  deleteObject(id) {
+    set(s => {
+      const history = [s.mapData, ...s.history].slice(0, MAX_HISTORY);
+      return {
+        mapData: { ...s.mapData, objects: s.mapData.objects.filter(o => o.id !== id) },
+        selectedObjectId: s.selectedObjectId === id ? null : s.selectedObjectId,
+        history,
+        isDirty: true,
+      };
+    });
+    scheduleSave();
+  },
+
+  addPlant(plant) {
+    const newPlant: PlantMarker = { ...plant, id: crypto.randomUUID() };
+    set(s => {
+      const history = [s.mapData, ...s.history].slice(0, MAX_HISTORY);
+      return {
+        mapData: { ...s.mapData, plants: [...s.mapData.plants, newPlant] },
+        history,
+        isDirty: true,
+      };
+    });
+    scheduleSave();
+  },
+
+  removePlant(id) {
     set(s => ({
-      map: { ...s.map, beds: s.map.beds.filter(b => b.id !== id) },
-      selectedBedId: s.selectedBedId === id ? null : s.selectedBedId,
+      mapData: { ...s.mapData, plants: s.mapData.plants.filter(p => p.id !== id) },
       isDirty: true,
     }));
     scheduleSave();
   },
 
-  // ── selectBed ────────────────────────────────────────────────────────────
-  selectBed(id) {
-    set({ selectedBedId: id });
-  },
-
-  // ── addPlantToBed ────────────────────────────────────────────────────────
-  addPlantToBed(bedId, plant) {
-    const item: PlantInBed = { ...plant, instanceId: crypto.randomUUID() };
-    set(s => ({
-      map: {
-        ...s.map,
-        beds: s.map.beds.map(b =>
-          b.id === bedId ? { ...b, plants: [...b.plants, item] } : b
-        ),
-      },
-      isDirty: true,
-    }));
+  // ── Undo ──────────────────────────────────────────────────────────────────
+  undo() {
+    const { history } = get();
+    if (history.length === 0) return;
+    const [prev, ...rest] = history;
+    set({ mapData: prev, history: rest, isDirty: true });
     scheduleSave();
   },
 
-  // ── removePlantFromBed ───────────────────────────────────────────────────
-  removePlantFromBed(bedId, instanceId) {
-    set(s => ({
-      map: {
-        ...s.map,
-        beds: s.map.beds.map(b =>
-          b.id === bedId
-            ? { ...b, plants: b.plants.filter(p => p.instanceId !== instanceId) }
-            : b
-        ),
-      },
-      isDirty: true,
-    }));
-    scheduleSave();
-  },
-
-  // ── setMapSize ────────────────────────────────────────────────────────────
-  setMapSize(widthM, heightM) {
-    set(s => ({
-      map: { ...s.map, widthM, heightM },
-      isDirty: true,
-    }));
-    scheduleSave();
+  // ── Wizard ────────────────────────────────────────────────────────────────
+  async loadWizardStatus() {
+    const token = getToken();
+    if (!token) return;
+    try {
+      const status = await api.get<WizardStatus>('/api/map/wizard-status', token);
+      set({ wizardStatus: status });
+    } catch { /* silent */ }
   },
 }));

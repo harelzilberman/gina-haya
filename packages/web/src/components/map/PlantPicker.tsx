@@ -1,6 +1,7 @@
 import { useState } from 'react';
-import { PLANTS, companionStatus } from '../../data/companions';
+import { PLANTS } from '../../data/companions';
 import type { PlantData } from '../../data/companions';
+import { useGardenStore } from '../../stores/gardenStore';
 
 const GOLD   = '#F5C840';
 const PARCH  = '#EDE0C4';
@@ -8,143 +9,143 @@ const SAGE   = '#7DC084';
 const FRANK  = '"Frank Ruhl Libre", Georgia, serif';
 const ASSIST = '"Assistant", "Heebo", sans-serif';
 
-const CATEGORY_LABELS: Record<string, string> = {
-  fruit:  'פרי 🍅',
-  root:   'שורש 🥕',
-  leaf:   'עלה 🥬',
-  flower: 'פרח 🌸',
+const CAT_LABELS: Record<string, string> = {
+  fruit: 'פרי 🍅', root: 'שורש 🥕', leaf: 'עלה 🥬', flower: 'פרח 🌸',
 };
 
-const STATUS_COLORS = {
-  good:    { bg: 'rgba(74,128,80,0.18)',  border: `rgba(125,192,132,0.4)`,  dot: SAGE },
-  bad:     { bg: 'rgba(163,48,48,0.18)',  border: `rgba(220,100,100,0.4)`,  dot: '#E07070' },
-  neutral: { bg: 'rgba(40,60,40,0.15)',   border: `rgba(245,200,64,0.12)`,  dot: `${PARCH}44` },
-};
-
-interface Props {
-  existingPlantIds: string[];
-  onAdd: (plant: PlantData) => void;
-  onClose: () => void;
+interface ActivePlant {
+  nameHe: string; nameEn: string; emoji: string; spacing: number;
 }
 
-export function PlantPicker({ existingPlantIds, onAdd, onClose }: Props) {
+interface Props {
+  activePlant: ActivePlant | null;
+  onSetActivePlant: (p: ActivePlant | null) => void;
+}
+
+export function PlantPicker({ activePlant, onSetActivePlant }: Props) {
   const [search, setSearch] = useState('');
-  const [filter, setFilter] = useState<string>('all');
+  const [catFilter, setCatFilter] = useState<string>('all');
+  const { gardens } = useGardenStore();
+
+  const gardenPlantNames = (gardens[0]?.garden_plants ?? []).map(
+    (p: any) => (p.common_name_he as string).toLowerCase()
+  );
 
   const filtered = PLANTS.filter(p => {
     const matchSearch = !search ||
       p.nameHe.includes(search) ||
       p.nameEn.toLowerCase().includes(search.toLowerCase());
-    const matchFilter = filter === 'all' || p.category === filter;
-    return matchSearch && matchFilter;
+    const matchCat = catFilter === 'all' || p.category === catFilter;
+    return matchSearch && matchCat;
   });
+
+  const gardenPlants = filtered.filter(p => gardenPlantNames.includes(p.nameHe.toLowerCase()));
+  const otherPlants  = filtered.filter(p => !gardenPlantNames.includes(p.nameHe.toLowerCase()));
+
+  function selectPlant(p: PlantData) {
+    const same = activePlant?.nameEn === p.nameEn;
+    onSetActivePlant(same ? null : { nameHe: p.nameHe, nameEn: p.nameEn, emoji: p.emoji, spacing: p.spacingCm });
+  }
 
   return (
     <div style={{
-      background: 'linear-gradient(160deg, rgba(22,50,24,0.98) 0%, rgba(20,43,22,0.99) 100%)',
-      border: '1px solid rgba(245,200,64,0.15)',
-      borderRadius: '12px',
-      padding: '16px',
-      maxHeight: '420px',
+      width: '260px',
+      flexShrink: 0,
+      height: '100%',
       display: 'flex',
       flexDirection: 'column',
+      background: 'rgba(20,43,22,0.97)',
+      borderInlineStart: '1px solid rgba(245,200,64,0.15)',
+      overflow: 'hidden',
     }}>
       {/* Header */}
-      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '12px' }}>
-        <h3 style={{ fontFamily: FRANK, fontSize: '15px', color: GOLD, margin: 0 }}>
-          בחר צמח לשתילה
+      <div style={{ padding: '14px 14px 8px', borderBottom: '1px solid rgba(245,200,64,0.08)' }}>
+        <h3 style={{ fontFamily: FRANK, fontSize: '14px', color: GOLD, margin: '0 0 8px' }}>
+          🌱 בחר צמח לשתילה
         </h3>
-        <button
-          onClick={onClose}
-          style={{ background: 'none', border: 'none', color: `${PARCH}55`, cursor: 'pointer', fontSize: '16px', padding: '2px 6px' }}
-        >
-          ✕
-        </button>
-      </div>
-
-      {/* Companion legend */}
-      {existingPlantIds.length > 0 && (
-        <div style={{ display: 'flex', gap: '10px', marginBottom: '10px', flexWrap: 'wrap' }}>
-          <span style={{ ...legendDot(STATUS_COLORS.good.dot) }}>⬤</span>
-          <span style={legendText}>טוב ביחד</span>
-          <span style={{ ...legendDot(STATUS_COLORS.bad.dot) }}>⬤</span>
-          <span style={legendText}>לא מומלץ</span>
-          <span style={{ ...legendDot(`${PARCH}30`) }}>⬤</span>
-          <span style={legendText}>ניטרלי</span>
-        </div>
-      )}
-
-      {/* Search + filter */}
-      <div style={{ display: 'flex', gap: '6px', marginBottom: '10px' }}>
+        {activePlant && (
+          <div style={{
+            display: 'flex', alignItems: 'center', gap: '6px', padding: '6px 10px',
+            borderRadius: '8px', backgroundColor: `${GOLD}18`, border: `1px solid ${GOLD}44`,
+            marginBottom: '8px',
+          }}>
+            <span style={{ fontSize: '18px' }}>{activePlant.emoji}</span>
+            <div>
+              <div style={{ fontFamily: ASSIST, fontSize: '12px', color: GOLD, fontWeight: 600 }}>{activePlant.nameHe}</div>
+              <div style={{ fontFamily: ASSIST, fontSize: '10px', color: `${PARCH}55` }}>{activePlant.spacing} ס"מ מרווח</div>
+            </div>
+            <button onClick={() => onSetActivePlant(null)}
+              style={{ marginInlineStart: 'auto', background: 'none', border: 'none', color: `${PARCH}55`, cursor: 'pointer', fontSize: '14px' }}>✕</button>
+          </div>
+        )}
         <input
-          placeholder="חיפוש..."
+          placeholder="חיפוש צמח..."
           value={search}
           onChange={e => setSearch(e.target.value)}
           style={{
-            flex: 1, fontFamily: ASSIST, fontSize: '12px', color: PARCH,
+            width: '100%', boxSizing: 'border-box',
+            fontFamily: ASSIST, fontSize: '12px', color: PARCH,
             background: 'rgba(245,200,64,0.06)', border: '1px solid rgba(245,200,64,0.15)',
-            borderRadius: '6px', padding: '6px 10px', outline: 'none',
+            borderRadius: '6px', padding: '7px 10px', outline: 'none', marginBottom: '6px',
           }}
         />
-        <select
-          value={filter}
-          onChange={e => setFilter(e.target.value)}
-          style={{
-            fontFamily: ASSIST, fontSize: '11px', color: PARCH,
-            background: 'rgba(245,200,64,0.06)', border: '1px solid rgba(245,200,64,0.15)',
-            borderRadius: '6px', padding: '6px 8px', outline: 'none', cursor: 'pointer',
-          }}
-        >
-          <option value="all">הכל</option>
-          {Object.entries(CATEGORY_LABELS).map(([k, v]) => (
-            <option key={k} value={k}>{v}</option>
+        <div style={{ display: 'flex', gap: '4px', flexWrap: 'wrap' }}>
+          <button onClick={() => setCatFilter('all')} style={filterBtn(catFilter === 'all')}>הכל</button>
+          {Object.entries(CAT_LABELS).map(([k, v]) => (
+            <button key={k} onClick={() => setCatFilter(k)} style={filterBtn(catFilter === k)}>{v}</button>
           ))}
-        </select>
+        </div>
       </div>
 
-      {/* Plant grid */}
-      <div style={{ overflowY: 'auto', flex: 1 }}>
-        <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px' }}>
-          {filtered.map(plant => {
-            const status = companionStatus(plant.id, existingPlantIds);
-            const colors = STATUS_COLORS[status];
-            const alreadyAdded = existingPlantIds.includes(plant.id);
-            return (
-              <button
-                key={plant.id}
-                onClick={() => !alreadyAdded && onAdd(plant)}
-                title={`${plant.nameEn} — ${plant.spacingCm} ס"מ מרווח`}
-                style={{
-                  fontFamily: ASSIST, fontSize: '12px', fontWeight: 500,
-                  padding: '5px 10px', borderRadius: '8px',
-                  border: `1px solid ${colors.border}`,
-                  color: alreadyAdded ? `${PARCH}44` : PARCH,
-                  backgroundColor: alreadyAdded ? 'transparent' : colors.bg,
-                  cursor: alreadyAdded ? 'default' : 'pointer',
-                  display: 'flex', alignItems: 'center', gap: '4px',
-                  transition: 'opacity 0.15s',
-                  opacity: alreadyAdded ? 0.4 : 1,
-                }}
-              >
-                <span style={{ color: colors.dot, fontSize: '8px', lineHeight: 1 }}>⬤</span>
-                {plant.emoji} {plant.nameHe}
-              </button>
-            );
-          })}
-          {filtered.length === 0 && (
-            <p style={{ fontFamily: ASSIST, fontSize: '12px', color: `${PARCH}44`, padding: '8px 0' }}>
-              אין תוצאות
-            </p>
-          )}
-        </div>
+      {/* Plant list */}
+      <div style={{ flex: 1, overflowY: 'auto', padding: '8px 10px' }}>
+        {gardenPlants.length > 0 && (
+          <>
+            <p style={sectionLabel}>הצמחים שלי ⭐</p>
+            {gardenPlants.map(p => <PlantRow key={p.id} plant={p} active={activePlant?.nameEn === p.nameEn} isGarden onSelect={() => selectPlant(p)} />)}
+          </>
+        )}
+        <p style={sectionLabel}>כל הצמחים</p>
+        {otherPlants.map(p => <PlantRow key={p.id} plant={p} active={activePlant?.nameEn === p.nameEn} onSelect={() => selectPlant(p)} />)}
+        {filtered.length === 0 && <p style={{ fontFamily: ASSIST, fontSize: '12px', color: `${PARCH}33`, textAlign: 'center', marginTop: '20px' }}>אין תוצאות</p>}
       </div>
     </div>
   );
 }
 
-const legendDot = (color: string): React.CSSProperties => ({
-  color, fontSize: '10px',
+function PlantRow({ plant, active, isGarden = false, onSelect }: { plant: PlantData; active: boolean; isGarden?: boolean; onSelect: () => void }) {
+  return (
+    <button
+      onClick={onSelect}
+      style={{
+        display: 'flex', alignItems: 'center', gap: '8px',
+        width: '100%', textAlign: 'right', padding: '7px 8px',
+        borderRadius: '7px', marginBottom: '3px', cursor: 'pointer',
+        border: `1px solid ${active ? GOLD + '55' : isGarden ? GOLD + '22' : 'transparent'}`,
+        background: active ? `${GOLD}15` : isGarden ? `${GOLD}07` : 'transparent',
+        transition: 'background 0.12s',
+      }}>
+      <span style={{ fontSize: '18px' }}>{plant.emoji}</span>
+      <div style={{ flex: 1 }}>
+        <div style={{ fontFamily: '"Assistant","Heebo",sans-serif', fontSize: '12px', fontWeight: active ? 600 : 400, color: active ? GOLD : '#EDE0C4CC' }}>{plant.nameHe}</div>
+        <div style={{ fontFamily: '"Assistant","Heebo",sans-serif', fontSize: '10px', color: 'rgba(237,224,196,0.35)' }}>{plant.nameEn}</div>
+      </div>
+      <span style={{
+        fontFamily: '"Assistant","Heebo",sans-serif', fontSize: '10px', padding: '2px 6px',
+        borderRadius: '50px', background: 'rgba(125,192,132,0.15)', color: '#7DC084',
+      }}>{plant.spacingCm} ס"מ</span>
+    </button>
+  );
+}
+
+const filterBtn = (active: boolean): React.CSSProperties => ({
+  fontFamily: ASSIST, fontSize: '10px', padding: '3px 8px', borderRadius: '50px',
+  border: `1px solid ${active ? GOLD + '66' : 'rgba(245,200,64,0.15)'}`,
+  color: active ? GOLD : `${PARCH}55`, backgroundColor: active ? `${GOLD}15` : 'transparent',
+  cursor: 'pointer',
 });
-const legendText: React.CSSProperties = {
-  fontFamily: ASSIST, fontSize: '10px', color: `${PARCH}66`, marginRight: '6px',
+
+const sectionLabel: React.CSSProperties = {
+  fontFamily: ASSIST, fontSize: '10px', fontWeight: 600, letterSpacing: '0.07em',
+  textTransform: 'uppercase', color: 'rgba(237,224,196,0.3)', margin: '8px 0 4px',
 };

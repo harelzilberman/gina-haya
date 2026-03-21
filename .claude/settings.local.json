@@ -8,7 +8,9 @@
       "Bash(ls:*)",
       "Bash(find:*)",
       "Bash(npx tsc:*)",
-      "Bash(npm run:*)"
+      "Bash(npm run:*)",
+      "Bash(python3 -c \"import sys,json; d=json.load\\(sys.stdin\\); print\\(''''\\\\n''''.join\\(sorted\\(d.get\\(''''dependencies'''',{}\\).keys\\(\\)\\)\\)\\)\")",
+      "Bash(node:*)"
     ]
   }
 }

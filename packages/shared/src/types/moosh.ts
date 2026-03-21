@@ -23,12 +23,14 @@ export interface MooshContext {
   };
   userLanguage: 'he' | 'en';
   gardenMap?: {
-    widthM: number;
-    heightM: number;
-    beds: Array<{
-      name: string;
-      plants: string[];
-    }>;
+    hasMap: boolean;
+    northAngle: number;
+    objectCount: number;
+    bedCount: number;
+    treeCount: number;
+    fruitTrees: string[];
+    plantCount: number;
+    plantNames: string[];
   } | null;
   recentHarvests?: Array<{
     plantNameHe: string;

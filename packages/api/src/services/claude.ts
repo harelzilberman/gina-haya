@@ -160,16 +160,14 @@ function buildSystemPrompt(context: MooshContext): string {
       : `\nPlants in garden: ${context.plants.join(', ')}`;
   }
 
-  if (context.gardenMap) {
-    const { widthM, heightM, beds } = context.gardenMap;
-    const bedSummaries = beds.map(b =>
-      b.plants.length > 0
-        ? `${b.name} (${b.plants.join(', ')})`
-        : b.name
-    ).join(' | ');
+  if (context.gardenMap?.hasMap) {
+    const m = context.gardenMap;
+    const fruitLine = m.fruitTrees.length > 0 ? `, פרי: ${m.fruitTrees.join(', ')}` : '';
+    const plantLine = m.plantNames.length > 0 ? `, צמחים: ${m.plantNames.slice(0, 8).join(', ')}` : '';
+    const summary = `${m.bedCount} ערוגות, ${m.treeCount} עצים${fruitLine}, ${m.plantCount} צמחים מסומנים${plantLine}. צפון: ${m.northAngle}°`;
     prompt += context.userLanguage === 'he'
-      ? `\nמפת גינה: ${widthM}×${heightM} מ'. ערוגות: ${bedSummaries || 'אין עדיין'}`
-      : `\nGarden map: ${widthM}×${heightM} m. Beds: ${bedSummaries || 'none yet'}`;
+      ? `\nמפת הגינה: ${summary}`
+      : `\nGarden map: ${m.bedCount} beds, ${m.treeCount} trees${fruitLine}, ${m.plantCount} plants${plantLine}. North: ${m.northAngle}°`;
   }
 
   return prompt;
