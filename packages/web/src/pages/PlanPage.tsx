@@ -64,13 +64,12 @@ const PLAN_CSS = `
     overflow: hidden !important;
   }
 
-  body * { visibility: hidden; }
-  #weekly-plan-print, #weekly-plan-print * { visibility: visible; }
-  #weekly-plan-print {
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
+  /* Hide screen UI, show print div */
+  body > * { display: none !important; }
+  #weekly-plan-print { 
+    display: block !important;
+    position: static !important;
+    width: 100% !important;
   }
 }
 `;
@@ -213,11 +212,28 @@ export function PlanPage() {
 
   function handlePrint() {
     const printDiv = document.getElementById('weekly-plan-print');
-    if (printDiv) printDiv.style.display = 'block';
-    window.print();
+    if (printDiv) {
+      printDiv.style.display = 'block';
+      printDiv.style.position = 'fixed';
+      printDiv.style.top = '0';
+      printDiv.style.left = '0';
+      printDiv.style.width = '100%';
+      printDiv.style.zIndex = '99999';
+      printDiv.style.background = 'white';
+    }
     setTimeout(() => {
-      if (printDiv) printDiv.style.display = 'none';
-    }, 1000);
+      window.print();
+      setTimeout(() => {
+        if (printDiv) {
+          printDiv.style.display = 'none';
+          printDiv.style.position = '';
+          printDiv.style.top = '';
+          printDiv.style.left = '';
+          printDiv.style.zIndex = '';
+          printDiv.style.background = '';
+        }
+      }, 500);
+    }, 100);
   }
 
   const isGardenLoading = !gardenCheckStarted || gardenStore.isLoading;
