@@ -132,7 +132,7 @@ export function Navbar() {
           top: 0,
           insetInlineStart: 0,
           insetInlineEnd: 0,
-          zIndex: 50,
+          zIndex: 100,
           height: '64px',
           display: 'flex',
           alignItems: 'center',
@@ -282,7 +282,7 @@ export function Navbar() {
                     borderRadius: '6px',
                     boxShadow: '0 12px 48px rgba(0,0,0,0.5)',
                     padding: '6px 0',
-                    zIndex: 50,
+                    zIndex: 101,
                   }}
                 >
                   {[
@@ -370,7 +370,7 @@ export function Navbar() {
             top: '52px',
             insetInlineStart: 0,
             insetInlineEnd: 0,
-            zIndex: 49,
+            zIndex: 99,
             background: 'linear-gradient(180deg, rgba(20,43,22,0.98) 0%, rgba(12,28,14,0.98) 100%)',
             backdropFilter: 'blur(10px)',
             borderBottom: '1px solid rgba(245,200,64,0.1)',

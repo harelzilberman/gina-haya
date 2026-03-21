@@ -158,7 +158,7 @@ export function DayDetailModal({ day, onClose }: Props) {
         style={{
           position:        'fixed',
           inset:           0,
-          zIndex:          100,
+          zIndex:          1000,
           backgroundColor: 'rgba(0,0,0,0.7)',
           backdropFilter:  'blur(4px)',
         }}
@@ -175,7 +175,7 @@ export function DayDetailModal({ day, onClose }: Props) {
           top:             '50%',
           left:            '50%',
           transform:       'translate(-50%, -50%)',
-          zIndex:          101,
+          zIndex:          1001,
           width:           'min(520px, calc(100vw - 32px))',
           maxHeight:       'calc(100vh - 64px)',
           overflowY:       'auto',
