@@ -12,6 +12,7 @@ import { GardenPage } from './pages/GardenPage';
 import { BillingPage } from './pages/BillingPage';
 import { SettingsPage } from './pages/SettingsPage';
 import { TrackerPage } from './pages/TrackerPage';
+import { PlanPage } from './pages/PlanPage';
 import { PrivacyPolicyPage } from './pages/PrivacyPolicyPage';
 import { ProtectedRoute } from './components/auth/ProtectedRoute';
 import { OnboardingWizard } from './components/auth/OnboardingWizard';
@@ -130,6 +131,14 @@ export default function App() {
             element={
               <ProtectedRoute>
                 <TrackerPage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/plan"
+            element={
+              <ProtectedRoute>
+                <PlanPage />
               </ProtectedRoute>
             }
           />

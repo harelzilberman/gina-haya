@@ -38,6 +38,7 @@ import { billingRouter } from './routes/billing';
 import { emailRouter }   from './routes/email';
 import { harvestsRouter }  from './routes/harvests';
 import { trackersRouter }  from './routes/trackers';
+import { plansRouter }   from './routes/plans';
 
 app.use('/api/auth',     authRouter);
 app.use('/api/garden',   gardenRouter);
@@ -48,6 +49,7 @@ app.use('/api/billing',  billingRouter);
 app.use('/api/email',    emailRouter);
 app.use('/api/harvests', harvestsRouter);
 app.use('/api/trackers', trackersRouter);
+app.use('/api/plans',    plansRouter);
 
 app.use((_req, res) => {
   res.status(404).json({ error: 'Not found' });

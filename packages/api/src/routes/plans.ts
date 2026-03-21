@@ -1,0 +1,106 @@
+import { Router, type IRouter } from 'express';
+import { verifyToken } from '../middleware/auth';
+import { db } from '../db/client';
+import { getCalendarRange } from '../db/queries/calendar';
+import { getGardensByUser } from '../db/queries/garden';
+import { fetchWeatherForRegion } from '../services/weather';
+import { generateWeeklyPlan } from '../services/weeklyPlan';
+import { ISRAEL_TIMEZONE } from '@gina-haya/shared';
+
+export const plansRouter: IRouter = Router();
+
+plansRouter.use(verifyToken);
+
+function todayISO(): string {
+  return new Date().toLocaleDateString('en-CA', { timeZone: ISRAEL_TIMEZONE });
+}
+
+async function getOrGeneratePlan(userId: string, forceRegenerate = false) {
+  const today = todayISO();
+  const endDate = new Date(today + 'T00:00:00');
+  endDate.setDate(endDate.getDate() + 6);
+  const weekEnd = endDate.toISOString().slice(0, 10);
+
+  // Return cached plan if generated today
+  if (!forceRegenerate) {
+    const { data: existing } = await db
+      .from('planting_plans')
+      .select('*')
+      .eq('user_id', userId)
+      .eq('week_start', today)
+      .order('generated_at', { ascending: false })
+      .limit(1)
+      .single();
+
+    if (existing) {
+      const generatedAt = new Date(existing.generated_at);
+      const todayStart  = new Date(today + 'T00:00:00');
+      if (generatedAt >= todayStart) {
+        return { ...existing.plan_data, generatedAt: existing.generated_at };
+      }
+    }
+  }
+
+  // Generate fresh plan
+  const [gardens, calendarDays] = await Promise.all([
+    getGardensByUser(userId),
+    getCalendarRange(today, weekEnd),
+  ]);
+
+  if (!calendarDays || calendarDays.length === 0) {
+    throw new Error('No calendar data available for this week');
+  }
+
+  const garden  = gardens[0] ?? null;
+  const weather = await fetchWeatherForRegion(garden?.locationRegion ?? null);
+  const plan    = await generateWeeklyPlan(userId, garden, calendarDays, weather);
+
+  const generatedAt = new Date().toISOString();
+
+  // Remove stale plans for this week, then persist fresh one
+  await db
+    .from('planting_plans')
+    .delete()
+    .eq('user_id', userId)
+    .eq('week_start', today);
+
+  const { data: saved } = await db
+    .from('planting_plans')
+    .insert({
+      user_id:      userId,
+      garden_id:    garden?.id ?? null,
+      week_start:   today,
+      week_end:     weekEnd,
+      plan_data:    plan,
+      generated_at: generatedAt,
+    })
+    .select()
+    .single();
+
+  return { ...plan, generatedAt: saved?.generated_at ?? generatedAt };
+}
+
+// GET /api/plans/weekly
+plansRouter.get('/weekly', async (req, res) => {
+  try {
+    const plan = await getOrGeneratePlan(req.user!.id);
+    res.json(plan);
+  } catch (err: any) {
+    console.error('[GET /api/plans/weekly]', err);
+    if (err.message?.includes('No calendar data')) {
+      return res.status(503).json({ error: err.message });
+    }
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// POST /api/plans/weekly/regenerate
+plansRouter.post('/weekly/regenerate', async (req, res) => {
+  try {
+    const plan = await getOrGeneratePlan(req.user!.id, true);
+    res.json(plan);
+  } catch (err: any) {
+    console.error('[POST /api/plans/weekly/regenerate]', err);
+    res.status(500).json({ error: err.message });
+  }
+});

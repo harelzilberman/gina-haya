@@ -177,6 +177,7 @@ export function Navbar() {
           >
             {[
               { label: t('nav.calendar'), to: '/calendar' },
+              { label: t('nav.plan'),     to: '/plan'     },
               { label: t('nav.tracker'), to: '/tracker' },
               { label: t('nav.plants'), to: '/plants' },
             ].map(item => (
@@ -288,6 +289,7 @@ export function Navbar() {
                   {[
                     { label: t('nav.garden'),    to: '/garden' },
                     { label: t('nav.calendar'), to: '/calendar' },
+                    { label: t('nav.plan'),     to: '/plan'     },
                     { label: t('nav.tracker'),  to: '/tracker' },
                     { label: t('nav.moosh'),    to: '/moosh' },
                     { label: t('nav.settings'), to: '/settings' },
@@ -384,6 +386,7 @@ export function Navbar() {
             <>
               {[
                 { label: t('nav.calendar'), to: '/calendar' },
+                { label: t('nav.plan'),     to: '/plan'     },
                 { label: t('nav.plants'),   to: '/plants' },
                 { label: t('nav.garden'),   to: '/garden' },
                 { label: t('nav.tracker'),  to: '/tracker' },
