@@ -1,3 +1,4 @@
+import { printWeeklyPlan } from '../utils/printPlan';
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { usePlanStore } from '../stores/planStore';
@@ -33,11 +34,7 @@ const PLAN_CSS = `
   from { opacity: 0; transform: translateY(10px); }
   to   { opacity: 1; transform: translateY(0); }
 }
-@media print {
-  @page {
-    size: A4 portrait;
-    margin: 1.2cm 1cm;
-  }
+
 
   html, body {
     height: auto !important;
@@ -210,17 +207,9 @@ export function PlanPage() {
   // Expanded day state — today is open by default
   const [expandedDay, setExpandedDay] = useState<string | null>(today);
 
-  function handlePrint() {
-    const printDiv = document.getElementById('weekly-plan-print');
-    if (printDiv) {
-      printDiv.style.display = 'block';
-      printDiv.style.position = 'fixed';
-      printDiv.style.top = '0';
-      printDiv.style.left = '0';
-      printDiv.style.width = '100%';
-      printDiv.style.zIndex = '99999';
-      printDiv.style.background = 'white';
-    }
+function handlePrint() {
+  printWeeklyPlan(plan, today);
+}
     setTimeout(() => {
       window.print();
       setTimeout(() => {
@@ -339,7 +328,7 @@ export function PlanPage() {
       </div>
 
       {/* ── Hidden print table — replaces screen UI when printing ── */}
-      <div id="weekly-plan-print" style={{ display: 'none', fontFamily: 'Arial, sans-serif', direction: 'rtl' }}>
+     
 
         {/* Print header */}
         <div style={{ fontSize: '11px', marginBottom: '8px', borderBottom: '2px solid #1C3A1E', paddingBottom: '6px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
