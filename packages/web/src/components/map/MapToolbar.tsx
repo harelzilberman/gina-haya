@@ -105,11 +105,12 @@ function CategoryDropdown({
 
       {open && (
         <div style={{
-          position: 'absolute', top: '100%', right: 0, marginTop: '4px',
+          position: 'absolute', top: '100%', right: 0, left: 'auto', marginTop: '4px',
           background: 'rgba(14,30,15,0.98)',
           border: '1px solid rgba(245,200,64,0.20)',
           borderRadius: '8px', padding: '4px',
-          minWidth: '140px', zIndex: 100,
+          minWidth: '160px', zIndex: 1000,
+          maxHeight: 'calc(100vh - 120px)', overflowY: 'auto',
           display: 'flex', flexDirection: 'column', gap: '2px',
           boxShadow: '0 4px 16px rgba(0,0,0,0.4)',
         }}>
@@ -149,7 +150,7 @@ export function MapToolbar({
 
   return (
     <div dir="rtl" style={{
-      position: 'relative', zIndex: 10, flexShrink: 0,
+      position: 'relative', zIndex: 100, flexShrink: 0,
       height: '52px', display: 'flex', alignItems: 'center',
       padding: '0 12px', gap: '6px', overflowX: 'auto',
       background: FOREST, borderBottom: '1px solid rgba(245,200,64,0.15)',
