@@ -201,7 +201,11 @@ mapRouter.post('/:id/wizard', async (req: any, res) => {
       : '';
 
     const wishlistLine = plantWishlist.length > 0
-      ? `רשימת צמחים מבוקשים: ${plantWishlist.join(', ')}`
+      ? `הצמחים שהמשתמש רוצה לגדל:\n${plantWishlist.map((p: any) => {
+          const name = typeof p === 'string' ? p : p.nameHe;
+          const qty  = typeof p === 'object' && p.quantity ? p.quantity : 1;
+          return `- ${name} × ${qty}`;
+        }).join('\n')}`
       : 'לא צוינה רשימת צמחים מבוקשת';
 
     const systemPrompt = `אתה מוש לבנה — מומחה גידול ביודינמי ישראלי. אתה מתכנן גינות ומייעץ על שתילה ביודינמית. \

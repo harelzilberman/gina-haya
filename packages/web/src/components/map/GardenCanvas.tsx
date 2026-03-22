@@ -1,5 +1,5 @@
 import { useRef, useState, useCallback, useEffect } from 'react';
-import type { MapObject, PlantMarker, MapData, MapTool } from '../../stores/mapStore';
+import type { MapObject, PlantMarker, MapData, MapTool, PlantPreview } from '../../stores/mapStore';
 import { SHAPE_CONFIGS, type ShapeType } from '../../data/mapObjects';
 import { GridInfoBox } from './GridInfoBox';
 import { ShapePropertiesPanel } from './ShapePropertiesPanel';
@@ -20,6 +20,7 @@ const ASSIST = '"Assistant", "Heebo", sans-serif';
 const TOOL_KIND: Partial<Record<MapTool, 'polygon' | 'rect' | 'circle'>> = {
   house: 'polygon', walkway: 'polygon',
   fence: 'rect', wall: 'rect', pergola: 'rect', deadzone: 'rect', 'pot-rect': 'rect',
+  bed: 'rect', hydroponics: 'rect', aquaponics: 'rect', 'raised-bed': 'rect', vertical: 'rect',
   'fruit-tree': 'circle', tree: 'circle', 'pot-round': 'circle',
 };
 const FIXED_WIDTH: Partial<Record<MapTool, number>> = { fence: 0.1, wall: 0.2 };
@@ -68,6 +69,9 @@ interface Props {
   onUpdatePlant: (id: string, changes: Partial<PlantMarker>) => void;
   onSelectObject: (id: string | null) => void;
   onSetNorthAngle: (angle: number) => void;
+  previewPlants?: PlantPreview[];
+  onConfirmPreview?: () => void;
+  onCancelPreview?: () => void;
 }
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
@@ -136,6 +140,20 @@ function SvgDefs() {
         <rect width="20" height="20" fill="rgba(160,150,130,0.3)"/>
         <path d="M10,0 L10,20 M0,10 L20,10"
           stroke="rgba(120,110,90,0.4)" strokeWidth="0.5" fill="none"/>
+      </pattern>
+      <pattern id="pat-hydro" width="10" height="6" patternUnits="userSpaceOnUse">
+        <line x1="0" y1="3" x2="10" y2="3" stroke="rgba(74,144,217,0.3)" strokeWidth="1"/>
+      </pattern>
+      <pattern id="pat-aqua" width="20" height="10" patternUnits="userSpaceOnUse">
+        <path d="M0,5 Q5,0 10,5 Q15,10 20,5" stroke="rgba(46,134,171,0.35)" strokeWidth="1" fill="none"/>
+      </pattern>
+      <pattern id="pat-wood" width="30" height="8" patternUnits="userSpaceOnUse">
+        <rect width="30" height="8" fill="rgba(139,90,43,0.2)"/>
+        <line x1="0" y1="4" x2="30" y2="4" stroke="rgba(100,60,20,0.25)" strokeWidth="0.5"/>
+        <line x1="0" y1="1" x2="30" y2="1" stroke="rgba(160,110,60,0.15)" strokeWidth="0.3"/>
+      </pattern>
+      <pattern id="pat-trellis" width="8" height="8" patternUnits="userSpaceOnUse">
+        <path d="M4,0 L4,8 M0,4 L8,4" stroke="rgba(74,124,89,0.3)" strokeWidth="0.5"/>
       </pattern>
       <filter id="shadow-sm">
         <feDropShadow dx="0" dy="1" stdDeviation="2" floodColor="#000" floodOpacity="0.3"/>
@@ -766,6 +784,7 @@ export function GardenCanvas({
   mapData, northAngle, selectedTool, activePlant, selectedObjectId, showSunZones,
   onAddObject, onUpdateObject, onDeleteObject, onAddPlant, onRemovePlant, onUpdatePlant,
   onSelectObject, onSetNorthAngle,
+  previewPlants = [], onConfirmPreview, onCancelPreview,
 }: Props) {
   const svgRef       = useRef<SVGSVGElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
@@ -1172,6 +1191,20 @@ export function GardenCanvas({
             </g>
           ))}
 
+          {/* Preview plants (wizard placement) */}
+          {previewPlants.map((p, i) => (
+            <g key={`preview-${i}`} style={{ pointerEvents: 'none', opacity: 0.65 }}>
+              <circle cx={p.x*PX} cy={p.y*PX} r={p.spacing/2*PX}
+                fill="rgba(245,200,64,0.06)" stroke="rgba(245,200,64,0.35)"
+                strokeWidth={1} strokeDasharray="4,3" />
+              <circle cx={p.x*PX} cy={p.y*PX} r={18}
+                fill="rgba(245,200,64,0.18)" stroke="#F5C840"
+                strokeWidth={1.5} strokeDasharray="4,3" />
+              <text x={p.x*PX} y={p.y*PX+7} textAnchor="middle" fontSize={20}
+                style={{ userSelect: 'none' }}>{p.emoji}</text>
+            </g>
+          ))}
+
           {/* Selection overlay */}
           {selectedObj && (
             <SelectionOverlay
@@ -1236,6 +1269,52 @@ export function GardenCanvas({
           />
         );
       })()}
+
+      {/* Plant preview confirmation panel */}
+      {previewPlants.length > 0 && (
+        <div style={{
+          position: 'absolute', bottom: 0, left: 0, right: 0,
+          height: '72px',
+          background: 'rgba(20,43,22,0.97)',
+          borderTop: '1px solid rgba(245,200,64,0.2)',
+          display: 'flex', alignItems: 'center',
+          padding: '0 24px', gap: '12px',
+          direction: 'rtl', zIndex: 100,
+          animation: 'slideUp 0.25s ease-out',
+        }}>
+          <style>{`@keyframes slideUp { from { transform: translateY(100%); opacity: 0; } to { transform: translateY(0); opacity: 1; } }`}</style>
+          <span style={{ fontSize: '24px' }}>🌕</span>
+          <div style={{ flex: 1 }}>
+            <p style={{ fontFamily: FRANK, color: GOLD, fontSize: '14px', margin: '0 0 2px' }}>
+              מוש ממליץ למקם {previewPlants.length} צמחים במפה
+            </p>
+            <p style={{ fontFamily: ASSIST, color: 'rgba(237,224,196,0.5)', fontSize: '11px', margin: 0 }}>
+              צמחים מוצגים בתצוגה מקדימה — אשר כדי להוסיף
+            </p>
+          </div>
+          <button
+            onClick={onConfirmPreview}
+            style={{
+              fontFamily: FRANK, fontSize: '13px', fontWeight: 700,
+              padding: '8px 18px', borderRadius: '7px', border: 'none',
+              background: GOLD, color: '#142B16', cursor: 'pointer', flexShrink: 0,
+            }}
+          >
+            ✓ אשר והנח
+          </button>
+          <button
+            onClick={onCancelPreview}
+            style={{
+              fontFamily: ASSIST, fontSize: '12px',
+              padding: '8px 14px', borderRadius: '7px',
+              border: '1px solid rgba(245,200,64,0.25)', background: 'transparent',
+              color: 'rgba(237,224,196,0.6)', cursor: 'pointer', flexShrink: 0,
+            }}
+          >
+            בטל
+          </button>
+        </div>
+      )}
     </div>
   );
 }

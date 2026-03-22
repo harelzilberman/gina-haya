@@ -1,7 +1,8 @@
-import { useState, useRef } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { api } from '../../api/client';
 import { useAuthStore } from '../../stores/authStore';
-import type { WizardStatus } from '../../stores/mapStore';
+import { useMapStore } from '../../stores/mapStore';
+import type { WizardStatus, PlantPreview, MapData } from '../../stores/mapStore';
 import { PLANTS } from '../../data/companions';
 
 const GOLD   = '#F5C840';
@@ -9,6 +10,13 @@ const PARCH  = '#EDE0C4';
 const SAGE   = '#7DC084';
 const FRANK  = '"Frank Ruhl Libre", Georgia, serif';
 const ASSIST = '"Assistant", "Heebo", sans-serif';
+
+interface WishlistItem {
+  nameHe: string;
+  nameEn: string;
+  emoji: string;
+  quantity: number;
+}
 
 interface WizardPlan {
   summary: string;
@@ -29,11 +37,110 @@ interface Props {
   wizardStatus: WizardStatus | null;
   onClose: () => void;
   onRefreshStatus: () => void;
+  onPlacePlants: (plants: PlantPreview[]) => void;
 }
 
-export function WizardModal({ mapId, wizardStatus, onClose, onRefreshStatus }: Props) {
+// ── Position calculation ──────────────────────────────────────────────────────
+
+function gridInRect(
+  x0: number, y0: number, w: number, h: number,
+  spacingM: number, qty: number
+): [number, number][] {
+  const positions: [number, number][] = [];
+  const cols = Math.max(1, Math.floor(w / spacingM));
+  const startX = x0 + spacingM * 0.5;
+  const startY = y0 + spacingM * 0.5;
+  let count = 0;
+  outerLoop: for (let row = 0; row < 50; row++) {
+    for (let col = 0; col < cols; col++) {
+      if (count >= qty) break outerLoop;
+      const px = startX + col * spacingM;
+      const py = startY + row * spacingM;
+      if (py > y0 + h) break outerLoop;
+      positions.push([px, py]);
+      count++;
+    }
+  }
+  // Overflow: place to the right of the bed
+  const ox = x0 + w + spacingM;
+  while (count < qty) {
+    const col = (count - positions.length) % 5;
+    const row = Math.floor((count - positions.length) / 5);
+    positions.push([ox + col * spacingM, y0 + row * spacingM]);
+    count++;
+  }
+  return positions;
+}
+
+function calculatePlantPositions(plan: WizardPlan, mapData: MapData): PlantPreview[] {
+  const bedTypes = new Set(['bed', 'raised-bed', 'hydroponics', 'aquaponics', 'vertical']);
+  const beds = mapData.objects.filter(
+    o => bedTypes.has(o.type) && o.shapeKind === 'rect' && o.x != null
+  );
+
+  const result: PlantPreview[] = [];
+  let bedIndex = 0;
+
+  for (const planBed of (plan.beds ?? [])) {
+    for (const plant of (planBed.plants ?? [])) {
+      const spacingM = Math.max(0.3, (plant.spacing ?? 30) / 100);
+      const qty = Math.min(plant.quantity ?? 1, 20);
+      const plantData = PLANTS.find(p => p.nameHe === plant.nameHe);
+      const emoji = plantData?.emoji ?? '🌱';
+
+      if (beds.length > 0) {
+        const bed = beds[bedIndex % beds.length];
+        bedIndex++;
+        const positions = gridInRect(
+          bed.x ?? 0, bed.y ?? 0,
+          bed.width ?? 2, bed.height ?? 1,
+          spacingM, qty
+        );
+        for (const [px, py] of positions) {
+          result.push({
+            plantNameHe: plant.nameHe, plantNameEn: plant.nameEn,
+            emoji, spacing: plant.spacing ?? 30,
+            x: px, y: py, bedName: planBed.name,
+          });
+        }
+      } else {
+        // No beds on map — scatter in canvas
+        const baseX = 5 + (result.length * 0.1);
+        const baseY = 5;
+        for (let i = 0; i < qty; i++) {
+          const col = i % 5, row = Math.floor(i / 5);
+          result.push({
+            plantNameHe: plant.nameHe, plantNameEn: plant.nameEn,
+            emoji, spacing: plant.spacing ?? 30,
+            x: baseX + col * spacingM, y: baseY + row * spacingM,
+            bedName: planBed.name,
+          });
+        }
+      }
+    }
+  }
+
+  return result;
+}
+
+// ── Component ─────────────────────────────────────────────────────────────────
+
+export function WizardModal({ mapId, wizardStatus, onClose, onRefreshStatus, onPlacePlants }: Props) {
   const { session } = useAuthStore();
-  const [wishlist, setWishlist] = useState<string[]>([]);
+  const mapData = useMapStore(s => s.mapData);
+
+  // Pre-populate from existing map plants
+  const initialWishlist: WishlistItem[] = mapData.plants.map(p => {
+    const plantData = PLANTS.find(d => d.nameHe === p.plantNameHe);
+    return {
+      nameHe: p.plantNameHe,
+      nameEn: p.plantNameEn,
+      emoji: p.emoji,
+      quantity: 1,
+    };
+  }).filter((item, idx, arr) => arr.findIndex(x => x.nameHe === item.nameHe) === idx); // dedupe
+
+  const [wishlist, setWishlist] = useState<WishlistItem[]>(initialWishlist);
   const [input, setInput] = useState('');
   const [suggestions, setSuggestions] = useState<string[]>([]);
   const [loading, setLoading] = useState(false);
@@ -44,7 +151,14 @@ export function WizardModal({ mapId, wizardStatus, onClose, onRefreshStatus }: P
 
   const addTag = (tag: string) => {
     const t = tag.trim();
-    if (t && !wishlist.includes(t)) setWishlist(w => [...w, t]);
+    if (!t || wishlist.some(w => w.nameHe === t)) return;
+    const plantData = PLANTS.find(p => p.nameHe === t || p.nameEn.toLowerCase() === t.toLowerCase());
+    setWishlist(w => [...w, {
+      nameHe: plantData?.nameHe ?? t,
+      nameEn: plantData?.nameEn ?? t,
+      emoji: plantData?.emoji ?? '🌱',
+      quantity: 1,
+    }]);
     setInput('');
     setSuggestions([]);
   };
@@ -62,6 +176,14 @@ export function WizardModal({ mapId, wizardStatus, onClose, onRefreshStatus }: P
     }
   };
 
+  const updateQty = (nameHe: string, delta: number) => {
+    setWishlist(w => w.map(x =>
+      x.nameHe === nameHe
+        ? { ...x, quantity: Math.min(50, Math.max(1, x.quantity + delta)) }
+        : x
+    ));
+  };
+
   const runWizard = async () => {
     if (!session?.access_token) return;
     setLoading(true);
@@ -69,7 +191,7 @@ export function WizardModal({ mapId, wizardStatus, onClose, onRefreshStatus }: P
     try {
       const result = await api.post<{ plan: WizardPlan; runsUsedThisMonth: number; limit: number | null }>(
         `/api/map/${mapId}/wizard`,
-        { plantWishlist: wishlist },
+        { plantWishlist: wishlist.map(w => ({ nameHe: w.nameHe, nameEn: w.nameEn, quantity: w.quantity })) },
         session.access_token
       );
       setPlan(result.plan);
@@ -145,17 +267,24 @@ export function WizardModal({ mapId, wizardStatus, onClose, onRefreshStatus }: P
               אילו צמחים תרצה לגדל בגינה? (אופציונלי)
             </p>
 
-            {/* Tags */}
+            {/* Tags with quantity */}
             <div style={{ display: 'flex', flexWrap: 'wrap', gap: '5px', minHeight: '32px' }}>
-              {wishlist.map(tag => (
-                <span key={tag} style={{
-                  display: 'inline-flex', alignItems: 'center', gap: '4px',
-                  fontFamily: ASSIST, fontSize: '12px', padding: '4px 10px', borderRadius: '50px',
+              {wishlist.map(item => (
+                <span key={item.nameHe} style={{
+                  display: 'inline-flex', alignItems: 'center', gap: '3px',
+                  fontFamily: ASSIST, fontSize: '12px', padding: '3px 6px 3px 8px',
+                  borderRadius: '50px',
                   backgroundColor: `${GOLD}18`, border: `1px solid ${GOLD}44`, color: GOLD,
                 }}>
-                  {tag}
-                  <button onClick={() => setWishlist(w => w.filter(t => t !== tag))}
-                    style={{ background: 'none', border: 'none', color: `${GOLD}88`, cursor: 'pointer', fontSize: '12px', padding: '0 0 0 2px' }}>✕</button>
+                  {item.emoji} {item.nameHe}
+                  {item.quantity > 1 && (
+                    <span style={{ opacity: 0.8 }}>×{item.quantity}</span>
+                  )}
+                  <button onClick={() => updateQty(item.nameHe, -1)} style={qtyBtn}>−</button>
+                  <span style={{ minWidth: '14px', textAlign: 'center', fontSize: '11px' }}>{item.quantity}</span>
+                  <button onClick={() => updateQty(item.nameHe, +1)} style={qtyBtn}>+</button>
+                  <button onClick={() => setWishlist(w => w.filter(x => x.nameHe !== item.nameHe))}
+                    style={{ background: 'none', border: 'none', color: `${GOLD}88`, cursor: 'pointer', fontSize: '12px', padding: '0 0 0 2px', lineHeight: 1 }}>✕</button>
                 </span>
               ))}
             </div>
@@ -263,8 +392,22 @@ export function WizardModal({ mapId, wizardStatus, onClose, onRefreshStatus }: P
             )}
 
             <div style={{ display: 'flex', gap: '8px' }}>
+              <button
+                onClick={() => {
+                  const positions = calculatePlantPositions(plan, mapData);
+                  onPlacePlants(positions);
+                  onClose();
+                }}
+                style={{
+                  flex: 2, fontFamily: FRANK, fontSize: '14px', fontWeight: 700,
+                  padding: '11px', borderRadius: '8px', border: 'none',
+                  backgroundColor: GOLD, color: '#142B16', cursor: 'pointer',
+                }}
+              >
+                🌱 הנח צמחים במפה
+              </button>
               <button onClick={onClose}
-                style={{ flex: 1, fontFamily: ASSIST, fontSize: '13px', padding: '10px', borderRadius: '8px', border: `1px solid rgba(245,200,64,0.2)`, color: `${PARCH}88`, background: 'none', cursor: 'pointer' }}>
+                style={{ flex: 1, fontFamily: ASSIST, fontSize: '13px', padding: '11px', borderRadius: '8px', border: `1px solid rgba(245,200,64,0.2)`, color: `${PARCH}88`, background: 'none', cursor: 'pointer' }}>
                 סגור
               </button>
             </div>
@@ -286,4 +429,10 @@ function Section({ title, color, children }: { title: string; color: string; chi
 
 const tipStyle: React.CSSProperties = {
   fontFamily: ASSIST, fontSize: '12px', color: 'rgba(237,224,196,0.7)', lineHeight: 1.5, margin: '2px 0',
+};
+
+const qtyBtn: React.CSSProperties = {
+  background: 'rgba(245,200,64,0.15)', border: '1px solid rgba(245,200,64,0.3)',
+  color: GOLD, cursor: 'pointer', fontSize: '11px', padding: '0 5px', lineHeight: '16px',
+  borderRadius: '3px', fontFamily: ASSIST,
 };

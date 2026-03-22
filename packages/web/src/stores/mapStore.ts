@@ -9,7 +9,18 @@ export type MapTool =
   | 'select' | 'plant'
   | 'house' | 'fence' | 'wall' | 'pergola' | 'deadzone' | 'walkway'
   | 'fruit-tree' | 'tree'
-  | 'pot-rect' | 'pot-round';
+  | 'pot-rect' | 'pot-round'
+  | 'bed' | 'hydroponics' | 'aquaponics' | 'raised-bed' | 'vertical';
+
+export interface PlantPreview {
+  plantNameHe: string;
+  plantNameEn: string;
+  emoji: string;
+  spacing: number;
+  x: number;
+  y: number;
+  bedName: string;
+}
 
 export interface MapObject {
   id: string;
@@ -80,6 +91,7 @@ interface MapState {
   wizardStatus: WizardStatus | null;
   history: MapData[];
   error: string | null;
+  previewPlants: PlantPreview[];
 
   loadMap: () => Promise<void>;
   saveMap: () => Promise<void>;
@@ -101,6 +113,10 @@ interface MapState {
 
   undo: () => void;
   loadWizardStatus: () => Promise<void>;
+
+  setPreviewPlants: (plants: PlantPreview[]) => void;
+  confirmPlantPreview: () => void;
+  cancelPlantPreview: () => void;
 }
 
 // ── Helpers ──────────────────────────────────────────────────────────────────
@@ -134,6 +150,7 @@ export const useMapStore = create<MapState>((set, get) => ({
   wizardStatus: null,
   history: [],
   error: null,
+  previewPlants: [],
 
   async loadMap() {
     const token = getToken();
@@ -263,4 +280,32 @@ export const useMapStore = create<MapState>((set, get) => ({
       set({ wizardStatus: status });
     } catch { /* silent */ }
   },
+
+  setPreviewPlants(plants) { set({ previewPlants: plants }); },
+
+  confirmPlantPreview() {
+    const { previewPlants } = get();
+    if (!previewPlants.length) return;
+    const newPlants: PlantMarker[] = previewPlants.map(p => ({
+      id: crypto.randomUUID(),
+      plantNameHe: p.plantNameHe,
+      plantNameEn: p.plantNameEn,
+      emoji: p.emoji,
+      spacing: p.spacing,
+      x: p.x,
+      y: p.y,
+    }));
+    set(s => {
+      const history = [s.mapData, ...s.history].slice(0, MAX_HISTORY);
+      return {
+        mapData: { ...s.mapData, plants: [...s.mapData.plants, ...newPlants] },
+        previewPlants: [],
+        history,
+        isDirty: true,
+      };
+    });
+    scheduleSave();
+  },
+
+  cancelPlantPreview() { set({ previewPlants: [] }); },
 }));

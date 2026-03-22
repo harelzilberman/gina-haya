@@ -1,10 +1,11 @@
 export type ShapeType =
   | 'house' | 'fence' | 'wall' | 'pergola' | 'deadzone' | 'walkway'
   | 'fruit-tree' | 'tree'
-  | 'pot-rect' | 'pot-round';
+  | 'pot-rect' | 'pot-round'
+  | 'bed' | 'hydroponics' | 'aquaponics' | 'raised-bed' | 'vertical';
 
 export type ShapeKind = 'polygon' | 'rect' | 'circle';
-export type PatternType = 'net' | 'gravel' | 'concrete';
+export type PatternType = 'net' | 'gravel' | 'concrete' | 'hydro' | 'aqua' | 'wood' | 'trellis';
 
 export interface ShapeConfig {
   type: ShapeType;
@@ -95,6 +96,43 @@ export const SHAPE_CONFIGS: Record<ShapeType, ShapeConfig> = {
     labelHe: 'עציץ עגול', emoji: '🪴',
     fill: 'rgba(180,100,40,0.45)', stroke: '#C0622A', strokeWidth: 2,
     defaultRadius: 0.1,
+  },
+  'bed': {
+    type: 'bed', shapeKind: 'rect',
+    labelHe: 'ערוגת גידול', emoji: '🌱',
+    fill: 'rgba(74,128,80,0.35)', stroke: '#7DC084', strokeWidth: 2,
+    defaultWidth: 2, defaultHeight: 1,
+  },
+  'hydroponics': {
+    type: 'hydroponics', shapeKind: 'rect',
+    labelHe: 'הידרופוניקה', emoji: '💧',
+    fill: 'rgba(30,100,200,0.25)', stroke: '#4A90D9', strokeWidth: 2,
+    strokeDash: [4, 2],
+    defaultWidth: 1.5, defaultHeight: 0.5,
+    pattern: 'hydro',
+  },
+  'aquaponics': {
+    type: 'aquaponics', shapeKind: 'rect',
+    labelHe: 'אקווופוניקה', emoji: '🐟',
+    fill: 'rgba(20,120,180,0.30)', stroke: '#2E86AB', strokeWidth: 2,
+    strokeDash: [6, 3],
+    defaultWidth: 2, defaultHeight: 1,
+    pattern: 'aqua',
+  },
+  'raised-bed': {
+    type: 'raised-bed', shapeKind: 'rect',
+    labelHe: 'ערוגה מוגבהת', emoji: '🧱',
+    fill: 'rgba(139,90,43,0.35)', stroke: '#8B5E2A', strokeWidth: 3,
+    defaultWidth: 2, defaultHeight: 1,
+    pattern: 'wood',
+  },
+  'vertical': {
+    type: 'vertical', shapeKind: 'rect',
+    labelHe: 'גידול אנכי', emoji: '🌿',
+    fill: 'rgba(34,100,34,0.25)', stroke: '#4A7C59', strokeWidth: 2,
+    strokeDash: [3, 3],
+    defaultWidth: 0.3, defaultHeight: 2,
+    pattern: 'trellis',
   },
 };
 

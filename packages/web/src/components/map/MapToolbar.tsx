@@ -53,6 +53,16 @@ const CATEGORIES: Category[] = [
     ],
   },
   {
+    id: 'growing', label: 'גידול',
+    items: [
+      { tool: 'bed',         emoji: '🌱', label: 'ערוגת גידול' },
+      { tool: 'hydroponics', emoji: '💧', label: 'הידרופוניקה' },
+      { tool: 'aquaponics',  emoji: '🐟', label: 'אקווופוניקה' },
+      { tool: 'raised-bed',  emoji: '🧱', label: 'ערוגה מוגבהת' },
+      { tool: 'vertical',    emoji: '🌿', label: 'גידול אנכי' },
+    ],
+  },
+  {
     id: 'pots', label: 'עציצים',
     items: [
       { tool: 'pot-rect',  emoji: '🪴', label: 'עציץ מלבני' },

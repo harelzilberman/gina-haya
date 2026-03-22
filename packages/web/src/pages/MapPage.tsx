@@ -10,6 +10,14 @@ export function MapPage() {
   const store = useMapStore();
   const [showTour, setShowTour]     = useState(false);
   const [showWizard, setShowWizard] = useState(false);
+  const [toast, setToast] = useState<string | null>(null);
+
+  const handleConfirmPreview = () => {
+    const count = store.previewPlants.length;
+    store.confirmPlantPreview();
+    setToast(`${count} צמחים נוספו למפה! 🌱`);
+    setTimeout(() => setToast(null), 3000);
+  };
 
   useEffect(() => {
     store.loadMap();
@@ -65,6 +73,9 @@ export function MapPage() {
             onRemovePlant={store.removePlant}
             onSelectObject={store.selectObject}
             onSetNorthAngle={store.setNorthAngle}
+            previewPlants={store.previewPlants}
+            onConfirmPreview={handleConfirmPreview}
+            onCancelPreview={store.cancelPlantPreview}
           />
         </div>
 
@@ -85,7 +96,21 @@ export function MapPage() {
           wizardStatus={store.wizardStatus}
           onClose={() => setShowWizard(false)}
           onRefreshStatus={store.loadWizardStatus}
+          onPlacePlants={plants => { store.setPreviewPlants(plants); setShowWizard(false); }}
         />
+      )}
+
+      {/* Success toast */}
+      {toast && (
+        <div style={{
+          position: 'fixed', bottom: '100px', left: '50%', transform: 'translateX(-50%)',
+          background: 'rgba(74,128,80,0.97)', border: '1px solid rgba(125,192,132,0.3)',
+          borderRadius: '10px', padding: '10px 20px', zIndex: 500,
+          fontFamily: '"Assistant","Heebo",sans-serif', fontSize: '13px', color: '#E8F5E9',
+          whiteSpace: 'nowrap', boxShadow: '0 4px 20px rgba(0,0,0,0.4)',
+        }}>
+          {toast}
+        </div>
       )}
 
       {/* First-time hint to create map */}
