@@ -110,8 +110,7 @@ function CategoryDropdown({
           border: '1px solid rgba(245,200,64,0.20)',
           borderRadius: '8px', padding: '4px',
           minWidth: '160px', zIndex: 1000,
-          maxHeight: 'calc(100vh - 120px)', overflowY: 'auto',
-          display: 'flex', flexDirection: 'column', gap: '2px',
+          display: 'flex', flexDirection: 'column', gap: '1px',
           boxShadow: '0 4px 16px rgba(0,0,0,0.4)',
         }}>
           {category.items.map(item => (
@@ -119,11 +118,12 @@ function CategoryDropdown({
               key={item.tool}
               onClick={() => { onSelect(item.tool); setOpen(false); }}
               style={{
-                fontFamily: ASSIST, fontSize: '12px',
-                padding: '7px 10px', borderRadius: '5px', textAlign: 'right',
+                fontFamily: ASSIST, fontSize: '13px', lineHeight: '1.3',
+                padding: '8px 14px', borderRadius: '5px', textAlign: 'right',
                 border: 'none', background: selectedTool === item.tool ? 'rgba(245,200,64,0.12)' : 'transparent',
                 color: selectedTool === item.tool ? GOLD : `${PARCH}88`,
-                cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '6px',
+                cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '8px',
+                whiteSpace: 'nowrap',
               }}
             >
               <span>{item.emoji}</span>
