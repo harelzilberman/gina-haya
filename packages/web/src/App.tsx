@@ -1,5 +1,5 @@
 import { useEffect } from 'react';
-import { Routes, Route, Navigate } from 'react-router-dom';
+import { Routes, Route, Navigate, useLocation } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { LoginPage } from './pages/LoginPage';
 import { SignupPage } from './pages/SignupPage';
@@ -28,6 +28,8 @@ import { supabase } from './lib/supabase';
 
 export default function App() {
   const { i18n } = useTranslation();
+  const location = useLocation();
+  const isMapPage = location.pathname === '/map';
   const { user, profile, isAuthReady, loadProfile, markOnboardingComplete } = useAuthStore();
   const { isComplete } = useOnboardingStore();
   const { isOpen: isUpgradeOpen } = useUpgradeModalStore();
@@ -68,8 +70,8 @@ export default function App() {
     <div className="min-h-screen font-heebo flex flex-col" style={{ backgroundColor: '#FDF6EC' }}>
       <Navbar />
 
-      {/* pt-[72px] offsets the fixed 64px navbar with 8px breathing room */}
-      <main className="flex-1" style={{ paddingTop: '72px' }}>
+      {/* pt-[72px] offsets the fixed 64px navbar (skipped on map page — it manages its own layout) */}
+      <main className="flex-1" style={{ paddingTop: isMapPage ? 0 : '72px' }}>
         <Routes>
           {/* Auth pages — no layout wrapper needed (they have their own) */}
           <Route path="/login" element={<LoginPage />} />
@@ -156,7 +158,7 @@ export default function App() {
         </Routes>
       </main>
 
-      <Footer />
+      {!isMapPage && <Footer />}
 
       {showOnboarding && <OnboardingWizard />}
       {isUpgradeOpen && <UpgradeModal />}
