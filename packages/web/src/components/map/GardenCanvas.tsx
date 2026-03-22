@@ -1,39 +1,56 @@
 import { useRef, useState, useCallback, useEffect } from 'react';
 import type { MapObject, PlantMarker, MapData, MapTool } from '../../stores/mapStore';
-import { MAP_OBJECT_TYPES, MAP_OBJECT_MAP } from '../../data/mapObjects';
-import { PLANT_MAP } from '../../data/companions';
+import { SHAPE_CONFIGS, type ShapeType } from '../../data/mapObjects';
+import { GridInfoBox } from './GridInfoBox';
+import { ShapePropertiesPanel } from './ShapePropertiesPanel';
 
-const GOLD   = '#F5C840';
-const PARCH  = '#EDE0C4';
+// ── Constants ─────────────────────────────────────────────────────────────────
+
+const PX = 50;            // px per meter
+const CANVAS_W = 2000;    // virtual canvas px
+const CANVAS_H = 1600;
+const MIN_SCALE = 0.2;
+const MAX_SCALE = 5;
+const GOLD  = '#F5C840';
+const PARCH = '#EDE0C4';
+const FRANK = '"Frank Ruhl Libre", Georgia, serif';
 const ASSIST = '"Assistant", "Heebo", sans-serif';
 
-// ── Types ─────────────────────────────────────────────────────────────────────
+// Tool → shape kind mapping
+const TOOL_KIND: Partial<Record<MapTool, 'polygon' | 'rect' | 'circle'>> = {
+  house: 'polygon', walkway: 'polygon',
+  fence: 'rect', wall: 'rect', pergola: 'rect', deadzone: 'rect', 'pot-rect': 'rect',
+  'fruit-tree': 'circle', tree: 'circle', 'pot-round': 'circle',
+};
+const FIXED_WIDTH: Partial<Record<MapTool, number>> = { fence: 0.1, wall: 0.2 };
+
+// ── Local types ───────────────────────────────────────────────────────────────
 
 interface Transform { x: number; y: number; s: number }
 
-interface DrawState {
-  mode: 'polygon' | 'rect' | 'circle';
-  // polygon
-  polyPts?: [number, number][];
-  // rect
-  rectStart?: [number, number];
-  rectEnd?: [number, number];
-  // circle
-  circCenter?: [number, number];
-  circEnd?: [number, number];
+type DrawState =
+  | { kind: 'polygon'; tool: ShapeType; pts: [number, number][] }
+  | { kind: 'rect';    tool: ShapeType; start: [number, number]; end: [number, number] }
+  | { kind: 'circle';  tool: ShapeType; center: [number, number]; end: [number, number] };
+
+interface PostPopup {
+  obj: Omit<MapObject, 'id'>;
+  sx: number; sy: number; // screen px
 }
 
-interface PendingShape {
-  shapeType: 'polygon' | 'rect' | 'circle';
-  points: number[][];
-  cx: number; cy: number; // container coords for popup
+interface SelectionDrag {
+  id: string;
+  startMx: number; startMy: number;   // canvas meters at drag start
+  origX?: number; origY?: number;
+  origCx?: number; origCy?: number;
+  origPts?: [number, number][];
 }
 
-interface TypePickerState {
-  pending: PendingShape;
-  step: 'type' | 'label';
-  pickedType?: string;
-  labelValue?: string;
+interface ResizeDrag {
+  id: string;
+  handle: string; // 'n'|'s'|'e'|'w'|'ne'|'nw'|'se'|'sw'|'r' (radius) | 'rot'
+  startMx: number; startMy: number;
+  origObj: MapObject;
 }
 
 interface Props {
@@ -54,59 +71,613 @@ interface Props {
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
 
-function centroid(pts: [number, number][]): [number, number] {
-  const sx = pts.reduce((s, p) => s + p[0], 0);
-  const sy = pts.reduce((s, p) => s + p[1], 0);
-  return [sx / pts.length, sy / pts.length];
-}
-
 function dist(a: [number, number], b: [number, number]) {
-  return Math.sqrt((a[0] - b[0]) ** 2 + (a[1] - b[1]) ** 2);
+  return Math.sqrt((a[0]-b[0])**2 + (a[1]-b[1])**2);
+}
+function centroid(pts: [number, number][]): [number, number] {
+  return [pts.reduce((s,p)=>s+p[0],0)/pts.length, pts.reduce((s,p)=>s+p[1],0)/pts.length];
+}
+function ptsToStr(pts: [number, number][]) {
+  return pts.map(p => `${p[0]*PX},${p[1]*PX}`).join(' ');
+}
+function polyArea(pts: [number, number][]): number {
+  let s = 0;
+  for (let i = 0; i < pts.length; i++) {
+    const j = (i+1) % pts.length;
+    s += pts[i][0]*pts[j][1] - pts[j][0]*pts[i][1];
+  }
+  return Math.abs(s/2);
+}
+function deg(rad: number) { return rad * 180 / Math.PI; }
+function rad(d: number) { return d * Math.PI / 180; }
+
+// Build rect data from two screen points for fence/wall (fixed-width line) or free rect
+function makeRectFromDrag(
+  start: [number, number], end: [number, number], fixedW?: number
+): Omit<MapObject, 'id' | 'type' | 'shapeKind' | 'label'> {
+  if (fixedW != null) {
+    // Line-style rect: thin along drag direction
+    const length = Math.max(0.2, dist(start, end));
+    const angle = deg(Math.atan2(end[0]-start[0], end[1]-start[1])); // from-north convention
+    const cx = (start[0]+end[0])/2;
+    const cy = (start[1]+end[1])/2;
+    return {
+      x: cx - fixedW/2, y: cy - length/2,
+      width: fixedW, height: length,
+      rotation: angle,
+    };
+  }
+  // Free rect (axis-aligned)
+  const x = Math.min(start[0], end[0]);
+  const y = Math.min(start[1], end[1]);
+  const width  = Math.max(0.2, Math.abs(end[0]-start[0]));
+  const height = Math.max(0.2, Math.abs(end[1]-start[1]));
+  return { x, y, width, height, rotation: 0 };
 }
 
-function polyToSvgPts(pts: [number, number][]) {
-  return pts.map(p => p.join(',')).join(' ');
+// ── SVG Defs (patterns) ───────────────────────────────────────────────────────
+
+function SvgDefs() {
+  return (
+    <defs>
+      <pattern id="pat-net" width="10" height="10" patternUnits="userSpaceOnUse">
+        <path d="M0,10 L10,0 M-2,2 L2,-2 M8,12 L12,8"
+          stroke="rgba(139,90,43,0.4)" strokeWidth="1" fill="none"/>
+      </pattern>
+      <pattern id="pat-gravel" width="8" height="8" patternUnits="userSpaceOnUse">
+        <rect width="8" height="8" fill="rgba(60,60,60,0.35)"/>
+        <circle cx="2" cy="2" r="1" fill="rgba(80,80,80,0.4)"/>
+        <circle cx="6" cy="6" r="1" fill="rgba(60,60,60,0.4)"/>
+        <circle cx="2" cy="6" r="0.5" fill="rgba(70,70,70,0.3)"/>
+        <circle cx="6" cy="2" r="0.7" fill="rgba(80,80,80,0.3)"/>
+      </pattern>
+      <pattern id="pat-concrete" width="20" height="20" patternUnits="userSpaceOnUse">
+        <rect width="20" height="20" fill="rgba(160,150,130,0.3)"/>
+        <path d="M10,0 L10,20 M0,10 L20,10"
+          stroke="rgba(120,110,90,0.4)" strokeWidth="0.5" fill="none"/>
+      </pattern>
+      <filter id="shadow-sm">
+        <feDropShadow dx="0" dy="1" stdDeviation="2" floodColor="#000" floodOpacity="0.3"/>
+      </filter>
+    </defs>
+  );
 }
 
-const GRID_SIZE   = 50;    // px per meter
-const CANVAS_W    = 2000;
-const CANVAS_H    = 1600;
-const MIN_SCALE   = 0.25;
-const MAX_SCALE   = 5;
+// ── Shape renderer ────────────────────────────────────────────────────────────
 
-// ── Component ─────────────────────────────────────────────────────────────────
+function renderShapeFill(obj: MapObject) {
+  const cfg = SHAPE_CONFIGS[obj.type];
+  if (!cfg) return null;
+
+  const strokeDash = cfg.strokeDash?.map(n => n).join(',') ?? undefined;
+  const patId = cfg.pattern ? `url(#pat-${cfg.pattern})` : cfg.fill;
+
+  if (obj.shapeKind === 'polygon' && obj.points) {
+    const pts = ptsToStr(obj.points);
+    return (
+      <g>
+        {cfg.pattern && (
+          <polygon points={pts} fill={cfg.fill} />
+        )}
+        <polygon
+          points={pts}
+          fill={patId}
+          stroke={cfg.stroke} strokeWidth={cfg.strokeWidth}
+          strokeDasharray={strokeDash}
+        />
+      </g>
+    );
+  }
+
+  if (obj.shapeKind === 'rect' && obj.x != null && obj.y != null && obj.width != null && obj.height != null) {
+    const rx = obj.x * PX;
+    const ry = obj.y * PX;
+    const rw = obj.width * PX;
+    const rh = obj.height * PX;
+    const cx = rx + rw / 2;
+    const cy = ry + rh / 2;
+    const rotation = obj.rotation ?? 0;
+    return (
+      <g transform={`rotate(${rotation},${cx},${cy})`}>
+        {cfg.pattern && (
+          <rect x={rx} y={ry} width={rw} height={rh} fill={cfg.fill} />
+        )}
+        <rect
+          x={rx} y={ry} width={rw} height={rh}
+          fill={patId}
+          stroke={cfg.stroke} strokeWidth={cfg.strokeWidth}
+          strokeDasharray={strokeDash}
+        />
+      </g>
+    );
+  }
+
+  if (obj.shapeKind === 'circle' && obj.cx != null && obj.cy != null && obj.radius != null) {
+    const cx = obj.cx * PX;
+    const cy = obj.cy * PX;
+    const r  = obj.radius * PX;
+    return (
+      <g>
+        <circle cx={cx} cy={cy} r={r} fill={cfg.fill} stroke={cfg.stroke} strokeWidth={cfg.strokeWidth} />
+        {/* Trunk circle */}
+        <circle cx={cx} cy={cy} r={Math.max(4, 0.2*PX)} fill="rgba(139,90,43,0.8)" />
+        {/* Emoji label */}
+        <text x={cx} y={cy - r - 4} textAnchor="middle" fontSize={18} style={{ userSelect: 'none' }}>
+          {cfg.emoji}
+        </text>
+      </g>
+    );
+  }
+
+  return null;
+}
+
+function renderShapeLabel(obj: MapObject) {
+  if (!obj.label) return null;
+  let lx = 0, ly = 0;
+
+  if (obj.shapeKind === 'polygon' && obj.points) {
+    const [cx, cy] = centroid(obj.points);
+    lx = cx * PX; ly = cy * PX;
+  } else if (obj.shapeKind === 'rect' && obj.x != null) {
+    const cx = (obj.x + (obj.width??0)/2) * PX;
+    const cy = (obj.y! + (obj.height??0)/2) * PX;
+    lx = cx; ly = cy;
+  } else if (obj.shapeKind === 'circle' && obj.cx != null) {
+    lx = obj.cx * PX; ly = obj.cy! * PX;
+  }
+
+  const name = obj.fruitTreeName
+    ? `${SHAPE_CONFIGS[obj.type]?.emoji ?? ''} ${obj.fruitTreeName}`
+    : obj.label;
+
+  return (
+    <text
+      x={lx} y={ly + 4}
+      textAnchor="middle"
+      fontSize={12} fill={PARCH}
+      fontFamily={FRANK}
+      style={{ userSelect: 'none', pointerEvents: 'none' }}
+      stroke="rgba(0,0,0,0.5)" strokeWidth={2} paintOrder="stroke"
+    >
+      {name}
+    </text>
+  );
+}
+
+// ── Selection overlay ─────────────────────────────────────────────────────────
+
+function SelectionOverlay({
+  obj, onStartResize,
+}: {
+  obj: MapObject;
+  onStartResize: (handle: string, e: React.MouseEvent) => void;
+}) {
+  const handleStyle = (cursor: string): React.CSSProperties => ({
+    fill: GOLD, stroke: '#142B16', strokeWidth: 1.5,
+    cursor, filter: 'url(#shadow-sm)',
+  });
+
+  if (obj.shapeKind === 'polygon' && obj.points) {
+    const [cx, cy] = centroid(obj.points);
+    return (
+      <g>
+        <polygon
+          points={ptsToStr(obj.points)}
+          fill="none" stroke={GOLD} strokeWidth={1.5} strokeDasharray="6,3"
+        />
+        {/* Vertex handles */}
+        {obj.points.map(([px, py], i) => (
+          <circle key={i} cx={px*PX} cy={py*PX} r={5}
+            style={handleStyle('move')}
+            onMouseDown={e => { e.stopPropagation(); onStartResize(`v${i}`, e); }}
+          />
+        ))}
+        {/* Rotation handle above centroid */}
+        <RotationHandle cx={cx*PX} cy={cy*PX} onStart={e => onStartResize('rot', e)} />
+      </g>
+    );
+  }
+
+  if (obj.shapeKind === 'rect' && obj.x != null && obj.width != null && obj.height != null) {
+    const rx = obj.x * PX, ry = obj.y! * PX;
+    const rw = obj.width * PX, rh = obj.height * PX;
+    const cx = rx + rw/2, cy = ry + rh/2;
+    const rot = obj.rotation ?? 0;
+    const H = 5;
+    const handles: [string, number, number, string][] = [
+      ['nw', rx,      ry,      'nw-resize'],
+      ['n',  cx,      ry,      'n-resize'],
+      ['ne', rx+rw,   ry,      'ne-resize'],
+      ['e',  rx+rw,   cy,      'e-resize'],
+      ['se', rx+rw,   ry+rh,   'se-resize'],
+      ['s',  cx,      ry+rh,   's-resize'],
+      ['sw', rx,      ry+rh,   'sw-resize'],
+      ['w',  rx,      cy,      'w-resize'],
+    ];
+    return (
+      <g transform={`rotate(${rot},${cx},${cy})`}>
+        <rect x={rx} y={ry} width={rw} height={rh}
+          fill="none" stroke={GOLD} strokeWidth={1.5} strokeDasharray="6,3" />
+        {handles.map(([id, hx, hy, cur]) => (
+          <rect key={id} x={hx-H} y={hy-H} width={H*2} height={H*2}
+            rx={2}
+            style={handleStyle(cur)}
+            onMouseDown={e => { e.stopPropagation(); onStartResize(id, e); }}
+          />
+        ))}
+        <RotationHandle cx={cx} cy={ry - 20} onStart={e => onStartResize('rot', e)} />
+      </g>
+    );
+  }
+
+  if (obj.shapeKind === 'circle' && obj.cx != null && obj.radius != null) {
+    const cx = obj.cx * PX, cy = obj.cy! * PX;
+    const r  = obj.radius * PX;
+    return (
+      <g>
+        <circle cx={cx} cy={cy} r={r}
+          fill="none" stroke={GOLD} strokeWidth={1.5} strokeDasharray="6,3" />
+        {/* Edge handle (east) */}
+        <circle cx={cx+r} cy={cy} r={5}
+          style={handleStyle('ew-resize')}
+          onMouseDown={e => { e.stopPropagation(); onStartResize('r', e); }}
+        />
+        <RotationHandle cx={cx} cy={cy - r - 20} onStart={e => onStartResize('rot', e)} />
+      </g>
+    );
+  }
+
+  return null;
+}
+
+function RotationHandle({ cx, cy, onStart }: { cx: number; cy: number; onStart: (e: React.MouseEvent) => void }) {
+  return (
+    <g style={{ cursor: 'grab' }} onMouseDown={e => { e.stopPropagation(); onStart(e); }}>
+      <line x1={cx} y1={cy+10} x2={cx} y2={cy} stroke={GOLD} strokeWidth={1} strokeDasharray="3,2" />
+      <circle cx={cx} cy={cy} r={6} fill={GOLD} stroke="#142B16" strokeWidth={1.5} />
+      <text x={cx} y={cy+4} textAnchor="middle" fontSize={8} fill="#142B16" style={{ userSelect: 'none', pointerEvents: 'none' }}>
+        ↻
+      </text>
+    </g>
+  );
+}
+
+// ── Drawing preview ───────────────────────────────────────────────────────────
+
+function DrawPreview({ drawing, cursor }: { drawing: DrawState; cursor: [number, number] }) {
+  const cfg = SHAPE_CONFIGS[drawing.tool];
+  const stroke = cfg?.stroke ?? GOLD;
+  const strokeDash = cfg?.strokeDash?.join(',') ?? undefined;
+
+  if (drawing.kind === 'polygon') {
+    const pts = drawing.pts;
+    if (pts.length === 0) return null;
+    const preview = [...pts, cursor];
+    return (
+      <g>
+        <polyline
+          points={preview.map(p => `${p[0]*PX},${p[1]*PX}`).join(' ')}
+          fill="none" stroke={stroke} strokeWidth={2} strokeDasharray={strokeDash ?? '6,3'}
+          opacity={0.7}
+        />
+        {pts.map(([x,y], i) => (
+          <circle key={i} cx={x*PX} cy={y*PX} r={5} fill={GOLD} stroke="#142B16" strokeWidth={1.5} />
+        ))}
+        {/* Close hint circle */}
+        {pts.length >= 3 && (
+          <circle cx={pts[0][0]*PX} cy={pts[0][1]*PX} r={10}
+            fill="none" stroke={GOLD} strokeWidth={1} opacity={0.5}
+            strokeDasharray="3,2"
+          />
+        )}
+      </g>
+    );
+  }
+
+  if (drawing.kind === 'rect') {
+    const fixedW = FIXED_WIDTH[drawing.tool];
+    const d = makeRectFromDrag(drawing.start, drawing.end, fixedW);
+    if (!d.width || !d.height) return null;
+    const rx = d.x! * PX, ry = d.y! * PX;
+    const rw = d.width * PX, rh = d.height * PX;
+    const cx = rx + rw/2, cy = ry + rh/2;
+    const rot = d.rotation ?? 0;
+    return (
+      <g transform={`rotate(${rot},${cx},${cy})`}>
+        <rect x={rx} y={ry} width={rw} height={rh}
+          fill={cfg?.fill ?? 'rgba(245,200,64,0.1)'}
+          stroke={stroke} strokeWidth={cfg?.strokeWidth ?? 2}
+          strokeDasharray={strokeDash}
+          opacity={0.75}
+        />
+      </g>
+    );
+  }
+
+  if (drawing.kind === 'circle') {
+    const r = Math.max(0.1, dist(drawing.center, drawing.end));
+    const cx = drawing.center[0]*PX, cy = drawing.center[1]*PX;
+    return (
+      <circle cx={cx} cy={cy} r={r*PX}
+        fill={cfg?.fill ?? 'rgba(245,200,64,0.1)'}
+        stroke={stroke} strokeWidth={cfg?.strokeWidth ?? 2}
+        opacity={0.75}
+      />
+    );
+  }
+
+  return null;
+}
+
+// ── Grid ──────────────────────────────────────────────────────────────────────
+
+function Grid() {
+  const lines: JSX.Element[] = [];
+  const major = 5; // every 5m = thick line
+
+  for (let x = 0; x <= CANVAS_W; x += PX) {
+    const isMajor = (x / PX) % major === 0;
+    lines.push(
+      <line key={`v${x}`} x1={x} y1={0} x2={x} y2={CANVAS_H}
+        stroke={isMajor ? 'rgba(125,192,132,0.25)' : 'rgba(125,192,132,0.12)'}
+        strokeWidth={isMajor ? 0.75 : 0.5}
+      />
+    );
+  }
+  for (let y = 0; y <= CANVAS_H; y += PX) {
+    const isMajor = (y / PX) % major === 0;
+    lines.push(
+      <line key={`h${y}`} x1={0} y1={y} x2={CANVAS_W} y2={y}
+        stroke={isMajor ? 'rgba(125,192,132,0.25)' : 'rgba(125,192,132,0.12)'}
+        strokeWidth={isMajor ? 0.75 : 0.5}
+      />
+    );
+  }
+  return <g>{lines}</g>;
+}
+
+// ── North arrow ───────────────────────────────────────────────────────────────
+
+function NorthArrow({ angle, svgW, onDragStart }: {
+  angle: number; svgW: number;
+  onDragStart: (e: React.MouseEvent) => void;
+}) {
+  const size = 44;
+  const x = svgW - size - 16;
+  const y = 16;
+  const cx = x + size/2, cy = y + size/2;
+
+  return (
+    <g transform={`translate(${x},${y})`} style={{ cursor: 'grab' }} onMouseDown={onDragStart}>
+      {/* Background circle */}
+      <circle cx={size/2} cy={size/2} r={size/2}
+        fill="rgba(20,43,22,0.85)" stroke="rgba(245,200,64,0.25)" strokeWidth={1} />
+      {/* Arrow rotated to northAngle */}
+      <g transform={`rotate(${angle},${size/2},${size/2})`}>
+        {/* North (gold) */}
+        <polygon
+          points={`${size/2},4 ${size/2-6},${size/2} ${size/2+6},${size/2}`}
+          fill={GOLD} />
+        {/* South */}
+        <polygon
+          points={`${size/2},${size-4} ${size/2-6},${size/2} ${size/2+6},${size/2}`}
+          fill="rgba(200,200,200,0.4)" />
+        {/* Center dot */}
+        <circle cx={size/2} cy={size/2} r={3} fill={GOLD} />
+      </g>
+      {/* N label */}
+      <text x={size/2} y={size + 12} textAnchor="middle"
+        fontFamily={FRANK} fontSize={10} fill={GOLD}>
+        צ {angle}°
+      </text>
+    </g>
+  );
+}
+
+// ── Scale bar ─────────────────────────────────────────────────────────────────
+
+function ScaleBar({ svgH }: { svgH: number }) {
+  const x = 16, y = svgH - 30;
+  const barW = PX; // 50px = 1m
+  return (
+    <g>
+      <line x1={x} y1={y} x2={x+barW} y2={y} stroke="white" strokeWidth={2}
+        style={{ filter: 'drop-shadow(0 0 2px rgba(0,0,0,0.6))' }} />
+      <line x1={x} y1={y-4} x2={x} y2={y+4} stroke="white" strokeWidth={1.5} />
+      <line x1={x+barW} y1={y-4} x2={x+barW} y2={y+4} stroke="white" strokeWidth={1.5} />
+      <text x={x+barW/2} y={y+14} textAnchor="middle"
+        fontFamily={ASSIST} fontSize={10} fill="white"
+        style={{ filter: 'drop-shadow(0 0 2px rgba(0,0,0,0.8))' }}>
+        1מ׳
+      </text>
+    </g>
+  );
+}
+
+// ── Sun zones ─────────────────────────────────────────────────────────────────
+
+function SunZones({ northAngle, svgW, svgH }: { northAngle: number; svgW: number; svgH: number }) {
+  const n = rad(northAngle);
+  const cx = svgW / 2, cy = svgH / 2;
+  const R = Math.max(svgW, svgH);
+  const zones = [
+    { dir: n + rad(180), color: 'rgba(255,200,50,0.10)',  label: '☀️ שמש מלאה', size: 0.45 },
+    { dir: n + rad(90),  color: 'rgba(255,165,0,0.07)',   label: '🌅 שמש בוקר', size: 0.25 },
+    { dir: n - rad(90),  color: 'rgba(255,120,0,0.07)',   label: '🌇 שמש אחה״צ', size: 0.25 },
+    { dir: n,            color: 'rgba(100,100,150,0.08)', label: '🌑 צל', size: 0.20 },
+  ];
+
+  return (
+    <g style={{ pointerEvents: 'none' }}>
+      {zones.map((z, i) => {
+        const span = z.size * 2 * Math.PI;
+        const a1 = z.dir - span/2;
+        const a2 = z.dir + span/2;
+        const x1 = cx + R * Math.sin(a1), y1 = cy - R * Math.cos(a1);
+        const x2 = cx + R * Math.sin(a2), y2 = cy - R * Math.cos(a2);
+        const lx = cx + (R*0.45) * Math.sin(z.dir);
+        const ly = cy - (R*0.45) * Math.cos(z.dir);
+        return (
+          <g key={i}>
+            <path d={`M${cx},${cy} L${x1},${y1} A${R},${R} 0 0,1 ${x2},${y2} Z`}
+              fill={z.color} />
+            <text x={lx} y={ly} textAnchor="middle" fontSize={11} fill="rgba(255,255,255,0.6)"
+              fontFamily={ASSIST} style={{ userSelect: 'none' }}>
+              {z.label}
+            </text>
+          </g>
+        );
+      })}
+    </g>
+  );
+}
+
+// ── Post-draw popup ───────────────────────────────────────────────────────────
+
+function PostDrawPopup({
+  popup, onConfirm, onCancel,
+}: {
+  popup: PostPopup;
+  onConfirm: (obj: Omit<MapObject, 'id'>) => void;
+  onCancel: () => void;
+}) {
+  const cfg = SHAPE_CONFIGS[popup.obj.type];
+  const [label, setLabel] = useState(cfg?.labelHe ?? '');
+  const [treeName, setTreeName] = useState('');
+  const [isFruit, setIsFruit] = useState(popup.obj.type === 'fruit-tree');
+
+  function confirm() {
+    const extra: Partial<MapObject> = {};
+    if (popup.obj.type === 'fruit-tree' || popup.obj.type === 'tree') {
+      extra.fruitTreeName = treeName;
+      extra.isFruitTree   = isFruit;
+    }
+    onConfirm({ ...popup.obj, label, ...extra });
+  }
+
+  const isTree = popup.obj.type === 'fruit-tree' || popup.obj.type === 'tree';
+
+  return (
+    <div
+      style={{
+        position: 'absolute',
+        left: Math.min(popup.sx, window.innerWidth - 240),
+        top:  Math.min(popup.sy, window.innerHeight - 200),
+        zIndex: 200,
+        background: 'rgba(14,30,15,0.98)',
+        border: `1px solid rgba(245,200,64,0.30)`,
+        borderRadius: '12px', padding: '14px',
+        width: '220px', boxShadow: '0 4px 20px rgba(0,0,0,0.5)',
+        fontFamily: ASSIST, direction: 'rtl',
+        display: 'flex', flexDirection: 'column', gap: '10px',
+      }}
+      onMouseDown={e => e.stopPropagation()}
+    >
+      <div style={{ fontFamily: FRANK, color: GOLD, fontSize: '14px' }}>
+        {cfg?.emoji} {cfg?.labelHe}
+      </div>
+
+      <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+        <label style={{ fontSize: '11px', color: `${PARCH}66` }}>שם</label>
+        <input
+          autoFocus
+          value={label} onChange={e => setLabel(e.target.value)}
+          onKeyDown={e => { if (e.key === 'Enter') confirm(); if (e.key === 'Escape') onCancel(); }}
+          style={{
+            fontFamily: ASSIST, fontSize: '13px', color: PARCH,
+            background: 'rgba(245,200,64,0.08)', border: '1px solid rgba(245,200,64,0.25)',
+            borderRadius: '6px', padding: '6px 8px', outline: 'none',
+          }}
+        />
+      </div>
+
+      {isTree && (
+        <>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+            <label style={{ fontSize: '11px', color: `${PARCH}66` }}>שם העץ</label>
+            <input
+              value={treeName} onChange={e => setTreeName(e.target.value)}
+              placeholder='למשל: לימון, זית...'
+              style={{
+                fontFamily: ASSIST, fontSize: '13px', color: PARCH,
+                background: 'rgba(245,200,64,0.08)', border: '1px solid rgba(245,200,64,0.25)',
+                borderRadius: '6px', padding: '6px 8px', outline: 'none',
+              }}
+            />
+          </div>
+          {popup.obj.type === 'fruit-tree' && (
+            <label style={{ display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer' }}>
+              <input type="checkbox" checked={isFruit}
+                onChange={e => setIsFruit(e.target.checked)}
+                style={{ accentColor: GOLD }} />
+              <span style={{ fontSize: '12px', color: `${PARCH}88` }}>עץ פרי</span>
+            </label>
+          )}
+        </>
+      )}
+
+      <div style={{ display: 'flex', gap: '8px' }}>
+        <button onClick={confirm} style={{
+          flex: 1, padding: '7px', borderRadius: '7px', border: 'none',
+          background: GOLD, color: '#142B16', fontFamily: ASSIST, fontSize: '12px',
+          fontWeight: 700, cursor: 'pointer',
+        }}>אישור</button>
+        <button onClick={onCancel} style={{
+          flex: 1, padding: '7px', borderRadius: '7px',
+          border: '1px solid rgba(245,200,64,0.25)', background: 'transparent',
+          color: `${PARCH}77`, fontFamily: ASSIST, fontSize: '12px', cursor: 'pointer',
+        }}>ביטול</button>
+      </div>
+    </div>
+  );
+}
+
+// ── Empty state hint ──────────────────────────────────────────────────────────
+
+function EmptyHint() {
+  return (
+    <div style={{
+      position: 'absolute', inset: 0, display: 'flex', flexDirection: 'column',
+      alignItems: 'center', justifyContent: 'center', pointerEvents: 'none',
+      gap: '10px', direction: 'rtl',
+    }}>
+      <span style={{ fontSize: '60px' }}>🗺️</span>
+      <span style={{ fontFamily: FRANK, color: GOLD, fontSize: '20px', fontWeight: 700 }}>
+        התחל לשרטט את הנכס שלך
+      </span>
+      <span style={{ fontFamily: ASSIST, color: `${PARCH}60`, fontSize: '14px' }}>
+        בחר כלי מהסרגל למעלה
+      </span>
+      <span style={{ fontSize: '24px', animation: 'pulse 1.5s ease-in-out infinite' }}>↑</span>
+      <style>{`@keyframes pulse { 0%,100%{opacity:0.4;transform:translateY(0)} 50%{opacity:1;transform:translateY(-6px)} }`}</style>
+    </div>
+  );
+}
+
+// ── Main component ────────────────────────────────────────────────────────────
 
 export function GardenCanvas({
   mapData, northAngle, selectedTool, activePlant, selectedObjectId, showSunZones,
   onAddObject, onUpdateObject, onDeleteObject, onAddPlant, onRemovePlant,
   onSelectObject, onSetNorthAngle,
 }: Props) {
-  const containerRef = useRef<HTMLDivElement>(null);
   const svgRef       = useRef<SVGSVGElement>(null);
+  const containerRef = useRef<HTMLDivElement>(null);
 
-  const [t, setT] = useState<Transform>({ x: 0, y: 0, s: 1 });
+  const [t, setT]           = useState<Transform>({ x: 0, y: 0, s: 0.6 });
   const [svgSize, setSvgSize] = useState({ w: 800, h: 600 });
-
   const [drawing, setDrawing] = useState<DrawState | null>(null);
-  const [mouseCanv, setMouseCanv] = useState<[number, number]>([0, 0]);
-  const [typePicker, setTypePicker] = useState<TypePickerState | null>(null);
+  const [cursor, setCursor]   = useState<[number, number]>([0, 0]);
+  const [popup, setPopup]     = useState<PostPopup | null>(null);
+  const [selDrag, setSelDrag] = useState<SelectionDrag | null>(null);
+  const [resDrag, setResDrag] = useState<ResizeDrag | null>(null);
+  const [rotTip, setRotTip]   = useState<string | null>(null);
 
-  const [dragObj, setDragObj] = useState<{ id: string; origPts: number[][]; mx: number; my: number } | null>(null);
-  const [vtxDrag, setVtxDrag] = useState<{ id: string; idx: number; origPts: number[][]; mx: number; my: number } | null>(null);
-  const [hoveredId, setHoveredId] = useState<string | null>(null);
-  const [hoveredPlantId, setHoveredPlantId] = useState<string | null>(null);
+  const panRef  = useRef({ active: false, sx: 0, sy: 0, tx: 0, ty: 0 });
+  const northRef = useRef({ active: false, scx: 0, scy: 0 });
 
-  // Pan state (ref to avoid stale closures)
-  const panRef = useRef<{ active: boolean; startX: number; startY: number; startTx: number; startTy: number }>({
-    active: false, startX: 0, startY: 0, startTx: 0, startTy: 0,
-  });
-
-  // North arrow dragging
-  const northRef = useRef<{ active: boolean; centerX: number; centerY: number }>({
-    active: false, centerX: 0, centerY: 0,
-  });
-
-  // ── SVG size tracker ────────────────────────────────────────────────────────
+  // ── Resize observer ────────────────────────────────────────────────────────
   useEffect(() => {
     const update = () => {
       if (svgRef.current) {
@@ -120,624 +691,439 @@ export function GardenCanvas({
     return () => ro.disconnect();
   }, []);
 
-  // ── Keyboard: Escape to cancel ───────────────────────────────────────────
+  // ── Keyboard ───────────────────────────────────────────────────────────────
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') { setDrawing(null); setTypePicker(null); }
+      if (e.key === 'Escape') { setDrawing(null); setPopup(null); }
+      if (e.key === 'Delete' && selectedObjectId && !popup) {
+        onDeleteObject(selectedObjectId);
+        onSelectObject(null);
+      }
     };
     window.addEventListener('keydown', onKey);
     return () => window.removeEventListener('keydown', onKey);
-  }, []);
+  }, [selectedObjectId, popup, onDeleteObject, onSelectObject]);
 
-  // ── Coord helpers ────────────────────────────────────────────────────────
-  const screenToCanvas = useCallback((sx: number, sy: number): [number, number] => {
+  // ── Coord helpers ──────────────────────────────────────────────────────────
+  const toCanvas = useCallback((sx: number, sy: number): [number, number] => {
     const r = svgRef.current!.getBoundingClientRect();
-    return [(sx - r.left - t.x) / t.s, (sy - r.top - t.y) / t.s];
+    return [(sx - r.left - t.x) / t.s / PX, (sy - r.top - t.y) / t.s / PX];
   }, [t]);
 
-  const canvasToContainer = useCallback((cx: number, cy: number): [number, number] => {
-    return [cx * t.s + t.x, cy * t.s + t.y];
+  const toScreen = useCallback((cx: number, cy: number): [number, number] => {
+    const r = svgRef.current!.getBoundingClientRect();
+    return [cx * PX * t.s + t.x + r.left, cy * PX * t.s + t.y + r.top];
   }, [t]);
 
-  // ── Finish drawing → show type picker ────────────────────────────────────
-  const finishShape = useCallback((shapeType: 'polygon' | 'rect' | 'circle', rawPts: number[][], center: [number, number]) => {
-    const [pcx, pcy] = canvasToContainer(center[0], center[1]);
-    setTypePicker({
-      pending: { shapeType, points: rawPts, cx: pcx, cy: pcy },
-      step: 'type',
-    });
+  // ── Finish drawing ─────────────────────────────────────────────────────────
+  const finishDrawing = useCallback((ds: DrawState) => {
+    const cfg = SHAPE_CONFIGS[ds.tool];
+    if (!cfg) return;
+
+    let obj: Omit<MapObject, 'id'> | null = null;
+
+    if (ds.kind === 'polygon' && ds.pts.length >= 3) {
+      obj = {
+        type: cfg.type, shapeKind: 'polygon',
+        points: ds.pts,
+        label: cfg.labelHe,
+        wallHeightM: cfg.defaultWallHeightM,
+      };
+    } else if (ds.kind === 'rect') {
+      const fixedW = FIXED_WIDTH[ds.tool];
+      const d = makeRectFromDrag(ds.start, ds.end, fixedW);
+      obj = {
+        type: cfg.type, shapeKind: 'rect',
+        ...d,
+        label: cfg.labelHe,
+        wallHeightM: cfg.defaultWallHeightM,
+      };
+    } else if (ds.kind === 'circle') {
+      const r = Math.max(0.1, dist(ds.center, ds.end));
+      obj = {
+        type: cfg.type, shapeKind: 'circle',
+        cx: ds.center[0], cy: ds.center[1], radius: r,
+        label: cfg.labelHe,
+        isFruitTree: ds.tool === 'fruit-tree',
+      };
+    }
+
+    if (!obj) return;
     setDrawing(null);
-  }, [canvasToContainer]);
 
-  // ── Wheel zoom ────────────────────────────────────────────────────────────
-  const onWheel = useCallback((e: React.WheelEvent<SVGSVGElement>) => {
-    e.preventDefault();
-    const r = svgRef.current!.getBoundingClientRect();
-    const mx = e.clientX - r.left;
-    const my = e.clientY - r.top;
-    const factor = e.deltaY < 0 ? 1.12 : 1 / 1.12;
-    const newS = Math.min(MAX_SCALE, Math.max(MIN_SCALE, t.s * factor));
-    const canvX = (mx - t.x) / t.s;
-    const canvY = (my - t.y) / t.s;
-    setT({ x: mx - canvX * newS, y: my - canvY * newS, s: newS });
-  }, [t]);
+    // Show popup for name/label
+    let [sx, sy] = [0, 0];
+    if (ds.kind === 'polygon') {
+      const [pcx, pcy] = centroid(ds.pts);
+      [sx, sy] = toScreen(pcx, pcy);
+    } else if (ds.kind === 'rect') {
+      const mx = (ds.start[0]+ds.end[0])/2, my = (ds.start[1]+ds.end[1])/2;
+      [sx, sy] = toScreen(mx, my);
+    } else if (ds.kind === 'circle') {
+      [sx, sy] = toScreen(ds.center[0], ds.center[1]);
+    }
 
-  // ── Mouse down ────────────────────────────────────────────────────────────
+    setPopup({ obj, sx: sx - 110, sy: sy - 60 });
+  }, [toScreen]);
+
+  // ── Mouse down ─────────────────────────────────────────────────────────────
   const onMouseDown = useCallback((e: React.MouseEvent<SVGSVGElement>) => {
-    // Middle mouse = pan
     if (e.button === 1) {
-      e.preventDefault();
-      panRef.current = { active: true, startX: e.clientX, startY: e.clientY, startTx: t.x, startTy: t.y };
+      panRef.current = { active: true, sx: e.clientX, sy: e.clientY, tx: t.x, ty: t.y };
       return;
     }
-    if (e.button !== 0) return;
-    if (typePicker) return;
+    if (e.button !== 0 || popup) return;
 
-    const [cx, cy] = screenToCanvas(e.clientX, e.clientY);
+    const [mx, my] = toCanvas(e.clientX, e.clientY);
+    const kind = TOOL_KIND[selectedTool];
 
-    if (selectedTool === 'polygon') {
-      const pts = drawing?.polyPts ?? [];
-      // Close polygon if clicking near first point
-      if (pts.length >= 3 && dist([cx, cy], pts[0] as [number, number]) < 12 / t.s) {
-        finishShape('polygon', pts.map(p => [p[0], p[1]]), centroid(pts as [number, number][]));
-        return;
-      }
-      setDrawing({ mode: 'polygon', polyPts: [...pts, [cx, cy]] });
-      return;
-    }
-
-    if (selectedTool === 'rect') {
-      setDrawing({ mode: 'rect', rectStart: [cx, cy], rectEnd: [cx, cy] });
-      return;
-    }
-
-    if (selectedTool === 'circle') {
-      setDrawing({ mode: 'circle', circCenter: [cx, cy], circEnd: [cx, cy] });
-      return;
-    }
-
-    if (selectedTool === 'plant') {
-      if (activePlant) {
-        const [scx, scy] = screenToCanvas(e.clientX, e.clientY);
-        onAddPlant({
-          plantNameHe: activePlant.nameHe,
-          plantNameEn: activePlant.nameEn,
-          emoji:       activePlant.emoji,
-          spacing:     activePlant.spacing,
-          x: scx, y: scy,
-        });
+    if (selectedTool === 'select') {
+      // Hit test objects (back-to-front)
+      const hit = [...mapData.objects].reverse().find(o => hitTest(o, mx, my));
+      if (hit) {
+        onSelectObject(hit.id);
+        const orig: Partial<MapObject> = hit.shapeKind === 'polygon'
+          ? { points: hit.points ? hit.points.map(p => [...p] as [number, number]) : undefined }
+          : hit.shapeKind === 'circle'
+          ? { cx: hit.cx, cy: hit.cy }
+          : { x: hit.x, y: hit.y };
+        setSelDrag({ id: hit.id, startMx: mx, startMy: my, ...orig });
+      } else {
+        onSelectObject(null);
       }
       return;
     }
-  }, [t, drawing, selectedTool, activePlant, typePicker, screenToCanvas, finishShape, onAddPlant]);
 
-  // ── Double-click: close polygon ──────────────────────────────────────────
+    if (selectedTool === 'plant' && activePlant) {
+      onAddPlant({ plantNameHe: activePlant.nameHe, plantNameEn: activePlant.nameEn,
+                   emoji: activePlant.emoji, spacing: activePlant.spacing, x: mx, y: my });
+      return;
+    }
+
+    const shapeType = selectedTool as ShapeType;
+
+    if (kind === 'polygon') {
+      if (!drawing || drawing.kind !== 'polygon') {
+        setDrawing({ kind: 'polygon', tool: shapeType, pts: [[mx, my]] });
+      } else {
+        const pts = drawing.pts;
+        // Close if near first point
+        if (pts.length >= 3 && dist([mx, my], pts[0]) < 12 / t.s / PX) {
+          finishDrawing(drawing);
+        } else {
+          setDrawing({ ...drawing, pts: [...pts, [mx, my]] });
+        }
+      }
+      return;
+    }
+
+    if (kind === 'rect') {
+      setDrawing({ kind: 'rect', tool: shapeType, start: [mx, my], end: [mx, my] });
+      return;
+    }
+
+    if (kind === 'circle') {
+      setDrawing({ kind: 'circle', tool: shapeType, center: [mx, my], end: [mx, my] });
+      return;
+    }
+  }, [t, drawing, selectedTool, activePlant, popup, mapData.objects, toCanvas, onSelectObject, onAddPlant, finishDrawing]);
+
+  // ── Double-click close polygon ─────────────────────────────────────────────
   const onDblClick = useCallback((e: React.MouseEvent<SVGSVGElement>) => {
-    if (selectedTool !== 'polygon' || !drawing?.polyPts || drawing.polyPts.length < 3) return;
-    finishShape('polygon', drawing.polyPts.map(p => [p[0], p[1]]), centroid(drawing.polyPts as [number, number][]));
-  }, [selectedTool, drawing, finishShape]);
+    if (drawing?.kind === 'polygon' && drawing.pts.length >= 3) {
+      finishDrawing(drawing);
+    }
+  }, [drawing, finishDrawing]);
 
-  // ── Mouse move ────────────────────────────────────────────────────────────
+  // ── Mouse move ─────────────────────────────────────────────────────────────
   const onMouseMove = useCallback((e: React.MouseEvent<SVGSVGElement>) => {
-    const [cx, cy] = screenToCanvas(e.clientX, e.clientY);
-    setMouseCanv([cx, cy]);
+    const [mx, my] = toCanvas(e.clientX, e.clientY);
+    setCursor([mx, my]);
 
-    // Pan
     if (panRef.current.active) {
-      const dx = e.clientX - panRef.current.startX;
-      const dy = e.clientY - panRef.current.startY;
-      setT({ x: panRef.current.startTx + dx, y: panRef.current.startTy + dy, s: t.s });
+      setT(prev => ({
+        ...prev,
+        x: panRef.current.tx + (e.clientX - panRef.current.sx),
+        y: panRef.current.ty + (e.clientY - panRef.current.sy),
+      }));
       return;
     }
 
-    // North drag
     if (northRef.current.active) {
       const r = svgRef.current!.getBoundingClientRect();
-      const sx = e.clientX - r.left;
-      const sy = e.clientY - r.top;
-      const angle = Math.atan2(sx - northRef.current.centerX, -(sy - northRef.current.centerY));
-      onSetNorthAngle(Math.round((angle * 180 / Math.PI + 360) % 360));
+      const sx = e.clientX - r.left, sy = e.clientY - r.top;
+      const angle = Math.atan2(sx - northRef.current.scx, -(sy - northRef.current.scy));
+      onSetNorthAngle(Math.round((deg(angle) + 360) % 360));
       return;
     }
 
-    // Rect/circle preview
-    if (drawing?.mode === 'rect') {
-      setDrawing(d => d ? { ...d, rectEnd: [cx, cy] } : null);
-    }
-    if (drawing?.mode === 'circle') {
-      setDrawing(d => d ? { ...d, circEnd: [cx, cy] } : null);
-    }
+    // Update rect/circle preview
+    if (drawing?.kind === 'rect')   setDrawing(d => d ? { ...(d as any), end: [mx, my] } : null);
+    if (drawing?.kind === 'circle') setDrawing(d => d ? { ...(d as any), end: [mx, my] } : null);
 
-    // Drag object
-    if (dragObj) {
-      const dx = cx - screenToCanvas(e.clientX, e.clientY)[0] + (cx - screenToCanvas(dragObj.mx, dragObj.my)[0]);
-      // Recalculate properly:
-      const [ocx] = screenToCanvas(dragObj.mx, dragObj.my);
-      const [ocx2] = screenToCanvas(0, 0);
-      void ocx2;
-      const ddx = cx - ocx;
-      const ddy = cy - (screenToCanvas(e.clientX, e.clientY)[1] - (screenToCanvas(dragObj.mx, dragObj.my)[1]));
-      void ddx; void ddy;
-
-      // Simple: recalculate delta from original mouse pos
-      const origMx = dragObj.mx;
-      const origMy = dragObj.my;
-      const [origCx, origCy] = screenToCanvas(origMx, origMy);
-      const deltX = cx - origCx;
-      const deltY = cy - origCy;
-      const newPts = movePts(dragObj.origPts, deltX, deltY);
-      onUpdateObject(dragObj.id, { points: newPts });
+    // Move selected object
+    if (selDrag) {
+      const dx = mx - selDrag.startMx, dy = my - selDrag.startMy;
+      const obj = mapData.objects.find(o => o.id === selDrag.id);
+      if (!obj) return;
+      if (obj.shapeKind === 'polygon' && selDrag.origPts) {
+        const pts = selDrag.origPts.map(([px, py]) => [px+dx, py+dy] as [number, number]);
+        onUpdateObject(selDrag.id, { points: pts });
+      } else if (obj.shapeKind === 'rect' && selDrag.origX != null) {
+        onUpdateObject(selDrag.id, { x: selDrag.origX + dx, y: selDrag.origY! + dy });
+      } else if (obj.shapeKind === 'circle' && selDrag.origCx != null) {
+        onUpdateObject(selDrag.id, { cx: selDrag.origCx + dx, cy: selDrag.origCy! + dy });
+      }
+      return;
     }
 
-    // Drag polygon vertex
-    if (vtxDrag) {
-      const [origCx, origCy] = screenToCanvas(vtxDrag.mx, vtxDrag.my);
-      const deltX = cx - origCx;
-      const deltY = cy - origCy;
-      const newPts = vtxDrag.origPts.map((p, i) =>
-        i === vtxDrag.idx ? [p[0] + deltX, p[1] + deltY] : p
-      );
-      onUpdateObject(vtxDrag.id, { points: newPts });
-    }
-  }, [t, drawing, dragObj, vtxDrag, screenToCanvas, onUpdateObject, onSetNorthAngle]);
+    // Resize / rotate
+    if (resDrag) {
+      const dx = mx - resDrag.startMx, dy = my - resDrag.startMy;
+      const o = resDrag.origObj;
 
-  // ── Mouse up ─────────────────────────────────────────────────────────────
+      if (resDrag.handle === 'rot') {
+        // Compute angle relative to object center
+        let lx = 0, ly = 0;
+        if (o.shapeKind === 'rect') { lx = o.x!+o.width!/2; ly = o.y!+o.height!/2; }
+        else if (o.shapeKind === 'circle') { lx = o.cx!; ly = o.cy!; }
+        else if (o.shapeKind === 'polygon' && o.points) { [lx, ly] = centroid(o.points); }
+        const a = deg(Math.atan2(mx - lx, -(my - ly)));
+        const newRot = ((Math.round(a) % 360) + 360) % 360;
+        onUpdateObject(resDrag.id, { rotation: newRot });
+        setRotTip(`${newRot}°`);
+        return;
+      }
+
+      if (o.shapeKind === 'circle' && resDrag.handle === 'r') {
+        const newR = Math.max(0.1, (o.radius ?? 1) + dx);
+        onUpdateObject(resDrag.id, { radius: newR });
+        return;
+      }
+
+      if (o.shapeKind === 'rect') {
+        let { x, y, width, height } = { x: o.x!, y: o.y!, width: o.width!, height: o.height! };
+        const h = resDrag.handle;
+        if (h.includes('e')) { width  = Math.max(0.2, width  + dx); }
+        if (h.includes('s')) { height = Math.max(0.2, height + dy); }
+        if (h.includes('w')) { x = o.x! + dx; width  = Math.max(0.2, o.width! - dx); }
+        if (h.includes('n')) { y = o.y! + dy; height = Math.max(0.2, o.height! - dy); }
+        // Enforce fixed width if applicable
+        const fixedW = SHAPE_CONFIGS[o.type]?.fixedWidth;
+        if (fixedW != null) {
+          if (h.includes('e') || h.includes('w')) { /* don't resize fixed dim */ }
+          else { /* length change ok */ }
+        }
+        onUpdateObject(resDrag.id, { x, y, width, height });
+        return;
+      }
+
+      if (o.shapeKind === 'polygon' && o.points && resDrag.handle.startsWith('v')) {
+        const vi = parseInt(resDrag.handle.slice(1));
+        const pts = o.points.map((p, i) =>
+          i === vi ? [p[0]+dx, p[1]+dy] as [number, number] : p
+        );
+        onUpdateObject(resDrag.id, { points: pts });
+      }
+    }
+  }, [t, drawing, selDrag, resDrag, mapData.objects, toCanvas, onUpdateObject, onSetNorthAngle]);
+
+  // ── Mouse up ───────────────────────────────────────────────────────────────
   const onMouseUp = useCallback((e: React.MouseEvent<SVGSVGElement>) => {
     panRef.current.active = false;
     northRef.current.active = false;
-    setDragObj(null);
-    setVtxDrag(null);
 
-    const [cx, cy] = screenToCanvas(e.clientX, e.clientY);
+    if (selDrag) { setSelDrag(null); return; }
+    if (resDrag) { setResDrag(null); setRotTip(null); return; }
 
-    if (drawing?.mode === 'rect' && drawing.rectStart) {
-      const [x1, y1] = drawing.rectStart;
-      const w = Math.abs(cx - x1), h = Math.abs(cy - y1);
-      if (w < 5 || h < 5) { setDrawing(null); return; }
-      const rx = Math.min(x1, cx), ry = Math.min(y1, cy);
-      finishShape('rect', [[rx, ry, w, h]], [rx + w / 2, ry + h / 2]);
+    const [mx, my] = toCanvas(e.clientX, e.clientY);
+
+    if (drawing?.kind === 'rect') {
+      const len = dist(drawing.start, drawing.end);
+      if (len * PX > 5) finishDrawing(drawing);
+      else setDrawing(null);
       return;
     }
-
-    if (drawing?.mode === 'circle' && drawing.circCenter) {
-      const r = dist(drawing.circCenter, [cx, cy]);
-      if (r < 5) { setDrawing(null); return; }
-      finishShape('circle', [[drawing.circCenter[0], drawing.circCenter[1], r]], drawing.circCenter);
+    if (drawing?.kind === 'circle') {
+      const r = dist(drawing.center, drawing.end);
+      if (r * PX > 5) finishDrawing(drawing);
+      else setDrawing(null);
       return;
     }
-  }, [drawing, screenToCanvas, finishShape]);
+  }, [drawing, selDrag, resDrag, toCanvas, finishDrawing]);
 
-  // ── Object mouse events ──────────────────────────────────────────────────
-  const onObjMouseDown = useCallback((e: React.MouseEvent, obj: MapObject) => {
+  // ── Wheel zoom ─────────────────────────────────────────────────────────────
+  const onWheel = useCallback((e: React.WheelEvent<SVGSVGElement>) => {
+    e.preventDefault();
+    const r = svgRef.current!.getBoundingClientRect();
+    const mx = e.clientX - r.left, my = e.clientY - r.top;
+    const factor = e.deltaY < 0 ? 1.12 : 1/1.12;
+    const newS = Math.min(MAX_SCALE, Math.max(MIN_SCALE, t.s * factor));
+    const cx = (mx - t.x) / t.s, cy = (my - t.y) / t.s;
+    setT({ x: mx - cx*newS, y: my - cy*newS, s: newS });
+  }, [t]);
+
+  // ── Resize handle drag start ───────────────────────────────────────────────
+  const startResize = useCallback((id: string, handle: string, e: React.MouseEvent) => {
     e.stopPropagation();
-    if (selectedTool === 'delete') { onDeleteObject(obj.id); return; }
-    if (selectedTool === 'select') {
-      onSelectObject(obj.id);
-      setDragObj({ id: obj.id, origPts: obj.points, mx: e.clientX, my: e.clientY });
-    }
-  }, [selectedTool, onDeleteObject, onSelectObject]);
+    const obj = mapData.objects.find(o => o.id === id);
+    if (!obj) return;
+    const [mx, my] = toCanvas(e.clientX, e.clientY);
+    setResDrag({ id, handle, startMx: mx, startMy: my, origObj: { ...obj } });
+  }, [mapData.objects, toCanvas]);
 
-  const onVtxMouseDown = useCallback((e: React.MouseEvent, obj: MapObject, idx: number) => {
+  // ── North arrow drag start ─────────────────────────────────────────────────
+  const startNorthDrag = useCallback((e: React.MouseEvent) => {
     e.stopPropagation();
-    setVtxDrag({ id: obj.id, idx, origPts: obj.points, mx: e.clientX, my: e.clientY });
-  }, []);
+    const r = svgRef.current!.getBoundingClientRect();
+    const arrowSize = 44;
+    const arrowX = svgSize.w - arrowSize - 16 + arrowSize/2;
+    const arrowY = 16 + arrowSize/2;
+    northRef.current = { active: true, scx: arrowX, scy: arrowY };
+  }, [svgSize]);
 
-  // ── Plant mouse events ───────────────────────────────────────────────────
-  const onPlantClick = useCallback((e: React.MouseEvent, plant: PlantMarker) => {
-    e.stopPropagation();
-    if (selectedTool === 'delete') onRemovePlant(plant.id);
-  }, [selectedTool, onRemovePlant]);
+  // ── Cursor style ───────────────────────────────────────────────────────────
+  function getCursor() {
+    if (TOOL_KIND[selectedTool]) return 'crosshair';
+    if (selectedTool === 'select') return 'default';
+    return 'default';
+  }
 
-  // ── Commit type picker ───────────────────────────────────────────────────
-  const commitTypePicker = useCallback((type: string) => {
-    const tp = typePicker!;
-    const needsLabel = ['bed', 'raised', 'pot', 'tree'].includes(type);
-    if (needsLabel) {
-      setTypePicker({ ...tp, step: 'label', pickedType: type, labelValue: '' });
-    } else {
-      const objType = MAP_OBJECT_MAP.get(type)!;
-      onAddObject({
-        type,
-        shapeType: tp.pending.shapeType,
-        points: tp.pending.points,
-        label: objType.labelHe,
-        isFruitTree: false,
-        fruitTreeName: '',
-      });
-      setTypePicker(null);
-    }
-  }, [typePicker, onAddObject]);
+  const selectedObj = mapData.objects.find(o => o.id === selectedObjectId) ?? null;
+  const isEmpty = mapData.objects.length === 0 && mapData.plants.length === 0;
 
-  const commitLabel = useCallback(() => {
-    const tp = typePicker!;
-    if (!tp.pickedType) return;
-    onAddObject({
-      type: tp.pickedType,
-      shapeType: tp.pending.shapeType,
-      points: tp.pending.points,
-      label: tp.labelValue || MAP_OBJECT_MAP.get(tp.pickedType)?.labelHe || '',
-      isFruitTree: tp.pickedType === 'tree' && !!tp.labelValue,
-      fruitTreeName: tp.pickedType === 'tree' ? (tp.labelValue || '') : '',
-    });
-    setTypePicker(null);
-  }, [typePicker, onAddObject]);
-
-  // ── Sun zones ─────────────────────────────────────────────────────────────
-  const sunZones = showSunZones ? buildSunZones(northAngle, CANVAS_W, CANVAS_H) : null;
-
-  // ── Cursor ────────────────────────────────────────────────────────────────
-  const cursor = panRef.current.active ? 'grabbing'
-    : selectedTool === 'polygon' || selectedTool === 'rect' || selectedTool === 'circle' ? 'crosshair'
-    : selectedTool === 'delete' ? 'not-allowed'
-    : selectedTool === 'plant' ? 'cell'
-    : 'default';
-
-  // ── Compass position (fixed, top-right) ───────────────────────────────────
-  const compassX = svgSize.w - 55;
-  const compassY = 55;
-
-  // ── Render ────────────────────────────────────────────────────────────────
-
+  // ── Render ─────────────────────────────────────────────────────────────────
   return (
-    <div ref={containerRef} style={{ position: 'relative', width: '100%', height: '100%', overflow: 'hidden' }}>
+    <div ref={containerRef} style={{ position: 'relative', width: '100%', height: '100%', overflow: 'hidden', background: '#0e1e0f' }}>
       <svg
         ref={svgRef}
-        style={{ display: 'block', width: '100%', height: '100%', background: '#1a2e1a', cursor }}
+        width="100%" height="100%"
+        style={{ display: 'block', cursor: getCursor() }}
         onMouseDown={onMouseDown}
         onMouseMove={onMouseMove}
         onMouseUp={onMouseUp}
-        onMouseLeave={() => { panRef.current.active = false; northRef.current.active = false; setDragObj(null); setVtxDrag(null); }}
-        onWheel={onWheel}
         onDoubleClick={onDblClick}
-        onContextMenu={e => { e.preventDefault(); if (drawing) setDrawing(null); }}
+        onWheel={onWheel}
       >
-        {/* ── World transform group ── */}
+        <SvgDefs />
+
+        {/* Transform group */}
         <g transform={`translate(${t.x},${t.y}) scale(${t.s})`}>
 
           {/* Grid */}
-          {Array.from({ length: Math.ceil(CANVAS_W / GRID_SIZE) + 1 }, (_, i) => (
-            <line key={`gv${i}`} x1={i * GRID_SIZE} y1={0} x2={i * GRID_SIZE} y2={CANVAS_H}
-              stroke="rgba(125,192,132,0.08)" strokeWidth={1 / t.s} />
-          ))}
-          {Array.from({ length: Math.ceil(CANVAS_H / GRID_SIZE) + 1 }, (_, i) => (
-            <line key={`gh${i}`} x1={0} y1={i * GRID_SIZE} x2={CANVAS_W} y2={i * GRID_SIZE}
-              stroke="rgba(125,192,132,0.08)" strokeWidth={1 / t.s} />
-          ))}
+          <Grid />
 
           {/* Sun zones */}
-          {sunZones && sunZones.map((z, i) => (
-            <g key={i}>
-              <polygon points={z.pts} fill={z.color} />
-              <text x={z.lx} y={z.ly} textAnchor="middle" fill="rgba(255,255,255,0.5)"
-                fontSize={14 / t.s} fontFamily="Arial,sans-serif">{z.label}</text>
+          {showSunZones && <SunZones northAngle={northAngle} svgW={svgSize.w/t.s} svgH={svgSize.h/t.s} />}
+
+          {/* Shapes */}
+          {mapData.objects.map(obj => (
+            <g
+              key={obj.id}
+              style={{ cursor: selectedTool === 'select' ? 'move' : undefined }}
+              onClick={e => { if (selectedTool === 'select') { e.stopPropagation(); onSelectObject(obj.id); } }}
+            >
+              {renderShapeFill(obj)}
+              {renderShapeLabel(obj)}
             </g>
           ))}
 
-          {/* ── Objects ── */}
-          {mapData.objects.map(obj => <MapObjectEl key={obj.id} obj={obj} isSelected={obj.id === selectedObjectId}
-            isHovered={obj.id === hoveredId} tool={selectedTool}
-            onMouseDown={e => onObjMouseDown(e, obj)}
-            onMouseEnter={() => setHoveredId(obj.id)}
-            onMouseLeave={() => setHoveredId(null)} />)}
-
-          {/* Selected polygon vertices */}
-          {(() => {
-            const selObj = mapData.objects.find(o => o.id === selectedObjectId);
-            if (!selObj || selObj.shapeType !== 'polygon') return null;
-            return selObj.points.map((p, i) => (
-              <circle key={i} cx={p[0]} cy={p[1]} r={6 / t.s}
-                fill={GOLD} stroke="#fff" strokeWidth={1.5 / t.s}
-                style={{ cursor: 'move' }}
-                onMouseDown={e => onVtxMouseDown(e, selObj, i)} />
-            ));
-          })()}
-
-          {/* ── Plants ── */}
-          {mapData.plants.map(plant => {
-            const isHov = plant.id === hoveredPlantId;
-            // Check companion relationships with selected plant
-            const selPlantId = mapData.plants.find(p => p.id === hoveredPlantId)?.plantNameEn.toLowerCase();
-            const otherPlantId = plant.plantNameEn.toLowerCase();
-            let ring = 'none';
-            if (selPlantId && selPlantId !== otherPlantId) {
-              const good = PLANT_MAP.get(selPlantId)?.goodCompanions.includes(otherPlantId);
-              const bad  = PLANT_MAP.get(selPlantId)?.badCompanions.includes(otherPlantId);
-              if (good) ring = 'good';
-              if (bad)  ring = 'bad';
-            }
-            return (
-              <g key={plant.id} style={{ cursor: selectedTool === 'delete' ? 'not-allowed' : 'pointer' }}
-                onMouseEnter={() => setHoveredPlantId(plant.id)}
-                onMouseLeave={() => setHoveredPlantId(null)}
-                onClick={e => onPlantClick(e, plant)}>
-                {/* Spacing ring */}
-                <circle cx={plant.x} cy={plant.y} r={plant.spacing / 2 * (GRID_SIZE / 100)}
-                  fill="none" stroke={ring === 'good' ? 'rgba(125,192,132,0.4)' : ring === 'bad' ? 'rgba(220,100,100,0.4)' : 'rgba(125,192,132,0.12)'}
-                  strokeWidth={1 / t.s} strokeDasharray={`${3/t.s} ${3/t.s}`} />
-                {/* Plant circle */}
-                <circle cx={plant.x} cy={plant.y} r={16 / t.s}
-                  fill={selectedTool === 'delete' && isHov ? 'rgba(220,100,100,0.3)' : 'rgba(74,128,80,0.6)'}
-                  stroke={isHov ? GOLD : '#7DC084'} strokeWidth={1.5 / t.s} />
-                {/* Emoji */}
-                <text x={plant.x} y={plant.y} textAnchor="middle" dominantBaseline="central"
-                  fontSize={14 / t.s} style={{ userSelect: 'none' }}>{plant.emoji}</text>
-                {/* Delete X on hover */}
-                {isHov && selectedTool !== 'delete' && (
-                  <g onClick={e => { e.stopPropagation(); onRemovePlant(plant.id); }}>
-                    <circle cx={plant.x + 12 / t.s} cy={plant.y - 12 / t.s} r={7 / t.s}
-                      fill="rgba(163,48,48,0.9)" stroke="#fff" strokeWidth={1 / t.s} style={{ cursor: 'pointer' }} />
-                    <text x={plant.x + 12 / t.s} y={plant.y - 12 / t.s} textAnchor="middle"
-                      dominantBaseline="central" fontSize={9 / t.s} fill="#fff" style={{ userSelect: 'none', pointerEvents: 'none' }}>✕</text>
-                  </g>
-                )}
-              </g>
-            );
-          })}
-
-          {/* Tooltip for hovered plant */}
-          {hoveredPlantId && (() => {
-            const p = mapData.plants.find(pl => pl.id === hoveredPlantId);
-            if (!p) return null;
-            const label = `${p.plantNameHe} (${p.spacing} ס"מ)`;
-            return (
-              <g style={{ pointerEvents: 'none' }}>
-                <rect x={p.x - label.length * 3.5} y={p.y - 34 / t.s}
-                  width={label.length * 7} height={16 / t.s} rx={3 / t.s}
-                  fill="rgba(20,43,22,0.9)" />
-                <text x={p.x} y={p.y - 26 / t.s} textAnchor="middle" dominantBaseline="middle"
-                  fontSize={10 / t.s} fill={PARCH} fontFamily="Arial,sans-serif">{label}</text>
-              </g>
-            );
-          })()}
-
-          {/* ── Drawing previews ── */}
-          {drawing?.mode === 'polygon' && drawing.polyPts && (
-            <g>
-              <polyline
-                points={[...drawing.polyPts, mouseCanv].map(p => p.join(',')).join(' ')}
-                fill="none" stroke={GOLD} strokeWidth={1.5 / t.s} strokeDasharray={`${4/t.s} ${4/t.s}`} />
-              {drawing.polyPts.map((p, i) => (
-                <circle key={i} cx={p[0]} cy={p[1]} r={5 / t.s}
-                  fill={i === 0 ? GOLD : 'rgba(245,200,64,0.6)'} stroke={GOLD} strokeWidth={1 / t.s} />
-              ))}
+          {/* Plant markers */}
+          {mapData.plants.map(p => (
+            <g key={p.id} style={{ cursor: 'pointer' }}
+              onClick={e => { if (selectedTool === 'select') { e.stopPropagation(); } }}>
+              <circle cx={p.x*PX} cy={p.y*PX} r={p.spacing*PX/2}
+                fill="rgba(74,128,80,0.12)" stroke="rgba(125,192,132,0.3)" strokeWidth={1} strokeDasharray="4,3" />
+              <text x={p.x*PX} y={p.y*PX+6} textAnchor="middle" fontSize={16}
+                style={{ userSelect: 'none', pointerEvents: 'none' }}>{p.emoji}</text>
             </g>
-          )}
-          {drawing?.mode === 'rect' && drawing.rectStart && drawing.rectEnd && (() => {
-            const [x1, y1] = drawing.rectStart;
-            const [x2, y2] = drawing.rectEnd;
-            return <rect x={Math.min(x1,x2)} y={Math.min(y1,y2)}
-              width={Math.abs(x2-x1)} height={Math.abs(y2-y1)}
-              fill={`${GOLD}18`} stroke={GOLD} strokeWidth={1.5 / t.s} strokeDasharray={`${4/t.s} ${4/t.s}`} />;
-          })()}
-          {drawing?.mode === 'circle' && drawing.circCenter && drawing.circEnd && (
-            <circle cx={drawing.circCenter[0]} cy={drawing.circCenter[1]}
-              r={dist(drawing.circCenter, drawing.circEnd)}
-              fill={`${GOLD}18`} stroke={GOLD} strokeWidth={1.5 / t.s} strokeDasharray={`${4/t.s} ${4/t.s}`} />
+          ))}
+
+          {/* Selection overlay */}
+          {selectedObj && (
+            <SelectionOverlay
+              obj={selectedObj}
+              onStartResize={(handle, e) => startResize(selectedObj.id, handle, e)}
+            />
           )}
 
-          {/* Scale bar */}
-          <g transform={`translate(16, ${CANVAS_H - 20})`} style={{ pointerEvents: 'none' }}>
-            <line x1={0} y1={0} x2={GRID_SIZE} y2={0} stroke={PARCH + '66'} strokeWidth={1.5 / t.s} />
-            <line x1={0} y1={-4 / t.s} x2={0} y2={4 / t.s} stroke={PARCH + '66'} strokeWidth={1.5 / t.s} />
-            <line x1={GRID_SIZE} y1={-4 / t.s} x2={GRID_SIZE} y2={4 / t.s} stroke={PARCH + '66'} strokeWidth={1.5 / t.s} />
-            <text x={GRID_SIZE / 2} y={-8 / t.s} textAnchor="middle" fontSize={11 / t.s}
-              fill={PARCH + '88'} fontFamily="Arial,sans-serif">1 מ'</text>
-          </g>
+          {/* Drawing preview */}
+          {drawing && <DrawPreview drawing={drawing} cursor={cursor} />}
+
+          {/* Scale bar (rendered in canvas space, unscaled) */}
+          <ScaleBar svgH={svgSize.h / t.s} />
         </g>
 
-        {/* ── Fixed UI: North arrow ── */}
-        <g
-          transform={`translate(${compassX},${compassY})`}
-          style={{ cursor: 'pointer' }}
-          onMouseDown={e => {
-            e.stopPropagation();
-            const r = svgRef.current!.getBoundingClientRect();
-            northRef.current = { active: true, centerX: compassX + r.left, centerY: compassY + r.top };
-          }}
-        >
-          <circle cx={0} cy={0} r={36} fill="rgba(20,43,22,0.85)" stroke="rgba(245,200,64,0.3)" strokeWidth={1} />
-          {/* Cardinal letters */}
-          {[['N',0,-28],['S',0,28],['E',28,0],['W',-28,0]].map(([l,x,y]) => (
-            <text key={l as string} x={x as number} y={(y as number) + 4}
-              textAnchor="middle" dominantBaseline="middle"
-              fontSize={9} fill="rgba(237,224,196,0.6)" fontFamily="Arial,sans-serif">{l}</text>
-          ))}
-          {/* North arrow */}
-          <g transform={`rotate(${northAngle})`}>
-            <polygon points="0,-22 5,-8 0,-12 -5,-8" fill={GOLD} opacity={0.9} />
-            <polygon points="0,22 5,8 0,12 -5,8" fill="rgba(237,224,196,0.3)" />
-          </g>
-          <text x={0} y={48} textAnchor="middle" fontSize={9} fill="rgba(237,224,196,0.4)" fontFamily="Arial,sans-serif">גרור לצפון</text>
-        </g>
+        {/* North arrow (in SVG space, unaffected by pan/zoom) */}
+        <NorthArrow angle={northAngle} svgW={svgSize.w} onDragStart={startNorthDrag} />
 
-        {/* ── Fixed UI: Zoom controls ── */}
-        <g transform={`translate(${svgSize.w - 42}, ${svgSize.h - 80})`}>
-          {[{ label: '+', dy: 0, factor: 1.3 }, { label: '−', dy: 36, factor: 1/1.3 }].map(btn => (
-            <g key={btn.label} transform={`translate(0,${btn.dy})`}
-              style={{ cursor: 'pointer' }}
-              onClick={e => {
-                e.stopPropagation();
-                const newS = Math.min(MAX_SCALE, Math.max(MIN_SCALE, t.s * btn.factor));
-                setT(tr => ({ x: tr.x + (svgSize.w / 2 - tr.x) * (1 - newS / tr.s), y: tr.y + (svgSize.h / 2 - tr.y) * (1 - newS / tr.s), s: newS }));
-              }}>
-              <rect x={0} y={0} width={28} height={28} rx={5} fill="rgba(20,43,22,0.85)" stroke="rgba(245,200,64,0.2)" strokeWidth={1} />
-              <text x={14} y={14} textAnchor="middle" dominantBaseline="central" fontSize={16} fill={PARCH + 'AA'} fontFamily="Arial,sans-serif">{btn.label}</text>
-            </g>
-          ))}
-        </g>
-
-        {/* Empty state hint */}
-        {mapData.objects.length === 0 && mapData.plants.length === 0 && !drawing && (
-          <g transform={`translate(${svgSize.w / 2},${svgSize.h / 2})`} style={{ pointerEvents: 'none' }}>
-            <rect x={-130} y={-60} width={260} height={120} rx={12} fill="rgba(20,43,22,0.9)" stroke="rgba(245,200,64,0.12)" strokeWidth={1} />
-            <text x={0} y={-22} textAnchor="middle" fontSize={32}>🗺️</text>
-            <text x={0} y={12} textAnchor="middle" fontSize={14} fill={GOLD} fontFamily="Arial,sans-serif">שרטט את הנכס שלך</text>
-            <text x={0} y={32} textAnchor="middle" fontSize={11} fill="rgba(237,224,196,0.4)" fontFamily="Arial,sans-serif">בחר כלי ציור מהסרגל למעלה</text>
-          </g>
+        {/* Rotation tooltip */}
+        {rotTip && (
+          <text x={svgSize.w/2} y={svgSize.h - 10} textAnchor="middle"
+            fontFamily={ASSIST} fontSize={12} fill={GOLD}>
+            {rotTip}
+          </text>
         )}
       </svg>
 
-      {/* ── Type picker popup ── */}
-      {typePicker && (
-        <div style={{
-          position: 'absolute',
-          left: Math.min(typePicker.pending.cx + 10, (containerRef.current?.clientWidth ?? 600) - 280),
-          top: Math.min(typePicker.pending.cy + 10, (containerRef.current?.clientHeight ?? 500) - 320),
-          zIndex: 20,
-          background: 'linear-gradient(160deg,rgba(24,52,26,0.98),rgba(20,43,22,0.99))',
-          border: '1px solid rgba(245,200,64,0.2)',
-          borderRadius: '12px',
-          padding: '14px',
-          width: '260px',
-          boxShadow: '0 8px 40px rgba(0,0,0,0.5)',
-        }}>
-          {typePicker.step === 'type' ? (
-            <>
-              <p style={{ fontFamily: ASSIST, fontSize: '12px', color: `${PARCH}88`, margin: '0 0 10px' }}>מה זה?</p>
-              <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px' }}>
-                {MAP_OBJECT_TYPES.map(ot => (
-                  <button key={ot.type} onClick={() => commitTypePicker(ot.type)}
-                    style={{
-                      fontFamily: ASSIST, fontSize: '12px', padding: '5px 10px', borderRadius: '6px',
-                      border: `1px solid ${ot.border}55`, color: PARCH,
-                      backgroundColor: ot.color, cursor: 'pointer',
-                    }}>
-                    {ot.emoji} {ot.labelHe}
-                  </button>
-                ))}
-              </div>
-              <button onClick={() => setTypePicker(null)}
-                style={{ marginTop: '10px', fontFamily: ASSIST, fontSize: '11px', color: `${PARCH}44`, background: 'none', border: 'none', cursor: 'pointer' }}>
-                ביטול
-              </button>
-            </>
-          ) : (
-            <>
-              <p style={{ fontFamily: ASSIST, fontSize: '12px', color: `${PARCH}88`, margin: '0 0 8px' }}>
-                {typePicker.pickedType === 'tree' ? 'שם העץ (אם פרי, ציין)' : 'שם הערוגה'}
-              </p>
-              <input
-                autoFocus
-                value={typePicker.labelValue ?? ''}
-                onChange={e => setTypePicker(tp => tp ? { ...tp, labelValue: e.target.value } : null)}
-                onKeyDown={e => e.key === 'Enter' && commitLabel()}
-                placeholder={typePicker.pickedType === 'tree' ? 'למשל: תפוח, זית, פרי' : 'שם הערוגה'}
-                style={{
-                  width: '100%', boxSizing: 'border-box',
-                  fontFamily: ASSIST, fontSize: '13px', color: PARCH,
-                  background: 'rgba(245,200,64,0.06)', border: '1px solid rgba(245,200,64,0.2)',
-                  borderRadius: '6px', padding: '7px 10px', outline: 'none', marginBottom: '8px',
-                }}
-              />
-              <div style={{ display: 'flex', gap: '6px' }}>
-                <button onClick={commitLabel}
-                  style={{ flex: 1, fontFamily: ASSIST, fontSize: '12px', fontWeight: 600, padding: '7px', borderRadius: '6px', border: 'none', backgroundColor: GOLD, color: '#142B16', cursor: 'pointer' }}>
-                  אישור
-                </button>
-                <button onClick={() => setTypePicker(null)}
-                  style={{ fontFamily: ASSIST, fontSize: '12px', padding: '7px 12px', borderRadius: '6px', border: '1px solid rgba(245,200,64,0.2)', color: `${PARCH}66`, background: 'none', cursor: 'pointer' }}>
-                  ביטול
-                </button>
-              </div>
-            </>
-          )}
-        </div>
+      {/* Grid info overlay */}
+      <GridInfoBox />
+
+      {/* Empty state */}
+      {isEmpty && !drawing && <EmptyHint />}
+
+      {/* Post-draw popup */}
+      {popup && (
+        <PostDrawPopup
+          popup={popup}
+          onConfirm={obj => { onAddObject(obj); setPopup(null); }}
+          onCancel={() => setPopup(null)}
+        />
+      )}
+
+      {/* Properties panel */}
+      {selectedObj && !popup && (
+        <ShapePropertiesPanel
+          object={selectedObj}
+          onUpdate={changes => onUpdateObject(selectedObj.id, changes)}
+          onDelete={() => { onDeleteObject(selectedObj.id); onSelectObject(null); }}
+        />
       )}
     </div>
   );
 }
 
-// ── MapObjectEl ───────────────────────────────────────────────────────────────
+// ── Hit testing ───────────────────────────────────────────────────────────────
 
-function MapObjectEl({ obj, isSelected, isHovered, tool, onMouseDown, onMouseEnter, onMouseLeave }: {
-  obj: MapObject; isSelected: boolean; isHovered: boolean; tool: MapTool;
-  onMouseDown: (e: React.MouseEvent) => void;
-  onMouseEnter: () => void; onMouseLeave: () => void;
-}) {
-  const ot = MAP_OBJECT_MAP.get(obj.type) ?? MAP_OBJECT_TYPES[0];
-  const fill   = isHovered && tool === 'delete' ? 'rgba(163,48,48,0.4)' : ot.color;
-  const stroke = isSelected ? GOLD : isHovered ? ot.border + 'CC' : ot.border;
-  const strokeW = isSelected ? ot.borderWidth + 1 : ot.borderWidth;
-  const dash    = ot.borderDash.join(',') || undefined;
-
-  const sharedProps = {
-    fill, stroke, strokeWidth: strokeW, strokeDasharray: dash,
-    style: { cursor: tool === 'select' ? 'move' : tool === 'delete' ? 'not-allowed' : 'default' },
-    onMouseDown, onMouseEnter, onMouseLeave,
-  };
-
-  let shape: React.ReactNode = null;
-  if (obj.shapeType === 'polygon') {
-    shape = <polygon points={polyToSvgPts(obj.points as [number,number][])} {...sharedProps} />;
-  } else if (obj.shapeType === 'rect' && obj.points[0]) {
-    const [x, y, w, h] = obj.points[0];
-    shape = <rect x={x} y={y} width={w} height={h} rx={3} {...sharedProps} />;
-  } else if (obj.shapeType === 'circle' && obj.points[0]) {
-    const [cx, cy, r] = obj.points[0];
-    shape = <circle cx={cx} cy={cy} r={r} {...sharedProps} />;
+function hitTest(obj: MapObject, mx: number, my: number): boolean {
+  if (obj.shapeKind === 'circle' && obj.cx != null && obj.cy != null && obj.radius != null) {
+    return dist([mx, my], [obj.cx, obj.cy]) <= obj.radius + 0.2;
   }
+  if (obj.shapeKind === 'rect' && obj.x != null && obj.width != null) {
+    // Simple AABB for now (ignores rotation)
+    const cx = obj.x + obj.width/2, cy = obj.y! + obj.height!/2;
+    const r = obj.rotation ?? 0;
+    // Rotate point into local space
+    const rr = rad(-r);
+    const lx = (mx - cx) * Math.cos(rr) - (my - cy) * Math.sin(rr) + cx;
+    const ly = (mx - cx) * Math.sin(rr) + (my - cy) * Math.cos(rr) + cy;
+    return lx >= obj.x - 0.1 && lx <= obj.x + obj.width + 0.1
+        && ly >= obj.y! - 0.1 && ly <= obj.y! + obj.height! + 0.1;
+  }
+  if (obj.shapeKind === 'polygon' && obj.points) {
+    return pointInPolygon([mx, my], obj.points);
+  }
+  return false;
+}
 
-  // Label
-  const labelPos = (() => {
-    if (obj.shapeType === 'polygon') return centroid(obj.points as [number,number][]);
-    if (obj.shapeType === 'rect' && obj.points[0]) {
-      const [x, y, w, h] = obj.points[0];
-      return [x + w / 2, y + h / 2] as [number, number];
+function pointInPolygon(p: [number, number], vs: [number, number][]): boolean {
+  let inside = false;
+  for (let i = 0, j = vs.length - 1; i < vs.length; j = i++) {
+    const [xi, yi] = vs[i], [xj, yj] = vs[j];
+    if (((yi > p[1]) !== (yj > p[1])) &&
+        (p[0] < (xj-xi)*(p[1]-yi)/(yj-yi)+xi)) {
+      inside = !inside;
     }
-    if (obj.shapeType === 'circle' && obj.points[0]) return [obj.points[0][0], obj.points[0][1]] as [number, number];
-    return [0, 0] as [number, number];
-  })();
-
-  return (
-    <g>
-      {shape}
-      {obj.label && (
-        <text x={labelPos[0]} y={labelPos[1]} textAnchor="middle" dominantBaseline="central"
-          fontSize={12} fill="rgba(237,224,196,0.9)" fontFamily="Arial,sans-serif"
-          style={{ pointerEvents: 'none', userSelect: 'none' }}>
-          {ot.emoji} {obj.label}
-        </text>
-      )}
-    </g>
-  );
-}
-
-// ── Sun zones ─────────────────────────────────────────────────────────────────
-
-function buildSunZones(northAngle: number, W: number, H: number) {
-  const cx = W / 2, cy = H / 2;
-  const r  = Math.max(W, H) * 0.8;
-
-  const toRad = (deg: number) => ((deg - 90) * Math.PI) / 180;
-  const pt = (deg: number) => {
-    const a = toRad(deg);
-    return `${cx + r * Math.cos(a)},${cy + r * Math.sin(a)}`;
-  };
-
-  const zones = [
-    { dir: 180, span: 90, color: 'rgba(255,200,0,0.12)',  label: 'שמש מלאה' },  // South
-    { dir: 90,  span: 90, color: 'rgba(255,165,0,0.08)',  label: 'שמש בוקר' },  // East
-    { dir: 270, span: 90, color: 'rgba(255,100,0,0.08)',  label: "שמש אחה\"צ" }, // West
-    { dir: 0,   span: 90, color: 'rgba(50,50,100,0.1)',   label: 'צל' },          // North
-  ];
-
-  return zones.map(z => {
-    const from = northAngle + z.dir - z.span / 2;
-    const to   = northAngle + z.dir + z.span / 2;
-    const pts  = `${cx},${cy} ${pt(from)} ${pt(from + 30)} ${pt(from + 60)} ${pt(to)}`;
-    const midA = toRad(from + z.span / 2);
-    const ld   = r * 0.5;
-    return { pts, color: z.color, label: z.label, lx: cx + ld * Math.cos(midA), ly: cy + ld * Math.sin(midA) };
-  });
-}
-
-// ── Move object points ────────────────────────────────────────────────────────
-
-function movePts(pts: number[][], dx: number, dy: number): number[][] {
-  return pts.map(p => {
-    if (p.length === 2) return [p[0] + dx, p[1] + dy];
-    if (p.length === 3) return [p[0] + dx, p[1] + dy, p[2]];
-    if (p.length === 4) return [p[0] + dx, p[1] + dy, p[2], p[3]];
-    return p;
-  });
+  }
+  return inside;
 }

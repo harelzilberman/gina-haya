@@ -8,7 +8,7 @@ import { WizardModal } from '../components/map/WizardModal';
 
 export function MapPage() {
   const store = useMapStore();
-  const [showTour, setShowTour] = useState(false);
+  const [showTour, setShowTour]     = useState(false);
   const [showWizard, setShowWizard] = useState(false);
 
   useEffect(() => {
@@ -17,9 +17,7 @@ export function MapPage() {
   }, []);
 
   useEffect(() => {
-    if (!store.isLoading && shouldShowTour()) {
-      setShowTour(true);
-    }
+    if (!store.isLoading && shouldShowTour()) setShowTour(true);
   }, [store.isLoading]);
 
   if (store.isLoading) {
@@ -31,8 +29,11 @@ export function MapPage() {
   }
 
   return (
-    <div dir="rtl" style={{ display: 'flex', flexDirection: 'column', height: '100vh', background: '#142B16', overflow: 'hidden' }}>
-      {/* Toolbar */}
+    <div dir="rtl" style={{
+      display: 'flex', flexDirection: 'column',
+      height: '100vh', background: '#142B16', overflow: 'hidden',
+    }}>
+      {/* Toolbar — 52px */}
       <MapToolbar
         selectedTool={store.selectedTool}
         onToolChange={store.setTool}
@@ -49,9 +50,8 @@ export function MapPage() {
         hasSavedMap={!!store.mapId}
       />
 
-      {/* Main area: canvas + optional plant picker */}
+      {/* Canvas area — fills remaining height: calc(100vh - 64px navbar - 52px toolbar) */}
       <div style={{ flex: 1, display: 'flex', overflow: 'hidden', position: 'relative' }}>
-        {/* Canvas */}
         <div style={{ flex: 1, position: 'relative', overflow: 'hidden' }}>
           <GardenCanvas
             mapData={store.mapData}
@@ -70,7 +70,7 @@ export function MapPage() {
           />
         </div>
 
-        {/* Plant picker panel (visible when tool = 'plant') */}
+        {/* Plant picker panel — shown in Part 2 */}
         {store.selectedTool === 'plant' && (
           <PlantPicker
             activePlant={store.activePlant}
@@ -79,10 +79,8 @@ export function MapPage() {
         )}
       </div>
 
-      {/* Tour */}
       {showTour && <MapTour onDone={() => setShowTour(false)} />}
 
-      {/* Wizard */}
       {showWizard && store.mapId && (
         <WizardModal
           mapId={store.mapId}
@@ -92,7 +90,7 @@ export function MapPage() {
         />
       )}
 
-      {/* Auto-create map on first use */}
+      {/* First-time hint to create map */}
       {!store.mapId && !store.isLoading && (
         <div style={{
           position: 'fixed', bottom: '80px', insetInlineStart: '50%', transform: 'translateX(-50%)',
