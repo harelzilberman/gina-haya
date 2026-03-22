@@ -561,9 +561,10 @@ function PostDrawPopup({
   return (
     <div
       style={{
-        position: 'absolute',
-        left: Math.min(popup.sx, window.innerWidth - 240),
-        top:  Math.min(popup.sy, window.innerHeight - 200),
+        position: 'fixed',
+        left: '50%',
+        top: '50%',
+        transform: 'translate(-50%, -50%)',
         zIndex: 200,
         background: 'rgba(14,30,15,0.98)',
         border: `1px solid rgba(245,200,64,0.30)`,
@@ -1032,9 +1033,10 @@ export function GardenCanvas({
           {mapData.plants.map(p => (
             <g key={p.id} style={{ cursor: 'pointer' }}
               onClick={e => { if (selectedTool === 'select') { e.stopPropagation(); } }}>
-              <circle cx={p.x*PX} cy={p.y*PX} r={p.spacing*PX/2}
-                fill="rgba(74,128,80,0.12)" stroke="rgba(125,192,132,0.3)" strokeWidth={1} strokeDasharray="4,3" />
-              <text x={p.x*PX} y={p.y*PX+6} textAnchor="middle" fontSize={16}
+              <circle cx={p.x*PX} cy={p.y*PX} r={18}
+                fill="rgba(20,43,22,0.85)" stroke="rgba(125,192,132,0.5)"
+                strokeWidth={1.5} />
+              <text x={p.x*PX} y={p.y*PX+7} textAnchor="middle" fontSize={20}
                 style={{ userSelect: 'none', pointerEvents: 'none' }}>{p.emoji}</text>
             </g>
           ))}
