@@ -20,8 +20,14 @@ export function MapPage() {
   };
 
   useEffect(() => {
-    store.loadMap();
-    store.loadWizardStatus();
+    const init = async () => {
+      await store.loadMap();
+      if (!useMapStore.getState().mapId) {
+        await store.createMap();
+      }
+      store.loadWizardStatus();
+    };
+    init();
   }, []);
 
   useEffect(() => {
@@ -52,7 +58,7 @@ export function MapPage() {
         onUndo={store.undo}
         onWizard={() => setShowWizard(true)}
         wizardStatus={store.wizardStatus}
-        hasSavedMap={!!store.mapId}
+        hasSavedMap={true}
       />
 
       {/* Canvas area — starts at 116px (64 navbar + 52 toolbar), fills rest of viewport */}
@@ -113,28 +119,6 @@ export function MapPage() {
         </div>
       )}
 
-      {/* First-time hint to create map */}
-      {!store.mapId && !store.isLoading && (
-        <div style={{
-          position: 'fixed', bottom: '80px', insetInlineStart: '50%', transform: 'translateX(-50%)',
-          background: 'rgba(20,43,22,0.97)', border: '1px solid rgba(245,200,64,0.2)',
-          borderRadius: '10px', padding: '10px 16px', zIndex: 50,
-          display: 'flex', alignItems: 'center', gap: '10px',
-          fontFamily: '"Assistant","Heebo",sans-serif', fontSize: '13px', color: 'rgba(237,224,196,0.7)',
-        }}>
-          התחל לצייר — המפה תישמר אוטומטית
-          <button
-            onClick={() => store.createMap()}
-            style={{
-              fontFamily: '"Assistant","Heebo",sans-serif', fontSize: '12px', fontWeight: 600,
-              padding: '5px 12px', borderRadius: '6px', border: 'none',
-              backgroundColor: '#F5C840', color: '#142B16', cursor: 'pointer',
-            }}
-          >
-            צור מפה
-          </button>
-        </div>
-      )}
     </div>
   );
 }
