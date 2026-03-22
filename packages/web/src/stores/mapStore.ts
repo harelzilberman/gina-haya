@@ -95,6 +95,7 @@ interface MapState {
   deleteObject: (id: string) => void;
 
   addPlant: (plant: Omit<PlantMarker, 'id'>) => void;
+  updatePlant: (id: string, changes: Partial<PlantMarker>) => void;
   removePlant: (id: string) => void;
 
   undo: () => void;
@@ -229,6 +230,14 @@ export const useMapStore = create<MapState>((set, get) => ({
       const history = [s.mapData, ...s.history].slice(0, MAX_HISTORY);
       return { mapData: { ...s.mapData, plants: [...s.mapData.plants, newPlant] }, history, isDirty: true };
     });
+    scheduleSave();
+  },
+
+  updatePlant(id, changes) {
+    set(s => ({
+      mapData: { ...s.mapData, plants: s.mapData.plants.map(p => p.id === id ? { ...p, ...changes } : p) },
+      isDirty: true,
+    }));
     scheduleSave();
   },
 

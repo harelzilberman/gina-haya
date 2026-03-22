@@ -61,6 +61,7 @@ export function MapPage() {
             onUpdateObject={store.updateObject}
             onDeleteObject={store.deleteObject}
             onAddPlant={store.addPlant}
+            onUpdatePlant={store.updatePlant}
             onRemovePlant={store.removePlant}
             onSelectObject={store.selectObject}
             onSetNorthAngle={store.setNorthAngle}

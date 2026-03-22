@@ -65,6 +65,7 @@ interface Props {
   onDeleteObject: (id: string) => void;
   onAddPlant: (plant: Omit<PlantMarker, 'id'>) => void;
   onRemovePlant: (id: string) => void;
+  onUpdatePlant: (id: string, changes: Partial<PlantMarker>) => void;
   onSelectObject: (id: string | null) => void;
   onSetNorthAngle: (angle: number) => void;
 }
@@ -660,7 +661,7 @@ function EmptyHint() {
 
 export function GardenCanvas({
   mapData, northAngle, selectedTool, activePlant, selectedObjectId, showSunZones,
-  onAddObject, onUpdateObject, onDeleteObject, onAddPlant, onRemovePlant,
+  onAddObject, onUpdateObject, onDeleteObject, onAddPlant, onRemovePlant, onUpdatePlant,
   onSelectObject, onSetNorthAngle,
 }: Props) {
   const svgRef       = useRef<SVGSVGElement>(null);
@@ -673,6 +674,9 @@ export function GardenCanvas({
   const [popup, setPopup]     = useState<PostPopup | null>(null);
   const [selDrag, setSelDrag] = useState<SelectionDrag | null>(null);
   const [resDrag, setResDrag] = useState<ResizeDrag | null>(null);
+  const [plantDrag, setPlantDrag] = useState<{
+    id: string; startMx: number; startMy: number; origX: number; origY: number;
+  } | null>(null);
   const [rotTip, setRotTip]   = useState<string | null>(null);
 
   const panRef  = useRef({ active: false, sx: 0, sy: 0, tx: 0, ty: 0 });
@@ -779,6 +783,16 @@ export function GardenCanvas({
     const kind = TOOL_KIND[selectedTool];
 
     if (selectedTool === 'select') {
+      // Check plants first (smaller targets, rendered on top)
+      const hitPlant = [...mapData.plants].reverse().find(p => {
+        const dx = mx - p.x, dy = my - p.y;
+        return Math.sqrt(dx*dx + dy*dy) <= 18 / PX;
+      });
+      if (hitPlant) {
+        setPlantDrag({ id: hitPlant.id, startMx: mx, startMy: my, origX: hitPlant.x, origY: hitPlant.y });
+        return;
+      }
+
       // Hit test objects (back-to-front)
       const hit = [...mapData.objects].reverse().find(o => hitTest(o, mx, my));
       if (hit) {
@@ -878,6 +892,13 @@ export function GardenCanvas({
       return;
     }
 
+    // Move plant
+    if (plantDrag) {
+      const dx = mx - plantDrag.startMx, dy = my - plantDrag.startMy;
+      onUpdatePlant(plantDrag.id, { x: plantDrag.origX + dx, y: plantDrag.origY + dy });
+      return;
+    }
+
     // Resize / rotate
     if (resDrag) {
       const dx = mx - resDrag.startMx, dy = my - resDrag.startMy;
@@ -927,13 +948,14 @@ export function GardenCanvas({
         onUpdateObject(resDrag.id, { points: pts });
       }
     }
-  }, [t, drawing, selDrag, resDrag, mapData.objects, toCanvas, onUpdateObject, onSetNorthAngle]);
+  }, [t, drawing, selDrag, resDrag, plantDrag, mapData.objects, toCanvas, onUpdateObject, onUpdatePlant, onSetNorthAngle]);
 
   // ── Mouse up ───────────────────────────────────────────────────────────────
   const onMouseUp = useCallback((e: React.MouseEvent<SVGSVGElement>) => {
     panRef.current.active = false;
     northRef.current.active = false;
 
+    if (plantDrag) { setPlantDrag(null); return; }
     if (selDrag) { setSelDrag(null); return; }
     if (resDrag) { setResDrag(null); setRotTip(null); return; }
 
@@ -951,7 +973,7 @@ export function GardenCanvas({
       else setDrawing(null);
       return;
     }
-  }, [drawing, selDrag, resDrag, toCanvas, finishDrawing]);
+  }, [drawing, selDrag, resDrag, plantDrag, toCanvas, finishDrawing]);
 
   // ── Wheel zoom ─────────────────────────────────────────────────────────────
   const onWheel = useCallback((e: React.WheelEvent<SVGSVGElement>) => {
@@ -1021,7 +1043,7 @@ export function GardenCanvas({
           {mapData.objects.map(obj => (
             <g
               key={obj.id}
-              style={{ cursor: selectedTool === 'select' ? 'move' : undefined }}
+              style={{ cursor: selectedTool === 'select' ? 'move' : undefined, opacity: selDrag?.id === obj.id ? 0.7 : 1 }}
               onClick={e => { if (selectedTool === 'select') { e.stopPropagation(); onSelectObject(obj.id); } }}
             >
               {renderShapeFill(obj)}
@@ -1031,7 +1053,8 @@ export function GardenCanvas({
 
           {/* Plant markers */}
           {mapData.plants.map(p => (
-            <g key={p.id} style={{ cursor: 'pointer' }}
+            <g key={p.id}
+              style={{ cursor: selectedTool === 'select' ? 'move' : 'pointer', opacity: plantDrag?.id === p.id ? 0.7 : 1 }}
               onClick={e => { if (selectedTool === 'select') { e.stopPropagation(); } }}>
               <circle cx={p.x*PX} cy={p.y*PX} r={18}
                 fill="rgba(20,43,22,0.85)" stroke="rgba(125,192,132,0.5)"
