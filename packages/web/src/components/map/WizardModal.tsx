@@ -1,7 +1,6 @@
-import { useState, useRef, useEffect } from 'react';
+import { useState, useRef } from 'react';
 import { api } from '../../api/client';
 import { useAuthStore } from '../../stores/authStore';
-import { useMapStore } from '../../stores/mapStore';
 import type { WizardStatus, PlantPreview, MapData } from '../../stores/mapStore';
 import { PLANTS } from '../../data/companions';
 
@@ -38,96 +37,136 @@ interface Props {
   onClose: () => void;
   onRefreshStatus: () => void;
   onPlacePlants: (plants: PlantPreview[]) => void;
+  mapData: MapData;
+  northAngle: number;
 }
 
 // ── Position calculation ──────────────────────────────────────────────────────
 
-function gridInRect(
-  x0: number, y0: number, w: number, h: number,
-  spacingM: number, qty: number
-): [number, number][] {
-  const positions: [number, number][] = [];
-  const cols = Math.max(1, Math.floor(w / spacingM));
-  const startX = x0 + spacingM * 0.5;
-  const startY = y0 + spacingM * 0.5;
-  let count = 0;
-  outerLoop: for (let row = 0; row < 50; row++) {
-    for (let col = 0; col < cols; col++) {
-      if (count >= qty) break outerLoop;
-      const px = startX + col * spacingM;
-      const py = startY + row * spacingM;
-      if (py > y0 + h) break outerLoop;
-      positions.push([px, py]);
-      count++;
-    }
-  }
-  // Overflow: place to the right of the bed
-  const ox = x0 + w + spacingM;
-  while (count < qty) {
-    const col = (count - positions.length) % 5;
-    const row = Math.floor((count - positions.length) / 5);
-    positions.push([ox + col * spacingM, y0 + row * spacingM]);
-    count++;
-  }
-  return positions;
+function getPlantEmoji(name: string): string {
+  const n = name.toLowerCase();
+  if (n.includes('tomato') || n.includes('עגבניה') || n.includes('עגבנייה')) return '🍅';
+  if (n.includes('pepper') || n.includes('פלפל')) return '🫑';
+  if (n.includes('cucumber') || n.includes('מלפפון')) return '🥒';
+  if (n.includes('carrot') || n.includes('גזר')) return '🥕';
+  if (n.includes('onion') || n.includes('בצל')) return '🧅';
+  if (n.includes('garlic') || n.includes('שום')) return '🧄';
+  if (n.includes('lettuce') || n.includes('חסה')) return '🥬';
+  if (n.includes('strawberry') || n.includes('תות')) return '🍓';
+  if (n.includes('eggplant') || n.includes('חציל')) return '🍆';
+  if (n.includes('zucchini') || n.includes('קישוא')) return '🥗';
+  if (n.includes('basil') || n.includes('בזיל')) return '🌿';
+  if (n.includes('rose') || n.includes('ורד')) return '🌹';
+  if (n.includes('sunflower') || n.includes('חמניה')) return '🌻';
+  return '🌱';
 }
 
-function calculatePlantPositions(plan: WizardPlan, mapData: MapData): PlantPreview[] {
-  const bedTypes = new Set(['bed', 'raised-bed', 'hydroponics', 'aquaponics', 'vertical']);
-  const beds = mapData.objects.filter(
-    o => bedTypes.has(o.type) && o.shapeKind === 'rect' && o.x != null
-  );
+function calculatePlantPositions(
+  plan: any,
+  mapData: MapData,
+  northAngle: number
+): PlantPreview[] {
+  const results: PlantPreview[] = [];
+  const CANVAS_W = 40; // meters
+  const CANVAS_H = 32; // meters
+  const MARGIN = 1;    // 1 meter margin from edges
 
-  const result: PlantPreview[] = [];
-  let bedIndex = 0;
+  // For each bed in the plan
+  for (const bed of (plan.beds ?? [])) {
+    // Find matching shape on map by name similarity
+    const matchingShape = mapData.objects.find(obj =>
+      obj.label?.toLowerCase().includes(bed.suggestedName?.toLowerCase()) ||
+      bed.suggestedName?.toLowerCase().includes(obj.label?.toLowerCase()) ||
+      ['bed', 'raised-bed', 'hydroponics', 'aquaponics', 'vertical']
+        .includes(obj.type)
+    );
 
-  for (const planBed of (plan.beds ?? [])) {
-    for (const plant of (planBed.plants ?? [])) {
-      const spacingM = Math.max(0.3, (plant.spacing ?? 30) / 100);
-      const qty = Math.min(plant.quantity ?? 1, 20);
-      const plantData = PLANTS.find(p => p.nameHe === plant.nameHe);
-      const emoji = plantData?.emoji ?? '🌱';
+    for (const plant of (bed.plants ?? [])) {
+      const spacingM = (plant.spacingCm ?? plant.spacing ?? 30) / 100; // convert cm to meters
+      const quantity = plant.quantity ?? 1;
 
-      if (beds.length > 0) {
-        const bed = beds[bedIndex % beds.length];
-        bedIndex++;
-        const positions = gridInRect(
-          bed.x ?? 0, bed.y ?? 0,
-          bed.width ?? 2, bed.height ?? 1,
-          spacingM, qty
-        );
-        for (const [px, py] of positions) {
-          result.push({
-            plantNameHe: plant.nameHe, plantNameEn: plant.nameEn,
-            emoji, spacing: plant.spacing ?? 30,
-            x: px, y: py, bedName: planBed.name,
+      let startX = MARGIN;
+      let startY = MARGIN + results.length * 2; // offset each bed
+
+      // If we found a matching shape, place inside it
+      if (matchingShape) {
+        if (matchingShape.shapeKind === 'rect' &&
+            matchingShape.x != null &&
+            matchingShape.y != null) {
+          startX = matchingShape.x + spacingM / 2;
+          startY = matchingShape.y + spacingM / 2;
+        } else if (matchingShape.shapeKind === 'circle' &&
+                   matchingShape.cx != null) {
+          startX = matchingShape.cx - spacingM;
+          startY = matchingShape.cy! - spacingM;
+        }
+      }
+
+      // Place plants in a grid with correct spacing
+      let placed = 0;
+      let row = 0;
+      while (placed < quantity) {
+        const col = placed % Math.max(1, Math.floor(
+          (matchingShape?.width ?? 4) / spacingM
+        ));
+        if (col === 0 && placed > 0) row++;
+
+        const x = startX + col * spacingM;
+        const y = startY + row * spacingM;
+
+        // Make sure position is within canvas bounds
+        const finalX = Math.min(Math.max(x, MARGIN), CANVAS_W - MARGIN);
+        const finalY = Math.min(Math.max(y, MARGIN), CANVAS_H - MARGIN);
+
+        // Check no overlap with existing plants
+        const tooClose = results.some(existing => {
+          const dx = existing.x - finalX;
+          const dy = existing.y - finalY;
+          return Math.sqrt(dx*dx + dy*dy) < spacingM * 0.8;
+        });
+
+        if (!tooClose) {
+          results.push({
+            plantNameHe: plant.nameHe ?? plant.name ?? 'צמח',
+            plantNameEn: plant.nameEn ?? plant.name ?? 'plant',
+            emoji: getPlantEmoji(plant.nameEn ?? plant.nameHe ?? ''),
+            spacing: spacingM,
+            x: finalX,
+            y: finalY,
+            bedName: bed.suggestedName ?? bed.name ?? 'ערוגה',
           });
         }
-      } else {
-        // No beds on map — scatter in canvas
-        const baseX = 5 + (result.length * 0.1);
-        const baseY = 5;
-        for (let i = 0; i < qty; i++) {
-          const col = i % 5, row = Math.floor(i / 5);
-          result.push({
-            plantNameHe: plant.nameHe, plantNameEn: plant.nameEn,
-            emoji, spacing: plant.spacing ?? 30,
-            x: baseX + col * spacingM, y: baseY + row * spacingM,
-            bedName: planBed.name,
-          });
-        }
+        placed++;
       }
     }
   }
 
-  return result;
+  // Handle pot suggestions
+  for (const pot of (plan.potAdvice ?? [])) {
+    const potShape = mapData.objects.find(obj =>
+      obj.type === 'pot-rect' || obj.type === 'pot-round'
+    );
+    for (const plantName of (pot.suggestedPlants ?? []).slice(0, 2)) {
+      const spacingM = 0.2;
+      results.push({
+        plantNameHe: plantName,
+        plantNameEn: plantName,
+        emoji: getPlantEmoji(plantName),
+        spacing: spacingM,
+        x: potShape?.cx ?? potShape?.x ?? (MARGIN + results.length),
+        y: potShape?.cy ?? potShape?.y ?? MARGIN,
+        bedName: pot.potDescription ?? 'עציץ',
+      });
+    }
+  }
+
+  return results;
 }
 
 // ── Component ─────────────────────────────────────────────────────────────────
 
-export function WizardModal({ mapId, wizardStatus, onClose, onRefreshStatus, onPlacePlants }: Props) {
+export function WizardModal({ mapId, wizardStatus, onClose, onRefreshStatus, onPlacePlants, mapData, northAngle }: Props) {
   const { session } = useAuthStore();
-  const mapData = useMapStore(s => s.mapData);
 
   // Pre-populate from existing map plants
   const initialWishlist: WishlistItem[] = mapData.plants.map(p => {
@@ -394,7 +433,7 @@ export function WizardModal({ mapId, wizardStatus, onClose, onRefreshStatus, onP
             <div style={{ display: 'flex', gap: '8px' }}>
               <button
                 onClick={() => {
-                  const positions = calculatePlantPositions(plan, mapData);
+                  const positions = calculatePlantPositions(plan, mapData, northAngle);
                   onPlacePlants(positions);
                   onClose();
                 }}

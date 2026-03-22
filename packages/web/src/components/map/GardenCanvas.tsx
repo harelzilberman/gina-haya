@@ -1191,17 +1191,39 @@ export function GardenCanvas({
             </g>
           ))}
 
-          {/* Preview plants (wizard placement) */}
+          {/* Preview plant markers */}
           {previewPlants.map((p, i) => (
-            <g key={`preview-${i}`} style={{ pointerEvents: 'none', opacity: 0.65 }}>
-              <circle cx={p.x*PX} cy={p.y*PX} r={p.spacing/2*PX}
-                fill="rgba(245,200,64,0.06)" stroke="rgba(245,200,64,0.35)"
-                strokeWidth={1} strokeDasharray="4,3" />
-              <circle cx={p.x*PX} cy={p.y*PX} r={18}
-                fill="rgba(245,200,64,0.18)" stroke="#F5C840"
-                strokeWidth={1.5} strokeDasharray="4,3" />
-              <text x={p.x*PX} y={p.y*PX+7} textAnchor="middle" fontSize={20}
-                style={{ userSelect: 'none' }}>{p.emoji}</text>
+            <g key={`preview-${i}`} style={{ pointerEvents: 'none' }}>
+              {/* Small spacing ring — dashed, semi-transparent */}
+              <circle
+                cx={p.x * PX}
+                cy={p.y * PX}
+                r={Math.max(8, (p.spacing / 2) * PX)}
+                fill="rgba(245,200,64,0.06)"
+                stroke="rgba(245,200,64,0.3)"
+                strokeWidth={1}
+                strokeDasharray="4,3"
+              />
+              {/* Plant circle — small, gold tinted */}
+              <circle
+                cx={p.x * PX}
+                cy={p.y * PX}
+                r={16}
+                fill="rgba(245,200,64,0.2)"
+                stroke="rgba(245,200,64,0.6)"
+                strokeWidth={1.5}
+                strokeDasharray="3,2"
+              />
+              {/* Plant emoji */}
+              <text
+                x={p.x * PX}
+                y={p.y * PX + 6}
+                textAnchor="middle"
+                fontSize={16}
+                style={{ userSelect: 'none' }}
+              >
+                {p.emoji}
+              </text>
             </g>
           ))}
 
@@ -1273,46 +1295,54 @@ export function GardenCanvas({
       {/* Plant preview confirmation panel */}
       {previewPlants.length > 0 && (
         <div style={{
-          position: 'absolute', bottom: 0, left: 0, right: 0,
-          height: '72px',
+          position: 'absolute',
+          bottom: 0,
+          left: 0,
+          right: 0,
+          zIndex: 300,
           background: 'rgba(20,43,22,0.97)',
-          borderTop: '1px solid rgba(245,200,64,0.2)',
-          display: 'flex', alignItems: 'center',
-          padding: '0 24px', gap: '12px',
-          direction: 'rtl', zIndex: 100,
-          animation: 'slideUp 0.25s ease-out',
+          borderTop: '1px solid rgba(245,200,64,0.25)',
+          padding: '12px 20px',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'space-between',
+          direction: 'rtl',
+          fontFamily: '"Assistant","Heebo",sans-serif',
         }}>
-          <style>{`@keyframes slideUp { from { transform: translateY(100%); opacity: 0; } to { transform: translateY(0); opacity: 1; } }`}</style>
-          <span style={{ fontSize: '24px' }}>🌕</span>
-          <div style={{ flex: 1 }}>
-            <p style={{ fontFamily: FRANK, color: GOLD, fontSize: '14px', margin: '0 0 2px' }}>
-              מוש ממליץ למקם {previewPlants.length} צמחים במפה
-            </p>
-            <p style={{ fontFamily: ASSIST, color: 'rgba(237,224,196,0.5)', fontSize: '11px', margin: 0 }}>
-              צמחים מוצגים בתצוגה מקדימה — אשר כדי להוסיף
-            </p>
+          <div>
+            <span style={{ color: '#F5C840', fontSize: '14px', fontWeight: 600 }}>
+              🌕 מוש ממליץ למקם {previewPlants.length} צמחים
+            </span>
+            <span style={{ color: 'rgba(237,224,196,0.6)', fontSize: '12px', marginRight: '8px' }}>
+              — מאשר?
+            </span>
           </div>
-          <button
-            onClick={onConfirmPreview}
-            style={{
-              fontFamily: FRANK, fontSize: '13px', fontWeight: 700,
-              padding: '8px 18px', borderRadius: '7px', border: 'none',
-              background: GOLD, color: '#142B16', cursor: 'pointer', flexShrink: 0,
-            }}
-          >
-            ✓ אשר והנח
-          </button>
-          <button
-            onClick={onCancelPreview}
-            style={{
-              fontFamily: ASSIST, fontSize: '12px',
-              padding: '8px 14px', borderRadius: '7px',
-              border: '1px solid rgba(245,200,64,0.25)', background: 'transparent',
-              color: 'rgba(237,224,196,0.6)', cursor: 'pointer', flexShrink: 0,
-            }}
-          >
-            בטל
-          </button>
+          <div style={{ display: 'flex', gap: '8px' }}>
+            <button
+              onClick={onCancelPreview}
+              style={{
+                padding: '7px 16px', borderRadius: '7px',
+                border: '1px solid rgba(245,200,64,0.25)',
+                background: 'transparent',
+                color: 'rgba(237,224,196,0.7)',
+                fontFamily: '"Assistant","Heebo",sans-serif',
+                fontSize: '13px', cursor: 'pointer',
+              }}
+            >
+              בטל
+            </button>
+            <button
+              onClick={onConfirmPreview}
+              style={{
+                padding: '7px 20px', borderRadius: '7px',
+                border: 'none', background: '#F5C840',
+                color: '#142B16', fontFamily: '"Frank Ruhl Libre",Georgia,serif',
+                fontSize: '13px', fontWeight: 700, cursor: 'pointer',
+              }}
+            >
+              אשר והנח 🌱
+            </button>
+          </div>
         </div>
       )}
     </div>

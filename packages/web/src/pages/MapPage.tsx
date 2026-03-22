@@ -103,6 +103,8 @@ export function MapPage() {
           onClose={() => setShowWizard(false)}
           onRefreshStatus={store.loadWizardStatus}
           onPlacePlants={plants => { store.setPreviewPlants(plants); setShowWizard(false); }}
+          mapData={store.mapData}
+          northAngle={store.northAngle}
         />
       )}
 
