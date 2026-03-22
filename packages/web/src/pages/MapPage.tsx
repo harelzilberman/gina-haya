@@ -29,11 +29,8 @@ export function MapPage() {
   }
 
   return (
-    <div dir="rtl" style={{
-      display: 'flex', flexDirection: 'column',
-      height: '100vh', background: '#142B16', overflow: 'hidden',
-    }}>
-      {/* Toolbar — 52px */}
+    <div dir="rtl" style={{ background: '#142B16' }}>
+      {/* Toolbar — fixed, sits below the 64px navbar */}
       <MapToolbar
         selectedTool={store.selectedTool}
         onToolChange={store.setTool}
@@ -50,8 +47,8 @@ export function MapPage() {
         hasSavedMap={!!store.mapId}
       />
 
-      {/* Canvas area — fills remaining height: calc(100vh - 64px navbar - 52px toolbar) */}
-      <div style={{ flex: 1, display: 'flex', overflow: 'hidden', position: 'relative' }}>
+      {/* Canvas area — starts at 116px (64 navbar + 52 toolbar), fills rest of viewport */}
+      <div style={{ position: 'fixed', top: '116px', left: 0, right: 0, bottom: 0, display: 'flex', overflow: 'hidden' }}>
         <div style={{ flex: 1, position: 'relative', overflow: 'hidden' }}>
           <GardenCanvas
             mapData={store.mapData}

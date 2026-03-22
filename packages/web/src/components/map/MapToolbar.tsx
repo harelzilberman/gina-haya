@@ -24,8 +24,6 @@ interface Props {
   hasSavedMap: boolean;
 }
 
-// ── Category definitions ──────────────────────────────────────────────────────
-
 interface DropItem { tool: MapTool; emoji: string; label: string }
 interface Category { id: string; label: string; items: DropItem[] }
 
@@ -63,16 +61,14 @@ const CATEGORIES: Category[] = [
   },
 ];
 
-// ── Dropdown button ───────────────────────────────────────────────────────────
-
 function CategoryDropdown({
   category, selectedTool, onSelect,
 }: { category: Category; selectedTool: MapTool; onSelect: (t: MapTool) => void }) {
   const [open, setOpen] = useState(false);
   const ref = useRef<HTMLDivElement>(null);
   const isActive = category.items.some(i => i.tool === selectedTool);
+  const activeItem = category.items.find(i => i.tool === selectedTool);
 
-  // Close on outside click
   useEffect(() => {
     if (!open) return;
     function handler(e: MouseEvent) {
@@ -82,51 +78,79 @@ function CategoryDropdown({
     return () => document.removeEventListener('mousedown', handler);
   }, [open]);
 
-  const activeItem = category.items.find(i => i.tool === selectedTool);
-
   return (
-    <div ref={ref} style={{ position: 'relative', flexShrink: 0 }}>
+    <div ref={ref} style={{ position: 'static', flexShrink: 0 }}>
       <button
         onClick={() => setOpen(o => !o)}
         style={{
-          fontFamily: ASSIST, fontSize: '12px', fontWeight: isActive ? 700 : 400,
-          padding: '5px 10px', borderRadius: '6px',
-          border: `1px solid ${isActive ? GOLD : 'rgba(245,200,64,0.18)'}`,
-          color: isActive ? GOLD : `${PARCH}88`,
-          backgroundColor: 'transparent',
-          cursor: 'pointer', minHeight: '32px',
-          borderBottom: isActive ? `2px solid ${GOLD}` : undefined,
-          display: 'flex', alignItems: 'center', gap: '4px',
+          fontFamily: ASSIST,
+          fontSize: '13px',
+          fontWeight: isActive ? 700 : 400,
+          padding: '6px 12px',
+          borderRadius: '6px',
+          border: `1px solid ${isActive ? GOLD : 'rgba(245,200,64,0.2)'}`,
+          color: isActive ? GOLD : `${PARCH}99`,
+          backgroundColor: isActive ? 'rgba(245,200,64,0.1)' : 'transparent',
+          cursor: 'pointer',
+          height: '36px',
+          display: 'flex',
+          alignItems: 'center',
+          gap: '5px',
+          whiteSpace: 'nowrap',
         }}
       >
         {activeItem ? `${activeItem.emoji} ${activeItem.label}` : category.label}
-        <span style={{ fontSize: '10px', opacity: 0.6 }}>▾</span>
+        <span style={{ fontSize: '9px', opacity: 0.5, marginTop: '1px' }}>▾</span>
       </button>
 
       {open && (
         <div style={{
-          position: 'absolute', top: '100%', right: 0, left: 'auto', marginTop: '4px',
-          background: 'rgba(14,30,15,0.98)',
-          border: '1px solid rgba(245,200,64,0.20)',
-          borderRadius: '8px', padding: '4px',
-          minWidth: '160px', zIndex: 1000,
-          display: 'flex', flexDirection: 'column', gap: '1px',
-          boxShadow: '0 4px 16px rgba(0,0,0,0.4)',
+          position: 'fixed',
+          top: '116px',
+          backgroundColor: 'rgba(10,24,11,0.99)',
+          border: '1px solid rgba(245,200,64,0.3)',
+          borderRadius: '10px',
+          padding: '6px',
+          minWidth: '180px',
+          zIndex: 9999,
+          display: 'flex',
+          flexDirection: 'column',
+          gap: '2px',
+          boxShadow: '0 8px 32px rgba(0,0,0,0.6)',
         }}>
           {category.items.map(item => (
             <button
               key={item.tool}
               onClick={() => { onSelect(item.tool); setOpen(false); }}
               style={{
-                fontFamily: ASSIST, fontSize: '13px', lineHeight: '1.3',
-                padding: '8px 14px', borderRadius: '5px', textAlign: 'right',
-                border: 'none', background: selectedTool === item.tool ? 'rgba(245,200,64,0.12)' : 'transparent',
-                color: selectedTool === item.tool ? GOLD : `${PARCH}88`,
-                cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '8px',
+                fontFamily: ASSIST,
+                fontSize: '14px',
+                lineHeight: '1.4',
+                padding: '10px 16px',
+                borderRadius: '6px',
+                textAlign: 'right',
+                border: 'none',
+                background: selectedTool === item.tool
+                  ? 'rgba(245,200,64,0.15)'
+                  : 'transparent',
+                color: selectedTool === item.tool ? GOLD : PARCH,
+                cursor: 'pointer',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '10px',
                 whiteSpace: 'nowrap',
+                direction: 'rtl',
+              }}
+              onMouseEnter={e => {
+                if (selectedTool !== item.tool)
+                  (e.currentTarget as HTMLElement).style.background = 'rgba(245,200,64,0.08)';
+              }}
+              onMouseLeave={e => {
+                if (selectedTool !== item.tool)
+                  (e.currentTarget as HTMLElement).style.background = 'transparent';
               }}
             >
-              <span>{item.emoji}</span>
+              <span style={{ fontSize: '18px' }}>{item.emoji}</span>
               <span>{item.label}</span>
             </button>
           ))}
@@ -135,8 +159,6 @@ function CategoryDropdown({
     </div>
   );
 }
-
-// ── Main Toolbar ──────────────────────────────────────────────────────────────
 
 export function MapToolbar({
   selectedTool, onToolChange, showSunZones, onToggleSunZones,
@@ -150,13 +172,22 @@ export function MapToolbar({
 
   return (
     <div dir="rtl" style={{
-      position: 'relative', zIndex: 100, flexShrink: 0,
-      height: '52px', display: 'flex', alignItems: 'center',
-      padding: '0 12px', gap: '6px', overflowX: 'auto',
-      background: FOREST, borderBottom: '1px solid rgba(245,200,64,0.15)',
+      position: 'fixed',
+      top: '64px',
+      left: 0,
+      right: 0,
+      zIndex: 200,
+      height: '52px',
+      display: 'flex',
+      alignItems: 'center',
+      padding: '0 16px',
+      gap: '8px',
+      background: FOREST,
+      borderBottom: '1px solid rgba(245,200,64,0.2)',
+      flexShrink: 0,
     }}>
 
-      {/* ── LEFT (RTL = visually right) — dropdown categories ── */}
+      {/* Category dropdowns */}
       {CATEGORIES.map(cat => (
         <CategoryDropdown
           key={cat.id}
@@ -166,19 +197,19 @@ export function MapToolbar({
         />
       ))}
 
-      <div style={{ width: '1px', height: '28px', background: 'rgba(245,200,64,0.12)', flexShrink: 0 }} />
+      <div style={{ width: '1px', height: '28px', background: 'rgba(245,200,64,0.15)', flexShrink: 0 }} />
 
-      {/* ── RIGHT section ── */}
-      <div style={{ marginInlineStart: 'auto', display: 'flex', alignItems: 'center', gap: '6px', flexShrink: 0 }}>
+      {/* Right section */}
+      <div style={{ marginInlineStart: 'auto', display: 'flex', alignItems: 'center', gap: '8px', flexShrink: 0 }}>
 
         {/* Select */}
         <button
           onClick={() => onToolChange('select')}
           style={{
             ...ghostBtn,
-            color: selectedTool === 'select' ? FOREST : `${PARCH}77`,
+            color: selectedTool === 'select' ? FOREST : `${PARCH}88`,
             background: selectedTool === 'select' ? GOLD : 'transparent',
-            border: `1px solid ${selectedTool === 'select' ? GOLD : 'rgba(245,200,64,0.18)'}`,
+            border: `1px solid ${selectedTool === 'select' ? GOLD : 'rgba(245,200,64,0.2)'}`,
             fontWeight: selectedTool === 'select' ? 700 : 400,
           }}
         >
@@ -188,17 +219,16 @@ export function MapToolbar({
         {/* Undo */}
         <button onClick={onUndo} title="בטל (Ctrl+Z)" style={ghostBtn}>↩️</button>
 
-        <div style={{ width: '1px', height: '28px', background: 'rgba(245,200,64,0.12)' }} />
+        <div style={{ width: '1px', height: '28px', background: 'rgba(245,200,64,0.15)' }} />
 
         {/* Sun zones */}
         <button
           onClick={onToggleSunZones}
-          title="אזורי שמש"
           style={{
             ...ghostBtn,
             color: showSunZones ? GOLD : `${PARCH}66`,
-            border: `1px solid ${showSunZones ? `${GOLD}55` : 'rgba(245,200,64,0.18)'}`,
-            padding: '5px 10px',
+            border: `1px solid ${showSunZones ? `${GOLD}66` : 'rgba(245,200,64,0.2)'}`,
+            background: showSunZones ? 'rgba(245,200,64,0.1)' : 'transparent',
           }}
         >
           ☀️ שמש
@@ -206,45 +236,56 @@ export function MapToolbar({
 
         {/* North angle */}
         <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
-          <span style={{ fontFamily: ASSIST, fontSize: '11px', color: `${PARCH}44` }}>🧭</span>
+          <span style={{ fontFamily: ASSIST, fontSize: '12px', color: `${PARCH}55` }}>🧭</span>
           <input
             type="number" min={0} max={359} value={northAngle}
             onChange={e => onNorthAngleChange(Number(e.target.value))}
             style={{
-              width: '52px', fontFamily: ASSIST, fontSize: '12px', color: PARCH,
-              background: 'rgba(245,200,64,0.06)', border: '1px solid rgba(245,200,64,0.18)',
-              borderRadius: '5px', padding: '4px 6px', outline: 'none', textAlign: 'center',
+              width: '54px',
+              fontFamily: ASSIST,
+              fontSize: '13px',
+              color: PARCH,
+              background: 'rgba(245,200,64,0.06)',
+              border: '1px solid rgba(245,200,64,0.2)',
+              borderRadius: '5px',
+              padding: '4px 6px',
+              outline: 'none',
+              textAlign: 'center',
             }}
           />
-          <span style={{ fontFamily: ASSIST, fontSize: '11px', color: `${PARCH}33` }}>°</span>
+          <span style={{ fontFamily: ASSIST, fontSize: '11px', color: `${PARCH}44` }}>°</span>
         </div>
 
-        <div style={{ width: '1px', height: '28px', background: 'rgba(245,200,64,0.12)' }} />
+        <div style={{ width: '1px', height: '28px', background: 'rgba(245,200,64,0.15)' }} />
 
         {/* Save status */}
         {isSaving ? (
-          <span style={{ fontFamily: ASSIST, fontSize: '11px', color: `${PARCH}44` }}>שומר...</span>
+          <span style={{ fontFamily: ASSIST, fontSize: '12px', color: `${PARCH}55` }}>שומר...</span>
         ) : isDirty ? (
-          <button onClick={onSave} style={{ ...ghostBtn, color: GOLD, border: `1px solid ${GOLD}44`, padding: '5px 14px' }}>
+          <button onClick={onSave} style={{ ...ghostBtn, color: GOLD, border: `1px solid ${GOLD}55`, padding: '5px 14px' }}>
             💾 שמור
           </button>
         ) : (
-          <span style={{ fontFamily: ASSIST, fontSize: '11px', color: `${PARCH}33` }}>נשמר ✓</span>
+          <span style={{ fontFamily: ASSIST, fontSize: '12px', color: `${PARCH}44` }}>נשמר ✓</span>
         )}
 
         {/* Wizard */}
         <button
           onClick={canWizard ? onWizard : undefined}
           disabled={!canWizard}
-          title={!hasSavedMap ? 'שמור את המפה תחילה' : !wizardStatus?.canRun ? 'הגעת למגבלת השימוש' : undefined}
           style={{
-            fontFamily: FRANK, fontSize: '12px', fontWeight: 700,
-            padding: '6px 12px', borderRadius: '6px', flexShrink: 0,
+            fontFamily: FRANK,
+            fontSize: '13px',
+            fontWeight: 700,
+            padding: '6px 14px',
+            borderRadius: '6px',
+            flexShrink: 0,
             border: 'none',
             color: canWizard ? FOREST : `${PARCH}44`,
             backgroundColor: canWizard ? GOLD : 'rgba(245,200,64,0.15)',
             cursor: canWizard ? 'pointer' : 'not-allowed',
             opacity: canWizard ? 1 : 0.5,
+            whiteSpace: 'nowrap',
           }}
         >
           {wizardLabel}
@@ -255,8 +296,15 @@ export function MapToolbar({
 }
 
 const ghostBtn: React.CSSProperties = {
-  fontFamily: ASSIST, fontSize: '12px',
-  padding: '5px 8px', borderRadius: '6px',
-  border: '1px solid rgba(245,200,64,0.18)', color: `${PARCH}77`,
-  backgroundColor: 'transparent', cursor: 'pointer', flexShrink: 0, minHeight: '32px',
+  fontFamily: ASSIST,
+  fontSize: '13px',
+  padding: '5px 10px',
+  borderRadius: '6px',
+  border: '1px solid rgba(245,200,64,0.2)',
+  color: `${PARCH}88`,
+  backgroundColor: 'transparent',
+  cursor: 'pointer',
+  flexShrink: 0,
+  height: '36px',
+  whiteSpace: 'nowrap',
 };
