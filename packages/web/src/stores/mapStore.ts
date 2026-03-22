@@ -45,6 +45,7 @@ export interface PlantMarker {
   x: number;
   y: number;
   spacing: number;
+  notes?: string;
 }
 
 export interface MapData {

@@ -307,7 +307,9 @@ function SelectionOverlay({
             onMouseDown={e => { e.stopPropagation(); onStartResize(id, e); }}
           />
         ))}
-        <RotationHandle cx={cx} cy={ry - 20} onStart={e => onStartResize('rot', e)} />
+        {obj.type !== 'pot-rect' && (
+          <RotationHandle cx={cx} cy={ry - 20} onStart={e => onStartResize('rot', e)} />
+        )}
       </g>
     );
   }
@@ -324,7 +326,9 @@ function SelectionOverlay({
           style={handleStyle('ew-resize')}
           onMouseDown={e => { e.stopPropagation(); onStartResize('r', e); }}
         />
-        <RotationHandle cx={cx} cy={cy - r - 20} onStart={e => onStartResize('rot', e)} />
+        {obj.type !== 'pot-round' && (
+          <RotationHandle cx={cx} cy={cy - r - 20} onStart={e => onStartResize('rot', e)} />
+        )}
       </g>
     );
   }
@@ -635,6 +639,105 @@ function PostDrawPopup({
   );
 }
 
+// ── Plant popup ───────────────────────────────────────────────────────────────
+
+function PlantPopup({
+  plant, onUpdate, onDelete, onClose,
+}: {
+  plant: PlantMarker;
+  onUpdate: (id: string, changes: Partial<PlantMarker>) => void;
+  onDelete: (id: string) => void;
+  onClose: () => void;
+}) {
+  const [notes, setNotes] = useState(plant.notes ?? '');
+
+  return (
+    <>
+      {/* Backdrop — click to close */}
+      <div
+        style={{ position: 'fixed', inset: 0, zIndex: 290 }}
+        onMouseDown={() => onClose()}
+      />
+      <div
+        style={{
+          position: 'fixed', left: '50%', top: '50%',
+          transform: 'translate(-50%, -50%)',
+          zIndex: 300,
+          background: 'rgba(14,30,15,0.98)',
+          border: '1px solid rgba(245,200,64,0.30)',
+          borderRadius: '12px', padding: '16px',
+          width: '240px',
+          boxShadow: '0 4px 24px rgba(0,0,0,0.6)',
+          fontFamily: ASSIST, direction: 'rtl',
+          display: 'flex', flexDirection: 'column', gap: '12px',
+        }}
+        onMouseDown={e => e.stopPropagation()}
+      >
+        {/* Close button */}
+        <button
+          onClick={onClose}
+          style={{
+            position: 'absolute', top: '10px', insetInlineStart: '10px',
+            background: 'none', border: 'none', cursor: 'pointer',
+            color: `${PARCH}55`, fontSize: '14px', lineHeight: 1, padding: '2px 4px',
+          }}
+        >✕</button>
+
+        {/* Header */}
+        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '4px', paddingTop: '4px' }}>
+          <span style={{ fontSize: '32px' }}>{plant.emoji}</span>
+          <span style={{ fontFamily: FRANK, color: GOLD, fontSize: '16px', fontWeight: 700 }}>
+            {plant.plantNameHe}
+          </span>
+          <span style={{ fontSize: '11px', color: `${PARCH}60` }}>{plant.plantNameEn}</span>
+        </div>
+
+        {/* Spacing info */}
+        <div style={{ fontSize: '12px', color: `${PARCH}66`, textAlign: 'center' }}>
+          ריווח: {plant.spacing}cm
+        </div>
+
+        {/* Notes */}
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+          <label style={{ fontSize: '11px', color: `${PARCH}66` }}>הערות</label>
+          <textarea
+            value={notes}
+            rows={3}
+            placeholder="למשל: שתלתי ב-15/3, צריך השקיה יומית..."
+            onChange={e => setNotes(e.target.value)}
+            style={{
+              fontFamily: ASSIST, fontSize: '12px', color: PARCH, resize: 'none',
+              background: 'rgba(245,200,64,0.08)', border: '1px solid rgba(245,200,64,0.25)',
+              borderRadius: '6px', padding: '6px 8px', outline: 'none',
+            }}
+          />
+        </div>
+
+        {/* Buttons */}
+        <div style={{ display: 'flex', gap: '8px' }}>
+          <button
+            onClick={() => { onUpdate(plant.id, { notes }); onClose(); }}
+            style={{
+              flex: 1, padding: '7px', borderRadius: '7px', border: 'none',
+              background: GOLD, color: '#142B16', fontFamily: ASSIST,
+              fontSize: '12px', fontWeight: 700, cursor: 'pointer',
+            }}
+          >שמור</button>
+          <button
+            onClick={() => { onDelete(plant.id); onClose(); }}
+            style={{
+              flex: 1, padding: '7px', borderRadius: '7px',
+              border: '1px solid rgba(200,50,50,0.5)', background: 'transparent',
+              color: 'rgba(220,80,80,0.85)', fontFamily: ASSIST,
+              fontSize: '12px', cursor: 'pointer',
+            }}
+          >מחק צמח</button>
+        </div>
+      </div>
+    </>
+  );
+}
+
 // ── Empty state hint ──────────────────────────────────────────────────────────
 
 function EmptyHint() {
@@ -677,6 +780,7 @@ export function GardenCanvas({
   const [plantDrag, setPlantDrag] = useState<{
     id: string; startMx: number; startMy: number; origX: number; origY: number;
   } | null>(null);
+  const [selectedPlantId, setSelectedPlantId] = useState<string | null>(null);
   const [rotTip, setRotTip]   = useState<string | null>(null);
 
   const panRef  = useRef({ active: false, sx: 0, sy: 0, tx: 0, ty: 0 });
@@ -699,7 +803,7 @@ export function GardenCanvas({
   // ── Keyboard ───────────────────────────────────────────────────────────────
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') { setDrawing(null); setPopup(null); }
+      if (e.key === 'Escape') { setDrawing(null); setPopup(null); setSelectedPlantId(null); }
       if (e.key === 'Delete' && selectedObjectId && !popup) {
         onDeleteObject(selectedObjectId);
         onSelectObject(null);
@@ -777,7 +881,7 @@ export function GardenCanvas({
       panRef.current = { active: true, sx: e.clientX, sy: e.clientY, tx: t.x, ty: t.y };
       return;
     }
-    if (e.button !== 0 || popup) return;
+    if (e.button !== 0 || popup || selectedPlantId) return;
 
     const [mx, my] = toCanvas(e.clientX, e.clientY);
     const kind = TOOL_KIND[selectedTool];
@@ -789,20 +893,24 @@ export function GardenCanvas({
         return Math.sqrt(dx*dx + dy*dy) <= 18 / PX;
       });
       if (hitPlant) {
+        setSelectedPlantId(hitPlant.id);
         setPlantDrag({ id: hitPlant.id, startMx: mx, startMy: my, origX: hitPlant.x, origY: hitPlant.y });
         return;
       }
+      setSelectedPlantId(null);
 
       // Hit test objects (back-to-front)
       const hit = [...mapData.objects].reverse().find(o => hitTest(o, mx, my));
       if (hit) {
         onSelectObject(hit.id);
-        const orig: Partial<MapObject> = hit.shapeKind === 'polygon'
-          ? { points: hit.points ? hit.points.map(p => [...p] as [number, number]) : undefined }
-          : hit.shapeKind === 'circle'
-          ? { cx: hit.cx, cy: hit.cy }
-          : { x: hit.x, y: hit.y };
-        setSelDrag({ id: hit.id, startMx: mx, startMy: my, ...orig });
+        if (hit.shapeKind === 'rect') {
+          setSelDrag({ id: hit.id, startMx: mx, startMy: my, origX: hit.x, origY: hit.y });
+        } else if (hit.shapeKind === 'circle') {
+          setSelDrag({ id: hit.id, startMx: mx, startMy: my, origCx: hit.cx, origCy: hit.cy });
+        } else {
+          setSelDrag({ id: hit.id, startMx: mx, startMy: my,
+            origPts: hit.points?.map(p => [...p] as [number, number]) });
+        }
       } else {
         onSelectObject(null);
       }
@@ -841,7 +949,7 @@ export function GardenCanvas({
       setDrawing({ kind: 'circle', tool: shapeType, center: [mx, my], end: [mx, my] });
       return;
     }
-  }, [t, drawing, selectedTool, activePlant, popup, mapData.objects, toCanvas, onSelectObject, onAddPlant, finishDrawing]);
+  }, [t, drawing, selectedTool, activePlant, popup, selectedPlantId, mapData.objects, mapData.plants, toCanvas, onSelectObject, onAddPlant, finishDrawing]);
 
   // ── Double-click close polygon ─────────────────────────────────────────────
   const onDblClick = useCallback((e: React.MouseEvent<SVGSVGElement>) => {
@@ -1114,6 +1222,20 @@ export function GardenCanvas({
           onDelete={() => { onDeleteObject(selectedObj.id); onSelectObject(null); }}
         />
       )}
+
+      {/* Plant popup */}
+      {selectedPlantId && (() => {
+        const plant = mapData.plants.find(p => p.id === selectedPlantId);
+        if (!plant) return null;
+        return (
+          <PlantPopup
+            plant={plant}
+            onUpdate={(id, changes) => onUpdatePlant(id, changes)}
+            onDelete={(id) => { onRemovePlant(id); }}
+            onClose={() => setSelectedPlantId(null)}
+          />
+        );
+      })()}
     </div>
   );
 }
