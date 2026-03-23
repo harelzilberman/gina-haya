@@ -208,8 +208,48 @@ mapRouter.post('/:id/wizard', async (req: any, res) => {
         }).join('\n')}`
       : 'לא צוינה רשימת צמחים מבוקשת';
 
+    const spacingLine = plantWishlist.length > 0
+      ? `\nמרווחי שתילה נכונים לצמחים המבוקשים:\n${plantWishlist.map((p: any) => {
+          const name = typeof p === 'string' ? p : p.nameHe;
+          const spacings: Record<string, number> = {
+            'עגבנייה': 50, 'פלפל': 50, 'חציל': 50, 'מלפפון': 40,
+            'קישוא': 50, 'גזר': 10, 'בצל': 10, 'שום': 15,
+            'חסה': 30, 'תרד': 15, 'בזיליקום': 30, 'פטרוזיליה': 20,
+            'תירס': 15, 'תות שדה': 25, 'בטטה': 20, 'ברוקולי': 40,
+            'כרוב': 40, 'כרובית': 40, 'סלק': 15, 'מנגולד': 25,
+          };
+          const spacing = spacings[name] ?? 30;
+          return `- ${name}: ${spacing}ס"מ בין צמחים`;
+        }).join('\n')}`
+      : '';
+
     const systemPrompt = `אתה מוש לבנה — מומחה גידול ביודינמי ישראלי. אתה מתכנן גינות ומייעץ על שתילה ביודינמית. \
 ענה תמיד בעברית בלבד. החזר JSON תקני בלבד — ללא הסברים נוספים, ללא markdown.`;
+
+    const objectsLine = mapData.objects.length > 0
+      ? `מיקומי האובייקטים על המפה (במטרים מנקודת המוצא):
+${mapData.objects.map((obj: any) => {
+  if (obj.shapeKind === 'rect') {
+    return `- ${obj.label} (${obj.type}): x=${obj.x?.toFixed(1)}, y=${obj.y?.toFixed(1)}, רוחב=${obj.width?.toFixed(1)}מ', גובה=${obj.height?.toFixed(1)}מ'`;
+  } else if (obj.shapeKind === 'circle') {
+    return `- ${obj.label} (${obj.type}): מרכז x=${obj.cx?.toFixed(1)}, y=${obj.cy?.toFixed(1)}, רדיוס=${obj.radius?.toFixed(1)}מ'`;
+  } else if (obj.shapeKind === 'polygon') {
+    const xs = (obj.points ?? []).map((p: [number,number]) => p[0]);
+    const ys = (obj.points ?? []).map((p: [number,number]) => p[1]);
+    const cx = xs.length ? xs.reduce((a: number,b: number)=>a+b,0)/xs.length : 0;
+    const cy = ys.length ? ys.reduce((a: number,b: number)=>a+b,0)/ys.length : 0;
+    return `- ${obj.label} (${obj.type}): מרכז x=${cx.toFixed(1)}, y=${cy.toFixed(1)}`;
+  }
+  return '';
+}).filter(Boolean).join('\n')}
+
+כיוון צפון: ${northAngle} מעלות
+אזורי שמש:
+- דרום (שמש מלאה): כיוון ${(northAngle + 180) % 360}°
+- מזרח (שמש בוקר): כיוון ${(northAngle + 90) % 360}°
+- מערב (שמש אחה״צ): כיוון ${(northAngle + 270) % 360}°
+- צפון (צל): כיוון ${northAngle}°`
+      : '';
 
     const userPrompt = `תכנן לי גינה ביודינמית בהתאם לנתונים הבאים:
 
@@ -220,7 +260,23 @@ ${weatherLine}
 ${calLine}
 
 מפת הגינה: ${mapSummary}
+${objectsLine}
 ${wishlistLine}
+${spacingLine}
+
+חשוב מאוד: עבור כל צמח שאתה ממליץ, ציין את המיקום המדויק שלו על המפה
+בשדות x ו-y (במטרים). המיקום צריך להיות:
+1. בתוך האובייקט המתאים (ערוגה/עציץ/אזור גידול)
+2. במרחק הנכון מצמחים אחרים (spacingCm בין מרכז למרכז)
+3. מחוץ לאזורי הבית והגדרות
+4. מותאם לאזור השמש הנכון לסוג הצמח:
+   - צמחי פרי (עגבנייה, פלפל, מלפפון): שמש מלאה → אזור דרומי
+   - עלים (חסה, תרד): צל חלקי → אזור צפוני
+   - שורשים (גזר, בצל): שמש בינונית
+   - תבלינים (בזיליקום, נענע): שמש מלאה עד חלקית
+
+כל צמח חייב להיות במרחק של לפחות spacingCm/100 מטרים מהצמח הקודם.
+אם יש כמה צמחים מאותו סוג, תן לכל אחד מיקום שונה עם המרחק הנכון ביניהם.
 
 החזר JSON בצורה הבאה בדיוק:
 {
@@ -234,9 +290,12 @@ ${wishlistLine}
         {
           "nameHe": "שם עברי",
           "nameEn": "English name",
-          "spacing": 30,
+          "spacingCm": 60,
           "quantity": 4,
+          "x": 5.3,
+          "y": 8.1,
           "plantingTime": "ספטמבר-אוקטובר",
+          "bdDayType": "יום פרי",
           "notes": "הערות"
         }
       ],

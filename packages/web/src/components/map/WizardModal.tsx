@@ -3,6 +3,7 @@ import { api } from '../../api/client';
 import { useAuthStore } from '../../stores/authStore';
 import type { WizardStatus, PlantPreview, MapData } from '../../stores/mapStore';
 import { PLANTS } from '../../data/companions';
+import { getPlantSpacing, PLANT_TABLE } from '../../data/plantTable';
 
 const GOLD   = '#F5C840';
 const PARCH  = '#EDE0C4';
@@ -139,10 +140,17 @@ function calculatePlantPositions(
     });
 
     for (const plant of (bed.plants ?? [])) {
-      let spacingM = 0.35;
-      if (plant.spacingCm) spacingM = plant.spacingCm / 100;
-      else if (plant.spacing) spacingM = plant.spacing > 5 ? plant.spacing / 100 : plant.spacing;
-      spacingM = Math.max(0.1, Math.min(1.5, spacingM));
+      // Look up correct spacing from plant table first
+      const tableSpacing = getPlantSpacing(plant.nameHe ?? '');
+      let spacingM: number;
+      if (plant.spacingCm && plant.spacingCm > 1) {
+        spacingM = plant.spacingCm / 100;
+      } else if (tableSpacing > 5) {
+        spacingM = tableSpacing / 100;
+      } else {
+        spacingM = 0.3;
+      }
+      spacingM = Math.max(0.08, Math.min(1.5, spacingM));
       const r = spacingM / 2;
       const qty = Math.max(1, plant.quantity ?? 1);
       const emoji = getPlantEmoji(plant.nameEn ?? plant.nameHe ?? '');
