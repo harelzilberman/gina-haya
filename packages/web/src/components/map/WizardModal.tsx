@@ -479,7 +479,7 @@ export function WizardModal({ mapId, wizardStatus, onClose, onRefreshStatus, onP
                       fontFamily: ASSIST, fontSize: '11px', padding: '3px 10px', borderRadius: '50px',
                       background: 'rgba(74,128,80,0.18)', border: '1px solid rgba(125,192,132,0.25)', color: `${PARCH}CC`,
                     }}>
-                      {p.nameHe} ×{p.quantity} ({p.spacing}ס"מ)
+                      {p.nameHe} ×{p.quantity} ({p.spacing < 2 ? Math.round(p.spacing * 100) : Math.round(p.spacing)}ס"מ)
                     </span>
                   ))}
                 </div>

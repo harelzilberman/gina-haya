@@ -443,8 +443,8 @@ function Grid() {
     const isMajor = (x / PX) % major === 0;
     lines.push(
       <line key={`v${x}`} x1={x} y1={0} x2={x} y2={CANVAS_H}
-        stroke={isMajor ? 'rgba(125,192,132,0.25)' : 'rgba(125,192,132,0.12)'}
-        strokeWidth={isMajor ? 0.75 : 0.5}
+        stroke={isMajor ? 'rgba(125,192,132,0.45)' : 'rgba(125,192,132,0.25)'}
+        strokeWidth={isMajor ? 1.5 : 0.75}
       />
     );
   }
@@ -452,8 +452,8 @@ function Grid() {
     const isMajor = (y / PX) % major === 0;
     lines.push(
       <line key={`h${y}`} x1={0} y1={y} x2={CANVAS_W} y2={y}
-        stroke={isMajor ? 'rgba(125,192,132,0.25)' : 'rgba(125,192,132,0.12)'}
-        strokeWidth={isMajor ? 0.75 : 0.5}
+        stroke={isMajor ? 'rgba(125,192,132,0.45)' : 'rgba(125,192,132,0.25)'}
+        strokeWidth={isMajor ? 1.5 : 0.75}
       />
     );
   }
@@ -712,7 +712,7 @@ function PlantPopup({
 
         {/* Spacing info */}
         <div style={{ fontSize: '12px', color: `${PARCH}66`, textAlign: 'center' }}>
-          ריווח: {plant.spacing}cm
+          ריווח: {plant.spacing < 2 ? Math.round(plant.spacing * 100) : Math.round(plant.spacing)}cm
         </div>
 
         {/* Notes */}
@@ -1198,7 +1198,7 @@ export function GardenCanvas({
               <circle
                 cx={p.x * PX}
                 cy={p.y * PX}
-                r={Math.min(35, Math.max(10, (p.spacing * PX) / 2))}
+                r={Math.min(40, Math.max(10, (p.spacing * PX) / 2))}
                 fill="rgba(245,200,64,0.06)"
                 stroke="rgba(245,200,64,0.3)"
                 strokeWidth={1}
