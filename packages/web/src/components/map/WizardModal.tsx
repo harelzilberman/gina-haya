@@ -67,129 +67,125 @@ function calculatePlantPositions(
   northAngle: number
 ): PlantPreview[] {
   const results: PlantPreview[] = [];
+  const MARGIN = 0.3;
   const CANVAS_W = 38;
   const CANVAS_H = 30;
-  const MARGIN = 1.5;
+
+  const placed: Array<{ x: number; y: number; r: number }> = [];
+
+  function overlaps(x: number, y: number, r: number): boolean {
+    return placed.some(p => {
+      const d = Math.sqrt((p.x - x) ** 2 + (p.y - y) ** 2);
+      return d < (p.r + r) * 0.85;
+    });
+  }
+
+  function findFreeNear(cx: number, cy: number, r: number): [number, number] {
+    if (!overlaps(cx, cy, r)) return [cx, cy];
+    for (let dist = r * 0.5; dist < 5; dist += r * 0.4) {
+      for (let angle = 0; angle < 360; angle += 20) {
+        const nx = cx + dist * Math.cos((angle * Math.PI) / 180);
+        const ny = cy + dist * Math.sin((angle * Math.PI) / 180);
+        if (nx >= MARGIN && nx <= CANVAS_W - MARGIN &&
+            ny >= MARGIN && ny <= CANVAS_H - MARGIN &&
+            !overlaps(nx, ny, r)) return [nx, ny];
+      }
+    }
+    return [cx, cy];
+  }
+
+  function getShapeInfo(shape: any) {
+    if (!shape) return null;
+    if (shape.shapeKind === 'rect' && shape.x != null) {
+      const bx = shape.x + 0.15, by = (shape.y ?? 0) + 0.15;
+      const bw = Math.max(0.3, (shape.width ?? 2) - 0.3);
+      const bh = Math.max(0.3, (shape.height ?? 2) - 0.3);
+      return { cx: bx + bw / 2, cy: by + bh / 2, bx, by, bw, bh };
+    }
+    if (shape.shapeKind === 'circle' && shape.cx != null) {
+      const r = (shape.radius ?? 1) * 0.8;
+      return { cx: shape.cx, cy: shape.cy ?? 0, bx: shape.cx - r, by: (shape.cy ?? 0) - r, bw: r * 2, bh: r * 2 };
+    }
+    if (shape.shapeKind === 'polygon' && shape.points?.length) {
+      const xs = shape.points.map((p: any) => p[0]);
+      const ys = shape.points.map((p: any) => p[1]);
+      const minX = Math.min(...xs), minY = Math.min(...ys);
+      const maxX = Math.max(...xs), maxY = Math.max(...ys);
+      return { cx: (minX + maxX) / 2, cy: (minY + maxY) / 2, bx: minX + 0.1, by: minY + 0.1, bw: maxX - minX - 0.2, bh: maxY - minY - 0.2 };
+    }
+    return null;
+  }
 
   const growingTypes = ['bed', 'raised-bed', 'hydroponics', 'aquaponics', 'vertical'];
   const growingShapes = mapData.objects.filter(o => growingTypes.includes(o.type));
-  let shapeIndex = 0;
-
-  // Global grid tracker to avoid overlap across beds
-  const usedPositions = new Set<string>();
-  function posKey(x: number, y: number): string {
-    return `${Math.round(x * 10)},${Math.round(y * 10)}`;
-  }
+  let fallbackShapeIdx = 0;
 
   for (const bed of (plan.beds ?? [])) {
-    // Find matching shape
-    let shape = mapData.objects.find(obj => {
-      const objLabel = (obj.label ?? '').toLowerCase();
-      const bedName = (bed.name ?? bed.suggestedName ?? '').toLowerCase();
-      return objLabel && bedName && (
-        objLabel.includes(bedName) || bedName.includes(objLabel)
-      );
-    });
-    if (!shape && growingShapes.length > 0) {
-      shape = growingShapes[shapeIndex % growingShapes.length];
-    }
-    shapeIndex++;
-
-    // Get bed bounds in meters
-    let bx = MARGIN + (shapeIndex - 1) * 6;
-    let by = MARGIN;
-    let bw = 5;
-    let bh = 4;
-
-    if (shape?.shapeKind === 'rect' && shape.x != null) {
-      bx = shape.x + 0.1;
-      by = (shape.y ?? MARGIN) + 0.1;
-      bw = Math.max(0.5, (shape.width ?? 5) - 0.2);
-      bh = Math.max(0.5, (shape.height ?? 4) - 0.2);
-    } else if (shape?.shapeKind === 'circle' && shape.cx != null) {
-      const r = (shape.radius ?? 1.5) * 0.8;
-      bx = (shape.cx ?? 0) - r;
-      by = (shape.cy ?? 0) - r;
-      bw = r * 2; bh = r * 2;
-    } else if (shape?.shapeKind === 'polygon' && shape.points?.length) {
-      const xs = shape.points.map((p: [number,number]) => p[0]);
-      const ys = shape.points.map((p: [number,number]) => p[1]);
-      bx = Math.min(...xs) + 0.1;
-      by = Math.min(...ys) + 0.1;
-      bw = Math.max(...xs) - Math.min(...xs) - 0.2;
-      bh = Math.max(...ys) - Math.min(...ys) - 0.2;
-    }
+    const bedName = (bed.name ?? bed.suggestedName ?? '').toLowerCase();
+    const matchShape = mapData.objects.find(obj => {
+      const lbl = (obj.label ?? '').toLowerCase();
+      return lbl && bedName && (lbl.includes(bedName) || bedName.includes(lbl));
+    }) ?? growingShapes[fallbackShapeIdx % Math.max(1, growingShapes.length)];
+    fallbackShapeIdx++;
+    const si = getShapeInfo(matchShape);
 
     for (const plant of (bed.plants ?? [])) {
-      // Normalize spacing to meters
-      let spacingM: number;
-      if (plant.spacingCm) {
-        spacingM = plant.spacingCm / 100;
-      } else if (plant.spacing) {
-        spacingM = plant.spacing > 5 ? plant.spacing / 100 : plant.spacing;
-      } else {
-        spacingM = 0.3;
-      }
-      // Sanity check spacing
+      let spacingM = 0.35;
+      if (plant.spacingCm) spacingM = plant.spacingCm / 100;
+      else if (plant.spacing) spacingM = plant.spacing > 5 ? plant.spacing / 100 : plant.spacing;
       spacingM = Math.max(0.1, Math.min(1.5, spacingM));
+      const r = spacingM / 2;
+      const qty = Math.max(1, plant.quantity ?? 1);
+      const emoji = getPlantEmoji(plant.nameEn ?? plant.nameHe ?? '');
+      const nameHe = plant.nameHe ?? plant.name ?? 'צמח';
+      const nameEn = plant.nameEn ?? plant.name ?? 'plant';
 
-      const quantity = Math.max(1, plant.quantity ?? 1);
-      const maxCols = Math.max(1, Math.floor(bw / spacingM));
-      let placed = 0;
-      let col = 0;
-      let row = 0;
+      for (let i = 0; i < qty; i++) {
+        let baseX: number, baseY: number;
 
-      while (placed < quantity) {
-        const x = bx + col * spacingM + spacingM * 0.5;
-        const y = by + row * spacingM + spacingM * 0.5;
+        if (si) {
+          const maxCols = Math.max(1, Math.floor(si.bw / spacingM));
+          const col = i % maxCols;
+          const row = Math.floor(i / maxCols);
+          baseX = si.bx + col * spacingM + r;
+          baseY = si.by + row * spacingM + r;
+        } else {
+          const col = (results.length + i) % 8;
+          const row = Math.floor((results.length + i) / 8);
+          baseX = MARGIN + col * spacingM + r;
+          baseY = MARGIN + row * spacingM + r;
+        }
 
-        // Move to next column
-        col++;
-        if (col >= maxCols) { col = 0; row++; }
+        baseX = Math.max(MARGIN, Math.min(CANVAS_W - MARGIN, baseX));
+        baseY = Math.max(MARGIN, Math.min(CANVAS_H - MARGIN, baseY));
+        const [fx, fy] = findFreeNear(baseX, baseY, r);
 
-        // Skip if out of reasonable bounds
-        if (y > CANVAS_H - MARGIN) break;
-        if (x > CANVAS_W - MARGIN) continue;
-
-        const key = posKey(x, y);
-        if (usedPositions.has(key)) continue;
-        usedPositions.add(key);
-
+        placed.push({ x: fx, y: fy, r });
         results.push({
-          plantNameHe: plant.nameHe ?? plant.name ?? 'צמח',
-          plantNameEn: plant.nameEn ?? plant.name ?? 'plant',
-          emoji: getPlantEmoji(plant.nameEn ?? plant.nameHe ?? ''),
-          spacing: spacingM,
-          x, y,
+          plantNameHe: nameHe, plantNameEn: nameEn,
+          emoji, spacing: spacingM, x: fx, y: fy,
           bedName: bed.name ?? bed.suggestedName ?? 'ערוגה',
         });
-        placed++;
       }
     }
   }
 
-  // Pot suggestions
   for (const pot of (plan.potAdvice ?? [])) {
-    const potShape = mapData.objects.find(o =>
-      o.type === 'pot-rect' || o.type === 'pot-round'
-    );
-    const bx = potShape?.x ?? potShape?.cx ?? MARGIN;
-    const by = potShape?.y ?? potShape?.cy ?? MARGIN;
-    const bw = potShape?.width ?? 0.3;
-    const bh = potShape?.height ?? 0.3;
+    const potShape = mapData.objects.find(o => o.type === 'pot-rect' || o.type === 'pot-round');
+    const si = getShapeInfo(potShape);
     let col = 0;
-
     for (const plantName of (pot.suggestedPlants ?? []).slice(0, 3)) {
-      const spacingM = 0.12;
-      const x = bx + col * spacingM + spacingM * 0.5;
-      const y = by + spacingM * 0.5;
-      col++;
+      const spacingM = 0.12, r = spacingM / 2;
+      const baseX = (si ? si.bx : MARGIN) + col * spacingM + r;
+      const baseY = (si ? si.by : MARGIN) + r;
+      const [fx, fy] = findFreeNear(baseX, baseY, r);
+      placed.push({ x: fx, y: fy, r });
       results.push({
         plantNameHe: plantName, plantNameEn: plantName,
-        emoji: getPlantEmoji(plantName),
-        spacing: spacingM, x, y,
-        bedName: pot.potDescription ?? 'עציץ',
+        emoji: getPlantEmoji(plantName), spacing: spacingM,
+        x: fx, y: fy, bedName: pot.potDescription ?? 'עציץ',
       });
+      col++;
     }
   }
 
