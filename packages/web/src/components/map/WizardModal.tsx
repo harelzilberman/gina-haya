@@ -103,9 +103,7 @@ function calculatePlantPositions(
       for (let angle = 0; angle < 360; angle += 15) {
         const nx = cx + dist * Math.cos((angle * Math.PI) / 180);
         const ny = cy + dist * Math.sin((angle * Math.PI) / 180);
-        if (nx >= MARGIN && nx <= CANVAS_W - MARGIN &&
-            ny >= MARGIN && ny <= CANVAS_H - MARGIN &&
-            !overlaps(nx, ny, r)) return [nx, ny];
+        if (!overlaps(nx, ny, r)) return [nx, ny];
       }
     }
     return [cx + r * 2, cy]; // move right as absolute last resort
@@ -137,11 +135,18 @@ function calculatePlantPositions(
   const growingShapes = mapData.objects.filter(o => growingTypes.includes(o.type));
   let fallbackShapeIdx = 0;
 
+  const GROWING_TYPES_FOR_MATCH = ['bed', 'raised-bed', 'hydroponics', 'aquaponics', 'vertical', 'pot-rect', 'pot-round', 'pergola'];
+
   for (const bed of (plan.beds ?? [])) {
-    const bedName = (bed.name ?? bed.suggestedName ?? '').toLowerCase();
     const matchShape = mapData.objects.find(obj => {
-      const lbl = (obj.label ?? '').toLowerCase();
-      return lbl && bedName && (lbl.includes(bedName) || bedName.includes(lbl));
+      if (!GROWING_TYPES_FOR_MATCH.includes(obj.type)) return false;
+      const objLabel = (obj.label ?? '').toLowerCase().trim();
+      const bedName = (bed.name ?? bed.suggestedName ?? '').toLowerCase().trim();
+      if (!objLabel || !bedName) return false;
+      const dirWords = ['מערבית', 'מזרחית', 'דרומית', 'צפונית', 'ימנית', 'שמאלית', 'עליונה', 'תחתונה'];
+      const cleanBed = dirWords.reduce((s, w) => s.replace(w, ''), bedName).trim();
+      const cleanObj = dirWords.reduce((s, w) => s.replace(w, ''), objLabel).trim();
+      return cleanObj.includes(cleanBed) || cleanBed.includes(cleanObj);
     }) ?? growingShapes[fallbackShapeIdx % Math.max(1, growingShapes.length)];
     fallbackShapeIdx++;
     const si = getShapeInfo(matchShape);
@@ -151,7 +156,7 @@ function calculatePlantPositions(
       'w:', matchShape?.width, 'h:', matchShape?.height,
       'si:', JSON.stringify(si));
     console.log('[WIZARD PLACEMENT]', {
-      bedName,
+      bedName: bed.name ?? bed.suggestedName,
       matchShape: matchShape ? { type: matchShape.type, label: matchShape.label, shapeKind: matchShape.shapeKind, x: matchShape.x, y: matchShape.y, width: matchShape.width, height: matchShape.height } : null,
       si,
       growingShapesCount: growingShapes.length,
@@ -209,13 +214,12 @@ function calculatePlantPositions(
           const globalIndex = results.length;
           const col = globalIndex % 10;
           const row = Math.floor(globalIndex / 10);
-          baseX = MARGIN + col * Math.max(colSpacingM, 0.5);
-          baseY = MARGIN + row * Math.max(rowSpacingM, 0.5);
+          baseX = 2 + col * Math.max(colSpacingM, 0.5);
+          baseY = 2 + row * Math.max(rowSpacingM, 0.5);
         }
 
-        // Hard clamp
-        baseX = Math.max(MARGIN, Math.min(CANVAS_W - MARGIN, baseX));
-        baseY = Math.max(MARGIN, Math.min(CANVAS_H - MARGIN, baseY));
+        baseX = baseX;
+        baseY = baseY;
 
         // Find free spot
         const [fx, fy] = findFreeNear(baseX, baseY, r, Math.max(colSpacingM, rowSpacingM) * 0.5);
