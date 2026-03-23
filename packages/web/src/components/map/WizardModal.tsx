@@ -66,6 +66,7 @@ function calculatePlantPositions(
   mapData: MapData,
   northAngle: number
 ): PlantPreview[] {
+  console.log('[WIZARD] mapData objects:', mapData.objects.length, 'plants:', mapData.plants.length, 'plan beds:', plan.beds?.length);
   const results: PlantPreview[] = [];
   const MARGIN = 0.3;
   const CANVAS_W = 38;
@@ -80,10 +81,11 @@ function calculatePlantPositions(
     });
   }
 
-  function findFreeNear(cx: number, cy: number, r: number): [number, number] {
+  function findFreeNear(cx: number, cy: number, r: number, step?: number): [number, number] {
+    const s = step ?? r;
     if (!overlaps(cx, cy, r)) return [cx, cy];
-    for (let dist = r * 0.5; dist < 5; dist += r * 0.4) {
-      for (let angle = 0; angle < 360; angle += 20) {
+    for (let dist = s; dist < 10; dist += s) {
+      for (let angle = 0; angle < 360; angle += 15) {
         const nx = cx + dist * Math.cos((angle * Math.PI) / 180);
         const ny = cy + dist * Math.sin((angle * Math.PI) / 180);
         if (nx >= MARGIN && nx <= CANVAS_W - MARGIN &&
@@ -91,7 +93,7 @@ function calculatePlantPositions(
             !overlaps(nx, ny, r)) return [nx, ny];
       }
     }
-    return [cx, cy];
+    return [cx + r * 2, cy]; // move right as absolute last resort
   }
 
   function getShapeInfo(shape: any) {
@@ -128,6 +130,13 @@ function calculatePlantPositions(
     }) ?? growingShapes[fallbackShapeIdx % Math.max(1, growingShapes.length)];
     fallbackShapeIdx++;
     const si = getShapeInfo(matchShape);
+    console.log('[WIZARD PLACEMENT]', {
+      bedName,
+      matchShape: matchShape ? { type: matchShape.type, label: matchShape.label, shapeKind: matchShape.shapeKind, x: matchShape.x, y: matchShape.y, width: matchShape.width, height: matchShape.height } : null,
+      si,
+      growingShapesCount: growingShapes.length,
+      allObjects: mapData.objects.map(o => ({ type: o.type, label: o.label, shapeKind: o.shapeKind })),
+    });
 
     for (const plant of (bed.plants ?? [])) {
       let spacingM = 0.35;
@@ -144,26 +153,38 @@ function calculatePlantPositions(
         let baseX: number, baseY: number;
 
         if (si) {
+          // Place inside the matching shape in a grid
           const maxCols = Math.max(1, Math.floor(si.bw / spacingM));
           const col = i % maxCols;
           const row = Math.floor(i / maxCols);
           baseX = si.bx + col * spacingM + r;
           baseY = si.by + row * spacingM + r;
         } else {
-          const col = (results.length + i) % 8;
-          const row = Math.floor((results.length + i) / 8);
-          baseX = MARGIN + col * spacingM + r;
-          baseY = MARGIN + row * spacingM + r;
+          // NO SHAPE FOUND — spread plants across canvas in a grid
+          // Use bed index and plant index to spread them out
+          const globalIndex = results.length;
+          const col = globalIndex % 10;
+          const row = Math.floor(globalIndex / 10);
+          baseX = MARGIN + col * Math.max(spacingM, 0.5);
+          baseY = MARGIN + row * Math.max(spacingM, 0.5);
         }
 
+        // Hard clamp
         baseX = Math.max(MARGIN, Math.min(CANVAS_W - MARGIN, baseX));
         baseY = Math.max(MARGIN, Math.min(CANVAS_H - MARGIN, baseY));
-        const [fx, fy] = findFreeNear(baseX, baseY, r);
 
+        // Find free spot
+        const [fx, fy] = findFreeNear(baseX, baseY, r, spacingM);
+
+        console.log('[PLANT POS]', { nameHe, i, baseX, baseY, fx, fy, spacingM, si: !!si });
         placed.push({ x: fx, y: fy, r });
         results.push({
-          plantNameHe: nameHe, plantNameEn: nameEn,
-          emoji, spacing: spacingM, x: fx, y: fy,
+          plantNameHe: nameHe,
+          plantNameEn: nameEn,
+          emoji,
+          spacing: spacingM,
+          x: fx,
+          y: fy,
           bedName: bed.name ?? bed.suggestedName ?? 'ערוגה',
         });
       }
