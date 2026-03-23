@@ -1,17 +1,19 @@
-// Auto-generated from planting_and_germinating_seeds_time_table.xlsx
-// Contains spacing, planting months, germination data for 50 plants
+// Auto-generated from planting_and_germinating_seeds_time_table.xlsx (v2)
+// 50 plants with verified spacings, planting months, BD day types
 
 export interface PlantTableEntry {
   nameHe: string;
   nameEn: string;
   family: string;
-  ediblePart: string;        // שורש | עלה | פרי | פרח
-  plantingMonths: string[];  // Hebrew month names
-  spacingCm: number | null;  // spacing between plants in cm
-  spacingCmForPlacement: number; // spacing used for map placement (min 5cm)
+  ediblePart: string;
+  bdDayType: 'fruit' | 'root' | 'leaf' | 'flower';
+  plantingMonths: string[];
+  spacingCm: number | null;
   rowSpacingCm: number | null;
+  placementSpacingCm: number;
   plantsPerSqm: string | null;
-  method: string | null;     // זריעה | שתילה
+  rowsPerBed: string | null;
+  method: string | null;
   germinationDays: string | null;
   daysToTransplant: string | null;
   daysToHarvest: string | null;
@@ -20,9 +22,10 @@ export interface PlantTableEntry {
 export const PLANT_TABLE: PlantTableEntry[] = [
   {
     "nameHe": "גזר",
-    "nameEn": "",
+    "nameEn": "Carrot",
     "family": "סוככיים",
     "ediblePart": "שורש",
+    "bdDayType": "root",
     "plantingMonths": [
       "אוקטובר",
       "נובמבר",
@@ -32,9 +35,10 @@ export const PLANT_TABLE: PlantTableEntry[] = [
       "יוני"
     ],
     "spacingCm": 1.0,
-    "spacingCmForPlacement": 5,
     "rowSpacingCm": 30.0,
+    "placementSpacingCm": 30.0,
     "plantsPerSqm": "100",
+    "rowsPerBed": "2",
     "method": "זריעה",
     "germinationDays": "7",
     "daysToTransplant": null,
@@ -42,9 +46,10 @@ export const PLANT_TABLE: PlantTableEntry[] = [
   },
   {
     "nameHe": "כוסברה",
-    "nameEn": "",
+    "nameEn": "Coriander",
     "family": "סוככיים",
     "ediblePart": "עלה",
+    "bdDayType": "leaf",
     "plantingMonths": [
       "ספטמבר",
       "אוקטובר",
@@ -55,9 +60,10 @@ export const PLANT_TABLE: PlantTableEntry[] = [
       "אפריל"
     ],
     "spacingCm": 0.75,
-    "spacingCmForPlacement": 5,
     "rowSpacingCm": 30.0,
+    "placementSpacingCm": 30.0,
     "plantsPerSqm": "150",
+    "rowsPerBed": "2",
     "method": "זריעה",
     "germinationDays": "5-6",
     "daysToTransplant": null,
@@ -65,9 +71,10 @@ export const PLANT_TABLE: PlantTableEntry[] = [
   },
   {
     "nameHe": "סלרי עלים",
-    "nameEn": "",
+    "nameEn": "Leaf Celery",
     "family": "סוככיים",
     "ediblePart": "עלה",
+    "bdDayType": "leaf",
     "plantingMonths": [
       "אוקטובר",
       "נובמבר",
@@ -75,9 +82,10 @@ export const PLANT_TABLE: PlantTableEntry[] = [
       "פברואר"
     ],
     "spacingCm": 30.0,
-    "spacingCmForPlacement": 30.0,
     "rowSpacingCm": 30.0,
+    "placementSpacingCm": 30.0,
     "plantsPerSqm": "3",
+    "rowsPerBed": "2",
     "method": "שתילה",
     "germinationDays": "14",
     "daysToTransplant": "40-45",
@@ -85,9 +93,10 @@ export const PLANT_TABLE: PlantTableEntry[] = [
   },
   {
     "nameHe": "שורש סלרי",
-    "nameEn": "",
+    "nameEn": "Celeriac",
     "family": "סוככיים",
     "ediblePart": "שורש",
+    "bdDayType": "root",
     "plantingMonths": [
       "אוקטובר",
       "נובמבר",
@@ -95,9 +104,10 @@ export const PLANT_TABLE: PlantTableEntry[] = [
       "פברואר"
     ],
     "spacingCm": 20.0,
-    "spacingCmForPlacement": 20.0,
     "rowSpacingCm": 30.0,
+    "placementSpacingCm": 20.0,
     "plantsPerSqm": "3",
+    "rowsPerBed": "2",
     "method": "שתילה",
     "germinationDays": "14",
     "daysToTransplant": "40-45",
@@ -105,9 +115,10 @@ export const PLANT_TABLE: PlantTableEntry[] = [
   },
   {
     "nameHe": "פטרוזיליה",
-    "nameEn": "",
+    "nameEn": "Parsley",
     "family": "סוככיים",
     "ediblePart": "עלה",
+    "bdDayType": "leaf",
     "plantingMonths": [
       "ספטמבר",
       "אוקטובר",
@@ -122,9 +133,10 @@ export const PLANT_TABLE: PlantTableEntry[] = [
       "אוגוסט"
     ],
     "spacingCm": 0.75,
-    "spacingCmForPlacement": 5,
     "rowSpacingCm": 30.0,
+    "placementSpacingCm": 30.0,
     "plantsPerSqm": "150",
+    "rowsPerBed": "2",
     "method": "זריעה",
     "germinationDays": "8-20",
     "daysToTransplant": null,
@@ -132,9 +144,10 @@ export const PLANT_TABLE: PlantTableEntry[] = [
   },
   {
     "nameHe": "שורש פטרוזיליה",
-    "nameEn": "",
+    "nameEn": "Parsley Root",
     "family": "סוככיים",
     "ediblePart": "שורש",
+    "bdDayType": "root",
     "plantingMonths": [
       "אוקטובר",
       "נובמבר",
@@ -142,9 +155,10 @@ export const PLANT_TABLE: PlantTableEntry[] = [
       "פברואר"
     ],
     "spacingCm": 2.0,
-    "spacingCmForPlacement": 5,
     "rowSpacingCm": 30.0,
+    "placementSpacingCm": 30.0,
     "plantsPerSqm": "50",
+    "rowsPerBed": "3",
     "method": "זריעה",
     "germinationDays": "10-20",
     "daysToTransplant": "45",
@@ -152,9 +166,10 @@ export const PLANT_TABLE: PlantTableEntry[] = [
   },
   {
     "nameHe": "שומר",
-    "nameEn": "",
+    "nameEn": "Fennel",
     "family": "סוככיים",
     "ediblePart": "עלה",
+    "bdDayType": "leaf",
     "plantingMonths": [
       "ספטמבר",
       "אוקטובר",
@@ -165,9 +180,10 @@ export const PLANT_TABLE: PlantTableEntry[] = [
       "אפריל"
     ],
     "spacingCm": 20.0,
-    "spacingCmForPlacement": 20.0,
     "rowSpacingCm": 30.0,
+    "placementSpacingCm": 20.0,
     "plantsPerSqm": "5",
+    "rowsPerBed": "3",
     "method": "שתילה",
     "germinationDays": "7-8",
     "daysToTransplant": "30",
@@ -175,9 +191,10 @@ export const PLANT_TABLE: PlantTableEntry[] = [
   },
   {
     "nameHe": "שמיר",
-    "nameEn": "",
+    "nameEn": "Dill",
     "family": "סוככיים",
     "ediblePart": "עלה",
+    "bdDayType": "leaf",
     "plantingMonths": [
       "אוקטובר",
       "נובמבר",
@@ -187,9 +204,10 @@ export const PLANT_TABLE: PlantTableEntry[] = [
       "אפריל"
     ],
     "spacingCm": 0.75,
-    "spacingCmForPlacement": 5,
     "rowSpacingCm": 30.0,
+    "placementSpacingCm": 30.0,
     "plantsPerSqm": "150",
+    "rowsPerBed": "2",
     "method": "זריעה",
     "germinationDays": "7-8",
     "daysToTransplant": null,
@@ -197,9 +215,10 @@ export const PLANT_TABLE: PlantTableEntry[] = [
   },
   {
     "nameHe": "חציל",
-    "nameEn": "",
+    "nameEn": "Eggplant",
     "family": "סולניים",
     "ediblePart": "פרי",
+    "bdDayType": "fruit",
     "plantingMonths": [
       "מרץ",
       "אפריל",
@@ -208,9 +227,10 @@ export const PLANT_TABLE: PlantTableEntry[] = [
       "יולי"
     ],
     "spacingCm": 50.0,
-    "spacingCmForPlacement": 50.0,
     "rowSpacingCm": 90.0,
+    "placementSpacingCm": 50.0,
     "plantsPerSqm": "2",
+    "rowsPerBed": "1",
     "method": "שתילה",
     "germinationDays": "7-8",
     "daysToTransplant": "35",
@@ -218,9 +238,10 @@ export const PLANT_TABLE: PlantTableEntry[] = [
   },
   {
     "nameHe": "עגבניה",
-    "nameEn": "",
+    "nameEn": "Tomato",
     "family": "סולניים",
     "ediblePart": "פרי",
+    "bdDayType": "fruit",
     "plantingMonths": [
       "מרץ",
       "אפריל",
@@ -228,9 +249,10 @@ export const PLANT_TABLE: PlantTableEntry[] = [
       "יוני"
     ],
     "spacingCm": 50.0,
-    "spacingCmForPlacement": 50.0,
     "rowSpacingCm": 90.0,
+    "placementSpacingCm": 50.0,
     "plantsPerSqm": "2",
+    "rowsPerBed": "1",
     "method": "שתילה",
     "germinationDays": "5-6",
     "daysToTransplant": "30",
@@ -238,9 +260,10 @@ export const PLANT_TABLE: PlantTableEntry[] = [
   },
   {
     "nameHe": "פלפל אדום",
-    "nameEn": "",
+    "nameEn": "Bell Pepper",
     "family": "סולניים",
     "ediblePart": "פרי",
+    "bdDayType": "fruit",
     "plantingMonths": [
       "מרץ",
       "אפריל",
@@ -248,9 +271,10 @@ export const PLANT_TABLE: PlantTableEntry[] = [
       "יוני"
     ],
     "spacingCm": 50.0,
-    "spacingCmForPlacement": 50.0,
     "rowSpacingCm": 70.0,
+    "placementSpacingCm": 50.0,
     "plantsPerSqm": "2",
+    "rowsPerBed": "2",
     "method": "שתילה",
     "germinationDays": "5-6",
     "daysToTransplant": "30",
@@ -258,9 +282,10 @@ export const PLANT_TABLE: PlantTableEntry[] = [
   },
   {
     "nameHe": "פלפל חריף",
-    "nameEn": "",
+    "nameEn": "Hot Pepper",
     "family": "סולניים",
     "ediblePart": "פרי",
+    "bdDayType": "fruit",
     "plantingMonths": [
       "מרץ",
       "אפריל",
@@ -268,9 +293,10 @@ export const PLANT_TABLE: PlantTableEntry[] = [
       "יוני"
     ],
     "spacingCm": 50.0,
-    "spacingCmForPlacement": 50.0,
     "rowSpacingCm": 70.0,
+    "placementSpacingCm": 50.0,
     "plantsPerSqm": "2",
+    "rowsPerBed": "2",
     "method": "שתילה",
     "germinationDays": "5-6",
     "daysToTransplant": "30",
@@ -278,18 +304,20 @@ export const PLANT_TABLE: PlantTableEntry[] = [
   },
   {
     "nameHe": "חומעה",
-    "nameEn": "",
+    "nameEn": "Sorrel",
     "family": "סלקיים",
     "ediblePart": "עלה",
+    "bdDayType": "leaf",
     "plantingMonths": [
       "דצמבר",
       "פברואר",
       "מרץ"
     ],
     "spacingCm": 0.7,
-    "spacingCmForPlacement": 5,
     "rowSpacingCm": 20.0,
+    "placementSpacingCm": 20.0,
     "plantsPerSqm": "120",
+    "rowsPerBed": "3-5",
     "method": "זריעה",
     "germinationDays": "5",
     "daysToTransplant": null,
@@ -297,9 +325,10 @@ export const PLANT_TABLE: PlantTableEntry[] = [
   },
   {
     "nameHe": "סלק אדום",
-    "nameEn": "",
+    "nameEn": "Beetroot",
     "family": "סלקיים",
     "ediblePart": "שורש",
+    "bdDayType": "root",
     "plantingMonths": [
       "ספטמבר",
       "אוקטובר",
@@ -310,9 +339,10 @@ export const PLANT_TABLE: PlantTableEntry[] = [
       "אפריל"
     ],
     "spacingCm": 15.0,
-    "spacingCmForPlacement": 15.0,
     "rowSpacingCm": 30.0,
+    "placementSpacingCm": 15.0,
     "plantsPerSqm": "6",
+    "rowsPerBed": "3",
     "method": "זריעה",
     "germinationDays": "8",
     "daysToTransplant": null,
@@ -320,9 +350,10 @@ export const PLANT_TABLE: PlantTableEntry[] = [
   },
   {
     "nameHe": "סלק עלים",
-    "nameEn": "",
+    "nameEn": "Leaf Beet",
     "family": "סלקיים",
     "ediblePart": "עלה",
+    "bdDayType": "leaf",
     "plantingMonths": [
       "ספטמבר",
       "אוקטובר",
@@ -333,9 +364,10 @@ export const PLANT_TABLE: PlantTableEntry[] = [
       "אפריל"
     ],
     "spacingCm": 0.7,
-    "spacingCmForPlacement": 5,
     "rowSpacingCm": 20.0,
+    "placementSpacingCm": 20.0,
     "plantsPerSqm": "120",
+    "rowsPerBed": "3-5",
     "method": "זריעה",
     "germinationDays": "8",
     "daysToTransplant": null,
@@ -343,9 +375,10 @@ export const PLANT_TABLE: PlantTableEntry[] = [
   },
   {
     "nameHe": "מנגולד",
-    "nameEn": "",
+    "nameEn": "Chard",
     "family": "סלקיים",
     "ediblePart": "עלה",
+    "bdDayType": "leaf",
     "plantingMonths": [
       "ספטמבר",
       "אוקטובר",
@@ -357,9 +390,10 @@ export const PLANT_TABLE: PlantTableEntry[] = [
       "מאי"
     ],
     "spacingCm": 25.0,
-    "spacingCmForPlacement": 25.0,
     "rowSpacingCm": 50.0,
+    "placementSpacingCm": 25.0,
     "plantsPerSqm": "4",
+    "rowsPerBed": "2",
     "method": "שתילה",
     "germinationDays": "8",
     "daysToTransplant": "30",
@@ -367,9 +401,10 @@ export const PLANT_TABLE: PlantTableEntry[] = [
   },
   {
     "nameHe": "תרד",
-    "nameEn": "",
+    "nameEn": "Spinach",
     "family": "סלקיים",
     "ediblePart": "עלה",
+    "bdDayType": "leaf",
     "plantingMonths": [
       "ספטמבר",
       "אוקטובר",
@@ -382,9 +417,10 @@ export const PLANT_TABLE: PlantTableEntry[] = [
       "יוני"
     ],
     "spacingCm": 4.0,
-    "spacingCmForPlacement": 5,
     "rowSpacingCm": 30.0,
+    "placementSpacingCm": 30.0,
     "plantsPerSqm": "25",
+    "rowsPerBed": "3",
     "method": "זריעה",
     "germinationDays": "5",
     "daysToTransplant": null,
@@ -392,9 +428,10 @@ export const PLANT_TABLE: PlantTableEntry[] = [
   },
   {
     "nameHe": "בצל",
-    "nameEn": "",
+    "nameEn": "Onion",
     "family": "שושניים",
     "ediblePart": "שורש",
+    "bdDayType": "root",
     "plantingMonths": [
       "ספטמבר",
       "נובמבר",
@@ -402,9 +439,10 @@ export const PLANT_TABLE: PlantTableEntry[] = [
       "מרץ"
     ],
     "spacingCm": 10.0,
-    "spacingCmForPlacement": 10.0,
     "rowSpacingCm": 30.0,
+    "placementSpacingCm": 10.0,
     "plantsPerSqm": "10",
+    "rowsPerBed": "3",
     "method": "זריעה",
     "germinationDays": "8-16",
     "daysToTransplant": "30",
@@ -412,9 +450,10 @@ export const PLANT_TABLE: PlantTableEntry[] = [
   },
   {
     "nameHe": "בצל ירוק",
-    "nameEn": "",
+    "nameEn": "Spring Onion",
     "family": "שושניים",
     "ediblePart": "עלה",
+    "bdDayType": "leaf",
     "plantingMonths": [
       "ספטמבר",
       "אוקטובר",
@@ -427,9 +466,10 @@ export const PLANT_TABLE: PlantTableEntry[] = [
       "יוני"
     ],
     "spacingCm": 0.8,
-    "spacingCmForPlacement": 5,
     "rowSpacingCm": 30.0,
+    "placementSpacingCm": 30.0,
     "plantsPerSqm": "120",
+    "rowsPerBed": "3",
     "method": "זריעה",
     "germinationDays": "8-16",
     "daysToTransplant": "30",
@@ -437,9 +477,10 @@ export const PLANT_TABLE: PlantTableEntry[] = [
   },
   {
     "nameHe": "לוף",
-    "nameEn": "",
+    "nameEn": "Leek",
     "family": "שושניים",
     "ediblePart": "עלה",
+    "bdDayType": "leaf",
     "plantingMonths": [
       "ספטמבר",
       "אוקטובר",
@@ -452,9 +493,10 @@ export const PLANT_TABLE: PlantTableEntry[] = [
       "יוני"
     ],
     "spacingCm": 10.0,
-    "spacingCmForPlacement": 10.0,
     "rowSpacingCm": 30.0,
+    "placementSpacingCm": 10.0,
     "plantsPerSqm": "10",
+    "rowsPerBed": "3",
     "method": "זריעה",
     "germinationDays": "8-10",
     "daysToTransplant": "60",
@@ -462,16 +504,18 @@ export const PLANT_TABLE: PlantTableEntry[] = [
   },
   {
     "nameHe": "שום",
-    "nameEn": "",
+    "nameEn": "Garlic",
     "family": "שושניים",
     "ediblePart": "שורש",
+    "bdDayType": "root",
     "plantingMonths": [
       "ספטמבר"
     ],
     "spacingCm": 15.0,
-    "spacingCmForPlacement": 15.0,
     "rowSpacingCm": 30.0,
+    "placementSpacingCm": 15.0,
     "plantsPerSqm": "6",
+    "rowsPerBed": "3",
     "method": "זריעה",
     "germinationDays": "14",
     "daysToTransplant": null,
@@ -479,9 +523,10 @@ export const PLANT_TABLE: PlantTableEntry[] = [
   },
   {
     "nameHe": "בזיליקום",
-    "nameEn": "",
+    "nameEn": "Basil",
     "family": "שפתניים",
     "ediblePart": "פרח",
+    "bdDayType": "flower",
     "plantingMonths": [
       "פברואר",
       "מרץ",
@@ -491,9 +536,10 @@ export const PLANT_TABLE: PlantTableEntry[] = [
       "יולי"
     ],
     "spacingCm": 30.0,
-    "spacingCmForPlacement": 30.0,
     "rowSpacingCm": 30.0,
+    "placementSpacingCm": 30.0,
     "plantsPerSqm": "3",
+    "rowsPerBed": "3",
     "method": "גם זריעה וגם שתילה",
     "germinationDays": "7-16",
     "daysToTransplant": "30",
@@ -501,9 +547,10 @@ export const PLANT_TABLE: PlantTableEntry[] = [
   },
   {
     "nameHe": "תירס",
-    "nameEn": "",
+    "nameEn": "Corn",
     "family": "דגניים",
     "ediblePart": "פרי",
+    "bdDayType": "fruit",
     "plantingMonths": [
       "מרץ",
       "אפריל",
@@ -512,9 +559,10 @@ export const PLANT_TABLE: PlantTableEntry[] = [
       "יולי"
     ],
     "spacingCm": 15.0,
-    "spacingCmForPlacement": 15.0,
     "rowSpacingCm": 70.0,
+    "placementSpacingCm": 15.0,
     "plantsPerSqm": "6",
+    "rowsPerBed": "2",
     "method": "זריעה",
     "germinationDays": "5-10",
     "daysToTransplant": "28",
@@ -522,17 +570,19 @@ export const PLANT_TABLE: PlantTableEntry[] = [
   },
   {
     "nameHe": "דלעת",
-    "nameEn": "",
+    "nameEn": "Pumpkin",
     "family": "דלועיים",
     "ediblePart": "פרי",
+    "bdDayType": "fruit",
     "plantingMonths": [
       "פברואר",
       "מרץ"
     ],
     "spacingCm": 250.0,
-    "spacingCmForPlacement": 250.0,
     "rowSpacingCm": 180.0,
+    "placementSpacingCm": 250.0,
     "plantsPerSqm": "0.4",
+    "rowsPerBed": "1",
     "method": "שתילה",
     "germinationDays": "4-5",
     "daysToTransplant": "14",
@@ -540,17 +590,19 @@ export const PLANT_TABLE: PlantTableEntry[] = [
   },
   {
     "nameHe": "דלעת ערמונים",
-    "nameEn": "",
+    "nameEn": "Butternut Squash",
     "family": "דלועיים",
     "ediblePart": "פרי",
+    "bdDayType": "fruit",
     "plantingMonths": [
       "פברואר",
       "מרץ"
     ],
     "spacingCm": 50.0,
-    "spacingCmForPlacement": 50.0,
     "rowSpacingCm": 50.0,
+    "placementSpacingCm": 50.0,
     "plantsPerSqm": "2",
+    "rowsPerBed": "2",
     "method": "זריעה",
     "germinationDays": "4-5",
     "daysToTransplant": "14",
@@ -558,17 +610,19 @@ export const PLANT_TABLE: PlantTableEntry[] = [
   },
   {
     "nameHe": "דלורית",
-    "nameEn": "",
+    "nameEn": "Delicata Squash",
     "family": "דלועיים",
     "ediblePart": "פרי",
+    "bdDayType": "fruit",
     "plantingMonths": [
       "פברואר",
       "מרץ"
     ],
     "spacingCm": 50.0,
-    "spacingCmForPlacement": 50.0,
     "rowSpacingCm": 50.0,
+    "placementSpacingCm": 50.0,
     "plantsPerSqm": "2",
+    "rowsPerBed": "2",
     "method": "שתילה",
     "germinationDays": "4-5",
     "daysToTransplant": "14",
@@ -576,17 +630,19 @@ export const PLANT_TABLE: PlantTableEntry[] = [
   },
   {
     "nameHe": "מלפפון",
-    "nameEn": "",
+    "nameEn": "Cucumber",
     "family": "דלועיים",
     "ediblePart": "פרי",
+    "bdDayType": "fruit",
     "plantingMonths": [
       "פברואר",
       "מרץ"
     ],
     "spacingCm": 40.0,
-    "spacingCmForPlacement": 40.0,
     "rowSpacingCm": 40.0,
+    "placementSpacingCm": 40.0,
     "plantsPerSqm": "3",
+    "rowsPerBed": "2",
     "method": "זריעה",
     "germinationDays": "6",
     "daysToTransplant": "14",
@@ -594,17 +650,19 @@ export const PLANT_TABLE: PlantTableEntry[] = [
   },
   {
     "nameHe": "קישוא",
-    "nameEn": "",
+    "nameEn": "Zucchini",
     "family": "דלועיים",
     "ediblePart": "פרי",
+    "bdDayType": "fruit",
     "plantingMonths": [
       "פברואר",
       "מרץ"
     ],
     "spacingCm": 50.0,
-    "spacingCmForPlacement": 50.0,
     "rowSpacingCm": 180.0,
+    "placementSpacingCm": 50.0,
     "plantsPerSqm": "2",
+    "rowsPerBed": "1",
     "method": "זריעה",
     "germinationDays": "5",
     "daysToTransplant": "14",
@@ -612,9 +670,10 @@ export const PLANT_TABLE: PlantTableEntry[] = [
   },
   {
     "nameHe": "אבטיח",
-    "nameEn": "",
+    "nameEn": "Watermelon",
     "family": "דלועיים",
     "ediblePart": "פרי",
+    "bdDayType": "fruit",
     "plantingMonths": [
       "מרץ",
       "אפריל",
@@ -622,9 +681,10 @@ export const PLANT_TABLE: PlantTableEntry[] = [
       "יוני"
     ],
     "spacingCm": 50.0,
-    "spacingCmForPlacement": 50.0,
     "rowSpacingCm": 180.0,
+    "placementSpacingCm": 50.0,
     "plantsPerSqm": "2",
+    "rowsPerBed": "1",
     "method": "זריעה",
     "germinationDays": "6",
     "daysToTransplant": "14",
@@ -632,9 +692,10 @@ export const PLANT_TABLE: PlantTableEntry[] = [
   },
   {
     "nameHe": "מלון",
-    "nameEn": "",
+    "nameEn": "Melon",
     "family": "דלועיים",
     "ediblePart": "פרי",
+    "bdDayType": "fruit",
     "plantingMonths": [
       "מרץ",
       "אפריל",
@@ -642,9 +703,10 @@ export const PLANT_TABLE: PlantTableEntry[] = [
       "יוני"
     ],
     "spacingCm": 40.0,
-    "spacingCmForPlacement": 40.0,
     "rowSpacingCm": 40.0,
+    "placementSpacingCm": 40.0,
     "plantsPerSqm": "4",
+    "rowsPerBed": "2",
     "method": "זריעה",
     "germinationDays": "6",
     "daysToTransplant": "14",
@@ -652,17 +714,19 @@ export const PLANT_TABLE: PlantTableEntry[] = [
   },
   {
     "nameHe": "תות שדה",
-    "nameEn": "",
+    "nameEn": "Strawberry",
     "family": "ורדניים",
     "ediblePart": "פרי",
+    "bdDayType": "fruit",
     "plantingMonths": [
       "ספטמבר",
       "מרץ"
     ],
     "spacingCm": 25.0,
-    "spacingCmForPlacement": 25.0,
     "rowSpacingCm": 50.0,
+    "placementSpacingCm": 25.0,
     "plantsPerSqm": "4",
+    "rowsPerBed": "3",
     "method": "שתילה",
     "germinationDays": null,
     "daysToTransplant": null,
@@ -670,9 +734,10 @@ export const PLANT_TABLE: PlantTableEntry[] = [
   },
   {
     "nameHe": "בטטה",
-    "nameEn": "",
+    "nameEn": "Sweet Potato",
     "family": "חבלבליים",
     "ediblePart": "שורש",
+    "bdDayType": "root",
     "plantingMonths": [
       "מרץ",
       "אפריל",
@@ -680,9 +745,10 @@ export const PLANT_TABLE: PlantTableEntry[] = [
       "יוני"
     ],
     "spacingCm": 20.0,
-    "spacingCmForPlacement": 20.0,
     "rowSpacingCm": 50.0,
+    "placementSpacingCm": 20.0,
     "plantsPerSqm": "5",
+    "rowsPerBed": "2",
     "method": "שתילה",
     "germinationDays": null,
     "daysToTransplant": null,
@@ -690,16 +756,18 @@ export const PLANT_TABLE: PlantTableEntry[] = [
   },
   {
     "nameHe": "ארטישוק",
-    "nameEn": "",
+    "nameEn": "Artichoke",
     "family": "מורכבים",
     "ediblePart": "פרח",
+    "bdDayType": "flower",
     "plantingMonths": [
       "ספטמבר"
     ],
     "spacingCm": 100.0,
-    "spacingCmForPlacement": 100.0,
     "rowSpacingCm": 180.0,
+    "placementSpacingCm": 100.0,
     "plantsPerSqm": "1",
+    "rowsPerBed": "1",
     "method": "שתילה",
     "germinationDays": null,
     "daysToTransplant": null,
@@ -707,17 +775,19 @@ export const PLANT_TABLE: PlantTableEntry[] = [
   },
   {
     "nameHe": "ארטישוק ירושלמי",
-    "nameEn": "",
+    "nameEn": "Jerusalem Artichoke",
     "family": "מורכבים",
     "ediblePart": "שורש",
+    "bdDayType": "root",
     "plantingMonths": [
       "מרץ",
       "אפריל"
     ],
     "spacingCm": 100.0,
-    "spacingCmForPlacement": 100.0,
     "rowSpacingCm": 180.0,
+    "placementSpacingCm": 100.0,
     "plantsPerSqm": "1",
+    "rowsPerBed": "1",
     "method": "זריעה",
     "germinationDays": null,
     "daysToTransplant": null,
@@ -725,17 +795,19 @@ export const PLANT_TABLE: PlantTableEntry[] = [
   },
   {
     "nameHe": "קנרס עליים",
-    "nameEn": "",
+    "nameEn": "Cardoon",
     "family": "מורכבים",
     "ediblePart": "עלה",
+    "bdDayType": "leaf",
     "plantingMonths": [
       "מרץ",
       "אפריל"
     ],
     "spacingCm": 50.0,
-    "spacingCmForPlacement": 50.0,
     "rowSpacingCm": 180.0,
+    "placementSpacingCm": 50.0,
     "plantsPerSqm": "2",
+    "rowsPerBed": "1",
     "method": "זריעה",
     "germinationDays": "30",
     "daysToTransplant": "30",
@@ -743,16 +815,18 @@ export const PLANT_TABLE: PlantTableEntry[] = [
   },
   {
     "nameHe": "חמניות",
-    "nameEn": "",
+    "nameEn": "Sunflower",
     "family": "מורכבים",
     "ediblePart": "פרח",
+    "bdDayType": "flower",
     "plantingMonths": [
       "מרץ"
     ],
     "spacingCm": 45.0,
-    "spacingCmForPlacement": 45.0,
     "rowSpacingCm": 70.0,
+    "placementSpacingCm": 45.0,
     "plantsPerSqm": "2.5",
+    "rowsPerBed": "2",
     "method": "זריעה",
     "germinationDays": "5",
     "daysToTransplant": null,
@@ -760,9 +834,10 @@ export const PLANT_TABLE: PlantTableEntry[] = [
   },
   {
     "nameHe": "חסה",
-    "nameEn": "",
+    "nameEn": "Lettuce",
     "family": "מורכבים",
     "ediblePart": "עלה",
+    "bdDayType": "leaf",
     "plantingMonths": [
       "ספטמבר",
       "אוקטובר",
@@ -776,9 +851,10 @@ export const PLANT_TABLE: PlantTableEntry[] = [
       "יולי"
     ],
     "spacingCm": 30.0,
-    "spacingCmForPlacement": 30.0,
     "rowSpacingCm": 30.0,
+    "placementSpacingCm": 30.0,
     "plantsPerSqm": "3",
+    "rowsPerBed": "3",
     "method": "שתילה",
     "germinationDays": "7-8",
     "daysToTransplant": "30",
@@ -786,9 +862,10 @@ export const PLANT_TABLE: PlantTableEntry[] = [
   },
   {
     "nameHe": "כרוב סיני",
-    "nameEn": "",
+    "nameEn": "Chinese Cabbage",
     "family": "מורכבים",
     "ediblePart": "עלה",
+    "bdDayType": "leaf",
     "plantingMonths": [
       "ספטמבר",
       "אוקטובר",
@@ -796,9 +873,10 @@ export const PLANT_TABLE: PlantTableEntry[] = [
       "דצמבר"
     ],
     "spacingCm": 30.0,
-    "spacingCmForPlacement": 30.0,
     "rowSpacingCm": 30.0,
+    "placementSpacingCm": 30.0,
     "plantsPerSqm": "3",
+    "rowsPerBed": "3",
     "method": "שתילה",
     "germinationDays": "7-8",
     "daysToTransplant": "30",
@@ -806,9 +884,10 @@ export const PLANT_TABLE: PlantTableEntry[] = [
   },
   {
     "nameHe": "גרגיר",
-    "nameEn": "",
+    "nameEn": "Arugula",
     "family": "מצליבים",
     "ediblePart": "עלה",
+    "bdDayType": "leaf",
     "plantingMonths": [
       "ספטמבר",
       "אוקטובר",
@@ -819,9 +898,10 @@ export const PLANT_TABLE: PlantTableEntry[] = [
       "אפריל"
     ],
     "spacingCm": 2.0,
-    "spacingCmForPlacement": 5,
     "rowSpacingCm": 30.0,
+    "placementSpacingCm": 30.0,
     "plantsPerSqm": "50",
+    "rowsPerBed": "3",
     "method": "זריעה",
     "germinationDays": "4-5",
     "daysToTransplant": null,
@@ -829,18 +909,20 @@ export const PLANT_TABLE: PlantTableEntry[] = [
   },
   {
     "nameHe": "חזרת",
-    "nameEn": "",
+    "nameEn": "Horseradish",
     "family": "מצליבים",
     "ediblePart": "שורש",
+    "bdDayType": "root",
     "plantingMonths": [
       "דצמבר",
       "פברואר",
       "מרץ"
     ],
     "spacingCm": 50.0,
-    "spacingCmForPlacement": 50.0,
     "rowSpacingCm": 180.0,
+    "placementSpacingCm": 50.0,
     "plantsPerSqm": "2",
+    "rowsPerBed": "1",
     "method": "שתילה",
     "germinationDays": null,
     "daysToTransplant": null,
@@ -848,9 +930,10 @@ export const PLANT_TABLE: PlantTableEntry[] = [
   },
   {
     "nameHe": "ברוקולי",
-    "nameEn": "",
+    "nameEn": "Broccoli",
     "family": "מצליבים",
     "ediblePart": "פרי",
+    "bdDayType": "fruit",
     "plantingMonths": [
       "ספטמבר",
       "אוקטובר",
@@ -859,9 +942,10 @@ export const PLANT_TABLE: PlantTableEntry[] = [
       "פברואר"
     ],
     "spacingCm": 40.0,
-    "spacingCmForPlacement": 40.0,
     "rowSpacingCm": 40.0,
+    "placementSpacingCm": 40.0,
     "plantsPerSqm": "2.5",
+    "rowsPerBed": "3",
     "method": "שתילה",
     "germinationDays": "7-8",
     "daysToTransplant": "30",
@@ -869,9 +953,10 @@ export const PLANT_TABLE: PlantTableEntry[] = [
   },
   {
     "nameHe": "כרובית",
-    "nameEn": "",
+    "nameEn": "Cauliflower",
     "family": "מצליבים",
     "ediblePart": "עלה",
+    "bdDayType": "leaf",
     "plantingMonths": [
       "ספטמבר",
       "אוקטובר",
@@ -880,9 +965,10 @@ export const PLANT_TABLE: PlantTableEntry[] = [
       "פברואר"
     ],
     "spacingCm": 40.0,
-    "spacingCmForPlacement": 40.0,
     "rowSpacingCm": 40.0,
+    "placementSpacingCm": 40.0,
     "plantsPerSqm": "2.5",
+    "rowsPerBed": "3",
     "method": "שתילה",
     "germinationDays": "7-8",
     "daysToTransplant": "30",
@@ -890,9 +976,10 @@ export const PLANT_TABLE: PlantTableEntry[] = [
   },
   {
     "nameHe": "כרוב",
-    "nameEn": "",
+    "nameEn": "Cabbage",
     "family": "מצליבים",
     "ediblePart": "עלה",
+    "bdDayType": "leaf",
     "plantingMonths": [
       "ספטמבר",
       "אוקטובר",
@@ -903,9 +990,10 @@ export const PLANT_TABLE: PlantTableEntry[] = [
       "אפריל"
     ],
     "spacingCm": 40.0,
-    "spacingCmForPlacement": 40.0,
     "rowSpacingCm": 40.0,
+    "placementSpacingCm": 40.0,
     "plantsPerSqm": "2.5",
+    "rowsPerBed": "3",
     "method": "שתילה",
     "germinationDays": "5-8",
     "daysToTransplant": "30",
@@ -913,9 +1001,10 @@ export const PLANT_TABLE: PlantTableEntry[] = [
   },
   {
     "nameHe": "כרוב אדום",
-    "nameEn": "",
+    "nameEn": "Red Cabbage",
     "family": "מצליבים",
     "ediblePart": "עלה",
+    "bdDayType": "leaf",
     "plantingMonths": [
       "ספטמבר",
       "אוקטובר",
@@ -926,9 +1015,10 @@ export const PLANT_TABLE: PlantTableEntry[] = [
       "אפריל"
     ],
     "spacingCm": 30.0,
-    "spacingCmForPlacement": 30.0,
     "rowSpacingCm": 40.0,
+    "placementSpacingCm": 30.0,
     "plantsPerSqm": "3",
+    "rowsPerBed": "3",
     "method": "שתילה",
     "germinationDays": "5-8",
     "daysToTransplant": "30",
@@ -936,16 +1026,18 @@ export const PLANT_TABLE: PlantTableEntry[] = [
   },
   {
     "nameHe": "צנון",
-    "nameEn": "",
+    "nameEn": "White Radish",
     "family": "מצליבים",
     "ediblePart": "שורש",
+    "bdDayType": "root",
     "plantingMonths": [
       "אוקטובר"
     ],
     "spacingCm": 2.5,
-    "spacingCmForPlacement": 5,
     "rowSpacingCm": 30.0,
+    "placementSpacingCm": 30.0,
     "plantsPerSqm": "40",
+    "rowsPerBed": "3",
     "method": "זריעה",
     "germinationDays": "5",
     "daysToTransplant": null,
@@ -953,9 +1045,10 @@ export const PLANT_TABLE: PlantTableEntry[] = [
   },
   {
     "nameHe": "צנונית",
-    "nameEn": "",
+    "nameEn": "Radish",
     "family": "מצליבים",
     "ediblePart": "שורש",
+    "bdDayType": "root",
     "plantingMonths": [
       "ספטמבר",
       "אוקטובר",
@@ -968,9 +1061,10 @@ export const PLANT_TABLE: PlantTableEntry[] = [
       "יוני"
     ],
     "spacingCm": 2.0,
-    "spacingCmForPlacement": 5,
     "rowSpacingCm": 30.0,
+    "placementSpacingCm": 30.0,
     "plantsPerSqm": "50",
+    "rowsPerBed": "3-4",
     "method": "זריעה",
     "germinationDays": "5",
     "daysToTransplant": null,
@@ -978,16 +1072,18 @@ export const PLANT_TABLE: PlantTableEntry[] = [
   },
   {
     "nameHe": "צנון לבן- דייקון",
-    "nameEn": "",
+    "nameEn": "Daikon",
     "family": "מצליבים",
     "ediblePart": "שורש",
+    "bdDayType": "root",
     "plantingMonths": [
       "אוקטובר"
     ],
     "spacingCm": 4.0,
-    "spacingCmForPlacement": 5,
     "rowSpacingCm": 30.0,
+    "placementSpacingCm": 30.0,
     "plantsPerSqm": "30",
+    "rowsPerBed": "3",
     "method": "זריעה",
     "germinationDays": "5",
     "daysToTransplant": null,
@@ -995,9 +1091,10 @@ export const PLANT_TABLE: PlantTableEntry[] = [
   },
   {
     "nameHe": "קולרבי",
-    "nameEn": "",
+    "nameEn": "Kohlrabi",
     "family": "מצליבים",
     "ediblePart": "עלה",
+    "bdDayType": "leaf",
     "plantingMonths": [
       "ספטמבר",
       "אוקטובר",
@@ -1010,9 +1107,10 @@ export const PLANT_TABLE: PlantTableEntry[] = [
       "יוני"
     ],
     "spacingCm": 10.0,
-    "spacingCmForPlacement": 10.0,
     "rowSpacingCm": 30.0,
+    "placementSpacingCm": 10.0,
     "plantsPerSqm": "10",
+    "rowsPerBed": "3",
     "method": "שתילה",
     "germinationDays": "5",
     "daysToTransplant": "30",
@@ -1020,17 +1118,19 @@ export const PLANT_TABLE: PlantTableEntry[] = [
   },
   {
     "nameHe": "קייל",
-    "nameEn": "",
+    "nameEn": "Kale",
     "family": "מצליבים",
     "ediblePart": "עלה",
+    "bdDayType": "leaf",
     "plantingMonths": [
       "נובמבר",
       "דצמבר"
     ],
     "spacingCm": 40.0,
-    "spacingCmForPlacement": 40.0,
     "rowSpacingCm": 70.0,
+    "placementSpacingCm": 40.0,
     "plantsPerSqm": "2.5",
+    "rowsPerBed": "2",
     "method": "שתילה",
     "germinationDays": "5-8",
     "daysToTransplant": "30",
@@ -1038,9 +1138,10 @@ export const PLANT_TABLE: PlantTableEntry[] = [
   },
   {
     "nameHe": "רוקולה",
-    "nameEn": "",
+    "nameEn": "Rocket",
     "family": "מצליבים",
     "ediblePart": "עלה",
+    "bdDayType": "leaf",
     "plantingMonths": [
       "ספטמבר",
       "אוקטובר",
@@ -1053,9 +1154,10 @@ export const PLANT_TABLE: PlantTableEntry[] = [
       "יוני"
     ],
     "spacingCm": 0.7,
-    "spacingCmForPlacement": 5,
     "rowSpacingCm": 20.0,
+    "placementSpacingCm": 20.0,
     "plantsPerSqm": "120",
+    "rowsPerBed": "3-5",
     "method": "זריעה",
     "germinationDays": "5",
     "daysToTransplant": null,
@@ -1063,20 +1165,28 @@ export const PLANT_TABLE: PlantTableEntry[] = [
   }
 ];
 
-// Helper: get spacing for a plant by Hebrew name
+export function getPlantByName(nameHe: string): PlantTableEntry | undefined {
+  const n = nameHe.trim();
+  return PLANT_TABLE.find(p =>
+    p.nameHe === n ||
+    p.nameEn.toLowerCase() === n.toLowerCase() ||
+    p.nameHe.includes(n) ||
+    n.includes(p.nameHe)
+  );
+}
+
 export function getPlantSpacing(nameHe: string): number {
-  const plant = PLANT_TABLE.find(p => p.nameHe === nameHe);
-  return plant?.spacingCmForPlacement ?? 30;
+  return getPlantByName(nameHe)?.placementSpacingCm ?? 30;
 }
 
-// Helper: get planting months for a plant
 export function getPlantingMonths(nameHe: string): string[] {
-  const plant = PLANT_TABLE.find(p => p.nameHe === nameHe);
-  return plant?.plantingMonths ?? [];
+  return getPlantByName(nameHe)?.plantingMonths ?? [];
 }
 
-// Helper: get edible part for biodynamic day type matching
+export function getBdDayType(nameHe: string): 'fruit' | 'root' | 'leaf' | 'flower' {
+  return getPlantByName(nameHe)?.bdDayType ?? 'leaf';
+}
+
 export function getEdiblePart(nameHe: string): string | null {
-  const plant = PLANT_TABLE.find(p => p.nameHe === nameHe);
-  return plant?.ediblePart ?? null;
+  return getPlantByName(nameHe)?.ediblePart ?? null;
 }
