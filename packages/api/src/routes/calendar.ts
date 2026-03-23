@@ -1,5 +1,7 @@
 import { Router, type IRouter } from 'express';
+import { exec } from 'child_process';
 import { getCalendarDay, getCalendarRange } from '../db/queries/calendar';
+import { db } from '../db/client';
 import { ISRAEL_TIMEZONE } from '@gina-haya/shared';
 
 export const calendarRouter: IRouter = Router();
@@ -33,6 +35,50 @@ calendarRouter.get('/week', async (_req, res) => {
     console.error('[GET /api/calendar/week]', err);
     res.status(500).json({ error: err.message });
   }
+});
+
+// GET /api/calendar/status — date range and row count of current calendar data
+calendarRouter.get('/status', async (_req, res) => {
+  try {
+    const { data, error } = await db
+      .from('biodynamic_calendar')
+      .select('date')
+      .order('date', { ascending: true });
+
+    if (error) throw error;
+
+    const dates = (data ?? []).map((r: { date: string }) => r.date);
+    res.json({
+      count: dates.length,
+      minDate: dates[0] ?? null,
+      maxDate: dates[dates.length - 1] ?? null,
+    });
+  } catch (err: any) {
+    console.error('[GET /api/calendar/status]', err);
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// POST /api/calendar/regenerate — trigger Python calendar script (admin only)
+calendarRouter.post('/regenerate', async (req: any, res) => {
+  const adminSecret = req.headers['x-admin-secret'];
+  if (adminSecret !== process.env.ADMIN_SECRET) {
+    return res.status(401).json({ error: 'Unauthorized' });
+  }
+
+  exec(
+    'python packages/api/scripts/generate_calendar.py',
+    { env: { ...process.env } },
+    (error, stdout, stderr) => {
+      if (error) {
+        console.error('[calendar/regenerate] error:', error);
+        return;
+      }
+      console.log('[calendar/regenerate] Done:', stdout);
+    }
+  );
+
+  res.json({ message: 'Calendar regeneration started', status: 'running' });
 });
 
 // GET /api/calendar/:date — specific date YYYY-MM-DD, no auth required
