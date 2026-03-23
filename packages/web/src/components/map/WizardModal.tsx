@@ -3,7 +3,7 @@ import { api } from '../../api/client';
 import { useAuthStore } from '../../stores/authStore';
 import type { WizardStatus, PlantPreview, MapData } from '../../stores/mapStore';
 import { PLANTS } from '../../data/companions';
-import { getPlantSpacing, PLANT_TABLE } from '../../data/plantTable';
+import { getPlantByName, getPlantSpacing, PLANT_TABLE } from '../../data/plantTable';
 
 const GOLD   = '#F5C840';
 const PARCH  = '#EDE0C4';
@@ -67,6 +67,16 @@ function calculatePlantPositions(
   mapData: MapData,
   northAngle: number
 ): PlantPreview[] {
+  console.log('[WIZARD DEBUG] mapData objects:',
+    JSON.stringify(mapData.objects.map(o => ({
+      type: o.type, label: o.label, shapeKind: o.shapeKind,
+      x: o.x, y: o.y, w: o.width, h: o.height,
+      cx: o.cx, cy: o.cy, r: o.radius
+    }))));
+  console.log('[WIZARD DEBUG] plan beds:',
+    JSON.stringify((plan.beds ?? []).map((b: any) => ({
+      name: b.name, plants: b.plants?.length
+    }))));
   console.log('[WIZARD] mapData objects:', mapData.objects.length, 'plants:', mapData.plants.length, 'plan beds:', plan.beds?.length);
   const results: PlantPreview[] = [];
   const MARGIN = 0.3;
@@ -140,18 +150,29 @@ function calculatePlantPositions(
     });
 
     for (const plant of (bed.plants ?? [])) {
-      // Look up correct spacing from plant table first
-      const tableSpacing = getPlantSpacing(plant.nameHe ?? '');
-      let spacingM: number;
+      // Get correct spacings from plant table
+      const tableEntry = getPlantByName(plant.nameHe ?? '');
+
+      // Column spacing (between plants in same row)
+      let colSpacingM = 0.30;
       if (plant.spacingCm && plant.spacingCm > 1) {
-        spacingM = plant.spacingCm / 100;
-      } else if (tableSpacing > 5) {
-        spacingM = tableSpacing / 100;
-      } else {
-        spacingM = 0.3;
+        colSpacingM = plant.spacingCm / 100;
+      } else if (tableEntry?.placementSpacingCm) {
+        colSpacingM = tableEntry.placementSpacingCm / 100;
       }
-      spacingM = Math.max(0.08, Math.min(1.5, spacingM));
-      const r = spacingM / 2;
+      colSpacingM = Math.max(0.08, Math.min(2.5, colSpacingM));
+
+      // Row spacing (between rows)
+      let rowSpacingM = colSpacingM; // default: same as column spacing
+      if (plant.rowSpacingCm && plant.rowSpacingCm > 1) {
+        rowSpacingM = plant.rowSpacingCm / 100;
+      } else if (tableEntry?.rowSpacingCm) {
+        rowSpacingM = tableEntry.rowSpacingCm / 100;
+      }
+      rowSpacingM = Math.max(0.08, Math.min(3.0, rowSpacingM));
+
+      // For overlap detection, use the smaller of the two
+      const r = Math.min(colSpacingM, rowSpacingM) / 2;
       const qty = Math.max(1, plant.quantity ?? 1);
       const emoji = getPlantEmoji(plant.nameEn ?? plant.nameHe ?? '');
       const nameHe = plant.nameHe ?? plant.name ?? 'צמח';
@@ -162,19 +183,22 @@ function calculatePlantPositions(
 
         if (si) {
           // Place inside the matching shape in a grid
-          const maxCols = Math.max(1, Math.floor(si.bw / spacingM));
+          const maxCols = Math.max(1, Math.floor(si.bw / colSpacingM));
           const col = i % maxCols;
           const row = Math.floor(i / maxCols);
-          baseX = si.bx + col * spacingM + r;
-          baseY = si.by + row * spacingM + r;
+          baseX = si.bx + col * colSpacingM + colSpacingM * 0.5;
+          baseY = si.by + row * rowSpacingM + rowSpacingM * 0.5;
+          if (si.bh < rowSpacingM * 2) {
+            baseY = si.by + si.bh / 2;
+          }
         } else {
           // NO SHAPE FOUND — spread plants across canvas in a grid
           // Use bed index and plant index to spread them out
           const globalIndex = results.length;
           const col = globalIndex % 10;
           const row = Math.floor(globalIndex / 10);
-          baseX = MARGIN + col * Math.max(spacingM, 0.5);
-          baseY = MARGIN + row * Math.max(spacingM, 0.5);
+          baseX = MARGIN + col * Math.max(colSpacingM, 0.5);
+          baseY = MARGIN + row * Math.max(rowSpacingM, 0.5);
         }
 
         // Hard clamp
@@ -182,15 +206,17 @@ function calculatePlantPositions(
         baseY = Math.max(MARGIN, Math.min(CANVAS_H - MARGIN, baseY));
 
         // Find free spot
-        const [fx, fy] = findFreeNear(baseX, baseY, r, spacingM);
+        const [fx, fy] = findFreeNear(baseX, baseY, r, Math.max(colSpacingM, rowSpacingM) * 0.5);
 
-        console.log('[PLANT POS]', { nameHe, i, baseX, baseY, fx, fy, spacingM, si: !!si });
+        console.log('[WIZARD DEBUG] placing', nameHe, 'at', baseX.toFixed(2), baseY.toFixed(2),
+          'shape:', matchShape?.label, 'si:', si ? `${si.bx.toFixed(1)},${si.by.toFixed(1)} ${si.bw.toFixed(1)}x${si.bh.toFixed(1)}` : 'null');
+        console.log('[PLANT POS]', { nameHe, i, baseX, baseY, fx, fy, colSpacingM, rowSpacingM, si: !!si });
         placed.push({ x: fx, y: fy, r });
         results.push({
           plantNameHe: nameHe,
           plantNameEn: nameEn,
           emoji,
-          spacing: spacingM,
+          spacing: colSpacingM,
           x: fx,
           y: fy,
           bedName: bed.name ?? bed.suggestedName ?? 'ערוגה',
