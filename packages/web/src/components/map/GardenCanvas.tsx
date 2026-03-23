@@ -1198,7 +1198,7 @@ export function GardenCanvas({
               <circle
                 cx={p.x * PX}
                 cy={p.y * PX}
-                r={Math.max(8, (p.spacing / 2) * PX)}
+                r={Math.min(35, Math.max(10, (p.spacing * PX) / 2))}
                 fill="rgba(245,200,64,0.06)"
                 stroke="rgba(245,200,64,0.3)"
                 strokeWidth={1}
