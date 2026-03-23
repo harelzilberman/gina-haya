@@ -67,6 +67,10 @@ function calculatePlantPositions(
   mapData: MapData,
   northAngle: number
 ): PlantPreview[] {
+  console.log('[ALL OBJECTS]', mapData.objects.map(o => ({
+    label: o.label, type: o.type, shapeKind: o.shapeKind,
+    x: o.x, y: o.y, width: o.width, height: o.height
+  })));
   console.log('[WIZARD DEBUG] mapData objects:',
     JSON.stringify(mapData.objects.map(o => ({
       type: o.type, label: o.label, shapeKind: o.shapeKind,
@@ -141,6 +145,11 @@ function calculatePlantPositions(
     }) ?? growingShapes[fallbackShapeIdx % Math.max(1, growingShapes.length)];
     fallbackShapeIdx++;
     const si = getShapeInfo(matchShape);
+    console.log('[SHAPE INFO]', matchShape?.label, matchShape?.type,
+      'shapeKind:', matchShape?.shapeKind,
+      'x:', matchShape?.x, 'y:', matchShape?.y,
+      'w:', matchShape?.width, 'h:', matchShape?.height,
+      'si:', JSON.stringify(si));
     console.log('[WIZARD PLACEMENT]', {
       bedName,
       matchShape: matchShape ? { type: matchShape.type, label: matchShape.label, shapeKind: matchShape.shapeKind, x: matchShape.x, y: matchShape.y, width: matchShape.width, height: matchShape.height } : null,
@@ -152,6 +161,9 @@ function calculatePlantPositions(
     for (const plant of (bed.plants ?? [])) {
       // Get correct spacings from plant table
       const tableEntry = getPlantByName(plant.nameHe ?? '');
+      console.log('[TABLE LOOKUP]', plant.nameHe, '→',
+        tableEntry?.nameHe, 'spacing:', tableEntry?.placementSpacingCm,
+        'rowSpacing:', tableEntry?.rowSpacingCm);
 
       // Column spacing (between plants in same row)
       let colSpacingM = 0.30;
