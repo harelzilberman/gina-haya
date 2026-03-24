@@ -3,7 +3,15 @@
 # Called by Railway cron job monthly
 
 echo "Starting biodynamic calendar generation..."
-cd /app
-pip install -r packages/api/scripts/requirements.txt --quiet
-python packages/api/scripts/generate_calendar.py
+echo "Working directory: $(pwd)"
+echo "Python: $(which python3 || which python)"
+
+# Install dependencies
+pip install pyswisseph requests --quiet
+
+# Run from wherever we are
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+echo "Script dir: $SCRIPT_DIR"
+
+python "$SCRIPT_DIR/generate_calendar.py"
 echo "Done!"
