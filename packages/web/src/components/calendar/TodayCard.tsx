@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useDirection } from '../../hooks/useDirection';
 import type { BiodynamicDay } from '@gina-haya/shared';
@@ -31,27 +31,218 @@ const PARCH  = '#EDE0C4';
 const FRANK  = '"Frank Ruhl Libre", Georgia, serif';
 const ASSIST = '"Assistant", "Heebo", sans-serif';
 
-// Hebrew → English moon sign lookup
-const MOON_SIGN_EN: Record<string, string> = {
-  'תאומים':  'Gemini',
-  'טלה':     'Aries',
-  'שור':     'Taurus',
-  'סרטן':    'Cancer',
-  'אריה':    'Leo',
-  'בתולה':   'Virgo',
-  'מאזניים': 'Libra',
-  'עקרב':    'Scorpio',
-  'קשת':     'Sagittarius',
-  'גדי':     'Capricorn',
-  'דלי':     'Aquarius',
-  'דגים':    'Pisces',
-};
 
 const CARD_CSS = `
 @keyframes tc-ring-in {
   from { stroke-dashoffset: ${RING_CIRCUMFERENCE}; }
 }
+@keyframes moonGlowSpin {
+  from { transform: rotate(0deg); }
+  to   { transform: rotate(360deg); }
+}
 `;
+
+function MoonPhaseDisplay({ phaseAngle, phaseHe, moonSignHe, ascending }: {
+  phaseAngle: number;
+  phaseHe: string;
+  moonSignHe: string;
+  ascending: boolean;
+}) {
+  const canvasRef = useRef<HTMLCanvasElement>(null);
+
+  useEffect(() => {
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+    const ctx = canvas.getContext('2d');
+    if (!ctx) return;
+
+    const size = 120;
+    const cx = size / 2, cy = size / 2, r = 52;
+    canvas.width = size;
+    canvas.height = size;
+    ctx.clearRect(0, 0, size, size);
+
+    const isFullMoon = phaseAngle > 155 && phaseAngle < 205;
+    const isNewMoon  = phaseAngle < 15  || phaseAngle > 345;
+
+    // Outer glow rings for full moon
+    if (isFullMoon) {
+      for (let i = 3; i >= 1; i--) {
+        ctx.beginPath();
+        ctx.arc(cx, cy, r + i * 7, 0, Math.PI * 2);
+        ctx.strokeStyle = `rgba(245,200,64,${0.06 / i})`;
+        ctx.lineWidth = 3;
+        ctx.stroke();
+      }
+    }
+
+    // Moon base sphere
+    const sphereGrad = ctx.createRadialGradient(cx - 15, cy - 15, 5, cx, cy, r);
+    if (isNewMoon) {
+      sphereGrad.addColorStop(0, '#1a2a1a');
+      sphereGrad.addColorStop(1, '#0a1208');
+    } else if (isFullMoon) {
+      sphereGrad.addColorStop(0, '#fffde8');
+      sphereGrad.addColorStop(0.6, '#f5e8a0');
+      sphereGrad.addColorStop(1, '#a08040');
+    } else {
+      sphereGrad.addColorStop(0, '#e8dfc0');
+      sphereGrad.addColorStop(0.6, '#c8b878');
+      sphereGrad.addColorStop(1, '#6b5a30');
+    }
+    ctx.beginPath();
+    ctx.arc(cx, cy, r, 0, Math.PI * 2);
+    ctx.fillStyle = sphereGrad;
+    ctx.fill();
+
+    // Craters
+    if (!isNewMoon) {
+      const craters = [
+        { x: 45, y: 38, r: 5 }, { x: 70, y: 50, r: 7 },
+        { x: 52, y: 68, r: 4 }, { x: 38, y: 58, r: 3 },
+        { x: 65, y: 35, r: 3.5 }, { x: 75, y: 68, r: 5 },
+        { x: 42, y: 75, r: 4 },
+      ];
+      craters.forEach(c => {
+        ctx.save();
+        ctx.beginPath();
+        ctx.arc(cx, cy, r, 0, Math.PI * 2);
+        ctx.clip();
+        ctx.beginPath();
+        ctx.arc(c.x, c.y, c.r, 0, Math.PI * 2);
+        ctx.fillStyle = 'rgba(80,65,30,0.18)';
+        ctx.fill();
+        ctx.restore();
+      });
+    }
+
+    // Phase shadow
+    if (!isFullMoon && !isNewMoon) {
+      ctx.save();
+      ctx.beginPath();
+      ctx.arc(cx, cy, r, 0, Math.PI * 2);
+      ctx.clip();
+
+      const normalizedAngle = phaseAngle <= 180 ? phaseAngle : 360 - phaseAngle;
+      const shadowX = r * Math.cos((normalizedAngle / 180) * Math.PI);
+
+      ctx.beginPath();
+      if (phaseAngle < 90) {
+        ctx.ellipse(cx, cy, Math.abs(shadowX), r, 0, Math.PI / 2, -Math.PI / 2, false);
+        ctx.arc(cx, cy, r, -Math.PI / 2, Math.PI / 2, false);
+      } else if (phaseAngle < 180) {
+        ctx.ellipse(cx, cy, Math.abs(shadowX), r, 0, -Math.PI / 2, Math.PI / 2, false);
+        ctx.arc(cx, cy, r, Math.PI / 2, -Math.PI / 2, false);
+      } else if (phaseAngle < 270) {
+        ctx.ellipse(cx, cy, Math.abs(shadowX), r, 0, Math.PI / 2, -Math.PI / 2, true);
+        ctx.arc(cx, cy, r, -Math.PI / 2, Math.PI / 2, true);
+      } else {
+        ctx.ellipse(cx, cy, Math.abs(shadowX), r, 0, -Math.PI / 2, Math.PI / 2, true);
+        ctx.arc(cx, cy, r, Math.PI / 2, -Math.PI / 2, true);
+      }
+      ctx.closePath();
+      const shadowGrad = ctx.createRadialGradient(cx, cy, 0, cx, cy, r);
+      shadowGrad.addColorStop(0, 'rgba(8,18,10,0.88)');
+      shadowGrad.addColorStop(1, 'rgba(8,18,10,0.95)');
+      ctx.fillStyle = shadowGrad;
+      ctx.fill();
+      ctx.restore();
+    }
+
+    // Atmospheric edge ring
+    ctx.beginPath();
+    ctx.arc(cx, cy, r - 0.5, 0, Math.PI * 2);
+    ctx.strokeStyle = 'rgba(255,255,220,0.15)';
+    ctx.lineWidth = 2;
+    ctx.stroke();
+  }, [phaseAngle]);
+
+  const isFullMoon   = phaseAngle > 155 && phaseAngle < 205;
+  const illumination = Math.round((1 - Math.cos(phaseAngle * Math.PI / 180)) / 2 * 100);
+  const daysToFull   = Math.round(((180 - phaseAngle + 360) % 360) / 13.2);
+  const daysToNew    = Math.round(((360 - phaseAngle) % 360) / 13.2);
+
+  return (
+    <div style={{
+      display: 'flex', flexDirection: 'column', alignItems: 'center',
+      gap: '10px', padding: '20px 0 12px',
+    }}>
+      {/* Moon canvas with optional rotating glow */}
+      <div style={{ position: 'relative', width: '120px', height: '120px' }}>
+        {isFullMoon && (
+          <div style={{
+            position: 'absolute', inset: '-12px',
+            borderRadius: '50%',
+            background: 'conic-gradient(rgba(245,200,64,0.15), rgba(245,200,64,0.05), rgba(245,200,64,0.15))',
+            animation: 'moonGlowSpin 8s linear infinite',
+          }} />
+        )}
+        <canvas
+          ref={canvasRef}
+          style={{ width: '120px', height: '120px', position: 'relative', zIndex: 1 }}
+        />
+      </div>
+
+      {/* Phase name */}
+      <div style={{ fontFamily: FRANK, fontSize: '18px', fontWeight: 700, color: GOLD }}>
+        {phaseHe}
+      </div>
+
+      {/* Moon sign */}
+      <div style={{ fontFamily: ASSIST, fontSize: '13px', color: `${PARCH}60` }}>
+        מזל הירח: {moonSignHe}
+      </div>
+
+      {/* Direction badge */}
+      <div style={{
+        display: 'inline-flex', alignItems: 'center', gap: '6px',
+        background: 'rgba(245,200,64,0.1)',
+        border: '1px solid rgba(245,200,64,0.25)',
+        borderRadius: '99px', padding: '4px 14px',
+        fontFamily: ASSIST, fontSize: '12px', color: GOLD,
+      }}>
+        {ascending ? '↑ ירח עולה' : '↓ ירח יורד'}
+      </div>
+
+      {/* Phase progress bar */}
+      <div style={{ width: '100%', maxWidth: '200px' }}>
+        <div style={{
+          display: 'flex', justifyContent: 'space-between',
+          fontSize: '10px', color: `${PARCH}35`,
+          fontFamily: ASSIST, marginBottom: '4px',
+        }}>
+          <span>🌑</span><span>🌓</span><span>🌕</span><span>🌗</span>
+        </div>
+        <div style={{
+          height: '3px', background: 'rgba(255,255,255,0.08)',
+          borderRadius: '99px', overflow: 'hidden',
+        }}>
+          <div style={{
+            height: '100%', borderRadius: '99px',
+            background: 'linear-gradient(90deg, #2d4a2f, #F5C840)',
+            width: `${phaseAngle / 360 * 100}%`,
+            transition: 'width 0.5s ease',
+          }} />
+        </div>
+      </div>
+
+      {/* Days to next phases */}
+      <div style={{
+        display: 'flex', gap: '16px',
+        fontFamily: ASSIST, fontSize: '11px', color: `${PARCH}50`,
+      }}>
+        <span>ירח מלא: {daysToFull === 0 ? 'היום!' : `${daysToFull} ימים`}</span>
+        <span>·</span>
+        <span>ירח חדש: {daysToNew === 0 ? 'היום!' : `${daysToNew} ימים`}</span>
+      </div>
+
+      {/* Illumination */}
+      <div style={{ fontFamily: ASSIST, fontSize: '11px', color: `${PARCH}40` }}>
+        תאורה: {illumination}%
+      </div>
+    </div>
+  );
+}
 
 function FormattedDate({ dateStr, locale }: { dateStr: string; locale: string }) {
   const date = new Date(dateStr + 'T12:00:00');
@@ -82,27 +273,11 @@ export function TodayCard({ day }: Props) {
   const targetOffset = RING_CIRCUMFERENCE * (1 - day.plantingScore / 10);
   const dashOffset   = mounted ? targetOffset : RING_CIRCUMFERENCE;
   const dtStyle      = DAY_TYPE_STYLES[day.dayType] ?? { bg: 'rgba(100,100,100,0.18)', color: PARCH, emoji: '🌱' };
-  const arrowSymbol  = day.ascendingDescending === 'ascending' ? '↑' : '↓';
 
-  // dayType translation includes emoji (e.g. "Fruit Day 🍅") — strip the emoji for the badge
   const DAY_TYPE_EN: Record<string, string> = {
     fruit: 'Fruit', root: 'Root', flower: 'Flower', leaf: 'Leaf',
   };
   const dayTypeLabel = isHe ? day.dayTypeHe : (DAY_TYPE_EN[day.dayType] ?? day.dayType);
-
-  const moonDirectionLabel = isHe
-    ? day.ascendingDescendingHe
-    : t(`moonPhase.${day.ascendingDescending}`);
-
-  const moonDescLabel = isHe
-    ? (day.ascendingDescending === 'ascending'
-        ? 'הארץ נושמת החוצה — זמן לקציר ואיסוף'
-        : 'הארץ נושמת פנימה — הזמן הטוב ביותר לשתילה')
-    : t(`moonPhase.${day.ascendingDescending === 'ascending' ? 'ascendingDesc' : 'descendingDesc'}`);
-
-  const moonSignLabel = isHe
-    ? day.moonSignHe
-    : (MOON_SIGN_EN[day.moonSignHe] ?? day.moonSignHe);
 
   return (
     <>
@@ -131,6 +306,14 @@ export function TodayCard({ day }: Props) {
         }}>
           <FormattedDate dateStr={day.date} locale={isHe ? 'he-IL' : 'en-US'} />
         </p>
+
+        {/* Moon phase widget */}
+        <MoonPhaseDisplay
+          phaseAngle={day.moonPhaseAngle ?? 0}
+          phaseHe={day.moonPhaseHe ?? day.moonPhaseNameHe ?? 'ירח'}
+          moonSignHe={day.moonSignHe ?? ''}
+          ascending={day.ascendingDescending === 'ascending'}
+        />
 
         {/* Score ring */}
         <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', marginBottom: '20px' }}>
@@ -219,62 +402,6 @@ export function TodayCard({ day }: Props) {
           }}>
             {dtStyle.emoji} {dayTypeLabel}
           </span>
-        </div>
-
-        {/* Moon direction row */}
-        <div style={{
-          display:         'flex',
-          alignItems:      'flex-start',
-          gap:             '12px',
-          padding:         '12px 14px',
-          borderRadius:    '10px',
-          backgroundColor: 'rgba(245,200,64,0.05)',
-          border:          '1px solid rgba(245,200,64,0.1)',
-          marginBottom:    '10px',
-        }}>
-          {/* Arrow circle */}
-          <div style={{
-            flexShrink:      0,
-            width:           '32px',
-            height:          '32px',
-            borderRadius:    '50%',
-            border:          `1.5px solid ${GOLD}66`,
-            display:         'flex',
-            alignItems:      'center',
-            justifyContent:  'center',
-            color:           GOLD,
-            fontSize:        '16px',
-            marginTop:       '1px',
-          }}>
-            {arrowSymbol}
-          </div>
-          <div style={{ flex: 1, textAlign: dir === 'rtl' ? 'right' : 'left' }}>
-            <p style={{ fontFamily: ASSIST, fontSize: '13px', fontWeight: 600, color: PARCH, margin: 0 }}>
-              {moonDirectionLabel}
-            </p>
-            <p style={{ fontFamily: ASSIST, fontSize: '12px', color: `${PARCH}60`, margin: '3px 0 0', lineHeight: 1.4 }}>
-              {moonDescLabel}
-            </p>
-          </div>
-        </div>
-
-        {/* Moon sign row */}
-        <div style={{
-          display:         'flex',
-          alignItems:      'center',
-          justifyContent:  'space-between',
-          direction:       dir as 'rtl' | 'ltr',
-          padding:         '10px 14px',
-          borderRadius:    '10px',
-          backgroundColor: 'rgba(245,200,64,0.04)',
-          border:          '1px solid rgba(245,200,64,0.08)',
-          marginBottom:    '14px',
-          fontFamily:      ASSIST,
-          fontSize:        '13px',
-          color:           `${PARCH}88`,
-        }}>
-          <span style={{ fontWeight: 600, color: PARCH }}>{moonSignLabel}</span>
-          <span>🌙 {t('moonSign')}:</span>
         </div>
 
         {/* BD prep pills */}
