@@ -170,10 +170,9 @@ def check_perigee_apogee(jd):
     BDI: Avoid sowing/transplanting 6 hours around perigee AND apogee.
     Exception: apogee is good for bulbs (potatoes etc).
     """
-    result, _ = swe.calc_ut(jd, swe.MOON,
-                             swe.FLG_SPEED | swe.FLG_DISTANCE)
-    distance   = result[2]   # AU
-    dist_speed = result[5]
+    result, _ = swe.calc_ut(jd, swe.MOON, swe.FLG_SPEED)
+    distance   = result[2]   # AU — always returned even without FLG_DISTANCE
+    dist_speed = result[3]   # speed in longitude (proxy for distance change)
 
     is_perigee = distance < 0.00242
     is_apogee  = distance > 0.00265
