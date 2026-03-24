@@ -159,8 +159,12 @@ function MoonPhaseDisplay({ phaseAngle, phaseHe, moonSignHe, ascending }: {
 
   const isFullMoon   = phaseAngle > 155 && phaseAngle < 205;
   const illumination = Math.round((1 - Math.cos(phaseAngle * Math.PI / 180)) / 2 * 100);
-  const daysToFull   = Math.round(((180 - phaseAngle + 360) % 360) / 13.2);
-  const daysToNew    = Math.round(((360 - phaseAngle) % 360) / 13.2);
+  const daysToFull = phaseAngle <= 180
+    ? Math.round((180 - phaseAngle) / 13.2)
+    : Math.round((540 - phaseAngle) / 13.2);
+  const daysToNew = phaseAngle <= 360
+    ? Math.round((360 - phaseAngle) / 13.2)
+    : Math.round((720 - phaseAngle) / 13.2);
 
   return (
     <div style={{
@@ -309,8 +313,8 @@ export function TodayCard({ day }: Props) {
 
         {/* Moon phase widget */}
         <MoonPhaseDisplay
-          phaseAngle={day.moonPhaseAngle ?? 0}
-          phaseHe={day.moonPhaseHe ?? day.moonPhaseNameHe ?? 'ירח'}
+          phaseAngle={(day.moonPhasePct ?? 0) / 100 * 360}
+          phaseHe={day.moonPhaseNameHe ?? day.moonPhaseHe ?? 'ירח'}
           moonSignHe={day.moonSignHe ?? ''}
           ascending={day.ascendingDescending === 'ascending'}
         />
