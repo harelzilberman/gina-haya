@@ -284,17 +284,24 @@ function MoonPhaseDisplay({ phaseAngle, phaseHe, moonSignHe, ascending }: {
       display: 'flex', flexDirection: 'column', alignItems: 'center',
       gap: '10px', padding: '20px 0 12px',
     }}>
-      <div style={{ position: 'relative', width: '165px', height: '165px' }}>
+      <div style={{
+        position: 'relative', width: '165px', height: '165px',
+        borderRadius: '50%',
+        border: '2px solid rgba(245,200,64,0.40)',
+        boxShadow: '0 0 16px rgba(245,200,64,0.18)',
+        overflow: 'hidden',
+      }}>
         {isFullMoon && (
           <div style={{
-            position: 'absolute', inset: '-16px', borderRadius: '50%',
+            position: 'absolute', inset: '-20px', borderRadius: '50%',
             background: 'conic-gradient(rgba(245,200,64,0.18), rgba(245,200,64,0.04), rgba(245,200,64,0.18))',
             animation: 'moonGlowSpin 8s linear infinite',
+            zIndex: 0,
           }} />
         )}
         <canvas
           ref={canvasRef}
-          style={{ width: '165px', height: '165px', position: 'relative', zIndex: 1 }}
+          style={{ width: '165px', height: '165px', position: 'relative', zIndex: 1, display: 'block' }}
         />
       </div>
 
