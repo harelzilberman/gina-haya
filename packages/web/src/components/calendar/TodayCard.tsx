@@ -39,180 +39,235 @@ const CARD_CSS = `
 }
 `;
 
-function drawRealisticMoon(
+// ─────────────────────────────────────────────
+// MOON ORIENTATION — latitude-based rotation
+// ─────────────────────────────────────────────
+// In the northern hemisphere, the moon appears rotated relative to
+// the "standard" equatorial view used in astronomy diagrams.
+// For Israel (~32°N), a waxing gibbous moon near the southern sky
+// shows the terminator at the bottom, not the left side.
+//
+// The parallactic angle q is the rotation of the moon's axis
+// relative to the observer's horizon. We approximate it using
+// the observer's latitude and the moon's typical position in the sky.
+//
+// Full formula: q = atan2(sin(H) * cos(lat),
+//                         cos(dec)*sin(lat) - sin(dec)*cos(lat)*cos(H))
+// where H = hour angle, dec = moon declination
+//
+// For a practical per-latitude approximation (moon on meridian):
+//   rotation ≈ (90° - latitude) CCW for northern hemisphere
+// This gives: Israel (32°N) → rotate ~58° CCW
+//             Tel Aviv specific → ~58°
+//
+// We use the browser's Geolocation API to get actual latitude,
+// falling back to Israel's default (32°N).
+
+function getMoonRotationDeg(latitudeDeg: number, phaseAngle: number): number {
+  // In northern hemisphere: moon appears rotated CCW relative to equatorial view.
+  // The rotation is approximately (90 - latitude) degrees CCW.
+  // In southern hemisphere: rotated ~180° from northern view.
+  // At equator: no rotation needed.
+  
+  const isNorthern = latitudeDeg >= 0;
+  
+  if (isNorthern) {
+    // Northern hemisphere: rotate CCW by (90 - lat)
+    // At lat=0 (equator): 90° rotation
+    // At lat=90 (pole): 0° rotation
+    // Israel 32°N: ~58° CCW → in canvas terms, rotate by +58°
+    return 90 - latitudeDeg;
+  } else {
+    // Southern hemisphere: moon appears flipped, add 180°
+    return 90 - latitudeDeg + 180;
+  }
+}
+
+// ─────────────────────────────────────────────
+// NASA moon texture loader (cached)
+// ─────────────────────────────────────────────
+const MOON_TEXTURE_URL = 'https://upload.wikimedia.org/wikipedia/commons/thumb/e/e1/FullMoon2010.jpg/600px-FullMoon2010.jpg';
+
+let moonTextureCache: HTMLImageElement | null = null;
+let moonTextureLoading = false;
+const moonTextureCbs: Array<(img: HTMLImageElement | null) => void> = [];
+
+function loadMoonTexture(cb: (img: HTMLImageElement | null) => void) {
+  if (moonTextureCache) { cb(moonTextureCache); return; }
+  moonTextureCbs.push(cb);
+  if (moonTextureLoading) return;
+  moonTextureLoading = true;
+  const img = new Image();
+  img.crossOrigin = 'anonymous';
+  img.onload = () => {
+    moonTextureCache = img;
+    moonTextureCbs.forEach(fn => fn(img));
+    moonTextureCbs.length = 0;
+  };
+  img.onerror = () => {
+    moonTextureCbs.forEach(fn => fn(null));
+    moonTextureCbs.length = 0;
+  };
+  img.src = MOON_TEXTURE_URL;
+}
+
+// ─────────────────────────────────────────────
+// MOON RENDERER
+// ─────────────────────────────────────────────
+function renderMoon(
   ctx: CanvasRenderingContext2D,
   cx: number,
   cy: number,
   r: number,
-  phaseAngle: number  // 0=new moon, 180=full moon, 360=new moon
+  phaseAngle: number,     // 0=new moon, 180=full moon, 360=new moon
+  rotationDeg: number,    // latitude-based rotation in degrees
+  texture: HTMLImageElement | null
 ) {
   const isFullMoon = phaseAngle > 155 && phaseAngle < 205;
   const isNewMoon  = phaseAngle < 10  || phaseAngle > 350;
+  const size = r * 2;
 
-  // ── Full moon glow rings ──
+  // ── Full moon outer glow ──
   if (isFullMoon) {
     for (let i = 4; i >= 1; i--) {
+      const g = ctx.createRadialGradient(cx, cy, r * 0.8, cx, cy, r + i * 8);
+      g.addColorStop(0, `rgba(255,230,100,${0.12 / i})`);
+      g.addColorStop(1, 'rgba(255,230,100,0)');
       ctx.beginPath();
-      ctx.arc(cx, cy, r + i * 6, 0, Math.PI * 2);
-      ctx.strokeStyle = `rgba(245,220,120,${0.07 / i})`;
-      ctx.lineWidth = 4;
-      ctx.stroke();
+      ctx.arc(cx, cy, r + i * 8, 0, Math.PI * 2);
+      ctx.fillStyle = g;
+      ctx.fill();
     }
   }
 
-  // ── Base lit sphere ──
-  const litGrad = ctx.createRadialGradient(cx - r * 0.3, cy - r * 0.3, r * 0.05, cx, cy, r);
-  if (isNewMoon) {
-    litGrad.addColorStop(0, '#1c2a18');
-    litGrad.addColorStop(1, '#080e06');
-  } else if (isFullMoon) {
-    litGrad.addColorStop(0, '#fff8d0');
-    litGrad.addColorStop(0.4, '#f0d870');
-    litGrad.addColorStop(0.75, '#c8a040');
-    litGrad.addColorStop(1, '#7a5c18');
-  } else {
-    litGrad.addColorStop(0, '#f0e8b8');
-    litGrad.addColorStop(0.45, '#d4b858');
-    litGrad.addColorStop(0.8, '#9a7830');
-    litGrad.addColorStop(1, '#4a3410');
-  }
+  // ── Clip to moon circle ──
+  ctx.save();
   ctx.beginPath();
   ctx.arc(cx, cy, r, 0, Math.PI * 2);
-  ctx.fillStyle = litGrad;
-  ctx.fill();
+  ctx.clip();
 
-  // ── Realistic maria (dark regions) ──
-  if (!isNewMoon) {
-    const maria = [
-      { x: cx + r*0.05,  y: cy - r*0.25, rx: r*0.28, ry: r*0.18, a: -0.3 }, // Mare Imbrium
-      { x: cx + r*0.30,  y: cy - r*0.05, rx: r*0.20, ry: r*0.14, a:  0.2 }, // Mare Serenitatis
-      { x: cx + r*0.18,  y: cy + r*0.15, rx: r*0.22, ry: r*0.15, a: -0.1 }, // Mare Tranquillitatis
-      { x: cx - r*0.12,  y: cy + 0,      rx: r*0.18, ry: r*0.12, a:  0.4 }, // Oceanus Procellarum
-      { x: cx + r*0.10,  y: cy + r*0.38, rx: r*0.16, ry: r*0.10, a:  0.1 }, // Mare Nubium
-      { x: cx - r*0.10,  y: cy - r*0.42, rx: r*0.12, ry: r*0.08, a: -0.2 }, // Mare Frigoris
-      { x: cx + r*0.42,  y: cy + r*0.28, rx: r*0.12, ry: r*0.08, a:  0.5 }, // Mare Fecunditatis
-    ];
-
-    ctx.save();
-    ctx.beginPath();
-    ctx.arc(cx, cy, r - 0.5, 0, Math.PI * 2);
-    ctx.clip();
-
-    maria.forEach(m => {
-      ctx.save();
-      ctx.translate(m.x, m.y);
-      ctx.rotate(m.a);
-      const mg = ctx.createRadialGradient(0, 0, 0, 0, 0, Math.max(m.rx, m.ry));
-      mg.addColorStop(0, 'rgba(40,28,8,0.55)');
-      mg.addColorStop(0.6, 'rgba(40,28,8,0.30)');
-      mg.addColorStop(1, 'rgba(40,28,8,0.00)');
-      ctx.beginPath();
-      ctx.scale(1, m.ry / m.rx);
-      ctx.arc(0, 0, m.rx, 0, Math.PI * 2);
-      ctx.fillStyle = mg;
-      ctx.fill();
-      ctx.restore();
-    });
-    ctx.restore();
-
-    // ── Craters ──
-    const craters = [
-      { x: cx + r*0.55, y: cy - r*0.58, r: r*0.07 },
-      { x: cx - r*0.30, y: cy + r*0.55, r: r*0.06 },
-      { x: cx + r*0.60, y: cy + r*0.10, r: r*0.05 },
-      { x: cx - r*0.50, y: cy - r*0.20, r: r*0.05 },
-      { x: cx + r*0.20, y: cy - r*0.60, r: r*0.04 },
-      { x: cx + r*0.70, y: cy - r*0.30, r: r*0.04 },
-      { x: cx - r*0.15, y: cy + r*0.70, r: r*0.04 },
-      { x: cx + r*0.45, y: cy + r*0.55, r: r*0.035 },
-    ];
-
-    ctx.save();
-    ctx.beginPath();
-    ctx.arc(cx, cy, r - 0.5, 0, Math.PI * 2);
-    ctx.clip();
-    craters.forEach(c => {
-      const cg = ctx.createRadialGradient(c.x - c.r*0.3, c.y - c.r*0.3, 0, c.x, c.y, c.r);
-      cg.addColorStop(0, 'rgba(255,240,180,0.15)');
-      cg.addColorStop(0.5, 'rgba(30,20,5,0.45)');
-      cg.addColorStop(0.85, 'rgba(30,20,5,0.25)');
-      cg.addColorStop(1, 'rgba(30,20,5,0.00)');
-      ctx.beginPath();
-      ctx.arc(c.x, c.y, c.r, 0, Math.PI * 2);
-      ctx.fillStyle = cg;
-      ctx.fill();
-      ctx.beginPath();
-      ctx.arc(c.x - c.r*0.2, c.y - c.r*0.2, c.r * 0.9, 0, Math.PI * 2);
-      ctx.strokeStyle = 'rgba(255,240,160,0.12)';
-      ctx.lineWidth = 0.8;
-      ctx.stroke();
-    });
-    ctx.restore();
+  // ── Draw base texture or fallback ──
+  if (isNewMoon) {
+    const g = ctx.createRadialGradient(cx - r*0.2, cy - r*0.2, 0, cx, cy, r);
+    g.addColorStop(0, '#1a2218');
+    g.addColorStop(1, '#060a05');
+    ctx.fillStyle = g;
+    ctx.fillRect(cx - r, cy - r, size, size);
+  } else if (texture) {
+    ctx.drawImage(texture, cx - r, cy - r, size, size);
+    // Spherical shading overlay
+    const shade = ctx.createRadialGradient(cx - r*0.25, cy - r*0.25, r*0.1, cx, cy, r);
+    shade.addColorStop(0,   'rgba(255,245,200,0.15)');
+    shade.addColorStop(0.5, 'rgba(0,0,0,0.0)');
+    shade.addColorStop(1,   'rgba(0,0,0,0.55)');
+    ctx.fillStyle = shade;
+    ctx.fillRect(cx - r, cy - r, size, size);
+  } else {
+    // Procedural fallback
+    const g = ctx.createRadialGradient(cx - r*0.3, cy - r*0.3, r*0.05, cx, cy, r);
+    g.addColorStop(0, '#f0e8b8');
+    g.addColorStop(0.5, '#c0a050');
+    g.addColorStop(1, '#4a3410');
+    ctx.fillStyle = g;
+    ctx.fillRect(cx - r, cy - r, size, size);
   }
 
-  // ── Phase shadow ──
-  // phaseAngle: 0=new moon, 180=full moon, 360=new moon
-  // Waxing (0–180): RIGHT side lit → shadow on LEFT
-  // Waning (180–360): LEFT side lit → shadow on RIGHT
+  // ── Phase shadow with latitude rotation ──
+  // We rotate the entire shadow drawing by rotationDeg so the
+  // terminator appears at the correct position for the observer's latitude.
   if (!isFullMoon && !isNewMoon) {
     ctx.save();
-    ctx.beginPath();
-    ctx.arc(cx, cy, r, 0, Math.PI * 2);
-    ctx.clip();
+    // Rotate around moon center by latitude compensation
+    ctx.translate(cx, cy);
+    ctx.rotate(rotationDeg * Math.PI / 180);
+    ctx.translate(-cx, -cy);
 
     const normalizedAngle = phaseAngle <= 180 ? phaseAngle : 360 - phaseAngle;
     const ellipseWidth = r * Math.abs(Math.cos(Math.PI * normalizedAngle / 180));
 
     ctx.beginPath();
     if (phaseAngle < 180) {
-      // Waxing: shadow covers LEFT half
+      // Waxing: shadow on LEFT (before rotation)
       ctx.arc(cx, cy, r, Math.PI / 2, -Math.PI / 2, false);
       ctx.ellipse(cx, cy, ellipseWidth, r, 0, -Math.PI / 2, Math.PI / 2, phaseAngle < 90);
     } else {
-      // Waning: shadow covers RIGHT half
+      // Waning: shadow on RIGHT (before rotation)
       ctx.arc(cx, cy, r, -Math.PI / 2, Math.PI / 2, false);
       ctx.ellipse(cx, cy, ellipseWidth, r, 0, Math.PI / 2, -Math.PI / 2, phaseAngle > 270);
     }
     ctx.closePath();
 
     const shadowGrad = ctx.createRadialGradient(cx, cy, 0, cx, cy, r);
-    shadowGrad.addColorStop(0, 'rgba(5,10,18,0.92)');
-    shadowGrad.addColorStop(1, 'rgba(3,8,15,0.97)');
+    shadowGrad.addColorStop(0, 'rgba(4,8,20,0.94)');
+    shadowGrad.addColorStop(1, 'rgba(2,4,12,0.98)');
     ctx.fillStyle = shadowGrad;
     ctx.fill();
     ctx.restore();
   }
 
-  // ── Atmospheric limb highlight ──
+  // ── Atmospheric limb glow ──
+  const limb = ctx.createRadialGradient(cx, cy, r - 4, cx, cy, r + 1);
+  limb.addColorStop(0, 'rgba(255,255,200,0.00)');
+  limb.addColorStop(0.6, 'rgba(255,255,200,0.10)');
+  limb.addColorStop(1, 'rgba(255,255,200,0.00)');
+  ctx.fillStyle = limb;
+  ctx.fillRect(cx - r, cy - r, size, size);
+
+  ctx.restore();
+
+  // ── Edge ring ──
   ctx.beginPath();
-  ctx.arc(cx, cy, r - 0.5, 0, Math.PI * 2);
-  ctx.strokeStyle = 'rgba(255,255,200,0.12)';
-  ctx.lineWidth = 2;
+  ctx.arc(cx, cy, r, 0, Math.PI * 2);
+  ctx.strokeStyle = isFullMoon ? 'rgba(255,240,150,0.25)' : 'rgba(255,255,200,0.08)';
+  ctx.lineWidth = 1.5;
   ctx.stroke();
 }
 
+// ─────────────────────────────────────────────
+// MOON PHASE DISPLAY COMPONENT
+// ─────────────────────────────────────────────
 function MoonPhaseDisplay({ phaseAngle, phaseHe, moonSignHe, ascending }: {
   phaseAngle: number;
   phaseHe: string;
   moonSignHe: string;
   ascending: boolean;
 }) {
-  const canvasRef = useRef<HTMLCanvasElement>(null);
+  const canvasRef  = useRef<HTMLCanvasElement>(null);
+  const textureRef = useRef<HTMLImageElement | null>(null);
+  const [latitudeDeg, setLatitudeDeg] = useState<number>(31.7); // Israel default
 
+  // Try to get real user latitude
   useEffect(() => {
+    if (!navigator.geolocation) return;
+    navigator.geolocation.getCurrentPosition(
+      pos => setLatitudeDeg(pos.coords.latitude),
+      ()  => setLatitudeDeg(31.7) // fallback to Israel
+    );
+  }, []);
+
+  // Load texture once
+  useEffect(() => {
+    loadMoonTexture(img => {
+      textureRef.current = img;
+      redraw();
+    });
+  }, []);
+
+  const redraw = () => {
     const canvas = canvasRef.current;
     if (!canvas) return;
     const ctx = canvas.getContext('2d');
     if (!ctx) return;
+    const SIZE = 140;
+    const cx = SIZE / 2, cy = SIZE / 2, r = 64;
+    canvas.width = SIZE;
+    canvas.height = SIZE;
+    ctx.clearRect(0, 0, SIZE, SIZE);
+    const rotDeg = getMoonRotationDeg(latitudeDeg, phaseAngle);
+    renderMoon(ctx, cx, cy, r, phaseAngle, rotDeg, textureRef.current);
+  };
 
-    const size = 140;
-    const cx = size / 2, cy = size / 2, r = 62;
-    canvas.width = size;
-    canvas.height = size;
-    ctx.clearRect(0, 0, size, size);
-
-    drawRealisticMoon(ctx, cx, cy, r, phaseAngle);
-  }, [phaseAngle]);
+  useEffect(() => { redraw(); }, [phaseAngle, latitudeDeg]);
 
   const isFullMoon   = phaseAngle > 155 && phaseAngle < 205;
   const illumination = Math.round((1 - Math.cos(phaseAngle * Math.PI / 180)) / 2 * 100);
@@ -229,9 +284,8 @@ function MoonPhaseDisplay({ phaseAngle, phaseHe, moonSignHe, ascending }: {
       <div style={{ position: 'relative', width: '140px', height: '140px' }}>
         {isFullMoon && (
           <div style={{
-            position: 'absolute', inset: '-14px',
-            borderRadius: '50%',
-            background: 'conic-gradient(rgba(245,200,64,0.15), rgba(245,200,64,0.04), rgba(245,200,64,0.15))',
+            position: 'absolute', inset: '-16px', borderRadius: '50%',
+            background: 'conic-gradient(rgba(245,200,64,0.18), rgba(245,200,64,0.04), rgba(245,200,64,0.18))',
             animation: 'moonGlowSpin 8s linear infinite',
           }} />
         )}
@@ -251,8 +305,7 @@ function MoonPhaseDisplay({ phaseAngle, phaseHe, moonSignHe, ascending }: {
 
       <div style={{
         display: 'inline-flex', alignItems: 'center', gap: '6px',
-        background: 'rgba(245,200,64,0.1)',
-        border: '1px solid rgba(245,200,64,0.25)',
+        background: 'rgba(245,200,64,0.1)', border: '1px solid rgba(245,200,64,0.25)',
         borderRadius: '99px', padding: '4px 14px',
         fontFamily: ASSIST, fontSize: '12px', color: GOLD,
       }}>
@@ -262,8 +315,7 @@ function MoonPhaseDisplay({ phaseAngle, phaseHe, moonSignHe, ascending }: {
       <div style={{ width: '100%', maxWidth: '200px' }}>
         <div style={{
           display: 'flex', justifyContent: 'space-between',
-          fontSize: '10px', color: `${PARCH}35`,
-          fontFamily: ASSIST, marginBottom: '4px',
+          fontSize: '10px', color: `${PARCH}35`, fontFamily: ASSIST, marginBottom: '4px',
         }}>
           <span>🌑</span><span>🌓</span><span>🌕</span><span>🌗</span>
         </div>
@@ -331,21 +383,15 @@ export function TodayCard({ day }: Props) {
   return (
     <>
       <style>{CARD_CSS}</style>
-      <div
-        dir={dir}
-        style={{
-          background:     'linear-gradient(145deg, rgba(28,58,30,0.85) 0%, rgba(20,43,22,0.95) 100%)',
-          border:         '1px solid rgba(245,200,64,0.12)',
-          borderRadius:   '16px',
-          padding:        '24px 20px',
-          marginBottom:   '12px',
-          backdropFilter: 'blur(8px)',
-        }}
-      >
+      <div dir={dir} style={{
+        background:     'linear-gradient(145deg, rgba(28,58,30,0.85) 0%, rgba(20,43,22,0.95) 100%)',
+        border:         '1px solid rgba(245,200,64,0.12)',
+        borderRadius:   '16px', padding: '24px 20px',
+        marginBottom:   '12px', backdropFilter: 'blur(8px)',
+      }}>
         <p style={{
           fontFamily: ASSIST, fontSize: '13px', fontWeight: 400,
-          textAlign: 'center', color: `${PARCH}88`,
-          marginBottom: '20px', lineHeight: 1.4,
+          textAlign: 'center', color: `${PARCH}88`, marginBottom: '20px', lineHeight: 1.4,
         }}>
           <FormattedDate dateStr={day.date} locale={isHe ? 'he-IL' : 'en-US'} />
         </p>
@@ -360,13 +406,10 @@ export function TodayCard({ day }: Props) {
         <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', marginBottom: '20px' }}>
           <svg width="140" height="140" viewBox="0 0 140 140"
             aria-label={`${t('plantingScore.label')}: ${day.plantingScore}`}>
-            <circle cx="70" cy="70" r={RING_R + 8}
-              fill="none" stroke={scoreColour} strokeWidth="1" opacity="0.12" />
-            <circle cx="70" cy="70" r={RING_R}
-              fill="none" stroke="rgba(255,255,255,0.06)" strokeWidth="10" />
-            <circle cx="70" cy="70" r={RING_R}
-              fill="none" stroke={scoreColour} strokeWidth="10" strokeLinecap="round"
-              strokeDasharray={RING_CIRCUMFERENCE} strokeDashoffset={dashOffset}
+            <circle cx="70" cy="70" r={RING_R + 8} fill="none" stroke={scoreColour} strokeWidth="1" opacity="0.12" />
+            <circle cx="70" cy="70" r={RING_R} fill="none" stroke="rgba(255,255,255,0.06)" strokeWidth="10" />
+            <circle cx="70" cy="70" r={RING_R} fill="none" stroke={scoreColour} strokeWidth="10"
+              strokeLinecap="round" strokeDasharray={RING_CIRCUMFERENCE} strokeDashoffset={dashOffset}
               transform="rotate(-90 70 70)"
               style={{ transition: 'stroke-dashoffset 0.8s cubic-bezier(0.34,1.56,0.64,1)', filter: `drop-shadow(0 0 6px ${scoreColour}88)` }}
             />
@@ -377,15 +420,13 @@ export function TodayCard({ day }: Props) {
               {day.plantingScore}
             </text>
             <text x="70" y="93" textAnchor="middle" dominantBaseline="central"
-              fontSize="11" fontWeight="400" fill={`${PARCH}55`}
-              fontFamily={ASSIST.replace(/"/g, '')}>
+              fontSize="11" fontWeight="400" fill={`${PARCH}55`} fontFamily={ASSIST.replace(/"/g, '')}>
               / 10
             </text>
           </svg>
           <p style={{
             fontFamily: ASSIST, fontSize: '11px', fontWeight: 600,
-            letterSpacing: '0.1em', textTransform: 'uppercase',
-            color: `${PARCH}44`, marginTop: '4px',
+            letterSpacing: '0.1em', textTransform: 'uppercase', color: `${PARCH}44`, marginTop: '4px',
           }}>
             {t('plantingScore.label')}
           </p>
