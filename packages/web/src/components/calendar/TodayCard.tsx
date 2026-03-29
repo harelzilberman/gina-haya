@@ -86,7 +86,7 @@ function getMoonRotationDeg(latitudeDeg: number, phaseAngle: number): number {
 // ─────────────────────────────────────────────
 // NASA moon texture loader (cached)
 // ─────────────────────────────────────────────
-const MOON_TEXTURE_URL = 'https://svs.gsfc.nasa.gov/vis/a000000/a004700/a004720/lroc_color_poles_1k.jpg';
+const MOON_TEXTURE_URL = '/moon.jpg';
 
 let moonTextureCache: HTMLImageElement | null = null;
 let moonTextureLoading = false;
@@ -170,11 +170,11 @@ function renderMoon(
     ctx.fillStyle = shade;
     ctx.fillRect(cx - r, cy - r, size, size);
   } else {
-    // Procedural fallback
-    const g = ctx.createRadialGradient(cx - r*0.3, cy - r*0.3, r*0.05, cx, cy, r);
-    g.addColorStop(0, '#f0e8b8');
-    g.addColorStop(0.5, '#c0a050');
-    g.addColorStop(1, '#4a3410');
+    // Texture failed — draw grey moon
+    const g = ctx.createRadialGradient(cx - r*0.3, cy - r*0.3, r*0.1, cx, cy, r);
+    g.addColorStop(0, '#d0d0d0');
+    g.addColorStop(0.6, '#888888');
+    g.addColorStop(1, '#333333');
     ctx.fillStyle = g;
     ctx.fillRect(cx - r, cy - r, size, size);
   }
@@ -252,17 +252,11 @@ function MoonPhaseDisplay({ phaseAngle, phaseHe, moonSignHe, ascending }: {
     );
   }, []);
 
-  // Load texture once
-  useEffect(() => {
-    loadMoonTexture(img => {
-      textureRef.current = img;
-      redraw();
-    });
-  }, []);
-
   const redraw = () => {
     const canvas = canvasRef.current;
     if (!canvas) return;
+    // Don't render until texture is loaded (avoids showing gold fallback)
+    if (!textureRef.current) return;
     const ctx = canvas.getContext('2d');
     if (!ctx) return;
     const SIZE = 165;
@@ -273,6 +267,14 @@ function MoonPhaseDisplay({ phaseAngle, phaseHe, moonSignHe, ascending }: {
     const rotDeg = getMoonRotationDeg(latitudeDeg, phaseAngle);
     renderMoon(ctx, cx, cy, r, phaseAngle, rotDeg, textureRef.current);
   };
+
+  // Load texture first, then draw
+  useEffect(() => {
+    loadMoonTexture(img => {
+      textureRef.current = img;
+      redraw();
+    });
+  }, []);
 
   useEffect(() => { redraw(); }, [phaseAngle, latitudeDeg]);
 
