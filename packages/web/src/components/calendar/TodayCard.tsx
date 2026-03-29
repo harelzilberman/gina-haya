@@ -127,6 +127,9 @@ function renderMoon(
   const isNewMoon  = phaseAngle < 10  || phaseAngle > 350;
   const size = r * 2;
 
+  // Fill canvas with card background so no dark corners bleed through
+  ctx.clearRect(cx - r - 4, cy - r - 4, size + 8, size + 8);
+
   // ── Full moon outer glow ──
   if (isFullMoon) {
     for (let i = 4; i >= 1; i--) {
@@ -215,11 +218,11 @@ function renderMoon(
 
   ctx.restore();
 
-  // ── Edge ring ──
+  // ── Thin edge highlight only ──
   ctx.beginPath();
   ctx.arc(cx, cy, r, 0, Math.PI * 2);
-  ctx.strokeStyle = isFullMoon ? 'rgba(255,240,150,0.25)' : 'rgba(255,255,200,0.08)';
-  ctx.lineWidth = 1.5;
+  ctx.strokeStyle = isFullMoon ? 'rgba(255,240,150,0.20)' : 'rgba(255,255,200,0.06)';
+  ctx.lineWidth = 0.5;
   ctx.stroke();
 }
 
@@ -259,7 +262,7 @@ function MoonPhaseDisplay({ phaseAngle, phaseHe, moonSignHe, ascending }: {
     const ctx = canvas.getContext('2d');
     if (!ctx) return;
     const SIZE = 165;
-    const cx = SIZE / 2, cy = SIZE / 2, r = 80;
+    const cx = SIZE / 2, cy = SIZE / 2, r = 82;
     canvas.width = SIZE;
     canvas.height = SIZE;
     ctx.clearRect(0, 0, SIZE, SIZE);
