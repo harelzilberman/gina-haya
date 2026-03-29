@@ -258,8 +258,8 @@ function MoonPhaseDisplay({ phaseAngle, phaseHe, moonSignHe, ascending }: {
     if (!canvas) return;
     const ctx = canvas.getContext('2d');
     if (!ctx) return;
-    const SIZE = 140;
-    const cx = SIZE / 2, cy = SIZE / 2, r = 64;
+    const SIZE = 165;
+    const cx = SIZE / 2, cy = SIZE / 2, r = 76;
     canvas.width = SIZE;
     canvas.height = SIZE;
     ctx.clearRect(0, 0, SIZE, SIZE);
@@ -281,7 +281,7 @@ function MoonPhaseDisplay({ phaseAngle, phaseHe, moonSignHe, ascending }: {
       display: 'flex', flexDirection: 'column', alignItems: 'center',
       gap: '10px', padding: '20px 0 12px',
     }}>
-      <div style={{ position: 'relative', width: '140px', height: '140px' }}>
+      <div style={{ position: 'relative', width: '165px', height: '165px' }}>
         {isFullMoon && (
           <div style={{
             position: 'absolute', inset: '-16px', borderRadius: '50%',
@@ -291,7 +291,7 @@ function MoonPhaseDisplay({ phaseAngle, phaseHe, moonSignHe, ascending }: {
         )}
         <canvas
           ref={canvasRef}
-          style={{ width: '140px', height: '140px', position: 'relative', zIndex: 1 }}
+          style={{ width: '165px', height: '165px', position: 'relative', zIndex: 1 }}
         />
       </div>
 
