@@ -116,38 +116,42 @@ function MoonPhaseDisplay({ phaseAngle, phaseHe, moonSignHe, ascending }: {
       });
     }
 
-    // Phase shadow
-    if (!isFullMoon && !isNewMoon) {
-      ctx.save();
-      ctx.beginPath();
-      ctx.arc(cx, cy, r, 0, Math.PI * 2);
-      ctx.clip();
+// Phase shadow
+if (!isFullMoon && !isNewMoon) {
+  ctx.save();
+  ctx.beginPath();
+  ctx.arc(cx, cy, r, 0, Math.PI * 2);
+  ctx.clip();
 
-      const normalizedAngle = phaseAngle <= 180 ? phaseAngle : 360 - phaseAngle;
-      const shadowX = r * Math.cos((normalizedAngle / 180) * Math.PI);
+  const normalizedAngle = phaseAngle <= 180 ? phaseAngle : 360 - phaseAngle;
+  const shadowX = r * Math.cos((normalizedAngle / 180) * Math.PI);
 
-      ctx.beginPath();
-      if (phaseAngle < 90) {
-        ctx.ellipse(cx, cy, Math.abs(shadowX), r, 0, Math.PI / 2, -Math.PI / 2, false);
-        ctx.arc(cx, cy, r, -Math.PI / 2, Math.PI / 2, false);
-      } else if (phaseAngle < 180) {
-        ctx.ellipse(cx, cy, Math.abs(shadowX), r, 0, -Math.PI / 2, Math.PI / 2, false);
-        ctx.arc(cx, cy, r, Math.PI / 2, -Math.PI / 2, false);
-      } else if (phaseAngle < 270) {
-        ctx.ellipse(cx, cy, Math.abs(shadowX), r, 0, Math.PI / 2, -Math.PI / 2, true);
-        ctx.arc(cx, cy, r, -Math.PI / 2, Math.PI / 2, true);
-      } else {
-        ctx.ellipse(cx, cy, Math.abs(shadowX), r, 0, -Math.PI / 2, Math.PI / 2, true);
-        ctx.arc(cx, cy, r, Math.PI / 2, -Math.PI / 2, true);
-      }
-      ctx.closePath();
-      const shadowGrad = ctx.createRadialGradient(cx, cy, 0, cx, cy, r);
-      shadowGrad.addColorStop(0, 'rgba(8,18,10,0.88)');
-      shadowGrad.addColorStop(1, 'rgba(8,18,10,0.95)');
-      ctx.fillStyle = shadowGrad;
-      ctx.fill();
-      ctx.restore();
-    }
+  ctx.beginPath();
+  if (phaseAngle < 90) {
+    // Waxing crescent: right side lit, left side dark
+    ctx.ellipse(cx, cy, Math.abs(shadowX), r, 0, -Math.PI / 2, Math.PI / 2, false);
+    ctx.arc(cx, cy, r, Math.PI / 2, -Math.PI / 2, false);
+  } else if (phaseAngle < 180) {
+    // Waxing gibbous: mostly lit, small shadow on left
+    ctx.ellipse(cx, cy, Math.abs(shadowX), r, 0, Math.PI / 2, -Math.PI / 2, false);
+    ctx.arc(cx, cy, r, -Math.PI / 2, Math.PI / 2, false);
+  } else if (phaseAngle < 270) {
+    // Waning gibbous: mostly lit, small shadow on right
+    ctx.ellipse(cx, cy, Math.abs(shadowX), r, 0, -Math.PI / 2, Math.PI / 2, true);
+    ctx.arc(cx, cy, r, Math.PI / 2, -Math.PI / 2, true);
+  } else {
+    // Waning crescent: left side lit, right side dark
+    ctx.ellipse(cx, cy, Math.abs(shadowX), r, 0, Math.PI / 2, -Math.PI / 2, true);
+    ctx.arc(cx, cy, r, -Math.PI / 2, Math.PI / 2, true);
+  }
+  ctx.closePath();
+  const shadowGrad = ctx.createRadialGradient(cx, cy, 0, cx, cy, r);
+  shadowGrad.addColorStop(0, 'rgba(8,18,10,0.88)');
+  shadowGrad.addColorStop(1, 'rgba(8,18,10,0.95)');
+  ctx.fillStyle = shadowGrad;
+  ctx.fill();
+  ctx.restore();
+}
 
     // Atmospheric edge ring
     ctx.beginPath();
