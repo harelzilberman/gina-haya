@@ -86,7 +86,7 @@ function getMoonRotationDeg(latitudeDeg: number, phaseAngle: number): number {
 // ─────────────────────────────────────────────
 // NASA moon texture loader (cached)
 // ─────────────────────────────────────────────
-const MOON_TEXTURE_URL = 'https://upload.wikimedia.org/wikipedia/commons/thumb/e/e1/FullMoon2010.jpg/600px-FullMoon2010.jpg';
+const MOON_TEXTURE_URL = 'https://svs.gsfc.nasa.gov/vis/a000000/a004700/a004720/lroc_color_poles_1k.jpg';
 
 let moonTextureCache: HTMLImageElement | null = null;
 let moonTextureLoading = false;
@@ -157,16 +157,11 @@ function renderMoon(
     ctx.fillStyle = g;
     ctx.fillRect(cx - r, cy - r, size, size);
   } else if (texture) {
-    // The Wikimedia moon photo is 600x570px.
-    // The moon circle inside it starts at ~x:15, y:5 and is ~570x560px.
-    // We crop tightly to the moon disk to avoid the black background margins.
-    const tw = texture.naturalWidth;   // 600
-    const th = texture.naturalHeight;  // 570
-    const cropX = tw * 0.025;   // ~15px — trim left black margin
-    const cropY = th * 0.005;   // ~3px  — trim top black margin
-    const cropW = tw * 0.95;    // ~570px — moon disk width
-    const cropH = th * 0.99;    // ~564px — moon disk height
-    ctx.drawImage(texture, cropX, cropY, cropW, cropH, cx - r, cy - r, size, size);
+    // NASA LRO texture — moon disk fills the image perfectly edge to edge
+    const tw = texture.naturalWidth;
+    const th = texture.naturalHeight;
+    // Use the full image — moon fills it completely
+    ctx.drawImage(texture, 0, 0, tw, th, cx - r, cy - r, size, size);
     // Spherical shading overlay
     const shade = ctx.createRadialGradient(cx - r*0.25, cy - r*0.25, r*0.1, cx, cy, r);
     shade.addColorStop(0,   'rgba(255,245,200,0.15)');
