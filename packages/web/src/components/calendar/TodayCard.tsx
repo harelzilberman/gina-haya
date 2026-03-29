@@ -259,7 +259,7 @@ function MoonPhaseDisplay({ phaseAngle, phaseHe, moonSignHe, ascending }: {
     const ctx = canvas.getContext('2d');
     if (!ctx) return;
     const SIZE = 165;
-    const cx = SIZE / 2, cy = SIZE / 2, r = 76;
+    const cx = SIZE / 2, cy = SIZE / 2, r = 80;
     canvas.width = SIZE;
     canvas.height = SIZE;
     ctx.clearRect(0, 0, SIZE, SIZE);
