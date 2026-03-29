@@ -15,7 +15,6 @@ interface Props {
   day: BiodynamicDay;
 }
 
-// Dark-themed day type styles
 const DAY_TYPE_STYLES: Record<string, { bg: string; color: string; emoji: string }> = {
   fruit:  { bg: 'rgba(192,98,42,0.18)',  color: '#E8956A', emoji: '🍅' },
   root:   { bg: 'rgba(180,140,40,0.18)', color: '#D4B04A', emoji: '🥕' },
@@ -23,14 +22,12 @@ const DAY_TYPE_STYLES: Record<string, { bg: string; color: string; emoji: string
   leaf:   { bg: 'rgba(74,128,80,0.22)',  color: '#7DC084', emoji: '🌿' },
 };
 
-const RING_R            = 60;
+const RING_R             = 60;
 const RING_CIRCUMFERENCE = 2 * Math.PI * RING_R;
-
 const GOLD   = '#F5C840';
 const PARCH  = '#EDE0C4';
 const FRANK  = '"Frank Ruhl Libre", Georgia, serif';
 const ASSIST = '"Assistant", "Heebo", sans-serif';
-
 
 const CARD_CSS = `
 @keyframes tc-ring-in {
@@ -41,6 +38,158 @@ const CARD_CSS = `
   to   { transform: rotate(360deg); }
 }
 `;
+
+function drawRealisticMoon(
+  ctx: CanvasRenderingContext2D,
+  cx: number,
+  cy: number,
+  r: number,
+  phaseAngle: number  // 0=new moon, 180=full moon, 360=new moon
+) {
+  const isFullMoon = phaseAngle > 155 && phaseAngle < 205;
+  const isNewMoon  = phaseAngle < 10  || phaseAngle > 350;
+
+  // ── Full moon glow rings ──
+  if (isFullMoon) {
+    for (let i = 4; i >= 1; i--) {
+      ctx.beginPath();
+      ctx.arc(cx, cy, r + i * 6, 0, Math.PI * 2);
+      ctx.strokeStyle = `rgba(245,220,120,${0.07 / i})`;
+      ctx.lineWidth = 4;
+      ctx.stroke();
+    }
+  }
+
+  // ── Base lit sphere ──
+  const litGrad = ctx.createRadialGradient(cx - r * 0.3, cy - r * 0.3, r * 0.05, cx, cy, r);
+  if (isNewMoon) {
+    litGrad.addColorStop(0, '#1c2a18');
+    litGrad.addColorStop(1, '#080e06');
+  } else if (isFullMoon) {
+    litGrad.addColorStop(0, '#fff8d0');
+    litGrad.addColorStop(0.4, '#f0d870');
+    litGrad.addColorStop(0.75, '#c8a040');
+    litGrad.addColorStop(1, '#7a5c18');
+  } else {
+    litGrad.addColorStop(0, '#f0e8b8');
+    litGrad.addColorStop(0.45, '#d4b858');
+    litGrad.addColorStop(0.8, '#9a7830');
+    litGrad.addColorStop(1, '#4a3410');
+  }
+  ctx.beginPath();
+  ctx.arc(cx, cy, r, 0, Math.PI * 2);
+  ctx.fillStyle = litGrad;
+  ctx.fill();
+
+  // ── Realistic maria (dark regions) ──
+  if (!isNewMoon) {
+    const maria = [
+      { x: cx + r*0.05,  y: cy - r*0.25, rx: r*0.28, ry: r*0.18, a: -0.3 }, // Mare Imbrium
+      { x: cx + r*0.30,  y: cy - r*0.05, rx: r*0.20, ry: r*0.14, a:  0.2 }, // Mare Serenitatis
+      { x: cx + r*0.18,  y: cy + r*0.15, rx: r*0.22, ry: r*0.15, a: -0.1 }, // Mare Tranquillitatis
+      { x: cx - r*0.12,  y: cy + 0,      rx: r*0.18, ry: r*0.12, a:  0.4 }, // Oceanus Procellarum
+      { x: cx + r*0.10,  y: cy + r*0.38, rx: r*0.16, ry: r*0.10, a:  0.1 }, // Mare Nubium
+      { x: cx - r*0.10,  y: cy - r*0.42, rx: r*0.12, ry: r*0.08, a: -0.2 }, // Mare Frigoris
+      { x: cx + r*0.42,  y: cy + r*0.28, rx: r*0.12, ry: r*0.08, a:  0.5 }, // Mare Fecunditatis
+    ];
+
+    ctx.save();
+    ctx.beginPath();
+    ctx.arc(cx, cy, r - 0.5, 0, Math.PI * 2);
+    ctx.clip();
+
+    maria.forEach(m => {
+      ctx.save();
+      ctx.translate(m.x, m.y);
+      ctx.rotate(m.a);
+      const mg = ctx.createRadialGradient(0, 0, 0, 0, 0, Math.max(m.rx, m.ry));
+      mg.addColorStop(0, 'rgba(40,28,8,0.55)');
+      mg.addColorStop(0.6, 'rgba(40,28,8,0.30)');
+      mg.addColorStop(1, 'rgba(40,28,8,0.00)');
+      ctx.beginPath();
+      ctx.scale(1, m.ry / m.rx);
+      ctx.arc(0, 0, m.rx, 0, Math.PI * 2);
+      ctx.fillStyle = mg;
+      ctx.fill();
+      ctx.restore();
+    });
+    ctx.restore();
+
+    // ── Craters ──
+    const craters = [
+      { x: cx + r*0.55, y: cy - r*0.58, r: r*0.07 },
+      { x: cx - r*0.30, y: cy + r*0.55, r: r*0.06 },
+      { x: cx + r*0.60, y: cy + r*0.10, r: r*0.05 },
+      { x: cx - r*0.50, y: cy - r*0.20, r: r*0.05 },
+      { x: cx + r*0.20, y: cy - r*0.60, r: r*0.04 },
+      { x: cx + r*0.70, y: cy - r*0.30, r: r*0.04 },
+      { x: cx - r*0.15, y: cy + r*0.70, r: r*0.04 },
+      { x: cx + r*0.45, y: cy + r*0.55, r: r*0.035 },
+    ];
+
+    ctx.save();
+    ctx.beginPath();
+    ctx.arc(cx, cy, r - 0.5, 0, Math.PI * 2);
+    ctx.clip();
+    craters.forEach(c => {
+      const cg = ctx.createRadialGradient(c.x - c.r*0.3, c.y - c.r*0.3, 0, c.x, c.y, c.r);
+      cg.addColorStop(0, 'rgba(255,240,180,0.15)');
+      cg.addColorStop(0.5, 'rgba(30,20,5,0.45)');
+      cg.addColorStop(0.85, 'rgba(30,20,5,0.25)');
+      cg.addColorStop(1, 'rgba(30,20,5,0.00)');
+      ctx.beginPath();
+      ctx.arc(c.x, c.y, c.r, 0, Math.PI * 2);
+      ctx.fillStyle = cg;
+      ctx.fill();
+      ctx.beginPath();
+      ctx.arc(c.x - c.r*0.2, c.y - c.r*0.2, c.r * 0.9, 0, Math.PI * 2);
+      ctx.strokeStyle = 'rgba(255,240,160,0.12)';
+      ctx.lineWidth = 0.8;
+      ctx.stroke();
+    });
+    ctx.restore();
+  }
+
+  // ── Phase shadow ──
+  // phaseAngle: 0=new moon, 180=full moon, 360=new moon
+  // Waxing (0–180): RIGHT side lit → shadow on LEFT
+  // Waning (180–360): LEFT side lit → shadow on RIGHT
+  if (!isFullMoon && !isNewMoon) {
+    ctx.save();
+    ctx.beginPath();
+    ctx.arc(cx, cy, r, 0, Math.PI * 2);
+    ctx.clip();
+
+    const normalizedAngle = phaseAngle <= 180 ? phaseAngle : 360 - phaseAngle;
+    const ellipseWidth = r * Math.abs(Math.cos(Math.PI * normalizedAngle / 180));
+
+    ctx.beginPath();
+    if (phaseAngle < 180) {
+      // Waxing: shadow covers LEFT half
+      ctx.arc(cx, cy, r, Math.PI / 2, -Math.PI / 2, false);
+      ctx.ellipse(cx, cy, ellipseWidth, r, 0, -Math.PI / 2, Math.PI / 2, phaseAngle < 90);
+    } else {
+      // Waning: shadow covers RIGHT half
+      ctx.arc(cx, cy, r, -Math.PI / 2, Math.PI / 2, false);
+      ctx.ellipse(cx, cy, ellipseWidth, r, 0, Math.PI / 2, -Math.PI / 2, phaseAngle > 270);
+    }
+    ctx.closePath();
+
+    const shadowGrad = ctx.createRadialGradient(cx, cy, 0, cx, cy, r);
+    shadowGrad.addColorStop(0, 'rgba(5,10,18,0.92)');
+    shadowGrad.addColorStop(1, 'rgba(3,8,15,0.97)');
+    ctx.fillStyle = shadowGrad;
+    ctx.fill();
+    ctx.restore();
+  }
+
+  // ── Atmospheric limb highlight ──
+  ctx.beginPath();
+  ctx.arc(cx, cy, r - 0.5, 0, Math.PI * 2);
+  ctx.strokeStyle = 'rgba(255,255,200,0.12)';
+  ctx.lineWidth = 2;
+  ctx.stroke();
+}
 
 function MoonPhaseDisplay({ phaseAngle, phaseHe, moonSignHe, ascending }: {
   phaseAngle: number;
@@ -56,155 +205,50 @@ function MoonPhaseDisplay({ phaseAngle, phaseHe, moonSignHe, ascending }: {
     const ctx = canvas.getContext('2d');
     if (!ctx) return;
 
-    const size = 120;
-    const cx = size / 2, cy = size / 2, r = 52;
+    const size = 140;
+    const cx = size / 2, cy = size / 2, r = 62;
     canvas.width = size;
     canvas.height = size;
     ctx.clearRect(0, 0, size, size);
 
-    const isFullMoon = phaseAngle > 155 && phaseAngle < 205;
-    const isNewMoon  = phaseAngle < 15  || phaseAngle > 345;
-
-    // Outer glow rings for full moon
-    if (isFullMoon) {
-      for (let i = 3; i >= 1; i--) {
-        ctx.beginPath();
-        ctx.arc(cx, cy, r + i * 7, 0, Math.PI * 2);
-        ctx.strokeStyle = `rgba(245,200,64,${0.06 / i})`;
-        ctx.lineWidth = 3;
-        ctx.stroke();
-      }
-    }
-
-    // Moon base sphere
-    const sphereGrad = ctx.createRadialGradient(cx - 15, cy - 15, 5, cx, cy, r);
-    if (isNewMoon) {
-      sphereGrad.addColorStop(0, '#1a2a1a');
-      sphereGrad.addColorStop(1, '#0a1208');
-    } else if (isFullMoon) {
-      sphereGrad.addColorStop(0, '#fffde8');
-      sphereGrad.addColorStop(0.6, '#f5e8a0');
-      sphereGrad.addColorStop(1, '#a08040');
-    } else {
-      sphereGrad.addColorStop(0, '#e8dfc0');
-      sphereGrad.addColorStop(0.6, '#c8b878');
-      sphereGrad.addColorStop(1, '#6b5a30');
-    }
-    ctx.beginPath();
-    ctx.arc(cx, cy, r, 0, Math.PI * 2);
-    ctx.fillStyle = sphereGrad;
-    ctx.fill();
-
-    // Craters
-    if (!isNewMoon) {
-      const craters = [
-        { x: 45, y: 38, r: 5 }, { x: 70, y: 50, r: 7 },
-        { x: 52, y: 68, r: 4 }, { x: 38, y: 58, r: 3 },
-        { x: 65, y: 35, r: 3.5 }, { x: 75, y: 68, r: 5 },
-        { x: 42, y: 75, r: 4 },
-      ];
-      craters.forEach(c => {
-        ctx.save();
-        ctx.beginPath();
-        ctx.arc(cx, cy, r, 0, Math.PI * 2);
-        ctx.clip();
-        ctx.beginPath();
-        ctx.arc(c.x, c.y, c.r, 0, Math.PI * 2);
-        ctx.fillStyle = 'rgba(80,65,30,0.18)';
-        ctx.fill();
-        ctx.restore();
-      });
-    }
-
-    // Phase shadow — geometrically correct
-    // phaseAngle: 0=new moon, 180=full moon, 360=new moon again
-    // Waxing (0–180): right side lit, shadow covers left
-    // Waning (180–360): left side lit, shadow covers right
-    if (!isFullMoon && !isNewMoon) {
-      ctx.save();
-      ctx.beginPath();
-      ctx.arc(cx, cy, r, 0, Math.PI * 2);
-      ctx.clip();
-
-      // How wide is the terminator ellipse?
-      // At 90° (first quarter): ellipse width = 0 (straight line)
-      // At 45° (crescent): ellipse bulges toward lit side
-      const normalizedAngle = phaseAngle <= 180 ? phaseAngle : 360 - phaseAngle;
-      const ellipseWidth = r * Math.abs(Math.cos((normalizedAngle / 180) * Math.PI));
-
-      ctx.beginPath();
-      if (phaseAngle < 180) {
-        // Waxing: draw dark left semicircle + terminator ellipse
-        // Arc from bottom to top on the LEFT side (the dark half)
-        ctx.arc(cx, cy, r, Math.PI / 2, -Math.PI / 2, false);
-        // Terminator ellipse: at <90° bulges left (more dark), at >90° bulges right (less dark)
-        ctx.ellipse(cx, cy, ellipseWidth, r, 0, -Math.PI / 2, Math.PI / 2, phaseAngle < 90);
-      } else {
-        // Waning: draw dark right semicircle + terminator ellipse
-        // Arc from top to bottom on the RIGHT side (the dark half)
-        ctx.arc(cx, cy, r, -Math.PI / 2, Math.PI / 2, false);
-        // Terminator ellipse: at >270° bulges right (more dark), at <270° bulges left (less dark)
-        ctx.ellipse(cx, cy, ellipseWidth, r, 0, Math.PI / 2, -Math.PI / 2, phaseAngle > 270);
-      }
-      ctx.closePath();
-
-      const shadowGrad = ctx.createRadialGradient(cx, cy, 0, cx, cy, r);
-      shadowGrad.addColorStop(0, 'rgba(8,18,10,0.88)');
-      shadowGrad.addColorStop(1, 'rgba(8,18,10,0.95)');
-      ctx.fillStyle = shadowGrad;
-      ctx.fill();
-      ctx.restore();
-    }
-
-    // Atmospheric edge ring
-    ctx.beginPath();
-    ctx.arc(cx, cy, r - 0.5, 0, Math.PI * 2);
-    ctx.strokeStyle = 'rgba(255,255,220,0.15)';
-    ctx.lineWidth = 2;
-    ctx.stroke();
+    drawRealisticMoon(ctx, cx, cy, r, phaseAngle);
   }, [phaseAngle]);
 
   const isFullMoon   = phaseAngle > 155 && phaseAngle < 205;
   const illumination = Math.round((1 - Math.cos(phaseAngle * Math.PI / 180)) / 2 * 100);
-  const daysToFull = phaseAngle <= 180
+  const daysToFull   = phaseAngle <= 180
     ? Math.round((180 - phaseAngle) / 13.2)
     : Math.round((540 - phaseAngle) / 13.2);
-  const daysToNew = phaseAngle <= 360
-    ? Math.round((360 - phaseAngle) / 13.2)
-    : Math.round((720 - phaseAngle) / 13.2);
+  const daysToNew    = Math.round((360 - phaseAngle) / 13.2);
 
   return (
     <div style={{
       display: 'flex', flexDirection: 'column', alignItems: 'center',
       gap: '10px', padding: '20px 0 12px',
     }}>
-      {/* Moon canvas with optional rotating glow */}
-      <div style={{ position: 'relative', width: '120px', height: '120px' }}>
+      <div style={{ position: 'relative', width: '140px', height: '140px' }}>
         {isFullMoon && (
           <div style={{
-            position: 'absolute', inset: '-12px',
+            position: 'absolute', inset: '-14px',
             borderRadius: '50%',
-            background: 'conic-gradient(rgba(245,200,64,0.15), rgba(245,200,64,0.05), rgba(245,200,64,0.15))',
+            background: 'conic-gradient(rgba(245,200,64,0.15), rgba(245,200,64,0.04), rgba(245,200,64,0.15))',
             animation: 'moonGlowSpin 8s linear infinite',
           }} />
         )}
         <canvas
           ref={canvasRef}
-          style={{ width: '120px', height: '120px', position: 'relative', zIndex: 1 }}
+          style={{ width: '140px', height: '140px', position: 'relative', zIndex: 1 }}
         />
       </div>
 
-      {/* Phase name */}
       <div style={{ fontFamily: FRANK, fontSize: '18px', fontWeight: 700, color: GOLD }}>
         {phaseHe}
       </div>
 
-      {/* Moon sign */}
       <div style={{ fontFamily: ASSIST, fontSize: '13px', color: `${PARCH}60` }}>
         מזל הירח: {moonSignHe}
       </div>
 
-      {/* Direction badge */}
       <div style={{
         display: 'inline-flex', alignItems: 'center', gap: '6px',
         background: 'rgba(245,200,64,0.1)',
@@ -215,7 +259,6 @@ function MoonPhaseDisplay({ phaseAngle, phaseHe, moonSignHe, ascending }: {
         {ascending ? '↑ ירח עולה' : '↓ ירח יורד'}
       </div>
 
-      {/* Phase progress bar */}
       <div style={{ width: '100%', maxWidth: '200px' }}>
         <div style={{
           display: 'flex', justifyContent: 'space-between',
@@ -237,7 +280,6 @@ function MoonPhaseDisplay({ phaseAngle, phaseHe, moonSignHe, ascending }: {
         </div>
       </div>
 
-      {/* Days to next phases */}
       <div style={{
         display: 'flex', gap: '16px',
         fontFamily: ASSIST, fontSize: '11px', color: `${PARCH}50`,
@@ -247,7 +289,6 @@ function MoonPhaseDisplay({ phaseAngle, phaseHe, moonSignHe, ascending }: {
         <span>ירח חדש: {daysToNew === 0 ? 'היום!' : `${daysToNew} ימים`}</span>
       </div>
 
-      {/* Illumination */}
       <div style={{ fontFamily: ASSIST, fontSize: '11px', color: `${PARCH}40` }}>
         תאורה: {illumination}%
       </div>
@@ -260,10 +301,7 @@ function FormattedDate({ dateStr, locale }: { dateStr: string; locale: string })
   return (
     <>
       {date.toLocaleDateString(locale, {
-        weekday: 'long',
-        day: 'numeric',
-        month: 'long',
-        year: 'numeric',
+        weekday: 'long', day: 'numeric', month: 'long', year: 'numeric',
       })}
     </>
   );
@@ -280,7 +318,7 @@ export function TodayCard({ day }: Props) {
     return () => cancelAnimationFrame(id);
   }, []);
 
-  const scoreColour = SCORE_COLOURS[day.scoreColour];
+  const scoreColour  = SCORE_COLOURS[day.scoreColour];
   const targetOffset = RING_CIRCUMFERENCE * (1 - day.plantingScore / 10);
   const dashOffset   = mounted ? targetOffset : RING_CIRCUMFERENCE;
   const dtStyle      = DAY_TYPE_STYLES[day.dayType] ?? { bg: 'rgba(100,100,100,0.18)', color: PARCH, emoji: '🌱' };
@@ -293,32 +331,25 @@ export function TodayCard({ day }: Props) {
   return (
     <>
       <style>{CARD_CSS}</style>
-
       <div
         dir={dir}
         style={{
-          background:    'linear-gradient(145deg, rgba(28,58,30,0.85) 0%, rgba(20,43,22,0.95) 100%)',
-          border:        '1px solid rgba(245,200,64,0.12)',
-          borderRadius:  '16px',
-          padding:       '24px 20px',
-          marginBottom:  '12px',
-          backdropFilter:'blur(8px)',
+          background:     'linear-gradient(145deg, rgba(28,58,30,0.85) 0%, rgba(20,43,22,0.95) 100%)',
+          border:         '1px solid rgba(245,200,64,0.12)',
+          borderRadius:   '16px',
+          padding:        '24px 20px',
+          marginBottom:   '12px',
+          backdropFilter: 'blur(8px)',
         }}
       >
-        {/* Date header */}
         <p style={{
-          fontFamily:    ASSIST,
-          fontSize:      '13px',
-          fontWeight:    400,
-          textAlign:     'center',
-          color:         `${PARCH}88`,
-          marginBottom:  '20px',
-          lineHeight:    1.4,
+          fontFamily: ASSIST, fontSize: '13px', fontWeight: 400,
+          textAlign: 'center', color: `${PARCH}88`,
+          marginBottom: '20px', lineHeight: 1.4,
         }}>
           <FormattedDate dateStr={day.date} locale={isHe ? 'he-IL' : 'en-US'} />
         </p>
 
-        {/* Moon phase widget */}
         <MoonPhaseDisplay
           phaseAngle={(day.moonPhasePct ?? 0) / 100 * 360}
           phaseHe={day.moonPhaseNameHe ?? day.moonPhaseHe ?? 'ירח'}
@@ -326,131 +357,75 @@ export function TodayCard({ day }: Props) {
           ascending={day.ascendingDescending === 'ascending'}
         />
 
-        {/* Score ring */}
         <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', marginBottom: '20px' }}>
-          <svg
-            width="140" height="140"
-            viewBox="0 0 140 140"
-            aria-label={`${t('plantingScore.label')}: ${day.plantingScore}`}
-          >
-            {/* Outer glow ring */}
+          <svg width="140" height="140" viewBox="0 0 140 140"
+            aria-label={`${t('plantingScore.label')}: ${day.plantingScore}`}>
             <circle cx="70" cy="70" r={RING_R + 8}
-              fill="none"
-              stroke={scoreColour}
-              strokeWidth="1"
-              opacity="0.12"
-            />
-            {/* Track */}
+              fill="none" stroke={scoreColour} strokeWidth="1" opacity="0.12" />
             <circle cx="70" cy="70" r={RING_R}
-              fill="none"
-              stroke="rgba(255,255,255,0.06)"
-              strokeWidth="10"
-            />
-            {/* Score arc */}
-            <circle
-              cx="70" cy="70" r={RING_R}
-              fill="none"
-              stroke={scoreColour}
-              strokeWidth="10"
-              strokeLinecap="round"
-              strokeDasharray={RING_CIRCUMFERENCE}
-              strokeDashoffset={dashOffset}
+              fill="none" stroke="rgba(255,255,255,0.06)" strokeWidth="10" />
+            <circle cx="70" cy="70" r={RING_R}
+              fill="none" stroke={scoreColour} strokeWidth="10" strokeLinecap="round"
+              strokeDasharray={RING_CIRCUMFERENCE} strokeDashoffset={dashOffset}
               transform="rotate(-90 70 70)"
               style={{ transition: 'stroke-dashoffset 0.8s cubic-bezier(0.34,1.56,0.64,1)', filter: `drop-shadow(0 0 6px ${scoreColour}88)` }}
             />
-            {/* Score number */}
-            <text
-              x="70" y="66"
-              textAnchor="middle"
-              dominantBaseline="central"
-              fontSize="42"
-              fontWeight="700"
-              fill={scoreColour}
+            <text x="70" y="66" textAnchor="middle" dominantBaseline="central"
+              fontSize="42" fontWeight="700" fill={scoreColour}
               fontFamily={FRANK.replace(/"/g, '')}
-              style={{ filter: `drop-shadow(0 0 8px ${scoreColour}66)` }}
-            >
+              style={{ filter: `drop-shadow(0 0 8px ${scoreColour}66)` }}>
               {day.plantingScore}
             </text>
-            {/* /10 label */}
-            <text
-              x="70" y="93"
-              textAnchor="middle"
-              dominantBaseline="central"
-              fontSize="11"
-              fontWeight="400"
-              fill={`${PARCH}55`}
-              fontFamily={ASSIST.replace(/"/g, '')}
-            >
+            <text x="70" y="93" textAnchor="middle" dominantBaseline="central"
+              fontSize="11" fontWeight="400" fill={`${PARCH}55`}
+              fontFamily={ASSIST.replace(/"/g, '')}>
               / 10
             </text>
           </svg>
-
           <p style={{
-            fontFamily:   ASSIST,
-            fontSize:     '11px',
-            fontWeight:   600,
-            letterSpacing:'0.1em',
-            textTransform:'uppercase',
-            color:        `${PARCH}44`,
-            marginTop:    '4px',
+            fontFamily: ASSIST, fontSize: '11px', fontWeight: 600,
+            letterSpacing: '0.1em', textTransform: 'uppercase',
+            color: `${PARCH}44`, marginTop: '4px',
           }}>
             {t('plantingScore.label')}
           </p>
         </div>
 
-        {/* Day type badge */}
         <div style={{ display: 'flex', justifyContent: 'center', marginBottom: '16px' }}>
           <span style={{
-            fontFamily:    ASSIST,
-            fontSize:      '14px',
-            fontWeight:    600,
-            padding:       '6px 20px',
-            borderRadius:  '50px',
-            backgroundColor: dtStyle.bg,
-            color:         dtStyle.color,
-            border:        `1px solid ${dtStyle.color}44`,
-            letterSpacing: '0.03em',
+            fontFamily: ASSIST, fontSize: '14px', fontWeight: 600,
+            padding: '6px 20px', borderRadius: '50px',
+            backgroundColor: dtStyle.bg, color: dtStyle.color,
+            border: `1px solid ${dtStyle.color}44`, letterSpacing: '0.03em',
           }}>
             {dtStyle.emoji} {dayTypeLabel}
           </span>
         </div>
 
-        {/* BD prep pills */}
         {(day.prep500Recommended || day.prep501Recommended) && (
           <div style={{ display: 'flex', flexWrap: 'wrap', justifyContent: dir === 'rtl' ? 'flex-end' : 'flex-start', gap: '8px' }}>
             {day.prep500Recommended && (
               <span style={{
-                fontFamily:    ASSIST,
-                fontSize:      '12px',
-                fontWeight:    500,
-                padding:       '5px 14px',
-                borderRadius:  '50px',
-                border:        `1px solid ${GOLD}55`,
-                color:         GOLD,
-                backgroundColor: 'rgba(245,200,64,0.06)',
-                letterSpacing: '0.02em',
+                fontFamily: ASSIST, fontSize: '12px', fontWeight: 500,
+                padding: '5px 14px', borderRadius: '50px',
+                border: `1px solid ${GOLD}55`, color: GOLD,
+                backgroundColor: 'rgba(245,200,64,0.06)', letterSpacing: '0.02em',
               }}>
                 {t('prep.500recommended')}
               </span>
             )}
             {day.prep501Recommended && (
               <span style={{
-                fontFamily:    ASSIST,
-                fontSize:      '12px',
-                fontWeight:    500,
-                padding:       '5px 14px',
-                borderRadius:  '50px',
-                border:        `1px solid ${GOLD}55`,
-                color:         GOLD,
-                backgroundColor: 'rgba(245,200,64,0.06)',
-                letterSpacing: '0.02em',
+                fontFamily: ASSIST, fontSize: '12px', fontWeight: 500,
+                padding: '5px 14px', borderRadius: '50px',
+                border: `1px solid ${GOLD}55`, color: GOLD,
+                backgroundColor: 'rgba(245,200,64,0.06)', letterSpacing: '0.02em',
               }}>
                 {t('prep.501recommended')}
               </span>
             )}
           </div>
         )}
-
       </div>
     </>
   );
