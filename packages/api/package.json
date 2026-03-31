@@ -14,7 +14,7 @@
     "db:seed-plants": "tsx src/db/seed-plants.ts"
   },
   "dependencies": {
-    "@anthropic-ai/sdk": "^0.20.0",
+    "@anthropic-ai/sdk": "^0.39.0",
     "@gina-haya/i18n": "workspace:*",
     "@gina-haya/shared": "workspace:*",
     "@supabase/supabase-js": "^2.39.0",
