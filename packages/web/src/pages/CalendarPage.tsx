@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useDirection } from '../hooks/useDirection';
 import { useToday, useWeek } from '../hooks/useCalendar';
@@ -5,6 +6,7 @@ import { NodeBlackoutBanner }  from '../components/calendar/NodeBlackoutBanner';
 import { MooshDailySummary }   from '../components/calendar/MooshDailySummary';
 import { TodayCard }           from '../components/calendar/TodayCard';
 import { WeekStrip }           from '../components/calendar/WeekStrip';
+import { useMooshPanelStore }  from '../stores/mooshPanelStore';
 
 const EARTH  = '#142B16';
 const GOLD   = '#F5C840';
@@ -15,6 +17,8 @@ const ASSIST = '"Assistant", "Heebo", sans-serif';
 const NOISE_BG = `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='250' height='250'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.75' numOctaves='4' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='250' height='250' filter='url(%23n)' opacity='0.55'/%3E%3C/svg%3E")`;
 
 const CAL_CSS = `
+.cal-quickask::placeholder { color: rgba(237,224,196,0.3); }
+.cal-quickask:focus { outline: none; }
 @keyframes cal-shimmer {
   0%   { background-position: -600px 0; }
   100% { background-position:  600px 0; }
@@ -57,6 +61,15 @@ export function CalendarPage() {
   const { t, i18n } = useTranslation('calendar');
   const { dir } = useDirection();
   const isHe = i18n.language === 'he';
+  const { open: openMoosh } = useMooshPanelStore();
+  const [quickAsk, setQuickAsk] = useState('');
+
+  const handleQuickAsk = () => {
+    const text = quickAsk.trim();
+    if (!text) return;
+    setQuickAsk('');
+    openMoosh(text);
+  };
   const { day, isLoading: dayLoading, error: dayError } = useToday();
   const { days, isLoading: weekLoading } = useWeek();
 
@@ -144,6 +157,72 @@ export function CalendarPage() {
               <WeekStrip days={days} todayDate={todayISO} />
             </div>
           )}
+
+          {/* Moosh quick-ask */}
+          <div className="cal-card-in" style={{ animationDelay: '400ms', marginTop: '20px' }}>
+            <div style={{
+              display:         'flex',
+              alignItems:      'center',
+              gap:             '10px',
+              backgroundColor: 'rgba(28,58,30,0.5)',
+              border:          '1px solid rgba(245,200,64,0.15)',
+              borderRadius:    '12px',
+              padding:         '10px 14px',
+            }}>
+              <div style={{
+                flexShrink:     0,
+                width:          '32px',
+                height:         '32px',
+                borderRadius:   '50%',
+                background:     'radial-gradient(circle at 40% 40%, #F5D060, #F5C840, #C8960A)',
+                display:        'flex',
+                alignItems:     'center',
+                justifyContent: 'center',
+                fontSize:       '16px',
+                lineHeight:     1,
+              }}>🌕</div>
+              <input
+                type="text"
+                className="cal-quickask"
+                value={quickAsk}
+                onChange={e => setQuickAsk(e.target.value)}
+                onKeyDown={e => e.key === 'Enter' && handleQuickAsk()}
+                placeholder={isHe ? 'שאל את מוש על הגינה...' : 'Ask Moosh about the garden...'}
+                style={{
+                  flex:       '1 1 auto',
+                  border:     'none',
+                  background: 'transparent',
+                  fontFamily: ASSIST,
+                  fontSize:   '14px',
+                  color:      PARCH,
+                  direction:  dir,
+                  textAlign:  dir === 'rtl' ? 'right' : 'left',
+                }}
+              />
+              <button
+                onClick={handleQuickAsk}
+                disabled={!quickAsk.trim()}
+                style={{
+                  flexShrink:      0,
+                  width:           '34px',
+                  height:          '34px',
+                  borderRadius:    '8px',
+                  border:          'none',
+                  backgroundColor: GOLD,
+                  color:           EARTH,
+                  fontFamily:      FRANK,
+                  fontWeight:      700,
+                  fontSize:        '16px',
+                  cursor:          quickAsk.trim() ? 'pointer' : 'default',
+                  opacity:         quickAsk.trim() ? 1 : 0.4,
+                  display:         'flex',
+                  alignItems:      'center',
+                  justifyContent:  'center',
+                  transition:      'opacity 0.2s',
+                }}
+              >→</button>
+            </div>
+          </div>
 
         </div>
       </div>

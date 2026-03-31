@@ -22,18 +22,28 @@ import { Navbar } from './components/layout/Navbar';
 import { Footer } from './components/layout/Footer';
 import { ToastContainer } from './components/ui/Toast';
 import { UpgradeModal } from './components/ui/UpgradeModal';
+import { MooshChat } from './components/moosh/MooshChat';
 import { useUpgradeModalStore } from './stores/upgradeModalStore';
 import { useAuthStore } from './stores/authStore';
 import { useOnboardingStore } from './stores/onboardingStore';
+import { useMooshPanelStore } from './stores/mooshPanelStore';
 import { supabase } from './lib/supabase';
 
 export default function App() {
   const { i18n } = useTranslation();
   const location = useLocation();
-  const isMapPage = location.pathname === '/map';
+  const isMapPage   = location.pathname === '/map';
+  const isMooshPage = location.pathname === '/moosh';
   const { user, profile, isAuthReady, loadProfile, markOnboardingComplete } = useAuthStore();
   const { isComplete } = useOnboardingStore();
   const { isOpen: isUpgradeOpen } = useUpgradeModalStore();
+  const {
+    isOpen:             isMooshPanelOpen,
+    initialMessage:     mooshInitial,
+    open:               openMooshPanel,
+    close:              closeMooshPanel,
+    clearInitialMessage,
+  } = useMooshPanelStore();
 
   // Central RTL/LTR management
   useEffect(() => {
@@ -172,6 +182,58 @@ export default function App() {
       {showOnboarding && <OnboardingWizard />}
       {isUpgradeOpen && <UpgradeModal />}
       <ToastContainer />
+
+      {/* Floating Moosh bubble — hidden on /moosh page itself */}
+      {user && !isMooshPage && (
+        <>
+          {isMooshPanelOpen && (
+            <div style={{
+              position:      'fixed',
+              bottom:        '92px',
+              left:          '20px',
+              width:         '400px',
+              zIndex:        9999,
+              borderRadius:  '16px',
+              boxShadow:     '0 16px 60px rgba(0,0,0,0.55)',
+              overflow:      'hidden',
+            }}>
+              <MooshChat
+                compact
+                initialMessage={mooshInitial}
+                onInitialMessageConsumed={clearInitialMessage}
+              />
+            </div>
+          )}
+          <button
+            onClick={() => isMooshPanelOpen ? closeMooshPanel() : openMooshPanel()}
+            aria-label="שיחה עם מוש"
+            style={{
+              position:        'fixed',
+              bottom:          '24px',
+              left:            '20px',
+              width:           '52px',
+              height:          '52px',
+              borderRadius:    '50%',
+              backgroundColor: '#F5C840',
+              border:          'none',
+              cursor:          'pointer',
+              fontSize:        isMooshPanelOpen ? '20px' : '26px',
+              fontWeight:      700,
+              color:           '#142B16',
+              display:         'flex',
+              alignItems:      'center',
+              justifyContent:  'center',
+              zIndex:          9999,
+              boxShadow:       '0 4px 20px rgba(245,200,64,0.45)',
+              transition:      'filter 0.2s, transform 0.2s',
+            }}
+            onMouseEnter={e => { (e.currentTarget as HTMLElement).style.filter = 'brightness(1.1)'; }}
+            onMouseLeave={e => { (e.currentTarget as HTMLElement).style.filter = 'none'; }}
+          >
+            {isMooshPanelOpen ? '✕' : '🌕'}
+          </button>
+        </>
+      )}
     </div>
   );
 }

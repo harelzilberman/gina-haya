@@ -193,6 +193,23 @@ export function Navbar() {
                 {item.label}
               </Link>
             ))}
+            <Link
+              to="/moosh"
+              className="gina-nav-link"
+              onClick={() => setMobileOpen(false)}
+              style={{
+                fontFamily:  ASSISTANT,
+                fontSize:    '14px',
+                fontWeight:  600,
+                color:       GOLD,
+                display:     'flex',
+                alignItems:  'center',
+                gap:         '5px',
+              }}
+            >
+              <span style={{ fontSize: '16px', lineHeight: 1 }}>🌕</span>
+              {t('nav.moosh')}
+            </Link>
           </div>
         )}
 

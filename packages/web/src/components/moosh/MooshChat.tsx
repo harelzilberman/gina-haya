@@ -176,7 +176,13 @@ function MessageBubble({ message, isRTL }: { message: MooshMessage; isRTL: boole
 }
 
 // ── Main chat ─────────────────────────────────────────────────────────────────
-export function MooshChat() {
+interface MooshChatProps {
+  compact?: boolean;
+  initialMessage?: string;
+  onInitialMessageConsumed?: () => void;
+}
+
+export function MooshChat({ compact, initialMessage, onInitialMessageConsumed }: MooshChatProps = {}) {
   const { t } = useTranslation('moosh');
   const { dir, isRTL } = useDirection();
 
@@ -193,6 +199,15 @@ export function MooshChat() {
   const [input, setInput]      = useState('');
   const messagesEndRef         = useRef<HTMLDivElement>(null);
   const textareaRef            = useRef<HTMLTextAreaElement>(null);
+
+  useEffect(() => {
+    if (initialMessage) {
+      setInput(initialMessage);
+      onInitialMessageConsumed?.();
+      textareaRef.current?.focus();
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [initialMessage]);
 
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -293,8 +308,8 @@ export function MooshChat() {
             flex:      '1 1 auto',
             overflowY: 'auto',
             padding:   '20px 16px',
-            minHeight: '400px',
-            maxHeight: '520px',
+            minHeight: compact ? '160px' : '400px',
+            maxHeight: compact ? '280px' : '520px',
             display:   'flex',
             flexDirection: 'column',
             gap:       '12px',

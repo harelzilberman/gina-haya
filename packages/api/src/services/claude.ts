@@ -77,7 +77,7 @@ When you need specific information — today's calendar, the user's garden, weat
 
 // ── Tool definitions ───────────────────────────────────────────────────────
 
-const MOOSH_TOOLS: Anthropic.Tool[] = [
+const MOOSH_TOOLS: Anthropic.Messages.Tool[] = [
   {
     name: 'get_today_calendar',
     description: "Returns today's biodynamic calendar data: moon direction, node crossing, day type, moon sign, planting score, prep recommendations, perigee status.",
@@ -235,7 +235,7 @@ export async function askMoosh(
     ? MOOSH_SYSTEM_PROMPT_HE
     : MOOSH_SYSTEM_PROMPT_EN;
 
-  const apiMessages: Anthropic.MessageParam[] = messages.map(m => ({
+  const apiMessages: Anthropic.Messages.MessageParam[] = messages.map(m => ({
     role: m.role,
     content: m.content,
   }));
@@ -258,8 +258,8 @@ export async function askMoosh(
     if (response.stop_reason === 'tool_use') {
       apiMessages.push({ role: 'assistant', content: response.content });
 
-      const toolResults: Anthropic.ToolResultBlockParam[] = response.content
-        .filter((b): b is Anthropic.ToolUseBlock => b.type === 'tool_use')
+      const toolResults: Anthropic.Messages.ToolResultBlockParam[] = response.content
+        .filter((b): b is Anthropic.Messages.ToolUseBlock => b.type === 'tool_use')
         .map(b => ({
           type: 'tool_result',
           tool_use_id: b.id,
