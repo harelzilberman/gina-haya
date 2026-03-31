@@ -75,6 +75,7 @@ function dayCardHTML(day: DayPlan, today: string, widthPct: string): string {
       background:${bgColor};
       font-size:11px;
       font-family:Arial,sans-serif;
+      page-break-inside:avoid;
     ">
       <div style="border-bottom:1.5px solid ${borderColor};padding-bottom:6px;margin-bottom:6px;">
         <div style="display:flex;justify-content:space-between;align-items:center;">
@@ -134,13 +135,16 @@ export function printWeeklyPlan(plan: WeeklyPlan, today: string) {
 <meta charset="UTF-8">
 <title>תכנית שבועית — גינה חיה</title>
 <style>
-  @page { size: A4 portrait; margin: 1cm 1.2cm; }
+  @page { size: A4 landscape; margin: 10mm; }
   * { box-sizing: border-box; margin: 0; padding: 0; }
-  body { font-family: Arial, sans-serif; direction: rtl; background: white; color: #1a1a1a; font-size: 11px; }
-  table { width: 100%; border-collapse: separate; border-spacing: 0; }
+  body { font-family: Arial, sans-serif; direction: rtl; background: white; color: #1a1a1a; font-size: 10px; }
+  table { width: 100%; border-collapse: separate; border-spacing: 0; page-break-inside: avoid; }
+  tr { page-break-inside: avoid; page-break-after: avoid; }
+  .pw { width: 100%; transform-origin: top left; zoom: 0.85; }
 </style>
 </head>
 <body>
+<div class="pw">
 
   <!-- Header -->
   <div style="display:flex;justify-content:space-between;align-items:center;border-bottom:2.5px solid #1C3A1E;padding-bottom:7px;margin-bottom:10px;">
@@ -192,6 +196,8 @@ export function printWeeklyPlan(plan: WeeklyPlan, today: string) {
     <span>גינה חיה ונושמת — gina-haya.com</span>
     <span>הדפס בתבונה 🌱</span>
   </div>
+
+</div><!-- /.pw -->
 
   <script>
     window.onload = function() {

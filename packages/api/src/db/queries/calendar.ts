@@ -21,6 +21,8 @@ interface CalendarRow {
   moon_phase_pct: number;
   moon_phase_name: string;
   moon_phase_name_he: string;
+  moon_phase_angle?: number;
+  moon_phase_he?: string;
   planting_score: number;
   score_colour: 'green' | 'yellow' | 'orange' | 'red' | 'black';
   moonrise_time: string | null;
@@ -48,6 +50,8 @@ function toCalendarDay(row: CalendarRow): BiodynamicDay {
     moonPhasePct: row.moon_phase_pct,
     moonPhaseName: row.moon_phase_name,
     moonPhaseNameHe: row.moon_phase_name_he,
+    moonPhaseAngle: row.moon_phase_angle,
+    moonPhaseHe: row.moon_phase_he,
     plantingScore: row.planting_score,
     scoreColour: row.score_colour,
     moonriseTime: row.moonrise_time,
