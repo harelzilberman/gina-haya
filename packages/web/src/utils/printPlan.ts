@@ -75,7 +75,6 @@ function dayCardHTML(day: DayPlan, today: string, widthPct: string): string {
       background:${bgColor};
       font-size:11px;
       font-family:Arial,sans-serif;
-      page-break-inside:avoid;
     ">
       <div style="border-bottom:1.5px solid ${borderColor};padding-bottom:6px;margin-bottom:6px;">
         <div style="display:flex;justify-content:space-between;align-items:center;">
@@ -135,17 +134,22 @@ export function printWeeklyPlan(plan: WeeklyPlan, today: string) {
 <meta charset="UTF-8">
 <title>תכנית שבועית — גינה חיה</title>
 <style>
-  @page { size: A4 portrait; margin: 8mm; }
+  @page { size: A4 portrait; margin: 1cm 1.2cm; }
   * { box-sizing: border-box; margin: 0; padding: 0; }
-  html, body { zoom: 0.72; }
-  body { font-family: Arial, sans-serif; direction: rtl; background: white; color: #1a1a1a; font-size: 10px; }
-  table { width: 100%; border-collapse: separate; border-spacing: 0; page-break-inside: avoid; }
-  tr { page-break-inside: avoid; page-break-after: avoid; }
-  .pw { width: 100%; }
+  body { font-family: Arial, sans-serif; direction: rtl; background: white; color: #1a1a1a; font-size: 11px; }
+  table { width: 100%; border-collapse: separate; border-spacing: 0; }
+  @media print {
+    td { page-break-inside: avoid; padding: 6px !important; }
+    td > div:first-child { padding-bottom: 4px !important; margin-bottom: 4px !important; }
+    ul { line-height: 1.05 !important; }
+    li { margin-bottom: 3px !important; line-height: 1.05 !important; }
+    table { margin-bottom: 3px !important; }
+    .task-section { padding: 5px 8px !important; margin-bottom: 4px !important; }
+    .task-row { gap: 4px 13px !important; }
+  }
 </style>
 </head>
 <body>
-<div class="pw">
 
   <!-- Header -->
   <div style="display:flex;justify-content:space-between;align-items:center;border-bottom:2.5px solid #1C3A1E;padding-bottom:7px;margin-bottom:10px;">
@@ -176,9 +180,9 @@ export function printWeeklyPlan(plan: WeeklyPlan, today: string) {
 
   <!-- Weekly tasks -->
   ${plan.gardenTasks && plan.gardenTasks.length > 0 ? `
-  <div style="border:1.5px solid #1C3A1E;border-radius:5px;padding:8px 12px;margin-bottom:6px;font-size:11px;">
+  <div class="task-section" style="border:1.5px solid #1C3A1E;border-radius:5px;padding:8px 12px;margin-bottom:6px;font-size:11px;">
     <strong style="color:#1C3A1E;display:block;margin-bottom:6px;font-size:12px;">📋 משימות שבועיות:</strong>
-    <div style="display:flex;flex-wrap:wrap;gap:6px 20px;">
+    <div class="task-row" style="display:flex;flex-wrap:wrap;gap:6px 20px;">
       ${plan.gardenTasks.map(t => `
         <span style="display:inline-flex;align-items:center;gap:6px;min-width:220px;">
           <span style="display:inline-block;min-width:12px;height:12px;border:1.5px solid #1C3A1E;border-radius:2px;flex-shrink:0;"></span>
@@ -197,8 +201,6 @@ export function printWeeklyPlan(plan: WeeklyPlan, today: string) {
     <span>גינה חיה ונושמת — gina-haya.com</span>
     <span>הדפס בתבונה 🌱</span>
   </div>
-
-</div><!-- /.pw -->
 
   <script>
     window.onload = function() {
