@@ -135,12 +135,13 @@ export function printWeeklyPlan(plan: WeeklyPlan, today: string) {
 <meta charset="UTF-8">
 <title>תכנית שבועית — גינה חיה</title>
 <style>
-  @page { size: A4 landscape; margin: 10mm; }
+  @page { size: A4 portrait; margin: 8mm; }
   * { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body { zoom: 0.72; }
   body { font-family: Arial, sans-serif; direction: rtl; background: white; color: #1a1a1a; font-size: 10px; }
   table { width: 100%; border-collapse: separate; border-spacing: 0; page-break-inside: avoid; }
   tr { page-break-inside: avoid; page-break-after: avoid; }
-  .pw { width: 100%; transform-origin: top left; zoom: 0.85; }
+  .pw { width: 100%; }
 </style>
 </head>
 <body>
