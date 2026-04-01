@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useDirection } from '../../hooks/useDirection';
 import type { BiodynamicDay } from '@gina-haya/shared';
@@ -40,179 +40,6 @@ const CARD_CSS = `
 `;
 
 // ─────────────────────────────────────────────
-// MOON ORIENTATION — latitude-based rotation
-// ─────────────────────────────────────────────
-// In the northern hemisphere, the moon appears rotated relative to
-// the "standard" equatorial view used in astronomy diagrams.
-// For Israel (~32°N), a waxing gibbous moon near the southern sky
-// shows the terminator at the bottom, not the left side.
-//
-// The parallactic angle q is the rotation of the moon's axis
-// relative to the observer's horizon. We approximate it using
-// the observer's latitude and the moon's typical position in the sky.
-//
-// Full formula: q = atan2(sin(H) * cos(lat),
-//                         cos(dec)*sin(lat) - sin(dec)*cos(lat)*cos(H))
-// where H = hour angle, dec = moon declination
-//
-// For a practical per-latitude approximation (moon on meridian):
-//   rotation ≈ (90° - latitude) CCW for northern hemisphere
-// This gives: Israel (32°N) → rotate ~58° CCW
-//             Tel Aviv specific → ~58°
-//
-// We use the browser's Geolocation API to get actual latitude,
-// falling back to Israel's default (32°N).
-
-function getMoonRotationDeg(latitudeDeg: number, phaseAngle: number): number {
-  // In northern hemisphere: moon appears rotated CCW relative to equatorial view.
-  // The rotation is approximately (90 - latitude) degrees CCW.
-  // In southern hemisphere: rotated ~180° from northern view.
-  // At equator: no rotation needed.
-  
-  const isNorthern = latitudeDeg >= 0;
-  
-  if (isNorthern) {
-    // Northern hemisphere: rotate CCW by (90 - lat)
-    // At lat=0 (equator): 90° rotation
-    // At lat=90 (pole): 0° rotation
-    // Israel 32°N: ~58° CCW → in canvas terms, rotate by +58°
-    return 90 - latitudeDeg;
-  } else {
-    // Southern hemisphere: moon appears flipped, add 180°
-    return 90 - latitudeDeg + 180;
-  }
-}
-
-// ─────────────────────────────────────────────
-// MOON RENDERER
-// ─────────────────────────────────────────────
-function renderMoon(
-  ctx: CanvasRenderingContext2D,
-  cx: number,
-  cy: number,
-  r: number,
-  phaseAngle: number,     // 0=new moon, 180=full moon, 360=new moon
-  rotationDeg: number,    // latitude-based rotation in degrees
-  texture: HTMLImageElement | null
-) {
-  const isFullMoon = phaseAngle > 155 && phaseAngle < 205;
-  const isNewMoon  = phaseAngle < 10  || phaseAngle > 350;
-  const size = r * 2;
-
-  // Fill canvas with card background so no dark corners bleed through
-  ctx.clearRect(cx - r - 4, cy - r - 4, size + 8, size + 8);
-
-  // ── Full moon outer glow ──
-  if (isFullMoon) {
-    for (let i = 4; i >= 1; i--) {
-      const g = ctx.createRadialGradient(cx, cy, r * 0.8, cx, cy, r + i * 8);
-      g.addColorStop(0, `rgba(255,230,100,${0.12 / i})`);
-      g.addColorStop(1, 'rgba(255,230,100,0)');
-      ctx.beginPath();
-      ctx.arc(cx, cy, r + i * 8, 0, Math.PI * 2);
-      ctx.fillStyle = g;
-      ctx.fill();
-    }
-  }
-
-  // ── Clip to moon circle ──
-  ctx.save();
-  ctx.beginPath();
-  ctx.arc(cx, cy, r, 0, Math.PI * 2);
-  ctx.clip();
-
-  // ── Draw base texture or fallback ──
-  if (isNewMoon) {
-    const g = ctx.createRadialGradient(cx - r*0.2, cy - r*0.2, 0, cx, cy, r);
-    g.addColorStop(0, '#1a2218');
-    g.addColorStop(1, '#060a05');
-    ctx.fillStyle = g;
-    ctx.fillRect(cx - r, cy - r, size, size);
-  } else if (texture) {
-    // NASA LRO texture — moon disk fills the image perfectly edge to edge
-    const tw = texture.naturalWidth;
-    const th = texture.naturalHeight;
-    // Use the full image — moon fills it completely
-    try {
-      ctx.drawImage(texture, 0, 0, tw, th, cx - r, cy - r, size, size);
-    } catch (e) {
-      // tainted canvas — draw grey fallback
-      const g = ctx.createRadialGradient(cx - r*0.3, cy - r*0.3, r*0.1, cx, cy, r);
-      g.addColorStop(0, '#d0d0d0');
-      g.addColorStop(0.6, '#888888');
-      g.addColorStop(1, '#333333');
-      ctx.fillStyle = g;
-      ctx.fillRect(cx - r, cy - r, size, size);
-    }
-    // Spherical shading overlay
-    const shade = ctx.createRadialGradient(cx - r*0.25, cy - r*0.25, r*0.1, cx, cy, r);
-    shade.addColorStop(0,   'rgba(255,245,200,0.15)');
-    shade.addColorStop(0.5, 'rgba(0,0,0,0.0)');
-    shade.addColorStop(1,   'rgba(0,0,0,0.55)');
-    ctx.fillStyle = shade;
-    ctx.fillRect(cx - r, cy - r, size, size);
-  } else {
-    // Texture failed — draw grey moon
-    const g = ctx.createRadialGradient(cx - r*0.3, cy - r*0.3, r*0.1, cx, cy, r);
-    g.addColorStop(0, '#d0d0d0');
-    g.addColorStop(0.6, '#888888');
-    g.addColorStop(1, '#333333');
-    ctx.fillStyle = g;
-    ctx.fillRect(cx - r, cy - r, size, size);
-  }
-
-  // ── Phase shadow with latitude rotation ──
-  // We rotate the entire shadow drawing by rotationDeg so the
-  // terminator appears at the correct position for the observer's latitude.
-  if (!isFullMoon && !isNewMoon) {
-    ctx.save();
-    // Rotate around moon center by latitude compensation
-    ctx.translate(cx, cy);
-    ctx.rotate(rotationDeg * Math.PI / 180);
-    ctx.translate(-cx, -cy);
-
-    const normalizedAngle = phaseAngle <= 180 ? phaseAngle : 360 - phaseAngle;
-    const ellipseWidth = r * Math.abs(Math.cos(Math.PI * normalizedAngle / 180));
-
-    ctx.beginPath();
-    if (phaseAngle < 180) {
-      // Waxing: shadow on LEFT (before rotation)
-      ctx.arc(cx, cy, r, Math.PI / 2, -Math.PI / 2, false);
-      ctx.ellipse(cx, cy, ellipseWidth, r, 0, -Math.PI / 2, Math.PI / 2, phaseAngle < 90);
-    } else {
-      // Waning: shadow on RIGHT (before rotation)
-      ctx.arc(cx, cy, r, -Math.PI / 2, Math.PI / 2, false);
-      ctx.ellipse(cx, cy, ellipseWidth, r, 0, Math.PI / 2, -Math.PI / 2, phaseAngle > 270);
-    }
-    ctx.closePath();
-
-    const shadowGrad = ctx.createRadialGradient(cx, cy, 0, cx, cy, r);
-    shadowGrad.addColorStop(0, 'rgba(4,8,20,0.94)');
-    shadowGrad.addColorStop(1, 'rgba(2,4,12,0.98)');
-    ctx.fillStyle = shadowGrad;
-    ctx.fill();
-    ctx.restore();
-  }
-
-  // ── Atmospheric limb glow ──
-  const limb = ctx.createRadialGradient(cx, cy, r - 4, cx, cy, r + 1);
-  limb.addColorStop(0, 'rgba(255,255,200,0.00)');
-  limb.addColorStop(0.6, 'rgba(255,255,200,0.10)');
-  limb.addColorStop(1, 'rgba(255,255,200,0.00)');
-  ctx.fillStyle = limb;
-  ctx.fillRect(cx - r, cy - r, size, size);
-
-  ctx.restore();
-
-  // ── Thin edge highlight only ──
-  ctx.beginPath();
-  ctx.arc(cx, cy, r, 0, Math.PI * 2);
-  ctx.strokeStyle = isFullMoon ? 'rgba(255,240,150,0.20)' : 'rgba(255,255,200,0.06)';
-  ctx.lineWidth = 0.5;
-  ctx.stroke();
-}
-
-// ─────────────────────────────────────────────
 // MOON PHASE DISPLAY COMPONENT
 // ─────────────────────────────────────────────
 function MoonPhaseDisplay({ phaseAngle, phaseHe, moonSignHe, ascending }: {
@@ -221,88 +48,60 @@ function MoonPhaseDisplay({ phaseAngle, phaseHe, moonSignHe, ascending }: {
   moonSignHe: string;
   ascending: boolean;
 }) {
-  const canvasRef  = useRef<HTMLCanvasElement>(null);
-  const textureRef = useRef<HTMLImageElement | null>(null);
-  const [latitudeDeg, setLatitudeDeg] = useState<number>(31.7); // Israel default
-
-  // Try to get real user latitude
-  useEffect(() => {
-    if (!navigator.geolocation) return;
-    navigator.geolocation.getCurrentPosition(
-      pos => setLatitudeDeg(pos.coords.latitude),
-      ()  => setLatitudeDeg(31.7) // fallback to Israel
-    );
-  }, []);
-
-  useEffect(() => {
-    const canvas = canvasRef.current;
-    if (!canvas) return;
-
-    // Only set dimensions once to avoid resetting canvas on re-render
-    const SIZE = 165;
-    if (canvas.width !== SIZE) canvas.width = SIZE;
-    if (canvas.height !== SIZE) canvas.height = SIZE;
-
-    const ctx = canvas.getContext('2d');
-    if (!ctx) return;
-
-    const cx = SIZE / 2, cy = SIZE / 2, r = 82;
-
-    const doDraw = (img: HTMLImageElement | null) => {
-      // Re-check canvas is still mounted
-      if (!canvasRef.current) return;
-      ctx.clearRect(0, 0, SIZE, SIZE);
-      const rotDeg = getMoonRotationDeg(latitudeDeg, phaseAngle);
-      renderMoon(ctx, cx, cy, r, phaseAngle, rotDeg, img);
-    };
-
-    // If texture already loaded, draw immediately
-    if (textureRef.current) {
-      doDraw(textureRef.current);
-      return;
-    }
-
-    // Otherwise load texture then draw
-    const m = new Image();
-    m.onload = () => {
-      textureRef.current = m;
-      doDraw(m);
-    };
-    m.onerror = () => doDraw(null);
-    m.src = '/moon.jpg';
-  }, [phaseAngle, latitudeDeg]);
-
-  const isFullMoon   = phaseAngle > 155 && phaseAngle < 205;
+  const isFullMoon = phaseAngle > 155 && phaseAngle < 205;
+  const isNewMoon  = phaseAngle < 10  || phaseAngle > 350;
   const illumination = Math.round((1 - Math.cos(phaseAngle * Math.PI / 180)) / 2 * 100);
-  const daysToFull   = phaseAngle <= 180
+  const daysToFull = phaseAngle <= 180
     ? Math.round((180 - phaseAngle) / 13.2)
     : Math.round((540 - phaseAngle) / 13.2);
-  const daysToNew    = Math.round((360 - phaseAngle) / 13.2);
+  const daysToNew = Math.round((360 - phaseAngle) / 13.2);
+
+  // Shadow width: 0% = full moon (no shadow), 100% = new moon (all shadow)
+  // For waxing (0-180): shadow covers left side, shrinks as moon grows
+  // For waning (180-360): shadow covers right side, grows as moon shrinks
+  const shadowPct = isFullMoon ? 0 : isNewMoon ? 100 : Math.round(Math.abs(Math.cos(phaseAngle * Math.PI / 180)) * 100);
+  const isWaxing = phaseAngle <= 180;
 
   return (
     <div style={{
       display: 'flex', flexDirection: 'column', alignItems: 'center',
       gap: '10px', padding: '20px 0 12px',
     }}>
+      {/* Moon circle */}
       <div style={{
-        position: 'relative', width: '165px', height: '165px',
+        position: 'relative',
+        width: '165px', height: '165px',
         borderRadius: '50%',
         border: '2px solid rgba(245,200,64,0.40)',
-        boxShadow: '0 0 16px rgba(245,200,64,0.18)',
+        boxShadow: isFullMoon
+          ? '0 0 32px rgba(245,200,64,0.35), 0 0 8px rgba(245,200,64,0.2)'
+          : '0 0 16px rgba(245,200,64,0.18)',
         overflow: 'hidden',
+        background: isNewMoon
+          ? 'radial-gradient(circle at 35% 35%, #1a2218, #060a05)'
+          : `url(/moon.jpg) center/cover no-repeat`,
       }}>
-        {isFullMoon && (
+        {/* Phase shadow overlay */}
+        {!isFullMoon && !isNewMoon && (
           <div style={{
-            position: 'absolute', inset: '-20px', borderRadius: '50%',
-            background: 'conic-gradient(rgba(245,200,64,0.18), rgba(245,200,64,0.04), rgba(245,200,64,0.18))',
-            animation: 'moonGlowSpin 8s linear infinite',
-            zIndex: 0,
+            position: 'absolute',
+            top: 0,
+            [isWaxing ? 'left' : 'right']: 0,
+            width: `${50 + shadowPct / 2}%`,
+            height: '100%',
+            background: 'rgba(4, 8, 20, 0.93)',
+            borderRadius: isWaxing
+              ? '0 999px 999px 0'
+              : '999px 0 0 999px',
           }} />
         )}
-        <canvas
-          ref={canvasRef}
-          style={{ width: '165px', height: '165px', position: 'relative', zIndex: 1, display: 'block' }}
-        />
+        {/* Spherical shading overlay */}
+        {!isNewMoon && (
+          <div style={{
+            position: 'absolute', inset: 0, borderRadius: '50%',
+            background: 'radial-gradient(circle at 35% 35%, rgba(255,245,200,0.10) 0%, rgba(0,0,0,0) 50%, rgba(0,0,0,0.50) 100%)',
+          }} />
+        )}
       </div>
 
       <div style={{ fontFamily: FRANK, fontSize: '18px', fontWeight: 700, color: GOLD }}>
