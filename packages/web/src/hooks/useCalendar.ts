@@ -6,16 +6,20 @@ export function useToday() {
   const [day, setDay] = useState<BiodynamicDay | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-
   useEffect(() => {
     setIsLoading(true);
     setError(null);
     api.get<BiodynamicDay>('/api/calendar/today')
-      .then(setDay)
-      .catch(err => setError(err.message))
+      .then(d => {
+        console.log('[useToday] received moonPhasePct:', d.moonPhasePct);
+        setDay(d);
+      })
+      .catch(err => {
+        console.error('[useToday] error:', err.message);
+        setError(err.message);
+      })
       .finally(() => setIsLoading(false));
   }, []);
-
   return { day, isLoading, error };
 }
 
