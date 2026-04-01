@@ -6,6 +6,7 @@ import { askMoosh } from '../services/claude';
 import { fetchWeatherForRegion } from '../services/weather';
 import type { MooshMessage, MooshContext } from '@gina-haya/shared';
 import { todayInIsrael } from '@gina-haya/shared';
+import { getRecentCompletedTasks } from '../db/queries/tasks';
 
 export const mooshRouter: IRouter = Router();
 
@@ -234,6 +235,12 @@ mooshRouter.post('/chat', async (req: any, res) => {
     const existingMessages: MooshMessage[] = convRecord?.messages || [];
     const last10Messages = existingMessages.slice(-10);
 
+    // ── 7b. Fetch recent completed tasks ─────────────────────────────────
+    const completedTasks = await getRecentCompletedTasks(userId, 7);
+    const taskContext = completedTasks.length > 0
+      ? `\n\nפעולות שהמשתמש ביצע לאחרונה בגינה:\n${completedTasks.map(t => `- ${t.title} (${t.date})`).join('\n')}`
+      : '';
+
     // ── 8. Call Claude API ────────────────────────────────────────────────
     const newUserMessage: MooshMessage = {
       role: 'user',
@@ -243,7 +250,8 @@ mooshRouter.post('/chat', async (req: any, res) => {
 
     const mooshResponse = await askMoosh(
       [...last10Messages, newUserMessage],
-      context
+      context,
+      taskContext || undefined
     );
 
     const mooshMessage: MooshMessage = {

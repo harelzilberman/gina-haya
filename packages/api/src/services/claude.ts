@@ -230,10 +230,12 @@ function handleToolCall(
 export async function askMoosh(
   messages: MooshMessage[],
   context: MooshContext,
+  extraSystemContext?: string,
 ): Promise<string> {
-  const systemPrompt = context.userLanguage === 'he'
+  const basePrompt = context.userLanguage === 'he'
     ? MOOSH_SYSTEM_PROMPT_HE
     : MOOSH_SYSTEM_PROMPT_EN;
+  const systemPrompt = extraSystemContext ? basePrompt + extraSystemContext : basePrompt;
 
   const apiMessages: Anthropic.Messages.MessageParam[] = messages.map(m => ({
     role: m.role,

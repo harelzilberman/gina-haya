@@ -41,6 +41,8 @@ import { trackersRouter }  from './routes/trackers';
 import { plansRouter }   from './routes/plans';
 import { mapRouter }     from './routes/map';
 import { usersRouter }   from './routes/users';
+import { tasksRouter }   from './routes/tasks';
+import { pushRouter }    from './routes/push';
 
 app.use('/api/auth',     authRouter);
 app.use('/api/garden',   gardenRouter);
@@ -54,6 +56,8 @@ app.use('/api/trackers', trackersRouter);
 app.use('/api/plans',    plansRouter);
 app.use('/api/map',      mapRouter);
 app.use('/api/users',    usersRouter);
+app.use('/api/tasks',    tasksRouter);
+app.use('/api/push',     pushRouter);
 
 app.use((_req, res) => {
   res.status(404).json({ error: 'Not found' });
