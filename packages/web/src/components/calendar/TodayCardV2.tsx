@@ -43,14 +43,14 @@ const CARD_CSS = `
 // MOON PHASE DISPLAY COMPONENT
 // ─────────────────────────────────────────────
 function MoonPhaseDisplay({ phaseAngle, phaseHe, moonSignHe, ascending }: {
-  phaseAngle: number;
+  phaseAngle: number;`n  phasePct: number;
   phaseHe: string;
   moonSignHe: string;
   ascending: boolean;
 }) {
-  const illumination = Math.round((1 - Math.cos(phaseAngle * Math.PI / 180)) / 2 * 100);
-  const isFullMoon = illumination > 95;
-  const isNewMoon  = illumination < 5;
+  const illumination = phasePct;
+  const isFullMoon = phasePct > 95;
+  const isNewMoon  = phasePct < 5;
   const daysToFull = phaseAngle <= 180
     ? Math.round((180 - phaseAngle) / 13.2)
     : Math.round((540 - phaseAngle) / 13.2);
@@ -219,7 +219,7 @@ export function TodayCard({ day }: Props) {
         </p>
 
         <MoonPhaseDisplay
-          phaseAngle={(day.moonPhasePct ?? 0) / 100 * 360}
+          phasePct=\{(day.moonPhasePct ?? 0)\}`n          phaseAngle=\{(day.moonPhasePct ?? 0) / 100 * 360}
           phaseHe={day.moonPhaseNameHe ?? day.moonPhaseHe ?? 'ירח'}
           moonSignHe={day.moonSignHe ?? ''}
           ascending={day.ascendingDescending === 'ascending'}
@@ -293,3 +293,4 @@ export function TodayCard({ day }: Props) {
     </>
   );
 }
+
