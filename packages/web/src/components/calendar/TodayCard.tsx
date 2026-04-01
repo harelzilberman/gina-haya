@@ -84,18 +84,6 @@ function getMoonRotationDeg(latitudeDeg: number, phaseAngle: number): number {
 }
 
 // ─────────────────────────────────────────────
-// NASA moon texture loader
-// ─────────────────────────────────────────────
-const MOON_TEXTURE_URL = '/moon.jpg';
-
-function loadMoonTexture(cb: (img: HTMLImageElement | null) => void) {
-  const img = new Image();
-  img.onload = () => cb(img);
-  img.onerror = () => cb(null);
-  img.src = MOON_TEXTURE_URL + '?t=' + Date.now();
-}
-
-// ─────────────────────────────────────────────
 // MOON RENDERER
 // ─────────────────────────────────────────────
 function renderMoon(
@@ -247,20 +235,41 @@ function MoonPhaseDisplay({ phaseAngle, phaseHe, moonSignHe, ascending }: {
   }, []);
 
   useEffect(() => {
-    loadMoonTexture(img => {
-      textureRef.current = img;
-      const canvas = canvasRef.current;
-      if (!canvas) return;
-      const ctx = canvas.getContext('2d');
-      if (!ctx) return;
-      const SIZE = 165;
-      const cx = SIZE / 2, cy = SIZE / 2, r = 82;
-      canvas.width = SIZE;
-      canvas.height = SIZE;
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+
+    // Only set dimensions once to avoid resetting canvas on re-render
+    const SIZE = 165;
+    if (canvas.width !== SIZE) canvas.width = SIZE;
+    if (canvas.height !== SIZE) canvas.height = SIZE;
+
+    const ctx = canvas.getContext('2d');
+    if (!ctx) return;
+
+    const cx = SIZE / 2, cy = SIZE / 2, r = 82;
+
+    const doDraw = (img: HTMLImageElement | null) => {
+      // Re-check canvas is still mounted
+      if (!canvasRef.current) return;
       ctx.clearRect(0, 0, SIZE, SIZE);
       const rotDeg = getMoonRotationDeg(latitudeDeg, phaseAngle);
       renderMoon(ctx, cx, cy, r, phaseAngle, rotDeg, img);
-    });
+    };
+
+    // If texture already loaded, draw immediately
+    if (textureRef.current) {
+      doDraw(textureRef.current);
+      return;
+    }
+
+    // Otherwise load texture then draw
+    const m = new Image();
+    m.onload = () => {
+      textureRef.current = m;
+      doDraw(m);
+    };
+    m.onerror = () => doDraw(null);
+    m.src = '/moon.jpg';
   }, [phaseAngle, latitudeDeg]);
 
   const isFullMoon   = phaseAngle > 155 && phaseAngle < 205;
