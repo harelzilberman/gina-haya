@@ -4,7 +4,7 @@ import { useDirection } from '../hooks/useDirection';
 import { useToday, useWeek } from '../hooks/useCalendar';
 import { NodeBlackoutBanner }  from '../components/calendar/NodeBlackoutBanner';
 import { MooshDailySummary }   from '../components/calendar/MooshDailySummary';
-import { TodayCard }           from '../components/calendar/TodayCard';
+import { TodayCard }           from '../components/calendar/TodayCardV2';
 import { WeekStrip }           from '../components/calendar/WeekStrip';
 import { useMooshPanelStore }  from '../stores/mooshPanelStore';
 
