@@ -255,8 +255,6 @@ function MoonPhaseDisplay({ phaseAngle, phaseHe, moonSignHe, ascending }: {
   const redraw = () => {
     const canvas = canvasRef.current;
     if (!canvas) return;
-    // Don't render until texture is loaded (avoids showing gold fallback)
-    if (!textureRef.current) return;
     const ctx = canvas.getContext('2d');
     if (!ctx) return;
     const SIZE = 165;
