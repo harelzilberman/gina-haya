@@ -3,6 +3,7 @@ import { api } from '../api/client';
 import { useAuthStore } from '../stores/authStore';
 import { useToastStore } from '../stores/toastStore';
 import { supabase } from '../lib/supabase';
+import { usePushNotifications } from '../hooks/usePushNotifications';
 
 const EARTH  = '#142B16';
 const GOLD   = '#F5C840';
@@ -15,6 +16,7 @@ const NOISE_BG = `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/s
 export function SettingsPage() {
   const { profile, session } = useAuthStore();
   const { show: showToast }  = useToastStore();
+  const { isSubscribed, permission, subscribe, unsubscribe, isLoading: pushLoading } = usePushNotifications();
 
   const [dailyTipEmail, setDailyTipEmail] = useState<boolean>(
     profile?.daily_tip_email ?? true
@@ -218,6 +220,37 @@ export function SettingsPage() {
               {isSaving ? 'שומר...' : 'שמור הגדרות'}
             </button>
 
+          </div>
+
+          {/* Notifications section */}
+          <div style={{ background: 'rgba(28,58,30,0.5)', border: '1px solid rgba(245,200,64,0.12)', borderRadius: '12px', padding: '20px', marginTop: '16px' }}>
+            <h3 style={{ fontFamily: FRANK, fontSize: '16px', color: GOLD, margin: '0 0 16px' }}>🔔 התראות</h3>
+
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+              <div>
+                <p style={{ fontFamily: ASSIST, fontSize: '14px', color: PARCH, margin: '0 0 2px' }}>התראות דחיפה</p>
+                <p style={{ fontFamily: ASSIST, fontSize: '12px', color: `${PARCH}60`, margin: 0 }}>
+                  {permission === 'denied' ? 'חסומות בדפדפן — שנה בהגדרות הדפדפן' : isSubscribed ? 'פעילות — תקבל תזכורות יומיות' : 'לא פעילות'}
+                </p>
+              </div>
+              {permission !== 'denied' && (
+                <button
+                  onClick={isSubscribed ? unsubscribe : subscribe}
+                  disabled={pushLoading}
+                  style={{
+                    fontFamily: ASSIST, fontSize: '13px', fontWeight: 600,
+                    padding: '7px 16px', borderRadius: '8px',
+                    border: isSubscribed ? '1px solid rgba(255,100,100,0.3)' : `1px solid ${GOLD}55`,
+                    color: isSubscribed ? '#ff9090' : GOLD,
+                    background: isSubscribed ? 'rgba(255,100,100,0.08)' : 'rgba(245,200,64,0.08)',
+                    cursor: pushLoading ? 'default' : 'pointer',
+                    opacity: pushLoading ? 0.7 : 1,
+                  }}
+                >
+                  {pushLoading ? '...' : isSubscribed ? 'בטל התראות' : 'הפעל התראות'}
+                </button>
+              )}
+            </div>
           </div>
         </div>
       </div>

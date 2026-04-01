@@ -2,9 +2,13 @@ import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { usePlanStore } from '../stores/planStore';
 import { useGardenStore } from '../stores/gardenStore';
+import { useAuthStore } from '../stores/authStore';
 import { WeeklyPlanHeader } from '../components/plan/WeeklyPlanHeader';
 import { DayPlanCard } from '../components/plan/DayPlanCard';
 import { WeeklyTaskList } from '../components/plan/WeeklyTaskList';
+import { TaskManager } from '../components/plan/TaskManager';
+import { NotificationBanner } from '../components/plan/NotificationBanner';
+import { useTasks } from '../hooks/useTasks';
 import { printWeeklyPlan } from '../utils/printPlan';
 
 const GOLD   = '#F5C840';
@@ -106,7 +110,11 @@ export function PlanPage() {
   const navigate    = useNavigate();
   const planStore   = usePlanStore();
   const gardenStore = useGardenStore();
+  const { session } = useAuthStore();
   const today       = todayISO();
+
+  const { tasks, isLoading: tasksLoading, updateStatus, addTask, deleteTask, createFromPlan } = useTasks();
+  const [tasksConfirmed, setTasksConfirmed] = useState(false);
 
   const [gardenCheckStarted, setGardenCheckStarted] = useState(false);
 
@@ -128,6 +136,29 @@ export function PlanPage() {
       planStore.loadWeeklyPlan();
     }
   }, [gardenCheckStarted, gardenStore.isLoading, gardenStore.gardens.length]);
+
+  // Auto-create tasks from plan when plan first loads and no tasks exist yet
+  useEffect(() => {
+    const plan = planStore.weeklyPlan;
+    if (!plan || tasksConfirmed || tasks.length > 0 || !session?.access_token) return;
+    const planTasks: Array<{ date: string; title: string; type: 'biodynamic' | 'maintenance' | 'custom'; source_action?: string }> = [];
+
+    plan.gardenTasks.forEach((task: string) => {
+      planTasks.push({ date: plan.weekStart, title: task, type: 'maintenance' });
+    });
+
+    plan.days.forEach((day: any) => {
+      if (day.prep500) planTasks.push({ date: day.date, title: 'הכנת BD 500 — קרן הזבל', type: 'biodynamic', source_action: 'prep500' });
+      if (day.prep501) planTasks.push({ date: day.date, title: 'הכנת BD 501 — קרן הסיליקה', type: 'biodynamic', source_action: 'prep501' });
+      day.recommendedActions?.slice(0, 2).forEach((action: string) => {
+        planTasks.push({ date: day.date, title: action, type: 'biodynamic', source_action: action });
+      });
+    });
+
+    if (planTasks.length > 0) {
+      createFromPlan(null, planTasks).then(() => setTasksConfirmed(true));
+    }
+  }, [planStore.weeklyPlan, session?.access_token]);
 
   const [expandedDay, setExpandedDay] = useState<string | null>(today);
 
@@ -180,6 +211,14 @@ export function PlanPage() {
         animation: 'plan-fade-in 0.4s ease-out both',
       }}>
         <WeeklyPlanHeader plan={plan} />
+        <NotificationBanner />
+        <TaskManager
+          tasks={tasks}
+          onUpdateStatus={updateStatus}
+          onDelete={deleteTask}
+          onAdd={addTask}
+          isLoading={tasksLoading}
+        />
         <WeeklyTaskList tasks={plan.gardenTasks} weekStart={plan.weekStart} />
 
         {plan.days.map(day => (
