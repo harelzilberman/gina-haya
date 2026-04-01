@@ -42,23 +42,25 @@ const CARD_CSS = `
 // ─────────────────────────────────────────────
 // MOON PHASE DISPLAY COMPONENT
 // ─────────────────────────────────────────────
-function MoonPhaseDisplay({ phaseAngle, phaseHe, moonSignHe, ascending }: {
-  phaseAngle: number;`n  phasePct: number;
+function MoonPhaseDisplay({ phaseAngle, phasePct, phaseHe, moonSignHe, ascending }: {
+  phaseAngle: number;
+  phasePct: number;
   phaseHe: string;
   moonSignHe: string;
   ascending: boolean;
 }) {
+  // Use phasePct (0-100) directly for illumination display and new/full moon detection
+  // phaseAngle (0-360) is only used for shadow geometry
   const illumination = phasePct;
   const isFullMoon = phasePct > 95;
   const isNewMoon  = phasePct < 5;
+
   const daysToFull = phaseAngle <= 180
     ? Math.round((180 - phaseAngle) / 13.2)
     : Math.round((540 - phaseAngle) / 13.2);
   const daysToNew = Math.round((360 - phaseAngle) / 13.2);
 
-  // Shadow width: 0% = full moon (no shadow), 100% = new moon (all shadow)
-  // For waxing (0-180): shadow covers left side, shrinks as moon grows
-  // For waning (180-360): shadow covers right side, grows as moon shrinks
+  // Shadow: covers left for waxing, right for waning
   const shadowPct = isFullMoon ? 0 : isNewMoon ? 100 : Math.round(Math.abs(Math.cos(phaseAngle * Math.PI / 180)) * 100);
   const isWaxing = phaseAngle <= 180;
 
@@ -79,7 +81,7 @@ function MoonPhaseDisplay({ phaseAngle, phaseHe, moonSignHe, ascending }: {
         overflow: 'hidden',
         background: isNewMoon ? 'radial-gradient(circle at 35% 35%, #1a2218, #060a05)' : '#000',
       }}>
-        {/* Moon texture as img tag — works on all mobile browsers */}
+        {/* Moon texture */}
         {!isNewMoon && (
           <img
             src="/moon.jpg"
@@ -219,7 +221,8 @@ export function TodayCard({ day }: Props) {
         </p>
 
         <MoonPhaseDisplay
-          phasePct=\{(day.moonPhasePct ?? 0)\}`n          phaseAngle=\{(day.moonPhasePct ?? 0) / 100 * 360}
+          phasePct={day.moonPhasePct ?? 0}
+          phaseAngle={(day.moonPhasePct ?? 0) / 100 * 360}
           phaseHe={day.moonPhaseNameHe ?? day.moonPhaseHe ?? 'ירח'}
           moonSignHe={day.moonSignHe ?? ''}
           ascending={day.ascendingDescending === 'ascending'}
@@ -248,7 +251,7 @@ export function TodayCard({ day }: Props) {
           </svg>
           <p style={{
             fontFamily: ASSIST, fontSize: '11px', fontWeight: 600,
-            letterSpacing: '0.1em', textTransform: 'uppercase', color: `${PARCH}44`, marginTop: '4px',
+            letterSpacing: '0.1em', textTransform: 'uppercase' as const, color: `${PARCH}44`, marginTop: '4px',
           }}>
             {t('plantingScore.label')}
           </p>
@@ -293,4 +296,3 @@ export function TodayCard({ day }: Props) {
     </>
   );
 }
-
