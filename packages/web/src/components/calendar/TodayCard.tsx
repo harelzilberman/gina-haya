@@ -98,7 +98,6 @@ function loadMoonTexture(cb: (img: HTMLImageElement | null) => void) {
   if (moonTextureLoading) return;
   moonTextureLoading = true;
   const img = new Image();
-  img.crossOrigin = 'anonymous';
   img.onload = () => {
     moonTextureCache = img;
     moonTextureCbs.forEach(fn => fn(img));
