@@ -77,10 +77,23 @@ function MoonPhaseDisplay({ phaseAngle, phaseHe, moonSignHe, ascending }: {
           ? '0 0 32px rgba(245,200,64,0.35), 0 0 8px rgba(245,200,64,0.2)'
           : '0 0 16px rgba(245,200,64,0.18)',
         overflow: 'hidden',
-        background: isNewMoon
-          ? 'radial-gradient(circle at 35% 35%, #1a2218, #060a05)'
-          : `url(/moon.jpg) center/cover no-repeat`,
+        background: isNewMoon ? 'radial-gradient(circle at 35% 35%, #1a2218, #060a05)' : '#000',
       }}>
+        {/* Moon texture as img tag — works on all mobile browsers */}
+        {!isNewMoon && (
+          <img
+            src="/moon.jpg"
+            alt=""
+            style={{
+              position: 'absolute',
+              top: 0, left: 0,
+              width: '100%', height: '100%',
+              objectFit: 'cover',
+              display: 'block',
+              borderRadius: '50%',
+            }}
+          />
+        )}
         {/* Phase shadow overlay */}
         {!isFullMoon && !isNewMoon && (
           <div style={{
@@ -90,9 +103,8 @@ function MoonPhaseDisplay({ phaseAngle, phaseHe, moonSignHe, ascending }: {
             width: `${50 + shadowPct / 2}%`,
             height: '100%',
             background: 'rgba(4, 8, 20, 0.93)',
-            borderRadius: isWaxing
-              ? '0 999px 999px 0'
-              : '999px 0 0 999px',
+            borderRadius: isWaxing ? '0 999px 999px 0' : '999px 0 0 999px',
+            zIndex: 1,
           }} />
         )}
         {/* Spherical shading overlay */}
@@ -100,6 +112,7 @@ function MoonPhaseDisplay({ phaseAngle, phaseHe, moonSignHe, ascending }: {
           <div style={{
             position: 'absolute', inset: 0, borderRadius: '50%',
             background: 'radial-gradient(circle at 35% 35%, rgba(255,245,200,0.10) 0%, rgba(0,0,0,0) 50%, rgba(0,0,0,0.50) 100%)',
+            zIndex: 2,
           }} />
         )}
       </div>
