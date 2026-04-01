@@ -98,14 +98,25 @@ function loadMoonTexture(cb: (img: HTMLImageElement | null) => void) {
   if (moonTextureLoading) return;
   moonTextureLoading = true;
   const img = new Image();
+  img.crossOrigin = 'anonymous';
   img.onload = () => {
     moonTextureCache = img;
     moonTextureCbs.forEach(fn => fn(img));
     moonTextureCbs.length = 0;
   };
   img.onerror = () => {
-    moonTextureCbs.forEach(fn => fn(null));
-    moonTextureCbs.length = 0;
+    // Retry without crossOrigin (fallback for mobile CORS issues)
+    const img2 = new Image();
+    img2.onload = () => {
+      moonTextureCache = img2;
+      moonTextureCbs.forEach(fn => fn(img2));
+      moonTextureCbs.length = 0;
+    };
+    img2.onerror = () => {
+      moonTextureCbs.forEach(fn => fn(null));
+      moonTextureCbs.length = 0;
+    };
+    img2.src = MOON_TEXTURE_URL + '?v=2';
   };
   img.src = MOON_TEXTURE_URL;
 }
@@ -160,7 +171,17 @@ function renderMoon(
     const tw = texture.naturalWidth;
     const th = texture.naturalHeight;
     // Use the full image — moon fills it completely
-    ctx.drawImage(texture, 0, 0, tw, th, cx - r, cy - r, size, size);
+    try {
+      ctx.drawImage(texture, 0, 0, tw, th, cx - r, cy - r, size, size);
+    } catch (e) {
+      // tainted canvas — draw grey fallback
+      const g = ctx.createRadialGradient(cx - r*0.3, cy - r*0.3, r*0.1, cx, cy, r);
+      g.addColorStop(0, '#d0d0d0');
+      g.addColorStop(0.6, '#888888');
+      g.addColorStop(1, '#333333');
+      ctx.fillStyle = g;
+      ctx.fillRect(cx - r, cy - r, size, size);
+    }
     // Spherical shading overlay
     const shade = ctx.createRadialGradient(cx - r*0.25, cy - r*0.25, r*0.1, cx, cy, r);
     shade.addColorStop(0,   'rgba(255,245,200,0.15)');
