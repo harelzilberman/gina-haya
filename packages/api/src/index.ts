@@ -43,6 +43,7 @@ import { mapRouter }     from './routes/map';
 import { usersRouter }   from './routes/users';
 import { tasksRouter }   from './routes/tasks';
 import { pushRouter }    from './routes/push';
+import { startCronJobs } from './services/cronJobs';
 
 app.use('/api/auth',     authRouter);
 app.use('/api/garden',   gardenRouter);
@@ -65,6 +66,7 @@ app.use((_req, res) => {
 
 app.listen(PORT, () => {
   console.log(`Gina Haya API running on http://localhost:${PORT}`);
+  startCronJobs();
 });
 
 export default app;

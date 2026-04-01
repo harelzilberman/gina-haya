@@ -5,6 +5,7 @@ import {
   getTasksForWeek, updateTaskStatus, createCustomTask,
   deleteTask, createTasksFromPlan
 } from '../db/queries/tasks';
+import { sendSmartReminder } from '../services/cronJobs';
 
 export const tasksRouter: IRouter = Router();
 tasksRouter.use(verifyToken);
@@ -33,6 +34,15 @@ tasksRouter.post('/from-plan', async (req, res) => {
     if (!tasks || !Array.isArray(tasks)) return res.status(400).json({ error: 'tasks array required' });
     const created = await createTasksFromPlan(req.user!.id, planId ?? null, tasks);
     res.json(created);
+
+    // Fire-and-forget smart reminder if there are biodynamic tasks today
+    const todayTasks = created.filter((t: any) => t.date === todayISO() && t.type === 'biodynamic');
+    if (todayTasks.length > 0) {
+      sendSmartReminder(
+        req.user!.id,
+        `יש לך ${todayTasks.length} משימות ביודינמיות היום: ${todayTasks[0].title}`
+      ).catch(() => {});
+    }
   } catch (err: any) {
     res.status(500).json({ error: err.message });
   }
