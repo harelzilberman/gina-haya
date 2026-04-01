@@ -48,9 +48,9 @@ function MoonPhaseDisplay({ phaseAngle, phaseHe, moonSignHe, ascending }: {
   moonSignHe: string;
   ascending: boolean;
 }) {
-  const isFullMoon = phaseAngle > 155 && phaseAngle < 205;
-  const isNewMoon  = phaseAngle < 10  || phaseAngle > 350;
   const illumination = Math.round((1 - Math.cos(phaseAngle * Math.PI / 180)) / 2 * 100);
+  const isFullMoon = illumination > 95;
+  const isNewMoon  = illumination < 5;
   const daysToFull = phaseAngle <= 180
     ? Math.round((180 - phaseAngle) / 13.2)
     : Math.round((540 - phaseAngle) / 13.2);
