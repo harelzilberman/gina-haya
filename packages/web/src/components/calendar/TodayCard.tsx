@@ -84,41 +84,15 @@ function getMoonRotationDeg(latitudeDeg: number, phaseAngle: number): number {
 }
 
 // ─────────────────────────────────────────────
-// NASA moon texture loader (cached)
+// NASA moon texture loader
 // ─────────────────────────────────────────────
 const MOON_TEXTURE_URL = '/moon.jpg';
 
-let moonTextureCache: HTMLImageElement | null = null;
-let moonTextureLoading = false;
-const moonTextureCbs: Array<(img: HTMLImageElement | null) => void> = [];
-
 function loadMoonTexture(cb: (img: HTMLImageElement | null) => void) {
-  if (moonTextureCache) { cb(moonTextureCache); return; }
-  moonTextureCbs.push(cb);
-  if (moonTextureLoading) return;
-  moonTextureLoading = true;
   const img = new Image();
-  img.crossOrigin = 'anonymous';
-  img.onload = () => {
-    moonTextureCache = img;
-    moonTextureCbs.forEach(fn => fn(img));
-    moonTextureCbs.length = 0;
-  };
-  img.onerror = () => {
-    // Retry without crossOrigin (fallback for mobile CORS issues)
-    const img2 = new Image();
-    img2.onload = () => {
-      moonTextureCache = img2;
-      moonTextureCbs.forEach(fn => fn(img2));
-      moonTextureCbs.length = 0;
-    };
-    img2.onerror = () => {
-      moonTextureCbs.forEach(fn => fn(null));
-      moonTextureCbs.length = 0;
-    };
-    img2.src = MOON_TEXTURE_URL + '?v=2';
-  };
-  img.src = MOON_TEXTURE_URL;
+  img.onload = () => cb(img);
+  img.onerror = () => cb(null);
+  img.src = MOON_TEXTURE_URL + '?t=' + Date.now();
 }
 
 // ─────────────────────────────────────────────
@@ -272,29 +246,22 @@ function MoonPhaseDisplay({ phaseAngle, phaseHe, moonSignHe, ascending }: {
     );
   }, []);
 
-  const redraw = () => {
-    const canvas = canvasRef.current;
-    if (!canvas) return;
-    const ctx = canvas.getContext('2d');
-    if (!ctx) return;
-    const SIZE = 165;
-    const cx = SIZE / 2, cy = SIZE / 2, r = 82;
-    canvas.width = SIZE;
-    canvas.height = SIZE;
-    ctx.clearRect(0, 0, SIZE, SIZE);
-    const rotDeg = getMoonRotationDeg(latitudeDeg, phaseAngle);
-    renderMoon(ctx, cx, cy, r, phaseAngle, rotDeg, textureRef.current);
-  };
-
-  // Load texture first, then draw
   useEffect(() => {
     loadMoonTexture(img => {
       textureRef.current = img;
-      redraw();
+      const canvas = canvasRef.current;
+      if (!canvas) return;
+      const ctx = canvas.getContext('2d');
+      if (!ctx) return;
+      const SIZE = 165;
+      const cx = SIZE / 2, cy = SIZE / 2, r = 82;
+      canvas.width = SIZE;
+      canvas.height = SIZE;
+      ctx.clearRect(0, 0, SIZE, SIZE);
+      const rotDeg = getMoonRotationDeg(latitudeDeg, phaseAngle);
+      renderMoon(ctx, cx, cy, r, phaseAngle, rotDeg, img);
     });
-  }, []);
-
-  useEffect(() => { redraw(); }, [phaseAngle, latitudeDeg]);
+  }, [phaseAngle, latitudeDeg]);
 
   const isFullMoon   = phaseAngle > 155 && phaseAngle < 205;
   const illumination = Math.round((1 - Math.cos(phaseAngle * Math.PI / 180)) / 2 * 100);
