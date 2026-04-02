@@ -65,14 +65,14 @@ export function CalendarScreen() {
           <>
             <DayCard day={day} />
 
-            {/* Moosh daily tip */}
-            {day.mooshDailySummary ? (
-              <View style={styles.mooshCard}>
-                <View style={styles.mooshHeader}>
-                  <Text style={styles.mooshAvatar}>🌕</Text>
-                  <Text style={styles.mooshName}>מוש לבנה</Text>
+            {/* Mon daily tip */}
+            {day.monDailySummary ? (
+              <View style={styles.monCard}>
+                <View style={styles.monHeader}>
+                  <Text style={styles.monAvatar}>🌕</Text>
+                  <Text style={styles.monName}>מון לבנה</Text>
                 </View>
-                <Text style={styles.mooshTip}>{day.mooshDailySummary}</Text>
+                <Text style={styles.monTip}>{day.monDailySummary}</Text>
               </View>
             ) : null}
 
@@ -137,7 +137,7 @@ const styles = StyleSheet.create({
     marginTop: 40,
     fontSize: 15,
   },
-  mooshCard: {
+  monCard: {
     backgroundColor: 'rgba(28,58,30,0.7)',
     borderWidth: 1,
     borderColor: 'rgba(200,168,75,0.2)',
@@ -147,20 +147,20 @@ const styles = StyleSheet.create({
     padding: 16,
     gap: 10,
   },
-  mooshHeader: {
+  monHeader: {
     flexDirection: 'row-reverse',
     alignItems: 'center',
     gap: 8,
   },
-  mooshAvatar: {
+  monAvatar: {
     fontSize: 22,
   },
-  mooshName: {
+  monName: {
     fontSize: 13,
     fontWeight: '600',
     color: '#c8a84b',
   },
-  mooshTip: {
+  monTip: {
     fontSize: 14,
     color: '#EDE0C4',
     lineHeight: 22,

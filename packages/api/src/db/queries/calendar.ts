@@ -27,7 +27,7 @@ interface CalendarRow {
   score_colour: 'green' | 'yellow' | 'orange' | 'red' | 'black';
   moonrise_time: string | null;
   moonset_time: string | null;
-  moosh_daily_summary: string;
+  mon_daily_summary: string;
 }
 
 function toCalendarDay(row: CalendarRow): BiodynamicDay {
@@ -56,7 +56,7 @@ function toCalendarDay(row: CalendarRow): BiodynamicDay {
     scoreColour: row.score_colour,
     moonriseTime: row.moonrise_time,
     moonsetTime: row.moonset_time,
-    mooshDailySummary: row.moosh_daily_summary,
+    monDailySummary: row.mon_daily_summary,
   };
 }
 

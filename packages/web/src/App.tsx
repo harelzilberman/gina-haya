@@ -6,7 +6,7 @@ import { SignupPage } from './pages/SignupPage';
 import { ResetPasswordPage } from './pages/ResetPasswordPage';
 import { LandingPage } from './pages/LandingPage';
 import { CalendarPage } from './pages/CalendarPage';
-import { MooshPage } from './pages/MooshPage';
+import { MonPage } from './pages/MonPage';
 import { PlantsPage } from './pages/PlantsPage';
 import { GardenPage } from './pages/GardenPage';
 import { BillingPage } from './pages/BillingPage';
@@ -22,28 +22,28 @@ import { Navbar } from './components/layout/Navbar';
 import { Footer } from './components/layout/Footer';
 import { ToastContainer } from './components/ui/Toast';
 import { UpgradeModal } from './components/ui/UpgradeModal';
-import { MooshChat } from './components/moosh/MooshChat';
+import { MonChat } from './components/mon/MonChat';
 import { useUpgradeModalStore } from './stores/upgradeModalStore';
 import { useAuthStore } from './stores/authStore';
 import { useOnboardingStore } from './stores/onboardingStore';
-import { useMooshPanelStore } from './stores/mooshPanelStore';
+import { useMonPanelStore } from './stores/monPanelStore';
 import { supabase } from './lib/supabase';
 
 export default function App() {
   const { i18n } = useTranslation();
   const location = useLocation();
   const isMapPage   = location.pathname === '/map';
-  const isMooshPage = location.pathname === '/moosh';
+  const isMonPage = location.pathname === '/mon';
   const { user, profile, isAuthReady, loadProfile, markOnboardingComplete } = useAuthStore();
   const { isComplete } = useOnboardingStore();
   const { isOpen: isUpgradeOpen } = useUpgradeModalStore();
   const {
-    isOpen:             isMooshPanelOpen,
-    initialMessage:     mooshInitial,
-    open:               openMooshPanel,
-    close:              closeMooshPanel,
+    isOpen:             isMonPanelOpen,
+    initialMessage:     monInitial,
+    open:               openMonPanel,
+    close:              closeMonPanel,
     clearInitialMessage,
-  } = useMooshPanelStore();
+  } = useMonPanelStore();
 
   // Central RTL/LTR management
   useEffect(() => {
@@ -109,10 +109,10 @@ export default function App() {
             }
           />
           <Route
-            path="/moosh"
+            path="/mon"
             element={
               <ProtectedRoute>
-                <MooshPage />
+                <MonPage />
               </ProtectedRoute>
             }
           />
@@ -183,10 +183,10 @@ export default function App() {
       {isUpgradeOpen && <UpgradeModal />}
       <ToastContainer />
 
-      {/* Floating Moosh bubble — hidden on /moosh page itself */}
-      {user && !isMooshPage && (
+      {/* Floating Mon bubble — hidden on /mon page itself */}
+      {user && !isMonPage && (
         <>
-          {isMooshPanelOpen && (
+          {isMonPanelOpen && (
             <div style={{
               position:      'fixed',
               bottom:        '92px',
@@ -197,16 +197,16 @@ export default function App() {
               boxShadow:     '0 16px 60px rgba(0,0,0,0.55)',
               overflow:      'hidden',
             }}>
-              <MooshChat
+              <MonChat
                 compact
-                initialMessage={mooshInitial}
+                initialMessage={monInitial}
                 onInitialMessageConsumed={clearInitialMessage}
               />
             </div>
           )}
           <button
-            onClick={() => isMooshPanelOpen ? closeMooshPanel() : openMooshPanel()}
-            aria-label="שיחה עם מוש"
+            onClick={() => isMonPanelOpen ? closeMonPanel() : openMonPanel()}
+            aria-label="שיחה עם מון"
             style={{
               position:        'fixed',
               bottom:          '24px',
@@ -217,7 +217,7 @@ export default function App() {
               backgroundColor: '#F5C840',
               border:          'none',
               cursor:          'pointer',
-              fontSize:        isMooshPanelOpen ? '20px' : '26px',
+              fontSize:        isMonPanelOpen ? '20px' : '26px',
               fontWeight:      700,
               color:           '#142B16',
               display:         'flex',
@@ -230,7 +230,7 @@ export default function App() {
             onMouseEnter={e => { (e.currentTarget as HTMLElement).style.filter = 'brightness(1.1)'; }}
             onMouseLeave={e => { (e.currentTarget as HTMLElement).style.filter = 'none'; }}
           >
-            {isMooshPanelOpen ? '✕' : '🌕'}
+            {isMonPanelOpen ? '✕' : '🌕'}
           </button>
         </>
       )}

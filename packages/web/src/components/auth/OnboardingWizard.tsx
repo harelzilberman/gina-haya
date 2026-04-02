@@ -45,9 +45,9 @@ function ProgressDots({ step }: { step: number }) {
   );
 }
 
-// ── Moosh avatar ───────────────────────────────────────────────────────────
+// ── Mon avatar ───────────────────────────────────────────────────────────
 
-function MooshAvatar() {
+function MonAvatar() {
   return (
     <div
       className="mx-auto flex items-center justify-center rounded-full mb-3"
@@ -81,7 +81,7 @@ function Step0({ onAgree }: { onAgree: () => void }) {
 
   return (
     <div dir={dir} className="text-center">
-      <MooshAvatar />
+      <MonAvatar />
       <p className="font-bold text-navy text-lg mb-1">{t('onboarding.welcome')}</p>
       <p className="text-gray-500 text-sm mb-5">{t('onboarding.opening')}</p>
 

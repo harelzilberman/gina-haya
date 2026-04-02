@@ -3,10 +3,10 @@ import { useTranslation } from 'react-i18next';
 import { useDirection } from '../hooks/useDirection';
 import { useToday, useWeek } from '../hooks/useCalendar';
 import { NodeBlackoutBanner }  from '../components/calendar/NodeBlackoutBanner';
-import { MooshDailySummary }   from '../components/calendar/MooshDailySummary';
+import { MonDailySummary }   from '../components/calendar/MonDailySummary';
 import { TodayCard }           from '../components/calendar/TodayCardV2';
 import { WeekStrip }           from '../components/calendar/WeekStrip';
-import { useMooshPanelStore }  from '../stores/mooshPanelStore';
+import { useMonPanelStore }  from '../stores/monPanelStore';
 
 const EARTH  = '#142B16';
 const GOLD   = '#F5C840';
@@ -61,14 +61,14 @@ export function CalendarPage() {
   const { t, i18n } = useTranslation('calendar');
   const { dir } = useDirection();
   const isHe = i18n.language === 'he';
-  const { open: openMoosh } = useMooshPanelStore();
+  const { open: openMon } = useMonPanelStore();
   const [quickAsk, setQuickAsk] = useState('');
 
   const handleQuickAsk = () => {
     const text = quickAsk.trim();
     if (!text) return;
     setQuickAsk('');
-    openMoosh(text);
+    openMon(text);
   };
   const { day, isLoading: dayLoading, error: dayError } = useToday();
   const { days, isLoading: weekLoading } = useWeek();
@@ -141,9 +141,9 @@ export function CalendarPage() {
             </h1>
           </div>
 
-          {/* Moosh daily summary */}
+          {/* Mon daily summary */}
           <div className="cal-card-in" style={{ animationDelay: '100ms' }}>
-            <MooshDailySummary day={day} />
+            <MonDailySummary day={day} />
           </div>
 
           {/* Today hero card */}
@@ -158,7 +158,7 @@ export function CalendarPage() {
             </div>
           )}
 
-          {/* Moosh quick-ask */}
+          {/* Mon quick-ask */}
           <div className="cal-card-in" style={{ animationDelay: '400ms', marginTop: '20px' }}>
             <div style={{
               display:         'flex',
@@ -187,7 +187,7 @@ export function CalendarPage() {
                 value={quickAsk}
                 onChange={e => setQuickAsk(e.target.value)}
                 onKeyDown={e => e.key === 'Enter' && handleQuickAsk()}
-                placeholder={isHe ? 'שאל את מוש על הגינה...' : 'Ask Moosh about the garden...'}
+                placeholder={isHe ? 'שאל את מון על הגינה...' : 'Ask Mon about the garden...'}
                 style={{
                   flex:       '1 1 auto',
                   border:     'none',

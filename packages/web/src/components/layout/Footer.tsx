@@ -76,7 +76,7 @@ export function Footer() {
             {[
               { label: isHebrew ? 'לוח שנה ביודינמי' : 'Calendar', to: '/calendar' },
               { label: isHebrew ? 'אנציקלופדיה'      : 'Encyclopedia', to: '/plants' },
-              { label: isHebrew ? 'מוש לבנה'          : 'Growth Tracker', to: '/moosh' },
+              { label: isHebrew ? 'מון לבנה'          : 'Growth Tracker', to: '/mon' },
             ].map(item => (
               <Link
                 key={item.to}

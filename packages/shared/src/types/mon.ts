@@ -1,10 +1,10 @@
-export interface MooshMessage {
+export interface MonMessage {
   role: 'user' | 'assistant';
   content: string;
   timestamp: string;
 }
 
-export interface MooshContext {
+export interface MonContext {
   gardenName: string | null;
   locationRegion: string | null;
   soilType: string | null;

@@ -1,6 +1,6 @@
 import { create } from 'zustand';
 
-interface MooshPanelState {
+interface MonPanelState {
   isOpen: boolean;
   initialMessage: string;
   open: (initialMessage?: string) => void;
@@ -8,7 +8,7 @@ interface MooshPanelState {
   clearInitialMessage: () => void;
 }
 
-export const useMooshPanelStore = create<MooshPanelState>((set) => ({
+export const useMonPanelStore = create<MonPanelState>((set) => ({
   isOpen: false,
   initialMessage: '',
   open: (initialMessage = '') => set({ isOpen: true, initialMessage }),

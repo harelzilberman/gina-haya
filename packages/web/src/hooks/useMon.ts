@@ -1,8 +1,8 @@
 import { useCallback } from 'react';
-import { useMooshStore } from '../stores/mooshStore';
+import { useMonStore } from '../stores/monStore';
 
-export function useMoosh() {
-  const store = useMooshStore();
+export function useMon() {
+  const store = useMonStore();
 
   const sendMessage = useCallback(
     async (text: string, gardenId?: string) => {

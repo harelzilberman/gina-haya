@@ -78,7 +78,7 @@ function formatTime(totalMinutes: number): string {
   return `${String(h).padStart(2, '0')}:${String(m).padStart(2, '0')}`;
 }
 
-// Short moosh summaries by day type
+// Short mon summaries by day type
 const MOOSH_SUMMARIES: Record<string, string> = {
   fruit:  'יום פרי — הזמן האידיאלי לשתילת עגבניות, מלפפונים ופלפלים',
   root:   'יום שורש — שתול גזר, סלק ובצל היום',
@@ -181,8 +181,8 @@ async function seed() {
     const moonriseMin = (15 * 60 + 30 + i * 50) % (24 * 60);
     const moonsetMin  = (moonriseMin + 6 * 60 + 20) % (24 * 60);
 
-    // Moosh daily summary
-    const mooshDailySummary = nodeActive
+    // Mon daily summary
+    const monDailySummary = nodeActive
       ? MOOSH_SUMMARIES.node
       : (MOOSH_SUMMARIES[zodiac.dayType] ?? MOOSH_SUMMARIES.fruit);
 
@@ -209,7 +209,7 @@ async function seed() {
       score_colour:            scoreColour,
       moonrise_time:           formatTime(moonriseMin),
       moonset_time:            formatTime(moonsetMin),
-      moosh_daily_summary:     mooshDailySummary,
+      mon_daily_summary:     monDailySummary,
     });
   }
 

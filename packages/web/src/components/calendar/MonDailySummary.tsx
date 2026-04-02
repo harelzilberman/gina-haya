@@ -12,11 +12,11 @@ const ASSIST   = '"Assistant", "Heebo", sans-serif';
 const PLAYFAIR = '"Playfair Display", Georgia, serif';
 
 const MOOSH_CSS = `
-@keyframes moosh-glow {
+@keyframes mon-glow {
   0%, 100% { box-shadow: 0 0 12px rgba(245,200,64,0.3), 0 0 4px rgba(245,200,64,0.15); }
   50%       { box-shadow: 0 0 22px rgba(245,200,64,0.5), 0 0 8px rgba(245,200,64,0.25); }
 }
-.moosh-avatar { animation: moosh-glow 3s ease-in-out infinite; }
+.mon-avatar { animation: mon-glow 3s ease-in-out infinite; }
 `;
 
 const DEFAULT_SUMMARIES_HE: Record<string, string> = {
@@ -33,13 +33,13 @@ const DEFAULT_SUMMARIES_EN: Record<string, string> = {
   leaf:   'Today is a Leaf day — good time to prune and harvest leafy vegetables.',
 };
 
-export function MooshDailySummary({ day }: Props) {
+export function MonDailySummary({ day }: Props) {
   const { i18n } = useTranslation();
   const { dir } = useDirection();
   const isHe = i18n.language === 'he';
 
   const summary = isHe
-    ? (day.mooshDailySummary || DEFAULT_SUMMARIES_HE[day.dayType] || 'שלום מהגינה!')
+    ? (day.monDailySummary || DEFAULT_SUMMARIES_HE[day.dayType] || 'שלום מהגינה!')
     : (DEFAULT_SUMMARIES_EN[day.dayType] || 'Hello from the garden!');
 
   return (
@@ -62,9 +62,9 @@ export function MooshDailySummary({ day }: Props) {
           backdropFilter:    'blur(8px)',
         }}
       >
-        {/* Moosh avatar */}
+        {/* Mon avatar */}
         <div
-          className="moosh-avatar"
+          className="mon-avatar"
           aria-hidden="true"
           style={{
             flexShrink:      0,
@@ -93,7 +93,7 @@ export function MooshDailySummary({ day }: Props) {
             color:        GOLD,
             margin:       '0 0 6px',
           }}>
-            {isHe ? 'מוש אומר:' : 'Moosh says:'}
+            {isHe ? 'מון אומר:' : 'Mon says:'}
           </p>
           <p style={{
             fontFamily:  PLAYFAIR,

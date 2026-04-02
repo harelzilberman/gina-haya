@@ -23,7 +23,7 @@ export interface DayPlan {
   recommendedActions: string[];
   recommendedPlants: string[];
   avoidActions: string[];
-  mooshTip: string;
+  monTip: string;
 }
 
 export interface WeeklyPlan {
@@ -132,7 +132,7 @@ ${JSON.stringify(daysJson, null, 2)}
       "recommendedActions": ["פעולה 1", "פעולה 2"],
       "recommendedPlants": ["צמח 1"],
       "avoidActions": [],
-      "mooshTip": "טיפ קצר ואישי של מוש"
+      "monTip": "טיפ קצר ואישי של מון"
     }
   ],
   "gardenTasks": ["משימה 1", "משימה 2", "משימה 3"],
@@ -144,13 +144,13 @@ ${JSON.stringify(daysJson, null, 2)}
 - bestDayForHarvest: יום ירח עולה עם ציון 5 ומעלה
 - recommendedPlants: צמחים מהגינה המתאימים לסוג היום; אם אין — כלליים
 - ביום צומת: recommendedActions=["יום מנוחה לגינה"], avoidActions=["זריעה","שתילה","קציר"]
-- mooshTip: חם, אישי, קצר (משפט אחד עד שניים)
+- monTip: חם, אישי, קצר (משפט אחד עד שניים)
 - 7 ימים בדיוק ב-days, בסדר כרונולוגי`;
 
   const response = await anthropic.messages.create({
     model:      'claude-sonnet-4-20250514',
     max_tokens: 4096,
-    system:     'אתה מוש לבנה — סבא הירח. מומחה גידול ביודינמי ישראלי. אתה מכין תכנית שבועית מותאמת אישית. כתוב בעברית. החזר JSON תקני בלבד.',
+    system:     'אתה מון לבנה — סבא הירח. מומחה גידול ביודינמי ישראלי. אתה מכין תכנית שבועית מותאמת אישית. כתוב בעברית. החזר JSON תקני בלבד.',
     messages:   [{ role: 'user', content: userPrompt }],
   });
 

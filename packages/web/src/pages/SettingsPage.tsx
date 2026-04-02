@@ -111,7 +111,7 @@ export function SettingsPage() {
                   קבל טיפ יומי מהגינה במייל
                 </div>
                 <div style={{ fontFamily: ASSIST, fontSize: '12px', fontWeight: 300, color: `${PARCH}55` }}>
-                  מוש ישלח לך כל בוקר את נתוני היום הביודינמי
+                  מון ישלח לך כל בוקר את נתוני היום הביודינמי
                 </div>
               </div>
 

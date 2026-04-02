@@ -31,7 +31,7 @@ const LP_CSS = `
   from { transform: rotate(0deg); }
   to   { transform: rotate(360deg); }
 }
-@keyframes lp-pulse-moosh {
+@keyframes lp-pulse-mon {
   0%, 100% { transform: scale(1);     box-shadow: 0 0 40px rgba(245,200,64,0.25); }
   50%       { transform: scale(1.025); box-shadow: 0 0 64px rgba(245,200,64,0.45); }
 }
@@ -50,7 +50,7 @@ const LP_CSS = `
 .lp-orb-2      { opacity: 0; animation: fadeIn 2s ease 0.3s forwards, lp-float-r 9s ease-in-out -3s infinite; }
 .lp-orb-3      { opacity: 0; animation: fadeIn 2s ease 0.3s forwards, lp-float  10s ease-in-out -5s infinite; }
 .lp-wheel      { animation: lp-rotate  60s linear infinite; }
-.lp-moosh      { animation: lp-pulse-moosh 3s ease-in-out infinite; }
+.lp-mon      { animation: lp-pulse-mon 3s ease-in-out infinite; }
 
 .lp-feat-card {
   border: 1px solid rgba(125,192,132,0.2);
@@ -167,7 +167,7 @@ const FEATURES_HE: Feature[] = [
   },
   {
     icon: '🤖',
-    title: 'מוש לבנה — המומחה שלך',
+    title: 'מון לבנה — המומחה שלך',
     body: 'בינה מלאכותית ביודינמית שמכירה את הגינה שלך. שאל, קבל עצה, גדל טוב יותר.',
   },
   {
@@ -185,7 +185,7 @@ const FEATURES_EN: Feature[] = [
   },
   {
     icon: '🤖',
-    title: 'Moosh Levana — Your Expert',
+    title: 'Mon Levana — Your Expert',
     body: 'Biodynamic AI that knows your garden. Ask, get advice, grow better.',
   },
   {
@@ -208,7 +208,7 @@ const PRICING_HE: PricingPlan[] = [
   {
     name: 'חינם לתמיד',
     price: null,
-    features: ['לוח ביודינמי בסיסי', '5 שאלות למוש בחודש', 'אנציקלופדיה בסיסית'],
+    features: ['לוח ביודינמי בסיסי', '5 שאלות למון בחודש', 'אנציקלופדיה בסיסית'],
     cta: 'התחל עכשיו',
     highlight: false,
     badge: '',
@@ -216,7 +216,7 @@ const PRICING_HE: PricingPlan[] = [
   {
     name: 'Grower',
     price: '9',
-    features: ['לוח ביודינמי מלא', '30 שאלות למוש', 'גינה אישית', 'התראות יומיות'],
+    features: ['לוח ביודינמי מלא', '30 שאלות למון', 'גינה אישית', 'התראות יומיות'],
     cta: 'בחר תוכנית',
     highlight: false,
     badge: '',
@@ -243,7 +243,7 @@ const PRICING_EN: PricingPlan[] = [
   {
     name: 'Free Forever',
     price: null,
-    features: ['Basic biodynamic calendar', '5 Moosh questions/month', 'Basic encyclopedia'],
+    features: ['Basic biodynamic calendar', '5 Mon questions/month', 'Basic encyclopedia'],
     cta: 'Start Now',
     highlight: false,
     badge: '',
@@ -251,7 +251,7 @@ const PRICING_EN: PricingPlan[] = [
   {
     name: 'Grower',
     price: '9',
-    features: ['Full biodynamic calendar', '30 Moosh questions', 'Personal garden', 'Daily alerts'],
+    features: ['Full biodynamic calendar', '30 Mon questions', 'Personal garden', 'Daily alerts'],
     cta: 'Choose Plan',
     highlight: false,
     badge: '',
@@ -739,7 +739,7 @@ export function LandingPage() {
               textAlign: 'center',
             }}>
                 <div
-                  className="lp-moosh"
+                  className="lp-mon"
                   style={{
                     width: '140px', height: '140px', borderRadius: '50%',
                     background: `radial-gradient(circle at 35% 35%, #F0D060, ${GOLD})`,
@@ -758,7 +758,7 @@ export function LandingPage() {
                   color: GOLD,
                   marginBottom: '4px',
                 }}>
-                  {isHe ? 'מוש לבנה' : 'Moosh Levana'}
+                  {isHe ? 'מון לבנה' : 'Mon Levana'}
                 </p>
                 <p style={{ fontFamily: ASSISTANT, fontSize: '13px', color: LEAF_GREEN }}>
                   {isHe ? 'סבא הירח שלך' : 'Your Moon Elder'}
@@ -776,7 +776,7 @@ export function LandingPage() {
                   lineHeight: 1.3,
                   fontWeight: 400,
                 }}>
-                  {isHe ? 'שלום! אני מוש לבנה' : 'Hello! I am Moosh Levana'}
+                  {isHe ? 'שלום! אני מון לבנה' : 'Hello! I am Mon Levana'}
                 </h2>
                 <p style={{
                   fontFamily: ASSISTANT,
@@ -807,7 +807,7 @@ export function LandingPage() {
                     color: `${PARCHMENT}DD`,
                   }}>
                     {isHe
-                      ? 'היום הוא יום פרי 🍅 — הזמן המושלם לשתול עגבניות ופלפלים. הירח יורד, הארץ נושמת פנימה.'
+                      ? 'היום הוא יום פרי 🍅 — הזמן המוןלם לשתול עגבניות ופלפלים. הירח יורד, הארץ נושמת פנימה.'
                       : 'Today is a Fruit Day 🍅 — the perfect time to plant tomatoes and peppers. The moon is descending, the earth breathes inward.'}
                   </p>
                 </div>
@@ -1075,7 +1075,7 @@ export function LandingPage() {
               color: `${PARCHMENT}66`,
               marginBottom: '48px',
             }}>
-              — {isHe ? 'מוש לבנה' : 'Moosh Levana'}
+              — {isHe ? 'מון לבנה' : 'Mon Levana'}
             </p>
             <Link
               to="/signup"

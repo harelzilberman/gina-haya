@@ -1,5 +1,5 @@
 import { create } from 'zustand';
-import type { MooshMessage } from '@gina-haya/shared';
+import type { MonMessage } from '@gina-haya/shared';
 import { useAuthStore } from './authStore';
 import { api } from '../api/client';
 
@@ -9,8 +9,8 @@ function getToken(): string | null {
   return useAuthStore.getState().session?.access_token ?? null;
 }
 
-interface MooshState {
-  messages: MooshMessage[];
+interface MonState {
+  messages: MonMessage[];
   isLoading: boolean;
   error: string | null;
   rateLimited: boolean;
@@ -24,7 +24,7 @@ interface MooshState {
   clearError: () => void;
 }
 
-export const useMooshStore = create<MooshState>((set, get) => ({
+export const useMonStore = create<MonState>((set, get) => ({
   messages:       [],
   isLoading:      false,
   error:          null,
@@ -40,7 +40,7 @@ export const useMooshStore = create<MooshState>((set, get) => ({
     if (!token || !text.trim()) return;
 
     // Optimistic: append user message immediately
-    const userMsg: MooshMessage = {
+    const userMsg: MonMessage = {
       role:      'user',
       content:   text.trim(),
       timestamp: new Date().toISOString(),
@@ -48,7 +48,7 @@ export const useMooshStore = create<MooshState>((set, get) => ({
     set(s => ({ messages: [...s.messages, userMsg], isLoading: true, error: null }));
 
     try {
-      const res = await fetch(`${API_BASE}/api/moosh/chat`, {
+      const res = await fetch(`${API_BASE}/api/mon/chat`, {
         method: 'POST',
         headers: {
           'Content-Type':  'application/json',
@@ -76,14 +76,14 @@ export const useMooshStore = create<MooshState>((set, get) => ({
       }
 
       const data = await res.json();
-      const mooshMsg: MooshMessage = {
+      const monMsg: MonMessage = {
         role:      'assistant',
         content:   data.response,
         timestamp: new Date().toISOString(),
       };
 
       set(s => ({
-        messages:       [...s.messages, mooshMsg],
+        messages:       [...s.messages, monMsg],
         isLoading:      false,
         rateLimited:    false,
         usageThisMonth: data.messagesUsedThisMonth ?? s.usageThisMonth,
@@ -98,7 +98,7 @@ export const useMooshStore = create<MooshState>((set, get) => ({
     const token = getToken();
     if (!token) return;
     try {
-      const data = await api.get<MooshMessage[]>('/api/moosh/history', token);
+      const data = await api.get<MonMessage[]>('/api/mon/history', token);
       set({ messages: data });
     } catch {
       // silently ignore — chat still works without history
@@ -109,7 +109,7 @@ export const useMooshStore = create<MooshState>((set, get) => ({
     const token = getToken();
     if (!token) return;
     try {
-      await api.del('/api/moosh/history', token);
+      await api.del('/api/mon/history', token);
       set({ messages: [], usageThisMonth: 0, rateLimited: false });
     } catch {
       // silently ignore

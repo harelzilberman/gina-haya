@@ -308,9 +308,9 @@ export function DayPlanCard({ day, isToday, isExpanded, onToggle, forceExpanded 
             </span>
           </div>
 
-          {/* Moosh tip */}
-          {day.mooshTip && (
-            <div className="moosh-tip" style={{
+          {/* Mon tip */}
+          {day.monTip && (
+            <div className="mon-tip" style={{
               padding:            '12px 14px',
               borderRadius:       '8px',
               backgroundColor:    'rgba(245,200,64,0.04)',
@@ -327,7 +327,7 @@ export function DayPlanCard({ day, isToday, isExpanded, onToggle, forceExpanded 
                 margin:      0,
                 lineHeight:  1.6,
               }}>
-                🌙 {day.mooshTip}
+                🌙 {day.monTip}
               </p>
             </div>
           )}

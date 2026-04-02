@@ -1,9 +1,9 @@
 import { useState, useRef, useEffect, KeyboardEvent } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useDirection } from '../../hooks/useDirection';
-import type { MooshMessage } from '@gina-haya/shared';
-import { useMoosh } from '../../hooks/useMoosh';
-import { MooshGreeting } from './MooshGreeting';
+import type { MonMessage } from '@gina-haya/shared';
+import { useMon } from '../../hooks/useMon';
+import { MonGreeting } from './MonGreeting';
 import { RateLimitBanner } from './RateLimitBanner';
 
 // ── Design tokens ────────────────────────────────────────────────────────────
@@ -15,21 +15,21 @@ const ASSIST   = '"Assistant", "Heebo", sans-serif';
 const PLAYFAIR = '"Playfair Display", Georgia, serif';
 
 const CHAT_CSS = `
-@keyframes moosh-bounce {
+@keyframes mon-bounce {
   0%, 80%, 100% { transform: translateY(0);   }
   40%           { transform: translateY(-5px); }
 }
-@keyframes moosh-glow {
+@keyframes mon-glow {
   0%, 100% { box-shadow: 0 0 8px rgba(245,200,64,0.25); }
   50%      { box-shadow: 0 0 18px rgba(245,200,64,0.5); }
 }
-.moosh-dot { animation: moosh-bounce 1.4s ease-in-out infinite; }
-.moosh-avatar-pulse { animation: moosh-glow 3s ease-in-out infinite; }
-.moosh-textarea::placeholder { color: rgba(237,224,196,0.3); }
-.moosh-textarea:focus { border-color: rgba(245,200,64,0.4) !important; outline: none; }
-.moosh-scroll::-webkit-scrollbar { width: 4px; }
-.moosh-scroll::-webkit-scrollbar-track { background: transparent; }
-.moosh-scroll::-webkit-scrollbar-thumb { background: rgba(125,192,132,0.2); border-radius: 2px; }
+.mon-dot { animation: mon-bounce 1.4s ease-in-out infinite; }
+.mon-avatar-pulse { animation: mon-glow 3s ease-in-out infinite; }
+.mon-textarea::placeholder { color: rgba(237,224,196,0.3); }
+.mon-textarea:focus { border-color: rgba(245,200,64,0.4) !important; outline: none; }
+.mon-scroll::-webkit-scrollbar { width: 4px; }
+.mon-scroll::-webkit-scrollbar-track { background: transparent; }
+.mon-scroll::-webkit-scrollbar-thumb { background: rgba(125,192,132,0.2); border-radius: 2px; }
 `;
 
 // ── Typing indicator ──────────────────────────────────────────────────────────
@@ -61,13 +61,13 @@ function TypingDots() {
             borderRadius:    '16px',
             padding:         '10px 16px',
           }}
-          aria-label={isRTL ? 'מוש חושב' : 'Moosh is thinking'}
+          aria-label={isRTL ? 'מון חושב' : 'Mon is thinking'}
         >
           <div style={{ display: 'flex', gap: '4px', alignItems: 'center', height: '16px' }}>
             {[0, 150, 300].map(delay => (
               <span
                 key={delay}
-                className="moosh-dot"
+                className="mon-dot"
                 style={{
                   display:          'inline-block',
                   width:            '7px',
@@ -86,11 +86,11 @@ function TypingDots() {
 }
 
 // ── Message bubble ────────────────────────────────────────────────────────────
-function MessageBubble({ message, isRTL }: { message: MooshMessage; isRTL: boolean }) {
+function MessageBubble({ message, isRTL }: { message: MonMessage; isRTL: boolean }) {
   const isUser = message.role === 'user';
 
   // In RTL: start = right, end = left
-  // User on RIGHT (start in RTL), Moosh on LEFT (end in RTL)
+  // User on RIGHT (start in RTL), Mon on LEFT (end in RTL)
   const rowJustify = isRTL
     ? (isUser ? 'flex-start' : 'flex-end')
     : (isUser ? 'flex-end'   : 'flex-start');
@@ -99,9 +99,9 @@ function MessageBubble({ message, isRTL }: { message: MooshMessage; isRTL: boole
   const userCorner  = isRTL
     ? { borderTopRightRadius: '4px' }   // user on right in RTL
     : { borderTopLeftRadius:  '4px' };  // user on right in LTR
-  const mooshCorner = isRTL
-    ? { borderTopLeftRadius:  '4px' }   // moosh on left in RTL
-    : { borderTopRightRadius: '4px' };  // moosh on left in LTR
+  const monCorner = isRTL
+    ? { borderTopLeftRadius:  '4px' }   // mon on left in RTL
+    : { borderTopRightRadius: '4px' };  // mon on left in LTR
 
   return (
     <div style={{ display: 'flex', justifyContent: rowJustify }}>
@@ -112,10 +112,10 @@ function MessageBubble({ message, isRTL }: { message: MooshMessage; isRTL: boole
         maxWidth:   '80%',
         flexDirection: isUser ? 'row-reverse' : 'row',
       }}>
-        {/* Moosh avatar — assistant messages only */}
+        {/* Mon avatar — assistant messages only */}
         {!isUser && (
           <div
-            className="moosh-avatar-pulse"
+            className="mon-avatar-pulse"
             aria-hidden="true"
             style={{
               flexShrink:      0,
@@ -144,7 +144,7 @@ function MessageBubble({ message, isRTL }: { message: MooshMessage; isRTL: boole
             lineHeight:   1.65,
             textAlign:    isRTL ? 'right' : 'left',
             direction:    isRTL ? 'rtl' : 'ltr',
-            ...(isUser ? userCorner : mooshCorner),
+            ...(isUser ? userCorner : monCorner),
             ...(isUser
               ? {
                   backgroundColor: 'rgba(74,128,80,0.3)',
@@ -176,14 +176,14 @@ function MessageBubble({ message, isRTL }: { message: MooshMessage; isRTL: boole
 }
 
 // ── Main chat ─────────────────────────────────────────────────────────────────
-interface MooshChatProps {
+interface MonChatProps {
   compact?: boolean;
   initialMessage?: string;
   onInitialMessageConsumed?: () => void;
 }
 
-export function MooshChat({ compact, initialMessage, onInitialMessageConsumed }: MooshChatProps = {}) {
-  const { t } = useTranslation('moosh');
+export function MonChat({ compact, initialMessage, onInitialMessageConsumed }: MonChatProps = {}) {
+  const { t } = useTranslation('mon');
   const { dir, isRTL } = useDirection();
 
   const {
@@ -194,7 +194,7 @@ export function MooshChat({ compact, initialMessage, onInitialMessageConsumed }:
     rateLimitTier,
     sendMessage,
     clearError,
-  } = useMoosh();
+  } = useMon();
 
   const [input, setInput]      = useState('');
   const messagesEndRef         = useRef<HTMLDivElement>(null);
@@ -261,7 +261,7 @@ export function MooshChat({ compact, initialMessage, onInitialMessageConsumed }:
           borderBottom:    '1px solid rgba(245,200,64,0.1)',
         }}>
           <div
-            className="moosh-avatar-pulse"
+            className="mon-avatar-pulse"
             aria-hidden="true"
             style={{
               flexShrink:      0,
@@ -303,7 +303,7 @@ export function MooshChat({ compact, initialMessage, onInitialMessageConsumed }:
 
         {/* Message list */}
         <div
-          className="moosh-scroll"
+          className="mon-scroll"
           style={{
             flex:      '1 1 auto',
             overflowY: 'auto',
@@ -315,7 +315,7 @@ export function MooshChat({ compact, initialMessage, onInitialMessageConsumed }:
             gap:       '12px',
           }}
         >
-          {messages.length === 0 && !isLoading && <MooshGreeting />}
+          {messages.length === 0 && !isLoading && <MonGreeting />}
 
           {messages.map((msg, idx) => (
             <MessageBubble key={idx} message={msg} isRTL={isRTL} />
@@ -374,7 +374,7 @@ export function MooshChat({ compact, initialMessage, onInitialMessageConsumed }:
           }}>
             <textarea
               ref={textareaRef}
-              className="moosh-textarea"
+              className="mon-textarea"
               value={input}
               onChange={handleInput}
               onKeyDown={handleKeyDown}

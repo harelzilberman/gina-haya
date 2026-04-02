@@ -377,7 +377,7 @@ export function WizardModal({ mapId, wizardStatus, onClose, onRefreshStatus, onP
               הגעת למגבלת האשפים החודשית
             </p>
             <p style={{ fontFamily: ASSIST, fontSize: '12px', color: `${PARCH}66`, margin: '0 0 14px' }}>
-              {wizardStatus?.limit} שימושים לחודש בחבילה הנוכחית שלך
+              {wizardStatus?.limit} שימוןים לחודש בחבילה הנוכחית שלך
             </p>
             <a href="/billing" style={{ fontFamily: ASSIST, fontSize: '13px', color: GOLD, fontWeight: 600 }}>
               שדרג לחבילה גבוהה יותר ←
@@ -390,7 +390,7 @@ export function WizardModal({ mapId, wizardStatus, onClose, onRefreshStatus, onP
           <div style={{ textAlign: 'center', padding: '32px 0' }}>
             <div style={{ fontSize: '48px', animation: 'spin 3s linear infinite', display: 'inline-block' }}>🌕</div>
             <p style={{ fontFamily: FRANK, fontSize: '16px', color: GOLD, margin: '16px 0 6px' }}>
-              מוש בודק את הגינה שלך...
+              מון בודק את הגינה שלך...
             </p>
             <p style={{ fontFamily: ASSIST, fontSize: '12px', color: `${PARCH}44` }}>
               זה לוקח כ-30 שניות
@@ -467,7 +467,7 @@ export function WizardModal({ mapId, wizardStatus, onClose, onRefreshStatus, onP
                 borderRadius: '8px', border: 'none', backgroundColor: GOLD, color: '#142B16',
                 cursor: 'pointer', width: '100%',
               }}>
-              🌕 בקש ממוש לתכנן
+              🌕 בקש ממון לתכנן
             </button>
           </>
         )}

@@ -144,8 +144,8 @@ export function DayDetailModal({ day, onClose }: Props) {
       ? 'The earth breathes outward — recommended for harvesting and gathering'
       : 'The earth breathes inward — best time for planting and watering');
 
-  const mooshSummary = isHe
-    ? (day.mooshDailySummary || MOOSH_DEFAULTS_HE[day.dayType] || '')
+  const monSummary = isHe
+    ? (day.monDailySummary || MOOSH_DEFAULTS_HE[day.dayType] || '')
     : (MOOSH_DEFAULTS_EN[day.dayType] || '');
 
   return (
@@ -397,7 +397,7 @@ export function DayDetailModal({ day, onClose }: Props) {
                 color:         GOLD,
                 margin:        '0 0 6px',
               }}>
-                {isHe ? 'מוש ממליץ:' : 'Moosh recommends:'}
+                {isHe ? 'מון ממליץ:' : 'Mon recommends:'}
               </p>
               <p style={{
                 fontFamily: PLAYFAIR,
@@ -407,7 +407,7 @@ export function DayDetailModal({ day, onClose }: Props) {
                 color:      `${PARCH}CC`,
                 margin:     0,
               }}>
-                {mooshSummary}
+                {monSummary}
               </p>
             </div>
           </div>

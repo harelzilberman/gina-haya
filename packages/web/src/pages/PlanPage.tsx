@@ -40,7 +40,7 @@ function LoadingState() {
     }}>
       <span style={{ fontSize: '56px', animation: 'plan-moon-pulse 2.5s ease-in-out infinite' }}>🌕</span>
       <p style={{ fontFamily: FRANK, fontSize: '20px', color: GOLD, margin: '20px 0 8px' }}>
-        מוש מכין את תכנית השבוע שלך...
+        מון מכין את תכנית השבוע שלך...
       </p>
       <p style={{ fontFamily: ASSIST, fontSize: '14px', color: `${PARCH}66`, margin: 0 }}>
         זה לוקח כ-20 שניות
@@ -90,7 +90,7 @@ function NoGardenPrompt({ onNavigate }: { onNavigate: () => void }) {
         צור גינה תחילה
       </h2>
       <p style={{ fontFamily: ASSIST, fontSize: '14px', color: `${PARCH}88`, margin: '0 0 28px', maxWidth: '300px', lineHeight: 1.4 }}>
-        כדי שמוש יוכל להכין תכנית שבועית מותאמת אישית, עליך קודם להגדיר את הגינה שלך
+        כדי שמון יוכל להכין תכנית שבועית מותאמת אישית, עליך קודם להגדיר את הגינה שלך
       </p>
       <button
         onClick={onNavigate}

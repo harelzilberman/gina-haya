@@ -10,8 +10,8 @@ const DAY_TYPE_HE: Record<string, string> = {
   leaf:   'יום עלה 🌿',
 };
 
-export function MooshGreeting() {
-  const { t, i18n } = useTranslation('moosh');
+export function MonGreeting() {
+  const { t, i18n } = useTranslation('mon');
   const { day } = useToday();
 
   const calendarLine = day

@@ -304,11 +304,11 @@ def prep_recommendations(ascending, is_node, is_full_moon,
 # MOOSH DAILY SUMMARIES — Hebrew, wise, warm
 # ═══════════════════════════════════════════════════════
 
-def get_moosh_summary(day_type, ascending, is_node, is_full_moon,
+def get_mon_summary(day_type, ascending, is_node, is_full_moon,
                       is_new_moon, is_pre_full_moon, moon_opposite_saturn,
                       is_perigee, is_apogee, prep500, prep501):
     if is_node:
-        return 'יום צומת — מוש ממליץ לנוח מעבודת הגינה היום ולתת לאדמה לנשום'
+        return 'יום צומת — מון ממליץ לנוח מעבודת הגינה היום ולתת לאדמה לנשום'
 
     parts = []
 
@@ -423,7 +423,7 @@ def generate_calendar_data(start_date, days):
             moon_opposite_saturn = saturn_data['moon_opposite_saturn'],
         )
 
-        moosh = get_moosh_summary(
+        mon = get_mon_summary(
             day_type             = moon_pos['day_type'],
             ascending            = moon_decl['ascending'],
             is_node              = node_data['is_node_day'],
@@ -465,7 +465,7 @@ def generate_calendar_data(start_date, days):
             'prep_500_recommended':    prep500,
             'prep_501_recommended':    prep501,
             'cpp_recommended':         cpp,
-            'moosh_daily_summary':     moosh,
+            'mon_daily_summary':     mon,
         })
 
         if offset % 30 == 0:
@@ -531,7 +531,7 @@ def main():
               f"{'↑' if r['ascending_descending']=='ascending' else '↓'} | "
               f"{r['moon_phase_he']:8} | {r['planting_score']}/10 {r['score_colour']:6} "
               f"{sat}{node}")
-        print(f"    מוש: {r['moosh_daily_summary'][:80]}...")
+        print(f"    מון: {r['mon_daily_summary'][:80]}...")
 
     # Upsert
     print(f'\nUpserting to Supabase...')

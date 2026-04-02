@@ -29,15 +29,15 @@ const CATEGORIES = [
 
 const VIDEOS: Video[] = [
   // Fertilizer
-  { id: 'f1', titleHe: 'תה קומפוסט — הכנה ושימוש', descHe: 'איך להכין תה קומפוסט ביתי ולהשתמש בו כדשן נוזלי לגינה', category: 'fertilizer', format: 'both', duration: '3:20', youtubeId: 'dQw4w9WgXcQ' },
+  { id: 'f1', titleHe: 'תה קומפוסט — הכנה ושימון', descHe: 'איך להכין תה קומפוסט ביתי ולהשתמש בו כדשן נוזלי לגינה', category: 'fertilizer', format: 'both', duration: '3:20', youtubeId: 'dQw4w9WgXcQ' },
   { id: 'f2', titleHe: 'ריסוס אצות ים', descHe: 'מתכון פשוט לנוזל ריסוס מאצות ים לחיזוק הצמחים', category: 'fertilizer', format: 'reel', duration: '1:00', comingSoon: true },
   { id: 'f3', titleHe: 'דשן ירוק — כיסוי אדמה', descHe: 'כיצד לגדל ולשלב דשן ירוק בגינה הביודינמית', category: 'fertilizer', format: 'yt', duration: '8:15', comingSoon: true },
-  { id: 'f4', titleHe: 'שתן מדולל כדשן', descHe: 'השימוש בשתן מדולל כדשן טבעי עשיר באזוט', category: 'fertilizer', format: 'reel', duration: '0:45', comingSoon: true },
+  { id: 'f4', titleHe: 'שתן מדולל כדשן', descHe: 'השימון בשתן מדולל כדשן טבעי עשיר באזוט', category: 'fertilizer', format: 'reel', duration: '0:45', comingSoon: true },
 
   // Pest control
   { id: 'p1', titleHe: 'שמן נים — מתכון בסיסי', descHe: 'הכנת תרסיס שמן נים אורגני להדברת מזיקים', category: 'pest', format: 'both', duration: '2:30', youtubeId: 'dQw4w9WgXcQ' },
   { id: 'p2', titleHe: 'חיפושיות טובות לגינה', descHe: 'כיצד למשוך חיפושיות אבקניות וציד טבעיות לגינה', category: 'pest', format: 'reel', duration: '1:00', comingSoon: true },
-  { id: 'p3', titleHe: 'מלכודות צהובות דביקות', descHe: 'שימוש במלכודות דביקות לניטור ולכידת מזיקים', category: 'pest', format: 'reel', duration: '0:30', comingSoon: true },
+  { id: 'p3', titleHe: 'מלכודות צהובות דביקות', descHe: 'שימון במלכודות דביקות לניטור ולכידת מזיקים', category: 'pest', format: 'reel', duration: '0:30', comingSoon: true },
   { id: 'p4', titleHe: 'צמחי מלווים להדברה', descHe: 'אילו צמחים להשתיל לידי כדי לדחות מזיקים', category: 'pest', format: 'yt', duration: '6:00', comingSoon: true },
 
   // Compost
@@ -46,9 +46,9 @@ const VIDEOS: Video[] = [
   { id: 'c3', titleHe: 'מה לא לשים בקומפוסט', descHe: 'הטעויות הנפוצות ואיך להימנע מהן', category: 'compost', format: 'reel', duration: '0:45', comingSoon: true },
 
   // BD preparations
-  { id: 'bd1', titleHe: 'BD 500 — קרן הזבל', descHe: 'הכנה ושימוש בפרפרט ביודינמי 500', category: 'bd', format: 'yt', duration: '12:00', youtubeId: 'dQw4w9WgXcQ' },
-  { id: 'bd2', titleHe: 'BD 501 — קרן הסיליקה', descHe: 'הכנה ושימוש בפרפרט ביודינמי 501', category: 'bd', format: 'yt', duration: '8:00', comingSoon: true },
-  { id: 'bd3', titleHe: 'CPP — תמצית גללים', descHe: 'הכנת ושימוש ב-CPP לחיזוק החיות בקרקע', category: 'bd', format: 'reel', duration: '1:00', comingSoon: true },
+  { id: 'bd1', titleHe: 'BD 500 — קרן הזבל', descHe: 'הכנה ושימון בפרפרט ביודינמי 500', category: 'bd', format: 'yt', duration: '12:00', youtubeId: 'dQw4w9WgXcQ' },
+  { id: 'bd2', titleHe: 'BD 501 — קרן הסיליקה', descHe: 'הכנה ושימון בפרפרט ביודינמי 501', category: 'bd', format: 'yt', duration: '8:00', comingSoon: true },
+  { id: 'bd3', titleHe: 'CPP — תמצית גללים', descHe: 'הכנת ושימון ב-CPP לחיזוק החיות בקרקע', category: 'bd', format: 'reel', duration: '1:00', comingSoon: true },
   { id: 'bd4', titleHe: 'הלוח הביודינמי — איך קוראים', descHe: 'מדריך מעשי לקריאת הלוח הביודינמי', category: 'bd', format: 'both', duration: '4:00', comingSoon: true },
 
   // Companions

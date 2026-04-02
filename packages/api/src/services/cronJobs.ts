@@ -94,7 +94,7 @@ export async function sendSmartReminder(userId: string, message: string) {
     if (settings && (!settings.enabled || !settings.smart_reminders)) return;
 
     await webpush.sendNotification(sub.subscription, JSON.stringify({
-      title: '🌙 מוש — תזכורת חכמה',
+      title: '🌙 מון — תזכורת חכמה',
       body: message,
       url: '/plan',
     }));

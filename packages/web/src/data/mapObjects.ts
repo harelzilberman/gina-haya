@@ -160,7 +160,7 @@ export const MAP_OBJECT_TYPES: MapObjectType[] = [
   { type: 'water',  labelHe: 'ברז מים',       emoji: '🚿', color: 'rgba(30,100,200,0.3)',  border: '#4A90D9', borderWidth: 2, borderDash: [], isCircle: true, isPoint: true },
   { type: 'tree',   labelHe: 'עץ',            emoji: '🌳', color: 'rgba(34,100,34,0.5)',   border: '#2d6e3e', borderWidth: 2, borderDash: [], isCircle: true },
   { type: 'shade',  labelHe: 'גגון/פרגולה',   emoji: '⛺', color: 'rgba(120,80,40,0.2)',  border: '#9B7A48', borderWidth: 2, borderDash: [4,4] },
-  { type: 'unused', labelHe: 'שטח ללא שימוש', emoji: '❌', color: 'rgba(80,80,80,0.3)',    border: '#555555', borderWidth: 1, borderDash: [4,4] },
+  { type: 'unused', labelHe: 'שטח ללא שימון', emoji: '❌', color: 'rgba(80,80,80,0.3)',    border: '#555555', borderWidth: 1, borderDash: [4,4] },
 ];
 
 export const MAP_OBJECT_MAP = new Map<string, MapObjectType>(

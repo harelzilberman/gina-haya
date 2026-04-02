@@ -223,7 +223,7 @@ mapRouter.post('/:id/wizard', async (req: any, res) => {
         }).join('\n')}`
       : '';
 
-    const systemPrompt = `אתה מוש לבנה — מומחה גידול ביודינמי ישראלי. אתה מתכנן גינות ומייעץ על שתילה ביודינמית. \
+    const systemPrompt = `אתה מון לבנה — מומחה גידול ביודינמי ישראלי. אתה מתכנן גינות ומייעץ על שתילה ביודינמית. \
 ענה תמיד בעברית בלבד. החזר JSON תקני בלבד — ללא הסברים נוספים, ללא markdown.`;
 
     const objectsLine = mapData.objects.length > 0

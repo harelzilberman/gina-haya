@@ -11,11 +11,11 @@ const MAX_FILE_BYTES = 8 * 1024 * 1024; // 8 MB safe limit for base64 under serv
 const ACCEPTED_TYPES = ['image/jpeg', 'image/png', 'image/webp'];
 
 const MOOSH_PULSE_CSS = `
-@keyframes mooshPulse {
+@keyframes monPulse {
   0%, 100% { transform: scale(1); opacity: 1; }
   50%       { transform: scale(1.12); opacity: 0.8; }
 }
-.moosh-pulse { animation: mooshPulse 1.6s ease-in-out infinite; }
+.mon-pulse { animation: monPulse 1.6s ease-in-out infinite; }
 `;
 
 interface Props {
@@ -138,9 +138,9 @@ export function PhotoUpload({ trackerId, plantNameHe, onClose, onComplete }: Pro
           {/* Analyzing state */}
           {isAnalyzing ? (
             <div style={{ textAlign: 'center', padding: '32px 0' }}>
-              <div className="moosh-pulse" style={{ fontSize: '64px', marginBottom: '20px' }}>🌕</div>
+              <div className="mon-pulse" style={{ fontSize: '64px', marginBottom: '20px' }}>🌕</div>
               <p style={{ fontFamily: FRANK, fontSize: '20px', color: GOLD, marginBottom: '8px' }}>
-                מוש בודק את הצמח שלך...
+                מון בודק את הצמח שלך...
               </p>
               <p style={{ fontFamily: ASST, fontSize: '14px', color: 'rgba(237,224,196,0.6)', marginBottom: '4px' }}>
                 ניתוח חכם עם בינה מלאכותית
@@ -266,7 +266,7 @@ export function PhotoUpload({ trackerId, plantNameHe, onClose, onComplete }: Pro
                 onMouseEnter={e => { if (imageBase64) (e.currentTarget as HTMLElement).style.filter = 'brightness(1.1)'; }}
                 onMouseLeave={e => { (e.currentTarget as HTMLElement).style.filter = 'none'; }}
               >
-                נתח עם מוש 🌕
+                נתח עם מון 🌕
               </button>
             </>
           )}

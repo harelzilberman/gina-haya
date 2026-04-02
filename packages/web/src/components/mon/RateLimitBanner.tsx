@@ -5,7 +5,7 @@ interface Props {
 }
 
 export function RateLimitBanner({ tier }: Props) {
-  const { t } = useTranslation('moosh');
+  const { t } = useTranslation('mon');
 
   const message =
     tier === 'grower'

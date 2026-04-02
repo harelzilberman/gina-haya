@@ -5,19 +5,19 @@ import {
   Platform,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import type { MooshMessage } from '@gina-haya/shared';
-import { sendMooshMessage, loadMooshHistory } from '../services/moosh';
-import { MooshBubble } from '../components/MooshBubble';
+import type { MonMessage } from '@gina-haya/shared';
+import { sendMonMessage, loadMonHistory } from '../services/mon';
+import { MonBubble } from '../components/MonBubble';
 
-export function MooshScreen() {
-  const [messages,  setMessages]  = useState<MooshMessage[]>([]);
+export function MonScreen() {
+  const [messages,  setMessages]  = useState<MonMessage[]>([]);
   const [input,     setInput]     = useState('');
   const [sending,   setSending]   = useState(false);
   const [error,     setError]     = useState<string | null>(null);
   const listRef = useRef<FlatList>(null);
 
   useEffect(() => {
-    loadMooshHistory().then(setMessages);
+    loadMonHistory().then(setMessages);
   }, []);
 
   useEffect(() => {
@@ -32,18 +32,18 @@ export function MooshScreen() {
     setInput('');
     setError(null);
 
-    const userMsg: MooshMessage = {
+    const userMsg: MonMessage = {
       role: 'user', content: text, timestamp: new Date().toISOString(),
     };
     setMessages(prev => [...prev, userMsg]);
     setSending(true);
 
     try {
-      const response = await sendMooshMessage(text, messages);
-      const mooshMsg: MooshMessage = {
+      const response = await sendMonMessage(text, messages);
+      const monMsg: MonMessage = {
         role: 'assistant', content: response, timestamp: new Date().toISOString(),
       };
-      setMessages(prev => [...prev, mooshMsg]);
+      setMessages(prev => [...prev, monMsg]);
     } catch (err: any) {
       setError(err.message ?? 'שגיאה בשליחת ההודעה');
     } finally {
@@ -64,7 +64,7 @@ export function MooshScreen() {
             <Text style={styles.avatarEmoji}>🌕</Text>
           </View>
           <View style={styles.headerText}>
-            <Text style={styles.name}>מוש לבנה</Text>
+            <Text style={styles.name}>מון לבנה</Text>
             <Text style={styles.subtitle}>המומחה הביודינמי שלך</Text>
           </View>
         </View>
@@ -74,13 +74,13 @@ export function MooshScreen() {
           ref={listRef}
           data={messages}
           keyExtractor={(_, i) => String(i)}
-          renderItem={({ item }) => <MooshBubble message={item} />}
+          renderItem={({ item }) => <MonBubble message={item} />}
           contentContainerStyle={styles.listContent}
           ListEmptyComponent={
             !sending ? (
               <View style={styles.emptyWrap}>
                 <Text style={styles.emptyEmoji}>🌱</Text>
-                <Text style={styles.emptyText}>שלום! אני מוש לבנה.{'\n'}מה קורה בגינה שלך היום?</Text>
+                <Text style={styles.emptyText}>שלום! אני מון לבנה.{'\n'}מה קורה בגינה שלך היום?</Text>
               </View>
             ) : null
           }
@@ -91,7 +91,7 @@ export function MooshScreen() {
           <View style={styles.typingRow}>
             <View style={styles.typingBubble}>
               <ActivityIndicator size="small" color="#c8a84b" />
-              <Text style={styles.typingText}>מוש חושב...</Text>
+              <Text style={styles.typingText}>מון חושב...</Text>
             </View>
           </View>
         )}
@@ -104,7 +104,7 @@ export function MooshScreen() {
             style={styles.input}
             value={input}
             onChangeText={setInput}
-            placeholder="שאל את מוש..."
+            placeholder="שאל את מון..."
             placeholderTextColor="rgba(237,224,196,0.3)"
             multiline
             textAlign="right"
@@ -123,7 +123,7 @@ export function MooshScreen() {
         </View>
 
         <Text style={styles.disclaimer}>
-          עצות מוש הן לצורך מידע בלבד. לבעיות חמורות, פנה למומחה גידול.
+          עצות מון הן לצורך מידע בלבד. לבעיות חמורות, פנה למומחה גידול.
         </Text>
       </KeyboardAvoidingView>
     </SafeAreaView>

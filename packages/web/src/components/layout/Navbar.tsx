@@ -194,7 +194,7 @@ export function Navbar() {
               </Link>
             ))}
             <Link
-              to="/moosh"
+              to="/mon"
               className="gina-nav-link"
               onClick={() => setMobileOpen(false)}
               style={{
@@ -208,7 +208,7 @@ export function Navbar() {
               }}
             >
               <span style={{ fontSize: '16px', lineHeight: 1 }}>🌕</span>
-              {t('nav.moosh')}
+              {t('nav.mon')}
             </Link>
           </div>
         )}
@@ -312,7 +312,7 @@ export function Navbar() {
                     { label: t('nav.map'),      to: '/map'      },
                     { label: t('nav.tracker'),  to: '/tracker' },
                     { label: t('nav.guides'),   to: '/guides' },
-                    { label: t('nav.moosh'),    to: '/moosh' },
+                    { label: t('nav.mon'),    to: '/mon' },
                     { label: t('nav.settings'), to: '/settings' },
                   ].map(item => (
                     <Link
@@ -413,7 +413,7 @@ export function Navbar() {
                 { label: t('nav.garden'),   to: '/garden' },
                 { label: t('nav.tracker'),  to: '/tracker' },
                 { label: t('nav.guides'),   to: '/guides' },
-                { label: t('nav.moosh'),    to: '/moosh' },
+                { label: t('nav.mon'),    to: '/mon' },
                 { label: t('nav.settings'), to: '/settings' },
               ].map(item => (
                 <Link
