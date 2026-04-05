@@ -82,11 +82,11 @@ function drawMoon(canvas: HTMLCanvasElement, phasePct: number, phaseAngle: numbe
     } else if (phasePct < 95) {
       ctx.beginPath();
       if (isWaxing) {
-        ctx.arc(cx, cy, r, Math.PI / 2, (3 * Math.PI) / 2, false);
-        ctx.ellipse(cx, cy, terminatorRx, r, 0, Math.PI / 2, -Math.PI / 2, true);
-      } else {
         ctx.arc(cx, cy, r, -Math.PI / 2, Math.PI / 2, false);
         ctx.ellipse(cx, cy, terminatorRx, r, 0, -Math.PI / 2, Math.PI / 2, true);
+      } else {
+        ctx.arc(cx, cy, r, Math.PI / 2, (3 * Math.PI) / 2, false);
+        ctx.ellipse(cx, cy, terminatorRx, r, 0, Math.PI / 2, -Math.PI / 2, true);
       }
       ctx.closePath();
       ctx.fillStyle = 'rgba(4,8,20,0.94)';
