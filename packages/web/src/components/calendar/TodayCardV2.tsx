@@ -119,26 +119,27 @@ function drawMoon(canvas: HTMLCanvasElement, phasePct: number, phaseAngle: numbe
 
     // Soft terminator gradient for realism
     if (phasePct >= 2 && phasePct <= 98) {
-      const feather = r * 0.13;
-      const terminatorX = cx + (isWaning ? -tRx : tRx);
+      const feather = r * 0.15;
+      // terminatorX: the actual x position of the terminator line on canvas
+      // = cx - r*cos(phaseAngle) because:
+      // at 0° (new): cos=1, terminatorX=cx-r (left edge, all dark from right)
+      // at 180° (full): cos=-1, terminatorX=cx+r (right edge, no shadow)
+      // at 217° (waning gibbous): cos=-0.8, terminatorX=cx+0.8r (near right edge, thin dark sliver on right)
+      const terminatorX = cx - r * Math.cos(phaseAngle * Math.PI / 180);
       const softGrad = ctx.createLinearGradient(
         terminatorX - feather, 0,
         terminatorX + feather, 0
       );
-      // gradient always: transparent → dark → transparent
-      // dark peak is on the shadow side of the terminator
+      // dark peaks on shadow side (right for waning, left for waxing)
       if (isWaning) {
-        // shadow is on RIGHT, terminator curves from left into right
-        // dark peaks on the RIGHT side of the gradient
         softGrad.addColorStop(0, 'rgba(4,8,20,0)');
-        softGrad.addColorStop(0.35, 'rgba(4,8,20,0)');
-        softGrad.addColorStop(0.6, 'rgba(4,8,20,0.7)');
-        softGrad.addColorStop(1, 'rgba(4,8,20,0)');
+        softGrad.addColorStop(0.45, 'rgba(4,8,20,0)');
+        softGrad.addColorStop(0.75, 'rgba(4,8,20,0.65)');
+        softGrad.addColorStop(1, 'rgba(4,8,20,0.3)');
       } else {
-        // shadow is on LEFT
-        softGrad.addColorStop(0, 'rgba(4,8,20,0)');
-        softGrad.addColorStop(0.4, 'rgba(4,8,20,0.7)');
-        softGrad.addColorStop(0.65, 'rgba(4,8,20,0)');
+        softGrad.addColorStop(0, 'rgba(4,8,20,0.3)');
+        softGrad.addColorStop(0.25, 'rgba(4,8,20,0.65)');
+        softGrad.addColorStop(0.55, 'rgba(4,8,20,0)');
         softGrad.addColorStop(1, 'rgba(4,8,20,0)');
       }
       ctx.fillStyle = softGrad;
