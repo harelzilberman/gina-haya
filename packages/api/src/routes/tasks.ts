@@ -41,10 +41,13 @@ tasksRouter.get('/range', async (req, res) => {
 
 // POST /api/tasks/from-plan — create tasks from weekly plan
 tasksRouter.post('/from-plan', async (req, res) => {
+  console.log('[POST /api/tasks/from-plan] HIT — userId:', req.user?.id, 'body keys:', Object.keys(req.body));
   try {
     const { planId, tasks } = req.body;
+    console.log('[POST /api/tasks/from-plan] planId:', planId, 'tasks count:', Array.isArray(tasks) ? tasks.length : 'NOT_ARRAY', 'sample:', JSON.stringify(tasks?.[0]));
     if (!tasks || !Array.isArray(tasks)) return res.status(400).json({ error: 'tasks array required' });
     const created = await createTasksFromPlan(req.user!.id, planId ?? null, tasks);
+    console.log('[POST /api/tasks/from-plan] Supabase insert succeeded, rows created:', created.length);
     res.json(created);
 
     // Fire-and-forget smart reminder if there are biodynamic tasks today
@@ -56,6 +59,7 @@ tasksRouter.post('/from-plan', async (req, res) => {
       ).catch(() => {});
     }
   } catch (err: any) {
+    console.error('[POST /api/tasks/from-plan] ERROR:', err.message, err.code, err.details);
     res.status(500).json({ error: err.message });
   }
 });

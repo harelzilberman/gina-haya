@@ -59,8 +59,13 @@ export async function createTasksFromPlan(
     status: 'pending' as const,
     source_action: t.source_action ?? null,
   }));
+  console.log('[createTasksFromPlan] inserting', rows.length, 'rows into garden_tasks for user', userId);
   const { data, error } = await db.from('garden_tasks').insert(rows).select();
-  if (error) throw error;
+  if (error) {
+    console.error('[createTasksFromPlan] Supabase error:', error.message, error.code, error.details, error.hint);
+    throw error;
+  }
+  console.log('[createTasksFromPlan] inserted successfully, count:', data?.length);
   return data ?? [];
 }
 

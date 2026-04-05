@@ -141,10 +141,26 @@ export function PlanPage() {
   // Auto-create tasks from plan when plan first loads and no tasks exist yet
   useEffect(() => {
     const plan = planStore.weeklyPlan;
+    console.log('[PlanPage] auto-create effect fired', {
+      hasPlan: !!plan,
+      tasksConfirmed,
+      tasksLength: tasks.length,
+      hasToken: !!session?.access_token,
+    });
     if (!plan || tasksConfirmed || tasks.length > 0 || !session?.access_token) return;
     const planTasks = synthesizePlanTasks(plan);
+    console.log('[PlanPage] synthesized planTasks:', planTasks.length, planTasks);
     if (planTasks.length > 0) {
-      createFromPlan(null, planTasks).then(() => setTasksConfirmed(true));
+      createFromPlan(null, planTasks)
+        .then((result) => {
+          console.log('[PlanPage] createFromPlan succeeded, tasks created:', result);
+          setTasksConfirmed(true);
+        })
+        .catch((err) => {
+          console.error('[PlanPage] createFromPlan FAILED:', err);
+        });
+    } else {
+      console.warn('[PlanPage] synthesized 0 tasks — gardenTasks:', plan.gardenTasks, 'days:', plan.days);
     }
   }, [planStore.weeklyPlan, session?.access_token]);
 
