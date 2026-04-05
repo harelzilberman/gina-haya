@@ -177,8 +177,8 @@ export function MapToolbar({
 }: Props) {
   const canWizard = hasSavedMap && (wizardStatus?.canRun ?? true);
   const wizardLabel = wizardStatus
-    ? `🌕 ממון (${wizardStatus.runsUsedThisMonth}/${wizardStatus.limit ?? '∞'})`
-    : '🌕 ממון';
+    ? `🌕 מצ'אפצ'ו (${wizardStatus.runsUsedThisMonth}/${wizardStatus.limit ?? '∞'})`
+    : '🌕 מצ\'אפצ\'ו';
 
   return (
     <div dir="rtl" style={{

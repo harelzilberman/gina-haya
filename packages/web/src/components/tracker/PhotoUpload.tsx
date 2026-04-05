@@ -140,7 +140,7 @@ export function PhotoUpload({ trackerId, plantNameHe, onClose, onComplete }: Pro
             <div style={{ textAlign: 'center', padding: '32px 0' }}>
               <div className="mon-pulse" style={{ fontSize: '64px', marginBottom: '20px' }}>🌕</div>
               <p style={{ fontFamily: FRANK, fontSize: '20px', color: GOLD, marginBottom: '8px' }}>
-                מון בודק את הצמח שלך...
+                צ'אפצ'ו בודק את הצמח שלך...
               </p>
               <p style={{ fontFamily: ASST, fontSize: '14px', color: 'rgba(237,224,196,0.6)', marginBottom: '4px' }}>
                 ניתוח חכם עם בינה מלאכותית
@@ -266,7 +266,7 @@ export function PhotoUpload({ trackerId, plantNameHe, onClose, onComplete }: Pro
                 onMouseEnter={e => { if (imageBase64) (e.currentTarget as HTMLElement).style.filter = 'brightness(1.1)'; }}
                 onMouseLeave={e => { (e.currentTarget as HTMLElement).style.filter = 'none'; }}
               >
-                נתח עם מון 🌕
+                נתח עם צ'אפצ'ו 🌕
               </button>
             </>
           )}

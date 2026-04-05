@@ -167,7 +167,7 @@ const FEATURES_HE: Feature[] = [
   },
   {
     icon: '🤖',
-    title: 'מון לבנה — המומחה שלך',
+    title: 'צ\'אפצ\'ו — המומחה שלך',
     body: 'בינה מלאכותית ביודינמית שמכירה את הגינה שלך. שאל, קבל עצה, גדל טוב יותר.',
   },
   {
@@ -208,7 +208,7 @@ const PRICING_HE: PricingPlan[] = [
   {
     name: 'חינם לתמיד',
     price: null,
-    features: ['לוח ביודינמי בסיסי', '5 שאלות למון בחודש', 'אנציקלופדיה בסיסית'],
+    features: ['לוח ביודינמי בסיסי', '5 שאלות לצ\'אפצ\'ו בחודש', 'אנציקלופדיה בסיסית'],
     cta: 'התחל עכשיו',
     highlight: false,
     badge: '',
@@ -216,7 +216,7 @@ const PRICING_HE: PricingPlan[] = [
   {
     name: 'Grower',
     price: '9',
-    features: ['לוח ביודינמי מלא', '30 שאלות למון', 'גינה אישית', 'התראות יומיות'],
+    features: ['לוח ביודינמי מלא', '30 שאלות לצ\'אפצ\'ו', 'גינה אישית', 'התראות יומיות'],
     cta: 'בחר תוכנית',
     highlight: false,
     badge: '',
@@ -807,7 +807,7 @@ export function LandingPage() {
                     color: `${PARCHMENT}DD`,
                   }}>
                     {isHe
-                      ? 'היום הוא יום פרי 🍅 — הזמן המוןלם לשתול עגבניות ופלפלים. הירח יורד, הארץ נושמת פנימה.'
+                      ? 'היום הוא יום פרי 🍅 — הזמן המושלם לשתול עגבניות ופלפלים. הירח יורד, הארץ נושמת פנימה.'
                       : 'Today is a Fruit Day 🍅 — the perfect time to plant tomatoes and peppers. The moon is descending, the earth breathes inward.'}
                   </p>
                 </div>

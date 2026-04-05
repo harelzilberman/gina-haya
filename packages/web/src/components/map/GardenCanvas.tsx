@@ -1311,7 +1311,7 @@ export function GardenCanvas({
         }}>
           <div>
             <span style={{ color: '#F5C840', fontSize: '14px', fontWeight: 600 }}>
-              🌕 מון ממליץ למקם {previewPlants.length} צמחים
+              🌕 צ'אפצ'ו ממליץ למקם {previewPlants.length} צמחים
             </span>
             <span style={{ color: 'rgba(237,224,196,0.6)', fontSize: '12px', marginRight: '8px' }}>
               — מאשר?

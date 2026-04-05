@@ -166,7 +166,7 @@ ${growingPlan.naturalFertilizers.length > 0 ? `
 ` : ''}
 
 <p style="font-size:11px;color:#999;margin-top:40px;border-top:1px solid #ddd;padding-top:8px;">
-  נוצר על ידי גינה חיה — מון לבנה 🌕 | הניתוח אינו מחליף ייעוץ אגרונומי מקצועי
+  נוצר על ידי גינה חיה — צ'אפצ'ו 🌕 | הניתוח אינו מחליף ייעוץ אגרונומי מקצועי
 </p>
 </body>
 </html>`);

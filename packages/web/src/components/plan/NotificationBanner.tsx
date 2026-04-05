@@ -25,7 +25,7 @@ export function NotificationBanner() {
           קבל תזכורות לגינה
         </p>
         <p style={{ fontFamily: ASSIST, fontSize: '12px', color: `${PARCH}70`, margin: 0 }}>
-          מון ישלח לך תזכורות יומיות על משימות הגינה
+          צ'אפצ'ו ישלח לך תזכורות יומיות על משימות הגינה
         </p>
       </div>
       <div style={{ display: 'flex', gap: '8px', flexShrink: 0 }}>

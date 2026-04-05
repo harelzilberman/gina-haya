@@ -390,7 +390,7 @@ export function WizardModal({ mapId, wizardStatus, onClose, onRefreshStatus, onP
           <div style={{ textAlign: 'center', padding: '32px 0' }}>
             <div style={{ fontSize: '48px', animation: 'spin 3s linear infinite', display: 'inline-block' }}>🌕</div>
             <p style={{ fontFamily: FRANK, fontSize: '16px', color: GOLD, margin: '16px 0 6px' }}>
-              מון בודק את הגינה שלך...
+              צ'אפצ'ו בודק את הגינה שלך...
             </p>
             <p style={{ fontFamily: ASSIST, fontSize: '12px', color: `${PARCH}44` }}>
               זה לוקח כ-30 שניות
@@ -467,7 +467,7 @@ export function WizardModal({ mapId, wizardStatus, onClose, onRefreshStatus, onP
                 borderRadius: '8px', border: 'none', backgroundColor: GOLD, color: '#142B16',
                 cursor: 'pointer', width: '100%',
               }}>
-              🌕 בקש ממון לתכנן
+              🌕 בקש מצ'אפצ'ו לתכנן
             </button>
           </>
         )}
