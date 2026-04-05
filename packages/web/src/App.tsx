@@ -230,7 +230,7 @@ export default function App() {
             onMouseEnter={e => { (e.currentTarget as HTMLElement).style.filter = 'brightness(1.1)'; }}
             onMouseLeave={e => { (e.currentTarget as HTMLElement).style.filter = 'none'; }}
           >
-            {isMonPanelOpen ? '✕' : '🌕'}
+            {isChupChuPanelOpen ? '✕' : '🌕'}
           </button>
         </>
       )}
