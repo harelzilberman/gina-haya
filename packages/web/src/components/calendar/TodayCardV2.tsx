@@ -39,6 +39,9 @@ const CARD_CSS = `
 }
 `;
 
+const moonImg = new Image();
+moonImg.src = '/moon.jpg';
+
 // ─────────────────────────────────────────────
 // MOON PHASE HELPERS
 // ─────────────────────────────────────────────
@@ -60,45 +63,37 @@ function drawMoon(canvas: HTMLCanvasElement, phasePct: number, phaseAngle: numbe
   const isWaning = phaseAngle > 180;
   const tRx = r * Math.abs(Math.cos(phaseAngle * Math.PI / 180));
 
-  ctx.save();
-  ctx.translate(cx, cy);
-  ctx.rotate(tiltDeg * Math.PI / 180);
-  ctx.translate(-cx, -cy);
-
-  // Clip everything to circle
-  ctx.beginPath();
-  ctx.arc(cx, cy, r, 0, Math.PI * 2);
-  ctx.clip();
-
-  // Step 1: draw moon texture (full lit base)
-  if (phasePct < 2) {
-    ctx.fillStyle = '#060a08';
-    ctx.fillRect(0, 0, size, size);
-    ctx.restore();
-    return;
-  }
-
-  ctx.fillStyle = '#060a08';
-  ctx.fillRect(0, 0, size, size);
-
-  const img = new Image();
-  img.src = '/moon.jpg';
-  img.onload = () => {
+  const render = () => {
+    ctx.clearRect(0, 0, size, size);
     ctx.save();
+    ctx.translate(cx, cy);
+    ctx.rotate(tiltDeg * Math.PI / 180);
+    ctx.translate(-cx, -cy);
+
+    // Clip to circle
     ctx.beginPath();
     ctx.arc(cx, cy, r, 0, Math.PI * 2);
     ctx.clip();
-    ctx.drawImage(img, 0, 0, size, size);
 
-    if (phasePct <= 98) {
-      // Step 2: paint dark half on correct side
+    // Dark base
+    ctx.fillStyle = '#060a08';
+    ctx.fillRect(0, 0, size, size);
+
+    if (phasePct < 2) {
+      ctx.restore();
+      return;
+    }
+
+    // Draw full moon texture
+    ctx.drawImage(moonImg, 0, 0, size, size);
+
+    if (phasePct < 98) {
+      // Step 1: paint dark half on correct side
       ctx.beginPath();
       if (isWaning) {
-        // dark on RIGHT
         ctx.arc(cx, cy, r, -Math.PI / 2, Math.PI / 2);
         ctx.lineTo(cx, cy - r);
       } else {
-        // dark on LEFT
         ctx.arc(cx, cy, r, Math.PI / 2, 3 * Math.PI / 2);
         ctx.lineTo(cx, cy - r);
       }
@@ -106,7 +101,8 @@ function drawMoon(canvas: HTMLCanvasElement, phasePct: number, phaseAngle: numbe
       ctx.fillStyle = 'rgba(4, 8, 20, 0.95)';
       ctx.fill();
 
-      // Step 3: restore lit area using terminator ellipse
+      // Step 2: restore lit area using terminator ellipse
+      ctx.save();
       ctx.beginPath();
       if (isWaning) {
         ctx.ellipse(cx, cy, tRx, r, 0, -Math.PI / 2, Math.PI / 2);
@@ -116,10 +112,12 @@ function drawMoon(canvas: HTMLCanvasElement, phasePct: number, phaseAngle: numbe
         ctx.lineTo(cx, cy - r);
       }
       ctx.closePath();
-      ctx.drawImage(img, 0, 0, size, size);
+      ctx.clip();
+      ctx.drawImage(moonImg, 0, 0, size, size);
+      ctx.restore();
     }
 
-    // Spherical shading overlay
+    // Spherical shading
     const grad = ctx.createRadialGradient(cx * 0.65, cy * 0.65, 0, cx, cy, r);
     grad.addColorStop(0, 'rgba(255,245,200,0.08)');
     grad.addColorStop(0.5, 'rgba(0,0,0,0)');
@@ -130,7 +128,11 @@ function drawMoon(canvas: HTMLCanvasElement, phasePct: number, phaseAngle: numbe
     ctx.restore();
   };
 
-  ctx.restore();
+  if (moonImg.complete) {
+    render();
+  } else {
+    moonImg.onload = render;
+  }
 }
 
 // ─────────────────────────────────────────────
