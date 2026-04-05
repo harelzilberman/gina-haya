@@ -50,72 +50,76 @@ function getMoonTilt(phaseAngle: number, lat: number): number {
   return baseTilt + phaseTilt;
 }
 
-function drawMoon(
-  canvas: HTMLCanvasElement,
-  phasePct: number,
-  phaseAngle: number,
-  tiltDeg: number
-) {
+function drawMoon(canvas: HTMLCanvasElement, phasePct: number, phaseAngle: number, tiltDeg: number) {
   const ctx = canvas.getContext('2d');
   if (!ctx) return;
   const size = canvas.width;
   const cx = size / 2, cy = size / 2, r = size / 2 - 2;
-
   ctx.clearRect(0, 0, size, size);
 
   const isWaning = phaseAngle > 180;
-  // terminatorRx: at new/full moon = r, at half moon = 0
-  const terminatorRx = r * Math.abs(Math.cos(phaseAngle * Math.PI / 180));
+  const tRx = r * Math.abs(Math.cos(phaseAngle * Math.PI / 180));
+
+  ctx.save();
+  ctx.translate(cx, cy);
+  ctx.rotate(tiltDeg * Math.PI / 180);
+  ctx.translate(-cx, -cy);
+
+  // Clip everything to circle
+  ctx.beginPath();
+  ctx.arc(cx, cy, r, 0, Math.PI * 2);
+  ctx.clip();
+
+  // Step 1: draw moon texture (full lit base)
+  if (phasePct < 2) {
+    ctx.fillStyle = '#060a08';
+    ctx.fillRect(0, 0, size, size);
+    ctx.restore();
+    return;
+  }
+
+  ctx.fillStyle = '#060a08';
+  ctx.fillRect(0, 0, size, size);
 
   const img = new Image();
   img.src = '/moon.jpg';
   img.onload = () => {
     ctx.save();
-
-    // Apply latitude tilt
-    ctx.translate(cx, cy);
-    ctx.rotate(tiltDeg * Math.PI / 180);
-    ctx.translate(-cx, -cy);
-
-    // Clip to circle
     ctx.beginPath();
     ctx.arc(cx, cy, r, 0, Math.PI * 2);
     ctx.clip();
-
-    // Dark base
-    ctx.fillStyle = '#060a08';
-    ctx.fillRect(0, 0, size, size);
-
-    // Moon texture
     ctx.drawImage(img, 0, 0, size, size);
 
-    if (phasePct < 5) {
-      // New moon: cover everything
-      ctx.fillStyle = 'rgba(4,8,20,0.97)';
-      ctx.fillRect(0, 0, size, size);
-    } else if (phasePct < 95) {
-      // Draw ONLY the dark sliver using the terminator ellipse
+    if (phasePct <= 98) {
+      // Step 2: paint dark half on correct side
       ctx.beginPath();
       if (isWaning) {
-        // Dark sliver on LEFT:
-        // Go along left half of outer circle (top to bottom, counterclockwise)
-        // then back up along terminator ellipse
-        ctx.arc(cx, cy, r, Math.PI / 2, (3 * Math.PI) / 2, true);
-        ctx.ellipse(cx, cy, terminatorRx, r, 0, (3 * Math.PI) / 2, Math.PI / 2, true);
+        // dark on RIGHT
+        ctx.arc(cx, cy, r, -Math.PI / 2, Math.PI / 2);
+        ctx.lineTo(cx, cy - r);
       } else {
-        // Dark sliver on RIGHT:
-        // Go along right half of outer circle (top to bottom, clockwise)
-        // then back up along terminator ellipse
-        ctx.arc(cx, cy, r, -Math.PI / 2, Math.PI / 2, false);
-        ctx.ellipse(cx, cy, terminatorRx, r, 0, Math.PI / 2, -Math.PI / 2, true);
+        // dark on LEFT
+        ctx.arc(cx, cy, r, Math.PI / 2, 3 * Math.PI / 2);
+        ctx.lineTo(cx, cy - r);
       }
       ctx.closePath();
-      ctx.fillStyle = 'rgba(4,8,20,0.95)';
+      ctx.fillStyle = 'rgba(4, 8, 20, 0.95)';
       ctx.fill();
-    }
-    // phasePct >= 95: full moon, no shadow drawn
 
-    // Spherical shading
+      // Step 3: restore lit area using terminator ellipse
+      ctx.beginPath();
+      if (isWaning) {
+        ctx.ellipse(cx, cy, tRx, r, 0, -Math.PI / 2, Math.PI / 2);
+        ctx.lineTo(cx, cy - r);
+      } else {
+        ctx.ellipse(cx, cy, tRx, r, 0, Math.PI / 2, 3 * Math.PI / 2);
+        ctx.lineTo(cx, cy - r);
+      }
+      ctx.closePath();
+      ctx.drawImage(img, 0, 0, size, size);
+    }
+
+    // Spherical shading overlay
     const grad = ctx.createRadialGradient(cx * 0.65, cy * 0.65, 0, cx, cy, r);
     grad.addColorStop(0, 'rgba(255,245,200,0.08)');
     grad.addColorStop(0.5, 'rgba(0,0,0,0)');
@@ -125,6 +129,8 @@ function drawMoon(
 
     ctx.restore();
   };
+
+  ctx.restore();
 }
 
 // ─────────────────────────────────────────────
