@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useDirection } from '../../hooks/useDirection';
 import type { BiodynamicDay } from '@gina-haya/shared';
@@ -40,84 +40,114 @@ const CARD_CSS = `
 `;
 
 // ─────────────────────────────────────────────
+// MOON PHASE HELPERS
+// ─────────────────────────────────────────────
+function getMoonTilt(phaseAngle: number, lat: number): number {
+  const latRad = lat * Math.PI / 180;
+  const baseTilt = -latRad * (180 / Math.PI) * 0.5;
+  const isWaxing = phaseAngle <= 180;
+  const phaseTilt = isWaxing ? -15 : 15;
+  return baseTilt + phaseTilt;
+}
+
+function drawMoon(canvas: HTMLCanvasElement, phasePct: number, phaseAngle: number, tiltDeg: number) {
+  const ctx = canvas.getContext('2d');
+  if (!ctx) return;
+  const size = canvas.width;
+  const cx = size / 2, cy = size / 2, r = size / 2 - 2;
+
+  ctx.clearRect(0, 0, size, size);
+
+  const img = new Image();
+  img.src = '/moon.jpg';
+  img.onload = () => {
+    ctx.save();
+    ctx.translate(cx, cy);
+    ctx.rotate(tiltDeg * Math.PI / 180);
+    ctx.translate(-cx, -cy);
+
+    ctx.beginPath();
+    ctx.arc(cx, cy, r, 0, Math.PI * 2);
+    ctx.clip();
+    ctx.fillStyle = '#080c10';
+    ctx.fillRect(0, 0, size, size);
+    ctx.drawImage(img, 0, 0, size, size);
+
+    const isWaxing = phaseAngle <= 180;
+    const terminatorRx = r * Math.abs(Math.cos(phaseAngle * Math.PI / 180));
+
+    if (phasePct < 5) {
+      ctx.fillStyle = 'rgba(4,8,20,0.96)';
+      ctx.fillRect(0, 0, size, size);
+    } else if (phasePct < 95) {
+      ctx.beginPath();
+      if (isWaxing) {
+        ctx.arc(cx, cy, r, Math.PI / 2, (3 * Math.PI) / 2, false);
+        ctx.ellipse(cx, cy, terminatorRx, r, 0, Math.PI / 2, -Math.PI / 2, true);
+      } else {
+        ctx.arc(cx, cy, r, -Math.PI / 2, Math.PI / 2, false);
+        ctx.ellipse(cx, cy, terminatorRx, r, 0, -Math.PI / 2, Math.PI / 2, true);
+      }
+      ctx.closePath();
+      ctx.fillStyle = 'rgba(4,8,20,0.94)';
+      ctx.fill();
+    }
+
+    const grad = ctx.createRadialGradient(cx * 0.7, cy * 0.7, 0, cx, cy, r);
+    grad.addColorStop(0, 'rgba(255,245,200,0.07)');
+    grad.addColorStop(0.5, 'rgba(0,0,0,0)');
+    grad.addColorStop(1, 'rgba(0,0,0,0.45)');
+    ctx.fillStyle = grad;
+    ctx.fillRect(0, 0, size, size);
+
+    ctx.restore();
+  };
+}
+
+// ─────────────────────────────────────────────
 // MOON PHASE DISPLAY COMPONENT
 // ─────────────────────────────────────────────
-function MoonPhaseDisplay({ phaseAngle, phasePct, phaseHe, moonSignHe, ascending }: {
+function MoonPhaseDisplay({ phaseAngle, phasePct, phaseHe, moonSignHe, ascending, lat = 31.5 }: {
   phaseAngle: number;
   phasePct: number;
   phaseHe: string;
   moonSignHe: string;
   ascending: boolean;
+  lat?: number;
 }) {
-  // Use phasePct (0-100) directly for illumination display and new/full moon detection
-  // phaseAngle (0-360) is only used for shadow geometry
   const illumination = phasePct;
   const isFullMoon = phasePct > 95;
-  const isNewMoon  = phasePct < 5;
 
   const daysToFull = phaseAngle <= 180
     ? Math.round((180 - phaseAngle) / 13.2)
     : Math.round((540 - phaseAngle) / 13.2);
   const daysToNew = Math.round((360 - phaseAngle) / 13.2);
 
-  // Shadow: covers left for waxing, right for waning
-  const shadowPct = isFullMoon ? 0 : isNewMoon ? 100 : Math.round((100 - phasePct) * 2);
-  const isWaxing = phaseAngle <= 180;
+  const tiltDeg = getMoonTilt(phaseAngle, lat);
+  const canvasRef = useRef<HTMLCanvasElement>(null);
+
+  useEffect(() => {
+    if (canvasRef.current) drawMoon(canvasRef.current, phasePct, phaseAngle, tiltDeg);
+  }, [phasePct, phaseAngle, tiltDeg]);
 
   return (
     <div style={{
       display: 'flex', flexDirection: 'column', alignItems: 'center',
       gap: '10px', padding: '20px 0 12px',
     }}>
-      {/* Moon circle */}
-      <div style={{
-        position: 'relative',
-        width: '165px', height: '165px',
-        borderRadius: '50%',
-        border: '2px solid rgba(245,200,64,0.40)',
-        boxShadow: isFullMoon
-          ? '0 0 32px rgba(245,200,64,0.35), 0 0 8px rgba(245,200,64,0.2)'
-          : '0 0 16px rgba(245,200,64,0.18)',
-        overflow: 'hidden',
-        background: isNewMoon ? 'radial-gradient(circle at 35% 35%, #1a2218, #060a05)' : '#000',
-      }}>
-        {/* Moon texture */}
-        {!isNewMoon && (
-          <img
-            src="/moon.jpg"
-            alt=""
-            style={{
-              position: 'absolute',
-              top: 0, left: 0,
-              width: '100%', height: '100%',
-              objectFit: 'cover',
-              display: 'block',
-              borderRadius: '50%',
-            }}
-          />
-        )}
-        {/* Phase shadow overlay */}
-        {!isFullMoon && !isNewMoon && (
-          <div style={{
-            position: 'absolute',
-            top: 0,
-            [isWaxing ? 'right' : 'left']: 0,
-            width: `${50 + shadowPct / 2}%`,
-            height: '100%',
-            background: 'rgba(4, 8, 20, 0.93)',
-            borderRadius: isWaxing ? '0 999px 999px 0' : '999px 0 0 999px',
-            zIndex: 1,
-          }} />
-        )}
-        {/* Spherical shading overlay */}
-        {!isNewMoon && (
-          <div style={{
-            position: 'absolute', inset: 0, borderRadius: '50%',
-            background: 'radial-gradient(circle at 35% 35%, rgba(255,245,200,0.10) 0%, rgba(0,0,0,0) 50%, rgba(0,0,0,0.50) 100%)',
-            zIndex: 2,
-          }} />
-        )}
-      </div>
+      <canvas
+        ref={canvasRef}
+        width={165}
+        height={165}
+        style={{
+          borderRadius: '50%',
+          border: '2px solid rgba(245,200,64,0.40)',
+          boxShadow: isFullMoon
+            ? '0 0 32px rgba(245,200,64,0.35)'
+            : '0 0 16px rgba(245,200,64,0.18)',
+          display: 'block',
+        }}
+      />
 
       <div style={{ fontFamily: FRANK, fontSize: '18px', fontWeight: 700, color: GOLD }}>
         {phaseHe}
