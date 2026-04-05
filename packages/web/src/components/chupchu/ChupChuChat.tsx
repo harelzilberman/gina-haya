@@ -1,9 +1,9 @@
 import { useState, useRef, useEffect, KeyboardEvent } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useDirection } from '../../hooks/useDirection';
-import type { MonMessage } from '@gina-haya/shared';
-import { useMon } from '../../hooks/useMon';
-import { MonGreeting } from './MonGreeting';
+import type { ChupChuMessage } from '@gina-haya/shared';
+import { useChupChu } from '../../hooks/useChupChu';
+import { ChupChuGreeting } from './ChupChuGreeting';
 import { RateLimitBanner } from './RateLimitBanner';
 
 // ── Design tokens ────────────────────────────────────────────────────────────
@@ -15,21 +15,21 @@ const ASSIST   = '"Assistant", "Heebo", sans-serif';
 const PLAYFAIR = '"Playfair Display", Georgia, serif';
 
 const CHAT_CSS = `
-@keyframes mon-bounce {
+@keyframes chupchu-bounce {
   0%, 80%, 100% { transform: translateY(0);   }
   40%           { transform: translateY(-5px); }
 }
-@keyframes mon-glow {
+@keyframes chupchu-glow {
   0%, 100% { box-shadow: 0 0 8px rgba(245,200,64,0.25); }
   50%      { box-shadow: 0 0 18px rgba(245,200,64,0.5); }
 }
-.mon-dot { animation: mon-bounce 1.4s ease-in-out infinite; }
-.mon-avatar-pulse { animation: mon-glow 3s ease-in-out infinite; }
-.mon-textarea::placeholder { color: rgba(237,224,196,0.3); }
-.mon-textarea:focus { border-color: rgba(245,200,64,0.4) !important; outline: none; }
-.mon-scroll::-webkit-scrollbar { width: 4px; }
-.mon-scroll::-webkit-scrollbar-track { background: transparent; }
-.mon-scroll::-webkit-scrollbar-thumb { background: rgba(125,192,132,0.2); border-radius: 2px; }
+.chupchu-dot { animation: chupchu-bounce 1.4s ease-in-out infinite; }
+.chupchu-avatar-pulse { animation: chupchu-glow 3s ease-in-out infinite; }
+.chupchu-textarea::placeholder { color: rgba(237,224,196,0.3); }
+.chupchu-textarea:focus { border-color: rgba(245,200,64,0.4) !important; outline: none; }
+.chupchu-scroll::-webkit-scrollbar { width: 4px; }
+.chupchu-scroll::-webkit-scrollbar-track { background: transparent; }
+.chupchu-scroll::-webkit-scrollbar-thumb { background: rgba(125,192,132,0.2); border-radius: 2px; }
 `;
 
 // ── Typing indicator ──────────────────────────────────────────────────────────
@@ -61,13 +61,13 @@ function TypingDots() {
             borderRadius:    '16px',
             padding:         '10px 16px',
           }}
-          aria-label={isRTL ? 'מון חושב' : 'Mon is thinking'}
+          aria-label={isRTL ? 'צ\'ופצ\'ו חושב' : 'Chupchu is thinking'}
         >
           <div style={{ display: 'flex', gap: '4px', alignItems: 'center', height: '16px' }}>
             {[0, 150, 300].map(delay => (
               <span
                 key={delay}
-                className="mon-dot"
+                className="chupchu-dot"
                 style={{
                   display:          'inline-block',
                   width:            '7px',
@@ -86,11 +86,11 @@ function TypingDots() {
 }
 
 // ── Message bubble ────────────────────────────────────────────────────────────
-function MessageBubble({ message, isRTL }: { message: MonMessage; isRTL: boolean }) {
+function MessageBubble({ message, isRTL }: { message: ChupChuMessage; isRTL: boolean }) {
   const isUser = message.role === 'user';
 
   // In RTL: start = right, end = left
-  // User on RIGHT (start in RTL), Mon on LEFT (end in RTL)
+  // User on RIGHT (start in RTL), ChupChu on LEFT (end in RTL)
   const rowJustify = isRTL
     ? (isUser ? 'flex-start' : 'flex-end')
     : (isUser ? 'flex-end'   : 'flex-start');
@@ -99,9 +99,9 @@ function MessageBubble({ message, isRTL }: { message: MonMessage; isRTL: boolean
   const userCorner  = isRTL
     ? { borderTopRightRadius: '4px' }   // user on right in RTL
     : { borderTopLeftRadius:  '4px' };  // user on right in LTR
-  const monCorner = isRTL
-    ? { borderTopLeftRadius:  '4px' }   // mon on left in RTL
-    : { borderTopRightRadius: '4px' };  // mon on left in LTR
+  const chupChuCorner = isRTL
+    ? { borderTopLeftRadius:  '4px' }   // chupchu on left in RTL
+    : { borderTopRightRadius: '4px' };  // chupchu on left in LTR
 
   return (
     <div style={{ display: 'flex', justifyContent: rowJustify }}>
@@ -112,10 +112,10 @@ function MessageBubble({ message, isRTL }: { message: MonMessage; isRTL: boolean
         maxWidth:   '80%',
         flexDirection: isUser ? 'row-reverse' : 'row',
       }}>
-        {/* Mon avatar — assistant messages only */}
+        {/* ChupChu avatar — assistant messages only */}
         {!isUser && (
           <div
-            className="mon-avatar-pulse"
+            className="chupchu-avatar-pulse"
             aria-hidden="true"
             style={{
               flexShrink:      0,
@@ -144,7 +144,7 @@ function MessageBubble({ message, isRTL }: { message: MonMessage; isRTL: boolean
             lineHeight:   1.65,
             textAlign:    isRTL ? 'right' : 'left',
             direction:    isRTL ? 'rtl' : 'ltr',
-            ...(isUser ? userCorner : monCorner),
+            ...(isUser ? userCorner : chupChuCorner),
             ...(isUser
               ? {
                   backgroundColor: 'rgba(74,128,80,0.3)',
@@ -176,14 +176,14 @@ function MessageBubble({ message, isRTL }: { message: MonMessage; isRTL: boolean
 }
 
 // ── Main chat ─────────────────────────────────────────────────────────────────
-interface MonChatProps {
+interface ChupChuChatProps {
   compact?: boolean;
   initialMessage?: string;
   onInitialMessageConsumed?: () => void;
 }
 
-export function MonChat({ compact, initialMessage, onInitialMessageConsumed }: MonChatProps = {}) {
-  const { t } = useTranslation('mon');
+export function ChupChuChat({ compact, initialMessage, onInitialMessageConsumed }: ChupChuChatProps = {}) {
+  const { t } = useTranslation('chupchu');
   const { dir, isRTL } = useDirection();
 
   const {
@@ -194,7 +194,7 @@ export function MonChat({ compact, initialMessage, onInitialMessageConsumed }: M
     rateLimitTier,
     sendMessage,
     clearError,
-  } = useMon();
+  } = useChupChu();
 
   const [input, setInput]      = useState('');
   const messagesEndRef         = useRef<HTMLDivElement>(null);
@@ -261,7 +261,7 @@ export function MonChat({ compact, initialMessage, onInitialMessageConsumed }: M
           borderBottom:    '1px solid rgba(245,200,64,0.1)',
         }}>
           <div
-            className="mon-avatar-pulse"
+            className="chupchu-avatar-pulse"
             aria-hidden="true"
             style={{
               flexShrink:      0,
@@ -303,7 +303,7 @@ export function MonChat({ compact, initialMessage, onInitialMessageConsumed }: M
 
         {/* Message list */}
         <div
-          className="mon-scroll"
+          className="chupchu-scroll"
           style={{
             flex:      '1 1 auto',
             overflowY: 'auto',
@@ -315,7 +315,7 @@ export function MonChat({ compact, initialMessage, onInitialMessageConsumed }: M
             gap:       '12px',
           }}
         >
-          {messages.length === 0 && !isLoading && <MonGreeting />}
+          {messages.length === 0 && !isLoading && <ChupChuGreeting />}
 
           {messages.map((msg, idx) => (
             <MessageBubble key={idx} message={msg} isRTL={isRTL} />
@@ -374,7 +374,7 @@ export function MonChat({ compact, initialMessage, onInitialMessageConsumed }: M
           }}>
             <textarea
               ref={textareaRef}
-              className="mon-textarea"
+              className="chupchu-textarea"
               value={input}
               onChange={handleInput}
               onKeyDown={handleKeyDown}

@@ -5,19 +5,19 @@ import {
   Platform,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import type { MonMessage } from '@gina-haya/shared';
-import { sendMonMessage, loadMonHistory } from '../services/mon';
-import { MonBubble } from '../components/MonBubble';
+import type { ChupChuMessage } from '@gina-haya/shared';
+import { sendChupChuMessage, loadChupChuHistory } from '../services/chupchu';
+import { ChupChuBubble } from '../components/ChupChuBubble';
 
-export function MonScreen() {
-  const [messages,  setMessages]  = useState<MonMessage[]>([]);
+export function ChupChuScreen() {
+  const [messages,  setMessages]  = useState<ChupChuMessage[]>([]);
   const [input,     setInput]     = useState('');
   const [sending,   setSending]   = useState(false);
   const [error,     setError]     = useState<string | null>(null);
   const listRef = useRef<FlatList>(null);
 
   useEffect(() => {
-    loadMonHistory().then(setMessages);
+    loadChupChuHistory().then(setMessages);
   }, []);
 
   useEffect(() => {
@@ -32,15 +32,15 @@ export function MonScreen() {
     setInput('');
     setError(null);
 
-    const userMsg: MonMessage = {
+    const userMsg: ChupChuMessage = {
       role: 'user', content: text, timestamp: new Date().toISOString(),
     };
     setMessages(prev => [...prev, userMsg]);
     setSending(true);
 
     try {
-      const response = await sendMonMessage(text, messages);
-      const monMsg: MonMessage = {
+      const response = await sendChupChuMessage(text, messages);
+      const monMsg: ChupChuMessage = {
         role: 'assistant', content: response, timestamp: new Date().toISOString(),
       };
       setMessages(prev => [...prev, monMsg]);
@@ -64,7 +64,7 @@ export function MonScreen() {
             <Text style={styles.avatarEmoji}>🌕</Text>
           </View>
           <View style={styles.headerText}>
-            <Text style={styles.name}>מון לבנה</Text>
+            <Text style={styles.name}>צ'ופצ'ו</Text>
             <Text style={styles.subtitle}>המומחה הביודינמי שלך</Text>
           </View>
         </View>
@@ -74,13 +74,13 @@ export function MonScreen() {
           ref={listRef}
           data={messages}
           keyExtractor={(_, i) => String(i)}
-          renderItem={({ item }) => <MonBubble message={item} />}
+          renderItem={({ item }) => <ChupChuBubble message={item} />}
           contentContainerStyle={styles.listContent}
           ListEmptyComponent={
             !sending ? (
               <View style={styles.emptyWrap}>
                 <Text style={styles.emptyEmoji}>🌱</Text>
-                <Text style={styles.emptyText}>שלום! אני מון לבנה.{'\n'}מה קורה בגינה שלך היום?</Text>
+                <Text style={styles.emptyText}>שלום! אני צ'ופצ'ו.{'\n'}מה קורה בגינה שלך היום?</Text>
               </View>
             ) : null
           }
@@ -91,7 +91,7 @@ export function MonScreen() {
           <View style={styles.typingRow}>
             <View style={styles.typingBubble}>
               <ActivityIndicator size="small" color="#c8a84b" />
-              <Text style={styles.typingText}>מון חושב...</Text>
+              <Text style={styles.typingText}>צ'ופצ'ו חושב...</Text>
             </View>
           </View>
         )}
@@ -104,7 +104,7 @@ export function MonScreen() {
             style={styles.input}
             value={input}
             onChangeText={setInput}
-            placeholder="שאל את מון..."
+            placeholder="שאל את צ'ופצ'ו..."
             placeholderTextColor="rgba(237,224,196,0.3)"
             multiline
             textAlign="right"
@@ -123,7 +123,7 @@ export function MonScreen() {
         </View>
 
         <Text style={styles.disclaimer}>
-          עצות מון הן לצורך מידע בלבד. לבעיות חמורות, פנה למומחה גידול.
+          עצות צ'ופצ'ו הן לצורך מידע בלבד. לבעיות חמורות, פנה למומחה גידול.
         </Text>
       </KeyboardAvoidingView>
     </SafeAreaView>

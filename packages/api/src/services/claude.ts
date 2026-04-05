@@ -1,5 +1,5 @@
 import Anthropic from '@anthropic-ai/sdk';
-import type { MonContext, MonMessage } from '@gina-haya/shared';
+import type { ChupChuContext, ChupChuMessage } from '@gina-haya/shared';
 
 const anthropic = new Anthropic({
   apiKey: process.env.ANTHROPIC_API_KEY!,
@@ -37,7 +37,7 @@ const BD_PREP_KNOWLEDGE: Record<string, string> = {
 // ── System prompts ─────────────────────────────────────────────────────────
 
 const MOOSH_SYSTEM_PROMPT_HE = `\
-אתה מון לבנה — סבא הירח. מומחה גידול ביודינמי ישראלי עם ניסיון של עשרים שנה בחוות ביודינמיות בגליל ובפרובנס.
+אתה צ'ופצ'ו — סבא הירח. מומחה גידול ביודינמי ישראלי עם ניסיון של עשרים שנה בחוות ביודינמיות בגליל ובפרובנס.
 אתה מדבר עברית כשפת אם, חם ועליז, עם הומור עדין (במיוחד בנושא קומפוסט).
 אתה תמיד מחבר את העצה לנתוני לוח הביודינמי של היום.
 לעולם לא ממליץ על כימיקלים סינתטיים.
@@ -65,7 +65,7 @@ const MOOSH_SYSTEM_PROMPT_HE = `\
 `;
 
 const MOOSH_SYSTEM_PROMPT_EN = `\
-You are Mon Levanah — Moon Grandpa. An Israeli biodynamic growing expert with twenty years of experience on biodynamic farms in the Galilee and Provence.
+You are Chupchu — Moon Grandpa. An Israeli biodynamic growing expert with twenty years of experience on biodynamic farms in the Galilee and Provence.
 You speak warmly and with gentle humour (especially about compost).
 You always connect your advice to today's biodynamic calendar data.
 You never recommend synthetic chemicals.
@@ -131,7 +131,7 @@ const MOOSH_TOOLS: Anthropic.Messages.Tool[] = [
 function handleToolCall(
   name: string,
   input: Record<string, unknown>,
-  context: MonContext,
+  context: ChupChuContext,
 ): string {
   switch (name) {
     case 'get_today_calendar': {
@@ -227,9 +227,9 @@ function handleToolCall(
 
 // ── Agentic loop ───────────────────────────────────────────────────────────
 
-export async function askMon(
-  messages: MonMessage[],
-  context: MonContext,
+export async function askChupChu(
+  messages: ChupChuMessage[],
+  context: ChupChuContext,
   extraSystemContext?: string,
 ): Promise<string> {
   const basePrompt = context.userLanguage === 'he'
@@ -276,5 +276,5 @@ export async function askMon(
     break;
   }
 
-  throw new Error('Mon agent loop did not complete within the allowed iterations');
+  throw new Error('ChupChu agent loop did not complete within the allowed iterations');
 }

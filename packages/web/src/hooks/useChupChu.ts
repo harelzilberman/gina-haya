@@ -1,8 +1,8 @@
 import { useCallback } from 'react';
-import { useMonStore } from '../stores/monStore';
+import { useChupChuStore } from '../stores/chupChuStore';
 
-export function useMon() {
-  const store = useMonStore();
+export function useChupChu() {
+  const store = useChupChuStore();
 
   const sendMessage = useCallback(
     async (text: string, gardenId?: string) => {

@@ -19,7 +19,7 @@ export interface DayPlan {
   recommendedActions: string[];
   recommendedPlants: string[];
   avoidActions: string[];
-  monTip: string;
+  chupChuTip: string;
 }
 
 export interface WeeklyPlan {

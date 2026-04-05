@@ -1,6 +1,6 @@
 import { create } from 'zustand';
 
-interface MonPanelState {
+interface ChupChuPanelState {
   isOpen: boolean;
   initialMessage: string;
   open: (initialMessage?: string) => void;
@@ -8,7 +8,7 @@ interface MonPanelState {
   clearInitialMessage: () => void;
 }
 
-export const useMonPanelStore = create<MonPanelState>((set) => ({
+export const useChupChuPanelStore = create<ChupChuPanelState>((set) => ({
   isOpen: false,
   initialMessage: '',
   open: (initialMessage = '') => set({ isOpen: true, initialMessage }),

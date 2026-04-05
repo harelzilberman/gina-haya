@@ -1,8 +1,8 @@
 import { useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useDirection } from '../hooks/useDirection';
-import { MonChat } from '../components/mon/MonChat';
-import { useMon } from '../hooks/useMon';
+import { ChupChuChat } from '../components/chupchu/ChupChuChat';
+import { useChupChu } from '../hooks/useChupChu';
 import { useAuthStore } from '../stores/authStore';
 
 const EARTH  = '#142B16';
@@ -13,11 +13,11 @@ const ASSIST = '"Assistant", "Heebo", sans-serif';
 
 const NOISE_BG = `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='250' height='250'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.75' numOctaves='4' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='250' height='250' filter='url(%23n)' opacity='0.55'/%3E%3C/svg%3E")`;
 
-export function MonPage() {
-  const { t, i18n } = useTranslation('mon');
+export function ChupChuPage() {
+  const { t, i18n } = useTranslation('chupchu');
   const { dir } = useDirection();
   const isHe = i18n.language === 'he';
-  const { loadHistory, usageThisMonth, monthlyLimit } = useMon();
+  const { loadHistory, usageThisMonth, monthlyLimit } = useChupChu();
   const { profile } = useAuthStore();
 
   useEffect(() => {
@@ -89,7 +89,7 @@ export function MonPage() {
           )}
 
           {/* Chat panel */}
-          <MonChat />
+          <ChupChuChat />
         </div>
       </div>
     </>

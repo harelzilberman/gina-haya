@@ -2,16 +2,16 @@ import 'dotenv/config';
 import { Router, type IRouter } from 'express';
 import { db } from '../db/client';
 import { verifyToken } from '../middleware/auth';
-import { askMon } from '../services/claude';
+import { askChupChu } from '../services/claude';
 import { fetchWeatherForRegion } from '../services/weather';
-import type { MonMessage, MonContext } from '@gina-haya/shared';
+import type { ChupChuMessage, ChupChuContext } from '@gina-haya/shared';
 import { todayInIsrael } from '@gina-haya/shared';
 import { getRecentCompletedTasks } from '../db/queries/tasks';
 
-export const monRouter: IRouter = Router();
+export const chupChuRouter: IRouter = Router();
 
-// All mon routes require auth
-monRouter.use(verifyToken);
+// All chupchu routes require auth
+chupChuRouter.use(verifyToken);
 
 // Monthly limits per tier
 const MONTHLY_LIMITS: Record<string, number | null> = {
@@ -21,11 +21,11 @@ const MONTHLY_LIMITS: Record<string, number | null> = {
   professional:   null, // unlimited
 };
 
-// ── GET /api/mon/history ────────────────────────────────────────────────
-monRouter.get('/history', async (req: any, res) => {
+// ── GET /api/chupchu/history ────────────────────────────────────────────────
+chupChuRouter.get('/history', async (req: any, res) => {
   try {
     const { data, error } = await db
-      .from('mon_conversations')
+      .from('chupchu_conversations')
       .select('messages, updated_at')
       .eq('user_id', req.user.id)
       .order('updated_at', { ascending: false })
@@ -35,31 +35,31 @@ monRouter.get('/history', async (req: any, res) => {
     if (error && error.code !== 'PGRST116') throw error;
 
     // messages is a JSONB array of { role, content, timestamp }
-    const messages: MonMessage[] = data?.messages || [];
+    const messages: ChupChuMessage[] = data?.messages || [];
     // Return last 20
     res.json(messages.slice(-20));
   } catch (err: any) {
-    console.error('[GET /api/mon/history]', err.message);
+    console.error('[GET /api/chupchu/history]', err.message);
     res.json([]); // Return empty array on error — don't break the UI
   }
 });
 
-// ── DELETE /api/mon/history ─────────────────────────────────────────────
-monRouter.delete('/history', async (req: any, res) => {
+// ── DELETE /api/chupchu/history ─────────────────────────────────────────────
+chupChuRouter.delete('/history', async (req: any, res) => {
   try {
     await db
-      .from('mon_conversations')
+      .from('chupchu_conversations')
       .delete()
       .eq('user_id', req.user.id);
     res.json({ success: true });
   } catch (err: any) {
-    console.error('[DELETE /api/mon/history]', err.message);
+    console.error('[DELETE /api/chupchu/history]', err.message);
     res.status(500).json({ error: err.message });
   }
 });
 
-// ── POST /api/mon/chat ──────────────────────────────────────────────────
-monRouter.post('/chat', async (req: any, res) => {
+// ── POST /api/chupchu/chat ──────────────────────────────────────────────────
+chupChuRouter.post('/chat', async (req: any, res) => {
   try {
     const { message, gardenId } = req.body;
 
@@ -89,14 +89,14 @@ monRouter.post('/chat', async (req: any, res) => {
       startOfMonth.setHours(0, 0, 0, 0);
 
       const { data: convData } = await db
-        .from('mon_conversations')
+        .from('chupchu_conversations')
         .select('messages')
         .eq('user_id', userId)
         .gte('updated_at', startOfMonth.toISOString())
         .limit(1)
         .single();
 
-      const existingMessages: MonMessage[] = convData?.messages || [];
+      const existingMessages: ChupChuMessage[] = convData?.messages || [];
       const userMessagesThisMonth = existingMessages.filter(
         m => m.role === 'user' &&
         new Date(m.timestamp) >= startOfMonth
@@ -186,8 +186,8 @@ monRouter.post('/chat', async (req: any, res) => {
       };
     }
 
-    // ── 6. Build Mon context ────────────────────────────────────────────
-    const context: MonContext = {
+    // ── 6. Build ChupChu context ────────────────────────────────────────────
+    const context: ChupChuContext = {
       gardenName: garden?.name || null,
       locationRegion: garden?.location_region || null,
       soilType: garden?.soil_type || null,
@@ -225,14 +225,14 @@ monRouter.post('/chat', async (req: any, res) => {
 
     // ── 7. Load conversation history ─────────────────────────────────────
     const { data: convRecord } = await db
-      .from('mon_conversations')
+      .from('chupchu_conversations')
       .select('id, messages')
       .eq('user_id', userId)
       .order('updated_at', { ascending: false })
       .limit(1)
       .single();
 
-    const existingMessages: MonMessage[] = convRecord?.messages || [];
+    const existingMessages: ChupChuMessage[] = convRecord?.messages || [];
     const last10Messages = existingMessages.slice(-10);
 
     // ── 7b. Fetch recent completed tasks ─────────────────────────────────
@@ -242,30 +242,30 @@ monRouter.post('/chat', async (req: any, res) => {
       : '';
 
     // ── 8. Call Claude API ────────────────────────────────────────────────
-    const newUserMessage: MonMessage = {
+    const newUserMessage: ChupChuMessage = {
       role: 'user',
       content: message.trim(),
       timestamp: new Date().toISOString(),
     };
 
-    const monResponse = await askMon(
+    const chupChuResponse = await askChupChu(
       [...last10Messages, newUserMessage],
       context,
       taskContext || undefined
     );
 
-    const monMessage: MonMessage = {
+    const chupChuMessage: ChupChuMessage = {
       role: 'assistant',
-      content: monResponse,
+      content: chupChuResponse,
       timestamp: new Date().toISOString(),
     };
 
     // ── 9. Save to DB ─────────────────────────────────────────────────────
-    const updatedMessages = [...existingMessages, newUserMessage, monMessage];
+    const updatedMessages = [...existingMessages, newUserMessage, chupChuMessage];
 
     if (convRecord?.id) {
       await db
-        .from('mon_conversations')
+        .from('chupchu_conversations')
         .update({
           messages: updatedMessages,
           updated_at: new Date().toISOString(),
@@ -273,7 +273,7 @@ monRouter.post('/chat', async (req: any, res) => {
         .eq('id', convRecord.id);
     } else {
       await db
-        .from('mon_conversations')
+        .from('chupchu_conversations')
         .insert({
           user_id: userId,
           garden_id: garden?.id || null,
@@ -292,13 +292,13 @@ monRouter.post('/chat', async (req: any, res) => {
     ).length;
 
     res.json({
-      response: monResponse,
+      response: chupChuResponse,
       messagesUsedThisMonth,
       monthlyLimit,
     });
 
   } catch (err: any) {
-    console.error('[POST /api/mon/chat]', err.message);
+    console.error('[POST /api/chupchu/chat]', err.message);
     res.status(500).json({ error: err.message });
   }
 });

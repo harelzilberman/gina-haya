@@ -397,7 +397,7 @@ export function DayDetailModal({ day, onClose }: Props) {
                 color:         GOLD,
                 margin:        '0 0 6px',
               }}>
-                {isHe ? 'מון ממליץ:' : 'Mon recommends:'}
+                {isHe ? "צ'ופצ'ו ממליץ:" : 'ChupChu recommends:'}
               </p>
               <p style={{
                 fontFamily: PLAYFAIR,

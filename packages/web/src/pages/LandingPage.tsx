@@ -31,7 +31,7 @@ const LP_CSS = `
   from { transform: rotate(0deg); }
   to   { transform: rotate(360deg); }
 }
-@keyframes lp-pulse-mon {
+@keyframes lp-pulse-chupchu {
   0%, 100% { transform: scale(1);     box-shadow: 0 0 40px rgba(245,200,64,0.25); }
   50%       { transform: scale(1.025); box-shadow: 0 0 64px rgba(245,200,64,0.45); }
 }
@@ -50,7 +50,7 @@ const LP_CSS = `
 .lp-orb-2      { opacity: 0; animation: fadeIn 2s ease 0.3s forwards, lp-float-r 9s ease-in-out -3s infinite; }
 .lp-orb-3      { opacity: 0; animation: fadeIn 2s ease 0.3s forwards, lp-float  10s ease-in-out -5s infinite; }
 .lp-wheel      { animation: lp-rotate  60s linear infinite; }
-.lp-mon      { animation: lp-pulse-mon 3s ease-in-out infinite; }
+.lp-chupchu  { animation: lp-pulse-chupchu 3s ease-in-out infinite; }
 
 .lp-feat-card {
   border: 1px solid rgba(125,192,132,0.2);
@@ -185,7 +185,7 @@ const FEATURES_EN: Feature[] = [
   },
   {
     icon: '🤖',
-    title: 'Mon Levana — Your Expert',
+    title: 'ChupChu — Your Expert',
     body: 'Biodynamic AI that knows your garden. Ask, get advice, grow better.',
   },
   {
@@ -243,7 +243,7 @@ const PRICING_EN: PricingPlan[] = [
   {
     name: 'Free Forever',
     price: null,
-    features: ['Basic biodynamic calendar', '5 Mon questions/month', 'Basic encyclopedia'],
+    features: ['Basic biodynamic calendar', '5 ChupChu questions/month', 'Basic encyclopedia'],
     cta: 'Start Now',
     highlight: false,
     badge: '',
@@ -251,7 +251,7 @@ const PRICING_EN: PricingPlan[] = [
   {
     name: 'Grower',
     price: '9',
-    features: ['Full biodynamic calendar', '30 Mon questions', 'Personal garden', 'Daily alerts'],
+    features: ['Full biodynamic calendar', '30 ChupChu questions', 'Personal garden', 'Daily alerts'],
     cta: 'Choose Plan',
     highlight: false,
     badge: '',
@@ -739,7 +739,7 @@ export function LandingPage() {
               textAlign: 'center',
             }}>
                 <div
-                  className="lp-mon"
+                  className="lp-chupchu"
                   style={{
                     width: '140px', height: '140px', borderRadius: '50%',
                     background: `radial-gradient(circle at 35% 35%, #F0D060, ${GOLD})`,
@@ -758,7 +758,7 @@ export function LandingPage() {
                   color: GOLD,
                   marginBottom: '4px',
                 }}>
-                  {isHe ? 'מון לבנה' : 'Mon Levana'}
+                  {isHe ? "צ'ופצ'ו" : 'ChupChu'}
                 </p>
                 <p style={{ fontFamily: ASSISTANT, fontSize: '13px', color: LEAF_GREEN }}>
                   {isHe ? 'סבא הירח שלך' : 'Your Moon Elder'}
@@ -776,7 +776,7 @@ export function LandingPage() {
                   lineHeight: 1.3,
                   fontWeight: 400,
                 }}>
-                  {isHe ? 'שלום! אני מון לבנה' : 'Hello! I am Mon Levana'}
+                  {isHe ? "שלום! אני צ'ופצ'ו" : 'Hello! I am ChupChu'}
                 </h2>
                 <p style={{
                   fontFamily: ASSISTANT,
@@ -1075,7 +1075,7 @@ export function LandingPage() {
               color: `${PARCHMENT}66`,
               marginBottom: '48px',
             }}>
-              — {isHe ? 'מון לבנה' : 'Mon Levana'}
+              — {isHe ? "צ'ופצ'ו" : 'ChupChu'}
             </p>
             <Link
               to="/signup"

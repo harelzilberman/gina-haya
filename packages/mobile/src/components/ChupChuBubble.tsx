@@ -1,15 +1,15 @@
 import { View, Text, StyleSheet } from 'react-native';
-import type { MonMessage } from '@gina-haya/shared';
+import type { ChupChuMessage } from '@gina-haya/shared';
 
 interface Props {
-  message: MonMessage;
+  message: ChupChuMessage;
 }
 
-export function MonBubble({ message }: Props) {
+export function ChupChuBubble({ message }: Props) {
   const isUser = message.role === 'user';
 
   return (
-    <View style={[styles.row, isUser ? styles.rowUser : styles.rowMon]}>
+    <View style={[styles.row, isUser ? styles.rowUser : styles.rowChupChu]}>
       {!isUser && (
         <View style={styles.avatar}>
           <Text style={styles.avatarEmoji}>🌕</Text>
@@ -17,9 +17,9 @@ export function MonBubble({ message }: Props) {
       )}
       <View style={[
         styles.bubble,
-        isUser ? styles.bubbleUser : styles.bubbleMon,
+        isUser ? styles.bubbleUser : styles.bubbleChupChu,
       ]}>
-        <Text style={[styles.text, isUser ? styles.textUser : styles.textMon]}>
+        <Text style={[styles.text, isUser ? styles.textUser : styles.textChupChu]}>
           {message.content}
         </Text>
       </View>
@@ -39,7 +39,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row-reverse',
     justifyContent: 'flex-start',
   },
-  rowMon: {
+  rowChupChu: {
     flexDirection: 'row-reverse',
     justifyContent: 'flex-end',
   },
@@ -67,7 +67,7 @@ const styles = StyleSheet.create({
     borderColor: 'rgba(125,192,132,0.2)',
     borderTopRightRadius: 4,
   },
-  bubbleMon: {
+  bubbleChupChu: {
     backgroundColor: 'rgba(28,58,30,0.85)',
     borderWidth: 1,
     borderColor: 'rgba(200,168,75,0.15)',
@@ -84,7 +84,7 @@ const styles = StyleSheet.create({
   textUser: {
     color: '#EDE0C4',
   },
-  textMon: {
+  textChupChu: {
     color: '#EDE0C4',
     fontStyle: 'italic',
   },

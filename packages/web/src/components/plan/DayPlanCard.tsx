@@ -308,9 +308,9 @@ export function DayPlanCard({ day, isToday, isExpanded, onToggle, forceExpanded 
             </span>
           </div>
 
-          {/* Mon tip */}
-          {day.monTip && (
-            <div className="mon-tip" style={{
+          {/* ChupChu tip */}
+          {day.chupChuTip && (
+            <div className="chupchu-tip" style={{
               padding:            '12px 14px',
               borderRadius:       '8px',
               backgroundColor:    'rgba(245,200,64,0.04)',
@@ -327,7 +327,7 @@ export function DayPlanCard({ day, isToday, isExpanded, onToggle, forceExpanded 
                 margin:      0,
                 lineHeight:  1.6,
               }}>
-                🌙 {day.monTip}
+                🌙 {day.chupChuTip}
               </p>
             </div>
           )}

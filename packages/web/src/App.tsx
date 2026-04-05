@@ -6,7 +6,7 @@ import { SignupPage } from './pages/SignupPage';
 import { ResetPasswordPage } from './pages/ResetPasswordPage';
 import { LandingPage } from './pages/LandingPage';
 import { CalendarPage } from './pages/CalendarPage';
-import { MonPage } from './pages/MonPage';
+import { ChupChuPage } from './pages/ChupChuPage';
 import { PlantsPage } from './pages/PlantsPage';
 import { GardenPage } from './pages/GardenPage';
 import { BillingPage } from './pages/BillingPage';
@@ -22,28 +22,28 @@ import { Navbar } from './components/layout/Navbar';
 import { Footer } from './components/layout/Footer';
 import { ToastContainer } from './components/ui/Toast';
 import { UpgradeModal } from './components/ui/UpgradeModal';
-import { MonChat } from './components/mon/MonChat';
+import { ChupChuChat } from './components/chupchu/ChupChuChat';
 import { useUpgradeModalStore } from './stores/upgradeModalStore';
 import { useAuthStore } from './stores/authStore';
 import { useOnboardingStore } from './stores/onboardingStore';
-import { useMonPanelStore } from './stores/monPanelStore';
+import { useChupChuPanelStore } from './stores/chupChuPanelStore';
 import { supabase } from './lib/supabase';
 
 export default function App() {
   const { i18n } = useTranslation();
   const location = useLocation();
   const isMapPage   = location.pathname === '/map';
-  const isMonPage = location.pathname === '/mon';
+  const isChupChuPage = location.pathname === '/chupchu';
   const { user, profile, isAuthReady, loadProfile, markOnboardingComplete } = useAuthStore();
   const { isComplete } = useOnboardingStore();
   const { isOpen: isUpgradeOpen } = useUpgradeModalStore();
   const {
-    isOpen:             isMonPanelOpen,
-    initialMessage:     monInitial,
-    open:               openMonPanel,
-    close:              closeMonPanel,
+    isOpen:             isChupChuPanelOpen,
+    initialMessage:     chupChuInitial,
+    open:               openChupChuPanel,
+    close:              closeChupChuPanel,
     clearInitialMessage,
-  } = useMonPanelStore();
+  } = useChupChuPanelStore();
 
   // Central RTL/LTR management
   useEffect(() => {
@@ -109,10 +109,10 @@ export default function App() {
             }
           />
           <Route
-            path="/mon"
+            path="/chupchu"
             element={
               <ProtectedRoute>
-                <MonPage />
+                <ChupChuPage />
               </ProtectedRoute>
             }
           />
@@ -183,10 +183,10 @@ export default function App() {
       {isUpgradeOpen && <UpgradeModal />}
       <ToastContainer />
 
-      {/* Floating Mon bubble — hidden on /mon page itself */}
-      {user && !isMonPage && (
+      {/* Floating ChupChu bubble — hidden on /chupchu page itself */}
+      {user && !isChupChuPage && (
         <>
-          {isMonPanelOpen && (
+          {isChupChuPanelOpen && (
             <div style={{
               position:      'fixed',
               bottom:        '92px',
@@ -197,16 +197,16 @@ export default function App() {
               boxShadow:     '0 16px 60px rgba(0,0,0,0.55)',
               overflow:      'hidden',
             }}>
-              <MonChat
+              <ChupChuChat
                 compact
-                initialMessage={monInitial}
+                initialMessage={chupChuInitial}
                 onInitialMessageConsumed={clearInitialMessage}
               />
             </div>
           )}
           <button
-            onClick={() => isMonPanelOpen ? closeMonPanel() : openMonPanel()}
-            aria-label="שיחה עם מון"
+            onClick={() => isChupChuPanelOpen ? closeChupChuPanel() : openChupChuPanel()}
+            aria-label="שיחה עם צ'ופצ'ו"
             style={{
               position:        'fixed',
               bottom:          '24px',
@@ -217,7 +217,7 @@ export default function App() {
               backgroundColor: '#F5C840',
               border:          'none',
               cursor:          'pointer',
-              fontSize:        isMonPanelOpen ? '20px' : '26px',
+              fontSize:        isChupChuPanelOpen ? '20px' : '26px',
               fontWeight:      700,
               color:           '#142B16',
               display:         'flex',

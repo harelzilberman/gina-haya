@@ -1,10 +1,10 @@
-export interface MonMessage {
+export interface ChupChuMessage {
   role: 'user' | 'assistant';
   content: string;
   timestamp: string;
 }
 
-export interface MonContext {
+export interface ChupChuContext {
   gardenName: string | null;
   locationRegion: string | null;
   soilType: string | null;

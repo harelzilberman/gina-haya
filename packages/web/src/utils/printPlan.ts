@@ -14,7 +14,7 @@ export interface DayPlan {
   recommendedActions: string[];
   recommendedPlants: string[];
   avoidActions?: string[];
-  monTip: string;
+  chupChuTip: string;
 }
 
 export interface WeeklyPlan {
@@ -61,8 +61,8 @@ function dayCardHTML(day: DayPlan, today: string, widthPct: string): string {
     day.prep501 ? '<span style="color:#2d6e3e;font-weight:bold;background:#e8f5e8;padding:1px 6px;border-radius:3px;">BD 501 ✓</span>' : '',
   ].filter(Boolean).join(' ');
 
-  const mon = day.monTip
-    ? `<div style="font-style:italic;color:#555;font-size:10px;margin-top:6px;border-top:1px dashed #ddd;padding-top:5px;">💬 ${day.monTip.substring(0, 120)}${day.monTip.length > 120 ? '...' : ''}</div>`
+  const chupChu = day.chupChuTip
+    ? `<div style="font-style:italic;color:#555;font-size:10px;margin-top:6px;border-top:1px dashed #ddd;padding-top:5px;">💬 ${day.chupChuTip.substring(0, 120)}${day.chupChuTip.length > 120 ? '...' : ''}</div>`
     : '';
 
   return `
@@ -102,7 +102,7 @@ function dayCardHTML(day: DayPlan, today: string, widthPct: string): string {
 
       ${plants && !day.nodeActive ? `<div style="margin-top:5px;font-size:10px;color:#2d6e3e;">🌱 ${plants}</div>` : ''}
 
-      ${mon}
+      ${chupChu}
     </td>
   `;
 }

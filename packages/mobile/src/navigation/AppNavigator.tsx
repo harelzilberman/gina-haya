@@ -3,13 +3,13 @@ import { Text } from 'react-native';
 
 import { CalendarScreen }  from '../screens/CalendarScreen';
 import { TasksScreen }     from '../screens/TasksScreen';
-import { MonScreen }     from '../screens/MonScreen';
+import { ChupChuScreen }     from '../screens/ChupChuScreen';
 import { SettingsScreen }  from '../screens/SettingsScreen';
 
 export type TabParamList = {
   Calendar: undefined;
   Tasks:    undefined;
-  Mon:    undefined;
+  ChupChu:    undefined;
   Settings: undefined;
 };
 
@@ -18,14 +18,14 @@ const Tab = createBottomTabNavigator<TabParamList>();
 const ICON: Record<string, string> = {
   Calendar: '📅',
   Tasks:    '✅',
-  Mon:    '🌕',
+  ChupChu:    '🌕',
   Settings: '⚙️',
 };
 
 const LABEL: Record<string, string> = {
   Calendar: 'לוח',
   Tasks:    'משימות',
-  Mon:    'מון',
+  ChupChu:    "צ'ופצ'ו",
   Settings: 'הגדרות',
 };
 
@@ -57,7 +57,7 @@ export function AppNavigator() {
     >
       <Tab.Screen name="Calendar"  component={CalendarScreen}  />
       <Tab.Screen name="Tasks"     component={TasksScreen}     />
-      <Tab.Screen name="Mon"     component={MonScreen}     />
+      <Tab.Screen name="ChupChu"     component={ChupChuScreen}     />
       <Tab.Screen name="Settings"  component={SettingsScreen}  />
     </Tab.Navigator>
   );

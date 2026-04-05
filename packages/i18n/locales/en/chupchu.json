@@ -1,16 +1,16 @@
 {
-  "title": "Mon Levanah",
+  "title": "Chupchu",
   "subtitle": "Your Biodynamic Expert",
-  "inputPlaceholder": "Ask Mon...",
+  "inputPlaceholder": "Ask Chupchu...",
   "sendButton": "Send",
-  "thinking": "Mon is thinking...",
-  "disclaimer": "Mon's advice is for informational purposes only. For serious issues, consult a professional.",
+  "thinking": "Chupchu is thinking...",
+  "disclaimer": "Chupchu's advice is for informational purposes only. For serious issues, consult a professional.",
   "rateLimit": {
     "free": "You've reached your monthly question limit. Upgrade to Grower to continue.",
     "grower": "You've reached your monthly question limit."
   },
   "upgrade": "Upgrade",
   "usageCounter": "{{used}} / {{limit}} messages this month",
-  "greeting": "Shalom! I am Mon Levanah. What's happening in your garden today?",
+  "greeting": "Shalom! I am Chupchu. What's happening in your garden today?",
   "calendarContext": "According to the biodynamic calendar, today is a {{dayType}}."
 }

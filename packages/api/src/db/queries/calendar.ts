@@ -56,7 +56,7 @@ function toCalendarDay(row: CalendarRow): BiodynamicDay {
     scoreColour: row.score_colour,
     moonriseTime: row.moonrise_time,
     moonsetTime: row.moonset_time,
-    monDailySummary: row.mon_daily_summary,
+    chupChuDailySummary: row.mon_daily_summary,
   };
 }
 

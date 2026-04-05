@@ -30,5 +30,5 @@ export interface BiodynamicDay {
   scoreColour: ScoreColour;
   moonriseTime: string | null;
   moonsetTime: string | null;
-  monDailySummary: string;
+  chupChuDailySummary: string;
 }

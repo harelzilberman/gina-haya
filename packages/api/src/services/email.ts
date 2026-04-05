@@ -14,8 +14,8 @@ const FROM_DOMAIN = process.env.NODE_ENV === 'production'
   ? 'gina-haya.com'
   : 'resend.dev';
 
-const FROM_HE = `מון מגינה חיה <onboarding@${FROM_DOMAIN}>`;
-const FROM_EN = `Mon from Gina Haya <onboarding@${FROM_DOMAIN}>`;
+const FROM_HE = `צ'ופצ'ו מגינה חיה <onboarding@${FROM_DOMAIN}>`;
+const FROM_EN = `ChupChu from Gina Haya <onboarding@${FROM_DOMAIN}>`;
 
 const TEMPLATES_DIR = path.join(__dirname, '../templates');
 let heTemplate: string;
@@ -117,7 +117,7 @@ export async function sendDailyTip(user: EmailUser, day: BiodynamicDay): Promise
     .replace(/\{\{DAY_TYPE_EMOJI\}\}/g, emoji)
     .replace(/\{\{MOON_DIRECTION_HE\}\}/g, day.ascendingDescendingHe)
     .replace(/\{\{MOON_DIRECTION_EN\}\}/g, day.ascendingDescending)
-    .replace(/\{\{MOOSH_SUMMARY\}\}/g, day.monDailySummary || '')
+    .replace(/\{\{MOOSH_SUMMARY\}\}/g, day.chupChuDailySummary || '')
     .replace(/\{\{PREP_500_ROW\}\}/g, prep500Row)
     .replace(/\{\{PREP_501_ROW\}\}/g, prep501Row)
     .replace(/\{\{APP_URL\}\}/g, APP_URL)
@@ -157,8 +157,8 @@ export async function sendWelcome(user: EmailUser): Promise<void> {
     <div style="font-family:Arial;max-width:600px;margin:0 auto;padding:32px;">
       <h2 style="color:#1B2A4A;">Hello ${name}! 🌱</h2>
       <p style="color:#444;">Welcome to Gina Haya!</p>
-      <p style="color:#444;">Mon Levanah here — your biodynamic Moon Grandpa, ready to look after your garden.</p>
-      <p style="color:#444;">Every morning you'll receive a personalised biodynamic daily tip with today's planting score and Mon's garden recommendations.</p>
+      <p style="color:#444;">ChupChu here — your biodynamic expert, ready to look after your garden.</p>
+      <p style="color:#444;">Every morning you'll receive a personalised biodynamic daily tip with today's planting score and ChupChu's garden recommendations.</p>
       <p style="color:#B7924A;font-style:italic;">"The garden is waiting for you. It is always there."</p>
       <a href="${APP_URL}" style="display:inline-block;background:#4A7C59;color:white;padding:14px 28px;border-radius:8px;text-decoration:none;margin-top:16px;">Open my garden</a>
     </div>
