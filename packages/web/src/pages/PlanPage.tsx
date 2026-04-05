@@ -10,6 +10,7 @@ import { TaskManager } from '../components/plan/TaskManager';
 import { NotificationBanner } from '../components/plan/NotificationBanner';
 import { useTasks } from '../hooks/useTasks';
 import { printWeeklyPlan } from '../utils/printPlan';
+import { synthesizePlanTasks } from '../utils/planTasks';
 
 const GOLD   = '#F5C840';
 const PARCH  = '#EDE0C4';
@@ -141,20 +142,7 @@ export function PlanPage() {
   useEffect(() => {
     const plan = planStore.weeklyPlan;
     if (!plan || tasksConfirmed || tasks.length > 0 || !session?.access_token) return;
-    const planTasks: Array<{ date: string; title: string; type: 'biodynamic' | 'maintenance' | 'custom'; source_action?: string }> = [];
-
-    plan.gardenTasks.forEach((task: string) => {
-      planTasks.push({ date: plan.weekStart, title: task, type: 'maintenance' });
-    });
-
-    plan.days.forEach((day: any) => {
-      if (day.prep500) planTasks.push({ date: day.date, title: 'הכנת BD 500 — קרן הזבל', type: 'biodynamic', source_action: 'prep500' });
-      if (day.prep501) planTasks.push({ date: day.date, title: 'הכנת BD 501 — קרן הסיליקה', type: 'biodynamic', source_action: 'prep501' });
-      day.recommendedActions?.slice(0, 2).forEach((action: string) => {
-        planTasks.push({ date: day.date, title: action, type: 'biodynamic', source_action: action });
-      });
-    });
-
+    const planTasks = synthesizePlanTasks(plan);
     if (planTasks.length > 0) {
       createFromPlan(null, planTasks).then(() => setTasksConfirmed(true));
     }

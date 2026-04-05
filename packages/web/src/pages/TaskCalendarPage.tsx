@@ -11,9 +11,11 @@ import {
   useSensors,
 } from '@dnd-kit/core';
 import { CSS } from '@dnd-kit/utilities';
+import { Link } from 'react-router-dom';
 import { useAuthStore } from '../stores/authStore';
 import { tasksApi, type GardenTask } from '../api/tasks';
 import { calendarApi } from '../api/calendar';
+import { seedTasksFromWeeklyPlan } from '../utils/planTasks';
 import type { BiodynamicDay } from '@gina-haya/shared';
 
 // ── Design tokens ──────────────────────────────────────────────────────────
@@ -515,7 +517,9 @@ export function TaskCalendarPage() {
   const [anchor,     setAnchor]     = useState(() => { const d = new Date(); d.setHours(0,0,0,0); return d; });
   const [tasks,      setTasks]      = useState<GardenTask[]>([]);
   const [bdMap,      setBdMap]      = useState<Record<string, BiodynamicDay>>({});
-  const [isLoading,  setIsLoading]  = useState(true);
+  const [isLoading,      setIsLoading]      = useState(true);
+  const [isBootstrapping, setIsBootstrapping] = useState(false);
+  const [noPlan,          setNoPlan]          = useState(false);
   const [addDate,    setAddDate]    = useState<string | null>(null);
   const [editTask,   setEditTask]   = useState<GardenTask | null>(null);
   const [draggingId, setDraggingId] = useState<string | null>(null);
@@ -535,24 +539,48 @@ export function TaskCalendarPage() {
     }
   })();
 
+  const rangeIncludesToday = from <= today && today <= to;
+
   const loadData = useCallback(async () => {
     if (!token) return;
     setIsLoading(true);
+    setNoPlan(false);
     try {
       const [fetchedTasks, fetchedBd] = await Promise.all([
         tasksApi.getRange(from, to, token),
         calendarApi.getRange(from, to),
       ]);
-      setTasks(fetchedTasks);
+
       const map: Record<string, BiodynamicDay> = {};
       for (const bd of fetchedBd) map[bd.date] = bd;
       setBdMap(map);
+
+      // If no tasks exist and we're viewing the current week, auto-seed from plan
+      if (fetchedTasks.length === 0 && rangeIncludesToday) {
+        setIsLoading(false);
+        setIsBootstrapping(true);
+        try {
+          const seeded = await seedTasksFromWeeklyPlan(token);
+          if (seeded) {
+            const refetched = await tasksApi.getRange(from, to, token);
+            setTasks(refetched);
+          } else {
+            setNoPlan(true);
+          }
+        } catch {
+          setNoPlan(true);
+        } finally {
+          setIsBootstrapping(false);
+        }
+      } else {
+        setTasks(fetchedTasks);
+      }
     } catch (err) {
       console.error('[TaskCalendarPage] load error', err);
     } finally {
       setIsLoading(false);
     }
-  }, [from, to, token]);
+  }, [from, to, token, rangeIncludesToday]);
 
   useEffect(() => { loadData(); }, [loadData]);
 
@@ -777,13 +805,55 @@ export function TaskCalendarPage() {
           </div>
         )}
 
+        {/* Bootstrapping banner — auto-seeding tasks from weekly plan */}
+        {isBootstrapping && (
+          <div style={{
+            display: 'flex', alignItems: 'center', gap: '10px',
+            background: 'rgba(245,200,64,0.07)', border: '1px solid rgba(245,200,64,0.2)',
+            borderRadius: '10px', padding: '12px 16px', marginBottom: '12px',
+          }}>
+            <span style={{ fontSize: '20px', animation: 'spin 2s linear infinite' }}>🌕</span>
+            <span style={{ fontFamily: ASST, fontSize: '13px', color: `${PARCH}80` }}>
+              צ'ופצ'ו מכין את משימות השבוע מהתכנית...
+            </span>
+          </div>
+        )}
+
+        {/* No plan empty state */}
+        {noPlan && !isBootstrapping && tasks.length === 0 && (
+          <div style={{
+            textAlign: 'center', padding: '60px 24px',
+            border: '1px dashed rgba(245,200,64,0.2)', borderRadius: '16px',
+            background: 'rgba(28,58,30,0.3)',
+          }}>
+            <div style={{ fontSize: '56px', marginBottom: '16px' }}>📋</div>
+            <h2 style={{ fontFamily: FRANK, fontSize: '20px', color: GOLD, marginBottom: '10px' }}>
+              אין משימות לתקופה זו
+            </h2>
+            <p style={{ fontFamily: ASST, fontSize: '14px', color: `${PARCH}70`, marginBottom: '24px', lineHeight: 1.6 }}>
+              צור תכנית שבועית תחילה ומשימות ייווצרו אוטומטית
+            </p>
+            <Link
+              to="/plan"
+              style={{
+                fontFamily: FRANK, fontSize: '15px', fontWeight: 700,
+                color: EARTH, background: GOLD,
+                padding: '10px 24px', borderRadius: '8px',
+                textDecoration: 'none', display: 'inline-block',
+              }}
+            >
+              צור תכנית שבועית 🌕
+            </Link>
+          </div>
+        )}
+
         {/* Calendar grid */}
         {isLoading ? (
           <div style={{ textAlign: 'center', padding: '60px 0' }}>
             <div style={{ fontSize: '48px' }} className="animate-pulse">🌕</div>
             <p style={{ fontFamily: ASST, fontSize: '14px', color: `${PARCH}50`, marginTop: '12px' }}>טוען לוח משימות...</p>
           </div>
-        ) : (
+        ) : noPlan && tasks.length === 0 ? null : (
           <DndContext sensors={sensors} onDragStart={handleDragStart} onDragEnd={handleDragEnd}>
             {view === 'week' ? (
               /* Week view — 7 columns */
