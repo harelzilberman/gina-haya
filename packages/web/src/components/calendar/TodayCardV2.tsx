@@ -61,7 +61,7 @@ function MoonPhaseDisplay({ phaseAngle, phasePct, phaseHe, moonSignHe, ascending
   const daysToNew = Math.round((360 - phaseAngle) / 13.2);
 
   // Shadow: covers left for waxing, right for waning
-  const shadowPct = isFullMoon ? 0 : isNewMoon ? 100 : Math.round(Math.abs(Math.cos(phaseAngle * Math.PI / 180)) * 100);
+  const shadowPct = isFullMoon ? 0 : isNewMoon ? 100 : Math.round((100 - phasePct) * 2);
   const isWaxing = phaseAngle <= 180;
 
   return (
@@ -101,7 +101,7 @@ function MoonPhaseDisplay({ phaseAngle, phasePct, phaseHe, moonSignHe, ascending
           <div style={{
             position: 'absolute',
             top: 0,
-            [isWaxing ? 'left' : 'right']: 0,
+            [isWaxing ? 'right' : 'left']: 0,
             width: `${50 + shadowPct / 2}%`,
             height: '100%',
             background: 'rgba(4, 8, 20, 0.93)',
