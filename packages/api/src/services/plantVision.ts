@@ -46,6 +46,13 @@ export interface GrowingPlan {
   naturalFertilizers: string[];
 }
 
+export interface TrackerTask {
+  title: string;
+  description: string;
+  priority: 'high' | 'medium' | 'low';
+  due_in_days: number;
+}
+
 export interface AnalysisContext {
   plantNameHint?: string;
   locationType: string;
@@ -172,7 +179,7 @@ export async function analyzePlantImage(
   imageBase64: string,
   mimeType: string,
   context: AnalysisContext
-): Promise<{ analysis: PlantAnalysis; growingPlan: GrowingPlan }> {
+): Promise<{ analysis: PlantAnalysis; growingPlan: GrowingPlan; tasks: TrackerTask[] }> {
   const systemPrompt = buildVisionSystemPrompt(context);
 
   const hint = context.plantNameHint
@@ -227,8 +234,20 @@ export async function analyzePlantImage(
     },
     "pestPrevention": ["טיפ מניעת מזיקים 1", "טיפ 2"],
     "naturalFertilizers": ["מחזק/דשן טבעי 1", "מחזק 2"]
-  }
-}`;
+  },
+  "tasks": [
+    {
+      "title": "כותרת משימה קצרה בעברית",
+      "description": "מה לעשות ולמה, בעברית",
+      "priority": "high",
+      "due_in_days": 1
+    }
+  ]
+}
+
+הוראות ל-tasks: צור 2-5 משימות קונקרטיות לביצוע בגינה המבוססות ישירות על ממצאי הניתוח.
+כל משימה צריכה להיות פעולה ספציפית (השקיה, דישון, גיזום, טיפול במזיקים, כוונון שמש/צל, העתקה לעציץ גדול יותר וכו').
+due_in_days: מתי לבצע את המשימה (1-14 ימים). priority: high=דחוף/נדרש עכשיו, medium=השבוע, low=בשבועיים הקרובים.`;
 
   const response = await anthropic.messages.create({
     model: 'claude-sonnet-4-20250514',
@@ -275,9 +294,11 @@ export async function analyzePlantImage(
   parsed.growingPlan.steps = parsed.growingPlan.steps ?? [];
   parsed.growingPlan.pestPrevention = parsed.growingPlan.pestPrevention ?? [];
   parsed.growingPlan.naturalFertilizers = parsed.growingPlan.naturalFertilizers ?? [];
+  const tasks: TrackerTask[] = (Array.isArray(parsed.tasks) ? parsed.tasks : []).slice(0, 7);
 
   return {
     analysis: parsed.analysis as PlantAnalysis,
     growingPlan: parsed.growingPlan as GrowingPlan,
+    tasks,
   };
 }

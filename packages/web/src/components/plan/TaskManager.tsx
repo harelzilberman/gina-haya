@@ -232,6 +232,17 @@ export function TaskManager({ tasks, onUpdateStatus, onDelete, onAdd, isLoading 
                       {cfg.label}
                     </span>
 
+                    {/* Tracker origin badge */}
+                    {task.source_action === 'growing_tracker' && (
+                      <span style={{
+                        fontFamily: ASSIST, fontSize: '10px', fontWeight: 600,
+                        padding: '2px 8px', borderRadius: '99px',
+                        background: 'rgba(74,124,89,0.2)', color: '#7DC084', flexShrink: 0,
+                      }}>
+                        🌱 ממעקב הגידול
+                      </span>
+                    )}
+
                     {/* Skip / Delete */}
                     <div style={{ display: 'flex', gap: '4px', flexShrink: 0 }}>
                       {!isDone && (

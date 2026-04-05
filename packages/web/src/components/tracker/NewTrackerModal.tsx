@@ -1,5 +1,5 @@
 import { useState, useRef } from 'react';
-import { useTrackerStore } from '../../stores/trackerStore';
+import { useTrackerStore, type CheckinResult } from '../../stores/trackerStore';
 import { useGardenStore } from '../../stores/gardenStore';
 
 const EARTH  = '#142B16';
@@ -18,7 +18,7 @@ const LOCATION_TYPES = [
 
 interface Props {
   onClose: () => void;
-  onCreated: (trackerId?: string) => void;
+  onCreated: (result: CheckinResult) => void;
 }
 
 export function NewTrackerModal({ onClose, onCreated }: Props) {
@@ -111,9 +111,9 @@ export function NewTrackerModal({ onClose, onCreated }: Props) {
       setIsAnalyzing(true);
       const base64 = imagePreview!.split(',')[1];
       const mimeType = imageFile.type;
-      await addCheckin(tracker.id, base64, mimeType, notes.trim() || undefined);
+      const result = await addCheckin(tracker.id, base64, mimeType, notes.trim() || undefined);
 
-      onCreated(tracker.id);
+      onCreated(result);
     } catch (err: any) {
       if (err.message === 'limit_exceeded') {
         setError('הגעת למגבלת המעקבים בתכנית שלך. שדרג לגישה לעוד מעקבים.');

@@ -75,6 +75,7 @@ export interface CheckinResult {
   checkin: TrackerCheckin;
   analysis: PlantAnalysis;
   growingPlan: GrowingPlan;
+  tasks_added?: number;
 }
 
 export interface LimitError {

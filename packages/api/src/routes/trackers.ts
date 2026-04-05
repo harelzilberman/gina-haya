@@ -286,7 +286,7 @@ trackersRouter.post('/:id/checkin', async (req: any, res) => {
     const previousCheckinDate = previousCheckin?.checkin_date ?? undefined;
 
     // Call Claude vision
-    const { analysis, growingPlan } = await analyzePlantImage(imageBase64, mimeType, {
+    const { analysis, growingPlan, tasks } = await analyzePlantImage(imageBase64, mimeType, {
       plantNameHint:       tracker.plant_name_he,
       locationType:        tracker.location_type,
       locationDescription: tracker.location_description ?? undefined,
@@ -315,7 +315,33 @@ trackersRouter.post('/:id/checkin', async (req: any, res) => {
 
     if (checkinError) throw checkinError;
 
-    res.status(201).json({ checkin, analysis, growingPlan });
+    // Insert AI-generated tasks into garden_tasks
+    let tasksAdded = 0;
+    if (tasks && tasks.length > 0) {
+      try {
+        const taskRows = tasks.map((t: any) => {
+          const [y, m, d] = today.split('-').map(Number);
+          const daysOut = Math.max(0, Math.min(Number(t.due_in_days) || 1, 30));
+          const dueDate = new Date(Date.UTC(y, m - 1, d + daysOut)).toISOString().slice(0, 10);
+          return {
+            user_id:       userId,
+            plan_id:       null,
+            date:          dueDate,
+            title:         String(t.title),
+            type:          'maintenance' as const,
+            status:        'pending' as const,
+            notes:         t.description ? String(t.description) : null,
+            source_action: 'growing_tracker',
+          };
+        });
+        const { data: inserted } = await db.from('garden_tasks').insert(taskRows).select('id');
+        tasksAdded = inserted?.length ?? 0;
+      } catch (taskErr: any) {
+        console.warn('[checkin] Failed to insert tracker tasks:', taskErr.message);
+      }
+    }
+
+    res.status(201).json({ checkin, analysis, growingPlan, tasks_added: tasksAdded });
   } catch (err: any) {
     console.error('[POST /api/trackers/:id/checkin]', err.message);
     res.status(500).json({ error: err.message });

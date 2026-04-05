@@ -34,10 +34,11 @@ interface Props {
   analysis: PlantAnalysis;
   growingPlan: GrowingPlan;
   checkinDate?: string;
+  tasksAdded?: number;
   onClose: () => void;
 }
 
-export function AnalysisResult({ analysis, growingPlan, checkinDate, onClose }: Props) {
+export function AnalysisResult({ analysis, growingPlan, checkinDate, tasksAdded, onClose }: Props) {
   const [expandedWeeks, setExpandedWeeks] = useState<Set<number>>(new Set([1]));
 
   function toggleWeek(week: number) {
@@ -248,6 +249,26 @@ ${growingPlan.naturalFertilizers.length > 0 ? `
             ביטחון: {analysis.confidence === 'high' ? 'גבוה' : analysis.confidence === 'medium' ? 'בינוני' : 'נמוך'}
           </span>
         </div>
+
+        {/* Tasks added banner */}
+        {tasksAdded != null && tasksAdded > 0 && (
+          <div style={{
+            display: 'flex', alignItems: 'center', gap: '10px',
+            backgroundColor: 'rgba(74,124,89,0.18)', border: '1px solid rgba(74,124,89,0.4)',
+            borderRadius: '10px', padding: '10px 14px', marginBottom: '16px',
+          }}>
+            <span style={{ fontSize: '18px', flexShrink: 0 }}>✓</span>
+            <span style={{ fontFamily: ASST, fontSize: '13px', color: '#7DC084', fontWeight: 600 }}>
+              {tasksAdded} משימות נוספו לתכנית השבועית
+            </span>
+            <a
+              href="/plan"
+              style={{ fontFamily: ASST, fontSize: '12px', color: GOLD, marginRight: 'auto', textDecoration: 'none', flexShrink: 0 }}
+            >
+              לתכנית ←
+            </a>
+          </div>
+        )}
 
         {/* Observations */}
         <div style={{

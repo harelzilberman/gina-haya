@@ -175,7 +175,7 @@ export function TrackerPage() {
       {showNewTracker && (
         <NewTrackerModal
           onClose={() => setShowNewTracker(false)}
-          onCreated={() => setShowNewTracker(false)}
+          onCreated={(result) => { setShowNewTracker(false); setAnalysisResult(result); }}
         />
       )}
 
@@ -193,6 +193,7 @@ export function TrackerPage() {
           analysis={analysisResult.analysis}
           growingPlan={analysisResult.growingPlan}
           checkinDate={analysisResult.checkin.checkin_date}
+          tasksAdded={analysisResult.tasks_added}
           onClose={() => { setAnalysisResult(null); loadTrackers(); }}
         />
       )}
