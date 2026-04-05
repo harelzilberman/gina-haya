@@ -119,22 +119,26 @@ function drawMoon(canvas: HTMLCanvasElement, phasePct: number, phaseAngle: numbe
 
     // Soft terminator gradient for realism
     if (phasePct >= 2 && phasePct <= 98) {
-      const feather = r * 0.13; // width of soft zone in pixels
-      // terminatorX = position of terminator center relative to cx
-      // same formula used for tRx but signed
+      const feather = r * 0.13;
       const terminatorX = cx + (isWaning ? -tRx : tRx);
-      const gradX0 = isWaning ? terminatorX - feather : terminatorX - feather;
-      const gradX1 = isWaning ? terminatorX + feather : terminatorX + feather;
-      const softGrad = ctx.createLinearGradient(gradX0, 0, gradX1, 0);
+      const softGrad = ctx.createLinearGradient(
+        terminatorX - feather, 0,
+        terminatorX + feather, 0
+      );
+      // gradient always: transparent → dark → transparent
+      // dark peak is on the shadow side of the terminator
       if (isWaning) {
+        // shadow is on RIGHT, terminator curves from left into right
+        // dark peaks on the RIGHT side of the gradient
         softGrad.addColorStop(0, 'rgba(4,8,20,0)');
-        softGrad.addColorStop(0.4, 'rgba(4,8,20,0.55)');
-        softGrad.addColorStop(0.6, 'rgba(4,8,20,0.75)');
+        softGrad.addColorStop(0.35, 'rgba(4,8,20,0)');
+        softGrad.addColorStop(0.6, 'rgba(4,8,20,0.7)');
         softGrad.addColorStop(1, 'rgba(4,8,20,0)');
       } else {
+        // shadow is on LEFT
         softGrad.addColorStop(0, 'rgba(4,8,20,0)');
-        softGrad.addColorStop(0.4, 'rgba(4,8,20,0.75)');
-        softGrad.addColorStop(0.6, 'rgba(4,8,20,0.55)');
+        softGrad.addColorStop(0.4, 'rgba(4,8,20,0.7)');
+        softGrad.addColorStop(0.65, 'rgba(4,8,20,0)');
         softGrad.addColorStop(1, 'rgba(4,8,20,0)');
       }
       ctx.fillStyle = softGrad;
