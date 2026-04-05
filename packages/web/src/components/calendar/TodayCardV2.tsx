@@ -117,6 +117,30 @@ function drawMoon(canvas: HTMLCanvasElement, phasePct: number, phaseAngle: numbe
       ctx.restore();
     }
 
+    // Soft terminator gradient for realism
+    if (phasePct >= 2 && phasePct <= 98) {
+      const feather = r * 0.13; // width of soft zone in pixels
+      // terminatorX = position of terminator center relative to cx
+      // same formula used for tRx but signed
+      const terminatorX = cx + (isWaning ? -tRx : tRx);
+      const gradX0 = isWaning ? terminatorX - feather : terminatorX - feather;
+      const gradX1 = isWaning ? terminatorX + feather : terminatorX + feather;
+      const softGrad = ctx.createLinearGradient(gradX0, 0, gradX1, 0);
+      if (isWaning) {
+        softGrad.addColorStop(0, 'rgba(4,8,20,0)');
+        softGrad.addColorStop(0.4, 'rgba(4,8,20,0.55)');
+        softGrad.addColorStop(0.6, 'rgba(4,8,20,0.75)');
+        softGrad.addColorStop(1, 'rgba(4,8,20,0)');
+      } else {
+        softGrad.addColorStop(0, 'rgba(4,8,20,0)');
+        softGrad.addColorStop(0.4, 'rgba(4,8,20,0.75)');
+        softGrad.addColorStop(0.6, 'rgba(4,8,20,0.55)');
+        softGrad.addColorStop(1, 'rgba(4,8,20,0)');
+      }
+      ctx.fillStyle = softGrad;
+      ctx.fillRect(0, 0, size, size);
+    }
+
     // Spherical shading
     const grad = ctx.createRadialGradient(cx * 0.65, cy * 0.65, 0, cx, cy, r);
     grad.addColorStop(0, 'rgba(255,245,200,0.08)');
