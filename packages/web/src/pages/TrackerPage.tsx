@@ -74,7 +74,7 @@ export function TrackerPage() {
               מעקב גידול
             </h1>
             <p style={{ fontFamily: ASST, fontSize: '14px', color: 'rgba(237,224,196,0.55)', margin: 0 }}>
-              צלם צמחים וצ'אפצ'ו יבנה לך תכנית גידול ביודינמית 🌕
+              צלם צמחים וצ'ופצ'ו יבנה לך תכנית גידול ביודינמית 🌕
             </p>
           </div>
 
@@ -135,7 +135,7 @@ export function TrackerPage() {
               עדיין אין צמחים במעקב
             </h2>
             <p style={{ fontFamily: ASST, fontSize: '15px', color: 'rgba(237,224,196,0.6)', marginBottom: '28px', lineHeight: 1.7, maxWidth: '400px', margin: '0 auto 28px' }}>
-              צלם צמח מהגינה שלך וצ'אפצ'ו יבנה לך תכנית גידול מותאמת אישית
+              צלם צמח מהגינה שלך וצ'ופצ'ו יבנה לך תכנית גידול מותאמת אישית
             </p>
             <button
               onClick={() => setShowNewTracker(true)}

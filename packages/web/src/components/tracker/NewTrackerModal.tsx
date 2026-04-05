@@ -199,7 +199,7 @@ export function NewTrackerModal({ onClose, onCreated }: Props) {
           }}>
             <div style={{ fontSize: '48px', animation: 'pulse 1.5s ease-in-out infinite' }}>🌕</div>
             <p style={{ fontFamily: FRANK, fontSize: '18px', color: GOLD, margin: '12px 0 4px' }}>
-              צ'אפצ'ו בודק את הצמח שלך...
+              צ'ופצ'ו בודק את הצמח שלך...
             </p>
             <p style={{ fontFamily: ASST, fontSize: '13px', color: 'rgba(237,224,196,0.6)', margin: 0 }}>
               זה לוקח כ-15 שניות
@@ -317,7 +317,7 @@ export function NewTrackerModal({ onClose, onCreated }: Props) {
                     צלם או העלה תמונה של הצמח
                   </p>
                   <p style={{ fontFamily: ASST, fontSize: '12px', color: 'rgba(237,224,196,0.5)', margin: 0 }}>
-                    צ'אפצ'ו ינתח את הצמח ויבנה תכנית גידול מותאמת
+                    צ'ופצ'ו ינתח את הצמח ויבנה תכנית גידול מותאמת
                   </p>
                   <p style={{ fontFamily: ASST, fontSize: '11px', color: 'rgba(237,224,196,0.35)', margin: '6px 0 0' }}>
                     JPG, PNG, WEBP עד 10MB
@@ -406,7 +406,7 @@ export function NewTrackerModal({ onClose, onCreated }: Props) {
                 transition: 'filter 0.2s',
               }}
             >
-              {isSubmitting ? 'יוצר מעקב...' : 'נתח עם צ\'אפצ\'ו 🌕'}
+              {isSubmitting ? 'יוצר מעקב...' : 'נתח עם צ\'ופצ\'ו 🌕'}
             </button>
           </form>
         )}
