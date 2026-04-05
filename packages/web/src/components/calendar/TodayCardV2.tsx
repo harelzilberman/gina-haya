@@ -43,10 +43,10 @@ const CARD_CSS = `
 // MOON PHASE HELPERS
 // ─────────────────────────────────────────────
 function getMoonTilt(phaseAngle: number, lat: number): number {
-  const latRad = lat * Math.PI / 180;
-  const baseTilt = -latRad * (180 / Math.PI) * 0.5;
+  const latFactor = (lat / 90);
+  const baseTilt = -90 * latFactor;
   const isWaxing = phaseAngle <= 180;
-  const phaseTilt = isWaxing ? -15 : 15;
+  const phaseTilt = isWaxing ? -10 : 10;
   return baseTilt + phaseTilt;
 }
 
@@ -58,45 +58,58 @@ function drawMoon(canvas: HTMLCanvasElement, phasePct: number, phaseAngle: numbe
 
   ctx.clearRect(0, 0, size, size);
 
+  const isWaning = phaseAngle > 180;
+  const terminatorRx = r * Math.abs(Math.cos(phaseAngle * Math.PI / 180));
+
   const img = new Image();
   img.src = '/moon.jpg';
   img.onload = () => {
     ctx.save();
+
+    // Rotate for observer latitude (Israel ~90deg CCW)
     ctx.translate(cx, cy);
-    ctx.rotate(tiltDeg * Math.PI / 180);
+    ctx.rotate((tiltDeg) * Math.PI / 180);
     ctx.translate(-cx, -cy);
 
+    // Clip everything to circle
     ctx.beginPath();
     ctx.arc(cx, cy, r, 0, Math.PI * 2);
     ctx.clip();
-    ctx.fillStyle = '#080c10';
+
+    // Dark base
+    ctx.fillStyle = '#060a08';
     ctx.fillRect(0, 0, size, size);
+
+    // Moon texture
     ctx.drawImage(img, 0, 0, size, size);
 
-    const isWaxing = phaseAngle <= 180;
-    const terminatorRx = r * Math.abs(Math.cos(phaseAngle * Math.PI / 180));
-
+    // Draw shadow on correct side
     if (phasePct < 5) {
-      ctx.fillStyle = 'rgba(4,8,20,0.96)';
+      // New moon — all dark
+      ctx.fillStyle = 'rgba(4,8,20,0.97)';
       ctx.fillRect(0, 0, size, size);
     } else if (phasePct < 95) {
       ctx.beginPath();
-      if (!isWaxing) {
-        ctx.arc(cx, cy, r, -Math.PI / 2, Math.PI / 2, false);
-        ctx.ellipse(cx, cy, terminatorRx, r, 0, -Math.PI / 2, Math.PI / 2, true);
-      } else {
+      if (isWaning) {
+        // Shadow on LEFT: left semicircle + terminator curving right
         ctx.arc(cx, cy, r, Math.PI / 2, (3 * Math.PI) / 2, false);
-        ctx.ellipse(cx, cy, terminatorRx, r, 0, Math.PI / 2, -Math.PI / 2, true);
+        ctx.ellipse(cx, cy, terminatorRx, r, 0, (3 * Math.PI) / 2, Math.PI / 2, false);
+      } else {
+        // Shadow on RIGHT: right semicircle + terminator curving left
+        ctx.arc(cx, cy, r, -Math.PI / 2, Math.PI / 2, true);
+        ctx.ellipse(cx, cy, terminatorRx, r, 0, Math.PI / 2, -Math.PI / 2, false);
       }
       ctx.closePath();
-      ctx.fillStyle = 'rgba(4,8,20,0.94)';
+      ctx.fillStyle = 'rgba(4,8,20,0.95)';
       ctx.fill();
     }
+    // phasePct >= 95: full moon, no shadow
 
-    const grad = ctx.createRadialGradient(cx * 0.7, cy * 0.7, 0, cx, cy, r);
-    grad.addColorStop(0, 'rgba(255,245,200,0.07)');
+    // Spherical shading overlay
+    const grad = ctx.createRadialGradient(cx * 0.65, cy * 0.65, 0, cx, cy, r);
+    grad.addColorStop(0, 'rgba(255,245,200,0.08)');
     grad.addColorStop(0.5, 'rgba(0,0,0,0)');
-    grad.addColorStop(1, 'rgba(0,0,0,0.45)');
+    grad.addColorStop(1, 'rgba(0,0,0,0.5)');
     ctx.fillStyle = grad;
     ctx.fillRect(0, 0, size, size);
 
