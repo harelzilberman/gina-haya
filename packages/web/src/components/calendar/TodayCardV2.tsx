@@ -50,7 +50,12 @@ function getMoonTilt(phaseAngle: number, lat: number): number {
   return baseTilt + phaseTilt;
 }
 
-function drawMoon(canvas: HTMLCanvasElement, phasePct: number, phaseAngle: number, tiltDeg: number) {
+function drawMoon(
+  canvas: HTMLCanvasElement,
+  phasePct: number,
+  phaseAngle: number,
+  tiltDeg: number
+) {
   const ctx = canvas.getContext('2d');
   if (!ctx) return;
   const size = canvas.width;
@@ -59,6 +64,7 @@ function drawMoon(canvas: HTMLCanvasElement, phasePct: number, phaseAngle: numbe
   ctx.clearRect(0, 0, size, size);
 
   const isWaning = phaseAngle > 180;
+  // terminatorRx: at new/full moon = r, at half moon = 0
   const terminatorRx = r * Math.abs(Math.cos(phaseAngle * Math.PI / 180));
 
   const img = new Image();
@@ -66,12 +72,12 @@ function drawMoon(canvas: HTMLCanvasElement, phasePct: number, phaseAngle: numbe
   img.onload = () => {
     ctx.save();
 
-    // Rotate for observer latitude (Israel ~90deg CCW)
+    // Apply latitude tilt
     ctx.translate(cx, cy);
-    ctx.rotate((tiltDeg) * Math.PI / 180);
+    ctx.rotate(tiltDeg * Math.PI / 180);
     ctx.translate(-cx, -cy);
 
-    // Clip everything to circle
+    // Clip to circle
     ctx.beginPath();
     ctx.arc(cx, cy, r, 0, Math.PI * 2);
     ctx.clip();
@@ -83,29 +89,33 @@ function drawMoon(canvas: HTMLCanvasElement, phasePct: number, phaseAngle: numbe
     // Moon texture
     ctx.drawImage(img, 0, 0, size, size);
 
-    // Draw shadow on correct side
     if (phasePct < 5) {
-      // New moon — all dark
+      // New moon: cover everything
       ctx.fillStyle = 'rgba(4,8,20,0.97)';
       ctx.fillRect(0, 0, size, size);
     } else if (phasePct < 95) {
+      // Draw ONLY the dark sliver using the terminator ellipse
       ctx.beginPath();
       if (isWaning) {
-        // Shadow on LEFT: left semicircle + terminator curving right
-        ctx.arc(cx, cy, r, Math.PI / 2, (3 * Math.PI) / 2, false);
-        ctx.ellipse(cx, cy, terminatorRx, r, 0, (3 * Math.PI) / 2, Math.PI / 2, false);
+        // Dark sliver on LEFT:
+        // Go along left half of outer circle (top to bottom, counterclockwise)
+        // then back up along terminator ellipse
+        ctx.arc(cx, cy, r, Math.PI / 2, (3 * Math.PI) / 2, true);
+        ctx.ellipse(cx, cy, terminatorRx, r, 0, (3 * Math.PI) / 2, Math.PI / 2, true);
       } else {
-        // Shadow on RIGHT: right semicircle + terminator curving left
-        ctx.arc(cx, cy, r, -Math.PI / 2, Math.PI / 2, true);
-        ctx.ellipse(cx, cy, terminatorRx, r, 0, Math.PI / 2, -Math.PI / 2, false);
+        // Dark sliver on RIGHT:
+        // Go along right half of outer circle (top to bottom, clockwise)
+        // then back up along terminator ellipse
+        ctx.arc(cx, cy, r, -Math.PI / 2, Math.PI / 2, false);
+        ctx.ellipse(cx, cy, terminatorRx, r, 0, Math.PI / 2, -Math.PI / 2, true);
       }
       ctx.closePath();
       ctx.fillStyle = 'rgba(4,8,20,0.95)';
       ctx.fill();
     }
-    // phasePct >= 95: full moon, no shadow
+    // phasePct >= 95: full moon, no shadow drawn
 
-    // Spherical shading overlay
+    // Spherical shading
     const grad = ctx.createRadialGradient(cx * 0.65, cy * 0.65, 0, cx, cy, r);
     grad.addColorStop(0, 'rgba(255,245,200,0.08)');
     grad.addColorStop(0.5, 'rgba(0,0,0,0)');
