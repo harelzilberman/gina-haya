@@ -90,11 +90,32 @@ export async function createCustomTask(
   userId: string,
   date: string,
   title: string,
-  notes?: string
+  notes?: string,
+  source_action?: string,
 ): Promise<GardenTask> {
   const { data, error } = await db
     .from('garden_tasks')
-    .insert({ user_id: userId, date, title, type: 'custom', status: 'pending', notes: notes ?? null })
+    .insert({ user_id: userId, date, title, type: 'custom', status: 'pending', notes: notes ?? null, source_action: source_action ?? null })
+    .select()
+    .single();
+  if (error) throw error;
+  return data;
+}
+
+export async function getTasksForRange(userId: string, from: string, to: string): Promise<GardenTask[]> {
+  return getTasksForWeek(userId, from, to);
+}
+
+export async function updateTask(
+  taskId: string,
+  userId: string,
+  updates: { status?: 'pending' | 'done' | 'skipped'; notes?: string | null; date?: string; title?: string },
+): Promise<GardenTask | null> {
+  const { data, error } = await db
+    .from('garden_tasks')
+    .update({ ...updates, updated_at: new Date().toISOString() })
+    .eq('id', taskId)
+    .eq('user_id', userId)
     .select()
     .single();
   if (error) throw error;

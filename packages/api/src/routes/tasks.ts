@@ -2,8 +2,8 @@ import { Router, type IRouter } from 'express';
 import { verifyToken } from '../middleware/auth';
 import { ISRAEL_TIMEZONE } from '@gina-haya/shared';
 import {
-  getTasksForWeek, updateTaskStatus, createCustomTask,
-  deleteTask, createTasksFromPlan
+  getTasksForWeek, getTasksForRange, updateTaskStatus, updateTask,
+  createCustomTask, deleteTask, createTasksFromPlan
 } from '../db/queries/tasks';
 import { sendSmartReminder } from '../services/cronJobs';
 
@@ -21,6 +21,18 @@ tasksRouter.get('/week', async (req, res) => {
     const end = new Date(today + 'T00:00:00');
     end.setDate(end.getDate() + 6);
     const tasks = await getTasksForWeek(req.user!.id, today, end.toISOString().slice(0, 10));
+    res.json(tasks);
+  } catch (err: any) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// GET /api/tasks/range — get tasks for a date range
+tasksRouter.get('/range', async (req, res) => {
+  try {
+    const { from, to } = req.query as { from?: string; to?: string };
+    if (!from || !to) return res.status(400).json({ error: 'from and to required' });
+    const tasks = await getTasksForRange(req.user!.id, from, to);
     res.json(tasks);
   } catch (err: any) {
     res.status(500).json({ error: err.message });
@@ -51,22 +63,24 @@ tasksRouter.post('/from-plan', async (req, res) => {
 // POST /api/tasks — create custom task
 tasksRouter.post('/', async (req, res) => {
   try {
-    const { date, title, notes } = req.body;
+    const { date, title, notes, source_action } = req.body;
     if (!date || !title) return res.status(400).json({ error: 'date and title required' });
-    const task = await createCustomTask(req.user!.id, date, title, notes);
+    const task = await createCustomTask(req.user!.id, date, title, notes, source_action);
     res.json(task);
   } catch (err: any) {
     res.status(500).json({ error: err.message });
   }
 });
 
-// PATCH /api/tasks/:id — update status
+// PATCH /api/tasks/:id — update task (status, notes, date, title)
 tasksRouter.patch('/:id', async (req, res) => {
   try {
-    const { status, notes } = req.body;
-    if (!status) return res.status(400).json({ error: 'status required' });
-    const task = await updateTaskStatus(req.params.id, req.user!.id, status, notes);
-    res.json(task);
+    const { status, notes, date, title } = req.body;
+    if (status || date || title !== undefined) {
+      const task = await updateTask(req.params.id, req.user!.id, { status, notes: notes ?? undefined, date, title });
+      return res.json(task);
+    }
+    return res.status(400).json({ error: 'at least one field required' });
   } catch (err: any) {
     res.status(500).json({ error: err.message });
   }

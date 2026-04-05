@@ -15,6 +15,7 @@ import { TrackerPage } from './pages/TrackerPage';
 import { PlanPage } from './pages/PlanPage';
 import { MapPage }  from './pages/MapPage';
 import { GuidesPage } from './pages/GuidesPage';
+import { TaskCalendarPage } from './pages/TaskCalendarPage';
 import { PrivacyPolicyPage } from './pages/PrivacyPolicyPage';
 import { ProtectedRoute } from './components/auth/ProtectedRoute';
 import { OnboardingWizard } from './components/auth/OnboardingWizard';
@@ -169,6 +170,14 @@ export default function App() {
             element={
               <ProtectedRoute>
                 <GuidesPage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/tasks"
+            element={
+              <ProtectedRoute>
+                <TaskCalendarPage />
               </ProtectedRoute>
             }
           />

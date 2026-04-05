@@ -180,6 +180,7 @@ export function Navbar() {
               { label: t('nav.plan'),     to: '/plan'     },
               { label: t('nav.map'),      to: '/map'      },
               { label: t('nav.tracker'), to: '/tracker' },
+              { label: t('nav.tasks'),   to: '/tasks'   },
               { label: t('nav.plants'), to: '/plants' },
               { label: t('nav.guides'), to: '/guides' },
             ].map(item => (
@@ -311,6 +312,7 @@ export function Navbar() {
                     { label: t('nav.plan'),     to: '/plan'     },
                     { label: t('nav.map'),      to: '/map'      },
                     { label: t('nav.tracker'),  to: '/tracker' },
+                    { label: t('nav.tasks'),    to: '/tasks'   },
                     { label: t('nav.guides'),   to: '/guides' },
                     { label: t('nav.chupchu'),    to: '/chupchu' },
                     { label: t('nav.settings'), to: '/settings' },
@@ -412,6 +414,7 @@ export function Navbar() {
                 { label: t('nav.plants'),   to: '/plants' },
                 { label: t('nav.garden'),   to: '/garden' },
                 { label: t('nav.tracker'),  to: '/tracker' },
+                { label: t('nav.tasks'),    to: '/tasks'   },
                 { label: t('nav.guides'),   to: '/guides' },
                 { label: t('nav.chupchu'),    to: '/chupchu' },
                 { label: t('nav.settings'), to: '/settings' },

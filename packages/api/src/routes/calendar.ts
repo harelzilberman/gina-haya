@@ -81,6 +81,19 @@ calendarRouter.post('/regenerate', async (req: any, res) => {
   res.json({ message: 'Calendar regeneration started', status: 'running' });
 });
 
+// GET /api/calendar/range?from=DATE&to=DATE — no auth required
+calendarRouter.get('/range', async (req, res) => {
+  const { from, to } = req.query as { from?: string; to?: string };
+  if (!from || !to) return res.status(400).json({ error: 'from and to required' });
+  try {
+    const days = await getCalendarRange(from, to);
+    res.json(days);
+  } catch (err: any) {
+    console.error('[GET /api/calendar/range]', err);
+    res.status(500).json({ error: err.message });
+  }
+});
+
 // GET /api/calendar/:date — specific date YYYY-MM-DD, no auth required
 calendarRouter.get('/:date', async (req, res) => {
   const { date } = req.params;
