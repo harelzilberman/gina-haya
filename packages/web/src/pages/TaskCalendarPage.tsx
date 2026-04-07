@@ -333,58 +333,47 @@ function DroppableDayCell({
         width: '100%',
       }}
     >
-      {/* Day header */}
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2px' }}>
-        <div style={{ display: 'flex', gap: '4px', alignItems: 'center' }}>
-          {dayStyle && (
-            <span
-              title={dayStyle.label}
-              style={{
-                fontSize: '10px', padding: '1px 5px', borderRadius: '99px',
-                background: dayStyle.bg, color: dayStyle.color, fontFamily: ASST, fontWeight: 600,
-              }}
-            >
-              {dayStyle.emoji}
-            </span>
+      {/* Day header — full centred layout for week view, compact row for month view */}
+      {compact ? (
+        <>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2px' }}>
+            <div style={{ display: 'flex', gap: '4px', alignItems: 'center' }}>
+              {dayStyle && (
+                <span title={dayStyle.label} style={{ fontSize: '10px', padding: '1px 5px', borderRadius: '99px', background: dayStyle.bg, color: dayStyle.color, fontFamily: ASST, fontWeight: 600 }}>
+                  {dayStyle.emoji}
+                </span>
+              )}
+              {bd && <span title={bd.moonPhaseNameHe} style={{ fontSize: '11px', lineHeight: 1 }}>{moonEmoji(bd.moonPhasePct)}</span>}
+            </div>
+            <div style={{ textAlign: 'right' }}>
+              <span style={{ fontFamily: FRANK, fontSize: '14px', color: isToday ? GOLD : isCurrentMonth ? PARCH : `${PARCH}50`, fontWeight: isToday ? 700 : 400 }}>{num}</span>
+              <span style={{ fontFamily: ASST, fontSize: '10px', color: `${PARCH}60`, marginRight: '3px' }}>{day}</span>
+            </div>
+          </div>
+          {bd && bd.plantingScore > 0 && (
+            <div style={{ display: 'flex', gap: '2px', marginBottom: '2px' }}>
+              {Array.from({ length: 5 }, (_, i) => (
+                <div key={i} style={{ flex: 1, height: '3px', borderRadius: '99px', background: i < bd.plantingScore ? (dayStyle?.color ?? GOLD) : 'rgba(255,255,255,0.08)' }} />
+              ))}
+            </div>
           )}
-          {bd && (
-            <span title={bd.moonPhaseNameHe} style={{ fontSize: '11px', lineHeight: 1 }}>
-              {moonEmoji(bd.moonPhasePct)}
-            </span>
+        </>
+      ) : (
+        <div style={{ textAlign: 'center', marginBottom: '6px' }}>
+          <div style={{ fontFamily: ASST, fontSize: '11px', color: `${PARCH}55` }}>{day}</div>
+          <div style={{ fontFamily: FRANK, fontSize: '16px', color: isToday ? GOLD : isCurrentMonth ? PARCH : `${PARCH}50`, fontWeight: isToday ? 700 : 400 }}>{num}</div>
+          <div style={{ fontFamily: ASST, fontSize: '10px', color: `${PARCH}40` }}>{month}</div>
+          <div style={{ display: 'flex', gap: '4px', justifyContent: 'center', alignItems: 'center', marginTop: '2px' }}>
+            {dayStyle && <span style={{ fontSize: '12px' }} title={dayStyle.label}>{dayStyle.emoji}</span>}
+            {bd && <span style={{ fontSize: '12px' }} title={bd.moonPhaseNameHe}>{moonEmoji(bd.moonPhasePct)}</span>}
+          </div>
+          {bd && bd.plantingScore > 0 && (
+            <div style={{ display: 'flex', gap: '1px', justifyContent: 'center', marginTop: '2px' }}>
+              {Array.from({ length: 5 }, (_, i) => (
+                <div key={i} style={{ width: '8px', height: '3px', borderRadius: '1px', background: i < bd.plantingScore ? (dayStyle?.color ?? GOLD) : 'rgba(255,255,255,0.08)' }} />
+              ))}
+            </div>
           )}
-        </div>
-        <div style={{ textAlign: 'right' }}>
-          <span
-            style={{
-              fontFamily: FRANK, fontSize: '14px',
-              color: isToday ? GOLD : isCurrentMonth ? PARCH : `${PARCH}50`,
-              fontWeight: isToday ? 700 : 400,
-            }}
-          >
-            {num}
-          </span>
-          {compact && (
-            <span style={{ fontFamily: ASST, fontSize: '10px', color: `${PARCH}60`, marginRight: '3px' }}>
-              {day}
-            </span>
-          )}
-        </div>
-      </div>
-
-      {/* BD planting score bar */}
-      {bd && bd.plantingScore > 0 && (
-        <div style={{ display: 'flex', gap: '2px', marginBottom: '2px' }}>
-          {Array.from({ length: 5 }, (_, i) => (
-            <div
-              key={i}
-              style={{
-                flex: 1, height: '3px', borderRadius: '99px',
-                background: i < bd.plantingScore
-                  ? (dayStyle?.color ?? GOLD)
-                  : 'rgba(255,255,255,0.08)',
-              }}
-            />
-          ))}
         </div>
       )}
 
@@ -915,43 +904,13 @@ export function TaskCalendarPage() {
                 width: '100%',
               }}>
                 {days.map((date, idx) => {
-                  const { day, num, month: mon } = formatDateHe(date);
-                  const bd = bdMap[date];
-                  const dayStyle = bd ? DAY_TYPE_STYLES[bd.dayType] : null;
                   // On mobile: last day (index 6) spans both columns
                   const isLast = isMobile && idx === 6;
                   return (
-                    <div key={date} style={{ gridColumn: isLast ? '1 / -1' : undefined, boxSizing: 'border-box' }}>
-                      {/* Column header */}
-                      <div style={{ textAlign: 'center', marginBottom: '6px' }}>
-                        <div style={{ fontFamily: ASST, fontSize: '11px', color: `${PARCH}55` }}>{day}</div>
-                        <div style={{ fontFamily: FRANK, fontSize: '16px', color: date === today ? GOLD : PARCH, fontWeight: date === today ? 700 : 400 }}>
-                          {num}
-                        </div>
-                        <div style={{ fontFamily: ASST, fontSize: '10px', color: `${PARCH}40` }}>{mon}</div>
-                        {dayStyle && (
-                          <div style={{ fontSize: '12px', marginTop: '2px' }}>{dayStyle.emoji}</div>
-                        )}
-                        {bd && (
-                          <div style={{ fontSize: '12px' }} title={bd.moonPhaseNameHe}>{moonEmoji(bd.moonPhasePct)}</div>
-                        )}
-                        {bd && bd.plantingScore > 0 && (
-                          <div style={{ display: 'flex', gap: '1px', justifyContent: 'center', marginTop: '2px' }}>
-                            {Array.from({ length: 5 }, (_, i) => (
-                              <div
-                                key={i}
-                                style={{
-                                  width: '8px', height: '3px', borderRadius: '1px',
-                                  background: i < bd.plantingScore ? (dayStyle?.color ?? GOLD) : 'rgba(255,255,255,0.08)',
-                                }}
-                              />
-                            ))}
-                          </div>
-                        )}
-                      </div>
+                    <div key={date} style={{ gridColumn: isLast ? '1 / -1' : undefined, boxSizing: 'border-box', overflow: 'hidden', width: '100%' }}>
                       <DroppableDayCell
                         date={date}
-                        bd={bd}
+                        bd={bdMap[date]}
                         tasks={tasksForDate(date)}
                         isCurrentMonth={true}
                         isToday={date === today}
