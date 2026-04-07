@@ -176,6 +176,7 @@ export function Navbar() {
             style={{ flex: '1 1 auto', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '28px' }}
           >
             {[
+              { label: isHebrew ? 'בית' : 'Home',  to: '/'         },
               { label: t('nav.calendar'), to: '/calendar' },
               { label: t('nav.plan'),     to: '/plan'     },
               { label: t('nav.map'),      to: '/map'      },
@@ -307,6 +308,7 @@ export function Navbar() {
                   }}
                 >
                   {[
+                    { label: isHebrew ? 'בית' : 'Home', to: '/' },
                     { label: t('nav.garden'),    to: '/garden' },
                     { label: t('nav.calendar'), to: '/calendar' },
                     { label: t('nav.plan'),     to: '/plan'     },
@@ -408,6 +410,7 @@ export function Navbar() {
           {user && (
             <>
               {[
+                { label: isHebrew ? 'בית' : 'Home', to: '/' },
                 { label: t('nav.calendar'), to: '/calendar' },
                 { label: t('nav.plan'),     to: '/plan'     },
                 { label: t('nav.map'),      to: '/map'      },

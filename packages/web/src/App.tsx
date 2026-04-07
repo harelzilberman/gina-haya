@@ -16,6 +16,7 @@ import { PlanPage } from './pages/PlanPage';
 import { MapPage }  from './pages/MapPage';
 import { GuidesPage } from './pages/GuidesPage';
 import { TaskCalendarPage } from './pages/TaskCalendarPage';
+import { DashboardPage } from './pages/DashboardPage';
 import { PrivacyPolicyPage } from './pages/PrivacyPolicyPage';
 import { ProtectedRoute } from './components/auth/ProtectedRoute';
 import { OnboardingWizard } from './components/auth/OnboardingWizard';
@@ -90,11 +91,12 @@ export default function App() {
           <Route path="/signup" element={<SignupPage />} />
           <Route path="/reset-password" element={<ResetPasswordPage />} />
 
-          {/* Root: landing for guests, redirect to calendar for logged-in users */}
+          {/* Root: dashboard for logged-in, landing for guests */}
           <Route
             path="/"
-            element={user ? <Navigate to="/calendar" replace /> : <LandingPage />}
+            element={user ? <ProtectedRoute><DashboardPage /></ProtectedRoute> : <LandingPage />}
           />
+          <Route path="/home-old" element={<LandingPage />} />
 
           {/* Public pages */}
           <Route path="/plants" element={<PlantsPage />} />
