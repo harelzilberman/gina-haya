@@ -6,6 +6,7 @@ import {
   createCustomTask, deleteTask, createTasksFromPlan
 } from '../db/queries/tasks';
 import { sendSmartReminder } from '../services/cronJobs';
+import { db } from '../db/client';
 
 export const tasksRouter: IRouter = Router();
 tasksRouter.use(verifyToken);
@@ -40,21 +41,86 @@ tasksRouter.get('/range', async (req, res) => {
 });
 
 // POST /api/tasks/from-plan — create tasks from weekly plan
+// Accepts { tasks: [...] } (client-built list) OR { planId: null } (server builds from stored plan)
 tasksRouter.post('/from-plan', async (req, res) => {
-  console.log('[POST /api/tasks/from-plan] HIT — userId:', req.user?.id, 'body keys:', Object.keys(req.body));
+  const userId = req.user!.id;
+  console.log('[POST /api/tasks/from-plan] HIT — userId:', userId, 'body keys:', Object.keys(req.body));
   try {
     const { planId, tasks } = req.body;
-    console.log('[POST /api/tasks/from-plan] planId:', planId, 'tasks count:', Array.isArray(tasks) ? tasks.length : 'NOT_ARRAY', 'sample:', JSON.stringify(tasks?.[0]));
-    if (!tasks || !Array.isArray(tasks)) return res.status(400).json({ error: 'tasks array required' });
-    const created = await createTasksFromPlan(req.user!.id, planId ?? null, tasks);
-    console.log('[POST /api/tasks/from-plan] Supabase insert succeeded, rows created:', created.length);
+    const today = todayISO();
+    const weekEnd = (() => {
+      const d = new Date(today + 'T00:00:00');
+      d.setDate(d.getDate() + 6);
+      return d.toISOString().slice(0, 10);
+    })();
+
+    let taskRows: Array<{ date: string; title: string; type: 'biodynamic' | 'maintenance' | 'custom'; source_action?: string }>;
+    let resolvedPlanId: string | null = planId ?? null;
+
+    if (Array.isArray(tasks) && tasks.length > 0) {
+      // Legacy path: client sent a pre-built tasks array
+      taskRows = tasks;
+    } else {
+      // Auto path: fetch the stored plan and synthesize tasks server-side
+      const { data: planRow } = await db
+        .from('planting_plans')
+        .select('*')
+        .eq('user_id', userId)
+        .eq('week_start', today)
+        .order('generated_at', { ascending: false })
+        .limit(1)
+        .single();
+
+      if (!planRow) {
+        console.log('[POST /api/tasks/from-plan] no plan found for today, returning empty');
+        return res.json([]);
+      }
+
+      resolvedPlanId = planRow.id;
+
+      // Avoid duplicates: if tasks already exist for this week, skip
+      const existing = await getTasksForRange(userId, today, weekEnd);
+      if (existing.length > 0) {
+        console.log('[POST /api/tasks/from-plan] tasks already exist for week, skipping');
+        return res.json(existing);
+      }
+
+      // Synthesize tasks from the stored plan_data
+      const plan = planRow.plan_data;
+      taskRows = [];
+
+      for (const task of (plan.gardenTasks ?? [])) {
+        taskRows.push({ date: plan.weekStart ?? today, title: String(task), type: 'maintenance', source_action: String(task) });
+      }
+      for (const day of (plan.days ?? [])) {
+        if (day.prep500) {
+          taskRows.push({ date: day.date, title: 'הכנת BD 500 — קרן הזבל', type: 'biodynamic', source_action: 'prep500' });
+        }
+        if (day.prep501) {
+          taskRows.push({ date: day.date, title: 'הכנת BD 501 — קרן הסיליקה', type: 'biodynamic', source_action: 'prep501' });
+        }
+        for (const action of (day.recommendedActions ?? []).slice(0, 2)) {
+          taskRows.push({ date: day.date, title: String(action), type: 'maintenance', source_action: String(action) });
+        }
+      }
+
+      console.log('[POST /api/tasks/from-plan] synthesized', taskRows.length, 'tasks from plan', resolvedPlanId);
+    }
+
+    if (taskRows.length === 0) {
+      console.log('[POST /api/tasks/from-plan] no tasks to create');
+      return res.json([]);
+    }
+
+    const created = await createTasksFromPlan(userId, resolvedPlanId, taskRows);
+    console.log('[POST /api/tasks/from-plan] inserted', created.length, 'rows');
     res.json(created);
 
-    // Fire-and-forget smart reminder if there are biodynamic tasks today
-    const todayTasks = created.filter((t: any) => t.date === todayISO() && t.type === 'biodynamic');
+    // Fire-and-forget smart reminder for biodynamic tasks today
+    const todayTasks = created.filter((t: any) => t.date === today && t.type === 'biodynamic');
     if (todayTasks.length > 0) {
       sendSmartReminder(
-        req.user!.id,
+        userId,
         `יש לך ${todayTasks.length} משימות ביודינמיות היום: ${todayTasks[0].title}`
       ).catch(() => {});
     }

@@ -24,6 +24,10 @@ export const tasksApi = {
   fromPlan: (planId: string | null, tasks: Array<{ date: string; title: string; type: string; source_action?: string }>, token: string) =>
     api.post<GardenTask[]>('/api/tasks/from-plan', { planId, tasks }, token),
 
+  // Auto-build tasks from the server-stored weekly plan (no client synthesis needed)
+  fromPlanAuto: (token: string) =>
+    api.post<GardenTask[]>('/api/tasks/from-plan', { planId: null }, token),
+
   updateStatus: (id: string, status: 'pending' | 'done' | 'skipped', token: string, notes?: string) =>
     api.patch<GardenTask>(`/api/tasks/${id}`, { status, notes }, token),
 

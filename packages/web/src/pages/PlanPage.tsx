@@ -10,7 +10,6 @@ import { TaskManager } from '../components/plan/TaskManager';
 import { NotificationBanner } from '../components/plan/NotificationBanner';
 import { useTasks } from '../hooks/useTasks';
 import { printWeeklyPlan } from '../utils/printPlan';
-import { synthesizePlanTasks } from '../utils/planTasks';
 
 const GOLD   = '#F5C840';
 const PARCH  = '#EDE0C4';
@@ -114,7 +113,7 @@ export function PlanPage() {
   const { session } = useAuthStore();
   const today       = todayISO();
 
-  const { tasks, isLoading: tasksLoading, updateStatus, addTask, deleteTask, createFromPlan } = useTasks();
+  const { tasks, isLoading: tasksLoading, updateStatus, addTask, deleteTask, autoCreateFromPlan } = useTasks();
   const [tasksConfirmed, setTasksConfirmed] = useState(false);
 
   const [gardenCheckStarted, setGardenCheckStarted] = useState(false);
@@ -141,27 +140,16 @@ export function PlanPage() {
   // Auto-create tasks from plan when plan first loads and no tasks exist yet
   useEffect(() => {
     const plan = planStore.weeklyPlan;
-    console.log('[PlanPage] auto-create effect fired', {
-      hasPlan: !!plan,
-      tasksConfirmed,
-      tasksLength: tasks.length,
-      hasToken: !!session?.access_token,
-    });
     if (!plan || tasksConfirmed || tasks.length > 0 || !session?.access_token) return;
-    const planTasks = synthesizePlanTasks(plan);
-    console.log('[PlanPage] synthesized planTasks:', planTasks.length, planTasks);
-    if (planTasks.length > 0) {
-      createFromPlan(null, planTasks)
-        .then((result) => {
-          console.log('[PlanPage] createFromPlan succeeded, tasks created:', result);
-          setTasksConfirmed(true);
-        })
-        .catch((err) => {
-          console.error('[PlanPage] createFromPlan FAILED:', err);
-        });
-    } else {
-      console.warn('[PlanPage] synthesized 0 tasks — gardenTasks:', plan.gardenTasks, 'days:', plan.days);
-    }
+    console.log('[PlanPage] auto-create: calling fromPlanAuto');
+    autoCreateFromPlan()
+      .then((created) => {
+        console.log('[PlanPage] autoCreateFromPlan returned', created.length, 'tasks');
+        setTasksConfirmed(true);
+      })
+      .catch((err) => {
+        console.error('[PlanPage] autoCreateFromPlan FAILED:', err);
+      });
   }, [planStore.weeklyPlan, session?.access_token]);
 
   const [expandedDay, setExpandedDay] = useState<string | null>(today);

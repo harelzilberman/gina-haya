@@ -15,7 +15,6 @@ import { Link } from 'react-router-dom';
 import { useAuthStore } from '../stores/authStore';
 import { tasksApi, type GardenTask } from '../api/tasks';
 import { calendarApi } from '../api/calendar';
-import { seedTasksFromWeeklyPlan } from '../utils/planTasks';
 import type { BiodynamicDay } from '@gina-haya/shared';
 
 // ── Design tokens ──────────────────────────────────────────────────────────
@@ -560,13 +559,10 @@ export function TaskCalendarPage() {
         setIsLoading(false);
         setIsBootstrapping(true);
         try {
-          const seeded = await seedTasksFromWeeklyPlan(token);
-          if (seeded) {
-            const refetched = await tasksApi.getRange(from, to, token);
-            setTasks(refetched);
-          } else {
-            setNoPlan(true);
-          }
+          await tasksApi.fromPlanAuto(token);
+          const refetched = await tasksApi.getRange(from, to, token);
+          setTasks(refetched);
+          if (refetched.length === 0) setNoPlan(true);
         } catch {
           setNoPlan(true);
         } finally {
