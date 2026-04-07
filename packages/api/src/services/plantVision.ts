@@ -1,8 +1,18 @@
 import Anthropic from '@anthropic-ai/sdk';
+import sharp from 'sharp';
 
 const anthropic = new Anthropic({
   apiKey: process.env.ANTHROPIC_API_KEY!,
 });
+
+async function compressImageForClaude(base64: string): Promise<{ data: string; mimeType: 'image/jpeg' }> {
+  const buffer = Buffer.from(base64, 'base64');
+  const compressed = await sharp(buffer)
+    .resize(1568, 1568, { fit: 'inside', withoutEnlargement: true })
+    .jpeg({ quality: 85 })
+    .toBuffer();
+  return { data: compressed.toString('base64'), mimeType: 'image/jpeg' };
+}
 
 export interface PlantAnalysis {
   plantIdentified: string;
@@ -182,6 +192,9 @@ export async function analyzePlantImage(
 ): Promise<{ analysis: PlantAnalysis; growingPlan: GrowingPlan; tasks: TrackerTask[] }> {
   const systemPrompt = buildVisionSystemPrompt(context);
 
+  // Compress image to stay under Claude's 5MB base64 limit
+  const { data: compressedImage, mimeType: compressedMimeType } = await compressImageForClaude(imageBase64);
+
   const hint = context.plantNameHint
     ? ` (רמז: ייתכן שזה ${context.plantNameHint})`
     : '';
@@ -261,8 +274,8 @@ due_in_days: מתי לבצע את המשימה (1-14 ימים). priority: high=�
             type: 'image',
             source: {
               type: 'base64',
-              media_type: mimeType as 'image/jpeg' | 'image/png' | 'image/gif' | 'image/webp',
-              data: imageBase64,
+              media_type: compressedMimeType,
+              data: compressedImage,
             },
           },
           { type: 'text', text: userMessage },
