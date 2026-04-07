@@ -45,7 +45,7 @@ moonImg.src = '/moon.jpg';
 // ─────────────────────────────────────────────
 // MOON PHASE HELPERS
 // ─────────────────────────────────────────────
-function getMoonTilt(phaseAngle: number, lat: number): number {
+export function getMoonTilt(phaseAngle: number, lat: number): number {
   const latFactor = (lat / 90);
   const baseTilt = -90 * latFactor;
   const isWaxing = phaseAngle <= 180;
@@ -53,7 +53,7 @@ function getMoonTilt(phaseAngle: number, lat: number): number {
   return baseTilt + phaseTilt;
 }
 
-function drawMoon(canvas: HTMLCanvasElement, phasePct: number, phaseAngle: number, tiltDeg: number) {
+export function drawMoon(canvas: HTMLCanvasElement, phasePct: number, phaseAngle: number, tiltDeg: number) {
   const ctx = canvas.getContext('2d');
   if (!ctx) return;
   const size = canvas.width;

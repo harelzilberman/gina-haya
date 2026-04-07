@@ -1,10 +1,10 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useToday } from '../hooks/useCalendar';
 import { useTasks } from '../hooks/useTasks';
 import { useAuthStore } from '../stores/authStore';
 import { useChupChuPanelStore } from '../stores/chupChuPanelStore';
-import { MoonPhaseDisplay } from '../components/calendar/TodayCardV2';
+import { drawMoon, getMoonTilt } from '../components/calendar/TodayCardV2';
 
 // ── Design tokens ──────────────────────────────────────────────────────────
 const EARTH = '#142B16';
@@ -71,6 +71,30 @@ function moonEmoji(pct: number): string {
   if (pct < 90) return '🌗';
   if (pct < 97) return '🌘';
   return '🌑';
+}
+
+// ── Moon canvas (bare — no labels) ────────────────────────────────────────
+function MoonCanvas({ phasePct, phaseAngle }: { phasePct: number; phaseAngle: number }) {
+  const ref = useRef<HTMLCanvasElement>(null);
+  const tilt = getMoonTilt(phaseAngle, 31.5);
+  useEffect(() => {
+    if (ref.current) drawMoon(ref.current, phasePct, phaseAngle, tilt);
+  }, [phasePct, phaseAngle, tilt]);
+  return (
+    <canvas
+      ref={ref}
+      width={165}
+      height={165}
+      style={{
+        borderRadius: '50%',
+        border: '2px solid rgba(245,200,64,0.40)',
+        boxShadow: phasePct > 95
+          ? '0 0 32px rgba(245,200,64,0.35)'
+          : '0 0 16px rgba(245,200,64,0.18)',
+        display: 'block',
+      }}
+    />
+  );
 }
 
 // ── Dashboard ──────────────────────────────────────────────────────────────
@@ -394,14 +418,11 @@ export function DashboardPage() {
             <>
               {/* Horizontal flex: left=MoonPhaseDisplay, right=summary+info cards */}
               <div style={{ display: 'flex', gap: '20px', alignItems: 'flex-start' }}>
-                {/* Left — Moon widget */}
-                <div style={{ flexShrink: 0 }}>
-                  <MoonPhaseDisplay
+                {/* Left — Moon canvas only */}
+                <div style={{ flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                  <MoonCanvas
                     phasePct={day.moonPhasePct ?? 0}
                     phaseAngle={day.moonPhaseAngle ?? (day.moonPhasePct ?? 0) / 100 * 360}
-                    phaseHe={day.moonPhaseNameHe ?? ''}
-                    moonSignHe={day.moonSignHe ?? ''}
-                    ascending={day.ascendingDescending === 'ascending'}
                   />
                 </div>
 
