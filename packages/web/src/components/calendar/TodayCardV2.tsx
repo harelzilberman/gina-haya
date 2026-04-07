@@ -138,7 +138,7 @@ function drawMoon(canvas: HTMLCanvasElement, phasePct: number, phaseAngle: numbe
 // ─────────────────────────────────────────────
 // MOON PHASE DISPLAY COMPONENT
 // ─────────────────────────────────────────────
-function MoonPhaseDisplay({ phaseAngle, phasePct, phaseHe, moonSignHe, ascending, lat = 31.5 }: {
+export function MoonPhaseDisplay({ phaseAngle, phasePct, phaseHe, moonSignHe, ascending, lat = 31.5 }: {
   phaseAngle: number;
   phasePct: number;
   phaseHe: string;
