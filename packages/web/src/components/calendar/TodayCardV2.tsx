@@ -283,7 +283,7 @@ export function TodayCard({ day }: Props) {
 
         <MoonPhaseDisplay
           phasePct={day.moonPhasePct ?? 0}
-          phaseAngle={(day.moonPhasePct ?? 0) / 100 * 360}
+          phaseAngle={day.moonPhaseAngle ?? (day.moonPhasePct ?? 0) / 100 * 360}
           phaseHe={day.moonPhaseNameHe ?? day.moonPhaseHe ?? 'ירח'}
           moonSignHe={day.moonSignHe ?? ''}
           ascending={day.ascendingDescending === 'ascending'}
