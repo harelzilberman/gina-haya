@@ -17,6 +17,17 @@ import { tasksApi, type GardenTask } from '../api/tasks';
 import { calendarApi } from '../api/calendar';
 import type { BiodynamicDay } from '@gina-haya/shared';
 
+// ── Responsive hook ────────────────────────────────────────────────────────
+function useWindowWidth() {
+  const [width, setWidth] = useState(() => typeof window !== 'undefined' ? window.innerWidth : 1024);
+  useEffect(() => {
+    const handler = () => setWidth(window.innerWidth);
+    window.addEventListener('resize', handler);
+    return () => window.removeEventListener('resize', handler);
+  }, []);
+  return width;
+}
+
 // ── Design tokens ──────────────────────────────────────────────────────────
 const EARTH = '#142B16';
 const GOLD  = '#F5C840';
@@ -160,19 +171,26 @@ function DraggableTaskCard({
 
   return (
     <div ref={setNodeRef} style={style} {...listeners} {...attributes}>
-      {/* Checkbox */}
+      {/* Checkbox — 44px touch target wrapping the 16px visual */}
       <button
         onPointerDown={e => e.stopPropagation()}
         onClick={e => { e.stopPropagation(); onStatusToggle(task); }}
         style={{
-          flexShrink: 0, width: '16px', height: '16px', borderRadius: '4px',
-          border: `1.5px solid ${isDone ? '#4A7C59' : 'rgba(255,255,255,0.25)'}`,
-          background: isDone ? '#4A7C59' : 'transparent',
+          flexShrink: 0, width: '44px', height: '44px', borderRadius: '4px',
+          border: 'none', background: 'transparent',
           cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center',
-          fontSize: '10px', color: 'white',
+          margin: '-14px -14px -14px -14px', padding: '14px',
         }}
       >
-        {isDone ? '✓' : ''}
+        <span style={{
+          width: '16px', height: '16px', borderRadius: '4px', flexShrink: 0,
+          border: `1.5px solid ${isDone ? '#4A7C59' : 'rgba(255,255,255,0.25)'}`,
+          background: isDone ? '#4A7C59' : 'transparent',
+          display: 'flex', alignItems: 'center', justifyContent: 'center',
+          fontSize: '10px', color: 'white',
+        }}>
+          {isDone ? '✓' : ''}
+        </span>
       </button>
 
       {/* Type emoji */}
@@ -228,6 +246,7 @@ function DroppableDayCell({
   isCurrentMonth,
   isToday,
   compact,
+  isMobileView = false,
   onAdd,
   onEdit,
   onStatusToggle,
@@ -240,6 +259,7 @@ function DroppableDayCell({
   isCurrentMonth: boolean;
   isToday: boolean;
   compact: boolean;
+  isMobileView?: boolean;
   onAdd: (date: string) => void;
   onEdit: (t: GardenTask) => void;
   onStatusToggle: (t: GardenTask) => void;
@@ -253,6 +273,44 @@ function DroppableDayCell({
   const pending = tasks.filter(t => t.status === 'pending').length;
   const done    = tasks.filter(t => t.status === 'done').length;
 
+  // On mobile month view: ultra-compact — just date number + BD dot + task badge
+  if (isMobileView && compact) {
+    return (
+      <div
+        ref={setNodeRef}
+        onClick={() => onAdd(date)}
+        style={{
+          background: isOver ? 'rgba(245,200,64,0.08)' : isToday ? 'rgba(245,200,64,0.07)' : 'rgba(20,50,22,0.35)',
+          border: `1px solid ${isToday ? 'rgba(245,200,64,0.3)' : 'rgba(255,255,255,0.06)'}`,
+          borderRadius: '6px',
+          padding: '4px 2px',
+          minHeight: '52px',
+          display: 'flex',
+          flexDirection: 'column',
+          alignItems: 'center',
+          justifyContent: 'space-between',
+          opacity: isCurrentMonth ? 1 : 0.35,
+          boxSizing: 'border-box',
+          cursor: 'pointer',
+        }}
+      >
+        <span style={{ fontFamily: FRANK, fontSize: '12px', color: isToday ? GOLD : isCurrentMonth ? PARCH : `${PARCH}50`, fontWeight: isToday ? 700 : 400, lineHeight: 1.2 }}>
+          {num}
+        </span>
+        {dayStyle && <span style={{ fontSize: '9px', lineHeight: 1 }}>{dayStyle.emoji}</span>}
+        {tasks.length > 0 && (
+          <span style={{
+            fontFamily: ASST, fontSize: '9px', fontWeight: 700,
+            background: 'rgba(245,200,64,0.2)', color: GOLD,
+            borderRadius: '99px', padding: '1px 4px', lineHeight: 1.4,
+          }}>
+            {tasks.length}
+          </span>
+        )}
+      </div>
+    );
+  }
+
   return (
     <div
       ref={setNodeRef}
@@ -264,13 +322,15 @@ function DroppableDayCell({
             : 'rgba(20,50,22,0.35)',
         border: `1px solid ${isOver ? 'rgba(245,200,64,0.4)' : isToday ? 'rgba(245,200,64,0.25)' : 'rgba(255,255,255,0.06)'}`,
         borderRadius: '10px',
-        padding: '8px',
+        padding: compact ? '6px' : '8px',
         minHeight: compact ? '90px' : '120px',
         display: 'flex',
         flexDirection: 'column',
         gap: '4px',
         opacity: isCurrentMonth ? 1 : 0.45,
         transition: 'background 0.15s, border-color 0.15s',
+        boxSizing: 'border-box',
+        width: '100%',
       }}
     >
       {/* Day header */}
@@ -329,7 +389,7 @@ function DroppableDayCell({
       )}
 
       {/* Tasks */}
-      <div style={{ flex: 1, overflow: 'hidden' }}>
+      <div style={{ flex: 1, overflow: 'hidden', minWidth: 0 }}>
         {tasks.slice(0, compact ? 3 : 99).map(task => (
           <DraggableTaskCard
             key={task.id}
@@ -354,7 +414,7 @@ function DroppableDayCell({
           style={{
             background: 'none', border: 'none', cursor: 'pointer',
             fontFamily: ASST, fontSize: '11px', color: `${PARCH}40`,
-            padding: '0', lineHeight: 1,
+            padding: '0', lineHeight: 1, minHeight: '44px', minWidth: '44px',
           }}
           onMouseEnter={e => { (e.currentTarget as HTMLElement).style.color = GOLD; }}
           onMouseLeave={e => { (e.currentTarget as HTMLElement).style.color = `${PARCH}40`; }}
@@ -511,6 +571,8 @@ function TaskModal({
 export function TaskCalendarPage() {
   const { session } = useAuthStore();
   const token = session?.access_token ?? '';
+  const windowWidth = useWindowWidth();
+  const isMobile = windowWidth < 768;
 
   const [view,       setView]       = useState<'week' | 'month'>('week');
   const [anchor,     setAnchor]     = useState(() => { const d = new Date(); d.setHours(0,0,0,0); return d; });
@@ -687,53 +749,33 @@ export function TaskCalendarPage() {
   const totalDone    = tasks.filter(t => t.status === 'done').length;
 
   return (
-    <div dir="rtl" style={{ minHeight: '100vh', backgroundColor: EARTH, padding: '28px 16px 80px', fontFamily: ASST }}>
-      <div style={{ maxWidth: '1200px', margin: '0 auto' }}>
+    <div dir="rtl" style={{ minHeight: '100vh', backgroundColor: EARTH, padding: isMobile ? '16px 8px 80px' : '28px 16px 80px', fontFamily: ASST, overflowX: 'hidden', width: '100%', boxSizing: 'border-box' }}>
+      <div style={{ maxWidth: '1200px', margin: '0 auto', width: '100%', boxSizing: 'border-box' }}>
 
         {/* Page header */}
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '20px', flexWrap: 'wrap', gap: '12px' }}>
-          <div>
-            <h1 style={{ fontFamily: FRANK, fontSize: '28px', color: GOLD, margin: '0 0 4px' }}>
-              📋 לוח משימות
-            </h1>
-            {tasks.length > 0 && (
-              <p style={{ fontFamily: ASST, fontSize: '13px', color: `${PARCH}55`, margin: 0 }}>
-                {totalDone} מתוך {totalDone + totalPending} הושלמו בטווח זה
-              </p>
-            )}
-          </div>
-
-          {/* Controls */}
-          <div style={{ display: 'flex', gap: '8px', alignItems: 'center', flexWrap: 'wrap' }}>
-            {/* Filter */}
-            <div style={{ display: 'flex', gap: '4px' }}>
-              {(['all', 'pending', 'done'] as const).map(f => (
-                <button
-                  key={f}
-                  onClick={() => setFilter(f)}
-                  style={{
-                    fontFamily: ASST, fontSize: '11px', fontWeight: 600,
-                    padding: '4px 10px', borderRadius: '99px',
-                    border: `1px solid ${filter === f ? GOLD : 'rgba(255,255,255,0.1)'}`,
-                    color: filter === f ? GOLD : `${PARCH}55`,
-                    background: filter === f ? 'rgba(245,200,64,0.1)' : 'transparent',
-                    cursor: 'pointer',
-                  }}
-                >
-                  {f === 'all' ? 'הכל' : f === 'pending' ? 'ממתינות' : 'הושלמו'}
-                </button>
-              ))}
+        <div style={{ marginBottom: '16px' }}>
+          {/* Row 1: title + stats */}
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '10px', flexWrap: 'wrap', gap: '8px' }}>
+            <div>
+              <h1 style={{ fontFamily: FRANK, fontSize: isMobile ? '22px' : '28px', color: GOLD, margin: '0 0 2px' }}>
+                📋 לוח משימות
+              </h1>
+              {tasks.length > 0 && (
+                <p style={{ fontFamily: ASST, fontSize: '12px', color: `${PARCH}55`, margin: 0 }}>
+                  {totalDone} מתוך {totalDone + totalPending} הושלמו
+                </p>
+              )}
             </div>
 
-            {/* View toggle */}
-            <div style={{ display: 'flex', border: '1px solid rgba(245,200,64,0.2)', borderRadius: '8px', overflow: 'hidden' }}>
+            {/* View toggle — always top-right */}
+            <div style={{ display: 'flex', border: '1px solid rgba(245,200,64,0.2)', borderRadius: '8px', overflow: 'hidden', flexShrink: 0 }}>
               {(['week', 'month'] as const).map(v => (
                 <button
                   key={v}
                   onClick={() => setView(v)}
                   style={{
                     fontFamily: ASST, fontSize: '12px', fontWeight: 600,
-                    padding: '6px 14px', border: 'none', cursor: 'pointer',
+                    padding: isMobile ? '6px 10px' : '6px 14px', border: 'none', cursor: 'pointer',
                     background: view === v ? 'rgba(245,200,64,0.15)' : 'transparent',
                     color: view === v ? GOLD : `${PARCH}60`,
                   }}
@@ -743,59 +785,70 @@ export function TaskCalendarPage() {
               ))}
             </div>
           </div>
-        </div>
 
-        {/* Navigation */}
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
-          <button
-            onClick={() => navigate(-1)}
-            style={{ background: 'none', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '6px', color: PARCH, cursor: 'pointer', padding: '6px 12px', fontFamily: ASST, fontSize: '14px' }}
-          >
-            ‹ הקודם
-          </button>
-
-          <div style={{ display: 'flex', gap: '12px', alignItems: 'center' }}>
-            <span style={{ fontFamily: FRANK, fontSize: '15px', color: PARCH }}>{headerLabel}</span>
+          {/* Row 2: prev/today/next navigation */}
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '10px' }}>
             <button
-              onClick={goToday}
-              style={{ background: 'none', border: '1px solid rgba(245,200,64,0.25)', borderRadius: '6px', color: GOLD, cursor: 'pointer', padding: '4px 10px', fontFamily: ASST, fontSize: '11px', fontWeight: 600 }}
+              onClick={() => navigate(-1)}
+              style={{ background: 'none', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '6px', color: PARCH, cursor: 'pointer', padding: isMobile ? '8px 12px' : '6px 12px', fontFamily: ASST, fontSize: '14px', minWidth: '44px', minHeight: '44px' }}
             >
-              היום
+              ‹ הקודם
+            </button>
+
+            <div style={{ display: 'flex', gap: '8px', alignItems: 'center', flex: 1, justifyContent: 'center' }}>
+              <span style={{ fontFamily: FRANK, fontSize: isMobile ? '13px' : '15px', color: PARCH, textAlign: 'center' }}>{headerLabel}</span>
+              <button
+                onClick={goToday}
+                style={{ background: 'none', border: '1px solid rgba(245,200,64,0.25)', borderRadius: '6px', color: GOLD, cursor: 'pointer', padding: '4px 8px', fontFamily: ASST, fontSize: '11px', fontWeight: 600, flexShrink: 0 }}
+              >
+                היום
+              </button>
+            </div>
+
+            <button
+              onClick={() => navigate(1)}
+              style={{ background: 'none', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '6px', color: PARCH, cursor: 'pointer', padding: isMobile ? '8px 12px' : '6px 12px', fontFamily: ASST, fontSize: '14px', minWidth: '44px', minHeight: '44px' }}
+            >
+              הבא ›
             </button>
           </div>
 
-          <button
-            onClick={() => navigate(1)}
-            style={{ background: 'none', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '6px', color: PARCH, cursor: 'pointer', padding: '6px 12px', fontFamily: ASST, fontSize: '14px' }}
-          >
-            הבא ›
-          </button>
-        </div>
-
-        {/* BD legend */}
-        <div style={{ display: 'flex', gap: '10px', marginBottom: '12px', flexWrap: 'wrap' }}>
-          {Object.values(DAY_TYPE_STYLES).map(s => (
-            <span
-              key={s.label}
-              style={{ fontFamily: ASST, fontSize: '10px', padding: '2px 8px', borderRadius: '99px', background: s.bg, color: s.color }}
-            >
-              {s.emoji} {s.label}
-            </span>
-          ))}
-          <span style={{ fontFamily: ASST, fontSize: '10px', color: `${PARCH}40`, alignSelf: 'center' }}>
-            | ציון שתילה:
-          </span>
-          {[1,2,3,4,5].map(i => (
-            <span key={i} style={{ fontFamily: ASST, fontSize: '10px', color: `${PARCH}40` }}>{'█'.repeat(i) + '░'.repeat(5-i)}</span>
-          ))}
+          {/* Row 3: filter + BD legend */}
+          <div style={{ display: 'flex', gap: '6px', flexWrap: 'wrap', alignItems: 'center' }}>
+            {(['all', 'pending', 'done'] as const).map(f => (
+              <button
+                key={f}
+                onClick={() => setFilter(f)}
+                style={{
+                  fontFamily: ASST, fontSize: '11px', fontWeight: 600,
+                  padding: '4px 8px', borderRadius: '99px',
+                  border: `1px solid ${filter === f ? GOLD : 'rgba(255,255,255,0.1)'}`,
+                  color: filter === f ? GOLD : `${PARCH}55`,
+                  background: filter === f ? 'rgba(245,200,64,0.1)' : 'transparent',
+                  cursor: 'pointer',
+                }}
+              >
+                {f === 'all' ? 'הכל' : f === 'pending' ? 'ממתינות' : 'הושלמו'}
+              </button>
+            ))}
+            <span style={{ color: `${PARCH}20` }}>|</span>
+            {Object.values(DAY_TYPE_STYLES).map(s => (
+              <span
+                key={s.label}
+                style={{ fontFamily: ASST, fontSize: '10px', padding: '2px 6px', borderRadius: '99px', background: s.bg, color: s.color }}
+              >
+                {s.emoji}{!isMobile && ` ${s.label}`}
+              </span>
+            ))}
+          </div>
         </div>
 
         {/* Week day name headers (month view) */}
         {view === 'month' && (
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(7, 1fr)', gap: '6px', marginBottom: '4px' }}>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(7, 1fr)', gap: isMobile ? '3px' : '6px', marginBottom: '4px' }}>
             {DAY_NAMES_HE.map(d => (
-              <div key={d} style={{ textAlign: 'center', fontFamily: ASST, fontSize: '11px', color: `${PARCH}50`, padding: '4px 0' }}>
-                {d}
+              <div key={d} style={{ textAlign: 'center', fontFamily: ASST, fontSize: isMobile ? '9px' : '11px', color: `${PARCH}50`, padding: '4px 0' }}>
+                {isMobile ? d.slice(0, 1) : d}
               </div>
             ))}
           </div>
@@ -852,63 +905,81 @@ export function TaskCalendarPage() {
         ) : noPlan && tasks.length === 0 ? null : (
           <DndContext sensors={sensors} onDragStart={handleDragStart} onDragEnd={handleDragEnd}>
             {view === 'week' ? (
-              /* Week view — 7 columns */
-              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(7, 1fr)', gap: '8px' }}>
-                {days.map(date => {
-                  const { day, num, month: mon } = formatDateHe(date);
-                  const bd = bdMap[date];
-                  const dayStyle = bd ? DAY_TYPE_STYLES[bd.dayType] : null;
-                  return (
-                    <div key={date}>
-                      {/* Column header */}
-                      <div style={{ textAlign: 'center', marginBottom: '6px' }}>
-                        <div style={{ fontFamily: ASST, fontSize: '11px', color: `${PARCH}55` }}>{day}</div>
-                        <div style={{ fontFamily: FRANK, fontSize: '16px', color: date === today ? GOLD : PARCH, fontWeight: date === today ? 700 : 400 }}>
-                          {num}
-                        </div>
-                        <div style={{ fontFamily: ASST, fontSize: '10px', color: `${PARCH}40` }}>{mon}</div>
-                        {dayStyle && (
-                          <div style={{ fontSize: '12px', marginTop: '2px' }}>{dayStyle.emoji}</div>
-                        )}
-                        {bd && (
-                          <div style={{ fontSize: '12px' }} title={bd.moonPhaseNameHe}>{moonEmoji(bd.moonPhasePct)}</div>
-                        )}
-                        {bd && bd.plantingScore > 0 && (
-                          <div style={{ display: 'flex', gap: '1px', justifyContent: 'center', marginTop: '2px' }}>
-                            {Array.from({ length: 5 }, (_, i) => (
-                              <div
-                                key={i}
-                                style={{
-                                  width: '8px', height: '3px', borderRadius: '1px',
-                                  background: i < bd.plantingScore ? (dayStyle?.color ?? GOLD) : 'rgba(255,255,255,0.08)',
-                                }}
-                              />
-                            ))}
+              /* Week view — 7 columns; scrollable with snap on mobile */
+              <div style={{
+                overflowX: isMobile ? 'auto' : 'visible',
+                WebkitOverflowScrolling: 'touch' as any,
+                scrollSnapType: isMobile ? 'x mandatory' : 'none',
+                marginLeft: isMobile ? '-8px' : 0,
+                marginRight: isMobile ? '-8px' : 0,
+                paddingLeft: isMobile ? '8px' : 0,
+                paddingRight: isMobile ? '8px' : 0,
+              } as React.CSSProperties}>
+                <div style={{
+                  display: 'grid',
+                  gridTemplateColumns: isMobile
+                    ? `repeat(7, calc((100vw - 16px) / 3))`
+                    : 'repeat(7, 1fr)',
+                  gap: '8px',
+                  width: isMobile ? 'max-content' : '100%',
+                  boxSizing: 'border-box',
+                }}>
+                  {days.map(date => {
+                    const { day, num, month: mon } = formatDateHe(date);
+                    const bd = bdMap[date];
+                    const dayStyle = bd ? DAY_TYPE_STYLES[bd.dayType] : null;
+                    return (
+                      <div key={date} style={{ scrollSnapAlign: isMobile ? 'start' : 'none', boxSizing: 'border-box' }}>
+                        {/* Column header */}
+                        <div style={{ textAlign: 'center', marginBottom: '6px' }}>
+                          <div style={{ fontFamily: ASST, fontSize: '11px', color: `${PARCH}55` }}>{day}</div>
+                          <div style={{ fontFamily: FRANK, fontSize: '16px', color: date === today ? GOLD : PARCH, fontWeight: date === today ? 700 : 400 }}>
+                            {num}
                           </div>
-                        )}
+                          <div style={{ fontFamily: ASST, fontSize: '10px', color: `${PARCH}40` }}>{mon}</div>
+                          {dayStyle && (
+                            <div style={{ fontSize: '12px', marginTop: '2px' }}>{dayStyle.emoji}</div>
+                          )}
+                          {bd && (
+                            <div style={{ fontSize: '12px' }} title={bd.moonPhaseNameHe}>{moonEmoji(bd.moonPhasePct)}</div>
+                          )}
+                          {bd && bd.plantingScore > 0 && (
+                            <div style={{ display: 'flex', gap: '1px', justifyContent: 'center', marginTop: '2px' }}>
+                              {Array.from({ length: 5 }, (_, i) => (
+                                <div
+                                  key={i}
+                                  style={{
+                                    width: '8px', height: '3px', borderRadius: '1px',
+                                    background: i < bd.plantingScore ? (dayStyle?.color ?? GOLD) : 'rgba(255,255,255,0.08)',
+                                  }}
+                                />
+                              ))}
+                            </div>
+                          )}
+                        </div>
+                        <DroppableDayCell
+                          date={date}
+                          bd={bd}
+                          tasks={tasksForDate(date)}
+                          isCurrentMonth={true}
+                          isToday={date === today}
+                          compact={false}
+                          onAdd={setAddDate}
+                          onEdit={setEditTask}
+                          onStatusToggle={handleStatusToggle}
+                          onDelete={id => handleDeleteTask(id)}
+                          draggingId={draggingId}
+                        />
                       </div>
-                      <DroppableDayCell
-                        date={date}
-                        bd={bd}
-                        tasks={tasksForDate(date)}
-                        isCurrentMonth={true}
-                        isToday={date === today}
-                        compact={false}
-                        onAdd={setAddDate}
-                        onEdit={setEditTask}
-                        onStatusToggle={handleStatusToggle}
-                        onDelete={id => handleDeleteTask(id)}
-                        draggingId={draggingId}
-                      />
-                    </div>
-                  );
-                })}
+                    );
+                  })}
+                </div>
               </div>
             ) : (
               /* Month view — grid of weeks */
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: isMobile ? '3px' : '6px' }}>
                 {weeks.map((week, wi) => (
-                  <div key={wi} style={{ display: 'grid', gridTemplateColumns: 'repeat(7, 1fr)', gap: '6px' }}>
+                  <div key={wi} style={{ display: 'grid', gridTemplateColumns: 'repeat(7, 1fr)', gap: isMobile ? '3px' : '6px' }}>
                     {week.map(date => (
                       <DroppableDayCell
                         key={date}
@@ -918,6 +989,7 @@ export function TaskCalendarPage() {
                         isCurrentMonth={new Date(date + 'T12:00:00').getMonth() === currentMonth}
                         isToday={date === today}
                         compact={true}
+                        isMobileView={isMobile}
                         onAdd={setAddDate}
                         onEdit={setEditTask}
                         onStatusToggle={handleStatusToggle}
