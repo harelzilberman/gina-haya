@@ -15,6 +15,7 @@ import { TrackerPage } from './pages/TrackerPage';
 import { PlanPage } from './pages/PlanPage';
 import { MapPage }  from './pages/MapPage';
 import { GuidesPage } from './pages/GuidesPage';
+import { ArticlesPage } from './pages/ArticlesPage';
 import { TaskCalendarPage } from './pages/TaskCalendarPage';
 import { DashboardPage } from './pages/DashboardPage';
 import { PrivacyPolicyPage } from './pages/PrivacyPolicyPage';
@@ -180,6 +181,14 @@ export default function App() {
             element={
               <ProtectedRoute>
                 <TaskCalendarPage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/articles"
+            element={
+              <ProtectedRoute>
+                <ArticlesPage />
               </ProtectedRoute>
             }
           />

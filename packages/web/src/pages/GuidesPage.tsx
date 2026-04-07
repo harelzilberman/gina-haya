@@ -1,4 +1,5 @@
 import { useState, useRef } from 'react';
+import { ArticleReader } from '../components/ArticleReader';
 
 const GOLD   = '#F5C840';
 const PARCH  = '#EDE0C4';
@@ -388,10 +389,12 @@ function SubjectModal({
   video,
   onClose,
   onPlayVideo,
+  onOpenArticle,
 }: {
   video: Video;
   onClose: () => void;
   onPlayVideo: (v: Video) => void;
+  onOpenArticle: (slug: string) => void;
 }) {
   const [articleMsg, setArticleMsg] = useState(false);
 
@@ -511,7 +514,8 @@ function SubjectModal({
               <div
                 onClick={() => {
                   if (content.article!.ready) {
-                    /* navigate to article — implement routing later */
+                    onClose();
+                    onOpenArticle(content.article!.slug);
                   } else {
                     setArticleMsg(true);
                     setTimeout(() => setArticleMsg(false), 2500);
@@ -609,6 +613,7 @@ function SubjectModal({
 export function GuidesPage() {
   const [subjectVideo, setSubjectVideo] = useState<Video | null>(null);  // subject popup
   const [playVideo,    setPlayVideo]    = useState<Video | null>(null);  // YouTube embed
+  const [articleSlug,  setArticleSlug]  = useState<string | null>(null); // article reader
   const [activeFilter, setActiveFilter] = useState<string>('all');
 
   const filteredCategories = activeFilter === 'all'
@@ -675,12 +680,18 @@ export function GuidesPage() {
           video={subjectVideo}
           onClose={() => setSubjectVideo(null)}
           onPlayVideo={v => { setSubjectVideo(null); setPlayVideo(v); }}
+          onOpenArticle={slug => { setSubjectVideo(null); setArticleSlug(slug); }}
         />
       )}
 
       {/* YouTube embed modal */}
       {playVideo && (
         <VideoModal video={playVideo} onClose={() => setPlayVideo(null)} />
+      )}
+
+      {/* Article reader */}
+      {articleSlug && (
+        <ArticleReader slug={articleSlug} onClose={() => setArticleSlug(null)} />
       )}
     </div>
   );

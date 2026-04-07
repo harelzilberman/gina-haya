@@ -41,8 +41,9 @@ import { trackersRouter }  from './routes/trackers';
 import { plansRouter }   from './routes/plans';
 import { mapRouter }     from './routes/map';
 import { usersRouter }   from './routes/users';
-import { tasksRouter }   from './routes/tasks';
-import { pushRouter }    from './routes/push';
+import { tasksRouter }    from './routes/tasks';
+import { pushRouter }     from './routes/push';
+import { articlesRouter } from './routes/articles';
 import { startCronJobs } from './services/cronJobs';
 
 app.use('/api/auth',     authRouter);
@@ -59,6 +60,7 @@ app.use('/api/map',      mapRouter);
 app.use('/api/users',    usersRouter);
 app.use('/api/tasks',    tasksRouter);
 app.use('/api/push',     pushRouter);
+app.use('/api/articles', articlesRouter);
 
 app.use((_req, res) => {
   res.status(404).json({ error: 'Not found' });

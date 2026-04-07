@@ -5,3 +5,4 @@ export * from './types/chupchu';
 export * from './constants/tiers';
 export * from './constants/calendar';
 export * from './utils/date';
+export * from './types/article';
