@@ -26,6 +26,7 @@ export function PlantPicker({ activePlant, onSetActivePlant }: Props) {
   const [search, setSearch] = useState('');
   const [catFilter, setCatFilter] = useState<string>('all');
   const { gardens } = useGardenStore();
+  const isMobile = typeof window !== 'undefined' && window.innerWidth < 768;
 
   const gardenPlantNames = (gardens[0]?.garden_plants ?? []).map(
     (p: any) => (p.common_name_he as string).toLowerCase()
@@ -48,7 +49,20 @@ export function PlantPicker({ activePlant, onSetActivePlant }: Props) {
   }
 
   return (
-    <div style={{
+    <div style={isMobile ? {
+      position: 'fixed',
+      bottom: 0,
+      left: 0,
+      right: 0,
+      zIndex: 50,
+      maxHeight: '70vh',
+      display: 'flex',
+      flexDirection: 'column',
+      background: 'rgba(20,43,22,0.97)',
+      borderTop: '1px solid rgba(245,200,64,0.15)',
+      borderRadius: '16px 16px 0 0',
+      overflow: 'hidden',
+    } : {
       width: '260px',
       flexShrink: 0,
       height: '100%',
@@ -98,7 +112,7 @@ export function PlantPicker({ activePlant, onSetActivePlant }: Props) {
       </div>
 
       {/* Plant list */}
-      <div style={{ flex: 1, overflowY: 'auto', padding: '8px 10px' }}>
+      <div style={{ flex: 1, overflowY: 'auto', padding: '8px 10px', paddingBottom: '80px', WebkitOverflowScrolling: 'touch' } as React.CSSProperties}>
         {gardenPlants.length > 0 && (
           <>
             <p style={sectionLabel}>הצמחים שלי ⭐</p>

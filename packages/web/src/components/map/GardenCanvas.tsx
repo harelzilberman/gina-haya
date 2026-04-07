@@ -802,8 +802,9 @@ export function GardenCanvas({
   const [selectedPlantId, setSelectedPlantId] = useState<string | null>(null);
   const [rotTip, setRotTip]   = useState<string | null>(null);
 
-  const panRef  = useRef({ active: false, sx: 0, sy: 0, tx: 0, ty: 0 });
+  const panRef   = useRef({ active: false, sx: 0, sy: 0, tx: 0, ty: 0 });
   const northRef = useRef({ active: false, scx: 0, scy: 0 });
+  const touchRef = useRef({ lastDist: 0, lastX: 0, lastY: 0 });
 
   // ── Resize observer ────────────────────────────────────────────────────────
   useEffect(() => {
@@ -1113,6 +1114,56 @@ export function GardenCanvas({
     setT({ x: mx - cx*newS, y: my - cy*newS, s: newS });
   }, [t]);
 
+  // ── Touch pan / pinch-zoom ─────────────────────────────────────────────────
+  const onTouchStart = useCallback((e: React.TouchEvent<SVGSVGElement>) => {
+    if (e.touches.length === 2) {
+      touchRef.current.lastDist = Math.hypot(
+        e.touches[0].clientX - e.touches[1].clientX,
+        e.touches[0].clientY - e.touches[1].clientY
+      );
+      touchRef.current.lastX = (e.touches[0].clientX + e.touches[1].clientX) / 2;
+      touchRef.current.lastY = (e.touches[0].clientY + e.touches[1].clientY) / 2;
+    } else if (e.touches.length === 1) {
+      touchRef.current.lastX = e.touches[0].clientX;
+      touchRef.current.lastY = e.touches[0].clientY;
+      panRef.current = { active: true, sx: e.touches[0].clientX, sy: e.touches[0].clientY, tx: t.x, ty: t.y };
+    }
+  }, [t]);
+
+  const onTouchMove = useCallback((e: React.TouchEvent<SVGSVGElement>) => {
+    e.preventDefault();
+    if (e.touches.length === 2) {
+      const d = Math.hypot(
+        e.touches[0].clientX - e.touches[1].clientX,
+        e.touches[0].clientY - e.touches[1].clientY
+      );
+      const midX = (e.touches[0].clientX + e.touches[1].clientX) / 2;
+      const midY = (e.touches[0].clientY + e.touches[1].clientY) / 2;
+      const scaleFactor = d / (touchRef.current.lastDist || d);
+      const dX = midX - touchRef.current.lastX;
+      const dY = midY - touchRef.current.lastY;
+      touchRef.current.lastDist = d;
+      touchRef.current.lastX = midX;
+      touchRef.current.lastY = midY;
+      setT(prev => {
+        const newS = Math.min(MAX_SCALE, Math.max(MIN_SCALE, prev.s * scaleFactor));
+        if (!svgRef.current) return prev;
+        const r = svgRef.current.getBoundingClientRect();
+        const mx = midX - r.left, my = midY - r.top;
+        const cx = (mx - prev.x) / prev.s, cy = (my - prev.y) / prev.s;
+        return { x: mx - cx * newS + dX, y: my - cy * newS + dY, s: newS };
+      });
+    } else if (e.touches.length === 1 && panRef.current.active) {
+      const dx = e.touches[0].clientX - panRef.current.sx;
+      const dy = e.touches[0].clientY - panRef.current.sy;
+      setT(prev => ({ ...prev, x: panRef.current.tx + dx, y: panRef.current.ty + dy }));
+    }
+  }, []);
+
+  const onTouchEnd = useCallback(() => {
+    panRef.current.active = false;
+  }, []);
+
   // ── Resize handle drag start ───────────────────────────────────────────────
   const startResize = useCallback((id: string, handle: string, e: React.MouseEvent) => {
     e.stopPropagation();
@@ -1145,15 +1196,28 @@ export function GardenCanvas({
   // ── Render ─────────────────────────────────────────────────────────────────
   return (
     <div ref={containerRef} style={{ position: 'relative', width: '100%', height: '100%', overflow: 'hidden', background: '#0e1e0f' }}>
+      <button
+        onClick={() => setT({ x: 0, y: 0, s: 0.6 })}
+        style={{
+          position: 'absolute', top: 8, right: 8, zIndex: 10,
+          padding: '4px 10px', borderRadius: 8, fontSize: 12,
+          background: 'rgba(0,0,0,0.5)', color: '#F5C840', border: 'none', cursor: 'pointer',
+        }}
+      >
+        ↺ איפוס
+      </button>
       <svg
         ref={svgRef}
         width="100%" height="100%"
-        style={{ display: 'block', cursor: getCursor() }}
+        style={{ display: 'block', cursor: getCursor(), touchAction: 'none' }}
         onMouseDown={onMouseDown}
         onMouseMove={onMouseMove}
         onMouseUp={onMouseUp}
         onDoubleClick={onDblClick}
         onWheel={onWheel}
+        onTouchStart={onTouchStart}
+        onTouchMove={onTouchMove}
+        onTouchEnd={onTouchEnd}
       >
         <SvgDefs />
 
