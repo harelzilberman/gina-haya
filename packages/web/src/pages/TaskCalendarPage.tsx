@@ -48,6 +48,55 @@ const DAY_TYPE_STYLES: Record<string, { bg: string; color: string; emoji: string
   leaf:   { bg: 'rgba(125,192,132,0.18)', color: '#7DC084', emoji: '🌿', label: 'עלה'   },
 };
 
+// ── Source detection + styles ──────────────────────────────────────────────
+function getTaskSource(task: GardenTask): 'biodynamic' | 'weekly_plan' | 'growing_tracker' | 'manual' {
+  if (task.type === 'biodynamic' || task.source_action === 'prep500' || task.source_action === 'prep501') {
+    return 'biodynamic';
+  }
+  if (task.source_action === 'growing_tracker') {
+    return 'growing_tracker';
+  }
+  if (task.plan_id) {
+    return 'weekly_plan';
+  }
+  return 'manual';
+}
+
+const SOURCE_STYLES = {
+  biodynamic: {
+    bg:          'rgba(55,138,221,0.12)',
+    border:      'rgba(55,138,221,0.3)',
+    badgeBg:     'rgba(55,138,221,0.2)',
+    badgeColor:  '#85B7EB',
+    icon:        '🌙',
+    labelHe:     'לוח ביודינמי',
+  },
+  weekly_plan: {
+    bg:          'rgba(127,119,221,0.12)',
+    border:      'rgba(127,119,221,0.3)',
+    badgeBg:     'rgba(127,119,221,0.2)',
+    badgeColor:  '#AFA9EC',
+    icon:        '✨',
+    labelHe:     'תכנית שבועית',
+  },
+  growing_tracker: {
+    bg:          'rgba(29,158,117,0.12)',
+    border:      'rgba(29,158,117,0.3)',
+    badgeBg:     'rgba(29,158,117,0.2)',
+    badgeColor:  '#5DCAA5',
+    icon:        '🌱',
+    labelHe:     'מעקב גידול',
+  },
+  manual: {
+    bg:          'rgba(186,117,23,0.12)',
+    border:      'rgba(186,117,23,0.3)',
+    badgeBg:     'rgba(186,117,23,0.2)',
+    badgeColor:  '#EF9F27',
+    icon:        '✋',
+    labelHe:     'אישי',
+  },
+} as const;
+
 function moonEmoji(pct: number): string {
   if (pct < 6)  return '🌑';
   if (pct < 25) return '🌒';
@@ -141,99 +190,104 @@ function DraggableTaskCard({
 }) {
   const { attributes, listeners, setNodeRef, transform } = useDraggable({ id: task.id });
 
-  const cfg  = TYPE_CONFIG[task.type];
   const isDone    = task.status === 'done';
   const isSkipped = task.status === 'skipped';
+  const source    = getTaskSource(task);
+  const src       = SOURCE_STYLES[source];
 
-  // Priority colour from source_action
   const priorityColor =
     task.source_action === 'high'   ? '#EF745A' :
     task.source_action === 'medium' ? GOLD :
     task.source_action === 'low'    ? '#7DC084' : undefined;
 
-  const style: React.CSSProperties = {
+  const cardStyle: React.CSSProperties = {
     transform: CSS.Transform.toString(transform),
-    opacity: isDragging ? 0.4 : isSkipped ? 0.5 : 1,
-    background: isDone
-      ? 'rgba(74,124,89,0.15)'
-      : 'rgba(20,50,22,0.8)',
-    border: `1px solid ${isDone ? 'rgba(74,124,89,0.4)' : priorityColor ? `${priorityColor}55` : 'rgba(255,255,255,0.08)'}`,
+    opacity:   isDragging ? 0.4 : isSkipped ? 0.5 : 1,
+    background: isDone ? 'rgba(74,124,89,0.15)' : src.bg,
+    border:     `1px solid ${isDone ? 'rgba(74,124,89,0.4)' : src.border}`,
     borderRadius: '7px',
-    padding: '6px 8px',
-    display: 'flex',
-    alignItems: 'center',
-    gap: '6px',
-    cursor: 'grab',
+    padding:    '5px 8px 6px',
+    display:    'flex',
+    flexDirection: 'column',
+    gap:        '3px',
+    cursor:     'grab',
     userSelect: 'none',
     marginBottom: '4px',
     transition: 'opacity 0.15s',
   };
 
   return (
-    <div ref={setNodeRef} style={style} {...listeners} {...attributes} onClick={e => e.stopPropagation()}>
-      {/* Checkbox — 44px touch target wrapping the 16px visual */}
-      <button
-        onPointerDown={e => e.stopPropagation()}
-        onClick={e => { e.stopPropagation(); onStatusToggle(task); }}
-        style={{
-          flexShrink: 0, width: '44px', height: '44px', borderRadius: '4px',
-          border: 'none', background: 'transparent',
-          cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center',
-          margin: '-14px -14px -14px -14px', padding: '14px',
-        }}
-      >
-        <span style={{
-          width: '16px', height: '16px', borderRadius: '4px', flexShrink: 0,
-          border: `1.5px solid ${isDone ? '#4A7C59' : 'rgba(255,255,255,0.25)'}`,
-          background: isDone ? '#4A7C59' : 'transparent',
-          display: 'flex', alignItems: 'center', justifyContent: 'center',
-          fontSize: '10px', color: 'white',
-        }}>
-          {isDone ? '✓' : ''}
-        </span>
-      </button>
-
-      {/* Type emoji */}
-      <span style={{ fontSize: '12px', flexShrink: 0 }}>{cfg.emoji}</span>
-
-      {/* Title */}
-      <span
-        onPointerDown={e => e.stopPropagation()}
-        onClick={e => { e.stopPropagation(); onEdit(task); }}
-        style={{
-          fontFamily: ASST, fontSize: '12px',
-          color: isDone ? `${PARCH}60` : PARCH,
-          flex: 1, textDecoration: isDone ? 'line-through' : 'none',
-          direction: 'rtl', textAlign: 'right',
-          cursor: 'pointer', overflow: 'hidden',
-          whiteSpace: 'nowrap', textOverflow: 'ellipsis',
-          minWidth: 0,
-        }}
-        title={task.title}
-      >
-        {task.title}
+    <div ref={setNodeRef} style={cardStyle} {...listeners} {...attributes} onClick={e => e.stopPropagation()}>
+      {/* Source badge — top row, aligned to RTL start (right) */}
+      <span style={{
+        alignSelf: 'flex-start',
+        fontFamily: ASST, fontSize: '9px',
+        background: src.badgeBg, color: src.badgeColor,
+        borderRadius: '4px', padding: '1px 5px',
+        display: 'inline-flex', alignItems: 'center', gap: '3px',
+        lineHeight: 1.4,
+      }}>
+        {src.icon} {src.labelHe}
       </span>
 
-      {/* Priority dot */}
-      {priorityColor && (
-        <span style={{ width: '6px', height: '6px', borderRadius: '50%', background: priorityColor, flexShrink: 0 }} />
-      )}
-
-      {/* Tracker badge */}
-      {task.source_action === 'growing_tracker' && (
-        <span style={{ fontSize: '10px', flexShrink: 0 }}>🌱</span>
-      )}
-
-      {/* Delete (custom tasks only) */}
-      {task.type === 'custom' && (
+      {/* Content row */}
+      <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+        {/* Checkbox — 44px touch target */}
         <button
           onPointerDown={e => e.stopPropagation()}
-          onClick={e => { e.stopPropagation(); onDelete(task.id); }}
-          style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: '10px', opacity: 0.4, padding: '0', flexShrink: 0 }}
+          onClick={e => { e.stopPropagation(); onStatusToggle(task); }}
+          style={{
+            flexShrink: 0, width: '32px', height: '32px', borderRadius: '4px',
+            border: 'none', background: 'transparent',
+            cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center',
+            margin: '-8px -8px -8px -8px', padding: '8px',
+          }}
         >
-          ×
+          <span style={{
+            width: '16px', height: '16px', borderRadius: '4px', flexShrink: 0,
+            border: `1.5px solid ${isDone ? '#4A7C59' : 'rgba(255,255,255,0.25)'}`,
+            background: isDone ? '#4A7C59' : 'transparent',
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+            fontSize: '10px', color: 'white',
+          }}>
+            {isDone ? '✓' : ''}
+          </span>
         </button>
-      )}
+
+        {/* Title */}
+        <span
+          onPointerDown={e => e.stopPropagation()}
+          onClick={e => { e.stopPropagation(); onEdit(task); }}
+          style={{
+            fontFamily: ASST, fontSize: '12px',
+            color: isDone ? `${PARCH}60` : PARCH,
+            flex: 1, textDecoration: isDone ? 'line-through' : 'none',
+            direction: 'rtl', textAlign: 'right',
+            cursor: 'pointer', overflow: 'hidden',
+            whiteSpace: 'nowrap', textOverflow: 'ellipsis',
+            minWidth: 0,
+          }}
+          title={task.title}
+        >
+          {task.title}
+        </span>
+
+        {/* Priority dot */}
+        {priorityColor && (
+          <span style={{ width: '6px', height: '6px', borderRadius: '50%', background: priorityColor, flexShrink: 0 }} />
+        )}
+
+        {/* Delete (custom tasks only) */}
+        {task.type === 'custom' && (
+          <button
+            onPointerDown={e => e.stopPropagation()}
+            onClick={e => { e.stopPropagation(); onDelete(task.id); }}
+            style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: '10px', opacity: 0.4, padding: '0', flexShrink: 0 }}
+          >
+            ×
+          </button>
+        )}
+      </div>
     </div>
   );
 }
@@ -570,6 +624,8 @@ const MODAL_CSS = `
 
 function ModalTaskRow({ task, onStatusToggle }: { task: GardenTask; onStatusToggle: (t: GardenTask) => void }) {
   const isDone = task.status === 'done';
+  const source = getTaskSource(task);
+  const src    = SOURCE_STYLES[source];
   const priorityColor =
     task.source_action === 'high'   ? '#EF745A' :
     task.source_action === 'medium' ? GOLD :
@@ -578,7 +634,10 @@ function ModalTaskRow({ task, onStatusToggle }: { task: GardenTask; onStatusTogg
   return (
     <div style={{
       display: 'flex', alignItems: 'center', gap: '10px',
-      padding: '10px 0', borderBottom: '1px solid rgba(255,255,255,0.05)',
+      padding: '10px 12px', marginBottom: '6px',
+      background: isDone ? 'rgba(74,124,89,0.10)' : src.bg,
+      border: `1px solid ${isDone ? 'rgba(74,124,89,0.3)' : src.border}`,
+      borderRadius: '8px',
     }}>
       <button
         onClick={() => onStatusToggle(task)}
@@ -599,11 +658,18 @@ function ModalTaskRow({ task, onStatusToggle }: { task: GardenTask; onStatusTogg
       }}>
         {task.title}
       </span>
+      {/* Source badge */}
+      <span style={{
+        fontFamily: ASST, fontSize: '10px',
+        background: src.badgeBg, color: src.badgeColor,
+        borderRadius: '4px', padding: '2px 6px',
+        display: 'inline-flex', alignItems: 'center', gap: '3px',
+        flexShrink: 0, whiteSpace: 'nowrap',
+      }}>
+        {src.icon} {src.labelHe}
+      </span>
       {priorityColor && (
         <span style={{ width: '7px', height: '7px', borderRadius: '50%', background: priorityColor, flexShrink: 0 }} />
-      )}
-      {task.source_action === 'growing_tracker' && (
-        <span style={{ fontFamily: ASST, fontSize: '11px', color: '#7DC084', flexShrink: 0 }}>🌱 מעקב</span>
       )}
     </div>
   );
@@ -1081,6 +1147,20 @@ export function TaskCalendarPage() {
                 style={{ fontFamily: ASST, fontSize: '10px', padding: '2px 6px', borderRadius: '99px', background: s.bg, color: s.color }}
               >
                 {s.emoji}{!isMobile && ` ${s.label}`}
+              </span>
+            ))}
+          </div>
+
+          {/* Row 4: source legend */}
+          <div style={{ display: 'flex', gap: '6px', flexWrap: 'wrap', alignItems: 'center', marginTop: '4px' }}>
+            {(Object.entries(SOURCE_STYLES) as [keyof typeof SOURCE_STYLES, typeof SOURCE_STYLES[keyof typeof SOURCE_STYLES]][]).map(([key, s]) => (
+              <span key={key} style={{
+                fontFamily: ASST, fontSize: '10px',
+                background: s.badgeBg, color: s.badgeColor,
+                borderRadius: '4px', padding: '2px 7px',
+                display: 'inline-flex', alignItems: 'center', gap: '3px',
+              }}>
+                {s.icon}{!isMobile && ` ${s.labelHe}`}
               </span>
             ))}
           </div>
