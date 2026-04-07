@@ -64,6 +64,52 @@ const VIDEOS: Video[] = [
   { id: 't5', titleHe: 'מולצ׳ינג — כיסוי קרקע', descHe: 'שיטות כיסוי קרקע לשמירת לחות ועצירת עשבים', category: 'technique', format: 'reel', duration: '0:45', comingSoon: true },
 ];
 
+// ── Content catalog ────────────────────────────────────────────────────────
+interface GuideContent {
+  video?:       { youtubeId: string; duration: string };
+  article?:     { slug: string; ready: boolean };
+  comingSoon?:  string[];
+}
+
+const GUIDE_CONTENT: Record<string, GuideContent> = {
+  // Fertilizer
+  f1:  { video: { youtubeId: 'dQw4w9WgXcQ', duration: '3:20' }, article: { slug: 'compost-tea', ready: false }, comingSoon: ['וובינר חי'] },
+  f2:  { comingSoon: ['סרטון', 'מאמר', 'וובינר'] },
+  f3:  { comingSoon: ['סרטון', 'מאמר'] },
+  f4:  { comingSoon: ['סרטון', 'מאמר'] },
+  // Pest control
+  p1:  { video: { youtubeId: 'dQw4w9WgXcQ', duration: '2:30' }, article: { slug: 'neem-oil', ready: false }, comingSoon: ['וובינר'] },
+  p2:  { comingSoon: ['סרטון', 'מאמר'] },
+  p3:  { comingSoon: ['סרטון', 'מאמר'] },
+  p4:  { comingSoon: ['סרטון', 'מאמר'] },
+  // Compost
+  c1:  { video: { youtubeId: 'dQw4w9WgXcQ', duration: '10:30' }, article: { slug: 'compost-basics', ready: false } },
+  c2:  { comingSoon: ['סרטון', 'מאמר'] },
+  c3:  { comingSoon: ['סרטון', 'מאמר'] },
+  // BD preparations
+  bd1: { video: { youtubeId: 'dQw4w9WgXcQ', duration: '12:00' }, article: { slug: 'bd-500', ready: false } },
+  bd2: { article: { slug: 'bd-501', ready: false }, comingSoon: ['סרטון'] },
+  bd3: { comingSoon: ['סרטון', 'מאמר'] },
+  bd4: { comingSoon: ['סרטון', 'מאמר'] },
+  // Companions
+  co1: { video: { youtubeId: 'dQw4w9WgXcQ', duration: '0:45' }, article: { slug: 'tomato-basil', ready: false } },
+  co2: { comingSoon: ['סרטון', 'מאמר'] },
+  co3: { comingSoon: ['סרטון', 'מאמר'] },
+  // Techniques
+  t1:  { video: { youtubeId: 'dQw4w9WgXcQ', duration: '15:00' }, article: { slug: 'fruit-tree-pruning', ready: false } },
+  t2:  { comingSoon: ['סרטון', 'מאמר'] },
+  t3:  { comingSoon: ['סרטון', 'מאמר'] },
+  t4:  { comingSoon: ['סרטון', 'מאמר'] },
+  t5:  { comingSoon: ['סרטון', 'מאמר'] },
+};
+
+const SUBJECT_MODAL_CSS = `
+@keyframes subjectModalIn {
+  from { opacity: 0; transform: translateY(20px) scale(0.97); }
+  to   { opacity: 1; transform: translateY(0) scale(1); }
+}
+`;
+
 function VideoCard({ video, onClick }: { video: Video; onClick: () => void }) {
   const [hovered, setHovered] = useState(false);
 
@@ -337,8 +383,232 @@ function VideoModal({ video, onClose }: { video: Video; onClose: () => void }) {
   );
 }
 
+// ── Subject popup modal ─────────────────────────────────────────────────────
+function SubjectModal({
+  video,
+  onClose,
+  onPlayVideo,
+}: {
+  video: Video;
+  onClose: () => void;
+  onPlayVideo: (v: Video) => void;
+}) {
+  const [articleMsg, setArticleMsg] = useState(false);
+
+  const content    = GUIDE_CONTENT[video.id] ?? { comingSoon: ['סרטון', 'מאמר', 'וובינר'] };
+  const category   = CATEGORIES.find(c => c.id === video.category);
+  const thumbUrl   = video.youtubeId
+    ? `https://img.youtube.com/vi/${video.youtubeId}/mqdefault.jpg`
+    : `https://placehold.co/500x280/142B16/F5C840?text=${encodeURIComponent(video.titleHe)}`;
+
+  const rowBase: React.CSSProperties = {
+    display: 'flex', alignItems: 'center', gap: '14px',
+    padding: '14px 18px',
+    borderRadius: '10px',
+    marginBottom: '8px',
+    transition: 'transform 0.15s, background 0.15s',
+    border: '1px solid rgba(245,200,64,0.08)',
+  };
+
+  return (
+    <>
+      <style>{SUBJECT_MODAL_CSS}</style>
+      {/* Backdrop */}
+      <div
+        onClick={onClose}
+        style={{
+          position: 'fixed', inset: 0, zIndex: 200,
+          background: 'rgba(0,0,0,0.75)', backdropFilter: 'blur(4px)',
+          display: 'flex', alignItems: 'center', justifyContent: 'center',
+          padding: '20px',
+        }}
+      >
+        {/* Modal card */}
+        <div
+          onClick={e => e.stopPropagation()}
+          style={{
+            background: 'linear-gradient(145deg, rgba(28,58,30,0.97), rgba(15,35,17,0.99))',
+            border: '1px solid rgba(245,200,64,0.2)',
+            borderRadius: '16px', overflow: 'hidden',
+            maxWidth: '500px', width: '92%',
+            maxHeight: '90vh', overflowY: 'auto',
+            direction: 'rtl',
+            boxShadow: '0 24px 80px rgba(0,0,0,0.7)',
+            animation: 'subjectModalIn 0.2s ease-out',
+          }}
+        >
+          {/* Thumbnail */}
+          <div style={{ position: 'relative', height: '200px', overflow: 'hidden' }}>
+            <img
+              src={thumbUrl}
+              alt={video.titleHe}
+              style={{ width: '100%', height: '100%', objectFit: 'cover', opacity: 0.7 }}
+              onError={e => { (e.target as HTMLImageElement).style.opacity = '0'; }}
+            />
+            <div style={{
+              position: 'absolute', inset: 0,
+              background: 'linear-gradient(to bottom, rgba(15,35,17,0) 30%, rgba(15,35,17,0.97) 100%)',
+            }} />
+            {/* Close button */}
+            <button
+              onClick={onClose}
+              style={{
+                position: 'absolute', top: '12px', left: '12px',
+                background: 'rgba(0,0,0,0.5)', border: 'none', borderRadius: '50%',
+                width: '32px', height: '32px', color: PARCH, cursor: 'pointer',
+                fontSize: '16px', display: 'flex', alignItems: 'center', justifyContent: 'center',
+              }}
+            >×</button>
+            {/* Title overlay */}
+            <div style={{ position: 'absolute', bottom: '16px', right: '18px', left: '18px' }}>
+              <h2 style={{ fontFamily: FRANK, fontSize: '20px', color: GOLD, margin: '0 0 6px', lineHeight: 1.2 }}>
+                {video.titleHe}
+              </h2>
+              {category && (
+                <span style={{
+                  fontFamily: ASSIST, fontSize: '11px',
+                  background: 'rgba(245,200,64,0.12)', color: GOLD,
+                  border: '1px solid rgba(245,200,64,0.25)',
+                  borderRadius: '99px', padding: '2px 10px',
+                }}>
+                  {category.labelHe}
+                </span>
+              )}
+            </div>
+          </div>
+
+          {/* Content options */}
+          <div style={{ padding: '20px 18px' }}>
+            <p style={{ fontFamily: ASSIST, fontSize: '12px', color: `${PARCH}55`, margin: '0 0 14px', letterSpacing: '0.06em', textTransform: 'uppercase' as const }}>
+              תוכן זמין
+            </p>
+
+            {/* Video row */}
+            {content.video && (
+              <div
+                onClick={() => { onClose(); onPlayVideo(video); }}
+                onMouseEnter={e => {
+                  (e.currentTarget as HTMLDivElement).style.transform = 'scale(1.01)';
+                  (e.currentTarget as HTMLDivElement).style.background = 'rgba(245,200,64,0.06)';
+                }}
+                onMouseLeave={e => {
+                  (e.currentTarget as HTMLDivElement).style.transform = 'scale(1)';
+                  (e.currentTarget as HTMLDivElement).style.background = 'rgba(255,255,255,0.03)';
+                }}
+                style={{ ...rowBase, background: 'rgba(255,255,255,0.03)', cursor: 'pointer' }}
+              >
+                <span style={{ fontSize: '26px', flexShrink: 0 }}>🎬</span>
+                <div style={{ flex: 1 }}>
+                  <div style={{ fontFamily: FRANK, fontSize: '15px', color: GOLD }}>סרטון הדרכה</div>
+                  <div style={{ fontFamily: ASSIST, fontSize: '12px', color: `${PARCH}55` }}>⏱ {content.video.duration}</div>
+                </div>
+                <span style={{ color: GOLD, fontSize: '20px', flexShrink: 0 }}>▶</span>
+              </div>
+            )}
+
+            {/* Article row */}
+            {content.article && (
+              <div
+                onClick={() => {
+                  if (content.article!.ready) {
+                    /* navigate to article — implement routing later */
+                  } else {
+                    setArticleMsg(true);
+                    setTimeout(() => setArticleMsg(false), 2500);
+                  }
+                }}
+                onMouseEnter={e => {
+                  (e.currentTarget as HTMLDivElement).style.transform = 'scale(1.01)';
+                  (e.currentTarget as HTMLDivElement).style.background = 'rgba(245,200,64,0.06)';
+                }}
+                onMouseLeave={e => {
+                  (e.currentTarget as HTMLDivElement).style.transform = 'scale(1)';
+                  (e.currentTarget as HTMLDivElement).style.background = 'rgba(255,255,255,0.03)';
+                }}
+                style={{ ...rowBase, background: 'rgba(255,255,255,0.03)', cursor: 'pointer' }}
+              >
+                <span style={{ fontSize: '26px', flexShrink: 0 }}>📖</span>
+                <div style={{ flex: 1 }}>
+                  <div style={{ fontFamily: FRANK, fontSize: '15px', color: content.article.ready ? GOLD : PARCH }}>
+                    מאמר מפורט
+                  </div>
+                  <div style={{ fontFamily: ASSIST, fontSize: '12px', color: `${PARCH}55` }}>על ידי צ'ופצ'ו</div>
+                </div>
+                {content.article.ready ? (
+                  <span style={{ color: GOLD, fontSize: '20px', flexShrink: 0 }}>→</span>
+                ) : (
+                  <span style={{
+                    fontFamily: ASSIST, fontSize: '10px',
+                    background: 'rgba(245,200,64,0.1)', color: GOLD,
+                    border: '1px solid rgba(245,200,64,0.2)',
+                    borderRadius: '4px', padding: '2px 7px', flexShrink: 0,
+                  }}>בקרוב</span>
+                )}
+              </div>
+            )}
+
+            {/* Article "in progress" feedback */}
+            {articleMsg && (
+              <div style={{
+                fontFamily: ASSIST, fontSize: '12px', color: GOLD,
+                textAlign: 'center', padding: '6px 0 2px',
+                animation: 'subjectModalIn 0.15s ease-out',
+              }}>
+                ✏️ המאמר בהכנה — יגיע בקרוב!
+              </div>
+            )}
+
+            {/* Coming soon rows */}
+            {content.comingSoon?.map(item => (
+              <div
+                key={item}
+                style={{ ...rowBase, background: 'rgba(255,255,255,0.02)', opacity: 0.4, cursor: 'default' }}
+              >
+                <span style={{ fontSize: '26px', flexShrink: 0 }}>🔜</span>
+                <div style={{ flex: 1 }}>
+                  <div style={{ fontFamily: FRANK, fontSize: '15px', color: PARCH }}>{item}</div>
+                </div>
+                <span style={{
+                  fontFamily: ASSIST, fontSize: '10px',
+                  background: 'rgba(255,255,255,0.08)', color: `${PARCH}60`,
+                  borderRadius: '4px', padding: '2px 7px', flexShrink: 0,
+                }}>בקרוב</span>
+              </div>
+            ))}
+          </div>
+
+          {/* Footer */}
+          <div style={{
+            padding: '12px 18px 20px',
+            borderTop: '1px solid rgba(255,255,255,0.06)',
+            display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '12px',
+          }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+              <span style={{ fontSize: '22px' }}>🌕</span>
+              <span style={{ fontFamily: ASSIST, fontSize: '11px', color: `${PARCH}50` }}>
+                צ'ופצ'ו ממליץ על התוכן הזה 🌿
+              </span>
+            </div>
+            <button
+              onClick={onClose}
+              style={{
+                fontFamily: ASSIST, fontSize: '13px', color: `${PARCH}70`,
+                background: 'transparent', border: '1px solid rgba(255,255,255,0.12)',
+                borderRadius: '8px', padding: '8px 18px', cursor: 'pointer', flexShrink: 0,
+              }}
+            >
+              סגור
+            </button>
+          </div>
+        </div>
+      </div>
+    </>
+  );
+}
+
 export function GuidesPage() {
-  const [selectedVideo, setSelectedVideo] = useState<Video | null>(null);
+  const [subjectVideo, setSubjectVideo] = useState<Video | null>(null);  // subject popup
+  const [playVideo,    setPlayVideo]    = useState<Video | null>(null);  // YouTube embed
   const [activeFilter, setActiveFilter] = useState<string>('all');
 
   const filteredCategories = activeFilter === 'all'
@@ -394,14 +664,23 @@ export function GuidesPage() {
             key={cat.id}
             category={cat}
             videos={videos}
-            onSelect={setSelectedVideo}
+            onSelect={setSubjectVideo}
           />
         );
       })}
 
-      {/* Video modal */}
-      {selectedVideo && (
-        <VideoModal video={selectedVideo} onClose={() => setSelectedVideo(null)} />
+      {/* Subject popup */}
+      {subjectVideo && (
+        <SubjectModal
+          video={subjectVideo}
+          onClose={() => setSubjectVideo(null)}
+          onPlayVideo={v => { setSubjectVideo(null); setPlayVideo(v); }}
+        />
+      )}
+
+      {/* YouTube embed modal */}
+      {playVideo && (
+        <VideoModal video={playVideo} onClose={() => setPlayVideo(null)} />
       )}
     </div>
   );
