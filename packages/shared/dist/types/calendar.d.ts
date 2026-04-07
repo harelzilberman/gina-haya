@@ -20,10 +20,12 @@ export interface BiodynamicDay {
     moonPhasePct: number;
     moonPhaseName: string;
     moonPhaseNameHe: string;
+    moonPhaseAngle?: number;
+    moonPhaseHe?: string;
     plantingScore: number;
     scoreColour: ScoreColour;
     moonriseTime: string | null;
     moonsetTime: string | null;
-    mooshDailySummary: string;
+    chupChuDailySummary: string;
 }
 //# sourceMappingURL=calendar.d.ts.map

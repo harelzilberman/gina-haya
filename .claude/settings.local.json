@@ -28,7 +28,8 @@
       "Bash(powershell -Command ':*)",
       "Bash(npm install:*)",
       "Bash(pnpm add:*)",
-      "Bash(pnpm --filter @gina-haya/web exec tsc --noEmit)"
+      "Bash(pnpm --filter @gina-haya/web exec tsc --noEmit)",
+      "Bash(pnpm --filter @gina-haya/shared build)"
     ]
   }
 }
