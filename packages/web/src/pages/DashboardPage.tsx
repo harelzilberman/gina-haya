@@ -416,86 +416,84 @@ export function DashboardPage() {
             <div style={{ textAlign: 'center', padding: '60px 0', fontSize: '48px' }}>🌕</div>
           ) : day ? (
             <>
-              {/* Horizontal flex: left=MoonPhaseDisplay, right=summary+info cards */}
-              <div style={{ display: 'flex', gap: '20px', alignItems: 'flex-start' }}>
-                {/* Left — Moon canvas only */}
+              {/* Moon + Cards row */}
+              <div style={{ display: 'flex', gap: '16px', alignItems: 'stretch' }}>
+                {/* Cards grid — RTL start (right side visually) */}
+                <div style={{
+                  flex: 1,
+                  display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '10px',
+                  alignContent: 'start',
+                }}>
+                  {/* Row 1 — planting score */}
+                  <div style={{ background: `${scoreColor}14`, border: `1px solid ${scoreColor}44`, borderRadius: '12px', padding: '14px 16px' }}>
+                    <div style={{ fontFamily: ASST, fontSize: '11px', color: `${PARCH}60`, marginBottom: '4px' }}>ציון שתילה</div>
+                    <div style={{ fontFamily: FRANK, fontSize: '28px', color: scoreColor, fontWeight: 700, lineHeight: 1 }}>
+                      {day.plantingScore}
+                      <span style={{ fontFamily: ASST, fontSize: '11px', color: `${PARCH}40`, fontWeight: 400 }}> /10</span>
+                    </div>
+                  </div>
+
+                  {/* Row 1 — moon phase % */}
+                  <div style={{ background: 'rgba(245,200,64,0.08)', border: '1px solid rgba(245,200,64,0.2)', borderRadius: '12px', padding: '14px 16px' }}>
+                    <div style={{ fontFamily: ASST, fontSize: '11px', color: `${PARCH}60`, marginBottom: '4px' }}>שלב הירח</div>
+                    <div style={{ fontFamily: FRANK, fontSize: '22px', color: GOLD }}>
+                      {moonEmoji(day.moonPhasePct)} {day.moonPhasePct}%
+                    </div>
+                  </div>
+
+                  {/* Row 1 — day type */}
+                  {dayType ? (
+                    <div style={{ background: dayType.bg, border: `1px solid ${dayType.color}55`, borderRadius: '12px', padding: '14px 16px' }}>
+                      <div style={{ fontFamily: ASST, fontSize: '11px', color: `${PARCH}60`, marginBottom: '4px' }}>סוג היום</div>
+                      <div style={{ fontFamily: FRANK, fontSize: '18px', color: dayType.color, fontWeight: 700 }}>
+                        {dayType.emoji} יום {dayType.label}
+                      </div>
+                    </div>
+                  ) : <div />}
+
+                  {/* Row 2 — moon sign */}
+                  <div style={{ background: 'rgba(255,255,255,0.04)', borderRadius: '10px', padding: '14px 16px' }}>
+                    <div style={{ fontFamily: ASST, fontSize: '11px', color: `${PARCH}50`, marginBottom: '5px' }}>מזל הירח</div>
+                    <div style={{ fontFamily: FRANK, fontSize: '16px', color: PARCH }}>{day.moonSignHe}</div>
+                  </div>
+
+                  {/* Row 2 — rise time */}
+                  <div style={{ background: 'rgba(255,255,255,0.04)', borderRadius: '10px', padding: '14px 16px' }}>
+                    <div style={{ fontFamily: ASST, fontSize: '11px', color: `${PARCH}50`, marginBottom: '5px' }}>זריחת ירח</div>
+                    <div style={{ fontFamily: FRANK, fontSize: '16px', color: PARCH }}>{day.moonriseTime ?? '—'}</div>
+                  </div>
+
+                  {/* Row 2 — set time */}
+                  <div style={{ background: 'rgba(255,255,255,0.04)', borderRadius: '10px', padding: '14px 16px' }}>
+                    <div style={{ fontFamily: ASST, fontSize: '11px', color: `${PARCH}50`, marginBottom: '5px' }}>שקיעת ירח</div>
+                    <div style={{ fontFamily: FRANK, fontSize: '16px', color: PARCH }}>{day.moonsetTime ?? '—'}</div>
+                  </div>
+
+                  {/* Row 3 — ascending/descending + phase name, full width */}
+                  <div style={{
+                    gridColumn: '1 / -1',
+                    background: 'rgba(255,255,255,0.04)', borderRadius: '10px', padding: '14px 16px',
+                    display: 'flex', justifyContent: 'space-between', alignItems: 'center',
+                  }}>
+                    <div>
+                      <div style={{ fontFamily: ASST, fontSize: '11px', color: `${PARCH}50`, marginBottom: '5px' }}>כיוון הירח</div>
+                      <div style={{ fontFamily: FRANK, fontSize: '16px', color: PARCH }}>
+                        {day.ascendingDescending === 'ascending' ? '↑ עולה' : '↓ יורד'}
+                      </div>
+                    </div>
+                    <div style={{ textAlign: 'right' }}>
+                      <div style={{ fontFamily: ASST, fontSize: '11px', color: `${PARCH}50`, marginBottom: '5px' }}>שם הפאזה</div>
+                      <div style={{ fontFamily: FRANK, fontSize: '16px', color: PARCH }}>{day.moonPhaseNameHe}</div>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Moon canvas — RTL end (left side visually) */}
                 <div style={{ flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                   <MoonCanvas
                     phasePct={day.moonPhasePct ?? 0}
                     phaseAngle={day.moonPhaseAngle ?? (day.moonPhasePct ?? 0) / 100 * 360}
                   />
-                </div>
-
-                {/* Right — cards stacked */}
-                <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: '12px' }}>
-                  {/* BD day type + moon + score row */}
-                  <div style={{ display: 'flex', gap: '12px', flexWrap: 'wrap' }}>
-                    {dayType && (
-                      <div style={{
-                        display: 'flex', alignItems: 'center', gap: '10px',
-                        background: dayType.bg, border: `1px solid ${dayType.color}55`,
-                        borderRadius: '12px', padding: '12px 20px',
-                      }}>
-                        <span style={{ fontSize: '28px' }}>{dayType.emoji}</span>
-                        <div>
-                          <div style={{ fontFamily: FRANK, fontSize: '18px', color: dayType.color, fontWeight: 700 }}>
-                            יום {dayType.label}
-                          </div>
-                          <div style={{ fontFamily: ASST, fontSize: '11px', color: `${PARCH}60` }}>
-                            {day.dayTypeHe}
-                          </div>
-                        </div>
-                      </div>
-                    )}
-
-                    <div style={{
-                      display: 'flex', alignItems: 'center', gap: '10px',
-                      background: 'rgba(245,200,64,0.08)', border: '1px solid rgba(245,200,64,0.2)',
-                      borderRadius: '12px', padding: '12px 20px',
-                    }}>
-                      <span style={{ fontSize: '30px' }}>{moonEmoji(day.moonPhasePct)}</span>
-                      <div>
-                        <div style={{ fontFamily: FRANK, fontSize: '17px', color: GOLD }}>{day.moonPhaseNameHe}</div>
-                        <div style={{ fontFamily: ASST, fontSize: '11px', color: `${PARCH}60` }}>
-                          תאורה {day.moonPhasePct}%
-                        </div>
-                      </div>
-                    </div>
-
-                    <div style={{
-                      display: 'flex', alignItems: 'center', gap: '10px',
-                      background: `${scoreColor}14`, border: `1px solid ${scoreColor}44`,
-                      borderRadius: '12px', padding: '12px 20px',
-                    }}>
-                      <span style={{ fontFamily: FRANK, fontSize: '32px', color: scoreColor, fontWeight: 700, lineHeight: 1 }}>
-                        {day.plantingScore}
-                      </span>
-                      <div>
-                        <div style={{ fontFamily: ASST, fontSize: '11px', color: `${PARCH}60` }}>ציון שתילה</div>
-                        <div style={{ fontFamily: ASST, fontSize: '11px', color: `${PARCH}40` }}>מתוך 10</div>
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* Moon + direction info grid */}
-                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '12px', width: '100%' }}>
-                    {[
-                      { label: 'מזל הירח',    value: day.moonSignHe },
-                      { label: 'כיוון הירח',  value: day.ascendingDescending === 'ascending' ? '↑ עולה' : '↓ יורד' },
-                      { label: 'שם הפאזה',    value: day.moonPhaseNameHe },
-                      ...(day.moonriseTime ? [{ label: 'זריחת ירח', value: day.moonriseTime }] : []),
-                      ...(day.moonsetTime  ? [{ label: 'שקיעת ירח', value: day.moonsetTime  }] : []),
-                    ].map(item => (
-                      <div key={item.label} style={{
-                        background: 'rgba(255,255,255,0.04)', borderRadius: '10px', padding: '14px 16px',
-                      }}>
-                        <div style={{ fontFamily: ASST, fontSize: '11px', color: `${PARCH}50`, marginBottom: '5px' }}>
-                          {item.label}
-                        </div>
-                        <div style={{ fontFamily: FRANK, fontSize: '16px', color: PARCH }}>{item.value}</div>
-                      </div>
-                    ))}
-                  </div>
                 </div>
               </div>
 
