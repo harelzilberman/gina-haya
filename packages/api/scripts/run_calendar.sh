@@ -1,6 +1,7 @@
 #!/bin/bash
 # Run the biodynamic calendar generator
-# Called by Railway cron job monthly
+# Called by Railway pre-deploy / cron job monthly
+set +e  # don't exit on error — failures must never block deployment
 
 echo "Starting biodynamic calendar generation..."
 echo "Working directory: $(pwd)"
@@ -15,3 +16,5 @@ echo "Script dir: $SCRIPT_DIR"
 
 python "$SCRIPT_DIR/generate_calendar.py"
 echo "Done!"
+
+exit 0
