@@ -170,7 +170,7 @@ function DraggableTaskCard({
   };
 
   return (
-    <div ref={setNodeRef} style={style} {...listeners} {...attributes}>
+    <div ref={setNodeRef} style={style} {...listeners} {...attributes} onClick={e => e.stopPropagation()}>
       {/* Checkbox — 44px touch target wrapping the 16px visual */}
       <button
         onPointerDown={e => e.stopPropagation()}
@@ -251,6 +251,7 @@ function DroppableDayCell({
   onEdit,
   onStatusToggle,
   onDelete,
+  onDayClick,
   draggingId,
 }: {
   date: string;
@@ -264,6 +265,7 @@ function DroppableDayCell({
   onEdit: (t: GardenTask) => void;
   onStatusToggle: (t: GardenTask) => void;
   onDelete: (id: string) => void;
+  onDayClick: (date: string) => void;
   draggingId: string | null;
 }) {
   const { setNodeRef, isOver } = useDroppable({ id: date });
@@ -278,7 +280,7 @@ function DroppableDayCell({
     return (
       <div
         ref={setNodeRef}
-        onClick={() => onAdd(date)}
+        onClick={() => onDayClick(date)}
         style={{
           background: isOver ? 'rgba(245,200,64,0.08)' : isToday ? 'rgba(245,200,64,0.07)' : 'rgba(20,50,22,0.35)',
           border: `1px solid ${isToday ? 'rgba(245,200,64,0.3)' : 'rgba(255,255,255,0.06)'}`,
@@ -314,6 +316,7 @@ function DroppableDayCell({
   return (
     <div
       ref={setNodeRef}
+      onClick={() => onDayClick(date)}
       style={{
         background: isOver
           ? 'rgba(245,200,64,0.08)'
@@ -331,6 +334,7 @@ function DroppableDayCell({
         transition: 'background 0.15s, border-color 0.15s',
         boxSizing: 'border-box',
         width: '100%',
+        cursor: 'pointer',
       }}
     >
       {/* Day header — full centred layout for week view, compact row for month view */}
@@ -399,7 +403,7 @@ function DroppableDayCell({
       {/* Footer: add + summary */}
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: 'auto' }}>
         <button
-          onClick={() => onAdd(date)}
+          onClick={e => { e.stopPropagation(); onAdd(date); }}
           style={{
             background: 'none', border: 'none', cursor: 'pointer',
             fontFamily: ASST, fontSize: '11px', color: `${PARCH}40`,
@@ -556,6 +560,243 @@ function TaskModal({
   );
 }
 
+// ── Day Detail Modal ──────────────────────────────────────────────────────────
+const MODAL_CSS = `
+@keyframes modalIn {
+  from { opacity: 0; transform: translateY(20px) scale(0.97); }
+  to   { opacity: 1; transform: translateY(0) scale(1); }
+}
+`;
+
+function ModalTaskRow({ task, onStatusToggle }: { task: GardenTask; onStatusToggle: (t: GardenTask) => void }) {
+  const isDone = task.status === 'done';
+  const priorityColor =
+    task.source_action === 'high'   ? '#EF745A' :
+    task.source_action === 'medium' ? GOLD :
+    task.source_action === 'low'    ? '#7DC084' : undefined;
+
+  return (
+    <div style={{
+      display: 'flex', alignItems: 'center', gap: '10px',
+      padding: '10px 0', borderBottom: '1px solid rgba(255,255,255,0.05)',
+    }}>
+      <button
+        onClick={() => onStatusToggle(task)}
+        style={{
+          flexShrink: 0, width: '20px', height: '20px', borderRadius: '5px',
+          border: `1.5px solid ${isDone ? '#4A7C59' : 'rgba(255,255,255,0.3)'}`,
+          background: isDone ? '#4A7C59' : 'transparent',
+          cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center',
+          fontSize: '11px', color: 'white', padding: 0,
+        }}
+      >
+        {isDone ? '✓' : ''}
+      </button>
+      <span style={{
+        fontFamily: ASST, fontSize: '14px', flex: 1,
+        color: isDone ? `${PARCH}50` : PARCH,
+        textDecoration: isDone ? 'line-through' : 'none',
+      }}>
+        {task.title}
+      </span>
+      {priorityColor && (
+        <span style={{ width: '7px', height: '7px', borderRadius: '50%', background: priorityColor, flexShrink: 0 }} />
+      )}
+      {task.source_action === 'growing_tracker' && (
+        <span style={{ fontFamily: ASST, fontSize: '11px', color: '#7DC084', flexShrink: 0 }}>🌱 מעקב</span>
+      )}
+    </div>
+  );
+}
+
+function DayDetailModal({ date, tasks, bd, onClose, onStatusToggle, onAddTask }: {
+  date: string;
+  tasks: GardenTask[];
+  bd?: BiodynamicDay;
+  onClose: () => void;
+  onStatusToggle: (t: GardenTask) => void;
+  onAddTask: (date: string, title: string) => void;
+}) {
+  const [addingTask, setAddingTask] = useState(false);
+  const [newTitle,   setNewTitle]   = useState('');
+
+  const pendingTasks = tasks.filter(t => t.status !== 'done');
+  const doneTasks    = tasks.filter(t => t.status === 'done');
+  const dayStyle     = bd ? DAY_TYPE_STYLES[bd.dayType] : null;
+
+  const fullDateHe = new Date(date + 'T12:00:00').toLocaleDateString('he-IL', {
+    weekday: 'long', day: 'numeric', month: 'long',
+  });
+
+  const handleAddSubmit = () => {
+    if (!newTitle.trim()) return;
+    onAddTask(date, newTitle.trim());
+    setNewTitle('');
+    setAddingTask(false);
+  };
+
+  return (
+    <>
+      <style>{MODAL_CSS}</style>
+      {/* Backdrop */}
+      <div
+        onClick={onClose}
+        style={{
+          position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.6)', zIndex: 100,
+          display: 'flex', alignItems: 'center', justifyContent: 'center',
+        }}
+      >
+        {/* Modal card */}
+        <div
+          onClick={e => e.stopPropagation()}
+          style={{
+            background: 'rgba(20,43,22,0.98)', border: '1px solid rgba(245,200,64,0.25)',
+            borderRadius: '16px', padding: '24px',
+            maxWidth: '480px', width: '90%', maxHeight: '80vh', overflowY: 'auto',
+            direction: 'rtl',
+            animation: 'modalIn 0.2s ease-out',
+          }}
+        >
+          {/* Header */}
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '16px' }}>
+            <div>
+              <h2 style={{ fontFamily: FRANK, fontSize: '20px', color: GOLD, margin: '0 0 8px' }}>
+                {fullDateHe}
+              </h2>
+              <div style={{ display: 'flex', gap: '8px', alignItems: 'center', flexWrap: 'wrap' }}>
+                {dayStyle && (
+                  <span style={{
+                    fontFamily: ASST, fontSize: '12px', padding: '3px 10px',
+                    borderRadius: '99px', background: dayStyle.bg, color: dayStyle.color,
+                  }}>
+                    {dayStyle.emoji} יום {dayStyle.label}
+                  </span>
+                )}
+                {bd && (
+                  <span style={{ fontFamily: ASST, fontSize: '12px', color: `${PARCH}70` }}>
+                    {moonEmoji(bd.moonPhasePct)} {bd.moonPhasePct}%
+                  </span>
+                )}
+              </div>
+            </div>
+            <button
+              onClick={onClose}
+              style={{
+                background: 'none', border: 'none', color: `${PARCH}50`,
+                cursor: 'pointer', fontSize: '22px', padding: '0', lineHeight: 1, flexShrink: 0,
+              }}
+            >
+              ×
+            </button>
+          </div>
+
+          {/* Content */}
+          {tasks.length === 0 ? (
+            /* Empty state — Chupchu relaxation message */
+            <div style={{ textAlign: 'center', padding: '20px 0 28px' }}>
+              <div style={{ fontSize: '44px', marginBottom: '14px' }}>🌿</div>
+              <h3 style={{ fontFamily: FRANK, fontSize: '20px', color: GOLD, margin: '0 0 12px' }}>
+                יום מנוחה בגינה
+              </h3>
+              <p style={{ fontFamily: ASST, fontSize: '14px', color: `${PARCH}80`, lineHeight: 1.8, margin: '0 0 14px' }}>
+                אין משימות מתוכננות להיום.<br />
+                זה הזמן המושלם לשבת, להקשיב לגינה,<br />
+                ולפשוט את הנשמה בין הצמחים.
+              </p>
+              <p style={{ fontFamily: FRANK, fontSize: '15px', color: GOLD, margin: 0 }}>
+                — צ'ופצ'ו 🤖
+              </p>
+            </div>
+          ) : (
+            /* Task list */
+            <div style={{ marginBottom: '4px' }}>
+              {pendingTasks.map(task => (
+                <ModalTaskRow key={task.id} task={task} onStatusToggle={onStatusToggle} />
+              ))}
+              {doneTasks.length > 0 && (
+                <>
+                  <div style={{
+                    display: 'flex', alignItems: 'center', gap: '8px',
+                    margin: '14px 0 8px',
+                    color: `${PARCH}40`, fontFamily: ASST, fontSize: '11px',
+                  }}>
+                    <div style={{ flex: 1, height: '1px', background: 'rgba(255,255,255,0.07)' }} />
+                    <span>הושלמו ✓</span>
+                    <div style={{ flex: 1, height: '1px', background: 'rgba(255,255,255,0.07)' }} />
+                  </div>
+                  {doneTasks.map(task => (
+                    <ModalTaskRow key={task.id} task={task} onStatusToggle={onStatusToggle} />
+                  ))}
+                </>
+              )}
+            </div>
+          )}
+
+          {/* Inline add task input */}
+          {addingTask && (
+            <div style={{ display: 'flex', gap: '8px', margin: '12px 0' }}>
+              <input
+                autoFocus
+                type="text"
+                value={newTitle}
+                onChange={e => setNewTitle(e.target.value)}
+                onKeyDown={e => {
+                  if (e.key === 'Enter') handleAddSubmit();
+                  if (e.key === 'Escape') { setAddingTask(false); setNewTitle(''); }
+                }}
+                placeholder="שם המשימה..."
+                style={{
+                  flex: 1, background: 'rgba(255,255,255,0.05)',
+                  border: '1px solid rgba(245,200,64,0.25)',
+                  borderRadius: '8px', padding: '8px 12px',
+                  fontFamily: ASST, fontSize: '13px', color: PARCH,
+                  outline: 'none', direction: 'rtl',
+                }}
+              />
+              <button
+                onClick={handleAddSubmit}
+                disabled={!newTitle.trim()}
+                style={{
+                  background: newTitle.trim() ? GOLD : 'rgba(245,200,64,0.3)',
+                  border: 'none', borderRadius: '8px', padding: '8px 14px',
+                  color: EARTH, fontFamily: FRANK, fontSize: '13px', fontWeight: 700,
+                  cursor: newTitle.trim() ? 'pointer' : 'not-allowed',
+                }}
+              >
+                הוסף
+              </button>
+            </div>
+          )}
+
+          {/* Footer */}
+          <div style={{ display: 'flex', gap: '8px', justifyContent: 'space-between', marginTop: '16px' }}>
+            <button
+              onClick={() => setAddingTask(true)}
+              style={{
+                fontFamily: ASST, fontSize: '13px', color: GOLD,
+                background: 'rgba(245,200,64,0.08)', border: '1px solid rgba(245,200,64,0.2)',
+                borderRadius: '8px', padding: '9px 14px', cursor: 'pointer',
+              }}
+            >
+              + הוסף משימה ליום זה
+            </button>
+            <button
+              onClick={onClose}
+              style={{
+                fontFamily: ASST, fontSize: '13px', color: `${PARCH}60`,
+                background: 'transparent', border: '1px solid rgba(255,255,255,0.1)',
+                borderRadius: '8px', padding: '9px 16px', cursor: 'pointer',
+              }}
+            >
+              סגור
+            </button>
+          </div>
+        </div>
+      </div>
+    </>
+  );
+}
+
 // ── Main Page ─────────────────────────────────────────────────────────────────
 export function TaskCalendarPage() {
   const { session } = useAuthStore();
@@ -570,10 +811,11 @@ export function TaskCalendarPage() {
   const [isLoading,      setIsLoading]      = useState(true);
   const [isBootstrapping, setIsBootstrapping] = useState(false);
   const [noPlan,          setNoPlan]          = useState(false);
-  const [addDate,    setAddDate]    = useState<string | null>(null);
-  const [editTask,   setEditTask]   = useState<GardenTask | null>(null);
-  const [draggingId, setDraggingId] = useState<string | null>(null);
-  const [filter,     setFilter]     = useState<'all' | 'pending' | 'done'>('all');
+  const [addDate,      setAddDate]      = useState<string | null>(null);
+  const [editTask,     setEditTask]     = useState<GardenTask | null>(null);
+  const [draggingId,   setDraggingId]   = useState<string | null>(null);
+  const [filter,       setFilter]       = useState<'all' | 'pending' | 'done'>('all');
+  const [selectedDate, setSelectedDate] = useState<string | null>(null);
 
   const sensors = useSensors(useSensor(PointerSensor, { activationConstraint: { distance: 6 } }));
 
@@ -712,6 +954,18 @@ export function TaskCalendarPage() {
       await loadData();
     }
     setEditTask(null);
+  };
+
+  // Day detail modal
+  const handleDayClick = (date: string) => setSelectedDate(date);
+
+  const handleAddFromModal = async (date: string, title: string) => {
+    try {
+      const newTask = await tasksApi.create(date, title, token);
+      setTasks(prev => [...prev, newTask]);
+    } catch (err) {
+      console.error('create task from modal failed', err);
+    }
   };
 
   // Filter tasks
@@ -919,6 +1173,7 @@ export function TaskCalendarPage() {
                         onEdit={setEditTask}
                         onStatusToggle={handleStatusToggle}
                         onDelete={id => handleDeleteTask(id)}
+                        onDayClick={handleDayClick}
                         draggingId={draggingId}
                       />
                     </div>
@@ -944,6 +1199,7 @@ export function TaskCalendarPage() {
                         onEdit={setEditTask}
                         onStatusToggle={handleStatusToggle}
                         onDelete={id => handleDeleteTask(id)}
+                        onDayClick={handleDayClick}
                         draggingId={draggingId}
                       />
                     ))}
@@ -967,6 +1223,18 @@ export function TaskCalendarPage() {
               )}
             </DragOverlay>
           </DndContext>
+        )}
+
+        {/* Day detail modal */}
+        {selectedDate && (
+          <DayDetailModal
+            date={selectedDate}
+            tasks={tasks.filter(t => t.date === selectedDate)}
+            bd={bdMap[selectedDate]}
+            onClose={() => setSelectedDate(null)}
+            onStatusToggle={handleStatusToggle}
+            onAddTask={handleAddFromModal}
+          />
         )}
 
         {/* Add task modal */}
