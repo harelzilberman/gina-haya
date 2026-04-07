@@ -905,75 +905,66 @@ export function TaskCalendarPage() {
         ) : noPlan && tasks.length === 0 ? null : (
           <DndContext sensors={sensors} onDragStart={handleDragStart} onDragEnd={handleDragEnd}>
             {view === 'week' ? (
-              /* Week view — 7 columns; scrollable with snap on mobile */
+              /* Week view — 2-col vertical grid on mobile, 7-col on desktop */
               <div style={{
-                overflowX: isMobile ? 'auto' : 'visible',
-                WebkitOverflowScrolling: 'touch' as any,
-                scrollSnapType: isMobile ? 'x mandatory' : 'none',
-                marginLeft: isMobile ? '-8px' : 0,
-                marginRight: isMobile ? '-8px' : 0,
-                paddingLeft: isMobile ? '8px' : 0,
-                paddingRight: isMobile ? '8px' : 0,
-              } as React.CSSProperties}>
-                <div style={{
-                  display: 'grid',
-                  gridTemplateColumns: isMobile
-                    ? `repeat(7, calc((100vw - 16px) / 3))`
-                    : 'repeat(7, 1fr)',
-                  gap: '8px',
-                  width: isMobile ? 'max-content' : '100%',
-                  boxSizing: 'border-box',
-                }}>
-                  {days.map(date => {
-                    const { day, num, month: mon } = formatDateHe(date);
-                    const bd = bdMap[date];
-                    const dayStyle = bd ? DAY_TYPE_STYLES[bd.dayType] : null;
-                    return (
-                      <div key={date} style={{ scrollSnapAlign: isMobile ? 'start' : 'none', boxSizing: 'border-box' }}>
-                        {/* Column header */}
-                        <div style={{ textAlign: 'center', marginBottom: '6px' }}>
-                          <div style={{ fontFamily: ASST, fontSize: '11px', color: `${PARCH}55` }}>{day}</div>
-                          <div style={{ fontFamily: FRANK, fontSize: '16px', color: date === today ? GOLD : PARCH, fontWeight: date === today ? 700 : 400 }}>
-                            {num}
-                          </div>
-                          <div style={{ fontFamily: ASST, fontSize: '10px', color: `${PARCH}40` }}>{mon}</div>
-                          {dayStyle && (
-                            <div style={{ fontSize: '12px', marginTop: '2px' }}>{dayStyle.emoji}</div>
-                          )}
-                          {bd && (
-                            <div style={{ fontSize: '12px' }} title={bd.moonPhaseNameHe}>{moonEmoji(bd.moonPhasePct)}</div>
-                          )}
-                          {bd && bd.plantingScore > 0 && (
-                            <div style={{ display: 'flex', gap: '1px', justifyContent: 'center', marginTop: '2px' }}>
-                              {Array.from({ length: 5 }, (_, i) => (
-                                <div
-                                  key={i}
-                                  style={{
-                                    width: '8px', height: '3px', borderRadius: '1px',
-                                    background: i < bd.plantingScore ? (dayStyle?.color ?? GOLD) : 'rgba(255,255,255,0.08)',
-                                  }}
-                                />
-                              ))}
-                            </div>
-                          )}
+                display: 'grid',
+                gridTemplateColumns: isMobile ? '1fr 1fr' : 'repeat(7, 1fr)',
+                gap: '8px',
+                overflowX: 'hidden',
+                boxSizing: 'border-box',
+                width: '100%',
+              }}>
+                {days.map((date, idx) => {
+                  const { day, num, month: mon } = formatDateHe(date);
+                  const bd = bdMap[date];
+                  const dayStyle = bd ? DAY_TYPE_STYLES[bd.dayType] : null;
+                  // On mobile: last day (index 6) spans both columns
+                  const isLast = isMobile && idx === 6;
+                  return (
+                    <div key={date} style={{ gridColumn: isLast ? '1 / -1' : undefined, boxSizing: 'border-box' }}>
+                      {/* Column header */}
+                      <div style={{ textAlign: 'center', marginBottom: '6px' }}>
+                        <div style={{ fontFamily: ASST, fontSize: '11px', color: `${PARCH}55` }}>{day}</div>
+                        <div style={{ fontFamily: FRANK, fontSize: '16px', color: date === today ? GOLD : PARCH, fontWeight: date === today ? 700 : 400 }}>
+                          {num}
                         </div>
-                        <DroppableDayCell
-                          date={date}
-                          bd={bd}
-                          tasks={tasksForDate(date)}
-                          isCurrentMonth={true}
-                          isToday={date === today}
-                          compact={false}
-                          onAdd={setAddDate}
-                          onEdit={setEditTask}
-                          onStatusToggle={handleStatusToggle}
-                          onDelete={id => handleDeleteTask(id)}
-                          draggingId={draggingId}
-                        />
+                        <div style={{ fontFamily: ASST, fontSize: '10px', color: `${PARCH}40` }}>{mon}</div>
+                        {dayStyle && (
+                          <div style={{ fontSize: '12px', marginTop: '2px' }}>{dayStyle.emoji}</div>
+                        )}
+                        {bd && (
+                          <div style={{ fontSize: '12px' }} title={bd.moonPhaseNameHe}>{moonEmoji(bd.moonPhasePct)}</div>
+                        )}
+                        {bd && bd.plantingScore > 0 && (
+                          <div style={{ display: 'flex', gap: '1px', justifyContent: 'center', marginTop: '2px' }}>
+                            {Array.from({ length: 5 }, (_, i) => (
+                              <div
+                                key={i}
+                                style={{
+                                  width: '8px', height: '3px', borderRadius: '1px',
+                                  background: i < bd.plantingScore ? (dayStyle?.color ?? GOLD) : 'rgba(255,255,255,0.08)',
+                                }}
+                              />
+                            ))}
+                          </div>
+                        )}
                       </div>
-                    );
-                  })}
-                </div>
+                      <DroppableDayCell
+                        date={date}
+                        bd={bd}
+                        tasks={tasksForDate(date)}
+                        isCurrentMonth={true}
+                        isToday={date === today}
+                        compact={false}
+                        onAdd={setAddDate}
+                        onEdit={setEditTask}
+                        onStatusToggle={handleStatusToggle}
+                        onDelete={id => handleDeleteTask(id)}
+                        draggingId={draggingId}
+                      />
+                    </div>
+                  );
+                })}
               </div>
             ) : (
               /* Month view — grid of weeks */
