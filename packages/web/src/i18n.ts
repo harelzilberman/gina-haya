@@ -11,7 +11,7 @@ i18n
     fallbackLng: 'he',       // Hebrew is the fallback — not English
     supportedLngs: ['he', 'en'],
     defaultNS: 'common',
-    ns: ['common', 'auth', 'calendar', 'garden', 'mon'],
+    ns: ['common', 'auth', 'calendar', 'garden', 'chupchu'],
     backend: {
       loadPath: '/locales/{{lng}}/{{ns}}.json',
     },

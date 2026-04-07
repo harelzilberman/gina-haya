@@ -12,6 +12,7 @@ export function useToday() {
     api.get<BiodynamicDay>('/api/calendar/today')
       .then(d => {
         console.log('[useToday] received moonPhasePct:', d.moonPhasePct);
+        console.log('[useToday] received moonPhaseAngle:', d.moonPhaseAngle);
         setDay(d);
       })
       .catch(err => {
