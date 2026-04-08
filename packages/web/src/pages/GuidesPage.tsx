@@ -74,31 +74,31 @@ interface GuideContent {
 
 const GUIDE_CONTENT: Record<string, GuideContent> = {
   // Fertilizer
-  f1:  { video: { youtubeId: 'dQw4w9WgXcQ', duration: '3:20' }, article: { slug: 'compost-tea', ready: false }, comingSoon: ['וובינר חי'] },
+  f1:  { video: { youtubeId: 'dQw4w9WgXcQ', duration: '3:20' }, article: { slug: 'compost', ready: true }, comingSoon: ['וובינר חי'] },
   f2:  { comingSoon: ['סרטון', 'מאמר', 'וובינר'] },
   f3:  { comingSoon: ['סרטון', 'מאמר'] },
   f4:  { comingSoon: ['סרטון', 'מאמר'] },
   // Pest control
-  p1:  { video: { youtubeId: 'dQw4w9WgXcQ', duration: '2:30' }, article: { slug: 'neem-oil', ready: false }, comingSoon: ['וובינר'] },
-  p2:  { comingSoon: ['סרטון', 'מאמר'] },
+  p1:  { video: { youtubeId: 'dQw4w9WgXcQ', duration: '2:30' }, article: { slug: 'pest-management', ready: true }, comingSoon: ['וובינר'] },
+  p2:  { article: { slug: 'pest-management', ready: true }, comingSoon: ['סרטון'] },
   p3:  { comingSoon: ['סרטון', 'מאמר'] },
-  p4:  { comingSoon: ['סרטון', 'מאמר'] },
+  p4:  { article: { slug: 'pest-management', ready: true }, comingSoon: ['סרטון'] },
   // Compost
-  c1:  { video: { youtubeId: 'dQw4w9WgXcQ', duration: '10:30' }, article: { slug: 'compost-basics', ready: false } },
-  c2:  { comingSoon: ['סרטון', 'מאמר'] },
+  c1:  { video: { youtubeId: 'dQw4w9WgXcQ', duration: '10:30' }, article: { slug: 'compost', ready: true } },
+  c2:  { article: { slug: 'compost', ready: true }, comingSoon: ['סרטון'] },
   c3:  { comingSoon: ['סרטון', 'מאמר'] },
   // BD preparations
-  bd1: { video: { youtubeId: 'dQw4w9WgXcQ', duration: '12:00' }, article: { slug: 'bd-500', ready: false } },
-  bd2: { article: { slug: 'bd-501', ready: false }, comingSoon: ['סרטון'] },
+  bd1: { video: { youtubeId: 'dQw4w9WgXcQ', duration: '12:00' }, article: { slug: 'calendar', ready: true } },
+  bd2: { article: { slug: 'calendar', ready: true }, comingSoon: ['סרטון'] },
   bd3: { comingSoon: ['סרטון', 'מאמר'] },
-  bd4: { comingSoon: ['סרטון', 'מאמר'] },
+  bd4: { article: { slug: 'calendar', ready: true }, comingSoon: ['סרטון'] },
   // Companions
-  co1: { video: { youtubeId: 'dQw4w9WgXcQ', duration: '0:45' }, article: { slug: 'tomato-basil', ready: false } },
+  co1: { video: { youtubeId: 'dQw4w9WgXcQ', duration: '0:45' }, comingSoon: ['מאמר'] },
   co2: { comingSoon: ['סרטון', 'מאמר'] },
   co3: { comingSoon: ['סרטון', 'מאמר'] },
   // Techniques
-  t1:  { video: { youtubeId: 'dQw4w9WgXcQ', duration: '15:00' }, article: { slug: 'fruit-tree-pruning', ready: false } },
-  t2:  { comingSoon: ['סרטון', 'מאמר'] },
+  t1:  { video: { youtubeId: 'dQw4w9WgXcQ', duration: '15:00' }, article: { slug: 'trees', ready: true } },
+  t2:  { article: { slug: 'soil-preparation', ready: true }, comingSoon: ['סרטון'] },
   t3:  { comingSoon: ['סרטון', 'מאמר'] },
   t4:  { comingSoon: ['סרטון', 'מאמר'] },
   t5:  { comingSoon: ['סרטון', 'מאמר'] },

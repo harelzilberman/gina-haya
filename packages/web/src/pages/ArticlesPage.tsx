@@ -1,8 +1,24 @@
 import { useState, useEffect } from 'react';
 import { api } from '../api/client';
-import { ARTICLE_CATEGORIES } from '@gina-haya/shared';
-import type { ArticleMeta } from '@gina-haya/shared';
+import i18n from '../i18n';
 import { ArticleReader } from '../components/ArticleReader';
+
+interface ArticleMeta {
+  slug: string;
+  title: string;
+  description: string;
+  readTimeMinutes: number;
+  category?: string | null;
+}
+
+const ARTICLE_CATEGORIES = [
+  { id: 'fertilizers',  labelHe: 'דשנים טבעיים',   labelEn: 'Fertilizers',        emoji: '🌱' },
+  { id: 'pest-control', labelHe: 'הדברה',           labelEn: 'Pest Control',       emoji: '🐛' },
+  { id: 'compost',      labelHe: 'קומפוסט',         labelEn: 'Compost',            emoji: '♻️' },
+  { id: 'bd-preps',     labelHe: 'פרפרטים BD',      labelEn: 'BD Preps',           emoji: '🌙' },
+  { id: 'companion',    labelHe: 'שיתופי פעולה',    labelEn: 'Companion Planting', emoji: '🤝' },
+  { id: 'techniques',   labelHe: 'טכניקות גינון',   labelEn: 'Techniques',         emoji: '🔧' },
+] as const;
 
 const GOLD   = '#F5C840';
 const PARCH  = '#EDE0C4';
@@ -16,7 +32,8 @@ export function ArticlesPage() {
   const [activeFilter, setActiveFilter] = useState<string>('all');
 
   useEffect(() => {
-    api.get<ArticleMeta[]>('/api/articles')
+    const lang = i18n.language === 'en' ? 'en' : 'he';
+    api.get<ArticleMeta[]>(`/api/articles?lang=${lang}`)
       .then(setArticles)
       .catch(() => setArticles([]))
       .finally(() => setLoading(false));
@@ -123,18 +140,6 @@ function ArticleCard({ article, onClick }: { article: ArticleMeta; onClick: () =
         transform: hovered ? 'translateY(-2px)' : 'none',
       }}
     >
-      {/* Hero image */}
-      {article.heroImage && (
-        <div style={{ height: '160px', overflow: 'hidden' }}>
-          <img
-            src={article.heroImage}
-            alt={article.titleHe}
-            style={{ width: '100%', height: '100%', objectFit: 'cover', opacity: 0.7 }}
-            onError={e => { (e.target as HTMLImageElement).parentElement!.style.display = 'none'; }}
-          />
-        </div>
-      )}
-
       <div style={{ padding: '16px' }}>
         {/* Category + read time */}
         <div style={{ display: 'flex', gap: '8px', alignItems: 'center', marginBottom: '10px' }}>
@@ -158,26 +163,23 @@ function ArticleCard({ article, onClick }: { article: ArticleMeta; onClick: () =
           fontFamily: FRANK, fontSize: '16px', color: hovered ? GOLD : PARCH,
           margin: '0 0 8px', lineHeight: 1.35, transition: 'color 0.15s',
         }}>
-          {article.titleHe}
+          {article.title}
         </h3>
 
         {/* Description */}
-        {article.descriptionHe && (
+        {article.description && (
           <p style={{
             fontFamily: ASSIST, fontSize: '12px', color: `${PARCH}60`,
             margin: '0 0 12px', lineHeight: 1.6,
             display: '-webkit-box', WebkitLineClamp: 2,
             WebkitBoxOrient: 'vertical', overflow: 'hidden',
           }}>
-            {article.descriptionHe}
+            {article.description}
           </p>
         )}
 
         {/* Footer */}
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-          <span style={{ fontFamily: ASSIST, fontSize: '11px', color: `${PARCH}40` }}>
-            {article.author}
-          </span>
+        <div style={{ display: 'flex', justifyContent: 'flex-end', alignItems: 'center' }}>
           <span style={{ color: GOLD, fontSize: '14px' }}>קרא ›</span>
         </div>
       </div>

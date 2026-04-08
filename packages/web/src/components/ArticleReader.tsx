@@ -1,14 +1,48 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
 import ReactMarkdown from 'react-markdown';
 import { api } from '../api/client';
-import type { Article, ARTICLE_CATEGORIES } from '@gina-haya/shared';
-import { ARTICLE_CATEGORIES as CATS } from '@gina-haya/shared';
+import i18n from '../i18n';
+
+// ── Local type ─────────────────────────────────────────────────────────────
+interface Article {
+  slug: string;
+  title: string;
+  description: string;
+  content: string;
+  readTimeMinutes: number;
+  category?: string | null;
+}
+
+// ── Local categories catalog ───────────────────────────────────────────────
+const ARTICLE_CATEGORIES = [
+  { id: 'fertilizers',  labelHe: 'דשנים טבעיים',   labelEn: 'Fertilizers',        emoji: '🌱' },
+  { id: 'pest-control', labelHe: 'הדברה',           labelEn: 'Pest Control',       emoji: '🐛' },
+  { id: 'compost',      labelHe: 'קומפוסט',         labelEn: 'Compost',            emoji: '♻️' },
+  { id: 'bd-preps',     labelHe: 'פרפרטים BD',      labelEn: 'BD Preps',           emoji: '🌙' },
+  { id: 'companion',    labelHe: 'שיתופי פעולה',    labelEn: 'Companion Planting', emoji: '🤝' },
+  { id: 'techniques',   labelHe: 'טכניקות גינון',   labelEn: 'Techniques',         emoji: '🔧' },
+] as const;
 
 // ── Design tokens ──────────────────────────────────────────────────────────
 const GOLD   = '#F5C840';
 const PARCH  = '#EDE0C4';
 const FRANK  = '"Frank Ruhl Libre", Georgia, serif';
 const ASSIST = '"Assistant", "Heebo", sans-serif';
+
+// ── Image placeholder component ────────────────────────────────────────────
+const ImagePlaceholder = () => (
+  <div style={{
+    display: 'flex', alignItems: 'center', justifyContent: 'center',
+    height: '160px', margin: '1.5rem 0',
+    background: 'rgba(245,200,64,0.05)',
+    border: '1px dashed rgba(245,200,64,0.2)',
+    borderRadius: '10px',
+    fontFamily: ASSIST, fontSize: '14px', color: `${PARCH}50`,
+    gap: '8px',
+  }}>
+    🖼️ תמונה בקרוב
+  </div>
+);
 
 // ── Markdown component overrides ───────────────────────────────────────────
 const MD: Record<string, React.ComponentType<any>> = {
@@ -22,11 +56,17 @@ const MD: Record<string, React.ComponentType<any>> = {
       {children}
     </h3>
   ),
-  p: ({ children }) => (
-    <p style={{ fontFamily: ASSIST, fontSize: '16px', color: `${PARCH}DD`, lineHeight: 1.85, margin: '0 0 1rem' }}>
-      {children}
-    </p>
-  ),
+  p: ({ children }) => {
+    // Render IMAGE_PLACEHOLDER marker as the placeholder component
+    if (typeof children === 'string' && children === '__IMAGE_PLACEHOLDER__') {
+      return <ImagePlaceholder />;
+    }
+    return (
+      <p style={{ fontFamily: ASSIST, fontSize: '16px', color: `${PARCH}DD`, lineHeight: 1.85, margin: '0 0 1rem' }}>
+        {children}
+      </p>
+    );
+  },
   blockquote: ({ children }) => (
     <blockquote style={{
       borderRight: `3px solid ${GOLD}`,
@@ -99,7 +139,8 @@ export function ArticleReader({ slug, onClose }: Props) {
     setLoading(true);
     setError(false);
     setArticle(null);
-    api.get<Article>(`/api/articles/${slug}`)
+    const lang = i18n.language === 'en' ? 'en' : 'he';
+    api.get<Article>(`/api/articles/${slug}?lang=${lang}`)
       .then(setArticle)
       .catch(() => setError(true))
       .finally(() => setLoading(false));
@@ -112,9 +153,14 @@ export function ArticleReader({ slug, onClose }: Props) {
     setProgress(Math.min(100, Math.max(0, pct || 0)));
   }, []);
 
-  const category = article
-    ? CATS.find(c => c.id === article.category)
+  const category = article?.category
+    ? ARTICLE_CATEGORIES.find(c => c.id === article.category)
     : null;
+
+  // Replace HTML comment IMAGE PLACEHOLDERs with a text marker ReactMarkdown can route
+  const processedContent = article?.content
+    .replace(/<!--\s*IMAGE PLACEHOLDER\s*-->/gi, '\n__IMAGE_PLACEHOLDER__\n')
+    ?? '';
 
   return (
     <div
@@ -204,22 +250,6 @@ export function ArticleReader({ slug, onClose }: Props) {
 
       {article && !loading && (
         <>
-          {/* Hero image */}
-          {article.heroImage && (
-            <div style={{ width: '100%', height: '240px', overflow: 'hidden', position: 'relative' }}>
-              <img
-                src={article.heroImage}
-                alt={article.titleHe}
-                style={{ width: '100%', height: '100%', objectFit: 'cover', opacity: 0.6 }}
-                onError={e => { (e.target as HTMLImageElement).parentElement!.style.display = 'none'; }}
-              />
-              <div style={{
-                position: 'absolute', inset: 0,
-                background: 'linear-gradient(to bottom, rgba(15,35,17,0) 40%, rgba(15,35,17,1) 100%)',
-              }} />
-            </div>
-          )}
-
           {/* Article header */}
           <div style={{ maxWidth: '680px', margin: '0 auto', padding: '28px 24px 0' }}>
             {/* Category + read time */}
@@ -245,17 +275,17 @@ export function ArticleReader({ slug, onClose }: Props) {
               fontFamily: FRANK, fontSize: '28px', color: GOLD,
               margin: '0 0 20px', lineHeight: 1.25,
             }}>
-              {article.titleHe}
+              {article.title}
             </h1>
 
-            {article.descriptionHe && (
+            {article.description && (
               <p style={{
                 fontFamily: ASSIST, fontSize: '15px', color: `${PARCH}80`,
                 lineHeight: 1.7, margin: '0 0 28px',
                 borderRight: `3px solid rgba(245,200,64,0.25)`,
                 paddingRight: '14px',
               }}>
-                {article.descriptionHe}
+                {article.description}
               </p>
             )}
 
@@ -265,29 +295,17 @@ export function ArticleReader({ slug, onClose }: Props) {
           {/* Article body */}
           <div style={{ maxWidth: '680px', margin: '0 auto', padding: '0 24px' }}>
             <ReactMarkdown components={MD}>
-              {article.content}
+              {processedContent}
             </ReactMarkdown>
           </div>
 
           {/* Footer */}
           <div style={{
-            maxWidth: '680px', margin: '0 auto',
+            maxWidth: '680px', margin: '40px auto 0',
             padding: '32px 24px 60px',
             borderTop: '1px solid rgba(245,200,64,0.12)',
-            marginTop: '40px',
           }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '14px' }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                <span style={{ fontSize: '28px' }}>🌕</span>
-                <div>
-                  <div style={{ fontFamily: FRANK, fontSize: '14px', color: GOLD }}>
-                    נכתב על ידי {article.author}
-                  </div>
-                  <div style={{ fontFamily: ASSIST, fontSize: '11px', color: `${PARCH}50` }}>
-                    {new Date(article.publishedAt + 'T12:00:00').toLocaleDateString('he-IL', { day: 'numeric', month: 'long', year: 'numeric' })}
-                  </div>
-                </div>
-              </div>
+            <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
               <button
                 onClick={onClose}
                 style={{
