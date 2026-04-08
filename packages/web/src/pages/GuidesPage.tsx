@@ -1,6 +1,5 @@
 import { useState, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { ArticleReader } from '../components/ArticleReader';
 import i18n from '../i18n';
 import { ARTICLES } from '../data/articles';
 
@@ -77,34 +76,34 @@ interface GuideContent {
 
 const GUIDE_CONTENT: Record<string, GuideContent> = {
   // Fertilizer
-  f1:  { video: { youtubeId: 'dQw4w9WgXcQ', duration: '3:20' }, article: { slug: 'compost', ready: true }, comingSoon: ['וובינר חי'] },
-  f2:  { comingSoon: ['סרטון', 'מאמר', 'וובינר'] },
-  f3:  { comingSoon: ['סרטון', 'מאמר'] },
+  f1:  { video: { youtubeId: 'dQw4w9WgXcQ', duration: '3:20' }, article: { slug: 'compost-tea', ready: true }, comingSoon: ['וובינר חי'] },
+  f2:  { article: { slug: 'seaweed-spray', ready: true }, comingSoon: ['סרטון', 'וובינר'] },
+  f3:  { article: { slug: 'green-manure', ready: true }, comingSoon: ['סרטון'] },
   f4:  { comingSoon: ['סרטון', 'מאמר'] },
   // Pest control
-  p1:  { video: { youtubeId: 'dQw4w9WgXcQ', duration: '2:30' }, article: { slug: 'pest-management', ready: true }, comingSoon: ['וובינר'] },
-  p2:  { article: { slug: 'pest-management', ready: true }, comingSoon: ['סרטון'] },
+  p1:  { video: { youtubeId: 'dQw4w9WgXcQ', duration: '2:30' }, article: { slug: 'neem-oil', ready: true }, comingSoon: ['וובינר'] },
+  p2:  { article: { slug: 'beneficial-insects', ready: true }, comingSoon: ['סרטון'] },
   p3:  { comingSoon: ['סרטון', 'מאמר'] },
-  p4:  { article: { slug: 'pest-management', ready: true }, comingSoon: ['סרטון'] },
+  p4:  { article: { slug: 'companion-planting', ready: true }, comingSoon: ['סרטון'] },
   // Compost
   c1:  { video: { youtubeId: 'dQw4w9WgXcQ', duration: '10:30' }, article: { slug: 'compost', ready: true } },
-  c2:  { article: { slug: 'compost', ready: true }, comingSoon: ['סרטון'] },
+  c2:  { article: { slug: 'vermicompost', ready: true }, comingSoon: ['סרטון'] },
   c3:  { comingSoon: ['סרטון', 'מאמר'] },
   // BD preparations
-  bd1: { video: { youtubeId: 'dQw4w9WgXcQ', duration: '12:00' }, article: { slug: 'calendar', ready: true } },
-  bd2: { article: { slug: 'calendar', ready: true }, comingSoon: ['סרטון'] },
+  bd1: { video: { youtubeId: 'dQw4w9WgXcQ', duration: '12:00' }, comingSoon: ['מאמר'] },
+  bd2: { comingSoon: ['סרטון', 'מאמר'] },
   bd3: { comingSoon: ['סרטון', 'מאמר'] },
-  bd4: { article: { slug: 'calendar', ready: true }, comingSoon: ['סרטון'] },
+  bd4: { comingSoon: ['סרטון', 'מאמר'] },
   // Companions
-  co1: { video: { youtubeId: 'dQw4w9WgXcQ', duration: '0:45' }, comingSoon: ['מאמר'] },
-  co2: { comingSoon: ['סרטון', 'מאמר'] },
+  co1: { video: { youtubeId: 'dQw4w9WgXcQ', duration: '0:45' }, article: { slug: 'companion-planting', ready: true } },
+  co2: { article: { slug: 'companion-planting', ready: true }, comingSoon: ['סרטון'] },
   co3: { comingSoon: ['סרטון', 'מאמר'] },
   // Techniques
-  t1:  { video: { youtubeId: 'dQw4w9WgXcQ', duration: '15:00' }, article: { slug: 'trees', ready: true } },
-  t2:  { article: { slug: 'soil-preparation', ready: true }, comingSoon: ['סרטון'] },
-  t3:  { comingSoon: ['סרטון', 'מאמר'] },
+  t1:  { video: { youtubeId: 'dQw4w9WgXcQ', duration: '15:00' }, comingSoon: ['מאמר'] },
+  t2:  { article: { slug: 'raised-vs-ground', ready: true }, comingSoon: ['סרטון'] },
+  t3:  { article: { slug: 'drip-irrigation', ready: true }, comingSoon: ['סרטון'] },
   t4:  { comingSoon: ['סרטון', 'מאמר'] },
-  t5:  { comingSoon: ['סרטון', 'מאמר'] },
+  t5:  { article: { slug: 'mulching', ready: true }, comingSoon: ['סרטון'] },
 };
 
 const SUBJECT_MODAL_CSS = `
@@ -721,9 +720,9 @@ function ArticleGuideCard({
 }
 
 export function GuidesPage() {
+  const navigate = useNavigate();
   const [subjectVideo, setSubjectVideo] = useState<Video | null>(null);  // subject popup
   const [playVideo,    setPlayVideo]    = useState<Video | null>(null);  // YouTube embed
-  const [articleSlug,  setArticleSlug]  = useState<string | null>(null); // article reader
   const [activeFilter, setActiveFilter] = useState<string>('all');
 
   const filteredCategories = activeFilter === 'all'
@@ -793,7 +792,7 @@ export function GuidesPage() {
           video={subjectVideo}
           onClose={() => setSubjectVideo(null)}
           onPlayVideo={v => { setSubjectVideo(null); setPlayVideo(v); }}
-          onOpenArticle={slug => { setSubjectVideo(null); setArticleSlug(slug); }}
+          onOpenArticle={slug => { setSubjectVideo(null); navigate('/articles/' + slug); }}
         />
       )}
 
@@ -802,10 +801,7 @@ export function GuidesPage() {
         <VideoModal video={playVideo} onClose={() => setPlayVideo(null)} />
       )}
 
-      {/* Article reader */}
-      {articleSlug && (
-        <ArticleReader slug={articleSlug} onClose={() => setArticleSlug(null)} />
-      )}
+
     </div>
   );
 }
