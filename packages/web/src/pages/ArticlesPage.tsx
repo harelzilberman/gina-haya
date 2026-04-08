@@ -1,55 +1,44 @@
-import { useState, useEffect } from 'react';
-import { api } from '../api/client';
-import i18n from '../i18n';
-import { ArticleReader } from '../components/ArticleReader';
-
-interface ArticleMeta {
-  slug: string;
-  title: string;
-  description: string;
-  readTimeMinutes: number;
-  category?: string | null;
-}
-
-const ARTICLE_CATEGORIES = [
-  { id: 'fertilizers',  labelHe: 'דשנים טבעיים',   labelEn: 'Fertilizers',        emoji: '🌱' },
-  { id: 'pest-control', labelHe: 'הדברה',           labelEn: 'Pest Control',       emoji: '🐛' },
-  { id: 'compost',      labelHe: 'קומפוסט',         labelEn: 'Compost',            emoji: '♻️' },
-  { id: 'bd-preps',     labelHe: 'פרפרטים BD',      labelEn: 'BD Preps',           emoji: '🌙' },
-  { id: 'companion',    labelHe: 'שיתופי פעולה',    labelEn: 'Companion Planting', emoji: '🤝' },
-  { id: 'techniques',   labelHe: 'טכניקות גינון',   labelEn: 'Techniques',         emoji: '🔧' },
-] as const;
+import { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
+import { ARTICLES, type ArticleEntry } from '../data/articles';
 
 const GOLD   = '#F5C840';
 const PARCH  = '#EDE0C4';
 const FRANK  = '"Frank Ruhl Libre", Georgia, serif';
 const ASSIST = '"Assistant", "Heebo", sans-serif';
 
+const CATEGORY_FILTERS = [
+  { id: 'all',          labelHe: '✨ הכל',           labelEn: '✨ All' },
+  { id: 'Natural Fertilizers', labelHe: 'דשנים טבעיים',  labelEn: 'Natural Fertilizers', emoji: '🌱' },
+  { id: 'Pest Control', labelHe: 'הדברה',            labelEn: 'Pest Control',          emoji: '🐛' },
+  { id: 'Compost',      labelHe: 'קומפוסט',          labelEn: 'Compost',               emoji: '♻️' },
+  { id: 'BD Preps',     labelHe: 'פרפרטים BD',       labelEn: 'BD Preps',              emoji: '🌙' },
+  { id: 'Companion Planting', labelHe: 'שיתופי פעולה', labelEn: 'Companion Planting',  emoji: '🤝' },
+  { id: 'Techniques',   labelHe: 'טכניקות גינון',    labelEn: 'Techniques',            emoji: '🔧' },
+] as const;
+
 export function ArticlesPage() {
-  const [articles,    setArticles]    = useState<ArticleMeta[]>([]);
-  const [loading,     setLoading]     = useState(true);
-  const [activeSlug,  setActiveSlug]  = useState<string | null>(null);
+  const { i18n } = useTranslation();
+  const navigate  = useNavigate();
+  const lang: 'he' | 'en' = i18n.language === 'en' ? 'en' : 'he';
+  const isRTL = lang === 'he';
+
   const [activeFilter, setActiveFilter] = useState<string>('all');
 
-  useEffect(() => {
-    const lang = i18n.language === 'en' ? 'en' : 'he';
-    api.get<ArticleMeta[]>(`/api/articles?lang=${lang}`)
-      .then(setArticles)
-      .catch(() => setArticles([]))
-      .finally(() => setLoading(false));
-  }, []);
-
   const filtered = activeFilter === 'all'
-    ? articles
-    : articles.filter(a => a.category === activeFilter);
+    ? ARTICLES
+    : ARTICLES.filter(a => a.categoryEn === activeFilter);
 
-  if (activeSlug) {
-    return <ArticleReader slug={activeSlug} onClose={() => setActiveSlug(null)} />;
-  }
+  const heading    = lang === 'he' ? '📖 מאמרים' : '📖 Articles';
+  const subheading = lang === 'he'
+    ? "מדריכים מעמיקים לגינון ביודינמי — נכתבים על ידי צ'ופצ'ו"
+    : 'In-depth guides to biodynamic gardening — written by Chupchu';
+  const emptyMsg  = lang === 'he' ? 'מאמרים בדרך...' : 'Articles coming soon...';
 
   return (
     <div
-      dir="rtl"
+      dir={isRTL ? 'rtl' : 'ltr'}
       style={{
         minHeight: '100vh',
         background: 'linear-gradient(180deg, #0e1e0f 0%, #142B16 30%, #0a1a0c 100%)',
@@ -60,60 +49,56 @@ export function ArticlesPage() {
       {/* Header */}
       <div style={{ marginBottom: '32px' }}>
         <h1 style={{ fontFamily: FRANK, fontSize: '32px', color: GOLD, margin: '0 0 8px' }}>
-          📖 מאמרים
+          {heading}
         </h1>
         <p style={{ fontFamily: ASSIST, fontSize: '15px', color: `${PARCH}60`, margin: 0 }}>
-          מדריכים מעמיקים לגינון ביודינמי — נכתבים על ידי צ'ופצ'ו
+          {subheading}
         </p>
       </div>
 
       {/* Category filter */}
       <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap', marginBottom: '32px' }}>
-        {[{ id: 'all', labelHe: '✨ הכל', emoji: '' }, ...ARTICLE_CATEGORIES].map(cat => (
-          <button
-            key={cat.id}
-            onClick={() => setActiveFilter(cat.id)}
-            style={{
-              fontFamily: ASSIST, fontSize: '13px',
-              padding: '6px 16px', borderRadius: '99px',
-              border: `1px solid ${activeFilter === cat.id ? GOLD : 'rgba(245,200,64,0.2)'}`,
-              background: activeFilter === cat.id ? 'rgba(245,200,64,0.15)' : 'transparent',
-              color: activeFilter === cat.id ? GOLD : `${PARCH}60`,
-              cursor: 'pointer', transition: 'all 0.15s',
-            }}
-          >
-            {'emoji' in cat && cat.emoji ? `${cat.emoji} ` : ''}{cat.labelHe}
-          </button>
-        ))}
+        {CATEGORY_FILTERS.map(cat => {
+          const label = lang === 'he' ? cat.labelHe : cat.labelEn;
+          const active = activeFilter === cat.id;
+          return (
+            <button
+              key={cat.id}
+              onClick={() => setActiveFilter(cat.id)}
+              style={{
+                fontFamily: ASSIST, fontSize: '13px',
+                padding: '6px 16px', borderRadius: '99px',
+                border: `1px solid ${active ? GOLD : 'rgba(245,200,64,0.2)'}`,
+                background: active ? 'rgba(245,200,64,0.15)' : 'transparent',
+                color: active ? GOLD : `${PARCH}60`,
+                cursor: 'pointer', transition: 'all 0.15s',
+              }}
+            >
+              {'emoji' in cat ? `${cat.emoji} ` : ''}{label}
+            </button>
+          );
+        })}
       </div>
 
       {/* Grid */}
-      {loading ? (
-        <div style={{ textAlign: 'center', padding: '60px 0' }}>
-          <div style={{ fontSize: '48px', marginBottom: '12px' }}>📖</div>
-          <p style={{ fontFamily: FRANK, fontSize: '18px', color: GOLD, margin: 0 }}>טוען מאמרים...</p>
-        </div>
-      ) : filtered.length === 0 ? (
+      {filtered.length === 0 ? (
         <div style={{ textAlign: 'center', padding: '60px 0' }}>
           <div style={{ fontSize: '48px', marginBottom: '12px' }}>🌱</div>
           <p style={{ fontFamily: FRANK, fontSize: '18px', color: GOLD, margin: '0 0 8px' }}>
-            {articles.length === 0 ? 'מאמרים בדרך...' : 'אין מאמרים בקטגוריה זו'}
+            {emptyMsg}
           </p>
           <p style={{ fontFamily: ASSIST, fontSize: '13px', color: `${PARCH}50`, margin: 0 }}>
-            צ'ופצ'ו עובד על התוכן 🌿
+            {lang === 'he' ? "צ'ופצ'ו עובד על התוכן 🌿" : 'Chupchu is working on it 🌿'}
           </p>
         </div>
       ) : (
-        <div style={{
-          display: 'grid',
-          gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))',
-          gap: '20px',
-        }}>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: '20px' }}>
           {filtered.map(article => (
             <ArticleCard
-              key={article.slug}
+              key={article.id}
               article={article}
-              onClick={() => setActiveSlug(article.slug)}
+              lang={lang}
+              onClick={() => navigate(`/articles/${article.id}`)}
             />
           ))}
         </div>
@@ -122,9 +107,21 @@ export function ArticlesPage() {
   );
 }
 
-function ArticleCard({ article, onClick }: { article: ArticleMeta; onClick: () => void }) {
+function ArticleCard({
+  article,
+  lang,
+  onClick,
+}: {
+  article: ArticleEntry;
+  lang: 'he' | 'en';
+  onClick: () => void;
+}) {
   const [hovered, setHovered] = useState(false);
-  const cat = ARTICLE_CATEGORIES.find(c => c.id === article.category);
+
+  const title       = lang === 'he' ? article.titleHe       : article.titleEn;
+  const description = lang === 'he' ? article.metaDescriptionHe : article.metaDescriptionEn;
+  const category    = lang === 'he' ? article.categoryHe    : article.categoryEn;
+  const readLabel   = lang === 'he' ? 'קרא ›' : 'Read ›';
 
   return (
     <div
@@ -141,46 +138,31 @@ function ArticleCard({ article, onClick }: { article: ArticleMeta; onClick: () =
       }}
     >
       <div style={{ padding: '16px' }}>
-        {/* Category + read time */}
-        <div style={{ display: 'flex', gap: '8px', alignItems: 'center', marginBottom: '10px' }}>
-          {cat && (
-            <span style={{
-              fontFamily: ASSIST, fontSize: '10px',
-              background: 'rgba(245,200,64,0.1)', color: GOLD,
-              border: '1px solid rgba(245,200,64,0.2)',
-              borderRadius: '99px', padding: '2px 8px',
-            }}>
-              {cat.emoji} {cat.labelHe}
-            </span>
-          )}
-          <span style={{ fontFamily: ASSIST, fontSize: '11px', color: `${PARCH}45` }}>
-            {article.readTimeMinutes} דק׳
+        {/* Category */}
+        <div style={{ marginBottom: '10px' }}>
+          <span style={{ fontFamily: ASSIST, fontSize: '10px', background: 'rgba(245,200,64,0.1)', color: GOLD, border: '1px solid rgba(245,200,64,0.2)', borderRadius: '99px', padding: '2px 8px' }}>
+            {category}
           </span>
         </div>
 
         {/* Title */}
-        <h3 style={{
-          fontFamily: FRANK, fontSize: '16px', color: hovered ? GOLD : PARCH,
-          margin: '0 0 8px', lineHeight: 1.35, transition: 'color 0.15s',
-        }}>
-          {article.title}
+        <h3 style={{ fontFamily: FRANK, fontSize: '16px', color: hovered ? GOLD : PARCH, margin: '0 0 8px', lineHeight: 1.35, transition: 'color 0.15s' }}>
+          {title}
         </h3>
 
         {/* Description */}
-        {article.description && (
-          <p style={{
-            fontFamily: ASSIST, fontSize: '12px', color: `${PARCH}60`,
-            margin: '0 0 12px', lineHeight: 1.6,
-            display: '-webkit-box', WebkitLineClamp: 2,
-            WebkitBoxOrient: 'vertical', overflow: 'hidden',
-          }}>
-            {article.description}
+        {description && (
+          <p style={{ fontFamily: ASSIST, fontSize: '12px', color: `${PARCH}60`, margin: '0 0 12px', lineHeight: 1.6, display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>
+            {description}
           </p>
         )}
 
         {/* Footer */}
-        <div style={{ display: 'flex', justifyContent: 'flex-end', alignItems: 'center' }}>
-          <span style={{ color: GOLD, fontSize: '14px' }}>קרא ›</span>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+          <span style={{ fontFamily: ASSIST, fontSize: '11px', color: `${PARCH}40` }}>
+            {new Date(article.publishedAt + 'T12:00:00').toLocaleDateString(lang === 'he' ? 'he-IL' : 'en-US', { day: 'numeric', month: 'long', year: 'numeric' })}
+          </span>
+          <span style={{ color: GOLD, fontSize: '14px' }}>{readLabel}</span>
         </div>
       </div>
     </div>

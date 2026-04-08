@@ -16,6 +16,7 @@ import { PlanPage } from './pages/PlanPage';
 import { MapPage }  from './pages/MapPage';
 import { GuidesPage } from './pages/GuidesPage';
 import { ArticlesPage } from './pages/ArticlesPage';
+import { ArticlePage } from './pages/ArticlePage';
 import { TaskCalendarPage } from './pages/TaskCalendarPage';
 import { DashboardPage } from './pages/DashboardPage';
 import { PrivacyPolicyPage } from './pages/PrivacyPolicyPage';
@@ -189,6 +190,14 @@ export default function App() {
             element={
               <ProtectedRoute>
                 <ArticlesPage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/articles/:slug"
+            element={
+              <ProtectedRoute>
+                <ArticlePage />
               </ProtectedRoute>
             }
           />
