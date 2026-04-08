@@ -1,3 +1,9 @@
+export interface ArticleImages {
+  hero: string;
+  steps?: string;
+  results?: string;
+}
+
 export interface ArticleEntry {
   id: string;
   titleHe: string;
@@ -9,6 +15,7 @@ export interface ArticleEntry {
   filenameHe: string;
   filenameEn: string;
   publishedAt: string;
+  images: ArticleImages | null;
 }
 
 export const ARTICLES: ArticleEntry[] = [
@@ -23,6 +30,11 @@ export const ARTICLES: ArticleEntry[] = [
     filenameHe: '01_תה_קומפוסט.md',
     filenameEn: '01_compost_tea.md',
     publishedAt: '2026-04-08',
+    images: {
+      hero:    '/articles/images/compost-tea/hero.png',
+      steps:   '/articles/images/compost-tea/steps.png',
+      results: '/articles/images/compost-tea/results.png',
+    },
   },
   {
     id: 'seaweed-spray',
@@ -35,6 +47,7 @@ export const ARTICLES: ArticleEntry[] = [
     filenameHe: '02_ריסוס_אצות_ים.md',
     filenameEn: '02_seaweed_spray.md',
     publishedAt: '2026-04-08',
+    images: null,
   },
   {
     id: 'green-manure',
@@ -47,6 +60,7 @@ export const ARTICLES: ArticleEntry[] = [
     filenameHe: '03_דשן_ירוק.md',
     filenameEn: '03_green_manure.md',
     publishedAt: '2026-04-08',
+    images: null,
   },
   {
     id: 'neem-oil',
@@ -59,6 +73,7 @@ export const ARTICLES: ArticleEntry[] = [
     filenameHe: '04_שמן_נים.md',
     filenameEn: '04_neem_oil.md',
     publishedAt: '2026-04-08',
+    images: null,
   },
   {
     id: 'beneficial-insects',
@@ -71,6 +86,7 @@ export const ARTICLES: ArticleEntry[] = [
     filenameHe: '05_חרקים_מועילים.md',
     filenameEn: '05_beneficial_insects.md',
     publishedAt: '2026-04-08',
+    images: null,
   },
   {
     id: 'mulching',
@@ -83,6 +99,7 @@ export const ARTICLES: ArticleEntry[] = [
     filenameHe: '06_חיפוי_קרקע.md',
     filenameEn: '06_mulching.md',
     publishedAt: '2026-04-08',
+    images: null,
   },
   {
     id: 'vermicompost',
@@ -95,6 +112,7 @@ export const ARTICLES: ArticleEntry[] = [
     filenameHe: '07_קומפוסט_תולעים.md',
     filenameEn: '07_vermicompost.md',
     publishedAt: '2026-04-08',
+    images: null,
   },
   {
     id: 'biochar',
@@ -107,6 +125,7 @@ export const ARTICLES: ArticleEntry[] = [
     filenameHe: '08_ביו_צאר.md',
     filenameEn: '08_biochar.md',
     publishedAt: '2026-04-08',
+    images: null,
   },
   {
     id: 'deep-vs-shallow-watering',
@@ -119,6 +138,7 @@ export const ARTICLES: ArticleEntry[] = [
     filenameHe: '09_השקיה_עמוקה_מול_שטחית.md',
     filenameEn: '09_deep_vs_shallow_watering.md',
     publishedAt: '2026-04-08',
+    images: null,
   },
   {
     id: 'drip-irrigation',
@@ -131,6 +151,7 @@ export const ARTICLES: ArticleEntry[] = [
     filenameHe: '10_השקיה_בטפטוף.md',
     filenameEn: '10_drip_irrigation.md',
     publishedAt: '2026-04-08',
+    images: null,
   },
   {
     id: 'compost',
@@ -143,6 +164,7 @@ export const ARTICLES: ArticleEntry[] = [
     filenameHe: '11_קומפוסט.md',
     filenameEn: '11_compost.md',
     publishedAt: '2026-04-08',
+    images: null,
   },
   {
     id: 'raised-vs-ground',
@@ -155,6 +177,7 @@ export const ARTICLES: ArticleEntry[] = [
     filenameHe: '12_ערוגות_מוגבהות_מול_קרקע.md',
     filenameEn: '12_raised_vs_ground.md',
     publishedAt: '2026-04-08',
+    images: null,
   },
   {
     id: 'crop-rotation',
@@ -167,6 +190,7 @@ export const ARTICLES: ArticleEntry[] = [
     filenameHe: '13_מחזור_זרעים.md',
     filenameEn: '13_crop_rotation.md',
     publishedAt: '2026-04-08',
+    images: null,
   },
   {
     id: 'natural-weed-control',
@@ -179,6 +203,7 @@ export const ARTICLES: ArticleEntry[] = [
     filenameHe: '14_עשבים_טבעי.md',
     filenameEn: '14_natural_weed_control.md',
     publishedAt: '2026-04-08',
+    images: null,
   },
   {
     id: 'companion-planting',
@@ -191,6 +216,7 @@ export const ARTICLES: ArticleEntry[] = [
     filenameHe: '15_שתילה_משולבת.md',
     filenameEn: '15_companion_planting.md',
     publishedAt: '2026-04-08',
+    images: null,
   },
   {
     id: 'soil-structure',
@@ -203,6 +229,7 @@ export const ARTICLES: ArticleEntry[] = [
     filenameHe: '16_מבנה_קרקע.md',
     filenameEn: '16_soil_structure.md',
     publishedAt: '2026-04-08',
+    images: null,
   },
   {
     id: 'mycorrhizae',
@@ -215,6 +242,7 @@ export const ARTICLES: ArticleEntry[] = [
     filenameHe: '17_מיקוריזה.md',
     filenameEn: '17_mycorrhizae.md',
     publishedAt: '2026-04-08',
+    images: null,
   },
   {
     id: 'plant-stress-signals',
@@ -227,6 +255,7 @@ export const ARTICLES: ArticleEntry[] = [
     filenameHe: '18_סימני_סטרס_בצמחים.md',
     filenameEn: '18_plant_stress_signals.md',
     publishedAt: '2026-04-08',
+    images: null,
   },
   {
     id: 'plant-immunity',
@@ -239,6 +268,7 @@ export const ARTICLES: ArticleEntry[] = [
     filenameHe: '19_חסינות_צמחים.md',
     filenameEn: '19_plant_immunity.md',
     publishedAt: '2026-04-08',
+    images: null,
   },
   {
     id: 'seasonal-rhythm',
@@ -251,5 +281,6 @@ export const ARTICLES: ArticleEntry[] = [
     filenameHe: '20_קצב_עונתי.md',
     filenameEn: '20_seasonal_rhythm.md',
     publishedAt: '2026-04-08',
+    images: null,
   },
 ];
