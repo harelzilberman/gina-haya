@@ -117,7 +117,18 @@ function parseMarkdown(raw: string, lang: 'he' | 'en') {
   const descMatch = raw.match(descPattern);
   const description = descMatch ? descMatch[1].trim() : '';
 
-  const content = raw
+  // Strip everything from internal-only headings onwards
+  const internalHeadings = [
+    /^##\s+פרומפטים ל-ComfyUI/m,
+    /^##\s+SUGGESTED VISUAL ASSETS/im,
+  ];
+  let stripped = raw;
+  for (const pattern of internalHeadings) {
+    const m = stripped.search(pattern);
+    if (m !== -1) stripped = stripped.slice(0, m);
+  }
+
+  const content = stripped
     .replace(/^#\s.+$/m, '')
     .replace(/## (כותרת SEO|SEO Title)\n.+/g, '')
     .replace(/## (תיאור מטא|Meta Description)\n.+/g, '')
