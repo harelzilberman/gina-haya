@@ -3,9 +3,9 @@ import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { ARTICLES, type ArticleEntry } from '../data/articles';
 
-const GOLD   = '#F5C840';
-const PARCH  = '#EDE0C4';
-const FRANK  = '"Frank Ruhl Libre", Georgia, serif';
+const GOLD   = '#c8a84b';
+const PARCH  = '#d4c9a8';
+const FRANK  = 'Georgia, serif';
 const ASSIST = '"Assistant", "Heebo", sans-serif';
 
 const CATEGORY_FILTERS = [
@@ -68,8 +68,8 @@ export function ArticlesPage() {
               style={{
                 fontFamily: ASSIST, fontSize: '13px',
                 padding: '6px 16px', borderRadius: '99px',
-                border: `1px solid ${active ? GOLD : 'rgba(245,200,64,0.2)'}`,
-                background: active ? 'rgba(245,200,64,0.15)' : 'transparent',
+                border: `1px solid ${active ? GOLD : 'rgba(180,150,60,0.2)'}`,
+                background: active ? 'rgba(180,150,60,0.15)' : 'transparent',
                 color: active ? GOLD : `${PARCH}60`,
                 cursor: 'pointer', transition: 'all 0.15s',
               }}
@@ -116,12 +116,12 @@ function ArticleCard({
   lang: 'he' | 'en';
   onClick: () => void;
 }) {
-  const [hovered, setHovered] = useState(false);
+  const [hovered,  setHovered]  = useState(false);
   const [imgError, setImgError] = useState(false);
 
-  const title       = lang === 'he' ? article.titleHe       : article.titleEn;
+  const title       = lang === 'he' ? article.titleHe           : article.titleEn;
   const description = lang === 'he' ? article.metaDescriptionHe : article.metaDescriptionEn;
-  const category    = lang === 'he' ? article.categoryHe    : article.categoryEn;
+  const category    = lang === 'he' ? article.categoryHe        : article.categoryEn;
   const readLabel   = lang === 'he' ? 'קרא ›' : 'Read ›';
   const heroSrc     = article.images?.hero ?? null;
   const showHero    = heroSrc && !imgError;
@@ -132,9 +132,9 @@ function ArticleCard({
       onMouseEnter={() => setHovered(true)}
       onMouseLeave={() => setHovered(false)}
       style={{
-        background: hovered ? 'rgba(245,200,64,0.06)' : 'rgba(20,50,22,0.5)',
-        border: `1px solid ${hovered ? 'rgba(245,200,64,0.35)' : 'rgba(245,200,64,0.12)'}`,
-        borderRadius: '12px', overflow: 'hidden',
+        background: hovered ? 'rgba(180,150,60,0.06)' : 'rgba(10,24,10,0.75)',
+        border: `1px solid ${hovered ? 'rgba(180,150,60,0.35)' : 'rgba(180,150,60,0.14)'}`,
+        borderRadius: '8px', overflow: 'hidden',
         cursor: 'pointer',
         transition: 'transform 0.18s, border-color 0.18s, background 0.18s',
         transform: hovered ? 'translateY(-2px)' : 'none',
@@ -148,26 +148,26 @@ function ArticleCard({
             alt={title}
             onError={() => setImgError(true)}
             style={{
-              width: '100%', height: '100%', objectFit: 'cover',
-              display: 'block',
-              transition: 'transform 0.3s ease',
-              transform: hovered ? 'scale(1.04)' : 'scale(1)',
+              width: '100%', height: '100%', objectFit: 'cover', display: 'block',
+              transition: 'transform 0.35s ease',
+              transform: hovered ? 'scale(1.05)' : 'scale(1)',
             }}
           />
           <div style={{
             position: 'absolute', inset: 0,
-            background: 'linear-gradient(to bottom, transparent 40%, rgba(10,25,12,0.6) 100%)',
+            background: 'linear-gradient(to bottom, transparent 40%, rgba(5,12,5,0.65) 100%)',
           }} />
         </div>
       ) : (
         <div style={{
           height: '120px', display: 'flex', alignItems: 'center', justifyContent: 'center',
-          background: 'linear-gradient(135deg, #0f2311 0%, #1a3d1c 100%)',
-          borderBottom: '1px solid rgba(245,200,64,0.08)',
+          background: 'linear-gradient(135deg, #070f07 0%, #0f1e0f 100%)',
+          borderBottom: '1px solid rgba(180,150,60,0.08)',
         }}>
           <span style={{
             fontFamily: ASSIST, fontSize: '11px',
-            color: `${GOLD}40`, letterSpacing: '0.06em', textTransform: 'uppercase' as const,
+            color: `${GOLD}35`, letterSpacing: '0.08em',
+            textTransform: 'uppercase' as const,
           }}>
             {category}
           </span>
@@ -175,13 +175,13 @@ function ArticleCard({
       )}
 
       <div style={{ padding: '14px 16px' }}>
-        {/* Category */}
+        {/* Category badge */}
         <div style={{ marginBottom: '10px' }}>
           <span style={{
-            fontFamily: ASSIST, fontSize: '10px',
-            background: 'rgba(245,200,64,0.1)', color: GOLD,
-            border: '1px solid rgba(245,200,64,0.2)',
-            borderRadius: '99px', padding: '2px 8px',
+            fontFamily: ASSIST, fontSize: '10px', letterSpacing: '0.05em',
+            background: 'rgba(180,150,60,0.08)', color: GOLD,
+            border: '1px solid rgba(180,150,60,0.2)',
+            borderRadius: '99px', padding: '2px 9px',
           }}>
             {category}
           </span>
@@ -189,9 +189,9 @@ function ArticleCard({
 
         {/* Title */}
         <h3 style={{
-          fontFamily: FRANK, fontSize: '16px',
+          fontFamily: FRANK, fontSize: '16px', fontWeight: 400,
           color: hovered ? GOLD : PARCH,
-          margin: '0 0 8px', lineHeight: 1.35, transition: 'color 0.15s',
+          margin: '0 0 8px', lineHeight: 1.4, transition: 'color 0.15s',
         }}>
           {title}
         </h3>
@@ -199,7 +199,7 @@ function ArticleCard({
         {/* Description */}
         {description && (
           <p style={{
-            fontFamily: ASSIST, fontSize: '12px', color: `${PARCH}60`,
+            fontFamily: ASSIST, fontSize: '13px', color: `${PARCH}55`,
             margin: '0 0 12px', lineHeight: 1.6,
             display: '-webkit-box', WebkitLineClamp: 2,
             WebkitBoxOrient: 'vertical', overflow: 'hidden',
@@ -210,13 +210,15 @@ function ArticleCard({
 
         {/* Footer */}
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-          <span style={{ fontFamily: ASSIST, fontSize: '11px', color: `${PARCH}40` }}>
+          <span style={{ fontFamily: ASSIST, fontSize: '11px', color: `${PARCH}35` }}>
             {new Date(article.publishedAt + 'T12:00:00').toLocaleDateString(
               lang === 'he' ? 'he-IL' : 'en-US',
               { day: 'numeric', month: 'long', year: 'numeric' },
             )}
           </span>
-          <span style={{ color: GOLD, fontSize: '14px' }}>{readLabel}</span>
+          <span style={{ fontFamily: FRANK, color: `${GOLD}BB`, fontSize: '14px' }}>
+            {readLabel}
+          </span>
         </div>
       </div>
     </div>
