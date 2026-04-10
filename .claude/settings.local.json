@@ -29,7 +29,25 @@
       "Bash(npm install:*)",
       "Bash(pnpm add:*)",
       "Bash(pnpm --filter @gina-haya/web exec tsc --noEmit)",
-      "Bash(pnpm --filter @gina-haya/shared build)"
+      "Bash(pnpm --filter @gina-haya/shared build)",
+      "Bash(pnpm --filter @gina-haya/api add gray-matter)",
+      "Bash(pnpm --filter @gina-haya/web add react-markdown)",
+      "Bash(pnpm --filter @gina-haya/api add --save-dev @types/gray-matter)",
+      "Bash(dir \"D:\\\\harel\\\\claude\\\\gina-haya-main\\\\gina-haya-project\\\\gina-haya\\\\gina-haya\\\\packages\\\\web\\\\public\\\\articles\" /s /b)",
+      "Bash(xargs grep:*)",
+      "Bash(git checkout:*)",
+      "Bash(git rm:*)",
+      "Bash(npx --prefix packages/web tsc --noEmit)",
+      "Bash(cp '/d/harel/claude/gina-haya-main/articles/full_articles/he/*.md' /d/harel/claude/gina-haya-main/gina-haya-project/gina-haya/gina-haya/packages/web/public/articles/he/)",
+      "Bash(cp '/d/harel/claude/gina-haya-main/articles/full_articles/en/*.md' /d/harel/claude/gina-haya-main/gina-haya-project/gina-haya/gina-haya/packages/web/public/articles/en/)",
+      "Read(//d/harel/claude/gina-haya-main/articles/full_articles/**)",
+      "Read(//d/harel/claude/gina-haya-main/articles/**)",
+      "Bash(mkdir -p \"D:/harel/claude/gina-haya-main/articles/full_articles/images/compost-tea\")",
+      "Bash(cp \"D:/harel/claude/StabilityMatrix-win-x64/Data/Images/Saved/00014-1799132256.png\" \"D:/harel/claude/gina-haya-main/articles/full_articles/images/compost-tea/hero.png\")",
+      "Bash(cp \"D:/harel/claude/StabilityMatrix-win-x64/Data/Images/Saved/00015-1519122490.png\" \"D:/harel/claude/gina-haya-main/articles/full_articles/images/compost-tea/steps.png\")",
+      "Bash(cp \"D:/harel/claude/StabilityMatrix-win-x64/Data/Images/Saved/00016-370482635.png\" \"D:/harel/claude/gina-haya-main/articles/full_articles/images/compost-tea/results.png\")",
+      "Bash(cp \"D:/harel/claude/gina-haya-main/articles/full_articles/images/compost-tea/hero.png\" \"D:/harel/claude/gina-haya-main/gina-haya-project/gina-haya/gina-haya/packages/web/public/articles/images/compost-tea/hero.png\")",
+      "Bash(xargs -I{} head -30 {})"
     ]
   }
 }
