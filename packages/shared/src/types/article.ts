@@ -12,6 +12,7 @@ export interface ArticleMeta {
 
 export interface Article extends ArticleMeta {
   content: string; // raw markdown (body only, no frontmatter)
+  htmlContent?: string;
 }
 
 export const ARTICLE_CATEGORIES = [

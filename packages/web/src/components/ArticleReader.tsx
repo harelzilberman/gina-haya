@@ -2,6 +2,7 @@ import { useState, useEffect, useRef, useCallback } from 'react';
 import ReactMarkdown from 'react-markdown';
 import { api } from '../api/client';
 import i18n from '../i18n';
+import { ARTICLES } from '../data/articles';
 
 // ── Local type ─────────────────────────────────────────────────────────────
 interface Article {
@@ -248,7 +249,27 @@ export function ArticleReader({ slug, onClose }: Props) {
         </div>
       )}
 
-      {article && !loading && (
+      {article && !loading && (() => {
+        const entry = ARTICLES.find(a => a.id === slug);
+        if (entry?.htmlContent) {
+          return (
+            <iframe
+              srcDoc={entry.htmlContent}
+              style={{ width: '100%', border: 'none', minHeight: '100vh' }}
+              onLoad={(e) => {
+                const iframe = e.target as HTMLIFrameElement;
+                if (iframe.contentWindow) {
+                  iframe.style.height = iframe.contentWindow.document.body.scrollHeight + 'px';
+                }
+              }}
+              title={article.title}
+            />
+          );
+        }
+        return null;
+      })()}
+
+      {article && !loading && !ARTICLES.find(a => a.id === slug)?.htmlContent && (
         <>
           {/* Article header */}
           <div style={{ maxWidth: '680px', margin: '0 auto', padding: '28px 24px 0' }}>

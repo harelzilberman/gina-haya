@@ -330,6 +330,13 @@ export function ArticlePage() {
 
   useEffect(() => {
     if (!slug) { setError(true); setLoading(false); return; }
+
+    // If article has embedded HTML, skip markdown fetch
+    if (entry?.htmlContent) {
+      setLoading(false);
+      return;
+    }
+
     setLoading(true); setError(false); setHeroError(false); setProgress(0);
 
     const filename = lang === 'en'
@@ -444,7 +451,21 @@ export function ArticlePage() {
       )}
 
       {/* ── Article ───────────────────────────────────────────────────────── */}
-      {!loading && !error && (
+      {!loading && !error && entry?.htmlContent && (
+        <iframe
+          srcDoc={entry.htmlContent}
+          style={{ width: '100%', border: 'none', minHeight: '100vh' }}
+          onLoad={(e) => {
+            const iframe = e.target as HTMLIFrameElement;
+            if (iframe.contentWindow) {
+              iframe.style.height = iframe.contentWindow.document.body.scrollHeight + 'px';
+            }
+          }}
+          title={entry.titleHe}
+        />
+      )}
+
+      {!loading && !error && !entry?.htmlContent && (
         <>
           {/* Hero image */}
           {showHero ? (
