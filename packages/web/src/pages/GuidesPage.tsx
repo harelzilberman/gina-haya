@@ -86,9 +86,9 @@ const GUIDE_CONTENT: Record<string, GuideContent> = {
   p3:  { comingSoon: ['סרטון', 'מאמר'] },
   p4:  { article: { slug: 'companion-planting', ready: true }, comingSoon: ['סרטון'] },
   // Compost
-  c1:  { video: { youtubeId: 'dQw4w9WgXcQ', duration: '10:30' }, article: { slug: 'compost', ready: true } },
+  c1:  { video: { youtubeId: 'dQw4w9WgXcQ', duration: '10:30' }, article: { slug: 'compost-pile', ready: true } },
   c2:  { article: { slug: 'vermicompost', ready: true }, comingSoon: ['סרטון'] },
-  c3:  { comingSoon: ['סרטון', 'מאמר'] },
+  c3:  { article: { slug: 'compost-dont', ready: true }, comingSoon: ['סרטון'] },
   // BD preparations
   bd1: { video: { youtubeId: 'dQw4w9WgXcQ', duration: '12:00' }, comingSoon: ['מאמר'] },
   bd2: { comingSoon: ['סרטון', 'מאמר'] },

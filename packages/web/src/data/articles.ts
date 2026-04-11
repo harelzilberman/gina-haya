@@ -2270,4 +2270,574 @@ function toggleFaq(el){
     publishedAt: '2026-04-08',
     images: null,
   },
+  {
+    id: 'compost-pile',
+    titleHe: 'ערימת קומפוסט',
+    titleEn: 'Compost Pile — The Complete Guide',
+    metaDescriptionHe: 'ערימת קומפוסט היא לב הגינה הביודינמית — מפעל חיים שהופך שאריות מטבח וגן לאדמה פורייה, שחורה ועשירה.',
+    metaDescriptionEn: 'Build a healthy compost pile with the right layers, ratios and timeline for rich finished compost.',
+    categoryHe: 'קומפוסט',
+    categoryEn: 'Compost',
+    filenameHe: '21_ערימת_קומפוסט.md',
+    filenameEn: '21_compost_pile.md',
+    publishedAt: '2026-04-11',
+    images: null,
+    htmlContent: `<style>
+@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;1,400&family=Lato:wght@300;400;700&family=Caveat:wght@400;600&display=swap');
+*{box-sizing:border-box;margin:0;padding:0;}
+.art{
+  --soil1:#1a0f06;
+  --soil2:#2d1a08;
+  --soil3:#4a2e10;
+  --soil4:#7a4e20;
+  --soil5:#a87040;
+  --humus:#f0e8d8;
+  --humus-dark:#e0d0b8;
+  --green:#2a4a1a;
+  --green-light:#4a7a2a;
+  --green-pale:#d0e8b8;
+  --amber:#c8880a;
+  --rust:#8b3a1a;
+  --cream:#faf6ef;
+  font-family:'Lato',sans-serif;
+  background:var(--cream);
+  color:var(--soil1);
+}
+.hero{
+  position:relative;
+  overflow:hidden;
+  padding:0;
+}
+.hero-layers{
+  display:flex;
+  flex-direction:column;
+  gap:0;
+}
+.layer{
+  padding:0 2.5rem;
+  display:flex;
+  align-items:center;
+}
+.layer-sky{background:#c8e8f0;padding-top:2.5rem;padding-bottom:1rem;gap:2rem;}
+.layer-brown{background:#8b5a2a;height:14px;}
+.layer-dark{background:#4a2e10;height:10px;}
+.layer-darkest{background:#1a0f06;height:8px;}
+.hero-tag{display:inline-block;background:rgba(0,0,0,0.2);color:#e0d8c8;font-size:10px;font-weight:700;letter-spacing:0.12em;text-transform:uppercase;padding:3px 11px;border-radius:2px;margin-bottom:0.9rem;}
+.hero h1{font-family:'Playfair Display',serif;font-size:2.8rem;font-weight:700;color:var(--soil1);line-height:1.05;margin-bottom:0.3rem;direction:rtl;}
+.hero-en{font-family:'Playfair Display',serif;font-size:0.95rem;font-style:italic;color:var(--soil4);margin-bottom:1.1rem;}
+.hero-meta{display:flex;gap:1.25rem;font-size:11px;color:var(--soil4);font-weight:300;}
+.hero-img{width:130px;height:130px;border-radius:50%;object-fit:cover;object-position:center 18%;border:3px solid var(--soil4);flex-shrink:0;}
+.body{padding:0 2.5rem;}
+.intro{font-family:'Playfair Display',serif;font-size:1.05rem;line-height:1.9;color:var(--soil3);border-right:3px solid var(--soil4);padding:0.25rem 1.1rem;margin:1.75rem 0;direction:rtl;}
+.section{margin:2.25rem 0 0;}
+.sh{display:flex;align-items:center;gap:0.7rem;margin-bottom:0.5rem;direction:rtl;}
+.sn{width:26px;height:26px;border-radius:50%;background:var(--soil2);color:var(--humus);font-family:'Playfair Display',serif;font-size:12px;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+.sh h2{font-family:'Playfair Display',serif;font-size:1.2rem;font-weight:700;color:var(--soil1);}
+.sh-en{font-size:0.75rem;font-weight:300;color:var(--soil5);font-style:italic;margin-right:auto;}
+.div{border:none;border-top:1px solid rgba(74,46,16,0.2);margin-bottom:1.1rem;}
+.p{font-size:0.93rem;line-height:1.85;color:var(--soil3);direction:rtl;margin-bottom:0.9rem;}
+.p strong{color:var(--soil1);font-weight:700;}
+.layers-diagram{margin:1.25rem 0;border-radius:8px;overflow:hidden;border:1px solid rgba(74,46,16,0.2);}
+.dlayer{padding:12px 16px;direction:rtl;display:flex;align-items:center;gap:12px;}
+.dlayer-1{background:#d0e8b8;}
+.dlayer-2{background:#c8a870;}
+.dlayer-3{background:#d0e8b8;}
+.dlayer-4{background:#a87040;}
+.dlayer-5{background:#d0e8b8;}
+.dlayer-6{background:#8b5a2a;}
+.dlayer-label{font-size:0.85rem;font-weight:700;flex:1;}
+.dlayer-desc{font-size:0.78rem;font-weight:300;opacity:0.8;}
+.dlayer-cm{font-size:0.72rem;font-weight:700;white-space:nowrap;opacity:0.7;}
+.dlayer-1 .dlayer-label{color:#2a4a1a;}
+.dlayer-2 .dlayer-label{color:#4a2e10;}
+.dlayer-3 .dlayer-label{color:#2a4a1a;}
+.dlayer-4 .dlayer-label{color:#2a1408;}
+.dlayer-5 .dlayer-label{color:#2a4a1a;}
+.dlayer-6 .dlayer-label{color:#faf6ef;}
+.dlayer-6 .dlayer-desc{color:#e0d0b8;}
+.dlayer-6 .dlayer-cm{color:#c8a870;}
+.stats{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin:1.25rem 0;}
+.stat{background:var(--soil2);border-radius:6px;padding:14px;text-align:center;}
+.stat-val{font-family:'Playfair Display',serif;font-size:1.5rem;font-weight:700;color:var(--amber);display:block;}
+.stat-lbl{font-size:0.72rem;color:#a87040;margin-top:3px;}
+.timeline{display:flex;flex-direction:column;gap:0;margin:1.25rem 0;position:relative;}
+.timeline::before{content:'';position:absolute;right:17px;top:20px;bottom:20px;width:2px;background:var(--humus-dark);}
+.tl{display:flex;gap:14px;align-items:flex-start;padding:10px 0;direction:rtl;position:relative;z-index:1;}
+.tl-dot{width:34px;height:34px;border-radius:50%;background:var(--soil3);color:var(--humus);font-size:0.72rem;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0;text-align:center;line-height:1.2;}
+.tl-title{font-size:0.9rem;font-weight:700;color:var(--soil1);margin-bottom:2px;}
+.tl-desc{font-size:0.82rem;color:var(--soil4);line-height:1.6;}
+.chupchu{background:var(--humus);border:1px solid rgba(74,46,16,0.2);border-radius:8px;padding:1rem 1.2rem;margin:1.75rem 0;display:flex;gap:0.9rem;align-items:flex-start;direction:rtl;}
+.chupchu-img{width:42px;height:42px;border-radius:50%;object-fit:cover;object-position:center 15%;border:1px solid rgba(74,46,16,0.3);flex-shrink:0;}
+.chupchu-name{font-family:'Caveat',cursive;font-size:13px;font-weight:600;color:var(--soil4);margin-bottom:3px;}
+.chupchu-text{font-family:'Caveat',cursive;font-size:1rem;line-height:1.55;color:var(--soil3);}
+.signs{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:1.25rem 0;}
+.sign{border-radius:8px;padding:12px 14px;direction:rtl;}
+.sign-good{background:var(--green-pale);border:1px solid rgba(74,122,42,0.3);}
+.sign-bad{background:#fce8e0;border:1px solid rgba(139,58,26,0.3);}
+.sign-title{font-size:0.82rem;font-weight:700;margin-bottom:6px;}
+.sign-good .sign-title{color:var(--green);}
+.sign-bad .sign-title{color:var(--rust);}
+.sign-item{font-size:0.8rem;line-height:1.65;color:var(--soil3);margin-bottom:3px;}
+.related{background:var(--humus-dark);border-radius:8px;padding:1.25rem 1.5rem;margin:2rem 0;direction:rtl;}
+.related-title{font-family:'Playfair Display',serif;font-size:1rem;font-weight:700;color:var(--soil1);margin-bottom:1rem;}
+.related-links{display:flex;flex-direction:column;gap:8px;}
+.related-link{display:flex;align-items:center;gap:8px;font-size:0.88rem;color:var(--green-light);text-decoration:none;}
+.related-link::before{content:'←';color:var(--soil4);font-size:12px;}
+.footer-cta{background:var(--soil1);padding:2rem 2.5rem;display:flex;align-items:center;gap:1.5rem;direction:rtl;margin-top:3rem;}
+.footer-img{width:52px;height:52px;border-radius:50%;object-fit:cover;object-position:center 15%;border:1px solid rgba(168,112,64,0.4);flex-shrink:0;}
+.footer-text{font-family:'Playfair Display',serif;font-size:0.9rem;line-height:1.7;color:var(--humus);flex:1;}
+.footer-text em{font-size:0.78rem;color:#4a2e10;font-style:normal;}
+.footer-btn{display:inline-block;background:var(--amber);color:var(--soil1);font-size:0.8rem;font-weight:700;padding:9px 20px;border-radius:4px;text-decoration:none;white-space:nowrap;flex-shrink:0;}
+@media(max-width:560px){.hero h1{font-size:2rem;}.hero-img{display:none;}.body{padding:0 1.5rem;}.stats{grid-template-columns:1fr 1fr;}.signs{grid-template-columns:1fr;}.footer-cta{flex-direction:column;padding:1.5rem;}}
+</style>
+<article class="art" itemscope itemtype="https://schema.org/Article">
+<header class="hero">
+  <div class="hero-layers">
+    <div class="layer layer-sky">
+      <div style="flex:1;">
+        <span class="hero-tag">קומפוסט · Composting</span>
+        <h1 itemprop="headline">ערימת קומפוסט</h1>
+        <div class="hero-en">Compost Pile — The Complete Guide</div>
+        <div class="hero-meta"><span>קריאה: 10 דקות</span><span>רמה: מתחיל</span><span>עונה: כל השנה</span></div>
+      </div>
+      <img class="hero-img" src="https://gina-haya.vercel.app/chupchu_final.png" alt="צ'ופצ'ו" itemprop="image">
+    </div>
+    <div class="layer layer-brown"></div>
+    <div class="layer layer-dark"></div>
+    <div class="layer layer-darkest"></div>
+  </div>
+</header>
+<div class="body">
+  <p class="intro" itemprop="description">ערימת קומפוסט היא לב הגינה הביודינמית — מפעל חיים שהופך שאריות מטבח וגן לאדמה פורייה, שחורה ועשירה. ברגע שמבינים את העקרונות, זה פשוט מאוד.</p>
+  <div class="section">
+    <div class="sh"><div class="sn">א</div><h2>שכבות הקומפוסט</h2><span class="sh-en">The layers</span></div>
+    <hr class="div">
+    <p class="p">הסוד הוא <strong>איזון בין חומר ירוק לחומר חום</strong> — פחמן לחנקן, יבש ללח, קשה לרך. כל שכבה תורמת משהו אחר לתהליך.</p>
+    <div class="layers-diagram">
+      <div class="dlayer dlayer-1"><span class="dlayer-label">חומר ירוק</span><span class="dlayer-desc">גזם טרי, קליפות, שאריות ירק</span><span class="dlayer-cm">10 ס"מ</span></div>
+      <div class="dlayer dlayer-2"><span class="dlayer-label">חומר חום</span><span class="dlayer-desc">עלים יבשים, קש, קרטון</span><span class="dlayer-cm">10 ס"מ</span></div>
+      <div class="dlayer dlayer-3"><span class="dlayer-label">חומר ירוק</span><span class="dlayer-desc">חזרה על הכבוד ירוק</span><span class="dlayer-cm">10 ס"מ</span></div>
+      <div class="dlayer dlayer-4"><span class="dlayer-label">חומר חום</span><span class="dlayer-desc">וכן הלאה לסירוגין</span><span class="dlayer-cm">10 ס"מ</span></div>
+      <div class="dlayer dlayer-5"><span class="dlayer-label">אדמה / קומפוסט ישן</span><span class="dlayer-desc">מחסן חיידקים — מאיץ את הפירוק</span><span class="dlayer-cm">2 ס"מ</span></div>
+      <div class="dlayer dlayer-6"><span class="dlayer-label">בסיס — ענפים דקים</span><span class="dlayer-desc">מאפשר אוורור מהתחתית</span><span class="dlayer-cm">15 ס"מ</span></div>
+    </div>
+  </div>
+  <div class="section">
+    <div class="sh"><div class="sn">ב</div><h2>המספרים החשובים</h2><span class="sh-en">Key numbers</span></div>
+    <hr class="div">
+    <div class="stats">
+      <div class="stat"><span class="stat-val">30:1</span><div class="stat-lbl">יחס פחמן:חנקן אידיאלי</div></div>
+      <div class="stat"><span class="stat-val">60°C</span><div class="stat-lbl">טמפ' ליבה — הורג זרעי עשבים</div></div>
+      <div class="stat"><span class="stat-val">3–6</span><div class="stat-lbl">חודשים עד קומפוסט בשל</div></div>
+    </div>
+  </div>
+  <div class="chupchu">
+    <img class="chupchu-img" src="https://gina-haya.vercel.app/chupchu_final.png" alt="צ'ופצ'ו">
+    <div>
+      <div class="chupchu-name">צ'ופצ'ו אומר:</div>
+      <div class="chupchu-text">הגלובוס בחזה שלי מלמד אותי — כל דבר שחי חוזר לאדמה. הקומפוסט רק מאיץ את מה שהטבע עושה ממילא. אתה לא יוצר — אתה מסייע.</div>
+    </div>
+  </div>
+  <div class="section">
+    <div class="sh"><div class="sn">ג</div><h2>לוח הזמנים</h2><span class="sh-en">Timeline</span></div>
+    <hr class="div">
+    <div class="timeline">
+      <div class="tl"><div class="tl-dot">שבוע 1</div><div><div class="tl-title">הקמה</div><div class="tl-desc">בניית הערימה בשכבות. הוספת מים אם יבש מדי — כמו ספוג סחוט.</div></div></div>
+      <div class="tl"><div class="tl-dot">שבוע 2</div><div><div class="tl-title">חום ראשון</div><div class="tl-desc">הערימה מתחממת — זה סימן טוב. החיידקים עובדים. לא לגעת.</div></div></div>
+      <div class="tl"><div class="tl-dot">שבוע 4</div><div><div class="tl-title">הפיכה ראשונה</div><div class="tl-desc">מניידים חומר מבחוץ לפנים, מאווררים. הערימה תתחמם שוב.</div></div></div>
+      <div class="tl"><div class="tl-dot">חודש 2</div><div><div class="tl-title">הפיכות נוספות</div><div class="tl-desc">כל 3–4 שבועות. ככל שמפנים יותר — הקומפוסט מוכן מהר יותר.</div></div></div>
+      <div class="tl"><div class="tl-dot">חודש 3+</div><div><div class="tl-title">קומפוסט בשל</div><div class="tl-desc">צבע שחור, ריח אדמה יער, לא מזהים חומרים מקוריים — מוכן!</div></div></div>
+    </div>
+  </div>
+  <div class="section">
+    <div class="sh"><div class="sn">ד</div><h2>סימנים לאבחון</h2><span class="sh-en">Diagnosis</span></div>
+    <hr class="div">
+    <div class="signs">
+      <div class="sign sign-good"><div class="sign-title">הערימה בריאה</div><div class="sign-item">מתחממת לאחר הפיכה</div><div class="sign-item">ריח אדמה נעים</div><div class="sign-item">לחה אבל לא רטובה</div><div class="sign-item">תולעים ורודות גלויות</div></div>
+      <div class="sign sign-bad"><div class="sign-title">צריך התייחסות</div><div class="sign-item">ריח רקבון — חסר אוורור</div><div class="sign-item">יבש מדי — הוסף מים</div><div class="sign-item">קר מדי — הוסף ירוק</div><div class="sign-item">נמלים — יבש מדי</div></div>
+    </div>
+  </div>
+  <div class="chupchu">
+    <img class="chupchu-img" src="https://gina-haya.vercel.app/chupchu_final.png" alt="צ'ופצ'ו">
+    <div>
+      <div class="chupchu-name">הסוד של צ'ופצ'ו:</div>
+      <div class="chupchu-text">יום שורש לפי הלוח הביודינמי — הזמן הטוב ביותר להוסיף לקומפוסט ולהפוך אותו. האדמה קולטת את החיים החדשים ביום הזה.</div>
+    </div>
+  </div>
+  <div class="related">
+    <div class="related-title">מאמרים קשורים</div>
+    <div class="related-links">
+      <a class="related-link" href="/articles/vermicompost">ורמיקומפוסט — תולעים בעבודה</a>
+      <a class="related-link" href="/articles/compost-tea">תה קומפוסט — להפיק מהקומפוסט יותר</a>
+      <a class="related-link" href="/articles/compost-dont">מה לא לשים בקומפוסט</a>
+    </div>
+  </div>
+</div>
+<footer class="footer-cta">
+  <img class="footer-img" src="https://gina-haya.vercel.app/chupchu_final.png" alt="צ'ופצ'ו">
+  <div class="footer-text">מתי יום השורש הבא לעבוד עם הקומפוסט?<br><em>Find the biodynamic root day for composting work.</em></div>
+  <a class="footer-btn" href="https://gina-haya.vercel.app">פתח גינה חיה ←</a>
+</footer>
+</article>`,
+  },
+  {
+    id: 'vermicompost',
+    titleHe: 'ורמיקומפוסט',
+    titleEn: 'Vermicompost — The Worm Factory',
+    metaDescriptionHe: 'תולעת אחת קטנה ואדומה אוכלת פסולת מטבח ומפרישה את הדשן העשיר ביותר שידע הגננות הביודינמית.',
+    metaDescriptionEn: 'Set up a worm bin at home and harvest the richest organic fertiliser in biodynamic gardening.',
+    categoryHe: 'קומפוסט',
+    categoryEn: 'Compost',
+    filenameHe: '22_ורמיקומפוסט.md',
+    filenameEn: '22_vermicompost.md',
+    publishedAt: '2026-04-11',
+    images: null,
+    htmlContent: `<style>
+@import url('https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:wght@300;400;500&family=Caveat:wght@400;600&display=swap');
+*{box-sizing:border-box;margin:0;padding:0;}
+.art{
+  --worm:#8b2a1a;
+  --worm-pale:#f5d8d0;
+  --dark:#1a0a0a;
+  --rich:#2d1408;
+  --mid:#5a2a14;
+  --humus:#c8a070;
+  --soil:#f0e8d8;
+  --soil-dark:#e0d0b8;
+  --alive:#4a6a1a;
+  --alive-pale:#d8e8b8;
+  --pink:#c85a5a;
+  font-family:'DM Sans',sans-serif;
+  background:var(--soil);
+  color:var(--dark);
+}
+.hero{
+  background:var(--rich);
+  padding:3rem 2.5rem 2.5rem;
+  display:flex;align-items:center;gap:2rem;
+  position:relative;overflow:hidden;
+}
+.hero-worm-lines{
+  position:absolute;inset:0;pointer-events:none;
+  background:repeating-linear-gradient(35deg,transparent,transparent 18px,rgba(139,42,26,0.08) 18px,rgba(139,42,26,0.08) 19px);
+}
+.hero-content{flex:1;position:relative;z-index:1;}
+.hero-tag{display:inline-block;background:var(--worm);color:#fce8e4;font-size:10px;font-weight:500;letter-spacing:0.12em;text-transform:uppercase;padding:3px 11px;border-radius:2px;margin-bottom:1rem;}
+.hero h1{font-family:'DM Serif Display',serif;font-size:2.8rem;color:#f5e8e0;line-height:1.05;margin-bottom:0.3rem;direction:rtl;}
+.hero-en{font-family:'DM Serif Display',serif;font-size:0.95rem;font-style:italic;color:var(--humus);margin-bottom:1.25rem;}
+.hero-meta{display:flex;gap:1.25rem;font-size:11px;color:#7a4a2a;font-weight:300;}
+.hero-img{width:130px;height:130px;border-radius:50%;object-fit:cover;object-position:center 18%;border:2px solid var(--worm);flex-shrink:0;position:relative;z-index:1;}
+.body{padding:0 2.5rem;}
+.intro{font-family:'DM Serif Display',serif;font-size:1.05rem;line-height:1.9;color:var(--rich);border-right:3px solid var(--worm);padding:0.25rem 1.1rem;margin:1.75rem 0;direction:rtl;}
+.section{margin:2.25rem 0 0;}
+.sh{display:flex;align-items:center;gap:0.7rem;margin-bottom:0.5rem;direction:rtl;}
+.sn{width:26px;height:26px;border-radius:50%;background:var(--worm);color:#fce8e4;font-family:'DM Serif Display',serif;font-size:12px;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+.sh h2{font-family:'DM Serif Display',serif;font-size:1.2rem;color:var(--dark);}
+.sh-en{font-size:0.75rem;font-weight:300;color:var(--mid);font-style:italic;margin-right:auto;}
+.div{border:none;border-top:1px solid rgba(139,42,26,0.2);margin-bottom:1.1rem;}
+.p{font-size:0.93rem;line-height:1.85;color:var(--rich);direction:rtl;margin-bottom:0.9rem;}
+.p strong{color:var(--dark);font-weight:500;}
+.worm-facts{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin:1.25rem 0;}
+.wf{background:var(--dark);border-radius:8px;padding:14px;text-align:center;}
+.wf-val{font-family:'DM Serif Display',serif;font-size:1.5rem;color:var(--worm);display:block;margin-bottom:2px;}
+.wf-lbl{font-size:0.72rem;color:#7a4a2a;}
+.setup-steps{display:flex;flex-direction:column;gap:8px;margin:1.25rem 0;}
+.setup-step{display:flex;gap:12px;align-items:flex-start;background:var(--soil-dark);border-radius:6px;padding:12px;direction:rtl;}
+.step-n{width:30px;height:30px;background:var(--worm);color:white;border-radius:50%;font-size:13px;font-weight:500;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+.step-title{font-size:0.9rem;font-weight:500;color:var(--dark);margin-bottom:2px;}
+.step-desc{font-size:0.82rem;color:var(--mid);line-height:1.6;}
+.chupchu{background:var(--worm-pale);border:1px solid rgba(139,42,26,0.25);border-radius:10px;padding:1rem 1.2rem;margin:1.75rem 0;display:flex;gap:0.9rem;align-items:flex-start;direction:rtl;}
+.chupchu-img{width:42px;height:42px;border-radius:50%;object-fit:cover;object-position:center 15%;border:1px solid rgba(139,42,26,0.3);flex-shrink:0;}
+.chupchu-name{font-family:'Caveat',cursive;font-size:13px;font-weight:600;color:var(--worm);margin-bottom:3px;}
+.chupchu-text{font-family:'Caveat',cursive;font-size:1rem;line-height:1.55;color:var(--rich);}
+.feed-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:1.25rem 0;}
+.feed-yes{background:var(--alive-pale);border:1px solid rgba(74,106,26,0.25);border-radius:8px;padding:12px 14px;direction:rtl;}
+.feed-no{background:#fce8e0;border:1px solid rgba(139,42,26,0.25);border-radius:8px;padding:12px 14px;direction:rtl;}
+.feed-title{font-size:0.82rem;font-weight:500;margin-bottom:6px;}
+.feed-yes .feed-title{color:var(--alive);}
+.feed-no .feed-title{color:var(--worm);}
+.feed-item{font-size:0.8rem;color:var(--rich);line-height:1.7;}
+.castings-box{background:var(--dark);border-radius:10px;padding:1.25rem 1.5rem;margin:1.25rem 0;direction:rtl;}
+.castings-title{font-size:0.72rem;font-weight:500;letter-spacing:0.1em;text-transform:uppercase;color:var(--humus);margin-bottom:0.75rem;}
+.castings-text{font-family:'DM Serif Display',serif;font-size:1rem;line-height:1.8;color:#d8c8a8;}
+.related{background:var(--soil-dark);border-radius:8px;padding:1.25rem 1.5rem;margin:2rem 0;direction:rtl;}
+.related-title{font-family:'DM Serif Display',serif;font-size:1rem;color:var(--dark);margin-bottom:1rem;}
+.related-links{display:flex;flex-direction:column;gap:8px;}
+.related-link{display:flex;align-items:center;gap:8px;font-size:0.88rem;color:var(--alive);text-decoration:none;}
+.related-link::before{content:'←';color:var(--worm);font-size:12px;}
+.footer-cta{background:var(--dark);padding:2rem 2.5rem;display:flex;align-items:center;gap:1.5rem;direction:rtl;margin-top:3rem;}
+.footer-img{width:52px;height:52px;border-radius:50%;object-fit:cover;object-position:center 15%;border:1px solid var(--worm);flex-shrink:0;}
+.footer-text{font-family:'DM Serif Display',serif;font-size:0.9rem;line-height:1.7;color:#d8c0a8;flex:1;}
+.footer-text em{font-size:0.78rem;color:#4a2a14;font-style:normal;}
+.footer-btn{display:inline-block;background:var(--worm);color:#fce8e4;font-size:0.8rem;font-weight:500;padding:9px 20px;border-radius:4px;text-decoration:none;white-space:nowrap;flex-shrink:0;}
+@media(max-width:560px){.hero h1{font-size:2rem;}.hero-img{display:none;}.body{padding:0 1.5rem;}.worm-facts{grid-template-columns:1fr 1fr;}.feed-grid{grid-template-columns:1fr;}.footer-cta{flex-direction:column;padding:1.5rem;}}
+</style>
+<article class="art" itemscope itemtype="https://schema.org/Article">
+<header class="hero">
+  <div class="hero-worm-lines"></div>
+  <div class="hero-content">
+    <span class="hero-tag">קומפוסט · Composting</span>
+    <h1 itemprop="headline">ורמיקומפוסט</h1>
+    <div class="hero-en">Vermicompost — The Worm Factory</div>
+    <div class="hero-meta"><span>קריאה: 6 דקות</span><span>רמה: מתחיל</span><span>עונה: כל השנה</span></div>
+  </div>
+  <img class="hero-img" src="https://gina-haya.vercel.app/chupchu_final.png" alt="צ'ופצ'ו" itemprop="image">
+</header>
+<div class="body">
+  <p class="intro" itemprop="description">תולעת אחת קטנה ואדומה אוכלת פסולת מטבח ומפרישה את הדשן העשיר ביותר שידע הגננות הביודינמית. ורמיקומפוסט הוא קומפוסט על סטרואידים — וכל מה שצריך זה קופסה וקצת תולעים.</p>
+  <div class="section">
+    <div class="sh"><div class="sn">א</div><h2>למה תולעים?</h2><span class="sh-en">Why worms?</span></div>
+    <hr class="div">
+    <p class="p">תולעי אדמה אוכלות חומר אורגני ומייצרות <strong>הפרשות תולעים (castings)</strong> — הדשן האורגני הצפוף ביותר בטבע. עשיר פי 5–7 מקומפוסט רגיל בחנקן, זרחן ואשלגן, ורווי חיידקים מועילים.</p>
+    <div class="worm-facts">
+      <div class="wf"><span class="wf-val">5×</span><div class="wf-lbl">יותר חנקן מקומפוסט רגיל</div></div>
+      <div class="wf"><span class="wf-val">500g</span><div class="wf-lbl">אוכל ביום לכל ק"ג תולעים</div></div>
+      <div class="wf"><span class="wf-val">90</span><div class="wf-lbl">יום עד קומפוסט בשל ראשון</div></div>
+    </div>
+  </div>
+  <div class="section">
+    <div class="sh"><div class="sn">ב</div><h2>הקמת מערכת ורמיקומפוסט</h2><span class="sh-en">Setup</span></div>
+    <hr class="div">
+    <div class="setup-steps">
+      <div class="setup-step"><div class="step-n">1</div><div><div class="step-title">הכלי</div><div class="step-desc">קופסת פלסטיק אטומה לאור עם חורי ניקוז. גודל מינימלי 40×60 ס"מ. עדיף מערכת שכבות.</div></div></div>
+      <div class="setup-step"><div class="step-n">2</div><div><div class="step-title">מצע ראשוני</div><div class="step-desc">קרטון קרוע + עיתון ישן + קצת אדמה — בסיס נוח ולח לתולעים להתיישב בו.</div></div></div>
+      <div class="setup-step"><div class="step-n">3</div><div><div class="step-title">התולעים</div><div class="step-desc">תולעי אדמה אדומות (Eisenia fetida) — לא תולעי גינה רגילות. קונים בחנויות דיג או גינון.</div></div></div>
+      <div class="setup-step"><div class="step-n">4</div><div><div class="step-title">מיקום</div><div class="step-desc">צל מלא, טמפ' 15–25°C. לא בשמש ישירה — תולעים מתות בחום מעל 35°C.</div></div></div>
+    </div>
+  </div>
+  <div class="chupchu">
+    <img class="chupchu-img" src="https://gina-haya.vercel.app/chupchu_final.png" alt="צ'ופצ'ו">
+    <div>
+      <div class="chupchu-name">צ'ופצ'ו אומר:</div>
+      <div class="chupchu-text">הזרועות שלי הן כלי גינה — אבל התולעים עובדות 24 שעות ביממה בלי לעצור. יש לי כבוד גדול אליהן. הן הקדמוניות האמיתיות של הגינה.</div>
+    </div>
+  </div>
+  <div class="section">
+    <div class="sh"><div class="sn">ג</div><h2>מה מאכילים</h2><span class="sh-en">What to feed</span></div>
+    <hr class="div">
+    <div class="feed-grid">
+      <div class="feed-yes">
+        <div class="feed-title">כן — אוהבות</div>
+        <div class="feed-item">קליפות ירק ופרי</div>
+        <div class="feed-item">שאריות קפה ותה</div>
+        <div class="feed-item">קרטון ועיתון קרוע</div>
+        <div class="feed-item">עלים יבשים</div>
+        <div class="feed-item">לחם ישן (כמות קטנה)</div>
+      </div>
+      <div class="feed-no">
+        <div class="feed-title">לא — מזיק להן</div>
+        <div class="feed-item">בצל ושום (חומצה)</div>
+        <div class="feed-item">הדרים בכמות גדולה</div>
+        <div class="feed-item">בשר ומוצרי חלב</div>
+        <div class="feed-item">מזון שמנוני</div>
+        <div class="feed-item">חומר מבושל חם</div>
+      </div>
+    </div>
+  </div>
+  <div class="castings-box">
+    <div class="castings-title">שימושים להפרשות התולעים</div>
+    <div class="castings-text">הפרשות יבשות — מפזרים ישירות על אדמת הערוגה. נוזל (worm tea) — מדללים 1:10 ומשקים. אפשר להוסיף לתה קומפוסט להעצמה כפולה.</div>
+  </div>
+  <div class="chupchu">
+    <img class="chupchu-img" src="https://gina-haya.vercel.app/chupchu_final.png" alt="צ'ופצ'ו">
+    <div>
+      <div class="chupchu-name">הסוד של צ'ופצ'ו:</div>
+      <div class="chupchu-text">ביום שורש לפי הלוח הביודינמי — הוסף הפרשות תולעים לאדמה. השורשים קולטים ביום הזה פי כמה. פתח גינה חיה לבדוק!</div>
+    </div>
+  </div>
+  <div class="related">
+    <div class="related-title">מאמרים קשורים</div>
+    <div class="related-links">
+      <a class="related-link" href="/articles/compost-pile">ערימת קומפוסט — המדריך המלא</a>
+      <a class="related-link" href="/articles/compost-tea">תה קומפוסט — השלמה מושלמת</a>
+      <a class="related-link" href="/articles/compost-dont">מה לא לשים בקומפוסט</a>
+    </div>
+  </div>
+</div>
+<footer class="footer-cta">
+  <img class="footer-img" src="https://gina-haya.vercel.app/chupchu_final.png" alt="צ'ופצ'ו">
+  <div class="footer-text">מתי יום השורש הבא להוסיף ורמיקומפוסט לגינה?<br><em>Find the biodynamic root day for worm casting application.</em></div>
+  <a class="footer-btn" href="https://gina-haya.vercel.app">פתח גינה חיה ←</a>
+</footer>
+</article>`,
+  },
+  {
+    id: 'compost-dont',
+    titleHe: 'מה לא לשים בקומפוסט',
+    titleEn: 'What Not to Compost — The No-List',
+    metaDescriptionHe: 'חלק מהחומרים יהרסו את כל הערימה — ריח, מחלות, מזיקים. הנה הרשימה שצריך לדעת בעל פה.',
+    metaDescriptionEn: 'Know what to keep out of your compost pile to avoid smells, pests and pathogens.',
+    categoryHe: 'קומפוסט',
+    categoryEn: 'Compost',
+    filenameHe: '23_מה_לא_לשים_בקומפוסט.md',
+    filenameEn: '23_compost_dont.md',
+    publishedAt: '2026-04-11',
+    images: null,
+    htmlContent: `<style>
+@import url('https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Inter:wght@300;400;500&family=Caveat:wght@400;600&display=swap');
+*{box-sizing:border-box;margin:0;padding:0;}
+.art{
+  --red:#cc1a1a;
+  --red-pale:#fce8e8;
+  --orange:#e05a00;
+  --orange-pale:#fdf0e0;
+  --green:#1a6a1a;
+  --green-pale:#e0f0e0;
+  --black:#0a0a0a;
+  --dark:#1a1a1a;
+  --gray:#3a3a3a;
+  --gray-mid:#6a6a6a;
+  --offwhite:#f8f6f2;
+  --yellow:#f0c000;
+  font-family:'Inter',sans-serif;
+  background:var(--offwhite);
+  color:var(--black);
+}
+.hero{
+  background:var(--black);
+  padding:3rem 2.5rem 2.5rem;
+  display:flex;align-items:center;gap:2rem;
+  position:relative;
+  overflow:hidden;
+}
+.hero-diagonal{
+  position:absolute;top:0;right:0;
+  width:0;height:0;
+  border-style:solid;
+  border-width:0 120px 120px 0;
+  border-color:transparent var(--red) transparent transparent;
+}
+.hero-content{flex:1;position:relative;z-index:1;}
+.hero-tag{display:inline-block;background:var(--red);color:white;font-size:10px;font-weight:500;letter-spacing:0.14em;text-transform:uppercase;padding:3px 11px;margin-bottom:1rem;}
+.hero h1{font-family:'Bebas Neue',sans-serif;font-size:3.5rem;color:white;line-height:1;margin-bottom:0.3rem;direction:rtl;letter-spacing:0.02em;}
+.hero-en{font-size:0.88rem;font-weight:300;color:var(--gray-mid);margin-bottom:1.25rem;letter-spacing:0.02em;}
+.hero-meta{display:flex;gap:1.25rem;font-size:11px;color:#4a4a4a;font-weight:300;}
+.hero-img{width:110px;height:110px;border-radius:0;object-fit:cover;object-position:center 18%;border:2px solid var(--red);flex-shrink:0;}
+.body{padding:0 2.5rem;}
+.intro{font-size:1rem;line-height:1.85;color:var(--dark);border-right:4px solid var(--red);padding:0.25rem 1.1rem;margin:1.75rem 0;direction:rtl;}
+.section{margin:2.25rem 0 0;}
+.sh{display:flex;align-items:center;gap:0.7rem;margin-bottom:0.5rem;direction:rtl;}
+.sn{width:24px;height:24px;background:var(--red);color:white;font-family:'Bebas Neue',sans-serif;font-size:14px;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+.sh h2{font-family:'Bebas Neue',sans-serif;font-size:1.5rem;color:var(--black);letter-spacing:0.03em;}
+.sh-en{font-size:0.72rem;font-weight:300;color:var(--gray-mid);letter-spacing:0.05em;margin-right:auto;}
+.div{border:none;border-top:2px solid var(--black);margin-bottom:1.1rem;}
+.p{font-size:0.93rem;line-height:1.85;color:var(--dark);direction:rtl;margin-bottom:0.9rem;}
+.p strong{color:var(--black);font-weight:500;}
+.no-list{display:flex;flex-direction:column;gap:8px;margin:1.25rem 0;}
+.no-item{display:flex;align-items:flex-start;gap:0;border-radius:4px;overflow:hidden;direction:rtl;}
+.no-icon{width:44px;display:flex;align-items:center;justify-content:center;flex-shrink:0;font-family:'Bebas Neue',sans-serif;font-size:1.1rem;font-weight:400;}
+.no-icon-red{background:var(--red);color:white;}
+.no-icon-orange{background:var(--orange);color:white;}
+.no-body{flex:1;padding:10px 12px;}
+.no-title{font-size:0.88rem;font-weight:500;color:var(--black);margin-bottom:2px;}
+.no-why{font-size:0.8rem;color:var(--gray);line-height:1.55;}
+.yes-list{display:flex;flex-direction:column;gap:6px;margin:1.25rem 0;}
+.yes-item{display:flex;align-items:center;gap:10px;padding:8px 12px;background:var(--green-pale);border-radius:4px;direction:rtl;}
+.yes-check{width:20px;height:20px;background:var(--green);border-radius:50%;color:white;font-size:11px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+.yes-text{font-size:0.88rem;color:var(--dark);}
+.chupchu{background:white;border:2px solid var(--red);border-radius:4px;padding:1rem 1.2rem;margin:1.75rem 0;display:flex;gap:0.9rem;align-items:flex-start;direction:rtl;}
+.chupchu-img{width:42px;height:42px;object-fit:cover;object-position:center 15%;border:2px solid var(--red);flex-shrink:0;}
+.chupchu-name{font-family:'Caveat',cursive;font-size:13px;font-weight:600;color:var(--red);margin-bottom:3px;}
+.chupchu-text{font-family:'Caveat',cursive;font-size:1rem;line-height:1.55;color:var(--dark);}
+.speed-table{margin:1.25rem 0;border:1px solid #ddd;border-radius:4px;overflow:hidden;}
+.speed-row{display:flex;align-items:center;border-bottom:1px solid #eee;direction:rtl;}
+.speed-row:last-child{border-bottom:none;}
+.speed-item{flex:1;padding:9px 12px;font-size:0.85rem;color:var(--dark);}
+.speed-bar-wrap{width:100px;padding:9px 12px;flex-shrink:0;}
+.speed-bar{height:8px;border-radius:4px;background:var(--green);}
+.speed-header{background:#f0f0f0;font-weight:500;font-size:0.78rem;color:var(--gray);}
+.related{background:#f0f0f0;border-radius:4px;padding:1.25rem 1.5rem;margin:2rem 0;direction:rtl;}
+.related-title{font-family:'Bebas Neue',sans-serif;font-size:1.2rem;color:var(--black);margin-bottom:1rem;letter-spacing:0.03em;}
+.related-links{display:flex;flex-direction:column;gap:8px;}
+.related-link{display:flex;align-items:center;gap:8px;font-size:0.88rem;color:var(--green);text-decoration:none;}
+.related-link::before{content:'←';color:var(--red);font-size:14px;font-weight:700;}
+.footer-cta{background:var(--black);padding:2rem 2.5rem;display:flex;align-items:center;gap:1.5rem;direction:rtl;margin-top:3rem;}
+.footer-img{width:52px;height:52px;object-fit:cover;object-position:center 15%;border:2px solid var(--red);flex-shrink:0;}
+.footer-text{font-size:0.9rem;line-height:1.7;color:#c8c8c8;flex:1;}
+.footer-text em{font-size:0.78rem;color:#4a4a4a;font-style:normal;}
+.footer-btn{display:inline-block;background:var(--red);color:white;font-family:'Bebas Neue',sans-serif;font-size:1rem;letter-spacing:0.05em;padding:9px 20px;text-decoration:none;white-space:nowrap;flex-shrink:0;}
+@media(max-width:560px){.hero h1{font-size:2.5rem;}.hero-img{display:none;}.body{padding:0 1.5rem;}.footer-cta{flex-direction:column;padding:1.5rem;}}
+</style>
+<article class="art" itemscope itemtype="https://schema.org/Article">
+<header class="hero">
+  <div class="hero-diagonal"></div>
+  <div class="hero-content">
+    <span class="hero-tag">קומפוסט · Composting</span>
+    <h1 itemprop="headline">מה לא לשים בקומפוסט</h1>
+    <div class="hero-en">What Not to Compost — The No-List</div>
+    <div class="hero-meta"><span>קריאה: 4 דקות</span><span>רמה: מתחיל</span><span>עונה: כל השנה</span></div>
+  </div>
+  <img class="hero-img" src="https://gina-haya.vercel.app/chupchu_final.png" alt="צ'ופצ'ו" itemprop="image">
+</header>
+<div class="body">
+  <p class="intro" itemprop="description">קומפוסט טוב הוא עסק עדין. מה שנכנס פנימה קובע מה יצא. חלק מהחומרים יהרסו את כל הערימה — ריח, מחלות, מזיקים. הנה הרשימה שצריך לדעת בעל פה.</p>
+  <div class="section">
+    <div class="sh"><div class="sn">א</div><h2>אסור — לעולם לא</h2><span class="sh-en">Never, ever</span></div>
+    <hr class="div">
+    <div class="no-list">
+      <div class="no-item"><div class="no-icon no-icon-red">✗</div><div class="no-body"><div class="no-title">בשר, דגים ועצמות</div><div class="no-why">ריח חזק שמושך מזיקים ועכברים. מתפרק לאט ומייצר חיידקים מזיקים.</div></div></div>
+      <div class="no-item"><div class="no-icon no-icon-red">✗</div><div class="no-body"><div class="no-title">מוצרי חלב</div><div class="no-why">ריח רקבון חזק, מושך חיות בר, מאט פירוק.</div></div></div>
+      <div class="no-item"><div class="no-icon no-icon-red">✗</div><div class="no-body"><div class="no-title">שמנים ושומנים</div><div class="no-why">מונעים אוורור, חונקים חיידקים מועילים, ריח חזק.</div></div></div>
+      <div class="no-item"><div class="no-icon no-icon-red">✗</div><div class="no-body"><div class="no-title">צמחים חולים</div><div class="no-why">מחלות וזרעי עשבים שוטים שורדים גם בטמפ' גבוהה ויחזרו לגינה.</div></div></div>
+      <div class="no-item"><div class="no-icon no-icon-red">✗</div><div class="no-body"><div class="no-title">גזם מטופל בקוטלי מחלות</div><div class="no-why">כימיקלים הורגים חיידקים מועילים ועלולים להרעיל אדמה.</div></div></div>
+    </div>
+  </div>
+  <div class="section">
+    <div class="sh"><div class="sn">ב</div><h2>בזהירות — רק במינון</h2><span class="sh-en">With caution</span></div>
+    <hr class="div">
+    <div class="no-list">
+      <div class="no-item"><div class="no-icon no-icon-orange">!</div><div class="no-body"><div class="no-title">קליפות הדרים בכמות גדולה</div><div class="no-why">חומציות מדי — מאטות פירוק. עד 10% מהנפח — בסדר.</div></div></div>
+      <div class="no-item"><div class="no-icon no-icon-orange">!</div><div class="no-body"><div class="no-title">בצל ושום גולמי</div><div class="no-why">ריח חזק, מדכא תולעים. בכמות קטנה — בסדר.</div></div></div>
+      <div class="no-item"><div class="no-icon no-icon-orange">!</div><div class="no-body"><div class="no-title">עיתון מצויר / קרטון מצופה</div><div class="no-why">דיו עלול להכיל מתכות כבדות. עיתון רגיל — בסדר.</div></div></div>
+      <div class="no-item"><div class="no-icon no-icon-orange">!</div><div class="no-body"><div class="no-title">אפר עץ בכמות גדולה</div><div class="no-why">מעלה pH חזק. כף-שתיים לכל שכבה — בסדר.</div></div></div>
+    </div>
+  </div>
+  <div class="chupchu">
+    <img class="chupchu-img" src="https://gina-haya.vercel.app/chupchu_final.png" alt="צ'ופצ'ו">
+    <div>
+      <div class="chupchu-name">צ'ופצ'ו אומר:</div>
+      <div class="chupchu-text">הקומפוסט שלי הוא מה שהוא — רק מה שהגינה מייצרת. כשספק — אל תשים. עדיף ערימה קצת יותר קטנה ובריאה מערימה גדולה עם בעיות.</div>
+    </div>
+  </div>
+  <div class="section">
+    <div class="sh"><div class="sn">ג</div><h2>כן — הכי טוב לקומפוסט</h2><span class="sh-en">Best inputs</span></div>
+    <hr class="div">
+    <div class="yes-list">
+      <div class="yes-item"><div class="yes-check">✓</div><span class="yes-text">קליפות ירק ופרי טריות</span></div>
+      <div class="yes-item"><div class="yes-check">✓</div><span class="yes-text">שאריות קפה ושקיות תה</span></div>
+      <div class="yes-item"><div class="yes-check">✓</div><span class="yes-text">גזם ירוק — ענפים דקים, עלים טריים</span></div>
+      <div class="yes-item"><div class="yes-check">✓</div><span class="yes-text">עלים יבשים, קש, קרטון נקי</span></div>
+      <div class="yes-item"><div class="yes-check">✓</div><span class="yes-text">פרחים קמולים (לא מטופלים)</span></div>
+      <div class="yes-item"><div class="yes-check">✓</div><span class="yes-text">ביצה — רק קליפה (לא הביצה עצמה)</span></div>
+    </div>
+  </div>
+  <div class="section">
+    <div class="sh"><div class="sn">ד</div><h2>מהירות פירוק</h2><span class="sh-en">Decomposition speed</span></div>
+    <hr class="div">
+    <div class="speed-table">
+      <div class="speed-row speed-header"><span class="speed-item">חומר</span><span class="speed-bar-wrap">מהירות</span></div>
+      <div class="speed-row"><span class="speed-item">שאריות קפה</span><div class="speed-bar-wrap"><div class="speed-bar" style="width:90%;"></div></div></div>
+      <div class="speed-row"><span class="speed-item">קליפות ירק</span><div class="speed-bar-wrap"><div class="speed-bar" style="width:80%;"></div></div></div>
+      <div class="speed-row"><span class="speed-item">גזם ירוק</span><div class="speed-bar-wrap"><div class="speed-bar" style="width:65%;"></div></div></div>
+      <div class="speed-row"><span class="speed-item">עלים יבשים</span><div class="speed-bar-wrap"><div class="speed-bar" style="width:40%;background:#c8a000;"></div></div></div>
+      <div class="speed-row"><span class="speed-item">קרטון / עיתון</span><div class="speed-bar-wrap"><div class="speed-bar" style="width:30%;background:#c8a000;"></div></div></div>
+      <div class="speed-row"><span class="speed-item">ענפים עבים</span><div class="speed-bar-wrap"><div class="speed-bar" style="width:15%;background:#cc4a00;"></div></div></div>
+    </div>
+  </div>
+  <div class="related">
+    <div class="related-title">מאמרים קשורים</div>
+    <div class="related-links">
+      <a class="related-link" href="/articles/compost-pile">ערימת קומפוסט — המדריך המלא</a>
+      <a class="related-link" href="/articles/vermicompost">ורמיקומפוסט</a>
+      <a class="related-link" href="/articles/compost-tea">תה קומפוסט</a>
+    </div>
+  </div>
+</div>
+<footer class="footer-cta">
+  <img class="footer-img" src="https://gina-haya.vercel.app/chupchu_final.png" alt="צ'ופצ'ו">
+  <div class="footer-text">מתי יום השורש הביודינמי לעבוד עם הקומפוסט?<br><em>Find the biodynamic root day for composting work.</em></div>
+  <a class="footer-btn" href="https://gina-haya.vercel.app">פתח גינה חיה</a>
+</footer>
+</article>`,
+  },
 ];
