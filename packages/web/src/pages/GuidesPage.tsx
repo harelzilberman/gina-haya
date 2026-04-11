@@ -90,10 +90,10 @@ const GUIDE_CONTENT: Record<string, GuideContent> = {
   c2:  { article: { slug: 'vermicompost', ready: true }, comingSoon: ['סרטון'] },
   c3:  { article: { slug: 'compost-dont', ready: true }, comingSoon: ['סרטון'] },
   // BD preparations
-  bd1: { video: { youtubeId: 'dQw4w9WgXcQ', duration: '12:00' }, comingSoon: ['מאמר'] },
-  bd2: { comingSoon: ['סרטון', 'מאמר'] },
-  bd3: { comingSoon: ['סרטון', 'מאמר'] },
-  bd4: { comingSoon: ['סרטון', 'מאמר'] },
+  bd1: { video: { youtubeId: 'dQw4w9WgXcQ', duration: '12:00' }, article: { slug: 'bd500', ready: true } },
+  bd2: { article: { slug: 'bd501', ready: true }, comingSoon: ['סרטון'] },
+  bd3: { article: { slug: 'cpp', ready: true }, comingSoon: ['סרטון'] },
+  bd4: { article: { slug: 'biodynamic-calendar', ready: true }, comingSoon: ['סרטון'] },
   // Companions
   co1: { video: { youtubeId: 'dQw4w9WgXcQ', duration: '0:45' }, article: { slug: 'companion-planting', ready: true } },
   co2: { article: { slug: 'companion-planting', ready: true }, comingSoon: ['סרטון'] },
@@ -618,6 +618,7 @@ const GUIDE_CAT_TO_ARTICLE_CAT: Record<string, string> = {
   fertilizer: 'Natural Fertilizers',
   pest:        'Pest Control',
   compost:     'Compost',
+  bd:          'BD Preps',
   companion:   'Companion Planting',
   technique:   'Techniques',
 };

@@ -2840,4 +2840,836 @@ function toggleFaq(el){
 </footer>
 </article>`,
   },
+  {
+    id: 'bd500',
+    titleHe: 'BD 500 — קרן הזבל',
+    titleEn: "Horn Manure — The Earth's Awakening",
+    metaDescriptionHe: 'בסתיו, קרן פרה מלאה בזבל נקברת בעומק האדמה. באביב, כשחופרים, מה שיצא הוא לא זבל — זה משהו אחר לגמרי.',
+    metaDescriptionEn: 'Bury cow manure in a horn through winter and unlock the most powerful biodynamic soil preparation.',
+    categoryHe: 'פרפרטים BD',
+    categoryEn: 'BD Preps',
+    filenameHe: '24_BD500_קרן_הזבל.md',
+    filenameEn: '24_bd500_horn_manure.md',
+    publishedAt: '2026-04-11',
+    images: null,
+    htmlContent: `<style>
+@import url('https://fonts.googleapis.com/css2?family=IM+Fell+English:ital@0;1&family=Cinzel:wght@400;600&family=Jost:wght@300;400;500&family=Caveat:wght@400;600&display=swap');
+*{box-sizing:border-box;margin:0;padding:0;}
+.art{
+  --midnight:#06080f;
+  --night:#0d1220;
+  --dusk:#1a2040;
+  --moon:#c8d4f0;
+  --moon-pale:#e8edf8;
+  --gold:#c8a030;
+  --gold-pale:#f0e0a0;
+  --earth:#3d2010;
+  --earth-mid:#6a3a18;
+  --earth-pale:#c8a070;
+  --horn:#d4b880;
+  --cream:#faf6ef;
+  font-family:'Jost',sans-serif;
+  background:var(--cream);
+  color:var(--midnight);
+}
+.hero{
+  background:var(--midnight);
+  padding:4rem 2.5rem 3rem;
+  position:relative;
+  overflow:hidden;
+  text-align:center;
+}
+.hero-stars{position:absolute;inset:0;pointer-events:none;}
+.star{position:absolute;background:white;border-radius:50%;}
+.hero-moon{
+  position:absolute;top:1.5rem;left:50%;transform:translateX(-50%);
+  width:60px;height:60px;border-radius:50%;
+  background:var(--moon);
+  opacity:0.15;
+}
+.hero-content{position:relative;z-index:1;}
+.hero-tag{display:inline-block;border:1px solid rgba(200,160,48,0.4);color:var(--gold);font-family:'Cinzel',serif;font-size:10px;letter-spacing:0.18em;text-transform:uppercase;padding:4px 14px;margin-bottom:1.5rem;}
+.hero h1{font-family:'Cinzel',serif;font-size:2.8rem;font-weight:600;color:var(--moon-pale);line-height:1.1;margin-bottom:0.4rem;direction:rtl;}
+.hero-num{font-family:'Cinzel',serif;font-size:5rem;font-weight:600;color:rgba(200,160,48,0.15);line-height:1;position:absolute;top:1rem;right:2rem;}
+.hero-en{font-family:'IM Fell English',serif;font-size:1rem;font-style:italic;color:var(--gold);margin-bottom:1.5rem;}
+.hero-meta{display:flex;gap:1.5rem;font-size:11px;color:rgba(200,212,240,0.4);font-weight:300;justify-content:center;}
+.hero-img{width:100px;height:100px;border-radius:50%;object-fit:cover;object-position:center 18%;border:1px solid rgba(200,160,48,0.3);margin:1.5rem auto 0;display:block;}
+.hero-divider{width:80px;height:1px;background:linear-gradient(90deg,transparent,var(--gold),transparent);margin:1.5rem auto 0;}
+.body{padding:0 2.5rem;}
+.intro{font-family:'IM Fell English',serif;font-size:1.1rem;font-style:italic;line-height:1.9;color:var(--earth-mid);border-right:2px solid var(--gold);padding:0.25rem 1.1rem;margin:1.75rem 0;direction:rtl;}
+.section{margin:2.25rem 0 0;}
+.sh{display:flex;align-items:center;gap:0.7rem;margin-bottom:0.5rem;direction:rtl;}
+.sn{width:26px;height:26px;background:var(--midnight);color:var(--gold);font-family:'Cinzel',serif;font-size:11px;display:flex;align-items:center;justify-content:center;flex-shrink:0;border:1px solid rgba(200,160,48,0.3);}
+.sh h2{font-family:'Cinzel',serif;font-size:1.1rem;font-weight:600;color:var(--midnight);}
+.sh-en{font-size:0.72rem;font-weight:300;color:var(--earth-pale);font-style:italic;margin-right:auto;}
+.div{border:none;border-top:1px solid rgba(100,58,24,0.2);margin-bottom:1.1rem;}
+.p{font-size:0.93rem;line-height:1.9;color:var(--earth);direction:rtl;margin-bottom:0.9rem;}
+.p strong{color:var(--midnight);font-weight:500;}
+.ritual-steps{display:flex;flex-direction:column;gap:0;margin:1.25rem 0;position:relative;}
+.ritual-steps::before{content:'';position:absolute;right:19px;top:24px;bottom:24px;width:1px;background:linear-gradient(to bottom,var(--gold),transparent);}
+.rstep{display:flex;gap:14px;align-items:flex-start;padding:14px 0;direction:rtl;position:relative;z-index:1;}
+.rstep-icon{width:38px;height:38px;border-radius:50%;background:var(--midnight);border:1px solid rgba(200,160,48,0.4);color:var(--gold);font-family:'Cinzel',serif;font-size:12px;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+.rstep-title{font-family:'Cinzel',serif;font-size:0.88rem;font-weight:600;color:var(--midnight);margin-bottom:3px;}
+.rstep-desc{font-size:0.83rem;color:var(--earth-mid);line-height:1.65;}
+.calendar-box{background:var(--midnight);border-radius:8px;padding:1.5rem;margin:1.25rem 0;direction:rtl;}
+.cal-title{font-family:'Cinzel',serif;font-size:0.75rem;letter-spacing:0.12em;color:var(--gold);margin-bottom:1rem;}
+.cal-row{display:flex;gap:0;margin-bottom:6px;align-items:center;direction:rtl;}
+.cal-label{font-size:0.8rem;color:var(--moon);width:80px;flex-shrink:0;}
+.cal-months{display:flex;gap:4px;flex:1;}
+.cal-month{width:24px;height:24px;border-radius:3px;display:flex;align-items:center;justify-content:center;font-size:0.6rem;color:rgba(255,255,255,0.3);flex-shrink:0;}
+.cal-month.active-bury{background:rgba(200,160,48,0.3);color:var(--gold);}
+.cal-month.active-dig{background:rgba(100,200,100,0.2);color:#80d080;}
+.dynamo-box{background:rgba(200,160,48,0.06);border:1px solid rgba(200,160,48,0.2);border-radius:8px;padding:1.25rem 1.5rem;margin:1.25rem 0;direction:rtl;}
+.dynamo-title{font-family:'Cinzel',serif;font-size:0.82rem;font-weight:600;color:var(--gold);margin-bottom:0.75rem;}
+.dynamo-p{font-family:'IM Fell English',serif;font-size:0.95rem;font-style:italic;line-height:1.8;color:var(--earth-mid);}
+.chupchu{background:var(--moon-pale);border:1px solid rgba(200,160,48,0.2);border-radius:8px;padding:1rem 1.2rem;margin:1.75rem 0;display:flex;gap:0.9rem;align-items:flex-start;direction:rtl;}
+.chupchu-img{width:42px;height:42px;border-radius:50%;object-fit:cover;object-position:center 15%;border:1px solid rgba(200,160,48,0.3);flex-shrink:0;}
+.chupchu-name{font-family:'Caveat',cursive;font-size:13px;font-weight:600;color:var(--gold);margin-bottom:3px;}
+.chupchu-text{font-family:'Caveat',cursive;font-size:1rem;line-height:1.55;color:var(--earth-mid);}
+.related{background:var(--moon-pale);border-radius:8px;padding:1.25rem 1.5rem;margin:2rem 0;direction:rtl;}
+.related-title{font-family:'Cinzel',serif;font-size:0.9rem;font-weight:600;color:var(--midnight);margin-bottom:1rem;}
+.related-links{display:flex;flex-direction:column;gap:8px;}
+.related-link{display:flex;align-items:center;gap:8px;font-size:0.88rem;color:var(--earth-mid);text-decoration:none;}
+.related-link::before{content:'←';color:var(--gold);font-size:12px;}
+.footer-cta{background:var(--midnight);padding:2rem 2.5rem;display:flex;align-items:center;gap:1.5rem;direction:rtl;margin-top:3rem;}
+.footer-img{width:52px;height:52px;border-radius:50%;object-fit:cover;object-position:center 15%;border:1px solid rgba(200,160,48,0.3);flex-shrink:0;}
+.footer-text{font-family:'IM Fell English',serif;font-size:0.95rem;font-style:italic;line-height:1.7;color:var(--moon);flex:1;}
+.footer-text em{font-size:0.78rem;color:#3a4060;font-style:normal;font-family:'Jost',sans-serif;}
+.footer-btn{display:inline-block;background:var(--gold);color:var(--midnight);font-family:'Cinzel',serif;font-size:0.8rem;font-weight:600;padding:9px 20px;border-radius:4px;text-decoration:none;white-space:nowrap;flex-shrink:0;letter-spacing:0.05em;}
+@media(max-width:560px){.hero h1{font-size:2rem;}.hero-num{display:none;}.body{padding:0 1.5rem;}.footer-cta{flex-direction:column;padding:1.5rem;}}
+</style>
+<article class="art" itemscope itemtype="https://schema.org/Article">
+<header class="hero">
+  <div class="hero-stars">
+    <div class="star" style="width:2px;height:2px;top:15%;right:20%;opacity:0.8;"></div>
+    <div class="star" style="width:1px;height:1px;top:25%;right:40%;opacity:0.6;"></div>
+    <div class="star" style="width:2px;height:2px;top:10%;right:60%;opacity:0.9;"></div>
+    <div class="star" style="width:1px;height:1px;top:35%;right:75%;opacity:0.5;"></div>
+    <div class="star" style="width:3px;height:3px;top:20%;right:85%;opacity:0.7;"></div>
+    <div class="star" style="width:1px;height:1px;top:45%;right:30%;opacity:0.6;"></div>
+    <div class="star" style="width:2px;height:2px;top:55%;right:55%;opacity:0.4;"></div>
+    <div class="star" style="width:1px;height:1px;top:8%;right:50%;opacity:0.8;"></div>
+  </div>
+  <div class="hero-moon"></div>
+  <div class="hero-num">500</div>
+  <div class="hero-content">
+    <span class="hero-tag">פרפרטים ביודינמיים · Biodynamic Preparations</span>
+    <h1 itemprop="headline">BD 500 — קרן הזבל</h1>
+    <div class="hero-en">Horn Manure — The Earth's Awakening</div>
+    <div class="hero-meta"><span>קריאה: 12 דקות</span><span>רמה: מתקדם</span><span>עונה: סתיו–אביב</span></div>
+    <img class="hero-img" src="https://gina-haya.vercel.app/chupchu_final.png" alt="צ'ופצ'ו" itemprop="image">
+    <div class="hero-divider"></div>
+  </div>
+</header>
+<div class="body">
+  <p class="intro" itemprop="description">בסתיו, קרן פרה מלאה בזבל נקברת בעומק האדמה. שם, בחשכה, בקור, בלחות החורף — משהו עמוק קורה. באביב, כשחופרים, מה שיצא הוא לא זבל. זה משהו אחר לגמרי.</p>
+  <div class="section">
+    <div class="sh"><div class="sn">I</div><h2>הרעיון מאחורי הפרפרט</h2><span class="sh-en">The philosophy</span></div>
+    <hr class="div">
+    <p class="p">רודולף שטיינר, מייסד הגינה הביודינמית, טען שהקרן היא <strong>אנטנה של כוחות קוסמיים</strong>. הפרה שולחת את כוחות החיים שלה דרך הקרן אל האדמה — והזבל בתוכה סופג את כל אלה לאורך חודשי החורף.</p>
+    <p class="p">התוצאה: פרפרט 500 עשיר בחיידקים, פטריות מיקוריזה, אנזימים ואנרגיה חיה שמעוררת את הקרקע מהשינה.</p>
+  </div>
+  <div class="dynamo-box">
+    <div class="dynamo-title">מה קורה בקרן בחורף</div>
+    <div class="dynamo-p">האדמה הקפואה מתנהגת כמו קפסולה. הקרן — בצורתה הספירלית — מרכזת את הכוחות פנימה. הזבל עובר תהליך המרה שאין לו שם מדויק — הוא לא מתפרק, הוא מתעלה.</div>
+  </div>
+  <div class="chupchu">
+    <img class="chupchu-img" src="https://gina-haya.vercel.app/chupchu_final.png" alt="צ'ופצ'ו">
+    <div>
+      <div class="chupchu-name">צ'ופצ'ו אומר:</div>
+      <div class="chupchu-text">הגלובוס בחזה שלי מלמד אותי — האדמה לא ישנה בחורף. היא חולמת. ופרפרט 500 הוא החלום שלה בצורת חומר.</div>
+    </div>
+  </div>
+  <div class="section">
+    <div class="sh"><div class="sn">II</div><h2>הריטואל — שלב אחר שלב</h2><span class="sh-en">The ritual</span></div>
+    <hr class="div">
+    <div class="ritual-steps">
+      <div class="rstep"><div class="rstep-icon">א</div><div><div class="rstep-title">איסוף הקרן</div><div class="rstep-desc">קרן פרה בוגרת — לא שור, לא עגל. הקרן היא צינור של אנרגיה חיה בלבד.</div></div></div>
+      <div class="rstep"><div class="rstep-icon">ב</div><div><div class="rstep-title">מילוי בזבל</div><div class="rstep-desc">זבל פרה טרי ואיכותי. ממלאים היטב ללא חללים אוויר. אין דחיסה יתרה.</div></div></div>
+      <div class="rstep"><div class="rstep-icon">ג</div><div><div class="rstep-title">קבורה — מיכאל (סוכות)</div><div class="rstep-desc">חופרים 50–60 ס"מ לאדמה. הקרן מונחת בנקודת צל, אדמה פוריה, לא ליד בטון.</div></div></div>
+      <div class="rstep"><div class="rstep-icon">ד</div><div><div class="rstep-title">המתנה — כל החורף</div><div class="rstep-desc">4–6 חודשים. האדמה עובדת בחשכה. אין מה לעשות. זה הזמן לסמוך.</div></div></div>
+      <div class="rstep"><div class="rstep-icon">ה</div><div><div class="rstep-title">חפירה — פסח</div><div class="rstep-desc">כשהאדמה מתחילה להתחמם. הפרפרט מוציאים בזהירות — צריך להריח אדמת יער. אז הצליח.</div></div></div>
+    </div>
+  </div>
+  <div class="section">
+    <div class="sh"><div class="sn">III</div><h2>לוח קבורה וחפירה</h2><span class="sh-en">Calendar</span></div>
+    <hr class="div">
+    <div class="calendar-box">
+      <div class="cal-title">חודשי שנה — קבורה וחפירה</div>
+      <div class="cal-row">
+        <span class="cal-label">קבורה</span>
+        <div class="cal-months">
+          <div class="cal-month">י'</div><div class="cal-month">פ'</div><div class="cal-month">מ'</div>
+          <div class="cal-month">א'</div><div class="cal-month">מ'</div><div class="cal-month">י'</div>
+          <div class="cal-month">י'</div><div class="cal-month">א'</div>
+          <div class="cal-month active-bury">ס'</div><div class="cal-month active-bury">א'</div>
+          <div class="cal-month active-bury">נ'</div><div class="cal-month active-bury">ד'</div>
+        </div>
+      </div>
+      <div class="cal-row">
+        <span class="cal-label">חפירה</span>
+        <div class="cal-months">
+          <div class="cal-month">י'</div><div class="cal-month">פ'</div>
+          <div class="cal-month active-dig">מ'</div><div class="cal-month active-dig">א'</div>
+          <div class="cal-month">מ'</div><div class="cal-month">י'</div>
+          <div class="cal-month">י'</div><div class="cal-month">א'</div>
+          <div class="cal-month">ס'</div><div class="cal-month">א'</div>
+          <div class="cal-month">נ'</div><div class="cal-month">ד'</div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="section">
+    <div class="sh"><div class="sn">IV</div><h2>הדינמיזציה — לב השיטה</h2><span class="sh-en">Dynamization</span></div>
+    <hr class="div">
+    <p class="p">כפית אחת של פרפרט 500 מדוללת ב-<strong>40 ליטר מים</strong> ומוערבלת בעצמה למשך שעה תמימה — לסירוגין בכיוון השעון ונגדו. הכאוס והסדר לסירוגין — כך משחררים את הכוח.</p>
+    <p class="p">מרססים בשקיעה, ישירות על האדמה — לא על עלים. פרפרט 500 מדבר עם השורשים.</p>
+  </div>
+  <div class="chupchu">
+    <img class="chupchu-img" src="https://gina-haya.vercel.app/chupchu_final.png" alt="צ'ופצ'ו">
+    <div>
+      <div class="chupchu-name">הסוד של צ'ופצ'ו:</div>
+      <div class="chupchu-text">פרפרט 500 מרססים ביום שורש לפי הלוח הביודינמי — בשקיעה. האדמה ערה, השורשים פתוחים, והירח תומך. פתח גינה חיה לדעת מתי!</div>
+    </div>
+  </div>
+  <div class="related">
+    <div class="related-title">מאמרים קשורים</div>
+    <div class="related-links">
+      <a class="related-link" href="/articles/bd501">BD 501 — קרן הסיליקה</a>
+      <a class="related-link" href="/articles/cpp">CPP — בור הזבל</a>
+      <a class="related-link" href="/articles/biodynamic-calendar">הלוח הביודינמי</a>
+    </div>
+  </div>
+</div>
+<footer class="footer-cta">
+  <img class="footer-img" src="https://gina-haya.vercel.app/chupchu_final.png" alt="צ'ופצ'ו">
+  <div class="footer-text">מתי יום השורש הבא לרסס BD 500?<br><em>Find the biodynamic root day for horn manure application.</em></div>
+  <a class="footer-btn" href="https://gina-haya.vercel.app">פתח גינה חיה</a>
+</footer>
+</article>`,
+  },
+  {
+    id: 'bd501',
+    titleHe: 'BD 501 — קרן הסיליקה',
+    titleEn: 'Horn Silica — The Light Preparation',
+    metaDescriptionHe: 'אם BD 500 הוא כוח האדמה — BD 501 הוא כוח האור. אבקת קוורץ בקרן פרה, קבורה בקיץ, סופגת כוחות קוסמיים של אור.',
+    metaDescriptionEn: 'Pack quartz powder into a cow horn, bury it through summer, and harvest the biodynamic light preparation.',
+    categoryHe: 'פרפרטים BD',
+    categoryEn: 'BD Preps',
+    filenameHe: '25_BD501_קרן_הסיליקה.md',
+    filenameEn: '25_bd501_horn_silica.md',
+    publishedAt: '2026-04-11',
+    images: null,
+    htmlContent: `<style>
+@import url('https://fonts.googleapis.com/css2?family=Cormorant:ital,wght@0,400;0,600;1,400;1,600&family=Raleway:wght@300;400;500&family=Caveat:wght@400;600&display=swap');
+*{box-sizing:border-box;margin:0;padding:0;}
+.art{
+  --crystal:#e8f4ff;
+  --crystal-deep:#a8c8f0;
+  --sky:#4a88d0;
+  --sky-deep:#1a4a8a;
+  --noon:#fff8e8;
+  --light:#fffef8;
+  --prism1:#e8d0f8;
+  --prism2:#d0e8ff;
+  --prism3:#d0f8e8;
+  --prism4:#fff0d0;
+  --ink:#0a1428;
+  --ink-mid:#1a3050;
+  --ink-light:#4a6080;
+  --gold:#c8a020;
+  font-family:'Raleway',sans-serif;
+  background:var(--light);
+  color:var(--ink);
+}
+.hero{
+  background:linear-gradient(160deg,var(--sky-deep) 0%,var(--sky) 60%,var(--crystal-deep) 100%);
+  padding:3.5rem 2.5rem 3rem;
+  position:relative;
+  overflow:hidden;
+  text-align:center;
+}
+.hero-rays{
+  position:absolute;inset:0;pointer-events:none;
+  background:repeating-conic-gradient(from 0deg at 50% -10%,rgba(255,255,255,0.04) 0deg,transparent 3deg,rgba(255,255,255,0.04) 6deg);
+}
+.hero-content{position:relative;z-index:1;}
+.hero-tag{display:inline-block;background:rgba(255,255,255,0.15);color:white;font-size:10px;font-weight:500;letter-spacing:0.14em;text-transform:uppercase;padding:3px 12px;border-radius:20px;margin-bottom:1.25rem;border:1px solid rgba(255,255,255,0.2);}
+.hero h1{font-family:'Cormorant',serif;font-size:2.8rem;font-weight:600;color:white;line-height:1.05;margin-bottom:0.35rem;direction:rtl;}
+.hero-num{font-family:'Raleway',sans-serif;font-size:5rem;font-weight:300;color:rgba(255,255,255,0.1);line-height:1;position:absolute;top:1rem;left:2rem;letter-spacing:-0.05em;}
+.hero-en{font-family:'Cormorant',serif;font-size:1rem;font-style:italic;color:rgba(255,255,255,0.75);margin-bottom:1.5rem;}
+.hero-meta{display:flex;gap:1.5rem;font-size:11px;color:rgba(255,255,255,0.45);font-weight:300;justify-content:center;}
+.hero-img{width:100px;height:100px;border-radius:50%;object-fit:cover;object-position:center 18%;border:2px solid rgba(255,255,255,0.3);margin:1.5rem auto 0;display:block;}
+.prism-bar{display:flex;height:4px;margin-top:2rem;}
+.prism-seg{flex:1;}
+.body{padding:0 2.5rem;}
+.intro{font-family:'Cormorant',serif;font-size:1.1rem;font-style:italic;line-height:1.9;color:var(--ink-mid);border-right:2px solid var(--sky);padding:0.25rem 1.1rem;margin:1.75rem 0;direction:rtl;}
+.section{margin:2.25rem 0 0;}
+.sh{display:flex;align-items:center;gap:0.7rem;margin-bottom:0.5rem;direction:rtl;}
+.sn{width:26px;height:26px;background:var(--sky-deep);color:white;font-family:'Cormorant',serif;font-size:13px;display:flex;align-items:center;justify-content:center;flex-shrink:0;border-radius:50%;}
+.sh h2{font-family:'Cormorant',serif;font-size:1.25rem;font-weight:600;color:var(--ink);}
+.sh-en{font-size:0.72rem;font-weight:300;color:var(--ink-light);font-style:italic;margin-right:auto;}
+.div{border:none;border-top:1px solid rgba(74,136,208,0.2);margin-bottom:1.1rem;}
+.p{font-size:0.93rem;line-height:1.9;color:var(--ink-mid);direction:rtl;margin-bottom:0.9rem;}
+.p strong{color:var(--ink);font-weight:500;}
+.contrast-box{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin:1.25rem 0;}
+.cb-500{background:var(--ink);border-radius:8px;padding:1.25rem;direction:rtl;}
+.cb-501{background:var(--crystal);border-radius:8px;padding:1.25rem;direction:rtl;border:1px solid rgba(74,136,208,0.2);}
+.cb-label{font-size:0.72rem;font-weight:500;letter-spacing:0.1em;text-transform:uppercase;margin-bottom:0.6rem;}
+.cb-500 .cb-label{color:var(--gold);}
+.cb-501 .cb-label{color:var(--sky);}
+.cb-name{font-family:'Cormorant',serif;font-size:1.1rem;font-weight:600;margin-bottom:6px;}
+.cb-500 .cb-name{color:white;}
+.cb-501 .cb-name{color:var(--ink);}
+.cb-desc{font-size:0.82rem;line-height:1.6;}
+.cb-500 .cb-desc{color:rgba(200,212,240,0.7);}
+.cb-501 .cb-desc{color:var(--ink-mid);}
+.how-steps{display:flex;flex-direction:column;gap:8px;margin:1.25rem 0;}
+.hstep{display:flex;gap:12px;align-items:flex-start;padding:12px 14px;background:var(--crystal);border-radius:8px;direction:rtl;border:1px solid rgba(74,136,208,0.15);}
+.hstep-n{width:28px;height:28px;background:var(--sky);color:white;border-radius:50%;font-size:12px;font-weight:500;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+.hstep-title{font-size:0.88rem;font-weight:500;color:var(--ink);margin-bottom:2px;}
+.hstep-desc{font-size:0.8rem;color:var(--ink-light);line-height:1.6;}
+.timing-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:1.25rem 0;}
+.tg-card{border-radius:8px;padding:14px;direction:rtl;text-align:center;}
+.tg-morning{background:var(--noon);border:1px solid rgba(200,160,32,0.2);}
+.tg-evening{background:var(--ink);border:1px solid rgba(74,136,208,0.2);}
+.tg-time{font-family:'Cormorant',serif;font-size:1.8rem;font-weight:600;display:block;margin-bottom:4px;}
+.tg-morning .tg-time{color:var(--gold);}
+.tg-evening .tg-time{color:var(--crystal-deep);}
+.tg-label{font-size:0.78rem;font-weight:300;}
+.tg-morning .tg-label{color:var(--ink-light);}
+.tg-evening .tg-label{color:rgba(168,200,240,0.6);}
+.tg-desc{font-size:0.75rem;margin-top:6px;line-height:1.5;}
+.tg-morning .tg-desc{color:var(--ink-light);}
+.tg-evening .tg-desc{color:rgba(168,200,240,0.5);}
+.chupchu{background:var(--crystal);border:1px solid rgba(74,136,208,0.2);border-radius:10px;padding:1rem 1.2rem;margin:1.75rem 0;display:flex;gap:0.9rem;align-items:flex-start;direction:rtl;}
+.chupchu-img{width:42px;height:42px;border-radius:50%;object-fit:cover;object-position:center 15%;border:1px solid rgba(74,136,208,0.3);flex-shrink:0;}
+.chupchu-name{font-family:'Caveat',cursive;font-size:13px;font-weight:600;color:var(--sky);margin-bottom:3px;}
+.chupchu-text{font-family:'Caveat',cursive;font-size:1rem;line-height:1.55;color:var(--ink-mid);}
+.related{background:var(--crystal);border-radius:8px;padding:1.25rem 1.5rem;margin:2rem 0;direction:rtl;}
+.related-title{font-family:'Cormorant',serif;font-size:1rem;font-weight:600;color:var(--ink);margin-bottom:1rem;}
+.related-links{display:flex;flex-direction:column;gap:8px;}
+.related-link{display:flex;align-items:center;gap:8px;font-size:0.88rem;color:var(--sky-deep);text-decoration:none;}
+.related-link::before{content:'←';color:var(--sky);font-size:12px;}
+.footer-cta{background:var(--sky-deep);padding:2rem 2.5rem;display:flex;align-items:center;gap:1.5rem;direction:rtl;margin-top:3rem;}
+.footer-img{width:52px;height:52px;border-radius:50%;object-fit:cover;object-position:center 15%;border:1px solid rgba(74,136,208,0.4);flex-shrink:0;}
+.footer-text{font-family:'Cormorant',serif;font-size:0.95rem;font-style:italic;line-height:1.7;color:var(--crystal);flex:1;}
+.footer-text em{font-size:0.78rem;color:#2a4a6a;font-style:normal;font-family:'Raleway',sans-serif;}
+.footer-btn{display:inline-block;background:var(--sky);color:white;font-size:0.8rem;font-weight:500;padding:9px 20px;border-radius:4px;text-decoration:none;white-space:nowrap;flex-shrink:0;}
+@media(max-width:560px){.hero h1{font-size:2rem;}.hero-num{display:none;}.body{padding:0 1.5rem;}.contrast-box{grid-template-columns:1fr;}.timing-grid{grid-template-columns:1fr;}.footer-cta{flex-direction:column;padding:1.5rem;}}
+</style>
+<article class="art" itemscope itemtype="https://schema.org/Article">
+<header class="hero">
+  <div class="hero-rays"></div>
+  <div class="hero-num">501</div>
+  <div class="hero-content">
+    <span class="hero-tag">פרפרטים ביודינמיים · Biodynamic Preparations</span>
+    <h1 itemprop="headline">BD 501 — קרן הסיליקה</h1>
+    <div class="hero-en">Horn Silica — The Light Preparation</div>
+    <div class="hero-meta"><span>קריאה: 8 דקות</span><span>רמה: מתקדם</span><span>עונה: אביב–קיץ</span></div>
+    <img class="hero-img" src="https://gina-haya.vercel.app/chupchu_final.png" alt="צ'ופצ'ו" itemprop="image">
+  </div>
+  <div class="prism-bar">
+    <div class="prism-seg" style="background:#e060a0;"></div>
+    <div class="prism-seg" style="background:#8050d0;"></div>
+    <div class="prism-seg" style="background:#4080f0;"></div>
+    <div class="prism-seg" style="background:#40c080;"></div>
+    <div class="prism-seg" style="background:#e0e040;"></div>
+    <div class="prism-seg" style="background:#f08020;"></div>
+    <div class="prism-seg" style="background:#e03020;"></div>
+  </div>
+</header>
+<div class="body">
+  <p class="intro" itemprop="description">אם BD 500 הוא כוח האדמה — BD 501 הוא כוח האור. אבקת קוורץ טחונה דק, ממולאת בקרן פרה, קבורה בקיץ כשהשמש בשיאה. היא סופגת את הכוחות הקוסמיים של האור.</p>
+  <div class="section">
+    <div class="sh"><div class="sn">א</div><h2>500 מול 501 — שני כוחות</h2><span class="sh-en">The two poles</span></div>
+    <hr class="div">
+    <div class="contrast-box">
+      <div class="cb-500">
+        <div class="cb-label">BD 500</div>
+        <div class="cb-name">קרן הזבל</div>
+        <div class="cb-desc">כוחות הארץ. שורשים. חנקן. לחות. חורף. שקיעה. מדבר עם האדמה.</div>
+      </div>
+      <div class="cb-501">
+        <div class="cb-label">BD 501</div>
+        <div class="cb-name">קרן הסיליקה</div>
+        <div class="cb-desc">כוחות האור. עלים. פרחים. יובש. קיץ. זריחה. מדבר עם הצמח.</div>
+      </div>
+    </div>
+    <p class="p">השניים פועלים יחד — 500 מקים את הבסיס, 501 מביא את הכיוון. כמו יסוד ובניין.</p>
+  </div>
+  <div class="chupchu">
+    <img class="chupchu-img" src="https://gina-haya.vercel.app/chupchu_final.png" alt="צ'ופצ'ו">
+    <div>
+      <div class="chupchu-name">צ'ופצ'ו אומר:</div>
+      <div class="chupchu-text">העיניים שלי זוהרות בצהוב-ענבר — הן רואות את האור כמו הצמחים רואים. BD 501 הוא זה שמלמד את הצמח להשתמש באור בצורה הטובה ביותר.</div>
+    </div>
+  </div>
+  <div class="section">
+    <div class="sh"><div class="sn">ב</div><h2>הכנה — מילוי וקבורה</h2><span class="sh-en">Preparation</span></div>
+    <hr class="div">
+    <div class="how-steps">
+      <div class="hstep"><div class="hstep-n">1</div><div><div class="hstep-title">טחינת קוורץ</div><div class="hstep-desc">גביש קוורץ טהור טוחנים לאבקה דקה כאבקת קמח. לוקח זמן — זה חלק מהריטואל.</div></div></div>
+      <div class="hstep"><div class="hstep-n">2</div><div><div class="hstep-title">הרטבה</div><div class="hstep-desc">מוסיפים מים מינימלי לאבקה עד לעיסה דקה שאפשר למלא בה את הקרן.</div></div></div>
+      <div class="hstep"><div class="hstep-n">3</div><div><div class="hstep-title">קבורת קיץ</div><div class="hstep-desc">בניגוד ל-500 — קוברים בקיץ, בנקודה שמשית. הקרן נחשפת לכוחות האור לאורך הקיץ.</div></div></div>
+      <div class="hstep"><div class="hstep-n">4</div><div><div class="hstep-title">חפירה בסתיו</div><div class="hstep-desc">חופרים בסוף הקיץ. האבקה שמרה את עצמה — יבשה ונוצצת. שמה בצנצנת זכוכית.</div></div></div>
+    </div>
+  </div>
+  <div class="section">
+    <div class="sh"><div class="sn">ג</div><h2>שימוש — זמן ואופן</h2><span class="sh-en">Application</span></div>
+    <hr class="div">
+    <div class="timing-grid">
+      <div class="tg-card tg-morning">
+        <span class="tg-time">זריחה</span>
+        <div class="tg-label">זמן השימוש</div>
+        <div class="tg-desc">בניגוד ל-500 — BD 501 משתמשים בבוקר מוקדם, כשהאור עולה</div>
+      </div>
+      <div class="tg-card tg-evening">
+        <span class="tg-time">1:30L</span>
+        <div class="tg-label">יחס דילול</div>
+        <div class="tg-desc">רבע כפית לכל 30 ליטר מים. כמות קטנה — עוצמה גדולה</div>
+      </div>
+    </div>
+    <p class="p">מערבלים שעה — כמו 500. מרססים <strong>על העלים</strong> (לא האדמה) בצורת טל עדין בשעות הבוקר המוקדמות.</p>
+  </div>
+  <div class="section">
+    <div class="sh"><div class="sn">ד</div><h2>מתי להשתמש</h2><span class="sh-en">When to use</span></div>
+    <hr class="div">
+    <p class="p">BD 501 מיועד לחיזוק צמחים שכבר מבוססים — לא לשתילים צעירים. עוזר בשלב הפריחה, הפירות ובגרות הצמח. ביום פרח או פרי לפי הלוח הביודינמי — תוצאות מקסימליות.</p>
+  </div>
+  <div class="chupchu">
+    <img class="chupchu-img" src="https://gina-haya.vercel.app/chupchu_final.png" alt="צ'ופצ'ו">
+    <div>
+      <div class="chupchu-name">הסוד של צ'ופצ'ו:</div>
+      <div class="chupchu-text">BD 501 ביום פרח — כשהצמח פתוח לאור, כשהפרחים מחפשים שמש. זה הזמן שבו הסיליקה עושה את הקסם. פתח גינה חיה!</div>
+    </div>
+  </div>
+  <div class="related">
+    <div class="related-title">מאמרים קשורים</div>
+    <div class="related-links">
+      <a class="related-link" href="/articles/bd500">BD 500 — קרן הזבל, הכוח הנגדי</a>
+      <a class="related-link" href="/articles/biodynamic-calendar">הלוח הביודינמי — ימי פרח ופרי</a>
+      <a class="related-link" href="/articles/cpp">CPP — השלמה שלישית</a>
+    </div>
+  </div>
+</div>
+<footer class="footer-cta">
+  <img class="footer-img" src="https://gina-haya.vercel.app/chupchu_final.png" alt="צ'ופצ'ו">
+  <div class="footer-text">מתי יום הפרח הבא לרסס BD 501?<br><em>Find the biodynamic flower day for silica application.</em></div>
+  <a class="footer-btn" href="https://gina-haya.vercel.app">פתח גינה חיה</a>
+</footer>
+</article>`,
+  },
+  {
+    id: 'cpp',
+    titleHe: 'CPP',
+    titleEn: 'Cow Pat Pit — Fermented Medicine for Soil',
+    metaDescriptionHe: 'CPP הוא הפרפרט הנגיש ביותר — זבל פרה, עשבי מרפא ואגרוף של BD 500 שמייצרים דשן מרוכז בפחות זמן.',
+    metaDescriptionEn: 'Make CPP at home — the most accessible biodynamic preparation that works like BD 500 without the horn.',
+    categoryHe: 'פרפרטים BD',
+    categoryEn: 'BD Preps',
+    filenameHe: '26_CPP_בור_הזבל.md',
+    filenameEn: '26_cpp_cow_pat_pit.md',
+    publishedAt: '2026-04-11',
+    images: null,
+    htmlContent: `<style>
+@import url('https://fonts.googleapis.com/css2?family=Spectral:ital,wght@0,400;0,600;1,400&family=Work+Sans:wght@300;400;500&family=Caveat:wght@400;600&display=swap');
+*{box-sizing:border-box;margin:0;padding:0;}
+.art{
+  --mud:#2a1a08;
+  --mud-mid:#4a2e10;
+  --mud-light:#8a5a28;
+  --clay:#c89050;
+  --clay-pale:#f0d8b0;
+  --sage:#2a4a20;
+  --sage-light:#4a7a38;
+  --sage-pale:#c8e0b8;
+  --ferment:#5a1a0a;
+  --ferment-pale:#f8e8d8;
+  --cream:#faf5ec;
+  font-family:'Work Sans',sans-serif;
+  background:var(--cream);
+  color:var(--mud);
+}
+.hero{
+  background:var(--mud);
+  padding:3rem 2.5rem 2.5rem;
+  display:flex;align-items:center;gap:2rem;
+  position:relative;overflow:hidden;
+}
+.hero-texture{
+  position:absolute;inset:0;pointer-events:none;
+  background:repeating-linear-gradient(120deg,transparent,transparent 6px,rgba(138,90,40,0.06) 6px,rgba(138,90,40,0.06) 7px);
+}
+.hero-content{flex:1;position:relative;z-index:1;}
+.hero-tag{display:inline-block;background:var(--ferment);color:var(--clay-pale);font-size:10px;font-weight:500;letter-spacing:0.12em;text-transform:uppercase;padding:3px 11px;border-radius:2px;margin-bottom:1rem;}
+.hero h1{font-family:'Spectral',serif;font-size:2.6rem;font-weight:600;color:var(--clay-pale);line-height:1.05;margin-bottom:0.3rem;direction:rtl;}
+.hero-abbr{font-family:'Work Sans',sans-serif;font-size:0.78rem;font-weight:300;color:var(--clay);letter-spacing:0.08em;margin-bottom:0.5rem;}
+.hero-en{font-family:'Spectral',serif;font-size:0.95rem;font-style:italic;color:var(--clay);margin-bottom:1.25rem;}
+.hero-meta{display:flex;gap:1.25rem;font-size:11px;color:#5a3a18;font-weight:300;}
+.hero-img{width:120px;height:120px;border-radius:50%;object-fit:cover;object-position:center 18%;border:2px solid var(--mud-light);flex-shrink:0;position:relative;z-index:1;}
+.body{padding:0 2.5rem;}
+.intro{font-family:'Spectral',serif;font-size:1.05rem;font-style:italic;line-height:1.9;color:var(--mud-mid);border-right:3px solid var(--clay);padding:0.25rem 1.1rem;margin:1.75rem 0;direction:rtl;}
+.section{margin:2.25rem 0 0;}
+.sh{display:flex;align-items:center;gap:0.7rem;margin-bottom:0.5rem;direction:rtl;}
+.sn{width:26px;height:26px;background:var(--mud);color:var(--clay);font-family:'Spectral',serif;font-size:13px;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+.sh h2{font-family:'Spectral',serif;font-size:1.2rem;font-weight:600;color:var(--mud);}
+.sh-en{font-size:0.72rem;font-weight:300;color:var(--clay);font-style:italic;margin-right:auto;}
+.div{border:none;border-top:1px solid rgba(74,46,16,0.2);margin-bottom:1.1rem;}
+.p{font-size:0.93rem;line-height:1.9;color:var(--mud-mid);direction:rtl;margin-bottom:0.9rem;}
+.p strong{color:var(--mud);font-weight:500;}
+.ingredients{display:flex;flex-direction:column;gap:8px;margin:1.25rem 0;}
+.ing-row{display:flex;align-items:center;gap:12px;padding:10px 14px;background:var(--clay-pale);border-radius:6px;direction:rtl;border-right:3px solid var(--clay);}
+.ing-name{font-size:0.9rem;color:var(--mud);flex:1;}
+.ing-role{font-size:0.78rem;color:var(--mud-light);font-style:italic;}
+.process{display:flex;flex-direction:column;gap:0;margin:1.25rem 0;position:relative;}
+.process::before{content:'';position:absolute;right:17px;top:20px;bottom:20px;width:2px;background:var(--clay-pale);}
+.proc-step{display:flex;gap:14px;align-items:flex-start;padding:12px 0;direction:rtl;position:relative;z-index:1;}
+.proc-dot{width:34px;height:34px;border-radius:50%;background:var(--mud-mid);color:var(--clay-pale);font-size:0.75rem;font-weight:500;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+.proc-title{font-size:0.9rem;font-weight:500;color:var(--mud);margin-bottom:2px;}
+.proc-desc{font-size:0.82rem;color:var(--mud-light);line-height:1.6;}
+.vs-box{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin:1.25rem 0;}
+.vs-card{border-radius:8px;padding:14px;direction:rtl;}
+.vs-cpp{background:var(--mud);}.vs-500{background:var(--sage-pale);border:1px solid rgba(42,74,32,0.2);}
+.vs-title{font-size:0.75rem;font-weight:500;letter-spacing:0.08em;text-transform:uppercase;margin-bottom:8px;}
+.vs-cpp .vs-title{color:var(--clay);}
+.vs-500 .vs-title{color:var(--sage);}
+.vs-point{font-size:0.82rem;line-height:1.7;margin-bottom:3px;}
+.vs-cpp .vs-point{color:rgba(240,216,176,0.8);}
+.vs-500 .vs-point{color:var(--mud-mid);}
+.chupchu{background:var(--ferment-pale);border:1px solid rgba(90,26,10,0.2);border-radius:10px;padding:1rem 1.2rem;margin:1.75rem 0;display:flex;gap:0.9rem;align-items:flex-start;direction:rtl;}
+.chupchu-img{width:42px;height:42px;border-radius:50%;object-fit:cover;object-position:center 15%;border:1px solid rgba(90,26,10,0.3);flex-shrink:0;}
+.chupchu-name{font-family:'Caveat',cursive;font-size:13px;font-weight:600;color:var(--ferment);margin-bottom:3px;}
+.chupchu-text{font-family:'Caveat',cursive;font-size:1rem;line-height:1.55;color:var(--mud-mid);}
+.related{background:var(--clay-pale);border-radius:8px;padding:1.25rem 1.5rem;margin:2rem 0;direction:rtl;}
+.related-title{font-family:'Spectral',serif;font-size:1rem;font-weight:600;color:var(--mud);margin-bottom:1rem;}
+.related-links{display:flex;flex-direction:column;gap:8px;}
+.related-link{display:flex;align-items:center;gap:8px;font-size:0.88rem;color:var(--sage-light);text-decoration:none;}
+.related-link::before{content:'←';color:var(--clay);font-size:12px;}
+.footer-cta{background:var(--mud);padding:2rem 2.5rem;display:flex;align-items:center;gap:1.5rem;direction:rtl;margin-top:3rem;}
+.footer-img{width:52px;height:52px;border-radius:50%;object-fit:cover;object-position:center 15%;border:1px solid var(--mud-light);flex-shrink:0;}
+.footer-text{font-family:'Spectral',serif;font-size:0.92rem;font-style:italic;line-height:1.7;color:var(--clay-pale);flex:1;}
+.footer-text em{font-size:0.78rem;color:#4a2e10;font-style:normal;font-family:'Work Sans',sans-serif;}
+.footer-btn{display:inline-block;background:var(--clay);color:var(--mud);font-size:0.8rem;font-weight:500;padding:9px 20px;border-radius:4px;text-decoration:none;white-space:nowrap;flex-shrink:0;}
+@media(max-width:560px){.hero h1{font-size:2rem;}.hero-img{display:none;}.body{padding:0 1.5rem;}.vs-box{grid-template-columns:1fr;}.footer-cta{flex-direction:column;padding:1.5rem;}}
+</style>
+<article class="art" itemscope itemtype="https://schema.org/Article">
+<header class="hero">
+  <div class="hero-texture"></div>
+  <div class="hero-content">
+    <span class="hero-tag">פרפרטים ביודינמיים · Biodynamic Preparations</span>
+    <div class="hero-abbr">Cow Pat Pit — בור הזבל הביודינמי</div>
+    <h1 itemprop="headline">CPP</h1>
+    <div class="hero-en">Cow Pat Pit — Fermented Medicine for Soil</div>
+    <div class="hero-meta"><span>קריאה: 6 דקות</span><span>רמה: בינוני</span><span>עונה: כל השנה</span></div>
+  </div>
+  <img class="hero-img" src="https://gina-haya.vercel.app/chupchu_final.png" alt="צ'ופצ'ו" itemprop="image">
+</header>
+<div class="body">
+  <p class="intro" itemprop="description">CPP הוא הפרפרט הנגיש ביותר — לא צריך קרן, לא צריך לחכות חורף שלם. זבל פרה, עשבי מרפא, ואגרוף של BD 500 — יחד הם מייצרים דשן מרוכז שעושה את אותו הקסם בפחות זמן.</p>
+  <div class="section">
+    <div class="sh"><div class="sn">א</div><h2>מה נכנס לבור?</h2><span class="sh-en">Ingredients</span></div>
+    <hr class="div">
+    <div class="ingredients">
+      <div class="ing-row"><span class="ing-name">זבל פרה טרי</span><span class="ing-role">הבסיס — מרכז חיידקים ומינרלים</span></div>
+      <div class="ing-row"><span class="ing-name">BD 500 (קצת)</span><span class="ing-role">מחמם ומגביר את התסיסה</span></div>
+      <div class="ing-row"><span class="ing-name">ולריאן (BD 507)</span><span class="ing-role">מאזן, מרגיע, מסדיר זרחן</span></div>
+      <div class="ing-row"><span class="ing-name">קמומיל (BD 503)</span><span class="ing-role">מייצב חנקן, מחזק מבנה</span></div>
+      <div class="ing-row"><span class="ing-name">ירטה (BD 504)</span><span class="ing-role">מוסיפה סיליקה ומינרלים</span></div>
+      <div class="ing-row"><span class="ing-name">אפר עץ (קצת)</span><span class="ing-role">אשלגן, pH, מינרלים</span></div>
+    </div>
+  </div>
+  <div class="section">
+    <div class="sh"><div class="sn">ב</div><h2>תהליך ההכנה</h2><span class="sh-en">Process</span></div>
+    <hr class="div">
+    <div class="process">
+      <div class="proc-step"><div class="proc-dot">1</div><div><div class="proc-title">חפירת הבור</div><div class="proc-desc">בור עמוק 50 ס"מ, מרופד בלבנים או עץ — לא מלט. גודל מינימלי 60×60 ס"מ.</div></div></div>
+      <div class="proc-step"><div class="proc-dot">2</div><div><div class="proc-title">מילוי ועירבוב</div><div class="proc-desc">ממלאים זבל טרי, מוסיפים פרפרטים ואפר, מערבבים היטב ידנית.</div></div></div>
+      <div class="proc-step"><div class="proc-dot">3</div><div><div class="proc-title">כיסוי ותסיסה</div><div class="proc-desc">מכסים בלוח עץ + שכבת קש. ממתינים 3–4 חודשים. מפנים פעם בחודש.</div></div></div>
+      <div class="proc-step"><div class="proc-dot">4</div><div><div class="proc-title">שימוש</div><div class="proc-desc">מדללים 1:10 במים, מערבלים 20 דקות, מרססים על האדמה לפני שתילה.</div></div></div>
+    </div>
+  </div>
+  <div class="chupchu">
+    <img class="chupchu-img" src="https://gina-haya.vercel.app/chupchu_final.png" alt="צ'ופצ'ו">
+    <div>
+      <div class="chupchu-name">צ'ופצ'ו אומר:</div>
+      <div class="chupchu-text">CPP הוא הפרפרט שהמציאו עבור אלה שלא יכולים לחכות חורף שלם. בארץ החמה שלנו — זה כנראה הפרפרט המעשי ביותר.</div>
+    </div>
+  </div>
+  <div class="section">
+    <div class="sh"><div class="sn">ג</div><h2>CPP מול BD 500</h2><span class="sh-en">Comparison</span></div>
+    <hr class="div">
+    <div class="vs-box">
+      <div class="vs-card vs-cpp">
+        <div class="vs-title">CPP</div>
+        <div class="vs-point">מוכן תוך 3–4 חודשים</div>
+        <div class="vs-point">אין צורך בקרן</div>
+        <div class="vs-point">קל להכנה עצמית</div>
+        <div class="vs-point">מכיל עשבי מרפא</div>
+        <div class="vs-point">מרוסס על האדמה</div>
+      </div>
+      <div class="vs-card vs-500">
+        <div class="vs-title">BD 500</div>
+        <div class="vs-point">6 חודשי חורף</div>
+        <div class="vs-point">קרן פרה נדרשת</div>
+        <div class="vs-point">עוצמה גבוהה יותר</div>
+        <div class="vs-point">ריטואל מוגדר</div>
+        <div class="vs-point">אפשר לשלב יחד</div>
+      </div>
+    </div>
+  </div>
+  <div class="chupchu">
+    <img class="chupchu-img" src="https://gina-haya.vercel.app/chupchu_final.png" alt="צ'ופצ'ו">
+    <div>
+      <div class="chupchu-name">הסוד של צ'ופצ'ו:</div>
+      <div class="chupchu-text">CPP ביום שורש — כשהאדמה הכי קולטת. פתח גינה חיה לדעת מתי היום הבא!</div>
+    </div>
+  </div>
+  <div class="related">
+    <div class="related-title">מאמרים קשורים</div>
+    <div class="related-links">
+      <a class="related-link" href="/articles/bd500">BD 500 — קרן הזבל</a>
+      <a class="related-link" href="/articles/bd501">BD 501 — קרן הסיליקה</a>
+      <a class="related-link" href="/articles/biodynamic-calendar">הלוח הביודינמי</a>
+    </div>
+  </div>
+</div>
+<footer class="footer-cta">
+  <img class="footer-img" src="https://gina-haya.vercel.app/chupchu_final.png" alt="צ'ופצ'ו">
+  <div class="footer-text">מתי יום השורש לרסס CPP?<br><em>Find the biodynamic root day for CPP application.</em></div>
+  <a class="footer-btn" href="https://gina-haya.vercel.app">פתח גינה חיה</a>
+</footer>
+</article>`,
+  },
+  {
+    id: 'biodynamic-calendar',
+    titleHe: 'הלוח הביודינמי',
+    titleEn: 'The Biodynamic Calendar — Planting by the Stars',
+    metaDescriptionHe: 'הלוח הביודינמי קובע שלא כל יום שווה לכל מטרה — ארבעה ימים, ארבעה כוחות, ומה לעשות בכל אחד מהם.',
+    metaDescriptionEn: 'Learn the four biodynamic day types — root, flower, fruit, leaf — and how the moon guides garden timing.',
+    categoryHe: 'פרפרטים BD',
+    categoryEn: 'BD Preps',
+    filenameHe: '27_הלוח_הביודינמי.md',
+    filenameEn: '27_biodynamic_calendar.md',
+    publishedAt: '2026-04-11',
+    images: null,
+    htmlContent: `<style>
+@import url('https://fonts.googleapis.com/css2?family=Philosopher:ital,wght@0,400;0,700;1,400&family=Nunito+Sans:wght@300;400;500&family=Caveat:wght@400;600&display=swap');
+*{box-sizing:border-box;margin:0;padding:0;}
+.art{
+  --cosmos:#06080f;
+  --deep:#0d1220;
+  --violet:#2a1a4a;
+  --purple:#4a2a8a;
+  --gold:#c8a030;
+  --gold-pale:#f0e0a0;
+  --root-c:#8b4a1a;
+  --root-p:#f5e0d0;
+  --flower-c:#8a2a6a;
+  --flower-p:#f5d0e8;
+  --fruit-c:#6a2a0a;
+  --fruit-p:#f8e0d0;
+  --leaf-c:#1a5a2a;
+  --leaf-p:#d0f0d8;
+  --cream:#faf6ef;
+  font-family:'Nunito Sans',sans-serif;
+  background:var(--cream);
+  color:var(--cosmos);
+}
+.hero{
+  background:var(--cosmos);
+  padding:4rem 2.5rem 3rem;
+  position:relative;overflow:hidden;
+  text-align:center;
+}
+.hero-orbit{
+  position:absolute;top:50%;left:50%;
+  transform:translate(-50%,-50%);
+  width:300px;height:300px;
+  border:1px solid rgba(200,160,48,0.08);
+  border-radius:50%;
+}
+.hero-orbit2{
+  position:absolute;top:50%;left:50%;
+  transform:translate(-50%,-50%);
+  width:200px;height:200px;
+  border:1px solid rgba(200,160,48,0.05);
+  border-radius:50%;
+}
+.hero-content{position:relative;z-index:1;}
+.hero-tag{display:inline-block;border:1px solid rgba(200,160,48,0.3);color:var(--gold);font-size:10px;font-weight:500;letter-spacing:0.16em;text-transform:uppercase;padding:4px 14px;margin-bottom:1.5rem;}
+.hero h1{font-family:'Philosopher',serif;font-size:2.8rem;font-weight:700;color:white;line-height:1.05;margin-bottom:0.35rem;direction:rtl;}
+.hero-en{font-family:'Philosopher',serif;font-size:1rem;font-style:italic;color:var(--gold);margin-bottom:1.5rem;}
+.hero-meta{display:flex;gap:1.5rem;font-size:11px;color:rgba(200,160,48,0.35);font-weight:300;justify-content:center;margin-bottom:2rem;}
+.hero-img{width:90px;height:90px;border-radius:50%;object-fit:cover;object-position:center 18%;border:2px solid rgba(200,160,48,0.3);display:inline-block;}
+.day-types-hero{display:flex;gap:8px;justify-content:center;margin-top:2rem;}
+.dth{padding:6px 14px;border-radius:20px;font-size:10px;font-weight:500;letter-spacing:0.06em;}
+.dth-root{background:rgba(139,74,26,0.3);color:#f0c090;border:1px solid rgba(139,74,26,0.3);}
+.dth-flower{background:rgba(138,42,106,0.3);color:#f0a0d0;border:1px solid rgba(138,42,106,0.3);}
+.dth-fruit{background:rgba(106,42,10,0.3);color:#f0b090;border:1px solid rgba(106,42,10,0.3);}
+.dth-leaf{background:rgba(26,90,42,0.3);color:#90d0a0;border:1px solid rgba(26,90,42,0.3);}
+.body{padding:0 2.5rem;}
+.intro{font-family:'Philosopher',serif;font-size:1.1rem;font-style:italic;line-height:1.9;color:#2a1a4a;border-right:2px solid var(--gold);padding:0.25rem 1.1rem;margin:1.75rem 0;direction:rtl;}
+.section{margin:2.25rem 0 0;}
+.sh{display:flex;align-items:center;gap:0.7rem;margin-bottom:0.5rem;direction:rtl;}
+.sn{width:26px;height:26px;background:var(--cosmos);color:var(--gold);font-family:'Philosopher',serif;font-size:13px;display:flex;align-items:center;justify-content:center;flex-shrink:0;border-radius:50%;border:1px solid rgba(200,160,48,0.3);}
+.sh h2{font-family:'Philosopher',serif;font-size:1.2rem;font-weight:700;color:var(--cosmos);}
+.sh-en{font-size:0.72rem;font-weight:300;color:#5a4a6a;font-style:italic;margin-right:auto;}
+.div{border:none;border-top:1px solid rgba(74,42,138,0.15);margin-bottom:1.1rem;}
+.p{font-size:0.93rem;line-height:1.9;color:#2a1a4a;direction:rtl;margin-bottom:0.9rem;}
+.p strong{color:var(--cosmos);font-weight:500;}
+.four-days{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin:1.25rem 0;}
+.day-card{border-radius:10px;padding:16px;direction:rtl;}
+.dc-root{background:var(--root-p);border:1px solid rgba(139,74,26,0.2);}
+.dc-flower{background:var(--flower-p);border:1px solid rgba(138,42,106,0.2);}
+.dc-fruit{background:var(--fruit-p);border:1px solid rgba(106,42,10,0.2);}
+.dc-leaf{background:var(--leaf-p);border:1px solid rgba(26,90,42,0.2);}
+.dc-icon{font-size:1.6rem;margin-bottom:6px;display:block;}
+.dc-name{font-family:'Philosopher',serif;font-size:1rem;font-weight:700;margin-bottom:4px;}
+.dc-root .dc-name{color:var(--root-c);}
+.dc-flower .dc-name{color:var(--flower-c);}
+.dc-fruit .dc-name{color:var(--fruit-c);}
+.dc-leaf .dc-name{color:var(--leaf-c);}
+.dc-planet{font-size:0.72rem;font-weight:300;margin-bottom:6px;opacity:0.7;}
+.dc-root .dc-planet{color:var(--root-c);}
+.dc-flower .dc-planet{color:var(--flower-c);}
+.dc-fruit .dc-planet{color:var(--fruit-c);}
+.dc-leaf .dc-planet{color:var(--leaf-c);}
+.dc-do{font-size:0.8rem;line-height:1.6;}
+.dc-root .dc-do{color:var(--root-c);}
+.dc-flower .dc-do{color:var(--flower-c);}
+.dc-fruit .dc-do{color:var(--fruit-c);}
+.dc-leaf .dc-do{color:var(--leaf-c);}
+.moon-box{background:var(--cosmos);border-radius:10px;padding:1.5rem;margin:1.25rem 0;direction:rtl;}
+.moon-title{font-family:'Philosopher',serif;font-size:0.82rem;letter-spacing:0.1em;color:var(--gold);margin-bottom:1rem;}
+.moon-phases{display:flex;gap:0;justify-content:space-between;}
+.moon-phase{text-align:center;flex:1;}
+.moon-icon{font-size:1.5rem;display:block;margin-bottom:4px;}
+.moon-name{font-size:0.72rem;color:rgba(200,160,48,0.6);}
+.moon-effect{font-size:0.68rem;color:rgba(200,212,240,0.4);margin-top:3px;line-height:1.4;}
+.chupchu{background:#f0ece8;border:1px solid rgba(74,42,138,0.15);border-radius:10px;padding:1rem 1.2rem;margin:1.75rem 0;display:flex;gap:0.9rem;align-items:flex-start;direction:rtl;}
+.chupchu-img{width:42px;height:42px;border-radius:50%;object-fit:cover;object-position:center 15%;border:1px solid rgba(200,160,48,0.3);flex-shrink:0;}
+.chupchu-name{font-family:'Caveat',cursive;font-size:13px;font-weight:600;color:var(--purple);margin-bottom:3px;}
+.chupchu-text{font-family:'Caveat',cursive;font-size:1rem;line-height:1.55;color:#2a1a4a;}
+.app-cta-box{background:var(--violet);border-radius:10px;padding:1.5rem;margin:1.25rem 0;direction:rtl;text-align:center;}
+.app-cta-title{font-family:'Philosopher',serif;font-size:1.1rem;color:var(--gold-pale);margin-bottom:0.5rem;}
+.app-cta-desc{font-size:0.85rem;color:rgba(200,212,240,0.6);margin-bottom:1.25rem;line-height:1.6;}
+.app-cta-btn{display:inline-block;background:var(--gold);color:var(--cosmos);font-family:'Philosopher',serif;font-size:0.9rem;font-weight:700;padding:10px 24px;border-radius:4px;text-decoration:none;}
+.related{background:#f0ece8;border-radius:8px;padding:1.25rem 1.5rem;margin:2rem 0;direction:rtl;}
+.related-title{font-family:'Philosopher',serif;font-size:1rem;font-weight:700;color:var(--cosmos);margin-bottom:1rem;}
+.related-links{display:flex;flex-direction:column;gap:8px;}
+.related-link{display:flex;align-items:center;gap:8px;font-size:0.88rem;color:var(--purple);text-decoration:none;}
+.related-link::before{content:'←';color:var(--gold);font-size:12px;}
+.footer-cta{background:var(--cosmos);padding:2rem 2.5rem;display:flex;align-items:center;gap:1.5rem;direction:rtl;margin-top:3rem;}
+.footer-img{width:52px;height:52px;border-radius:50%;object-fit:cover;object-position:center 15%;border:1px solid rgba(200,160,48,0.3);flex-shrink:0;}
+.footer-text{font-family:'Philosopher',serif;font-size:0.95rem;font-style:italic;line-height:1.7;color:var(--gold-pale);flex:1;}
+.footer-text em{font-size:0.78rem;color:#2a1a4a;font-style:normal;font-family:'Nunito Sans',sans-serif;}
+.footer-btn{display:inline-block;background:var(--gold);color:var(--cosmos);font-family:'Philosopher',serif;font-size:0.85rem;font-weight:700;padding:10px 20px;border-radius:4px;text-decoration:none;white-space:nowrap;flex-shrink:0;}
+@media(max-width:560px){.hero h1{font-size:2rem;}.four-days{grid-template-columns:1fr;}.day-types-hero{flex-wrap:wrap;}.body{padding:0 1.5rem;}.moon-phases{gap:0;}.footer-cta{flex-direction:column;padding:1.5rem;}}
+</style>
+<article class="art" itemscope itemtype="https://schema.org/Article">
+<header class="hero">
+  <div class="hero-orbit"></div>
+  <div class="hero-orbit2"></div>
+  <div class="hero-content">
+    <span class="hero-tag">פרפרטים ביודינמיים · Biodynamic Calendar</span>
+    <h1 itemprop="headline">הלוח הביודינמי</h1>
+    <div class="hero-en">The Biodynamic Calendar — Planting by the Stars</div>
+    <div class="hero-meta"><span>קריאה: 10 דקות</span><span>רמה: מתחיל–מתקדם</span><span>עונה: כל השנה</span></div>
+    <img class="hero-img" src="https://gina-haya.vercel.app/chupchu_final.png" alt="צ'ופצ'ו" itemprop="image">
+    <div class="day-types-hero">
+      <span class="dth dth-root">יום שורש</span>
+      <span class="dth dth-flower">יום פרח</span>
+      <span class="dth dth-fruit">יום פרי</span>
+      <span class="dth dth-leaf">יום עלה</span>
+    </div>
+  </div>
+</header>
+<div class="body">
+  <p class="intro" itemprop="description">הלוח הביודינמי קובע שלא כל יום שווה לכל מטרה. הירח עובר בין קבוצות הכוכבים ומשפיע על האדמה, הצמח וכוח הגדילה — ויש ימים שבהם הטבע עצמו עוזר לך.</p>
+  <div class="section">
+    <div class="sh"><div class="sn">א</div><h2>ארבעת ימי הגינה</h2><span class="sh-en">The four day types</span></div>
+    <hr class="div">
+    <div class="four-days">
+      <div class="day-card dc-root">
+        <span class="dc-icon">🌱</span>
+        <div class="dc-name">יום שורש</div>
+        <div class="dc-planet">מזל עפר · שור, בתולה, גדי</div>
+        <div class="dc-do">קציר שורשים, דישון אדמה, פרפרטים 500/CPP, השקיה עמוקה, עבודת אדמה</div>
+      </div>
+      <div class="day-card dc-flower">
+        <span class="dc-icon">🌸</span>
+        <div class="dc-name">יום פרח</div>
+        <div class="dc-planet">מזל אוויר · תאומים, מאזניים, דלי</div>
+        <div class="dc-do">ריסוס עלים, גיזום, הגרלה, שמן נים, חיפושיות, חיתוך לפרח</div>
+      </div>
+      <div class="day-card dc-fruit">
+        <span class="dc-icon">🍎</span>
+        <div class="dc-name">יום פרי</div>
+        <div class="dc-planet">מזל אש · אריה, קשת, מאזניים</div>
+        <div class="dc-do">קציר פירות, זריעת דגנים, שתן מדולל, ריסוס אצות, אחסון</div>
+      </div>
+      <div class="day-card dc-leaf">
+        <span class="dc-icon">🌿</span>
+        <div class="dc-name">יום עלה</div>
+        <div class="dc-planet">מזל מים · סרטן, עקרב, דגים</div>
+        <div class="dc-do">גידול ירקות עלים, ריסוס אצות ים, השקיה עלים, שתילת חסה</div>
+      </div>
+    </div>
+  </div>
+  <div class="chupchu">
+    <img class="chupchu-img" src="https://gina-haya.vercel.app/chupchu_final.png" alt="צ'ופצ'ו">
+    <div>
+      <div class="chupchu-name">צ'ופצ'ו אומר:</div>
+      <div class="chupchu-text">הגלובוס בחזה שלי מחובר לירח בראשי. כשאני מסתכל למעלה — אני יודע לאיזה יום אנחנו נכנסים. גינה חיה עושה את זה אוטומטית בשבילך.</div>
+    </div>
+  </div>
+  <div class="section">
+    <div class="sh"><div class="sn">ב</div><h2>שלבי הירח</h2><span class="sh-en">Moon phases</span></div>
+    <hr class="div">
+    <div class="moon-box">
+      <div class="moon-title">ירח ועוצמת גדילה</div>
+      <div class="moon-phases">
+        <div class="moon-phase"><span class="moon-icon">🌑</span><div class="moon-name">ירח חדש</div><div class="moon-effect">מנוחה, אין שתילה</div></div>
+        <div class="moon-phase"><span class="moon-icon">🌒</span><div class="moon-name">רבע ראשון</div><div class="moon-effect">גדילה מעלה, זריעה</div></div>
+        <div class="moon-phase"><span class="moon-icon">🌕</span><div class="moon-name">ירח מלא</div><div class="moon-effect">שיא לחות, קציר</div></div>
+        <div class="moon-phase"><span class="moon-icon">🌘</span><div class="moon-name">רבע אחרון</div><div class="moon-effect">שורשים, כריתה</div></div>
+      </div>
+    </div>
+  </div>
+  <div class="section">
+    <div class="sh"><div class="sn">ג</div><h2>איך משתמשים בלוח?</h2><span class="sh-en">How to use</span></div>
+    <hr class="div">
+    <p class="p">לא חייבים להבין הכל — צריך לדעת <strong>מה אתם עומדים לעשות היום בגינה</strong>, ואז לבדוק איזה יום זה. אם תכננתם לקצור עגבניות — בדקו אם זה יום פרי. אם רציתם לדשן — בדקו יום שורש.</p>
+    <p class="p">גינה חיה מחשבת עבורכם את הלוח הביודינמי בזמן אמת — כולל מיקום הירח בישראל ושלב הירח.</p>
+  </div>
+  <div class="app-cta-box">
+    <div class="app-cta-title">הלוח הביודינמי חי — בגינה חיה</div>
+    <div class="app-cta-desc">גינה חיה מחשבת את יום הגינה של היום ושל השבוע הקרוב — לפי מיקום הירח האמיתי, שלב הירח, וזמני הגינה המומלצים בישראל.</div>
+    <a class="app-cta-btn" href="https://gina-haya.vercel.app">פתח את הלוח שלך ←</a>
+  </div>
+  <div class="chupchu">
+    <img class="chupchu-img" src="https://gina-haya.vercel.app/chupchu_final.png" alt="צ'ופצ'ו">
+    <div>
+      <div class="chupchu-name">הסוד של צ'ופצ'ו:</div>
+      <div class="chupchu-text">הלוח הביודינמי הוא לא דת — זו תצפית. מאה שנות גינאים הסתכלו, כתבו, ניסו. התוצאות מדברות בעד עצמן. נסו פעם אחת ביום הנכון — ותרגישו את ההבדל.</div>
+    </div>
+  </div>
+  <div class="related">
+    <div class="related-title">מאמרים קשורים</div>
+    <div class="related-links">
+      <a class="related-link" href="/articles/bd500">BD 500 — ריסוס ביום שורש</a>
+      <a class="related-link" href="/articles/bd501">BD 501 — ריסוס ביום פרח</a>
+      <a class="related-link" href="/articles/compost-tea">תה קומפוסט — ביום פרח</a>
+      <a class="related-link" href="/articles/seaweed-spray">אצות ים — ביום עלה</a>
+    </div>
+  </div>
+</div>
+<footer class="footer-cta">
+  <img class="footer-img" src="https://gina-haya.vercel.app/chupchu_final.png" alt="צ'ופצ'ו">
+  <div class="footer-text">מה יום הגינה של היום?<br><em>Open the app to see today's biodynamic day type.</em></div>
+  <a class="footer-btn" href="https://gina-haya.vercel.app">פתח גינה חיה ←</a>
+</footer>
+</article>`,
+  },
 ];
