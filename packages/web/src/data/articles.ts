@@ -1323,8 +1323,8 @@ function toggleFaq(el){
   },
   {
     id: 'neem-oil',
-    titleHe: 'שמן נים — נשק סודי נגד מזיקים',
-    titleEn: 'Neem Oil — Secret Weapon Against Pests',
+    titleHe: 'שמן נים',
+    titleEn: 'Neem Oil — Nature\'s Pesticide Laboratory',
     metaDescriptionHe: 'כך משתמשים בשמן נים בצורה נכונה כדי להפחית לחץ מזיקים בגינה בלי לפעול באגרסיביות מיותרת.',
     metaDescriptionEn: 'Learn how to use neem oil safely and effectively to reduce pest pressure in the garden.',
     categoryHe: 'הדברה',
@@ -1333,6 +1333,185 @@ function toggleFaq(el){
     filenameEn: '04_neem_oil.md',
     publishedAt: '2026-04-08',
     images: null,
+    htmlContent: `<style>
+@import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;700&family=Libre+Baskerville:ital,wght@0,400;0,700;1,400&family=Caveat:wght@400;600&display=swap');
+*{box-sizing:border-box;margin:0;padding:0;}
+.art{
+  --bitter:#0d1f0e;
+  --bitter-mid:#1a3a1c;
+  --bitter-light:#2d5c30;
+  --neem:#4a8a4e;
+  --neem-pale:#c8e8ca;
+  --clinical:#f4f9f4;
+  --clinical-dark:#e0eee0;
+  --white:#ffffff;
+  --amber:#7a5a08;
+  --rust:#8b2a1a;
+  --acid:#c8d800;
+  font-family:'Space Grotesk',sans-serif;
+  background:var(--clinical);
+  color:var(--bitter);
+}
+.hero{
+  background:var(--bitter);
+  padding:0;
+  display:flex;
+  min-height:200px;
+}
+.hero-left{
+  background:var(--bitter-mid);
+  width:8px;
+  flex-shrink:0;
+}
+.hero-accent{
+  background:var(--neem);
+  width:4px;
+  flex-shrink:0;
+}
+.hero-body{
+  flex:1;
+  padding:2.5rem 2.5rem 2.5rem 1.5rem;
+  display:flex;
+  align-items:center;
+  gap:2rem;
+}
+.hero-content{flex:1;}
+.hero-tag{display:inline-block;border:1px solid rgba(74,138,78,0.5);color:var(--neem-pale);font-size:10px;font-weight:500;letter-spacing:0.14em;text-transform:uppercase;padding:3px 11px;margin-bottom:1rem;}
+.hero h1{font-family:'Libre Baskerville',serif;font-size:2.8rem;font-weight:700;color:#e8f5e8;line-height:1.05;margin-bottom:0.3rem;direction:rtl;}
+.hero-en{font-family:'Space Grotesk',sans-serif;font-size:0.88rem;font-weight:300;color:var(--neem);margin-bottom:1.25rem;letter-spacing:0.02em;}
+.hero-meta{display:flex;gap:1.25rem;font-size:11px;color:#3a6a3e;font-weight:300;}
+.hero-img{width:120px;height:120px;border-radius:4px;object-fit:cover;object-position:center 18%;border:1px solid rgba(74,138,78,0.3);flex-shrink:0;}
+.body{padding:0 2.5rem;}
+.intro{font-family:'Libre Baskerville',serif;font-size:1rem;line-height:1.9;color:var(--bitter-mid);border-right:3px solid var(--neem);padding:0.25rem 1.1rem;margin:1.75rem 0;direction:rtl;}
+.section{margin:2.25rem 0 0;}
+.sh{display:flex;align-items:center;gap:0.7rem;margin-bottom:0.5rem;direction:rtl;}
+.sn{width:24px;height:24px;background:var(--bitter);color:var(--neem-pale);font-size:11px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+.sh h2{font-family:'Libre Baskerville',serif;font-size:1.15rem;font-weight:700;color:var(--bitter);}
+.sh-en{font-size:0.72rem;font-weight:300;color:var(--neem);letter-spacing:0.05em;margin-right:auto;}
+.div{border:none;border-top:1px solid rgba(45,92,48,0.2);margin-bottom:1.1rem;}
+.p{font-size:0.92rem;line-height:1.85;color:var(--bitter-mid);direction:rtl;margin-bottom:0.9rem;}
+.p strong{color:var(--bitter);font-weight:500;}
+.compound-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:1.25rem 0;}
+.compound{background:var(--bitter);border-radius:4px;padding:14px;direction:rtl;}
+.compound-name{font-size:0.88rem;font-weight:700;color:var(--neem-pale);margin-bottom:4px;}
+.compound-desc{font-size:0.78rem;color:#5a8a5e;line-height:1.55;}
+.recipe{background:var(--white);border:1px solid rgba(45,92,48,0.15);border-radius:4px;padding:1.25rem;margin:1.25rem 0;direction:rtl;}
+.recipe-title{font-size:0.72rem;font-weight:700;letter-spacing:0.12em;text-transform:uppercase;color:var(--neem);margin-bottom:1rem;}
+.recipe-row{display:flex;align-items:baseline;gap:10px;padding:7px 0;border-bottom:1px solid rgba(45,92,48,0.1);}
+.recipe-row:last-child{border-bottom:none;}
+.recipe-name{font-size:0.88rem;color:var(--bitter-mid);flex:1;}
+.recipe-qty{font-size:0.82rem;color:var(--neem);font-weight:500;white-space:nowrap;}
+.pests{margin:1.25rem 0;}
+.pest-row{display:flex;align-items:center;gap:10px;padding:10px 0;border-bottom:1px solid rgba(45,92,48,0.1);direction:rtl;}
+.pest-row:last-child{border-bottom:none;}
+.pest-name{font-size:0.9rem;font-weight:500;color:var(--bitter);flex:1;}
+.pest-eff{display:flex;gap:3px;}
+.pest-dot{width:10px;height:10px;border-radius:50%;}
+.pest-dot.full{background:var(--neem);}
+.pest-dot.half{background:var(--neem-pale);}
+.pest-dot.empty{background:var(--clinical-dark);}
+.chupchu{background:var(--clinical-dark);border-right:3px solid var(--neem);border-radius:0 8px 8px 0;padding:1rem 1.2rem 1rem 1.2rem;margin:1.75rem 0;display:flex;gap:0.9rem;align-items:flex-start;direction:rtl;}
+.chupchu-img{width:42px;height:42px;border-radius:50%;object-fit:cover;object-position:center 15%;border:1px solid rgba(45,92,48,0.3);flex-shrink:0;}
+.chupchu-name{font-family:'Caveat',cursive;font-size:13px;font-weight:600;color:var(--neem);margin-bottom:3px;}
+.chupchu-text{font-family:'Caveat',cursive;font-size:1rem;line-height:1.55;color:var(--bitter-mid);}
+.warning{background:#fff8f2;border-right:3px solid var(--rust);padding:12px 16px;margin:1.25rem 0;direction:rtl;}
+.warning-title{font-size:0.85rem;font-weight:700;color:var(--rust);margin-bottom:4px;}
+.warning-body{font-size:0.83rem;color:var(--bitter-mid);line-height:1.65;}
+.related{background:var(--clinical-dark);border-radius:4px;padding:1.25rem 1.5rem;margin:2rem 0;direction:rtl;}
+.related-title{font-family:'Libre Baskerville',serif;font-size:0.95rem;font-weight:700;color:var(--bitter);margin-bottom:1rem;}
+.related-links{display:flex;flex-direction:column;gap:8px;}
+.related-link{display:flex;align-items:center;gap:8px;font-size:0.88rem;color:var(--bitter-light);text-decoration:none;}
+.related-link::before{content:'←';color:var(--neem);font-size:12px;}
+.footer-cta{background:var(--bitter);padding:2rem 2.5rem;display:flex;align-items:center;gap:1.5rem;direction:rtl;margin-top:3rem;}
+.footer-img{width:52px;height:52px;border-radius:4px;object-fit:cover;object-position:center 15%;border:1px solid rgba(74,138,78,0.3);flex-shrink:0;}
+.footer-text{font-family:'Libre Baskerville',serif;font-size:0.9rem;line-height:1.7;color:var(--neem-pale);flex:1;}
+.footer-text em{font-size:0.78rem;color:#3a6a3e;font-style:normal;}
+.footer-btn{display:inline-block;background:var(--neem);color:#e8f5e8;font-size:0.8rem;font-weight:500;padding:9px 20px;border-radius:2px;text-decoration:none;white-space:nowrap;flex-shrink:0;}
+@media(max-width:560px){.hero h1{font-size:2rem;}.hero-img{display:none;}.body{padding:0 1.5rem;}.compound-grid{grid-template-columns:1fr;}.footer-cta{flex-direction:column;padding:1.5rem;}}
+</style>
+<article class="art" itemscope itemtype="https://schema.org/Article">
+<header class="hero">
+  <div class="hero-left"></div>
+  <div class="hero-accent"></div>
+  <div class="hero-body">
+    <div class="hero-content">
+      <span class="hero-tag">הדברה · Pest Control</span>
+      <h1 itemprop="headline">שמן נים</h1>
+      <div class="hero-en">Neem Oil — Nature's Pesticide Laboratory</div>
+      <div class="hero-meta"><span>קריאה: 6 דקות</span><span>רמה: מתחיל</span><span>עונה: כל השנה</span></div>
+    </div>
+    <img class="hero-img" src="https://gina-haya.vercel.app/chupchu_final.png" alt="צ'ופצ'ו — גינה חיה" itemprop="image">
+  </div>
+</header>
+<div class="body">
+  <p class="intro" itemprop="description">עץ הנים גדל בהודו ובדרום אסיה כבר אלפי שנים. הזרעים שלו מכילים מעבדה כימית שלמה — מעל 70 תרכובות פעילות שמבלבלות, מרתיעות והורגות מזיקים מבלי לפגוע בחרקים מועילים.</p>
+  <div class="section">
+    <div class="sh"><div class="sn">א</div><h2>מה עושה שמן הנים?</h2><span class="sh-en">How it works</span></div>
+    <hr class="div">
+    <p class="p">המנגנון של שמן נים שונה מקוטלי חרקים רגילים. הוא לא הורג מיד — הוא <strong>מבלבל את מחזור החיים</strong> של המזיק: מפריע להתרבות, מונע הטלת ביצים, ומונע מהזחלים להתפתח לבוגר.</p>
+    <div class="compound-grid">
+      <div class="compound"><div class="compound-name">Azadirachtin</div><div class="compound-desc">החומר הפעיל העיקרי. מחקה הורמון גדילה ומונע מהזחל להתפתח.</div></div>
+      <div class="compound"><div class="compound-name">Nimbin</div><div class="compound-desc">תכונות אנטי-פטרייתיות ואנטי-ויראליות. מגן מפני מחלות עלים.</div></div>
+      <div class="compound"><div class="compound-name">Salannin</div><div class="compound-desc">מרתיע חרקים מלאכול את העלים — מחסום הזנה יעיל.</div></div>
+      <div class="compound"><div class="compound-name">Gedunin</div><div class="compound-desc">פעיל נגד קרדיות ופטריות — כולל אבקת אורנ"ה.</div></div>
+    </div>
+  </div>
+  <div class="section">
+    <div class="sh"><div class="sn">ב</div><h2>הכנת תמיסת ריסוס</h2><span class="sh-en">Preparation</span></div>
+    <hr class="div">
+    <div class="recipe">
+      <div class="recipe-title">מתכון — 1 ליטר תמיסה</div>
+      <div class="recipe-row"><span class="recipe-name">שמן נים טהור (cold-pressed)</span><span class="recipe-qty">5 מ"ל (כפית)</span></div>
+      <div class="recipe-row"><span class="recipe-name">סבון נוזלי טבעי (אמולסיפייר)</span><span class="recipe-qty">2–3 טיפות</span></div>
+      <div class="recipe-row"><span class="recipe-name">מים פושרים</span><span class="recipe-qty">1 ליטר</span></div>
+      <div class="recipe-row"><span class="recipe-name">ערבוב חזק לפני כל שימוש</span><span class="recipe-qty">חובה</span></div>
+    </div>
+    <p class="p">הסבון הוא האמולסיפייר — שמן ומים לא מתערבבים בלעדיו. בלי סבון התמיסה נפרדת ואתה מרסס מים בלבד.</p>
+  </div>
+  <div class="chupchu">
+    <img class="chupchu-img" src="https://gina-haya.vercel.app/chupchu_final.png" alt="צ'ופצ'ו">
+    <div>
+      <div class="chupchu-name">צ'ופצ'ו אומר:</div>
+      <div class="chupchu-text">השיניים שלי עשויות עץ — ועץ הנים הוא אחד מבעלי הברית הטובים ביותר שיש לי בגינה. הרחתי אותו פעם. מר להפליא. המזיקים מסכימים איתי.</div>
+    </div>
+  </div>
+  <div class="section">
+    <div class="sh"><div class="sn">ג</div><h2>יעילות לפי מזיק</h2><span class="sh-en">Effectiveness by pest</span></div>
+    <hr class="div">
+    <div class="pests">
+      <div class="pest-row"><span class="pest-name">כנימות (אפיד)</span><div class="pest-eff"><div class="pest-dot full"></div><div class="pest-dot full"></div><div class="pest-dot full"></div><div class="pest-dot full"></div><div class="pest-dot full"></div></div></div>
+      <div class="pest-row"><span class="pest-name">קרדית עכביש</span><div class="pest-eff"><div class="pest-dot full"></div><div class="pest-dot full"></div><div class="pest-dot full"></div><div class="pest-dot full"></div><div class="pest-dot half"></div></div></div>
+      <div class="pest-row"><span class="pest-name">זבוב לבן (ורמות)</span><div class="pest-eff"><div class="pest-dot full"></div><div class="pest-dot full"></div><div class="pest-dot full"></div><div class="pest-dot half"></div><div class="pest-dot empty"></div></div></div>
+      <div class="pest-row"><span class="pest-name">אבקת אורנה (פטרייה)</span><div class="pest-eff"><div class="pest-dot full"></div><div class="pest-dot full"></div><div class="pest-dot full"></div><div class="pest-dot empty"></div><div class="pest-dot empty"></div></div></div>
+      <div class="pest-row"><span class="pest-name">זחלי פרפרים</span><div class="pest-eff"><div class="pest-dot full"></div><div class="pest-dot full"></div><div class="pest-dot half"></div><div class="pest-dot empty"></div><div class="pest-dot empty"></div></div></div>
+    </div>
+  </div>
+  <div class="warning">
+    <div class="warning-title">זמן ריסוס חשוב מאוד</div>
+    <div class="warning-body">שמן נים מתפרק בשמש תוך 4–8 שעות — רססו תמיד בשקיעה או בבוקר מוקדם. ריסוס בצהריים = בזבוז מוחלט ועלול לשרוף עלים.</div>
+  </div>
+  <div class="chupchu">
+    <img class="chupchu-img" src="https://gina-haya.vercel.app/chupchu_final.png" alt="צ'ופצ'ו">
+    <div>
+      <div class="chupchu-name">הסוד של צ'ופצ'ו:</div>
+      <div class="chupchu-text">ביום פרח לפי הלוח הביודינמי — רססו שמן נים. הצמח ער, הפרחים פתוחים, והחרקים הרעים פעילים. זמן תקיפה מושלם.</div>
+    </div>
+  </div>
+  <div class="related">
+    <div class="related-title">מאמרים קשורים</div>
+    <div class="related-links">
+      <a class="related-link" href="/articles/companion-plants">צמחי מלווים להדברה</a>
+      <a class="related-link" href="/articles/beneficial-beetles">חיפושיות טובות — בעלי ברית</a>
+      <a class="related-link" href="/articles/yellow-traps">מלכודות צהובות</a>
+    </div>
+  </div>
+</div>
+<footer class="footer-cta">
+  <img class="footer-img" src="https://gina-haya.vercel.app/chupchu_final.png" alt="צ'ופצ'ו">
+  <div class="footer-text">מתי יום הפרח הבא לרסס שמן נים?<br><em>Find the perfect biodynamic flower day for neem application.</em></div>
+  <a class="footer-btn" href="https://gina-haya.vercel.app">פתח גינה חיה ←</a>
+</footer>
+</article>`,
   },
   {
     id: 'beneficial-insects',
@@ -1346,6 +1525,555 @@ function toggleFaq(el){
     filenameEn: '05_beneficial_insects.md',
     publishedAt: '2026-04-08',
     images: null,
+  },
+  {
+    id: 'beneficial-beetles',
+    titleHe: 'חיפושיות טובות',
+    titleEn: 'Beneficial Beetles — Your Garden\'s Tiny Army',
+    metaDescriptionHe: 'חיפושיות טובות, זבובי רחף וצרעות טפיל — כך מזמינים אותם לגינה ומניחים להם לעשות את העבודה.',
+    metaDescriptionEn: 'Learn which beneficial beetles and insects protect your garden and how to attract them naturally.',
+    categoryHe: 'הדברה',
+    categoryEn: 'Pest Control',
+    filenameHe: '22_חיפושיות_טובות.md',
+    filenameEn: '22_beneficial_beetles.md',
+    publishedAt: '2026-04-11',
+    images: null,
+    htmlContent: `<style>
+@import url('https://fonts.googleapis.com/css2?family=Nunito:ital,wght@0,400;0,700;0,800;1,400&family=Fraunces:ital,wght@0,400;0,600;1,400&family=Caveat:wght@400;600&display=swap');
+*{box-sizing:border-box;margin:0;padding:0;}
+.art{
+  --red:#c82020;
+  --red-pale:#fce8e8;
+  --spot:#1a1a1a;
+  --meadow:#fdf9ee;
+  --meadow-dark:#f5edcf;
+  --leaf:#3a6a2a;
+  --leaf-pale:#d0ead0;
+  --sky:#e8f4f0;
+  --gold:#c89020;
+  --ink:#1a2a1a;
+  --ink-mid:#2a4a2a;
+  font-family:'Nunito',sans-serif;
+  background:var(--meadow);
+  color:var(--ink);
+}
+.hero{
+  background:var(--sky);
+  padding:2.5rem 2.5rem 0;
+  position:relative;
+  overflow:hidden;
+}
+.hero-spots{position:absolute;top:0;left:0;right:0;bottom:0;pointer-events:none;overflow:hidden;}
+.spot{position:absolute;background:var(--red-pale);border-radius:50%;}
+.hero-inner{display:flex;align-items:flex-end;gap:2rem;}
+.hero-content{flex:1;padding-bottom:2rem;}
+.hero-tag{display:inline-block;background:var(--red);color:white;font-size:10px;font-weight:800;letter-spacing:0.1em;text-transform:uppercase;padding:4px 12px;border-radius:20px;margin-bottom:1rem;}
+.hero h1{font-family:'Fraunces',serif;font-size:2.8rem;font-weight:600;color:var(--ink);line-height:1.05;margin-bottom:0.3rem;direction:rtl;}
+.hero-en{font-family:'Fraunces',serif;font-size:0.95rem;font-style:italic;color:var(--leaf);margin-bottom:1.25rem;}
+.hero-meta{display:flex;gap:1.25rem;font-size:11px;color:#5a7a5a;font-weight:400;}
+.hero-img{width:130px;height:130px;border-radius:50%;object-fit:cover;object-position:center 18%;border:3px solid var(--red);flex-shrink:0;align-self:flex-end;}
+.grass-bar{height:28px;background:var(--meadow);border-radius:50% 50% 0 0 / 80% 80% 0 0;}
+.body{padding:0 2.5rem;}
+.intro{font-family:'Fraunces',serif;font-size:1.05rem;line-height:1.9;color:var(--ink-mid);border-right:3px solid var(--red);padding:0.25rem 1.1rem;margin:1.75rem 0;direction:rtl;}
+.section{margin:2.25rem 0 0;}
+.sh{display:flex;align-items:center;gap:0.7rem;margin-bottom:0.5rem;direction:rtl;}
+.sn{width:28px;height:28px;border-radius:50%;background:var(--red);color:white;font-size:13px;font-weight:800;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+.sh h2{font-family:'Fraunces',serif;font-size:1.2rem;font-weight:600;color:var(--ink);}
+.sh-en{font-size:0.75rem;font-weight:400;color:var(--leaf);font-style:italic;margin-right:auto;}
+.div{border:none;border-top:2px dotted rgba(200,32,32,0.2);margin-bottom:1.1rem;}
+.p{font-size:0.93rem;line-height:1.85;color:var(--ink-mid);direction:rtl;margin-bottom:0.9rem;}
+.p strong{color:var(--ink);font-weight:700;}
+.beetle-cards{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin:1.25rem 0;}
+.beetle-card{background:white;border-radius:12px;padding:16px;direction:rtl;border:2px solid transparent;}
+.beetle-card:nth-child(1){border-color:var(--red);}
+.beetle-card:nth-child(2){border-color:#e87020;}
+.beetle-card:nth-child(3){border-color:var(--leaf);}
+.beetle-card:nth-child(4){border-color:#2080c8;}
+.beetle-icon{font-size:2rem;margin-bottom:8px;display:block;}
+.beetle-name{font-size:0.92rem;font-weight:800;color:var(--ink);margin-bottom:4px;}
+.beetle-latin{font-size:0.72rem;font-style:italic;color:#7a7a7a;margin-bottom:6px;}
+.beetle-eats{font-size:0.8rem;color:var(--ink-mid);line-height:1.5;}
+.beetle-stat{font-size:0.72rem;font-weight:700;color:var(--red);margin-top:6px;}
+.invite-box{background:var(--leaf-pale);border-radius:12px;padding:1.25rem 1.5rem;margin:1.25rem 0;direction:rtl;}
+.invite-title{font-family:'Fraunces',serif;font-size:1rem;font-weight:600;color:var(--leaf);margin-bottom:0.75rem;}
+.invite-list{display:flex;flex-direction:column;gap:6px;}
+.invite-item{display:flex;align-items:flex-start;gap:10px;font-size:0.87rem;color:var(--ink-mid);line-height:1.5;}
+.invite-bullet{width:8px;height:8px;border-radius:50%;background:var(--leaf);flex-shrink:0;margin-top:5px;}
+.chupchu{background:var(--red-pale);border-radius:12px;padding:1rem 1.2rem;margin:1.75rem 0;display:flex;gap:0.9rem;align-items:flex-start;direction:rtl;border:1px solid rgba(200,32,32,0.2);}
+.chupchu-img{width:42px;height:42px;border-radius:50%;object-fit:cover;object-position:center 15%;border:2px solid var(--red);flex-shrink:0;}
+.chupchu-name{font-family:'Caveat',cursive;font-size:13px;font-weight:600;color:var(--red);margin-bottom:3px;}
+.chupchu-text{font-family:'Caveat',cursive;font-size:1rem;line-height:1.55;color:var(--ink-mid);}
+.dont-box{background:#fff5f0;border-radius:8px;padding:1rem 1.25rem;margin:1.25rem 0;direction:rtl;border:1px solid rgba(200,32,32,0.15);}
+.dont-title{font-size:0.85rem;font-weight:700;color:var(--red);margin-bottom:6px;}
+.dont-text{font-size:0.83rem;color:var(--ink-mid);line-height:1.65;}
+.related{background:var(--meadow-dark);border-radius:12px;padding:1.25rem 1.5rem;margin:2rem 0;direction:rtl;}
+.related-title{font-family:'Fraunces',serif;font-size:1rem;font-weight:600;color:var(--ink);margin-bottom:1rem;}
+.related-links{display:flex;flex-direction:column;gap:8px;}
+.related-link{display:flex;align-items:center;gap:8px;font-size:0.88rem;color:var(--leaf);text-decoration:none;}
+.related-link::before{content:'←';color:var(--red);font-size:12px;}
+.footer-cta{background:var(--ink);padding:2rem 2.5rem;display:flex;align-items:center;gap:1.5rem;direction:rtl;margin-top:3rem;}
+.footer-img{width:52px;height:52px;border-radius:50%;object-fit:cover;object-position:center 15%;border:2px solid var(--red);flex-shrink:0;}
+.footer-text{font-family:'Fraunces',serif;font-size:0.9rem;line-height:1.7;color:var(--leaf-pale);flex:1;}
+.footer-text em{font-size:0.78rem;color:#3a5a3a;font-style:normal;}
+.footer-btn{display:inline-block;background:var(--red);color:white;font-size:0.8rem;font-weight:700;padding:9px 20px;border-radius:20px;text-decoration:none;white-space:nowrap;flex-shrink:0;}
+@media(max-width:560px){.hero h1{font-size:2rem;}.hero-img{display:none;}.body{padding:0 1.5rem;}.beetle-cards{grid-template-columns:1fr;}.footer-cta{flex-direction:column;padding:1.5rem;}}
+</style>
+<article class="art" itemscope itemtype="https://schema.org/Article">
+<header class="hero">
+  <div class="hero-spots">
+    <div class="spot" style="width:80px;height:80px;top:-20px;right:10%;opacity:0.4;"></div>
+    <div class="spot" style="width:40px;height:40px;top:30px;left:15%;opacity:0.3;"></div>
+    <div class="spot" style="width:120px;height:120px;bottom:-30px;left:5%;opacity:0.25;"></div>
+  </div>
+  <div class="hero-inner">
+    <div class="hero-content">
+      <span class="hero-tag">הדברה · Pest Control</span>
+      <h1 itemprop="headline">חיפושיות טובות</h1>
+      <div class="hero-en">Beneficial Beetles — Your Garden's Tiny Army</div>
+      <div class="hero-meta"><span>קריאה: 5 דקות</span><span>רמה: מתחיל</span><span>עונה: אביב–קיץ</span></div>
+    </div>
+    <img class="hero-img" src="https://gina-haya.vercel.app/chupchu_final.png" alt="צ'ופצ'ו — גינה חיה" itemprop="image">
+  </div>
+  <div class="grass-bar"></div>
+</header>
+<div class="body">
+  <p class="intro" itemprop="description">הגינה הביודינמית שלך לא צריכה קוטלי חרקים — היא צריכה צבא קטן שכבר חי בתוכה. חיפושיות, חרקים ועכבישים שמחפשים בדיוק את המזיקים שמטרידים אותך.</p>
+  <div class="section">
+    <div class="sh"><div class="sn">א</div><h2>ארבעת הגיבורים הגדולים</h2><span class="sh-en">The big four</span></div>
+    <hr class="div">
+    <div class="beetle-cards">
+      <div class="beetle-card">
+        <span class="beetle-icon">🐞</span>
+        <div class="beetle-name">פרת משה רבנו</div>
+        <div class="beetle-latin">Coccinellidae</div>
+        <div class="beetle-eats">אוכלת כנימות, קרדיות, וזחלים קטנים</div>
+        <div class="beetle-stat">עד 5,000 כנימות בחיים</div>
+      </div>
+      <div class="beetle-card">
+        <span class="beetle-icon">🦋</span>
+        <div class="beetle-name">זבוב רחף</div>
+        <div class="beetle-latin">Syrphidae</div>
+        <div class="beetle-eats">הזחלים שלו אוכלים כנימות — הבוגר מאביק פרחים</div>
+        <div class="beetle-stat">גיבור כפול: הדברה + האבקה</div>
+      </div>
+      <div class="beetle-card">
+        <span class="beetle-icon">🪲</span>
+        <div class="beetle-name">חיפושית קרקע</div>
+        <div class="beetle-latin">Carabidae</div>
+        <div class="beetle-eats">ציד לילי — זחלים, חלזונות, ביצי מזיקים</div>
+        <div class="beetle-stat">שמרנית קרקע מעולה</div>
+      </div>
+      <div class="beetle-card">
+        <span class="beetle-icon">🦗</span>
+        <div class="beetle-name">צרעת טפיל</div>
+        <div class="beetle-latin">Parasitoid wasp</div>
+        <div class="beetle-eats">מטילה ביצים בתוך מזיקים — הזחל אוכל מבפנים</div>
+        <div class="beetle-stat">לא עוקצת בני אדם</div>
+      </div>
+    </div>
+  </div>
+  <div class="chupchu">
+    <img class="chupchu-img" src="https://gina-haya.vercel.app/chupchu_final.png" alt="צ'ופצ'ו">
+    <div>
+      <div class="chupchu-name">צ'ופצ'ו אומר:</div>
+      <div class="chupchu-text">פרת משה רבנו אחת ישבה על ידי פעם ולא זזה שעה שלמה. אחר כך הבנתי — היא ציידת. היא חיכתה לכנימות לעבור. פשוט גאון.</div>
+    </div>
+  </div>
+  <div class="section">
+    <div class="sh"><div class="sn">ב</div><h2>איך מזמינים אותם?</h2><span class="sh-en">How to attract them</span></div>
+    <hr class="div">
+    <div class="invite-box">
+      <div class="invite-title">הגינה שהם רוצים לגור בה</div>
+      <div class="invite-list">
+        <div class="invite-item"><div class="invite-bullet"></div><span>שמיר, כוסברה ושומר — פרחי תפרחת קטנים שצרעות וזבובי רחף אוהבים</span></div>
+        <div class="invite-item"><div class="invite-bullet"></div><span>ערימת עצים קטנה בפינה — בית מושלם לחיפושיות קרקע</span></div>
+        <div class="invite-item"><div class="invite-bullet"></div><span>מים עומדים קטנים — קערת מים רדודה מושכת חרקים מועילים</span></div>
+        <div class="invite-item"><div class="invite-bullet"></div><span>עשבים לא מטופחים בפינה אחת — מקלט ומקור מזון לחרקים</span></div>
+        <div class="invite-item"><div class="invite-bullet"></div><span>פרחים פתוחים לאורך כל העונה — מקור נקטר רציף</span></div>
+      </div>
+    </div>
+  </div>
+  <div class="dont-box">
+    <div class="dont-title">מה מבריח אותם?</div>
+    <div class="dont-text">שמן נים, קוטלי חרקים אורגניים ואפילו סבון גינה — כולם פוגעים בחרקים המועילים בדיוק כמו במזיקים. השתמשו בהם בצנע ורק בזמן ההתקפה עצמה, לא כטיפול מונע.</div>
+  </div>
+  <div class="chupchu">
+    <img class="chupchu-img" src="https://gina-haya.vercel.app/chupchu_final.png" alt="צ'ופצ'ו">
+    <div>
+      <div class="chupchu-name">הסוד של צ'ופצ'ו:</div>
+      <div class="chupchu-text">ביום פרח לפי הלוח הביודינמי — הפרחים פתוחים לרווחה והחרקים המועילים פעילים במיוחד. זה הזמן לצפות בהם עובדים!</div>
+    </div>
+  </div>
+  <div class="related">
+    <div class="related-title">מאמרים קשורים</div>
+    <div class="related-links">
+      <a class="related-link" href="/articles/companion-plants">צמחי מלווים — שותפויות בגינה</a>
+      <a class="related-link" href="/articles/neem-oil">שמן נים — מתי ואיך</a>
+      <a class="related-link" href="/articles/yellow-traps">מלכודות צהובות</a>
+    </div>
+  </div>
+</div>
+<footer class="footer-cta">
+  <img class="footer-img" src="https://gina-haya.vercel.app/chupchu_final.png" alt="צ'ופצ'ו">
+  <div class="footer-text">מתי יום הפרח הבא — כשהחרקים המועילים הכי פעילים?<br><em>Find the biodynamic flower day for your garden allies.</em></div>
+  <a class="footer-btn" href="https://gina-haya.vercel.app">פתח גינה חיה ←</a>
+</footer>
+</article>`,
+  },
+  {
+    id: 'yellow-traps',
+    titleHe: 'מלכודות צהובות',
+    titleEn: 'Yellow Sticky Traps — Simple. Brutal. Effective.',
+    metaDescriptionHe: 'מלכודות צהובות דביקות — הכלי הפשוט ביותר לניטור והדברת מזיקים בגינה ללא כימיקלים.',
+    metaDescriptionEn: 'Yellow sticky traps — the simplest tool for monitoring and catching garden pests without chemicals.',
+    categoryHe: 'הדברה',
+    categoryEn: 'Pest Control',
+    filenameHe: '23_מלכודות_צהובות.md',
+    filenameEn: '23_yellow_traps.md',
+    publishedAt: '2026-04-11',
+    images: null,
+    htmlContent: `<style>
+@import url('https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@400;600;700;800&family=Barlow:wght@300;400;500&family=Caveat:wght@400;600&display=swap');
+*{box-sizing:border-box;margin:0;padding:0;}
+.art{
+  --yellow:#f0d000;
+  --yellow-dark:#c8a800;
+  --yellow-deep:#6a5000;
+  --black:#0a0a0a;
+  --near-black:#141414;
+  --gray:#2a2a2a;
+  --gray-mid:#4a4a4a;
+  --gray-light:#8a8a8a;
+  --white:#fafafa;
+  --danger:#e02020;
+  font-family:'Barlow',sans-serif;
+  background:var(--white);
+  color:var(--black);
+}
+.hero{
+  background:var(--yellow);
+  padding:3rem 2.5rem 2.5rem;
+  position:relative;
+  display:flex;
+  align-items:center;
+  gap:2rem;
+}
+.hero-stripe{
+  position:absolute;
+  top:0;right:0;bottom:0;
+  width:12px;
+  background:repeating-linear-gradient(180deg,var(--black) 0,var(--black) 12px,var(--yellow-dark) 12px,var(--yellow-dark) 24px);
+}
+.hero-content{flex:1;}
+.hero-tag{display:inline-block;background:var(--black);color:var(--yellow);font-family:'Barlow Condensed',sans-serif;font-size:11px;font-weight:700;letter-spacing:0.15em;text-transform:uppercase;padding:4px 12px;margin-bottom:1rem;}
+.hero h1{font-family:'Barlow Condensed',sans-serif;font-size:4rem;font-weight:800;color:var(--black);line-height:0.95;margin-bottom:0.3rem;direction:rtl;text-transform:uppercase;}
+.hero-en{font-family:'Barlow Condensed',sans-serif;font-size:1rem;font-weight:400;color:var(--yellow-deep);margin-bottom:1.25rem;letter-spacing:0.05em;}
+.hero-meta{display:flex;gap:1.25rem;font-size:11px;color:var(--yellow-deep);font-weight:400;}
+.hero-img{width:120px;height:120px;border-radius:0;object-fit:cover;object-position:center 18%;border:3px solid var(--black);flex-shrink:0;}
+.body{padding:0 2.5rem;}
+.intro{font-family:'Barlow',sans-serif;font-size:1rem;line-height:1.85;color:var(--gray);border-right:4px solid var(--black);padding:0.25rem 1.1rem;margin:1.75rem 0;direction:rtl;}
+.section{margin:2.25rem 0 0;}
+.sh{display:flex;align-items:center;gap:0.7rem;margin-bottom:0.5rem;direction:rtl;}
+.sn{width:26px;height:26px;background:var(--yellow);border:2px solid var(--black);font-family:'Barlow Condensed',sans-serif;font-size:13px;font-weight:800;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+.sh h2{font-family:'Barlow Condensed',sans-serif;font-size:1.4rem;font-weight:800;color:var(--black);text-transform:uppercase;letter-spacing:0.03em;}
+.sh-en{font-size:0.72rem;font-weight:400;color:var(--gray-light);letter-spacing:0.06em;margin-right:auto;}
+.div{border:none;border-top:2px solid var(--black);margin-bottom:1.1rem;}
+.p{font-size:0.93rem;line-height:1.85;color:var(--gray);direction:rtl;margin-bottom:0.9rem;}
+.p strong{color:var(--black);font-weight:600;}
+.why-yellow{background:var(--yellow);border:2px solid var(--black);padding:1.5rem;margin:1.25rem 0;direction:rtl;}
+.why-title{font-family:'Barlow Condensed',sans-serif;font-size:1.1rem;font-weight:800;color:var(--black);text-transform:uppercase;margin-bottom:0.75rem;}
+.why-text{font-size:0.9rem;color:var(--gray);line-height:1.7;}
+.trap-types{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin:1.25rem 0;}
+.trap{border:2px solid var(--black);padding:14px;direction:rtl;}
+.trap-color{width:100%;height:8px;margin-bottom:10px;}
+.trap-name{font-family:'Barlow Condensed',sans-serif;font-size:1rem;font-weight:700;color:var(--black);text-transform:uppercase;margin-bottom:4px;}
+.trap-for{font-size:0.8rem;color:var(--gray-mid);line-height:1.5;}
+.trap-note{font-size:0.72rem;color:var(--gray-light);margin-top:6px;font-style:italic;}
+.placement{display:flex;flex-direction:column;gap:8px;margin:1.25rem 0;}
+.place-row{display:flex;align-items:center;gap:12px;padding:10px 12px;background:var(--white);border:1px solid #ddd;direction:rtl;}
+.place-num{font-family:'Barlow Condensed',sans-serif;font-size:1.5rem;font-weight:800;color:var(--yellow-dark);flex-shrink:0;width:28px;text-align:center;}
+.place-text{font-size:0.88rem;color:var(--gray);line-height:1.5;}
+.chupchu{background:#f5f5f5;border:2px solid var(--black);padding:1rem 1.2rem;margin:1.75rem 0;display:flex;gap:0.9rem;align-items:flex-start;direction:rtl;}
+.chupchu-img{width:42px;height:42px;object-fit:cover;object-position:center 15%;border:2px solid var(--black);flex-shrink:0;}
+.chupchu-name{font-family:'Caveat',cursive;font-size:13px;font-weight:600;color:var(--yellow-dark);margin-bottom:3px;}
+.chupchu-text{font-family:'Caveat',cursive;font-size:1rem;line-height:1.55;color:var(--gray);}
+.warning{background:var(--danger);padding:12px 16px;margin:1.25rem 0;direction:rtl;}
+.warning-title{font-family:'Barlow Condensed',sans-serif;font-size:1rem;font-weight:800;color:white;text-transform:uppercase;margin-bottom:4px;}
+.warning-body{font-size:0.83rem;color:rgba(255,255,255,0.9);line-height:1.65;}
+.related{background:#f0f0f0;border:2px solid var(--black);padding:1.25rem 1.5rem;margin:2rem 0;direction:rtl;}
+.related-title{font-family:'Barlow Condensed',sans-serif;font-size:1.1rem;font-weight:800;color:var(--black);text-transform:uppercase;margin-bottom:1rem;}
+.related-links{display:flex;flex-direction:column;gap:8px;}
+.related-link{display:flex;align-items:center;gap:8px;font-size:0.88rem;color:var(--gray);text-decoration:none;}
+.related-link::before{content:'←';color:var(--yellow-dark);font-size:14px;font-weight:800;}
+.footer-cta{background:var(--black);padding:2rem 2.5rem;display:flex;align-items:center;gap:1.5rem;direction:rtl;margin-top:3rem;}
+.footer-img{width:52px;height:52px;object-fit:cover;object-position:center 15%;border:2px solid var(--yellow);flex-shrink:0;}
+.footer-text{font-family:'Barlow',sans-serif;font-size:0.9rem;line-height:1.7;color:#c8c8c8;flex:1;}
+.footer-text em{font-size:0.78rem;color:#5a5a5a;font-style:normal;}
+.footer-btn{display:inline-block;background:var(--yellow);color:var(--black);font-family:'Barlow Condensed',sans-serif;font-size:0.9rem;font-weight:800;text-transform:uppercase;padding:10px 20px;text-decoration:none;white-space:nowrap;flex-shrink:0;letter-spacing:0.05em;}
+@media(max-width:560px){.hero h1{font-size:2.8rem;}.hero-img{display:none;}.body{padding:0 1.5rem;}.trap-types{grid-template-columns:1fr;}.footer-cta{flex-direction:column;padding:1.5rem;}}
+</style>
+<article class="art" itemscope itemtype="https://schema.org/Article">
+<header class="hero">
+  <div class="hero-stripe"></div>
+  <div class="hero-content">
+    <span class="hero-tag">הדברה · Pest Control</span>
+    <h1 itemprop="headline">מלכודות צהובות</h1>
+    <div class="hero-en">Yellow Sticky Traps — Simple. Brutal. Effective.</div>
+    <div class="hero-meta"><span>קריאה: 4 דקות</span><span>רמה: מתחיל</span><span>עונה: כל השנה</span></div>
+  </div>
+  <img class="hero-img" src="https://gina-haya.vercel.app/chupchu_final.png" alt="צ'ופצ'ו — גינה חיה" itemprop="image">
+</header>
+<div class="body">
+  <p class="intro" itemprop="description">הכלי הפשוט ביותר בארסנל ההדברה הטבעית — פיסת פלסטיק צהוב מכוסה בדבק. ללא כימיקלים, ללא מאמץ, ועם יעילות מפתיעה נגד מגוון רחב של מזיקים.</p>
+  <div class="section">
+    <div class="sh"><div class="sn">א</div><h2>למה צהוב?</h2><span class="sh-en">Why yellow?</span></div>
+    <hr class="div">
+    <div class="why-yellow">
+      <div class="why-title">הפיזיקה של הצבע</div>
+      <div class="why-text">רוב חרקי הגינה רואים ספקטרום קצר גל — הם רגישים מאוד לצהוב–ירוק. הצבע הצהוב מחקה עבורם עלים צעירים ורעננים — בדיוק מה שהם מחפשים. כשהם מתקרבים — הם נתקעים.</div>
+    </div>
+  </div>
+  <div class="section">
+    <div class="sh"><div class="sn">ב</div><h2>סוגי מלכודות וצבעים</h2><span class="sh-en">Types &amp; colors</span></div>
+    <hr class="div">
+    <div class="trap-types">
+      <div class="trap"><div class="trap-color" style="background:#f0d000;border:1px solid #aaa;"></div><div class="trap-name">צהוב</div><div class="trap-for">ורמות לבנות, כנימות, זבובי פירות, עש שממה</div><div class="trap-note">הכי נפוץ ויעיל לרוב המזיקים</div></div>
+      <div class="trap"><div class="trap-color" style="background:#1a1aaa;border:1px solid #aaa;"></div><div class="trap-name">כחול</div><div class="trap-for">כנימות פרחים (Thrips) — לא נתפסות על צהוב</div><div class="trap-note">השתמשו כחול + צהוב ביחד</div></div>
+      <div class="trap"><div class="trap-color" style="background:#cc2020;border:1px solid #aaa;"></div><div class="trap-name">אדום</div><div class="trap-for">מגרה זבובי פרי בעצים פירות</div><div class="trap-note">משמש לעיתים עם פרומון</div></div>
+      <div class="trap"><div class="trap-color" style="background:#ffffff;border:1px solid #aaa;"></div><div class="trap-name">לבן</div><div class="trap-for">חרקים קופצים, מינים מסוימים של זבובים</div><div class="trap-note">פחות נפוץ, לבעיות ספציפיות</div></div>
+    </div>
+  </div>
+  <div class="section">
+    <div class="sh"><div class="sn">ג</div><h2>מיקום ותלייה</h2><span class="sh-en">Placement</span></div>
+    <hr class="div">
+    <div class="placement">
+      <div class="place-row"><span class="place-num">1</span><span class="place-text">גובה מיטבי: 10–20 ס"מ מעל פסגת הצמח — שם המזיקים טסים</span></div>
+      <div class="place-row"><span class="place-num">2</span><span class="place-text">כיוון: צד צהוב מפנה לכיוון הצמחים, לא לשמש ישירות</span></div>
+      <div class="place-row"><span class="place-num">3</span><span class="place-text">צפיפות: 1 מלכודת לכל 10 מ"ר — יותר לא מועיל</span></div>
+      <div class="place-row"><span class="place-num">4</span><span class="place-text">החלפה: כל 4–6 שבועות, או כשהמשטח מלא ב-50%</span></div>
+    </div>
+  </div>
+  <div class="chupchu">
+    <img class="chupchu-img" src="https://gina-haya.vercel.app/chupchu_final.png" alt="צ'ופצ'ו">
+    <div>
+      <div class="chupchu-name">צ'ופצ'ו אומר:</div>
+      <div class="chupchu-text">תמיד בדוק את המלכודות. הן בעצם ניטור — תראה מה נתפס, תבין מה קורה בגינה. אם פתאום 20 ורמות לבנות — זה שלט אזהרה.</div>
+    </div>
+  </div>
+  <div class="warning">
+    <div class="warning-title">סכנה — גם חרקים טובים נתפסים</div>
+    <div class="warning-body">מלכודות צהובות לא מבדילות — פרת משה רבנו, זבובי רחף וצרעות מועילות נתפסות גם כן. השתמשו במינון נכון ולא יותר מהנדרש.</div>
+  </div>
+  <div class="related">
+    <div class="related-title">מאמרים קשורים</div>
+    <div class="related-links">
+      <a class="related-link" href="/articles/neem-oil">שמן נים — הדברה כימית טבעית</a>
+      <a class="related-link" href="/articles/beneficial-beetles">חיפושיות טובות</a>
+      <a class="related-link" href="/articles/companion-plants">צמחי מלווים</a>
+    </div>
+  </div>
+</div>
+<footer class="footer-cta">
+  <img class="footer-img" src="https://gina-haya.vercel.app/chupchu_final.png" alt="צ'ופצ'ו">
+  <div class="footer-text">רוצה לדעת מתי הזמן הביודינמי הטוב לבדוק מלכודות?<br><em>Check your biodynamic calendar for optimal pest monitoring.</em></div>
+  <a class="footer-btn" href="https://gina-haya.vercel.app">פתח גינה חיה ←</a>
+</footer>
+</article>`,
+  },
+  {
+    id: 'companion-plants',
+    titleHe: 'צמחי מלווים להדברה',
+    titleEn: 'Companion Plants — The Art of Garden Friendships',
+    metaDescriptionHe: 'צמחי מלווים דוחים מזיקים, מושכים חרקים מועילים ומגינים זה על זה — כך בוחרים ומשלבים אותם.',
+    metaDescriptionEn: 'Companion plants repel pests, attract beneficial insects, and protect each other — learn how to choose and combine them.',
+    categoryHe: 'הדברה',
+    categoryEn: 'Pest Control',
+    filenameHe: '24_צמחי_מלווים.md',
+    filenameEn: '24_companion_plants.md',
+    publishedAt: '2026-04-11',
+    images: null,
+    htmlContent: `<style>
+@import url('https://fonts.googleapis.com/css2?family=Crimson+Pro:ital,wght@0,400;0,600;1,400;1,600&family=Mulish:wght@300;400;500&family=Caveat:wght@400;600&display=swap');
+*{box-sizing:border-box;margin:0;padding:0;}
+.art{
+  --terracotta:#8b3a1a;
+  --terracotta-pale:#f5e0d8;
+  --sage:#3a5a2a;
+  --sage-pale:#d8ecd0;
+  --mustard:#8a7010;
+  --mustard-pale:#f0e8b8;
+  --lavender:#5a3a8a;
+  --lavender-pale:#e8d8f8;
+  --cream:#faf6ef;
+  --cream-dark:#f0e8d8;
+  --ink:#1e140a;
+  --ink-mid:#3d2a14;
+  --ink-light:#7a5a3a;
+  font-family:'Mulish',sans-serif;
+  background:var(--cream);
+  color:var(--ink);
+}
+.hero{
+  background:var(--terracotta);
+  padding:3rem 2.5rem 0;
+  position:relative;
+  overflow:hidden;
+}
+.hero-pattern{
+  position:absolute;inset:0;
+  background-image:radial-gradient(circle,rgba(255,255,255,0.06) 1px,transparent 1px);
+  background-size:20px 20px;
+  pointer-events:none;
+}
+.hero-inner{display:flex;align-items:flex-end;gap:2rem;position:relative;z-index:1;}
+.hero-content{flex:1;padding-bottom:2rem;}
+.hero-tag{display:inline-block;background:rgba(255,255,255,0.15);color:#f5e0d8;font-size:10px;font-weight:500;letter-spacing:0.14em;text-transform:uppercase;padding:3px 12px;border-radius:20px;margin-bottom:1rem;border:1px solid rgba(255,255,255,0.2);}
+.hero h1{font-family:'Crimson Pro',serif;font-size:3rem;font-weight:600;color:#faf0e8;line-height:1.05;margin-bottom:0.3rem;direction:rtl;}
+.hero-en{font-family:'Crimson Pro',serif;font-size:1rem;font-style:italic;color:rgba(245,224,216,0.7);margin-bottom:1.25rem;}
+.hero-meta{display:flex;gap:1.25rem;font-size:11px;color:rgba(245,224,216,0.5);font-weight:300;}
+.hero-img{width:130px;height:130px;border-radius:50%;object-fit:cover;object-position:center 18%;border:2px solid rgba(255,255,255,0.3);flex-shrink:0;align-self:flex-end;}
+.arch{height:36px;background:var(--cream);border-radius:50% 50% 0 0 / 100% 100% 0 0;}
+.body{padding:0 2.5rem;}
+.intro{font-family:'Crimson Pro',serif;font-size:1.1rem;font-style:italic;line-height:1.9;color:var(--ink-mid);border-right:3px solid var(--terracotta);padding:0.25rem 1.1rem;margin:1.75rem 0;direction:rtl;}
+.section{margin:2.25rem 0 0;}
+.sh{display:flex;align-items:center;gap:0.7rem;margin-bottom:0.5rem;direction:rtl;}
+.sn{width:26px;height:26px;border-radius:50%;background:var(--terracotta);color:#faf0e8;font-family:'Crimson Pro',serif;font-size:13px;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+.sh h2{font-family:'Crimson Pro',serif;font-size:1.3rem;font-weight:600;color:var(--ink);}
+.sh-en{font-size:0.75rem;font-weight:300;color:var(--ink-light);font-style:italic;margin-right:auto;}
+.div{border:none;border-top:1px solid rgba(139,58,26,0.2);margin-bottom:1.1rem;}
+.p{font-size:0.93rem;line-height:1.9;color:var(--ink-mid);direction:rtl;margin-bottom:0.9rem;}
+.p strong{color:var(--ink);font-weight:500;}
+.pairs{display:flex;flex-direction:column;gap:10px;margin:1.25rem 0;}
+.pair{display:flex;align-items:stretch;gap:0;border-radius:8px;overflow:hidden;direction:rtl;}
+.pair-a{flex:1;padding:12px 14px;display:flex;flex-direction:column;justify-content:center;}
+.pair-connector{width:36px;display:flex;align-items:center;justify-content:center;font-family:'Crimson Pro',serif;font-size:1.1rem;font-weight:600;flex-shrink:0;}
+.pair-b{flex:1;padding:12px 14px;display:flex;flex-direction:column;justify-content:center;}
+.pair-name{font-size:0.9rem;font-weight:500;margin-bottom:2px;}
+.pair-role{font-size:0.75rem;font-weight:300;line-height:1.4;}
+.p1-a{background:var(--terracotta-pale);}.p1-a .pair-name{color:var(--terracotta);}
+.p1-b{background:var(--sage-pale);}.p1-b .pair-name{color:var(--sage);}
+.p1-c{background:var(--terracotta);color:rgba(255,255,255,0.6);}
+.p2-a{background:var(--mustard-pale);}.p2-a .pair-name{color:var(--mustard);}
+.p2-b{background:var(--sage-pale);}.p2-b .pair-name{color:var(--sage);}
+.p2-c{background:var(--mustard);color:rgba(255,255,255,0.6);}
+.p3-a{background:var(--lavender-pale);}.p3-a .pair-name{color:var(--lavender);}
+.p3-b{background:var(--terracotta-pale);}.p3-b .pair-name{color:var(--terracotta);}
+.p3-c{background:var(--lavender);color:rgba(255,255,255,0.6);}
+.p4-a{background:var(--sage-pale);}.p4-a .pair-name{color:var(--sage);}
+.p4-b{background:var(--mustard-pale);}.p4-b .pair-name{color:var(--mustard);}
+.p4-c{background:var(--sage);color:rgba(255,255,255,0.6);}
+.bad-pairs{background:var(--cream-dark);border-radius:8px;padding:1.1rem 1.4rem;margin:1.25rem 0;direction:rtl;}
+.bad-title{font-size:0.82rem;font-weight:500;color:var(--terracotta);margin-bottom:0.6rem;}
+.bad-list{display:flex;flex-direction:column;gap:5px;}
+.bad-item{font-size:0.83rem;color:var(--ink-mid);display:flex;align-items:center;gap:8px;}
+.bad-x{color:var(--terracotta);font-weight:700;}
+.chupchu{background:var(--terracotta-pale);border-radius:10px;padding:1rem 1.2rem;margin:1.75rem 0;display:flex;gap:0.9rem;align-items:flex-start;direction:rtl;border:1px solid rgba(139,58,26,0.2);}
+.chupchu-img{width:42px;height:42px;border-radius:50%;object-fit:cover;object-position:center 15%;border:1px solid rgba(139,58,26,0.3);flex-shrink:0;}
+.chupchu-name{font-family:'Caveat',cursive;font-size:13px;font-weight:600;color:var(--terracotta);margin-bottom:3px;}
+.chupchu-text{font-family:'Caveat',cursive;font-size:1rem;line-height:1.55;color:var(--ink-mid);}
+.related{background:var(--cream-dark);border-radius:8px;padding:1.25rem 1.5rem;margin:2rem 0;direction:rtl;}
+.related-title{font-family:'Crimson Pro',serif;font-size:1rem;font-weight:600;color:var(--ink);margin-bottom:1rem;}
+.related-links{display:flex;flex-direction:column;gap:8px;}
+.related-link{display:flex;align-items:center;gap:8px;font-size:0.88rem;color:var(--sage);text-decoration:none;}
+.related-link::before{content:'←';color:var(--terracotta);font-size:12px;}
+.footer-cta{background:var(--ink);padding:2rem 2.5rem;display:flex;align-items:center;gap:1.5rem;direction:rtl;margin-top:3rem;}
+.footer-img{width:52px;height:52px;border-radius:50%;object-fit:cover;object-position:center 15%;border:1px solid rgba(139,58,26,0.4);flex-shrink:0;}
+.footer-text{font-family:'Crimson Pro',serif;font-size:0.95rem;line-height:1.7;color:var(--terracotta-pale);flex:1;}
+.footer-text em{font-size:0.8rem;color:#5a3a2a;font-style:normal;}
+.footer-btn{display:inline-block;background:var(--terracotta);color:#faf0e8;font-size:0.8rem;font-weight:500;padding:9px 20px;border-radius:20px;text-decoration:none;white-space:nowrap;flex-shrink:0;}
+@media(max-width:560px){.hero h1{font-size:2.2rem;}.hero-img{display:none;}.body{padding:0 1.5rem;}.footer-cta{flex-direction:column;padding:1.5rem;}}
+</style>
+<article class="art" itemscope itemtype="https://schema.org/Article">
+<header class="hero">
+  <div class="hero-pattern"></div>
+  <div class="hero-inner">
+    <div class="hero-content">
+      <span class="hero-tag">הדברה · Pest Control</span>
+      <h1 itemprop="headline">צמחי מלווים להדברה</h1>
+      <div class="hero-en">Companion Plants — The Art of Garden Friendships</div>
+      <div class="hero-meta"><span>קריאה: 7 דקות</span><span>רמה: מתחיל–בינוני</span><span>עונה: כל השנה</span></div>
+    </div>
+    <img class="hero-img" src="https://gina-haya.vercel.app/chupchu_final.png" alt="צ'ופצ'ו — גינה חיה" itemprop="image">
+  </div>
+  <div class="arch"></div>
+</header>
+<div class="body">
+  <p class="intro" itemprop="description">הגינה הביודינמית רואה את הצמחים כקהילה — כל אחד תורם לשכניו. צמחי מלווים הם שותפים אסטרטגיים שדוחים מזיקים, מושכים חרקים מועילים, ומגינים זה על זה בשקט.</p>
+  <div class="section">
+    <div class="sh"><div class="sn">א</div><h2>זוגות מנצחים</h2><span class="sh-en">Winning pairs</span></div>
+    <hr class="div">
+    <div class="pairs">
+      <div class="pair">
+        <div class="pair-a p1-a"><div class="pair-name">עגבנייה</div><div class="pair-role">אוהבת הגנה מכנימות ומפטריות</div></div>
+        <div class="pair-connector p1-c">+</div>
+        <div class="pair-b p1-b"><div class="pair-name">בזיליקום</div><div class="pair-role">ריח חריף מבריח זבובים לבנים וכנימות</div></div>
+      </div>
+      <div class="pair">
+        <div class="pair-a p2-a"><div class="pair-name">כרוב ובני משפחתו</div><div class="pair-role">מותקפים על ידי פרפר הלבן</div></div>
+        <div class="pair-connector p2-c">+</div>
+        <div class="pair-b p2-b"><div class="pair-name">שמיר / נענע</div><div class="pair-role">מבלבלים את הפרפרים בריח חזק</div></div>
+      </div>
+      <div class="pair">
+        <div class="pair-a p3-a"><div class="pair-name">ורדים</div><div class="pair-role">סובלים מכנימות ומחלות עלים</div></div>
+        <div class="pair-connector p3-c">+</div>
+        <div class="pair-b p3-b"><div class="pair-name">שום</div><div class="pair-role">מרחיק כנימות ופטריות בריח חריף</div></div>
+      </div>
+      <div class="pair">
+        <div class="pair-a p4-a"><div class="pair-name">מלפפון / קישוא</div><div class="pair-role">קרדיות עכביש אוהבות אותם</div></div>
+        <div class="pair-connector p4-c">+</div>
+        <div class="pair-b p4-b"><div class="pair-name">קמומיל</div><div class="pair-role">מושך טורפים טבעיים של הקרדיות</div></div>
+      </div>
+    </div>
+  </div>
+  <div class="chupchu">
+    <img class="chupchu-img" src="https://gina-haya.vercel.app/chupchu_final.png" alt="צ'ופצ'ו">
+    <div>
+      <div class="chupchu-name">צ'ופצ'ו אומר:</div>
+      <div class="chupchu-text">כשגדלתי בתוך העץ, למדתי שכל עץ מוקף בצמחים שמגינים עליו. הטבע כבר יודע את הכלל הזה. אנחנו רק צריכים להקשיב.</div>
+    </div>
+  </div>
+  <div class="section">
+    <div class="sh"><div class="sn">ב</div><h2>מנגנוני ההגנה</h2><span class="sh-en">How it works</span></div>
+    <hr class="div">
+    <p class="p"><strong>בלבול חושי</strong> — ריחות חזקים מסכים את הריח של הצמח המטרה. פרפרים וחרקים מוצאים צמחים באמצעות ריח — ריח מסכים עוצר אותם לפני שמצאו.</p>
+    <p class="p"><strong>משיכת אויבים טבעיים</strong> — פרחי תפרחת קטנים (שמיר, כוסברה, שומר) מושכים צרעות טפיל וזבובי רחף שאוכלים כנימות.</p>
+    <p class="p"><strong>מחסום פיזי</strong> — גובה שונה, צפיפות, עלים שונים — קשה יותר לחרק לנוע בין שדות מעורבים מאשר בין שורות חד-גוניות.</p>
+  </div>
+  <div class="section">
+    <div class="sh"><div class="sn">ג</div><h2>שילובים שאסורים</h2><span class="sh-en">Incompatible pairs</span></div>
+    <hr class="div">
+    <div class="bad-pairs">
+      <div class="bad-title">אלה לא אוהבים להיות ביחד</div>
+      <div class="bad-list">
+        <div class="bad-item"><span class="bad-x">✗</span>בצל + שעועית — הבצל מעכב צמיחת שעועית</div>
+        <div class="bad-item"><span class="bad-x">✗</span>שום + אפונה — שום מדכא צמיחת קטניות</div>
+        <div class="bad-item"><span class="bad-x">✗</span>שומר + כמעט הכל — עצמאי מאוד, עדיף גינה נפרדת</div>
+        <div class="bad-item"><span class="bad-x">✗</span>עגבנייה + שומר — תחרות שורשים, שניהם סובלים</div>
+      </div>
+    </div>
+  </div>
+  <div class="chupchu">
+    <img class="chupchu-img" src="https://gina-haya.vercel.app/chupchu_final.png" alt="צ'ופצ'ו">
+    <div>
+      <div class="chupchu-name">הסוד של צ'ופצ'ו:</div>
+      <div class="chupchu-text">שתילת צמחי מלווים ביום פרח לפי הלוח הביודינמי — הצמחים קולטים את ההשפעה של שכניהם החדשים הכי טוב ביום הזה. פתח גינה חיה!</div>
+    </div>
+  </div>
+  <div class="related">
+    <div class="related-title">מאמרים קשורים</div>
+    <div class="related-links">
+      <a class="related-link" href="/articles/three-sisters">שלוש האחיות — שיתוף פעולה קלאסי</a>
+      <a class="related-link" href="/articles/beneficial-beetles">חיפושיות טובות</a>
+      <a class="related-link" href="/articles/neem-oil">שמן נים — מתי לעזור לצמחי המלווים</a>
+    </div>
+  </div>
+</div>
+<footer class="footer-cta">
+  <img class="footer-img" src="https://gina-haya.vercel.app/chupchu_final.png" alt="צ'ופצ'ו">
+  <div class="footer-text">מתי יום הפרח הביודינמי לשתול את צמחי המלווים שלך?<br><em>Find the best biodynamic flower day for companion planting.</em></div>
+  <a class="footer-btn" href="https://gina-haya.vercel.app">פתח גינה חיה ←</a>
+</footer>
+</article>`,
   },
   {
     id: 'mulching',
