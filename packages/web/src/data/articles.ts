@@ -639,8 +639,8 @@ function toggleFaq(el){
   },
   {
     id: 'seaweed-spray',
-    titleHe: 'ריסוס אצות ים לצמחים — כוח מהים בגינה',
-    titleEn: 'Seaweed Spray for Plants — Ocean Power in Your Garden',
+    titleHe: 'ריסוס אצות ים',
+    titleEn: 'Seaweed Spray — The Ocean\'s Gift',
     metaDescriptionHe: 'כך תשתמשו בריסוס אצות ים כדי לחזק צמחים, לשפר עמידות ולעודד צמיחה מאוזנת בגינה.',
     metaDescriptionEn: 'Learn how seaweed spray supports plant vitality, resilience, and balanced growth in the garden.',
     categoryHe: 'דשנים טבעיים',
@@ -649,11 +649,274 @@ function toggleFaq(el){
     filenameEn: '02_seaweed_spray.md',
     publishedAt: '2026-04-08',
     images: null,
+    htmlContent: `<style>
+@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;1,400&family=Source+Sans+3:wght@300;400;600&family=Caveat:wght@400;600&display=swap');
+*{box-sizing:border-box;margin:0;padding:0;}
+.art{
+  --ocean:#0a3d4a;
+  --ocean-mid:#1a5c6e;
+  --ocean-light:#2d8a9e;
+  --foam:#e8f4f7;
+  --foam-dark:#c2dde5;
+  --salt:#f0f8fa;
+  --kelp:#1a4a2e;
+  --kelp-light:#2d7a4a;
+  --brine:#7ab8c8;
+  --amber:#c8851a;
+  --rust:#8b4a1a;
+  font-family:'Source Sans 3',sans-serif;
+  background:var(--salt);
+  color:var(--ocean);
+}
+.hero{
+  background:var(--ocean);
+  padding:3rem 2.5rem 0;
+  position:relative;
+  overflow:hidden;
+}
+.hero-waves{
+  display:flex;
+  align-items:flex-end;
+  gap:2rem;
+}
+.hero-content{flex:1;padding-bottom:2rem;}
+.hero-tag{
+  display:inline-block;
+  background:var(--ocean-light);
+  color:#c8eef5;
+  font-size:10px;font-weight:600;
+  letter-spacing:0.14em;text-transform:uppercase;
+  padding:3px 11px;border-radius:2px;
+  margin-bottom:1rem;
+}
+.hero h1{
+  font-family:'Playfair Display',serif;
+  font-size:2.6rem;font-weight:700;
+  color:#e8f4f7;line-height:1.1;
+  margin-bottom:0.35rem;
+  direction:rtl;
+}
+.hero-en{
+  font-family:'Playfair Display',serif;
+  font-size:0.95rem;font-style:italic;
+  color:var(--brine);margin-bottom:1.25rem;
+}
+.hero-meta{display:flex;gap:1.25rem;font-size:11px;color:#5a9aaa;font-weight:300;}
+.hero-img-wrap{flex-shrink:0;position:relative;align-self:flex-end;}
+.hero-img{
+  width:130px;height:130px;
+  border-radius:50% 50% 0 0;
+  object-fit:cover;object-position:center 18%;
+  border:2px solid rgba(45,138,158,0.5);
+  display:block;
+}
+.wave-bar{
+  height:32px;background:var(--salt);
+  border-radius:50% 50% 0 0 / 100% 100% 0 0;
+  margin-top:-1px;
+}
+.body{padding:0 2.5rem;}
+.intro{
+  font-family:'Playfair Display',serif;
+  font-size:1.05rem;line-height:1.85;
+  color:var(--ocean-mid);
+  border-right:3px solid var(--ocean-light);
+  padding:0.25rem 1.1rem;
+  margin:1.75rem 0;
+  direction:rtl;
+}
+.section{margin:2.25rem 0 0;}
+.sh{display:flex;align-items:center;gap:0.7rem;margin-bottom:0.5rem;direction:rtl;}
+.sn{
+  width:26px;height:26px;border-radius:50%;
+  background:var(--ocean);color:var(--foam);
+  font-family:'Playfair Display',serif;font-size:12px;
+  display:flex;align-items:center;justify-content:center;flex-shrink:0;
+}
+.sh h2{font-family:'Playfair Display',serif;font-size:1.2rem;font-weight:700;color:var(--ocean);}
+.sh-en{font-size:0.75rem;font-weight:300;color:var(--brine);font-style:italic;margin-right:auto;}
+.div{border:none;border-top:1px solid rgba(45,138,158,0.2);margin-bottom:1.1rem;}
+.p{font-size:0.93rem;line-height:1.85;color:var(--ocean-mid);direction:rtl;margin-bottom:0.9rem;}
+.p strong{color:var(--ocean);font-weight:600;}
+.benefits{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:1.25rem 0;}
+.benefit{
+  background:var(--foam);
+  border:1px solid rgba(45,138,158,0.2);
+  border-top:3px solid var(--ocean-light);
+  border-radius:0 0 7px 7px;
+  padding:12px 14px;direction:rtl;
+}
+.benefit-icon{font-size:1.3rem;margin-bottom:5px;display:block;}
+.benefit-title{font-size:0.88rem;font-weight:600;color:var(--ocean);margin-bottom:3px;}
+.benefit-body{font-size:0.8rem;color:var(--ocean-mid);line-height:1.55;}
+.recipe-box{
+  background:var(--ocean);
+  border-radius:10px;
+  padding:1.25rem 1.5rem;
+  margin:1.25rem 0;
+  direction:rtl;
+}
+.recipe-title{font-size:0.78rem;font-weight:600;letter-spacing:0.1em;text-transform:uppercase;color:var(--brine);margin-bottom:1rem;}
+.recipe-row{display:flex;align-items:center;gap:12px;padding:8px 0;border-bottom:1px solid rgba(255,255,255,0.08);}
+.recipe-row:last-child{border-bottom:none;}
+.recipe-dot{width:6px;height:6px;border-radius:50%;background:var(--ocean-light);flex-shrink:0;}
+.recipe-name{font-size:0.9rem;color:#c8eef5;}
+.recipe-qty{font-size:0.8rem;color:var(--brine);margin-right:auto;font-weight:300;}
+.chupchu{
+  background:var(--foam);
+  border:1px solid rgba(45,138,158,0.3);
+  border-radius:10px;
+  padding:1rem 1.2rem;
+  margin:1.75rem 0;
+  display:flex;gap:0.9rem;
+  align-items:flex-start;direction:rtl;
+}
+.chupchu-img{width:42px;height:42px;border-radius:50%;object-fit:cover;object-position:center 15%;border:1px solid rgba(45,138,158,0.3);flex-shrink:0;}
+.chupchu-name{font-family:'Caveat',cursive;font-size:13px;font-weight:600;color:var(--ocean-light);margin-bottom:3px;}
+.chupchu-text{font-family:'Caveat',cursive;font-size:1rem;line-height:1.55;color:var(--ocean-mid);}
+.timing{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin:1.25rem 0;}
+.timing-card{
+  background:var(--foam-dark);
+  border-radius:8px;padding:12px;
+  text-align:center;direction:rtl;
+}
+.timing-val{font-family:'Playfair Display',serif;font-size:1.4rem;font-weight:700;color:var(--ocean);display:block;}
+.timing-lbl{font-size:0.75rem;color:var(--ocean-mid);font-weight:300;margin-top:2px;}
+.warning{background:#fff8f2;border-right:3px solid var(--rust);border-radius:0 7px 7px 0;padding:12px 16px;margin:1.25rem 0;direction:rtl;}
+.warning-title{font-size:0.88rem;font-weight:600;color:var(--rust);margin-bottom:4px;}
+.warning-body{font-size:0.85rem;color:var(--ocean-mid);line-height:1.65;}
+.plants{display:flex;gap:8px;flex-wrap:wrap;margin:0.75rem 0;direction:rtl;}
+.plant{background:var(--kelp);color:#c8e8d5;font-size:0.82rem;padding:4px 14px;border-radius:20px;}
+.related{background:var(--foam-dark);border-radius:8px;padding:1.25rem 1.5rem;margin:2rem 0;direction:rtl;}
+.related-title{font-family:'Playfair Display',serif;font-size:1rem;font-weight:700;color:var(--ocean);margin-bottom:1rem;}
+.related-links{display:flex;flex-direction:column;gap:8px;}
+.related-link{display:flex;align-items:center;gap:8px;font-size:0.88rem;color:var(--kelp-light);text-decoration:none;}
+.related-link::before{content:'←';color:var(--ocean-light);font-size:12px;}
+.footer-cta{
+  background:var(--ocean);
+  padding:2rem 2.5rem;
+  display:flex;align-items:center;gap:1.5rem;
+  direction:rtl;margin-top:3rem;
+}
+.footer-img{width:52px;height:52px;border-radius:50%;object-fit:cover;object-position:center 15%;border:1px solid rgba(45,138,158,0.5);flex-shrink:0;}
+.footer-text{font-family:'Playfair Display',serif;font-size:0.92rem;line-height:1.7;color:var(--brine);flex:1;}
+.footer-text em{font-size:0.8rem;color:#4a8a9a;font-style:normal;}
+.footer-btn{display:inline-block;background:var(--ocean-light);color:#e8f4f7;font-size:0.8rem;font-weight:600;padding:9px 20px;border-radius:4px;text-decoration:none;white-space:nowrap;flex-shrink:0;}
+@media(max-width:560px){
+  .hero h1{font-size:1.9rem;}
+  .hero-img-wrap{display:none;}
+  .body{padding:0 1.5rem;}
+  .benefits{grid-template-columns:1fr;}
+  .timing{grid-template-columns:1fr 1fr;}
+  .footer-cta{flex-direction:column;padding:1.5rem;}
+}
+</style>
+<article class="art" itemscope itemtype="https://schema.org/Article">
+<header class="hero">
+  <div class="hero-waves">
+    <div class="hero-content">
+      <span class="hero-tag">דשנים טבעיים · Natural Fertilizers</span>
+      <h1 itemprop="headline">ריסוס אצות ים</h1>
+      <div class="hero-en">Seaweed Spray — The Ocean's Gift</div>
+      <div class="hero-meta">
+        <span>קריאה: 5 דקות</span>
+        <span>רמה: מתחיל</span>
+        <span>עונה: כל השנה</span>
+      </div>
+    </div>
+    <div class="hero-img-wrap">
+      <img class="hero-img" src="https://gina-haya.vercel.app/chupchu_final.png" alt="צ'ופצ'ו — גינה חיה" itemprop="image">
+    </div>
+  </div>
+  <div class="wave-bar"></div>
+</header>
+<div class="body">
+  <p class="intro" itemprop="description">
+    האוקיינוס מכיל למעלה מ-60 מינרלים ואלמנטים קורט שהצמח שלך כמעט לא מקבל מהאדמה. ריסוס אצות ים הוא הדרך הפשוטה ביותר לתת לצמחים שלך את כל העושר הזה — ישירות על העלים.
+  </p>
+  <div class="section">
+    <div class="sh"><div class="sn">א</div><h2>למה אצות ים?</h2><span class="sh-en">Why seaweed?</span></div>
+    <hr class="div">
+    <p class="p">אצות ים הן מהאורגניזמים הרב-תכליתיים ביותר בטבע. הן גדלות ללא אדמה, סופגות מינרלים ישירות ממי הים, ומכילות <strong>ציטוקינינים, אוקסינים וגיברלינים</strong> — הורמוני גדילה טבעיים שמגרים את הצמח ממש כמו מינון אנרגיה.</p>
+    <p class="p">בניגוד לדשנים כימיים שמגיעים בכמויות גדולות, ריסוס אצות עובד בכמויות זעירות — מעט מאוד עושה הרבה מאוד.</p>
+  </div>
+  <div class="benefits">
+    <div class="benefit"><span class="benefit-icon">🌿</span><div class="benefit-title">עלים מבריקים ובריאים</div><div class="benefit-body">הכלורופיל מתחזק, העלים מתכהים ומתעבים.</div></div>
+    <div class="benefit"><span class="benefit-icon">💪</span><div class="benefit-title">עמידות למחלות</div><div class="benefit-body">מחזק את דפנות התא, מקשה על חדירת פטריות.</div></div>
+    <div class="benefit"><span class="benefit-icon">🌱</span><div class="benefit-title">שורשים עמוקים יותר</div><div class="benefit-body">הציטוקינינים מגרים צמיחת שורש ראשוני.</div></div>
+    <div class="benefit"><span class="benefit-icon">🌡</span><div class="benefit-title">עמידות לקיצוניות</div><div class="benefit-body">עוזר לצמח לעמוד בחום, קור ויובש.</div></div>
+  </div>
+  <div class="chupchu">
+    <img class="chupchu-img" src="https://gina-haya.vercel.app/chupchu_final.png" alt="צ'ופצ'ו">
+    <div>
+      <div class="chupchu-name">צ'ופצ'ו אומר:</div>
+      <div class="chupchu-text">הגלובוס בחזה שלי מלמד אותי — 70% מהכדור שלנו הוא ים. הצמחים שלך יודעים את זה גם. תנו להם לטעום ממנו.</div>
+    </div>
+  </div>
+  <div class="section">
+    <div class="sh"><div class="sn">ב</div><h2>הכנת תמיסת הריסוס</h2><span class="sh-en">How to prepare</span></div>
+    <hr class="div">
+    <div class="recipe-box">
+      <div class="recipe-title">מתכון בסיסי — 10 ליטר</div>
+      <div class="recipe-row"><div class="recipe-dot"></div><span class="recipe-name">אצות ים מיובשות / אבקת אצות</span><span class="recipe-qty">2–3 כפות</span></div>
+      <div class="recipe-row"><div class="recipe-dot"></div><span class="recipe-name">מים ללא כלור</span><span class="recipe-qty">10 ליטר</span></div>
+      <div class="recipe-row"><div class="recipe-dot"></div><span class="recipe-name">השרייה</span><span class="recipe-qty">24–48 שעות</span></div>
+      <div class="recipe-row"><div class="recipe-dot"></div><span class="recipe-name">סינון דק לפני ריסוס</span><span class="recipe-qty">חובה</span></div>
+    </div>
+    <p class="p">אפשר גם להשתמש במוצרי אצות מרוכזים מחנות הגינון — מדללים לפי הוראות היצרן, בדרך כלל 1:500 עד 1:1000.</p>
+  </div>
+  <div class="section">
+    <div class="sh"><div class="sn">ג</div><h2>זמן ותדירות</h2><span class="sh-en">Timing</span></div>
+    <hr class="div">
+    <div class="timing">
+      <div class="timing-card"><span class="timing-val">7:00</span><div class="timing-lbl">שעת ריסוס מועדפת — לפני שהשמש חזקה</div></div>
+      <div class="timing-card"><span class="timing-val">14 י'</span><div class="timing-lbl">מחזוריות בעונת גדילה</div></div>
+      <div class="timing-card"><span class="timing-val">3×</span><div class="timing-lbl">מינימום בעונה לתוצאות</div></div>
+    </div>
+    <div class="warning">
+      <div class="warning-title">אל תרססו בצהריים</div>
+      <div class="warning-body">שמש חזקה + עלים רטובים = כוויות עלים. תמיד בבוקר מוקדם או בשעות הערב.</div>
+    </div>
+  </div>
+  <div class="chupchu">
+    <img class="chupchu-img" src="https://gina-haya.vercel.app/chupchu_final.png" alt="צ'ופצ'ו">
+    <div>
+      <div class="chupchu-name">טיפ של צ'ופצ'ו:</div>
+      <div class="chupchu-text">שילוב מנצח — ריסוס אצות ים ביום עלה לפי הלוח הביודינמי. העלים בשיא הקליטה שלהם בדיוק בזמן הזה.</div>
+    </div>
+  </div>
+  <div class="section">
+    <div class="sh"><div class="sn">ד</div><h2>מתאים במיוחד ל</h2><span class="sh-en">Best for</span></div>
+    <hr class="div">
+    <div class="plants">
+      <span class="plant">עשבי תיבול</span><span class="plant">ירקות עלים</span><span class="plant">תותים</span>
+      <span class="plant">פרחים</span><span class="plant">שתלים צעירים</span><span class="plant">עצי הדר</span>
+      <span class="plant">גפן</span><span class="plant">ורדים</span>
+    </div>
+  </div>
+  <div class="related">
+    <div class="related-title">מאמרים קשורים</div>
+    <div class="related-links">
+      <a class="related-link" href="/articles/compost-tea">תה קומפוסט — המדריך המלא</a>
+      <a class="related-link" href="/articles/green-manure">דשן ירוק — מה זה ואיך עושים</a>
+      <a class="related-link" href="/articles/biodynamic-calendar">הלוח הביודינמי — ימי עלה ופרח</a>
+    </div>
+  </div>
+</div>
+<footer class="footer-cta">
+  <img class="footer-img" src="https://gina-haya.vercel.app/chupchu_final.png" alt="צ'ופצ'ו">
+  <div class="footer-text">
+    רוצה לדעת מהו יום העלה הבא לפי הלוח הביודינמי?<br>
+    <em>Find the perfect biodynamic leaf day for your seaweed spray.</em>
+  </div>
+  <a class="footer-btn" href="https://gina-haya.vercel.app">פתח גינה חיה ←</a>
+</footer>
+</article>`,
   },
   {
     id: 'green-manure',
-    titleHe: 'דשן ירוק — להאכיל את הקרקע לפני הצמח',
-    titleEn: 'Green Manure — Feed the Soil Before the Plants',
+    titleHe: 'דשן ירוק',
+    titleEn: 'Green Manure — Grow to Give Back',
     metaDescriptionHe: 'כך משתמשים בדשן ירוק כדי לשפר פוריות, מבנה קרקע וחיוניות של הערוגה לאורך זמן.',
     metaDescriptionEn: 'Learn how green manure improves soil fertility, structure, and long-term garden health naturally.',
     categoryHe: 'דשנים טבעיים',
@@ -662,6 +925,401 @@ function toggleFaq(el){
     filenameEn: '03_green_manure.md',
     publishedAt: '2026-04-08',
     images: null,
+    htmlContent: `<style>
+@import url('https://fonts.googleapis.com/css2?family=Merriweather:ital,wght@0,400;0,700;1,400&family=IBM+Plex+Sans:wght@300;400;500&family=Caveat:wght@400;600&display=swap');
+*{box-sizing:border-box;margin:0;padding:0;}
+.art{
+  --forest:#1a3a1e;
+  --forest-mid:#2d5c32;
+  --forest-light:#4a8a50;
+  --leaf:#6ab870;
+  --leaf-pale:#c8e8ca;
+  --meadow:#f2f7f2;
+  --meadow-dark:#ddeedd;
+  --soil:#3d2a0e;
+  --soil-light:#7a5c3a;
+  --gold:#b8940a;
+  --rust:#8b3a1a;
+  font-family:'IBM Plex Sans',sans-serif;
+  background:var(--meadow);
+  color:var(--forest);
+}
+.hero{
+  background:var(--forest);
+  padding:3rem 2.5rem 2.5rem;
+  position:relative;
+  display:flex;align-items:center;gap:2rem;
+  overflow:hidden;
+}
+.hero::after{
+  content:'';
+  position:absolute;bottom:0;left:0;right:0;height:4px;
+  background:repeating-linear-gradient(90deg,var(--forest-light) 0,var(--forest-light) 8px,transparent 8px,transparent 16px);
+}
+.hero-content{flex:1;}
+.hero-tag{display:inline-block;background:var(--forest-light);color:#d0f0d2;font-size:10px;font-weight:500;letter-spacing:0.13em;text-transform:uppercase;padding:3px 11px;border-radius:2px;margin-bottom:1rem;}
+.hero h1{font-family:'Merriweather',serif;font-size:2.6rem;font-weight:700;color:#e8f5e8;line-height:1.1;margin-bottom:0.35rem;direction:rtl;}
+.hero-en{font-family:'Merriweather',serif;font-size:0.95rem;font-style:italic;color:var(--leaf);margin-bottom:1.25rem;}
+.hero-meta{display:flex;gap:1.25rem;font-size:11px;color:#5a8a5e;font-weight:300;}
+.hero-img{width:140px;height:140px;border-radius:50%;object-fit:cover;object-position:center 18%;border:2px solid rgba(74,138,80,0.5);flex-shrink:0;}
+.body{padding:0 2.5rem;}
+.intro{font-family:'Merriweather',serif;font-size:1.02rem;line-height:1.9;color:var(--forest-mid);border-right:3px solid var(--forest-light);padding:0.25rem 1.1rem;margin:1.75rem 0;direction:rtl;}
+.section{margin:2.25rem 0 0;}
+.sh{display:flex;align-items:center;gap:0.7rem;margin-bottom:0.5rem;direction:rtl;}
+.sn{width:26px;height:26px;border-radius:50%;background:var(--forest);color:var(--leaf-pale);font-family:'Merriweather',serif;font-size:12px;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+.sh h2{font-family:'Merriweather',serif;font-size:1.2rem;font-weight:700;color:var(--forest);}
+.sh-en{font-size:0.75rem;font-weight:300;color:var(--forest-light);font-style:italic;margin-right:auto;}
+.div{border:none;border-top:1px solid rgba(74,138,80,0.25);margin-bottom:1.1rem;}
+.p{font-size:0.93rem;line-height:1.85;color:var(--forest-mid);direction:rtl;margin-bottom:0.9rem;}
+.p strong{color:var(--forest);font-weight:500;}
+.plants-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:1.25rem 0;}
+.plant-card{background:white;border:1px solid rgba(74,138,80,0.2);border-radius:8px;padding:12px 14px;direction:rtl;border-right:4px solid var(--forest-light);}
+.plant-name{font-size:0.9rem;font-weight:500;color:var(--forest);margin-bottom:3px;}
+.plant-why{font-size:0.8rem;color:var(--forest-light);line-height:1.5;}
+.plant-season{font-size:0.72rem;color:var(--soil-light);font-weight:300;margin-top:4px;}
+.timeline{display:flex;flex-direction:column;gap:0;margin:1.25rem 0;position:relative;}
+.timeline::before{content:'';position:absolute;right:17px;top:20px;bottom:20px;width:2px;background:var(--leaf-pale);}
+.tl-item{display:flex;gap:14px;align-items:flex-start;padding:10px 0;direction:rtl;position:relative;z-index:1;}
+.tl-dot{width:34px;height:34px;border-radius:50%;background:var(--forest-mid);color:white;font-size:0.75rem;font-weight:500;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+.tl-body{padding-top:4px;}
+.tl-title{font-size:0.9rem;font-weight:500;color:var(--forest);margin-bottom:2px;}
+.tl-desc{font-size:0.82rem;color:var(--forest-light);line-height:1.6;}
+.chupchu{background:var(--meadow-dark);border:1px solid rgba(74,138,80,0.3);border-radius:10px;padding:1rem 1.2rem;margin:1.75rem 0;display:flex;gap:0.9rem;align-items:flex-start;direction:rtl;}
+.chupchu-img{width:42px;height:42px;border-radius:50%;object-fit:cover;object-position:center 15%;border:1px solid rgba(74,138,80,0.3);flex-shrink:0;}
+.chupchu-name{font-family:'Caveat',cursive;font-size:13px;font-weight:600;color:var(--forest-mid);margin-bottom:3px;}
+.chupchu-text{font-family:'Caveat',cursive;font-size:1rem;line-height:1.55;color:var(--forest-mid);}
+.npk-row{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin:1.25rem 0;}
+.npk-card{background:var(--forest);border-radius:8px;padding:14px;text-align:center;}
+.npk-val{font-family:'Merriweather',serif;font-size:1.5rem;font-weight:700;color:var(--leaf);display:block;}
+.npk-lbl{font-size:0.72rem;color:#5a8a5e;margin-top:2px;}
+.npk-name{font-size:0.8rem;color:#a8d0aa;margin-top:4px;}
+.warning{background:#fff8f2;border-right:3px solid var(--rust);border-radius:0 7px 7px 0;padding:12px 16px;margin:1.25rem 0;direction:rtl;}
+.warning-title{font-size:0.88rem;font-weight:500;color:var(--rust);margin-bottom:4px;}
+.warning-body{font-size:0.85rem;color:var(--forest-mid);line-height:1.65;}
+.related{background:var(--meadow-dark);border-radius:8px;padding:1.25rem 1.5rem;margin:2rem 0;direction:rtl;}
+.related-title{font-family:'Merriweather',serif;font-size:1rem;font-weight:700;color:var(--forest);margin-bottom:1rem;}
+.related-links{display:flex;flex-direction:column;gap:8px;}
+.related-link{display:flex;align-items:center;gap:8px;font-size:0.88rem;color:var(--forest-light);text-decoration:none;}
+.related-link::before{content:'←';color:var(--forest-mid);font-size:12px;}
+.footer-cta{background:var(--forest);padding:2rem 2.5rem;display:flex;align-items:center;gap:1.5rem;direction:rtl;margin-top:3rem;}
+.footer-img{width:52px;height:52px;border-radius:50%;object-fit:cover;object-position:center 15%;border:1px solid rgba(74,138,80,0.5);flex-shrink:0;}
+.footer-text{font-family:'Merriweather',serif;font-size:0.9rem;line-height:1.7;color:var(--leaf);flex:1;}
+.footer-text em{font-size:0.78rem;color:#4a7a4e;font-style:normal;}
+.footer-btn{display:inline-block;background:var(--forest-light);color:#e8f5e8;font-size:0.8rem;font-weight:500;padding:9px 20px;border-radius:4px;text-decoration:none;white-space:nowrap;flex-shrink:0;}
+@media(max-width:560px){.hero{flex-direction:column;}.hero h1{font-size:2rem;}.hero-img{display:none;}.body{padding:0 1.5rem;}.plants-grid{grid-template-columns:1fr;}.npk-row{grid-template-columns:1fr 1fr;}.footer-cta{flex-direction:column;padding:1.5rem;}}
+</style>
+<article class="art" itemscope itemtype="https://schema.org/Article">
+<header class="hero">
+  <div class="hero-content">
+    <span class="hero-tag">דשנים טבעיים · Natural Fertilizers</span>
+    <h1 itemprop="headline">דשן ירוק</h1>
+    <div class="hero-en">Green Manure — Grow to Give Back</div>
+    <div class="hero-meta"><span>קריאה: 8 דקות</span><span>רמה: מתחיל–בינוני</span><span>עונה: סתיו–אביב</span></div>
+  </div>
+  <img class="hero-img" src="https://gina-haya.vercel.app/chupchu_final.png" alt="צ'ופצ'ו — גינה חיה" itemprop="image">
+</header>
+<div class="body">
+  <p class="intro" itemprop="description">
+    דשן ירוק הוא הרעיון הפשוט והגאוני ביותר בגינה ביודינמית — גדלים צמחים מיוחדים שכל מטרתם היא לחזור לאדמה. הם מתים כדי שהאדמה תחיה.
+  </p>
+  <div class="section">
+    <div class="sh"><div class="sn">א</div><h2>מה זה בעצם?</h2><span class="sh-en">What is green manure?</span></div>
+    <hr class="div">
+    <p class="p">דשן ירוק הוא גידול מכוון של צמחים <strong>שלא מיועדים לאכילה</strong> — הם גדלים, ואז נחרשים חזרה לאדמה בעודם ירוקים. הם פועלים בשלוש רמות במקביל: מוסיפים חומר אורגני, מקבעים חנקן מהאוויר, ומשפרים את מבנה הקרקע.</p>
+    <p class="p">בגינה ביודינמית, דשן ירוק הוא גם "תרופה לאדמה" — כל צמח בוחר לפי מה שהאדמה חסרה.</p>
+  </div>
+  <div class="chupchu">
+    <img class="chupchu-img" src="https://gina-haya.vercel.app/chupchu_final.png" alt="צ'ופצ'ו">
+    <div>
+      <div class="chupchu-name">צ'ופצ'ו אומר:</div>
+      <div class="chupchu-text">כשצנחתי לתוך העץ שלי, ראיתי שגם עצים מתים — הם פשוט הופכים לאדמה חדשה. דשן ירוק הוא אותו רעיון, רק מהיר יותר.</div>
+    </div>
+  </div>
+  <div class="section">
+    <div class="sh"><div class="sn">ב</div><h2>הצמחים הכי טובים לדשן ירוק</h2><span class="sh-en">Best plants to use</span></div>
+    <hr class="div">
+    <div class="plants-grid">
+      <div class="plant-card">
+        <div class="plant-name">פול מצרי</div>
+        <div class="plant-why">מקבע חנקן מהאוויר — אחד הטובים ביותר</div>
+        <div class="plant-season">זריעה: אוקטובר–נובמבר</div>
+      </div>
+      <div class="plant-card">
+        <div class="plant-name">לוביה</div>
+        <div class="plant-why">צומחת מהר, שורשים עמוקים, מינרלים רבים</div>
+        <div class="plant-season">זריעה: מרץ–אפריל</div>
+      </div>
+      <div class="plant-card">
+        <div class="plant-name">חרדל</div>
+        <div class="plant-why">מדכא עשבים שוטים, חיטוי קרקע טבעי</div>
+        <div class="plant-season">זריעה: ספטמבר–פברואר</div>
+      </div>
+      <div class="plant-card">
+        <div class="plant-name">פציליה</div>
+        <div class="plant-why">פרחים יפים, מפרה דבורים, נחרש בקלות</div>
+        <div class="plant-season">זריעה: ספטמבר–ינואר</div>
+      </div>
+      <div class="plant-card">
+        <div class="plant-name">שיפון</div>
+        <div class="plant-why">מונע סחיפת קרקע, שורשים שבירי מבנה</div>
+        <div class="plant-season">זריעה: נובמבר–ינואר</div>
+      </div>
+      <div class="plant-card">
+        <div class="plant-name">בקיה</div>
+        <div class="plant-why">קטנית מצוינת, חנקן גבוה, צומחת מהר</div>
+        <div class="plant-season">זריעה: אוקטובר–דצמבר</div>
+      </div>
+    </div>
+  </div>
+  <div class="section">
+    <div class="sh"><div class="sn">ג</div><h2>מה קורה בקרקע?</h2><span class="sh-en">Soil science</span></div>
+    <hr class="div">
+    <div class="npk-row">
+      <div class="npk-card"><span class="npk-val">N</span><div class="npk-lbl">חנקן</div><div class="npk-name">קטניות מקבעות ישירות מהאוויר</div></div>
+      <div class="npk-card"><span class="npk-val">P</span><div class="npk-lbl">זרחן</div><div class="npk-name">שורשים עמוקים מוציאים מהסלע</div></div>
+      <div class="npk-card"><span class="npk-val">K</span><div class="npk-lbl">אשלגן</div><div class="npk-name">חומר אורגני מפרק ומשחרר</div></div>
+    </div>
+    <p class="p">הקטניות (פול, לוביה, בקיה) עובדות עם חיידקי <strong>ריזוביום</strong> בשורשיהן — יחד הן קובעות חנקן מהאוויר ומכניסות אותו לאדמה בחינם.</p>
+  </div>
+  <div class="section">
+    <div class="sh"><div class="sn">ד</div><h2>תזמון וביצוע</h2><span class="sh-en">How &amp; when</span></div>
+    <hr class="div">
+    <div class="timeline">
+      <div class="tl-item"><div class="tl-dot">1</div><div class="tl-body"><div class="tl-title">זורעים בתחילת הסתיו</div><div class="tl-desc">מיד אחרי קציר הקיץ — האדמה עדיין חמה, הצמחים צומחים מהר.</div></div></div>
+      <div class="tl-item"><div class="tl-dot">2</div><div class="tl-body"><div class="tl-title">מניחים לגדול 6–10 שבועות</div><div class="tl-desc">עד לפני פריחה — ברגע שהפרח מתחיל, הצמח מעביר אנרגיה לזרע ולא לעלה.</div></div></div>
+      <div class="tl-item"><div class="tl-dot">3</div><div class="tl-body"><div class="tl-title">חורשים / קוצרים ומניחים</div><div class="tl-desc">אפשר לחרוש עם מעדר ידני או פשוט לקצור ולהניח על פני האדמה כמולץ'.</div></div></div>
+      <div class="tl-item"><div class="tl-dot">4</div><div class="tl-body"><div class="tl-title">ממתינים 3–4 שבועות</div><div class="tl-desc">הצמח מתפרק, האדמה מתחממת. רק אז שותלים את הגידול הבא.</div></div></div>
+    </div>
+    <div class="warning">
+      <div class="warning-title">אל תשתלו מיד אחרי</div>
+      <div class="warning-body">חומר ירוק טרי מתפרק ועלול לשרוף שורשים עדינים. תמיד ממתינים לפחות 3 שבועות לפני שתילה חדשה.</div>
+    </div>
+  </div>
+  <div class="chupchu">
+    <img class="chupchu-img" src="https://gina-haya.vercel.app/chupchu_final.png" alt="צ'ופצ'ו">
+    <div>
+      <div class="chupchu-name">הסוד של צ'ופצ'ו:</div>
+      <div class="chupchu-text">לפי הלוח הביודינמי — יום שורש הוא הזמן הכי טוב לחרוש דשן ירוק. האדמה קולטת טוב יותר ביום הזה. פתח את גינה חיה לבדוק!</div>
+    </div>
+  </div>
+  <div class="related">
+    <div class="related-title">מאמרים קשורים</div>
+    <div class="related-links">
+      <a class="related-link" href="/articles/compost-tea">תה קומפוסט — המדריך המלא</a>
+      <a class="related-link" href="/articles/compost-pile">ערימת קומפוסט — איך בונים</a>
+      <a class="related-link" href="/articles/biodynamic-calendar">הלוח הביודינמי — ימי שורש</a>
+    </div>
+  </div>
+</div>
+<footer class="footer-cta">
+  <img class="footer-img" src="https://gina-haya.vercel.app/chupchu_final.png" alt="צ'ופצ'ו">
+  <div class="footer-text">
+    מתי יום השורש הבא לחרוש את הדשן הירוק שלך?<br>
+    <em>Check the biodynamic root day for your green manure work.</em>
+  </div>
+  <a class="footer-btn" href="https://gina-haya.vercel.app">פתח גינה חיה ←</a>
+</footer>
+</article>`,
+  },
+  {
+    id: 'diluted-urine',
+    titleHe: 'שתן מדולל',
+    titleEn: 'Diluted Urine — The Alchemist\'s Fertilizer',
+    metaDescriptionHe: 'שתן אנושי מדולל הוא אחד מדשני החנקן הטהורים והמיידיים ביותר בטבע — פשוט, חינמי, ואפקטיבי.',
+    metaDescriptionEn: 'Diluted human urine is one of the purest and most immediately available nitrogen fertilizers in nature — simple, free, and effective.',
+    categoryHe: 'דשנים טבעיים',
+    categoryEn: 'Natural Fertilizers',
+    filenameHe: '21_שתן_מדולל.md',
+    filenameEn: '21_diluted_urine.md',
+    publishedAt: '2026-04-11',
+    images: null,
+    htmlContent: `<style>
+@import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,600;1,400&family=Jost:wght@300;400;500&family=Caveat:wght@400;600&display=swap');
+*{box-sizing:border-box;margin:0;padding:0;}
+.art{
+  --gold:#8a6a0a;
+  --gold-bright:#c8980a;
+  --gold-pale:#f5e8c0;
+  --gold-deep:#4a3800;
+  --ivory:#faf6ec;
+  --ivory-dark:#f0e8d0;
+  --ink:#1a1408;
+  --ink-mid:#3d2e10;
+  --ink-light:#7a6030;
+  --copper:#8b4a1a;
+  --sage:#3a5a30;
+  font-family:'Jost',sans-serif;
+  background:var(--ivory);
+  color:var(--ink);
+}
+.hero{
+  background:var(--gold-deep);
+  padding:3rem 2.5rem 2.5rem;
+  position:relative;
+  display:flex;align-items:center;gap:2rem;
+}
+.hero::before{
+  content:'';position:absolute;
+  top:0;left:0;right:0;bottom:0;
+  background:repeating-linear-gradient(0deg,transparent,transparent 28px,rgba(255,255,255,0.03) 28px,rgba(255,255,255,0.03) 29px);
+  pointer-events:none;
+}
+.hero-content{flex:1;position:relative;z-index:1;}
+.hero-tag{display:inline-block;background:rgba(200,152,10,0.3);color:#e8c870;font-size:10px;font-weight:500;letter-spacing:0.14em;text-transform:uppercase;padding:3px 11px;border-radius:2px;margin-bottom:1rem;border:1px solid rgba(200,152,10,0.4);}
+.hero h1{font-family:'Cormorant Garamond',serif;font-size:3rem;font-weight:600;color:#f5e8c0;line-height:1.05;margin-bottom:0.35rem;direction:rtl;}
+.hero-en{font-family:'Cormorant Garamond',serif;font-size:1rem;font-style:italic;color:#c8980a;margin-bottom:1.25rem;}
+.hero-meta{display:flex;gap:1.25rem;font-size:11px;color:#7a6030;font-weight:300;}
+.hero-img-wrap{position:relative;z-index:1;flex-shrink:0;}
+.hero-img{width:130px;height:130px;border-radius:50%;object-fit:cover;object-position:center 18%;border:1px solid rgba(200,152,10,0.4);display:block;}
+.hero-img-ring{position:absolute;inset:-10px;border-radius:50%;border:1px dashed rgba(200,152,10,0.2);pointer-events:none;}
+.body{padding:0 2.5rem;}
+.intro{font-family:'Cormorant Garamond',serif;font-size:1.15rem;line-height:1.85;color:var(--ink-mid);border-right:3px solid var(--gold-bright);padding:0.25rem 1.1rem;margin:1.75rem 0;direction:rtl;}
+.section{margin:2.25rem 0 0;}
+.sh{display:flex;align-items:center;gap:0.7rem;margin-bottom:0.5rem;direction:rtl;}
+.sn{width:26px;height:26px;border-radius:50%;background:var(--gold-deep);color:var(--gold-pale);font-family:'Cormorant Garamond',serif;font-size:13px;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+.sh h2{font-family:'Cormorant Garamond',serif;font-size:1.3rem;font-weight:600;color:var(--ink);}
+.sh-en{font-size:0.75rem;font-weight:300;color:var(--ink-light);font-style:italic;margin-right:auto;}
+.div{border:none;border-top:1px solid rgba(138,106,10,0.2);margin-bottom:1.1rem;}
+.p{font-size:0.93rem;line-height:1.9;color:var(--ink-mid);direction:rtl;margin-bottom:0.9rem;}
+.p strong{color:var(--ink);font-weight:500;}
+.ratio-visual{display:flex;align-items:center;gap:0;margin:1.5rem 0;direction:rtl;}
+.ratio-part{display:flex;flex-direction:column;align-items:center;padding:1.25rem;text-align:center;}
+.ratio-num{font-family:'Cormorant Garamond',serif;font-size:2.5rem;font-weight:600;line-height:1;}
+.ratio-lbl{font-size:0.75rem;font-weight:300;margin-top:4px;}
+.ratio-divider{font-family:'Cormorant Garamond',serif;font-size:2rem;color:var(--gold-bright);padding:0 0.5rem;align-self:center;}
+.ratio-urine{background:var(--gold-pale);border:1px solid rgba(138,106,10,0.3);border-radius:8px 0 0 8px;flex:1;}
+.ratio-urine .ratio-num{color:var(--gold);}
+.ratio-urine .ratio-lbl{color:var(--gold);}
+.ratio-water{background:var(--ivory-dark);border:1px solid rgba(138,106,10,0.15);border-radius:0 8px 8px 0;border-right:none;flex:4;}
+.ratio-water .ratio-num{color:#3a6a8a;}
+.ratio-water .ratio-lbl{color:#3a6a8a;}
+.facts{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;margin:1.25rem 0;}
+.fact{background:var(--ivory-dark);border-radius:8px;padding:14px;text-align:center;}
+.fact-val{font-family:'Cormorant Garamond',serif;font-size:1.6rem;font-weight:600;color:var(--gold);display:block;}
+.fact-lbl{font-size:0.75rem;color:var(--ink-light);margin-top:3px;font-weight:300;}
+.do-dont{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin:1.25rem 0;}
+.do{background:#f0f7f0;border:1px solid rgba(58,90,48,0.2);border-radius:8px;padding:14px;direction:rtl;}
+.dont{background:#fff5f0;border:1px solid rgba(139,74,26,0.2);border-radius:8px;padding:14px;direction:rtl;}
+.do-title{font-size:0.82rem;font-weight:500;color:var(--sage);margin-bottom:8px;}
+.dont-title{font-size:0.82rem;font-weight:500;color:var(--copper);margin-bottom:8px;}
+.do-item,.dont-item{font-size:0.82rem;color:var(--ink-mid);line-height:1.65;margin-bottom:4px;padding-right:10px;position:relative;}
+.do-item::before{content:'✓';position:absolute;right:0;color:var(--sage);}
+.dont-item::before{content:'✗';position:absolute;right:0;color:var(--copper);}
+.chupchu{background:var(--ivory-dark);border:1px solid rgba(138,106,10,0.25);border-radius:10px;padding:1rem 1.2rem;margin:1.75rem 0;display:flex;gap:0.9rem;align-items:flex-start;direction:rtl;}
+.chupchu-img{width:42px;height:42px;border-radius:50%;object-fit:cover;object-position:center 15%;border:1px solid rgba(138,106,10,0.3);flex-shrink:0;}
+.chupchu-name{font-family:'Caveat',cursive;font-size:13px;font-weight:600;color:var(--gold);margin-bottom:3px;}
+.chupchu-text{font-family:'Caveat',cursive;font-size:1rem;line-height:1.55;color:var(--ink-mid);}
+.history-box{background:var(--gold-deep);border-radius:10px;padding:1.25rem 1.5rem;margin:1.25rem 0;direction:rtl;}
+.history-title{font-size:0.75rem;font-weight:500;letter-spacing:0.1em;text-transform:uppercase;color:var(--gold-bright);margin-bottom:0.75rem;}
+.history-text{font-family:'Cormorant Garamond',serif;font-size:1rem;font-style:italic;line-height:1.8;color:#d4b860;}
+.related{background:var(--ivory-dark);border-radius:8px;padding:1.25rem 1.5rem;margin:2rem 0;direction:rtl;}
+.related-title{font-family:'Cormorant Garamond',serif;font-size:1rem;font-weight:600;color:var(--ink);margin-bottom:1rem;}
+.related-links{display:flex;flex-direction:column;gap:8px;}
+.related-link{display:flex;align-items:center;gap:8px;font-size:0.88rem;color:var(--sage);text-decoration:none;}
+.related-link::before{content:'←';color:var(--gold);font-size:12px;}
+.footer-cta{background:var(--gold-deep);padding:2rem 2.5rem;display:flex;align-items:center;gap:1.5rem;direction:rtl;margin-top:3rem;}
+.footer-img{width:52px;height:52px;border-radius:50%;object-fit:cover;object-position:center 15%;border:1px solid rgba(200,152,10,0.4);flex-shrink:0;}
+.footer-text{font-family:'Cormorant Garamond',serif;font-size:0.95rem;line-height:1.7;color:var(--gold-pale);flex:1;}
+.footer-text em{font-size:0.8rem;color:#7a6030;font-style:normal;}
+.footer-btn{display:inline-block;background:var(--gold-bright);color:#1a1408;font-size:0.8rem;font-weight:500;padding:9px 20px;border-radius:4px;text-decoration:none;white-space:nowrap;flex-shrink:0;}
+@media(max-width:560px){.hero{flex-direction:column;}.hero h1{font-size:2.2rem;}.hero-img-wrap{display:none;}.body{padding:0 1.5rem;}.facts{grid-template-columns:1fr 1fr;}.do-dont{grid-template-columns:1fr;}.footer-cta{flex-direction:column;padding:1.5rem;}}
+</style>
+<article class="art" itemscope itemtype="https://schema.org/Article">
+<header class="hero">
+  <div class="hero-content">
+    <span class="hero-tag">דשנים טבעיים · Natural Fertilizers</span>
+    <h1 itemprop="headline">שתן מדולל</h1>
+    <div class="hero-en">Diluted Urine — The Alchemist's Fertilizer</div>
+    <div class="hero-meta"><span>קריאה: 5 דקות</span><span>רמה: מתחיל</span><span>עונה: כל השנה</span></div>
+  </div>
+  <div class="hero-img-wrap">
+    <img class="hero-img" src="https://gina-haya.vercel.app/chupchu_final.png" alt="צ'ופצ'ו — גינה חיה" itemprop="image">
+    <div class="hero-img-ring"></div>
+  </div>
+</header>
+<div class="body">
+  <p class="intro" itemprop="description">
+    הדשן החינמי, הזמין תמיד, שאנשים מתביישים לדבר עליו — אבל שהשתמשו בו בכל תרבות חקלאית בהיסטוריה. שתן אנושי מדולל הוא אחד מדשני החנקן הטהורים והמיידיים ביותר בטבע.
+  </p>
+  <div class="section">
+    <div class="sh"><div class="sn">א</div><h2>המדע שמאחורי הקסם</h2><span class="sh-en">The science</span></div>
+    <hr class="div">
+    <p class="p">שתן בריא מכיל בעיקר <strong>אוריאה</strong> — תרכובת חנקן שהצמח הופך במהירות לאמוניום ולאחר מכן לניטראט, שהוא צורת החנקן הכי זמינה לצמח. בנוסף יש בו זרחן ואשלגן.</p>
+    <div class="facts">
+      <div class="fact"><span class="fact-val">11%</span><div class="fact-lbl">חנקן (N) — גבוה מאוד</div></div>
+      <div class="fact"><span class="fact-val">1%</span><div class="fact-lbl">זרחן (P)</div></div>
+      <div class="fact"><span class="fact-val">2.5%</span><div class="fact-lbl">אשלגן (K)</div></div>
+    </div>
+    <p class="p">ריכוז החנקן בשתן טרי גבוה ממרבית הדשנים האורגניים — לכן הדילול קריטי.</p>
+  </div>
+  <div class="section">
+    <div class="sh"><div class="sn">ב</div><h2>יחס הדילול — הכלל הזהוב</h2><span class="sh-en">The golden ratio</span></div>
+    <hr class="div">
+    <div class="ratio-visual">
+      <div class="ratio-part ratio-urine"><span class="ratio-num">1</span><span class="ratio-lbl">שתן</span></div>
+      <div class="ratio-divider">:</div>
+      <div class="ratio-part ratio-water"><span class="ratio-num">10</span><span class="ratio-lbl">מים</span></div>
+    </div>
+    <p class="p">לשתילים עדינים — 1:20. לעצי פרי בוגרים ועגבניות — 1:7 אפשרי. כלל האצבע: יחס 1:10 עובד כמעט לכל צמח.</p>
+  </div>
+  <div class="chupchu">
+    <img class="chupchu-img" src="https://gina-haya.vercel.app/chupchu_final.png" alt="צ'ופצ'ו">
+    <div>
+      <div class="chupchu-name">צ'ופצ'ו אומר:</div>
+      <div class="chupchu-text">כן, זה נשמע מוזר. אבל הרצינות של הגינאי נמדדת בנכונות שלו לנסות את מה שעובד — לא רק את מה שנוח לדבר עליו.</div>
+    </div>
+  </div>
+  <div class="section">
+    <div class="sh"><div class="sn">ג</div><h2>עושים ואל תעשו</h2><span class="sh-en">Do and don't</span></div>
+    <hr class="div">
+    <div class="do-dont">
+      <div class="do">
+        <div class="do-title">כן לעשות</div>
+        <div class="do-item">תמיד לדלל 1:10 לפחות</div>
+        <div class="do-item">השקיה לאדמה, לא ריסוס עלים</div>
+        <div class="do-item">שתן טרי — תוך שעה מהאיסוף</div>
+        <div class="do-item">בבוקר לפני השמש</div>
+        <div class="do-item">על ירקות עלים ועצי פרי</div>
+      </div>
+      <div class="dont">
+        <div class="dont-title">אל תעשו</div>
+        <div class="dont-item">על ירקות שאוכלים את השורש</div>
+        <div class="dont-item">שתן מדולל ישן (מסריח)</div>
+        <div class="dont-item">בקרבת קטיף — 3 שבועות לפחות</div>
+        <div class="dont-item">אם נוטלים תרופות</div>
+        <div class="dont-item">ריסוס ישיר על עלים</div>
+      </div>
+    </div>
+  </div>
+  <div class="history-box">
+    <div class="history-title">מסורת עתיקה</div>
+    <div class="history-text">בסין המסורתית, ביפן, בהודו ובאפריקה — שתן אנושי שימש חקלאים במשך אלפי שנים. בסקנדינביה ובאירופה כפרית נאסף בחביות מיוחדות לשדות. זה לא חדש — זה ישן מאוד.</div>
+  </div>
+  <div class="chupchu">
+    <img class="chupchu-img" src="https://gina-haya.vercel.app/chupchu_final.png" alt="צ'ופצ'ו">
+    <div>
+      <div class="chupchu-name">הסוד של צ'ופצ'ו:</div>
+      <div class="chupchu-text">לפי הלוח הביודינמי — ביום פרי הצמח רוצה חנקן לפרות. זה הזמן המושלם לשתן מדולל. פתח גינה חיה לבדוק מתי היום הבא!</div>
+    </div>
+  </div>
+  <div class="related">
+    <div class="related-title">מאמרים קשורים</div>
+    <div class="related-links">
+      <a class="related-link" href="/articles/compost-tea">תה קומפוסט — דשן נוזלי חי</a>
+      <a class="related-link" href="/articles/seaweed-spray">ריסוס אצות ים — מינרלים מהאוקיינוס</a>
+      <a class="related-link" href="/articles/biodynamic-calendar">הלוח הביודינמי — ימי פרי</a>
+    </div>
+  </div>
+</div>
+<footer class="footer-cta">
+  <img class="footer-img" src="https://gina-haya.vercel.app/chupchu_final.png" alt="צ'ופצ'ו">
+  <div class="footer-text">
+    רוצה לדעת מהו יום הפרי הבא לפי הלוח הביודינמי?<br>
+    <em>Find the perfect biodynamic fruit day for your liquid fertilizer.</em>
+  </div>
+  <a class="footer-btn" href="https://gina-haya.vercel.app">פתח גינה חיה ←</a>
+</footer>
+</article>`,
   },
   {
     id: 'neem-oil',
