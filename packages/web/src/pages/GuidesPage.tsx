@@ -95,9 +95,9 @@ const GUIDE_CONTENT: Record<string, GuideContent> = {
   bd3: { article: { slug: 'cpp', ready: true }, comingSoon: ['סרטון'] },
   bd4: { article: { slug: 'biodynamic-calendar', ready: true }, comingSoon: ['סרטון'] },
   // Companions
-  co1: { video: { youtubeId: 'dQw4w9WgXcQ', duration: '0:45' }, article: { slug: 'companion-planting', ready: true } },
-  co2: { article: { slug: 'companion-planting', ready: true }, comingSoon: ['סרטון'] },
-  co3: { comingSoon: ['סרטון', 'מאמר'] },
+  co1: { video: { youtubeId: 'dQw4w9WgXcQ', duration: '0:45' }, article: { slug: 'tomato-basil', ready: true } },
+  co2: { article: { slug: 'three-sisters', ready: true }, comingSoon: ['סרטון'] },
+  co3: { article: { slug: 'flowers-vegetables', ready: true }, comingSoon: ['סרטון'] },
   // Techniques
   t1:  { video: { youtubeId: 'dQw4w9WgXcQ', duration: '15:00' }, comingSoon: ['מאמר'] },
   t2:  { article: { slug: 'raised-vs-ground', ready: true }, comingSoon: ['סרטון'] },

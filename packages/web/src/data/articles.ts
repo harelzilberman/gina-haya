@@ -3672,4 +3672,651 @@ function toggleFaq(el){
 </footer>
 </article>`,
   },
+  {
+    id: 'tomato-basil',
+    titleHe: 'עגבנייה + בזיליקום',
+    titleEn: 'Tomato & Basil — The Mediterranean Romance',
+    metaDescriptionHe: 'הזוג הכי מפורסם בגינה — עגבנייה ובזיליקום מגינים אחד על השני ושניהם יוצאים מרוויחים.',
+    metaDescriptionEn: 'Why tomatoes and basil grow better together — the science behind the most famous companion planting pair.',
+    categoryHe: 'שיתופי פעולה',
+    categoryEn: 'Companion Planting',
+    filenameHe: '28_עגבנייה_בזיליקום.md',
+    filenameEn: '28_tomato_basil.md',
+    publishedAt: '2026-04-12',
+    images: null,
+    htmlContent: `<style>
+@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;1,400&family=Lato:wght@300;400;700&family=Caveat:wght@400;600&display=swap');
+*{box-sizing:border-box;margin:0;padding:0;}
+.art{
+  --tomato:#c83020;
+  --tomato-pale:#fde8e5;
+  --basil:#1a4a1a;
+  --basil-mid:#2d6a2d;
+  --basil-pale:#d0ebd0;
+  --terra:#8b4a1a;
+  --terra-pale:#f5e0d0;
+  --sun:#e8a820;
+  --cream:#faf6ef;
+  --ink:#1a0e06;
+  --ink-mid:#3a2010;
+  font-family:'Lato',sans-serif;
+  background:var(--cream);
+  color:var(--ink);
+}
+.hero{
+  background:var(--terra);
+  padding:3rem 2.5rem 0;
+  position:relative;overflow:hidden;
+}
+.hero-sun{
+  position:absolute;top:-60px;left:-60px;
+  width:200px;height:200px;
+  background:rgba(232,168,32,0.12);
+  border-radius:50%;
+}
+.hero-inner{display:flex;align-items:flex-end;gap:2rem;position:relative;z-index:1;}
+.hero-content{flex:1;padding-bottom:2rem;}
+.hero-tag{display:inline-block;background:var(--tomato);color:white;font-size:10px;font-weight:700;letter-spacing:0.12em;text-transform:uppercase;padding:3px 12px;border-radius:20px;margin-bottom:1rem;}
+.hero h1{font-family:'Playfair Display',serif;font-size:2.6rem;font-weight:700;color:#faf0e8;line-height:1.05;margin-bottom:0.3rem;direction:rtl;}
+.hero-en{font-family:'Playfair Display',serif;font-size:0.95rem;font-style:italic;color:rgba(250,240,232,0.6);margin-bottom:1.25rem;}
+.hero-meta{display:flex;gap:1.25rem;font-size:11px;color:rgba(250,240,232,0.4);font-weight:300;}
+.hero-img{width:130px;height:130px;border-radius:50% 50% 0 0;object-fit:cover;object-position:center 18%;border:2px solid rgba(200,48,32,0.4);flex-shrink:0;}
+.arch{height:32px;background:var(--cream);border-radius:50% 50% 0 0/100% 100% 0 0;}
+.body{padding:0 2.5rem;}
+.intro{font-family:'Playfair Display',serif;font-size:1.05rem;font-style:italic;line-height:1.9;color:var(--ink-mid);border-right:3px solid var(--tomato);padding:0.25rem 1.1rem;margin:1.75rem 0;direction:rtl;}
+.section{margin:2.25rem 0 0;}
+.sh{display:flex;align-items:center;gap:0.7rem;margin-bottom:0.5rem;direction:rtl;}
+.sn{width:26px;height:26px;border-radius:50%;background:var(--tomato);color:white;font-family:'Playfair Display',serif;font-size:12px;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+.sh h2{font-family:'Playfair Display',serif;font-size:1.2rem;font-weight:700;color:var(--ink);}
+.sh-en{font-size:0.75rem;font-weight:300;color:var(--terra);font-style:italic;margin-right:auto;}
+.div{border:none;border-top:1px solid rgba(139,74,26,0.2);margin-bottom:1.1rem;}
+.p{font-size:0.93rem;line-height:1.88;color:var(--ink-mid);direction:rtl;margin-bottom:0.9rem;}
+.p strong{color:var(--ink);font-weight:700;}
+.pair-hero{display:flex;align-items:stretch;gap:0;margin:1.25rem 0;border-radius:10px;overflow:hidden;}
+.ph-tomato{flex:1;background:var(--tomato-pale);padding:1.25rem 1.4rem;direction:rtl;border-left:1px solid rgba(200,48,32,0.1);}
+.ph-plus{width:44px;background:white;display:flex;align-items:center;justify-content:center;font-family:'Playfair Display',serif;font-size:1.5rem;color:var(--sun);flex-shrink:0;}
+.ph-basil{flex:1;background:var(--basil-pale);padding:1.25rem 1.4rem;direction:rtl;}
+.ph-name{font-family:'Playfair Display',serif;font-size:1rem;font-weight:700;margin-bottom:4px;}
+.ph-tomato .ph-name{color:var(--tomato);}
+.ph-basil .ph-name{color:var(--basil);}
+.ph-latin{font-size:0.72rem;font-style:italic;opacity:0.6;margin-bottom:8px;}
+.ph-give{font-size:0.8rem;line-height:1.6;}
+.ph-tomato .ph-give{color:var(--terra);}
+.ph-basil .ph-give{color:var(--basil-mid);}
+.benefits-list{display:flex;flex-direction:column;gap:8px;margin:1.25rem 0;}
+.bl-item{display:flex;align-items:flex-start;gap:12px;padding:11px 14px;border-radius:8px;direction:rtl;}
+.bl-tomato{background:var(--tomato-pale);border-right:3px solid var(--tomato);}
+.bl-basil{background:var(--basil-pale);border-right:3px solid var(--basil);}
+.bl-shared{background:var(--terra-pale);border-right:3px solid var(--terra);}
+.bl-title{font-size:0.88rem;font-weight:700;margin-bottom:2px;}
+.bl-tomato .bl-title{color:var(--tomato);}
+.bl-basil .bl-title{color:var(--basil);}
+.bl-shared .bl-title{color:var(--terra);}
+.bl-desc{font-size:0.8rem;line-height:1.55;color:var(--ink-mid);}
+.planting-box{background:var(--ink);border-radius:10px;padding:1.25rem 1.5rem;margin:1.25rem 0;direction:rtl;}
+.pb-title{font-size:0.75rem;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;color:var(--sun);margin-bottom:0.75rem;}
+.pb-row{display:flex;align-items:center;gap:10px;padding:7px 0;border-bottom:1px solid rgba(255,255,255,0.06);}
+.pb-row:last-child{border-bottom:none;}
+.pb-label{font-size:0.85rem;color:#e0d0c0;flex:1;}
+.pb-val{font-size:0.85rem;color:var(--sun);font-weight:700;}
+.chupchu{background:var(--terra-pale);border:1px solid rgba(139,74,26,0.2);border-radius:10px;padding:1rem 1.2rem;margin:1.75rem 0;display:flex;gap:0.9rem;align-items:flex-start;direction:rtl;}
+.chupchu-img{width:42px;height:42px;border-radius:50%;object-fit:cover;object-position:center 15%;border:1px solid rgba(139,74,26,0.3);flex-shrink:0;}
+.chupchu-name{font-family:'Caveat',cursive;font-size:13px;font-weight:600;color:var(--terra);margin-bottom:3px;}
+.chupchu-text{font-family:'Caveat',cursive;font-size:1rem;line-height:1.55;color:var(--ink-mid);}
+.related{background:var(--terra-pale);border-radius:8px;padding:1.25rem 1.5rem;margin:2rem 0;direction:rtl;}
+.related-title{font-family:'Playfair Display',serif;font-size:1rem;font-weight:700;color:var(--ink);margin-bottom:1rem;}
+.related-links{display:flex;flex-direction:column;gap:8px;}
+.related-link{display:flex;align-items:center;gap:8px;font-size:0.88rem;color:var(--basil-mid);text-decoration:none;}
+.related-link::before{content:'←';color:var(--tomato);font-size:12px;}
+.footer-cta{background:var(--ink);padding:2rem 2.5rem;display:flex;align-items:center;gap:1.5rem;direction:rtl;margin-top:3rem;}
+.footer-img{width:52px;height:52px;border-radius:50%;object-fit:cover;object-position:center 15%;border:1px solid rgba(200,48,32,0.4);flex-shrink:0;}
+.footer-text{font-family:'Playfair Display',serif;font-size:0.9rem;font-style:italic;line-height:1.7;color:#e0c8a8;flex:1;}
+.footer-text em{font-size:0.78rem;color:#4a2e10;font-style:normal;font-family:'Lato',sans-serif;}
+.footer-btn{display:inline-block;background:var(--tomato);color:white;font-size:0.8rem;font-weight:700;padding:9px 20px;border-radius:20px;text-decoration:none;white-space:nowrap;flex-shrink:0;}
+@media(max-width:560px){.hero h1{font-size:2rem;}.hero-img{display:none;}.body{padding:0 1.5rem;}.pair-hero{flex-direction:column;}.ph-plus{width:100%;height:32px;}.footer-cta{flex-direction:column;padding:1.5rem;}}
+</style>
+<article class="art" itemscope itemtype="https://schema.org/Article">
+<header class="hero">
+  <div class="hero-sun"></div>
+  <div class="hero-inner">
+    <div class="hero-content">
+      <span class="hero-tag">שיתופי פעולה · Companion Planting</span>
+      <h1 itemprop="headline">עגבנייה + בזיליקום</h1>
+      <div class="hero-en">Tomato & Basil — The Mediterranean Romance</div>
+      <div class="hero-meta"><span>קריאה: 5 דקות</span><span>רמה: מתחיל</span><span>עונה: אביב–קיץ</span></div>
+    </div>
+    <img class="hero-img" src="https://gina-haya.vercel.app/chupchu_final.png" alt="צ'ופצ'ו" itemprop="image">
+  </div>
+  <div class="arch"></div>
+</header>
+<div class="body">
+  <p class="intro" itemprop="description">הזוג הכי מפורסם בגינה — ולא סתם. עגבנייה ובזיליקום גדלים יחד כבר אלפי שנים באגן הים התיכון, ומה שמבשלים יחד גם גדל יחד. הם מגינים אחד על השני, ושניהם יוצאים מרוויחים.</p>
+  <div class="section">
+    <div class="sh"><div class="sn">א</div><h2>מה כל אחד נותן לשני</h2><span class="sh-en">What each gives</span></div>
+    <hr class="div">
+    <div class="pair-hero">
+      <div class="ph-tomato">
+        <div class="ph-name">עגבנייה</div>
+        <div class="ph-latin">Solanum lycopersicum</div>
+        <div class="ph-give">נותנת צל חלקי שהבזיליקום אוהב. גובהה מגן על הבזיליקום מרוח חמה.</div>
+      </div>
+      <div class="ph-plus">+</div>
+      <div class="ph-basil">
+        <div class="ph-name">בזיליקום</div>
+        <div class="ph-latin">Ocimum basilicum</div>
+        <div class="ph-give">ריח חריף מבריח זבובים לבנים, כנימות וקרדיות. משפר טעם הפרי לפי מסורת.</div>
+      </div>
+    </div>
+  </div>
+  <div class="section">
+    <div class="sh"><div class="sn">ב</div><h2>היתרונות המדויקים</h2><span class="sh-en">Benefits</span></div>
+    <hr class="div">
+    <div class="benefits-list">
+      <div class="bl-item bl-tomato">
+        <div><div class="bl-title">העגבנייה מרוויחה</div><div class="bl-desc">הבזיליקום מבלבל ומרחיק זבובים לבנים ועש העגבנייה. מפחית נזקי כנימות ב-30–40%.</div></div>
+      </div>
+      <div class="bl-item bl-basil">
+        <div><div class="bl-title">הבזיליקום מרוויח</div><div class="bl-desc">צל חלקי מהעגבנייה מונע ציבה מהירה בימים חמים. מאריך עונת הבזיליקום בשבועות.</div></div>
+      </div>
+      <div class="bl-item bl-shared">
+        <div><div class="bl-title">שניהם מרוויחים</div><div class="bl-desc">שניהם מושכים דבורים ומאביקים. הגינה כולה הופכת פעילה יותר ביולוגית.</div></div>
+      </div>
+    </div>
+  </div>
+  <div class="chupchu">
+    <img class="chupchu-img" src="https://gina-haya.vercel.app/chupchu_final.png" alt="צ'ופצ'ו">
+    <div>
+      <div class="chupchu-name">צ'ופצ'ו אומר:</div>
+      <div class="chupchu-text">ישנתי פעם ליד שורת עגבניות עם בזיליקום. בבוקר — לא נגסה בי כנימה אחת. עכשיו אני תמיד שם ליד.</div>
+    </div>
+  </div>
+  <div class="section">
+    <div class="sh"><div class="sn">ג</div><h2>מרחק ואופן שתילה</h2><span class="sh-en">Planting guide</span></div>
+    <hr class="div">
+    <div class="planting-box">
+      <div class="pb-title">המדריך המדויק</div>
+      <div class="pb-row"><span class="pb-label">מרחק מהעגבנייה</span><span class="pb-val">30–40 ס"מ</span></div>
+      <div class="pb-row"><span class="pb-label">מספר בזיליקומים לעגבנייה</span><span class="pb-val">2–3 שתילים</span></div>
+      <div class="pb-row"><span class="pb-label">זמן שתילה משותף</span><span class="pb-val">מרץ–אפריל</span></div>
+      <div class="pb-row"><span class="pb-label">יום שתילה מועדף</span><span class="pb-val">יום פרח (לוח BD)</span></div>
+      <div class="pb-row"><span class="pb-label">לא לשתול ליד</span><span class="pb-val">שומר — מעכב שניהם</span></div>
+    </div>
+  </div>
+  <div class="section">
+    <div class="sh"><div class="sn">ד</div><h2>שיתופי פעולה נוספים לעגבנייה</h2><span class="sh-en">More tomato friends</span></div>
+    <hr class="div">
+    <p class="p">העגבנייה היא חברותית מאוד. מלבד בזיליקום היא אוהבת גם <strong>נענע</strong> (מרחיק עכברים), <strong>שמיר</strong> (מושך חרקים טורפים), <strong>כוסברה</strong> (מרחיקה כנימות) ו<strong>אספרגוס</strong> (מדחיק תולעי שורש).</p>
+  </div>
+  <div class="chupchu">
+    <img class="chupchu-img" src="https://gina-haya.vercel.app/chupchu_final.png" alt="צ'ופצ'ו">
+    <div>
+      <div class="chupchu-name">הסוד של צ'ופצ'ו:</div>
+      <div class="chupchu-text">שתלו ביום פרח לפי הלוח הביודינמי — הפרחים ייפתחו מוקדם יותר ויביאו יותר דבורים. פתח גינה חיה לבדוק!</div>
+    </div>
+  </div>
+  <div class="related">
+    <div class="related-title">מאמרים קשורים</div>
+    <div class="related-links">
+      <a class="related-link" href="/articles/three-sisters">שלוש האחיות — שיתוף פעולה קלאסי</a>
+      <a class="related-link" href="/articles/flowers-vegetables">פרחים בין ירקות</a>
+      <a class="related-link" href="/articles/companion-plants">צמחי מלווים להדברה</a>
+    </div>
+  </div>
+</div>
+<footer class="footer-cta">
+  <img class="footer-img" src="https://gina-haya.vercel.app/chupchu_final.png" alt="צ'ופצ'ו">
+  <div class="footer-text">מתי יום הפרח הבא לשתול עגבנייה ובזיליקום יחד?<br><em>Find the best biodynamic flower day for planting.</em></div>
+  <a class="footer-btn" href="https://gina-haya.vercel.app">פתח גינה חיה ←</a>
+</footer>
+</article>`,
+  },
+  {
+    id: 'three-sisters',
+    titleHe: 'שלוש האחיות',
+    titleEn: 'The Three Sisters — Ancient Native American Wisdom',
+    metaDescriptionHe: 'תירס, שעועית ודלעת — שלושה צמחים שגדלים יחד בהרמוניה מושלמת. כל אחת נותנת לשתיים האחרות מה שהן צריכות.',
+    metaDescriptionEn: 'Grow corn, beans and squash together using the ancient Three Sisters method — mutual support in the garden.',
+    categoryHe: 'שיתופי פעולה',
+    categoryEn: 'Companion Planting',
+    filenameHe: '29_שלוש_האחיות.md',
+    filenameEn: '29_three_sisters.md',
+    publishedAt: '2026-04-12',
+    images: null,
+    htmlContent: `<style>
+@import url('https://fonts.googleapis.com/css2?family=Rokkitt:wght@300;400;600;700&family=Karla:ital,wght@0,300;0,400;1,400&family=Caveat:wght@400;600&display=swap');
+*{box-sizing:border-box;margin:0;padding:0;}
+.art{
+  --corn:#c8900a;
+  --corn-pale:#fdf0d0;
+  --bean:#4a7a2a;
+  --bean-pale:#d8f0c8;
+  --squash:#c85a0a;
+  --squash-pale:#fde8d0;
+  --earth:#2a1808;
+  --earth-mid:#4a2e12;
+  --earth-light:#8a5a28;
+  --sky:#e8f0f8;
+  --cream:#faf6ef;
+  --woven:#d4a060;
+  font-family:'Karla',sans-serif;
+  background:var(--cream);
+  color:var(--earth);
+}
+.hero{
+  background:var(--earth);
+  padding:0;
+  position:relative;overflow:hidden;
+}
+.hero-weave{
+  position:absolute;inset:0;pointer-events:none;
+  background:repeating-linear-gradient(45deg,rgba(200,144,10,0.05) 0,rgba(200,144,10,0.05) 2px,transparent 2px,transparent 14px),
+             repeating-linear-gradient(-45deg,rgba(74,122,42,0.05) 0,rgba(74,122,42,0.05) 2px,transparent 2px,transparent 14px);
+}
+.hero-top{padding:3rem 2.5rem 2rem;display:flex;align-items:center;gap:2rem;position:relative;z-index:1;}
+.hero-content{flex:1;}
+.hero-tag{display:inline-block;background:var(--corn);color:#fff8e8;font-size:10px;font-weight:600;letter-spacing:0.12em;text-transform:uppercase;padding:3px 12px;border-radius:2px;margin-bottom:1rem;}
+.hero h1{font-family:'Rokkitt',serif;font-size:3rem;font-weight:700;color:#faf0e0;line-height:1.0;margin-bottom:0.3rem;direction:rtl;}
+.hero-en{font-family:'Rokkitt',serif;font-size:1rem;font-weight:300;color:rgba(250,240,224,0.55);margin-bottom:1.25rem;}
+.hero-meta{display:flex;gap:1.25rem;font-size:11px;color:rgba(250,240,224,0.35);font-weight:300;}
+.hero-img{width:120px;height:120px;border-radius:50%;object-fit:cover;object-position:center 18%;border:2px solid var(--corn);flex-shrink:0;}
+.sisters-bar{display:flex;height:8px;}
+.sb-corn{flex:1;background:var(--corn);}
+.sb-bean{flex:1;background:var(--bean);}
+.sb-squash{flex:1;background:var(--squash);}
+.body{padding:0 2.5rem;}
+.intro{font-family:'Rokkitt',serif;font-size:1.1rem;font-weight:300;line-height:1.9;color:var(--earth-mid);border-right:3px solid var(--corn);padding:0.25rem 1.1rem;margin:1.75rem 0;direction:rtl;}
+.section{margin:2.25rem 0 0;}
+.sh{display:flex;align-items:center;gap:0.7rem;margin-bottom:0.5rem;direction:rtl;}
+.sn{width:26px;height:26px;background:var(--earth);color:var(--woven);font-family:'Rokkitt',serif;font-size:13px;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+.sh h2{font-family:'Rokkitt',serif;font-size:1.25rem;font-weight:700;color:var(--earth);}
+.sh-en{font-size:0.72rem;font-weight:300;color:var(--earth-light);font-style:italic;margin-right:auto;}
+.div{border:none;border-top:1px solid rgba(74,46,18,0.2);margin-bottom:1.1rem;}
+.p{font-size:0.93rem;line-height:1.88;color:var(--earth-mid);direction:rtl;margin-bottom:0.9rem;}
+.p strong{color:var(--earth);font-weight:600;}
+.three-cards{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;margin:1.25rem 0;}
+.sister-card{border-radius:8px;padding:16px;direction:rtl;text-align:center;}
+.sc-corn{background:var(--corn-pale);border-top:4px solid var(--corn);}
+.sc-bean{background:var(--bean-pale);border-top:4px solid var(--bean);}
+.sc-squash{background:var(--squash-pale);border-top:4px solid var(--squash);}
+.sc-icon{font-size:2rem;margin-bottom:8px;display:block;}
+.sc-name{font-family:'Rokkitt',serif;font-size:0.95rem;font-weight:700;margin-bottom:4px;}
+.sc-corn .sc-name{color:var(--corn);}
+.sc-bean .sc-name{color:var(--bean);}
+.sc-squash .sc-name{color:var(--squash);}
+.sc-role{font-size:0.75rem;font-weight:600;letter-spacing:0.06em;text-transform:uppercase;margin-bottom:6px;opacity:0.6;}
+.sc-corn .sc-role{color:var(--corn);}
+.sc-bean .sc-role{color:var(--bean);}
+.sc-squash .sc-role{color:var(--squash);}
+.sc-gives{font-size:0.78rem;line-height:1.55;color:var(--earth-mid);}
+.legend-box{background:var(--earth);border-radius:10px;padding:1.5rem;margin:1.25rem 0;direction:rtl;}
+.lb-title{font-family:'Rokkitt',serif;font-size:0.8rem;letter-spacing:0.1em;text-transform:uppercase;color:var(--woven);margin-bottom:1rem;}
+.lb-text{font-family:'Karla',sans-serif;font-style:italic;font-size:0.95rem;line-height:1.85;color:rgba(212,160,96,0.8);}
+.how-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:1.25rem 0;}
+.how-card{background:var(--corn-pale);border-radius:8px;padding:14px;direction:rtl;}
+.how-card:nth-child(2){background:var(--bean-pale);}
+.how-card:nth-child(3){background:var(--squash-pale);}
+.how-card:nth-child(4){background:#f8f4e8;}
+.how-title{font-size:0.82rem;font-weight:700;color:var(--earth);margin-bottom:4px;}
+.how-text{font-size:0.78rem;color:var(--earth-mid);line-height:1.55;}
+.chupchu{background:var(--corn-pale);border:1px solid rgba(200,144,10,0.25);border-radius:10px;padding:1rem 1.2rem;margin:1.75rem 0;display:flex;gap:0.9rem;align-items:flex-start;direction:rtl;}
+.chupchu-img{width:42px;height:42px;border-radius:50%;object-fit:cover;object-position:center 15%;border:1px solid rgba(200,144,10,0.3);flex-shrink:0;}
+.chupchu-name{font-family:'Caveat',cursive;font-size:13px;font-weight:600;color:var(--corn);margin-bottom:3px;}
+.chupchu-text{font-family:'Caveat',cursive;font-size:1rem;line-height:1.55;color:var(--earth-mid);}
+.timing-row{display:flex;gap:8px;margin:1.25rem 0;direction:rtl;}
+.tr-step{flex:1;background:white;border:1px solid rgba(74,46,18,0.15);border-radius:6px;padding:12px;text-align:center;}
+.tr-num{font-family:'Rokkitt',serif;font-size:1.4rem;font-weight:700;color:var(--corn);display:block;}
+.tr-lbl{font-size:0.75rem;color:var(--earth-light);margin-top:2px;}
+.related{background:#f5ede0;border-radius:8px;padding:1.25rem 1.5rem;margin:2rem 0;direction:rtl;}
+.related-title{font-family:'Rokkitt',serif;font-size:1rem;font-weight:700;color:var(--earth);margin-bottom:1rem;}
+.related-links{display:flex;flex-direction:column;gap:8px;}
+.related-link{display:flex;align-items:center;gap:8px;font-size:0.88rem;color:var(--bean);text-decoration:none;}
+.related-link::before{content:'←';color:var(--corn);font-size:12px;}
+.footer-cta{background:var(--earth);padding:2rem 2.5rem;display:flex;align-items:center;gap:1.5rem;direction:rtl;margin-top:3rem;}
+.footer-img{width:52px;height:52px;border-radius:50%;object-fit:cover;object-position:center 15%;border:1px solid var(--corn);flex-shrink:0;}
+.footer-text{font-family:'Rokkitt',serif;font-size:0.95rem;font-weight:300;line-height:1.7;color:var(--corn-pale);flex:1;}
+.footer-text em{font-size:0.78rem;color:#4a2e12;font-style:normal;font-family:'Karla',sans-serif;}
+.footer-btn{display:inline-block;background:var(--corn);color:var(--earth);font-family:'Rokkitt',serif;font-size:0.88rem;font-weight:700;padding:9px 20px;border-radius:4px;text-decoration:none;white-space:nowrap;flex-shrink:0;}
+@media(max-width:560px){.hero h1{font-size:2.2rem;}.hero-img{display:none;}.body{padding:0 1.5rem;}.three-cards{grid-template-columns:1fr;}.how-grid{grid-template-columns:1fr;}.timing-row{flex-direction:column;}.footer-cta{flex-direction:column;padding:1.5rem;}}
+</style>
+<article class="art" itemscope itemtype="https://schema.org/Article">
+<header class="hero">
+  <div class="hero-weave"></div>
+  <div class="hero-top">
+    <div class="hero-content">
+      <span class="hero-tag">שיתופי פעולה · Companion Planting</span>
+      <h1 itemprop="headline">שלוש האחיות</h1>
+      <div class="hero-en">The Three Sisters — Ancient Native American Wisdom</div>
+      <div class="hero-meta"><span>קריאה: 8 דקות</span><span>רמה: מתחיל</span><span>עונה: אביב–קיץ</span></div>
+    </div>
+    <img class="hero-img" src="https://gina-haya.vercel.app/chupchu_final.png" alt="צ'ופצ'ו" itemprop="image">
+  </div>
+  <div class="sisters-bar">
+    <div class="sb-corn"></div>
+    <div class="sb-bean"></div>
+    <div class="sb-squash"></div>
+  </div>
+</header>
+<div class="body">
+  <p class="intro" itemprop="description">לפני אלפי שנים, עמי האינדיאנים של אמריקה הצפונית גילו מה שמדע הגינה אישר רק לאחרונה — תירס, שעועית ודלעת גדלים יחד בהרמוניה מושלמת. כל אחת נותנת לשתיים האחרות מה שהן צריכות.</p>
+  <div class="section">
+    <div class="sh"><div class="sn">א</div><h2>שלוש האחיות — מי הן?</h2><span class="sh-en">Meet the sisters</span></div>
+    <hr class="div">
+    <div class="three-cards">
+      <div class="sister-card sc-corn">
+        <span class="sc-icon">🌽</span>
+        <div class="sc-name">תירס</div>
+        <div class="sc-role">האחות הגדולה</div>
+        <div class="sc-gives">גדל גבוה ומספק מוט טבעי לשעועית לטפס עליו</div>
+      </div>
+      <div class="sister-card sc-bean">
+        <span class="sc-icon">🫘</span>
+        <div class="sc-name">שעועית</div>
+        <div class="sc-role">האחות האמצעית</div>
+        <div class="sc-gives">קטנית — מקבעת חנקן לאדמה ומזינה את שתי האחיות</div>
+      </div>
+      <div class="sister-card sc-squash">
+        <span class="sc-icon">🎃</span>
+        <div class="sc-name">דלעת</div>
+        <div class="sc-role">האחות הקטנה</div>
+        <div class="sc-gives">עלים גדולים מכסים האדמה — שומרים לחות, מונעים עשבים</div>
+      </div>
+    </div>
+  </div>
+  <div class="legend-box">
+    <div class="lb-title">האגדה האינדיאנית</div>
+    <div class="lb-text">על פי מסורת האירוקויים — שלוש האחיות הן רוחות שתמיד ישנות יחד, לעולם לא נפרדות, ושמחות רק כשגדלות יחד. הגינאי שמפריד אותן מפסיד את כוח השלוש.</div>
+  </div>
+  <div class="chupchu">
+    <img class="chupchu-img" src="https://gina-haya.vercel.app/chupchu_final.png" alt="צ'ופצ'ו">
+    <div>
+      <div class="chupchu-name">צ'ופצ'ו אומר:</div>
+      <div class="chupchu-text">הגלובוס בחזה שלי זוכר את אמריקה לפני הקולוניזציה. השדות של שלוש האחיות היו שם אלפי שנים לפני שהגינאות "המודרנית" הגיעה. יש חכמה שהמדע עדיין מגיע אליה.</div>
+    </div>
+  </div>
+  <div class="section">
+    <div class="sh"><div class="sn">ב</div><h2>איך זה עובד בפועל</h2><span class="sh-en">The mechanics</span></div>
+    <hr class="div">
+    <div class="how-grid">
+      <div class="how-card">
+        <div class="how-title">שעועית מזינה תירס ודלעת</div>
+        <div class="how-text">חיידקי שורש מקבעים חנקן — דשן טבעי בחינם לכל השדה.</div>
+      </div>
+      <div class="how-card">
+        <div class="how-title">תירס מחזיק את השעועית</div>
+        <div class="how-text">גבעול חזק — ביתן של השעועית המטפסת. חוסך מוטות תמיכה.</div>
+      </div>
+      <div class="how-card">
+        <div class="how-title">דלעת שומרת לחות</div>
+        <div class="how-text">עלים גדולים מצלים האדמה — מפחיתים השקיה ב-30% ומונעים עשבים.</div>
+      </div>
+      <div class="how-card">
+        <div class="how-title">יחד מרתיעים מזיקים</div>
+        <div class="how-text">שלושה ריחות שונים מבלבלים חרקים. קשה יותר למצוא מטרה בגינה מעורבת.</div>
+      </div>
+    </div>
+  </div>
+  <div class="section">
+    <div class="sh"><div class="sn">ג</div><h2>לוח זמנים לשתילה</h2><span class="sh-en">Planting timeline</span></div>
+    <hr class="div">
+    <div class="timing-row">
+      <div class="tr-step"><span class="tr-num">1</span><div class="tr-lbl">שבוע 1 — תירס בלבד</div></div>
+      <div class="tr-step"><span class="tr-num">2</span><div class="tr-lbl">שבוע 2–3 — תירס 15 ס"מ, מוסיפים שעועית</div></div>
+      <div class="tr-step"><span class="tr-num">3</span><div class="tr-lbl">שבוע 3–4 — מוסיפים דלעת בין הגבעולים</div></div>
+    </div>
+    <p class="p">הסיבה לזמנים שונים — התירס צריך להגיע לגובה שהשעועית תוכל לטפס עליו לפני שהשעועית נזרעת. אם שותלים ביחד — השעועית תחנוק את התירס.</p>
+  </div>
+  <div class="chupchu">
+    <img class="chupchu-img" src="https://gina-haya.vercel.app/chupchu_final.png" alt="צ'ופצ'ו">
+    <div>
+      <div class="chupchu-name">הסוד של צ'ופצ'ו:</div>
+      <div class="chupchu-text">תירס — ביום פרי, שעועית — ביום פרח, דלעת — ביום פרי. כל אחת לפי יום הגינה שלה לפי הלוח הביודינמי. פתח גינה חיה!</div>
+    </div>
+  </div>
+  <div class="related">
+    <div class="related-title">מאמרים קשורים</div>
+    <div class="related-links">
+      <a class="related-link" href="/articles/tomato-basil">עגבנייה ובזיליקום</a>
+      <a class="related-link" href="/articles/flowers-vegetables">פרחים בין ירקות</a>
+      <a class="related-link" href="/articles/green-manure">דשן ירוק — עוד שיתוף פעולה עם האדמה</a>
+    </div>
+  </div>
+</div>
+<footer class="footer-cta">
+  <img class="footer-img" src="https://gina-haya.vercel.app/chupchu_final.png" alt="צ'ופצ'ו">
+  <div class="footer-text">מתי הזמן הביודינמי לשתול את שלוש האחיות?<br><em>Find the biodynamic days for each of the three sisters.</em></div>
+  <a class="footer-btn" href="https://gina-haya.vercel.app">פתח גינה חיה ←</a>
+</footer>
+</article>`,
+  },
+  {
+    id: 'flowers-vegetables',
+    titleHe: 'פרחים בין ירקות',
+    titleEn: 'Flowers Among Vegetables — Beauty That Works',
+    metaDescriptionHe: 'פרחים בגינת ירקות הם לא סתם יפים — כל פרח הוא כלי עבודה שמרחיק מזיקים, מושך מאביקים ומסייע לשכניו.',
+    metaDescriptionEn: 'Which flowers to plant in the vegetable garden and why — marigold, lavender, nasturtium and borage.',
+    categoryHe: 'שיתופי פעולה',
+    categoryEn: 'Companion Planting',
+    filenameHe: '30_פרחים_בין_ירקות.md',
+    filenameEn: '30_flowers_vegetables.md',
+    publishedAt: '2026-04-12',
+    images: null,
+    htmlContent: `<style>
+@import url('https://fonts.googleapis.com/css2?family=Abril+Fatface&family=Quicksand:wght@300;400;500;600&family=Caveat:wght@400;600&display=swap');
+*{box-sizing:border-box;margin:0;padding:0;}
+.art{
+  --marigold:#e8900a;
+  --marigold-pale:#fef0d0;
+  --lavender:#7a3a9a;
+  --lavender-pale:#f0e0f8;
+  --sunflower:#e8c00a;
+  --borage:#2a5a9a;
+  --borage-pale:#d8e8f8;
+  --nasturtium:#e04a0a;
+  --nasturtium-pale:#fde0d0;
+  --green:#2a5a1a;
+  --green-pale:#d8f0c8;
+  --cream:#fdf9f0;
+  --ink:#1a1208;
+  --ink-mid:#3a2a10;
+  font-family:'Quicksand',sans-serif;
+  background:var(--cream);
+  color:var(--ink);
+}
+.hero{
+  background:var(--green);
+  padding:3rem 2.5rem 0;
+  position:relative;overflow:hidden;
+}
+.hero-dots{position:absolute;inset:0;pointer-events:none;}
+.dot{position:absolute;border-radius:50%;}
+.hero-inner{display:flex;align-items:flex-end;gap:2rem;position:relative;z-index:1;}
+.hero-content{flex:1;padding-bottom:2rem;}
+.hero-tag{display:inline-block;background:var(--marigold);color:white;font-size:10px;font-weight:600;letter-spacing:0.12em;text-transform:uppercase;padding:3px 12px;border-radius:20px;margin-bottom:1rem;}
+.hero h1{font-family:'Abril Fatface',serif;font-size:2.8rem;color:#f8f0e0;line-height:1.05;margin-bottom:0.3rem;direction:rtl;}
+.hero-en{font-family:'Quicksand',sans-serif;font-size:0.95rem;font-weight:300;color:rgba(248,240,224,0.55);margin-bottom:1.25rem;}
+.hero-meta{display:flex;gap:1.25rem;font-size:11px;color:rgba(248,240,224,0.35);font-weight:300;}
+.hero-img{width:130px;height:130px;border-radius:50%;object-fit:cover;object-position:center 18%;border:3px solid var(--marigold);flex-shrink:0;align-self:flex-end;}
+.petal-bar{height:6px;background:linear-gradient(90deg,var(--marigold),var(--lavender),var(--sunflower),var(--nasturtium),var(--borage),var(--marigold));}
+.body{padding:0 2.5rem;}
+.intro{font-family:'Abril Fatface',serif;font-size:1rem;line-height:1.85;color:var(--ink-mid);border-right:3px solid var(--marigold);padding:0.25rem 1.1rem;margin:1.75rem 0;direction:rtl;font-weight:400;}
+.section{margin:2.25rem 0 0;}
+.sh{display:flex;align-items:center;gap:0.7rem;margin-bottom:0.5rem;direction:rtl;}
+.sn{width:28px;height:28px;border-radius:50%;background:var(--green);color:var(--marigold-pale);font-family:'Abril Fatface',serif;font-size:13px;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+.sh h2{font-family:'Abril Fatface',serif;font-size:1.2rem;color:var(--ink);}
+.sh-en{font-size:0.72rem;font-weight:400;color:#7a6a3a;font-style:italic;margin-right:auto;}
+.div{border:none;border-top:2px dashed rgba(74,46,18,0.15);margin-bottom:1.1rem;}
+.p{font-size:0.93rem;line-height:1.88;color:var(--ink-mid);direction:rtl;margin-bottom:0.9rem;}
+.p strong{color:var(--ink);font-weight:600;}
+.flower-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:1.25rem 0;}
+.flower-card{border-radius:10px;padding:14px 16px;direction:rtl;position:relative;overflow:hidden;}
+.fc-marigold{background:var(--marigold-pale);border:1px solid rgba(232,144,10,0.25);}
+.fc-lavender{background:var(--lavender-pale);border:1px solid rgba(122,58,154,0.2);}
+.fc-nasturtium{background:var(--nasturtium-pale);border:1px solid rgba(224,74,10,0.2);}
+.fc-borage{background:var(--borage-pale);border:1px solid rgba(42,90,154,0.2);}
+.fc-accent{position:absolute;top:0;right:0;width:4px;height:100%;}
+.fc-marigold .fc-accent{background:var(--marigold);}
+.fc-lavender .fc-accent{background:var(--lavender);}
+.fc-nasturtium .fc-accent{background:var(--nasturtium);}
+.fc-borage .fc-accent{background:var(--borage);}
+.fc-icon{font-size:1.4rem;margin-bottom:5px;display:block;}
+.fc-name{font-family:'Abril Fatface',serif;font-size:0.95rem;font-weight:400;margin-bottom:4px;}
+.fc-marigold .fc-name{color:var(--marigold);}
+.fc-lavender .fc-name{color:var(--lavender);}
+.fc-nasturtium .fc-name{color:var(--nasturtium);}
+.fc-borage .fc-name{color:var(--borage);}
+.fc-latin{font-size:0.7rem;font-style:italic;opacity:0.55;margin-bottom:6px;color:var(--ink-mid);}
+.fc-repels{font-size:0.75rem;font-weight:600;margin-bottom:3px;color:var(--ink);}
+.fc-desc{font-size:0.78rem;line-height:1.55;color:var(--ink-mid);}
+.three-roles{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin:1.25rem 0;}
+.role-card{background:white;border-radius:8px;padding:12px;text-align:center;direction:rtl;border-bottom:3px solid;}
+.role-card:nth-child(1){border-color:var(--marigold);}
+.role-card:nth-child(2){border-color:var(--borage);}
+.role-card:nth-child(3){border-color:var(--lavender);}
+.role-icon{font-size:1.4rem;display:block;margin-bottom:6px;}
+.role-title{font-size:0.78rem;font-weight:600;color:var(--ink);margin-bottom:3px;}
+.role-desc{font-size:0.72rem;color:var(--ink-mid);line-height:1.5;}
+.placement-box{background:var(--green);border-radius:10px;padding:1.25rem 1.5rem;margin:1.25rem 0;direction:rtl;}
+.pb-title{font-size:0.75rem;font-weight:600;letter-spacing:0.1em;text-transform:uppercase;color:rgba(216,240,200,0.6);margin-bottom:0.75rem;}
+.pb-item{display:flex;align-items:center;gap:10px;padding:7px 0;border-bottom:1px solid rgba(255,255,255,0.06);}
+.pb-item:last-child{border-bottom:none;}
+.pb-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0;}
+.pb-text{font-size:0.85rem;color:#d0e8b8;}
+.chupchu{background:var(--marigold-pale);border:1px solid rgba(232,144,10,0.25);border-radius:10px;padding:1rem 1.2rem;margin:1.75rem 0;display:flex;gap:0.9rem;align-items:flex-start;direction:rtl;}
+.chupchu-img{width:42px;height:42px;border-radius:50%;object-fit:cover;object-position:center 15%;border:2px solid var(--marigold);flex-shrink:0;}
+.chupchu-name{font-family:'Caveat',cursive;font-size:13px;font-weight:600;color:var(--marigold);margin-bottom:3px;}
+.chupchu-text{font-family:'Caveat',cursive;font-size:1rem;line-height:1.55;color:var(--ink-mid);}
+.related{background:var(--green-pale);border-radius:8px;padding:1.25rem 1.5rem;margin:2rem 0;direction:rtl;}
+.related-title{font-family:'Abril Fatface',serif;font-size:1rem;color:var(--ink);margin-bottom:1rem;}
+.related-links{display:flex;flex-direction:column;gap:8px;}
+.related-link{display:flex;align-items:center;gap:8px;font-size:0.88rem;color:var(--green);text-decoration:none;}
+.related-link::before{content:'←';color:var(--marigold);font-size:12px;}
+.footer-cta{background:var(--green);padding:2rem 2.5rem;display:flex;align-items:center;gap:1.5rem;direction:rtl;margin-top:3rem;}
+.footer-img{width:52px;height:52px;border-radius:50%;object-fit:cover;object-position:center 15%;border:2px solid var(--marigold);flex-shrink:0;}
+.footer-text{font-family:'Abril Fatface',serif;font-size:0.9rem;font-weight:400;line-height:1.7;color:var(--marigold-pale);flex:1;}
+.footer-text em{font-size:0.78rem;color:#2a5a1a;font-style:normal;font-family:'Quicksand',sans-serif;}
+.footer-btn{display:inline-block;background:var(--marigold);color:white;font-family:'Quicksand',sans-serif;font-size:0.82rem;font-weight:600;padding:9px 20px;border-radius:20px;text-decoration:none;white-space:nowrap;flex-shrink:0;}
+@media(max-width:560px){.hero h1{font-size:2rem;}.hero-img{display:none;}.body{padding:0 1.5rem;}.flower-grid{grid-template-columns:1fr;}.three-roles{grid-template-columns:1fr;}.footer-cta{flex-direction:column;padding:1.5rem;}}
+</style>
+<article class="art" itemscope itemtype="https://schema.org/Article">
+<header class="hero">
+  <div class="hero-dots">
+    <div class="dot" style="width:40px;height:40px;top:10%;right:8%;background:rgba(232,144,10,0.15);"></div>
+    <div class="dot" style="width:24px;height:24px;top:30%;right:25%;background:rgba(122,58,154,0.12);"></div>
+    <div class="dot" style="width:60px;height:60px;top:5%;left:10%;background:rgba(232,192,10,0.1);"></div>
+    <div class="dot" style="width:18px;height:18px;top:50%;left:30%;background:rgba(224,74,10,0.12);"></div>
+  </div>
+  <div class="hero-inner">
+    <div class="hero-content">
+      <span class="hero-tag">שיתופי פעולה · Companion Planting</span>
+      <h1 itemprop="headline">פרחים בין ירקות</h1>
+      <div class="hero-en">Flowers Among Vegetables — Beauty That Works</div>
+      <div class="hero-meta"><span>קריאה: 6 דקות</span><span>רמה: מתחיל</span><span>עונה: כל השנה</span></div>
+    </div>
+    <img class="hero-img" src="https://gina-haya.vercel.app/chupchu_final.png" alt="צ'ופצ'ו" itemprop="image">
+  </div>
+  <div class="petal-bar"></div>
+</header>
+<div class="body">
+  <p class="intro" itemprop="description">פרחים בגינת ירקות הם לא סתם יפים — כל פרח הוא כלי עבודה. הם מרחיקים מזיקים, מושכים מאביקים, ומסייעים לשכניהם הירקות לגדול טוב יותר.</p>
+  <div class="section">
+    <div class="sh"><div class="sn">א</div><h2>ארבעת הפרחים החיוניים</h2><span class="sh-en">The essential four</span></div>
+    <hr class="div">
+    <div class="flower-grid">
+      <div class="flower-card fc-marigold">
+        <div class="fc-accent"></div>
+        <span class="fc-icon">🌼</span>
+        <div class="fc-name">טגטס (מריגולד)</div>
+        <div class="fc-latin">Tagetes spp.</div>
+        <div class="fc-repels">מרחיק: נמטודות, כנימות, זבובים לבנים</div>
+        <div class="fc-desc">השורשים מפרישים תרכובת רעילה לנמטודות. הריח מבלבל מזיקים. ליד עגבניות ומלפפונים.</div>
+      </div>
+      <div class="flower-card fc-lavender">
+        <div class="fc-accent"></div>
+        <span class="fc-icon">💜</span>
+        <div class="fc-name">לבנדר</div>
+        <div class="fc-latin">Lavandula angustifolia</div>
+        <div class="fc-repels">מרחיק: כנות, עש, פרעושים</div>
+        <div class="fc-desc">ריח חזק מרחיק מזיקים רבים. מושך דבורים ופרפרים. אוהב יובש — מתאים לגינה ישראלית.</div>
+      </div>
+      <div class="flower-card fc-nasturtium">
+        <div class="fc-accent"></div>
+        <span class="fc-icon">🌺</span>
+        <div class="fc-name">נסטורציה</div>
+        <div class="fc-latin">Tropaeolum majus</div>
+        <div class="fc-repels">פח דבש: מושכת כנימות אליה — לא לירקות</div>
+        <div class="fc-desc">אסטרטגיה מבריקה — הכנימות מעדיפות את הנסטורציה. כל הנזק שם, לא על הירקות.</div>
+      </div>
+      <div class="flower-card fc-borage">
+        <div class="fc-accent"></div>
+        <span class="fc-icon">🔵</span>
+        <div class="fc-name">בורג' (לשון שור)</div>
+        <div class="fc-latin">Borago officinalis</div>
+        <div class="fc-repels">מרחיק: תולעי כרוב ומזיקי עגבנייה</div>
+        <div class="fc-desc">עשבוני מהיר שמושך דבורי דבש. ליד תותים — מגדיל יבול. זרעים עצמאיים כל שנה.</div>
+      </div>
+    </div>
+  </div>
+  <div class="section">
+    <div class="sh"><div class="sn">ב</div><h2>שלוש הסיבות לשתול פרחים</h2><span class="sh-en">Why it works</span></div>
+    <hr class="div">
+    <div class="three-roles">
+      <div class="role-card">
+        <span class="role-icon">🐝</span>
+        <div class="role-title">האבקה</div>
+        <div class="role-desc">פרחים מושכים דבורים — גם הירקות הסמוכים מואבקים טוב יותר</div>
+      </div>
+      <div class="role-card">
+        <span class="role-icon">🛡</span>
+        <div class="role-title">הגנה</div>
+        <div class="role-desc">ריחות מבלבלים ומרחיקים חרקים שמחפשים ירקות לפי ריח</div>
+      </div>
+      <div class="role-card">
+        <span class="role-icon">🪲</span>
+        <div class="role-title">מלכוד</div>
+        <div class="role-desc">פרחים כמו נסטורציה מושכים מזיקים אליהם — פח טבעי</div>
+      </div>
+    </div>
+  </div>
+  <div class="chupchu">
+    <img class="chupchu-img" src="https://gina-haya.vercel.app/chupchu_final.png" alt="צ'ופצ'ו">
+    <div>
+      <div class="chupchu-name">צ'ופצ'ו אומר:</div>
+      <div class="chupchu-text">ראיתי פעם גינת ירקות בלי פרחים. היא הייתה עצובה. הירקות גדלו, אבל לא שרו. כשהוספנו טגטס ולבנדר — הגינה הפכה להיות חיה.</div>
+    </div>
+  </div>
+  <div class="section">
+    <div class="sh"><div class="sn">ג</div><h2>איך לשלב אותם</h2><span class="sh-en">Placement tips</span></div>
+    <hr class="div">
+    <div class="placement-box">
+      <div class="pb-title">עצות שתילה</div>
+      <div class="pb-item"><div class="pb-dot" style="background:var(--marigold);"></div><span class="pb-text">טגטס — שורת גבול בשוליים, גם בין שורות ירקות</span></div>
+      <div class="pb-item"><div class="pb-dot" style="background:var(--lavender);"></div><span class="pb-text">לבנדר — פינות ורכסים, לא בתוך הערוגה הצפופה</span></div>
+      <div class="pb-item"><div class="pb-dot" style="background:var(--nasturtium);"></div><span class="pb-text">נסטורציה — מרחק 50 ס"מ מהירקות כ"פח" נפרד</span></div>
+      <div class="pb-item"><div class="pb-dot" style="background:var(--borage);"></div><span class="pb-text">בורג' — ליד תותים ועגבניות, בסמיכות</span></div>
+      <div class="pb-item"><div class="pb-dot" style="background:var(--sunflower);"></div><span class="pb-text">חמנייה — רקע גבוה, מצל חלקי וצד צפוני</span></div>
+    </div>
+  </div>
+  <div class="chupchu">
+    <img class="chupchu-img" src="https://gina-haya.vercel.app/chupchu_final.png" alt="צ'ופצ'ו">
+    <div>
+      <div class="chupchu-name">הסוד של צ'ופצ'ו:</div>
+      <div class="chupchu-text">שתלו פרחים ביום פרח לפי הלוח הביודינמי — הם יפרחו מהר יותר ויביאו יותר מאביקים. פתח גינה חיה לבדוק מתי!</div>
+    </div>
+  </div>
+  <div class="related">
+    <div class="related-title">מאמרים קשורים</div>
+    <div class="related-links">
+      <a class="related-link" href="/articles/tomato-basil">עגבנייה ובזיליקום</a>
+      <a class="related-link" href="/articles/three-sisters">שלוש האחיות</a>
+      <a class="related-link" href="/articles/beneficial-beetles">חיפושיות טובות — מה מושך אותן</a>
+    </div>
+  </div>
+</div>
+<footer class="footer-cta">
+  <img class="footer-img" src="https://gina-haya.vercel.app/chupchu_final.png" alt="צ'ופצ'ו">
+  <div class="footer-text">מתי יום הפרח הביודינמי לשתול פרחים בגינה?<br><em>Find the biodynamic flower day for planting companion flowers.</em></div>
+  <a class="footer-btn" href="https://gina-haya.vercel.app">פתח גינה חיה ←</a>
+</footer>
+</article>`,
+  },
 ];
