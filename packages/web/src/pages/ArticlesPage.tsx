@@ -15,7 +15,6 @@ const CATEGORY_FILTERS = [
   { id: 'Compost',      labelHe: 'קומפוסט',          labelEn: 'Compost',               emoji: '♻️' },
   { id: 'BD Preps',     labelHe: 'פרפרטים BD',       labelEn: 'BD Preps',              emoji: '🌙' },
   { id: 'Companion Planting', labelHe: 'שיתופי פעולה', labelEn: 'Companion Planting',  emoji: '🤝' },
-  { id: 'Techniques',   labelHe: 'טכניקות גינון',    labelEn: 'Techniques',            emoji: '🔧' },
 ] as const;
 
 export function ArticlesPage() {

@@ -82,9 +82,9 @@ const GUIDE_CONTENT: Record<string, GuideContent> = {
   f4:  { comingSoon: ['סרטון', 'מאמר'] },
   // Pest control
   p1:  { video: { youtubeId: 'dQw4w9WgXcQ', duration: '2:30' }, article: { slug: 'neem-oil', ready: true }, comingSoon: ['וובינר'] },
-  p2:  { article: { slug: 'beneficial-insects', ready: true }, comingSoon: ['סרטון'] },
+  p2:  { comingSoon: ['סרטון', 'מאמר'] },
   p3:  { comingSoon: ['סרטון', 'מאמר'] },
-  p4:  { article: { slug: 'companion-planting', ready: true }, comingSoon: ['סרטון'] },
+  p4:  { comingSoon: ['סרטון', 'מאמר'] },
   // Compost
   c1:  { video: { youtubeId: 'dQw4w9WgXcQ', duration: '10:30' }, article: { slug: 'compost-pile', ready: true } },
   c2:  { article: { slug: 'vermicompost', ready: true }, comingSoon: ['סרטון'] },
@@ -100,10 +100,10 @@ const GUIDE_CONTENT: Record<string, GuideContent> = {
   co3: { article: { slug: 'flowers-vegetables', ready: true }, comingSoon: ['סרטון'] },
   // Techniques
   t1:  { video: { youtubeId: 'dQw4w9WgXcQ', duration: '15:00' }, comingSoon: ['מאמר'] },
-  t2:  { article: { slug: 'raised-vs-ground', ready: true }, comingSoon: ['סרטון'] },
-  t3:  { article: { slug: 'drip-irrigation', ready: true }, comingSoon: ['סרטון'] },
+  t2:  { comingSoon: ['סרטון', 'מאמר'] },
+  t3:  { comingSoon: ['סרטון', 'מאמר'] },
   t4:  { comingSoon: ['סרטון', 'מאמר'] },
-  t5:  { article: { slug: 'mulching', ready: true }, comingSoon: ['סרטון'] },
+  t5:  { comingSoon: ['סרטון', 'מאמר'] },
 };
 
 const SUBJECT_MODAL_CSS = `
