@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { ARTICLES, type ArticleEntry } from '../data/articles';
 
@@ -16,6 +16,30 @@ const CATEGORY_FILTERS = [
   { id: 'BD Preps',     labelHe: 'פרפרטים BD',       labelEn: 'BD Preps',              emoji: '🌙' },
   { id: 'Companion Planting', labelHe: 'שיתופי פעולה', labelEn: 'Companion Planting',  emoji: '🤝' },
 ] as const;
+
+function CrossNavLink({ to, label }: { to: string; label: string }) {
+  const [hovered, setHovered] = useState(false);
+  return (
+    <Link
+      to={to}
+      onMouseEnter={() => setHovered(true)}
+      onMouseLeave={() => setHovered(false)}
+      style={{
+        display: 'inline-flex', alignItems: 'center', gap: '6px',
+        fontFamily: ASSIST, fontSize: '13px',
+        color: GOLD,
+        background: hovered ? 'rgba(200,168,75,0.14)' : 'rgba(200,168,75,0.07)',
+        border: `1px solid ${hovered ? 'rgba(200,168,75,0.4)' : 'rgba(200,168,75,0.2)'}`,
+        borderRadius: '99px',
+        padding: '7px 18px',
+        textDecoration: 'none',
+        transition: 'background 0.15s, border-color 0.15s',
+      }}
+    >
+      {label}
+    </Link>
+  );
+}
 
 export function ArticlesPage() {
   const { i18n } = useTranslation();
@@ -46,13 +70,18 @@ export function ArticlesPage() {
       }}
     >
       {/* Header */}
-      <div style={{ marginBottom: '32px' }}>
+      <div style={{ marginBottom: '20px' }}>
         <h1 style={{ fontFamily: FRANK, fontSize: '32px', color: GOLD, margin: '0 0 8px' }}>
           {heading}
         </h1>
         <p style={{ fontFamily: ASSIST, fontSize: '15px', color: `${PARCH}60`, margin: 0 }}>
           {subheading}
         </p>
+      </div>
+
+      {/* Cross-nav to videos */}
+      <div style={{ marginBottom: '28px' }}>
+        <CrossNavLink to="/guides" label="🎬 לסרטונים ←" />
       </div>
 
       {/* Category filter */}

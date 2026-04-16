@@ -1,7 +1,6 @@
 import { useState, useRef } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import i18n from '../i18n';
-import { ARTICLES } from '../data/articles';
 
 const GOLD   = '#F5C840';
 const PARCH  = '#EDE0C4';
@@ -612,111 +611,28 @@ function SubjectModal({
   );
 }
 
-// ── Articles section ──────────────────────────────────────────────────────
-// Maps GuidesPage category IDs → ArticleEntry.categoryEn values
-const GUIDE_CAT_TO_ARTICLE_CAT: Record<string, string> = {
-  fertilizer: 'Natural Fertilizers',
-  pest:        'Pest Control',
-  compost:     'Compost',
-  bd:          'BD Preps',
-  companion:   'Companion Planting',
-  technique:   'Techniques',
-};
 
-function ArticlesSection({ activeFilter }: { activeFilter: string }) {
-  const navigate = useNavigate();
-  const lang = i18n.language === 'en' ? 'en' : 'he';
-
-  const filtered = activeFilter === 'all'
-    ? ARTICLES
-    : ARTICLES.filter(a => a.categoryEn === GUIDE_CAT_TO_ARTICLE_CAT[activeFilter]);
-
-  if (filtered.length === 0) return null;
-
-  const heading = lang === 'he' ? '📖 מאמרים' : '📖 Articles';
-
-  return (
-    <div style={{ marginTop: '52px' }}>
-      {/* Section divider */}
-      <div style={{ display: 'flex', alignItems: 'center', gap: '16px', marginBottom: '28px' }}>
-        <div style={{ flex: 1, height: '1px', background: 'rgba(245,200,64,0.15)' }} />
-        <h2 style={{ fontFamily: FRANK, fontSize: '20px', color: GOLD, margin: 0, flexShrink: 0 }}>
-          {heading}
-        </h2>
-        <div style={{ flex: 1, height: '1px', background: 'rgba(245,200,64,0.15)' }} />
-      </div>
-
-      {/* Cards grid */}
-      <div style={{
-        display: 'grid',
-        gridTemplateColumns: 'repeat(auto-fill, minmax(220px, 1fr))',
-        gap: '14px',
-      }}>
-        {filtered.map(article => {
-          const title    = lang === 'he' ? article.titleHe    : article.titleEn;
-          const category = lang === 'he' ? article.categoryHe : article.categoryEn;
-          return (
-            <ArticleGuideCard
-              key={article.id}
-              title={title}
-              category={category}
-              onClick={() => navigate(`/articles/${article.id}`)}
-            />
-          );
-        })}
-      </div>
-    </div>
-  );
-}
-
-function ArticleGuideCard({
-  title,
-  category,
-  onClick,
-}: {
-  title: string;
-  category: string;
-  onClick: () => void;
-}) {
+function CrossNavLink({ to, label }: { to: string; label: string }) {
   const [hovered, setHovered] = useState(false);
   return (
-    <div
-      onClick={onClick}
+    <Link
+      to={to}
       onMouseEnter={() => setHovered(true)}
       onMouseLeave={() => setHovered(false)}
       style={{
-        background: hovered ? 'rgba(245,200,64,0.08)' : 'rgba(20,43,22,0.55)',
-        border: `1px solid ${hovered ? 'rgba(245,200,64,0.4)' : 'rgba(245,200,64,0.12)'}`,
-        borderRadius: '10px',
-        padding: '14px 16px',
-        cursor: 'pointer',
-        transition: 'background 0.15s, border-color 0.15s, transform 0.15s',
-        transform: hovered ? 'translateY(-2px)' : 'none',
+        display: 'inline-flex', alignItems: 'center', gap: '6px',
+        fontFamily: ASSIST, fontSize: '13px',
+        color: GOLD,
+        background: hovered ? 'rgba(245,200,64,0.14)' : 'rgba(245,200,64,0.07)',
+        border: `1px solid ${hovered ? 'rgba(245,200,64,0.4)' : 'rgba(245,200,64,0.2)'}`,
+        borderRadius: '99px',
+        padding: '7px 18px',
+        textDecoration: 'none',
+        transition: 'background 0.15s, border-color 0.15s',
       }}
     >
-      <div style={{
-        fontFamily: ASSIST, fontSize: '10px',
-        color: GOLD, background: 'rgba(245,200,64,0.1)',
-        border: '1px solid rgba(245,200,64,0.2)',
-        borderRadius: '99px', padding: '2px 8px',
-        display: 'inline-block', marginBottom: '8px',
-      }}>
-        {category}
-      </div>
-      <div style={{
-        fontFamily: FRANK, fontSize: '14px',
-        color: hovered ? GOLD : PARCH,
-        lineHeight: 1.4, transition: 'color 0.15s',
-      }}>
-        {title}
-      </div>
-      <div style={{
-        marginTop: '10px', fontFamily: ASSIST,
-        fontSize: '12px', color: `${GOLD}80`,
-      }}>
-        {i18n.language === 'en' ? 'Read article →' : 'קרא מאמר ←'}
-      </div>
-    </div>
+      {label}
+    </Link>
   );
 }
 
@@ -741,13 +657,18 @@ export function GuidesPage() {
       }}
     >
       {/* Header */}
-      <div style={{ marginBottom: '36px' }}>
+      <div style={{ marginBottom: '20px' }}>
         <h1 style={{ fontFamily: FRANK, fontSize: '32px', color: GOLD, margin: '0 0 8px' }}>
           🎬 מדריכי גינה
         </h1>
         <p style={{ fontFamily: ASSIST, fontSize: '15px', color: 'rgba(237,224,196,0.6)', margin: 0 }}>
           סרטונים מעשיים לגינון ביודינמי — טבעי, חי ונושם
         </p>
+      </div>
+
+      {/* Cross-nav to articles */}
+      <div style={{ marginBottom: '28px' }}>
+        <CrossNavLink to="/articles" label="📖 למאמרים ←" />
       </div>
 
       {/* Category filter pills */}
@@ -783,9 +704,6 @@ export function GuidesPage() {
           />
         );
       })}
-
-      {/* Articles section */}
-      <ArticlesSection activeFilter={activeFilter} />
 
       {/* Subject popup */}
       {subjectVideo && (

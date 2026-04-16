@@ -53,7 +53,9 @@ export function Navbar() {
   const navigate = useNavigate();
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
+  const [guidesOpen, setGuidesOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
+  const guidesRef = useRef<HTMLDivElement>(null);
   const isHebrew = i18n.language === 'he';
 
   function toggleLanguage() {
@@ -68,6 +70,9 @@ export function Navbar() {
     function handleClick(e: MouseEvent) {
       if (dropdownRef.current && !dropdownRef.current.contains(e.target as Node)) {
         setDropdownOpen(false);
+      }
+      if (guidesRef.current && !guidesRef.current.contains(e.target as Node)) {
+        setGuidesOpen(false);
       }
     }
     document.addEventListener('mousedown', handleClick);
@@ -183,7 +188,6 @@ export function Navbar() {
               { label: t('nav.tracker'), to: '/tracker' },
               { label: t('nav.tasks'),   to: '/tasks'   },
               { label: t('nav.plants'), to: '/plants' },
-              { label: t('nav.guides'), to: '/guides' },
             ].map(item => (
               <Link
                 key={item.to}
@@ -195,6 +199,68 @@ export function Navbar() {
                 {item.label}
               </Link>
             ))}
+
+            {/* Guides dropdown */}
+            <div
+              ref={guidesRef}
+              style={{ position: 'relative' }}
+              onMouseEnter={() => setGuidesOpen(true)}
+              onMouseLeave={() => setGuidesOpen(false)}
+            >
+              <span
+                className="gina-nav-link"
+                style={{
+                  fontFamily: ASSISTANT, fontSize: '14px', fontWeight: 400,
+                  color: PARCHMENT, cursor: 'default',
+                  display: 'inline-flex', alignItems: 'center', gap: '4px',
+                }}
+              >
+                {t('nav.guides')}
+                <span style={{ fontSize: '8px', opacity: 0.55, marginTop: '1px' }}>▾</span>
+              </span>
+              {guidesOpen && (
+                <div style={{
+                  position: 'absolute',
+                  top: 'calc(100% + 10px)',
+                  left: '50%',
+                  transform: 'translateX(-50%)',
+                  minWidth: '156px',
+                  background: 'linear-gradient(180deg, #1a3a1c 0%, #142B16 100%)',
+                  border: '1px solid rgba(245,200,64,0.15)',
+                  borderRadius: '6px',
+                  boxShadow: '0 12px 48px rgba(0,0,0,0.5)',
+                  padding: '6px 0',
+                  zIndex: 101,
+                }}>
+                  <Link
+                    to="/guides"
+                    className="gina-dropdown-item"
+                    onClick={() => { setGuidesOpen(false); setMobileOpen(false); }}
+                    style={{
+                      display: 'block', padding: '9px 16px',
+                      fontFamily: ASSISTANT, fontSize: '14px', fontWeight: 400,
+                      color: PARCHMENT, textDecoration: 'none',
+                      transition: 'background-color 0.15s, color 0.15s',
+                    }}
+                  >
+                    {isHebrew ? '🎬 סרטונים' : '🎬 Videos'}
+                  </Link>
+                  <Link
+                    to="/articles"
+                    className="gina-dropdown-item"
+                    onClick={() => { setGuidesOpen(false); setMobileOpen(false); }}
+                    style={{
+                      display: 'block', padding: '9px 16px',
+                      fontFamily: ASSISTANT, fontSize: '14px', fontWeight: 400,
+                      color: PARCHMENT, textDecoration: 'none',
+                      transition: 'background-color 0.15s, color 0.15s',
+                    }}
+                  >
+                    {isHebrew ? '📖 מאמרים' : '📖 Articles'}
+                  </Link>
+                </div>
+              )}
+            </div>
             <Link
               to="/chupchu"
               className="gina-nav-link"
@@ -315,7 +381,8 @@ export function Navbar() {
                     { label: t('nav.map'),      to: '/map'      },
                     { label: t('nav.tracker'),  to: '/tracker' },
                     { label: t('nav.tasks'),    to: '/tasks'   },
-                    { label: t('nav.guides'),   to: '/guides' },
+                    { label: isHebrew ? '🎬 סרטונים' : '🎬 Videos',  to: '/guides'   },
+                    { label: isHebrew ? '📖 מאמרים' : '📖 Articles', to: '/articles' },
                     { label: t('nav.chupchu'),    to: '/chupchu' },
                     { label: t('nav.settings'), to: '/settings' },
                   ].map(item => (
@@ -418,7 +485,8 @@ export function Navbar() {
                 { label: t('nav.garden'),   to: '/garden' },
                 { label: t('nav.tracker'),  to: '/tracker' },
                 { label: t('nav.tasks'),    to: '/tasks'   },
-                { label: t('nav.guides'),   to: '/guides' },
+                { label: isHebrew ? '🎬 סרטונים' : '🎬 Videos',  to: '/guides'   },
+                { label: isHebrew ? '📖 מאמרים' : '📖 Articles', to: '/articles' },
                 { label: t('nav.chupchu'),    to: '/chupchu' },
                 { label: t('nav.settings'), to: '/settings' },
               ].map(item => (

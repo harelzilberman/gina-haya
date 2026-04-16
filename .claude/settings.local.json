@@ -50,7 +50,8 @@
       "Bash(xargs -I{} head -30 {})",
       "Bash(npm list *)",
       "Bash(git add *)",
-      "Bash(git commit *)"
+      "Bash(git commit *)",
+      "Bash(git mv *)"
     ]
   }
 }
