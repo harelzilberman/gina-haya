@@ -31,11 +31,7 @@ export const ARTICLES: ArticleEntry[] = [
     filenameHe: '01_תה_קומפוסט.md',
     filenameEn: '01_compost_tea.md',
     publishedAt: '2026-04-08',
-    images: {
-      hero:    '/articles/images/compost-tea/hero.png',
-      steps:   '/articles/images/compost-tea/steps.png',
-      results: '/articles/images/compost-tea/results.png',
-    },
+    images: { hero: '/images/articles/compost-tea.jpg' },
     htmlContent: `<style>
 @import url('https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,400;0,600;1,400&family=Caveat:wght@400;600&family=DM+Sans:wght@300;400;500&display=swap');
 
@@ -648,7 +644,7 @@ function toggleFaq(el){
     filenameHe: '02_ריסוס_אצות_ים.md',
     filenameEn: '02_seaweed_spray.md',
     publishedAt: '2026-04-08',
-    images: null,
+    images: { hero: '/images/articles/seaweed.jpg' },
     htmlContent: `<style>
 @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;1,400&family=Source+Sans+3:wght@300;400;600&family=Caveat:wght@400;600&display=swap');
 *{box-sizing:border-box;margin:0;padding:0;}
@@ -924,7 +920,7 @@ function toggleFaq(el){
     filenameHe: '03_דשן_ירוק.md',
     filenameEn: '03_green_manure.md',
     publishedAt: '2026-04-08',
-    images: null,
+    images: { hero: '/images/articles/green-manure.jpg' },
     htmlContent: `<style>
 @import url('https://fonts.googleapis.com/css2?family=Merriweather:ital,wght@0,400;0,700;1,400&family=IBM+Plex+Sans:wght@300;400;500&family=Caveat:wght@400;600&display=swap');
 *{box-sizing:border-box;margin:0;padding:0;}
@@ -1132,7 +1128,7 @@ function toggleFaq(el){
     filenameHe: '21_שתן_מדולל.md',
     filenameEn: '21_diluted_urine.md',
     publishedAt: '2026-04-11',
-    images: null,
+    images: { hero: '/images/articles/urine.jpg' },
     htmlContent: `<style>
 @import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,600;1,400&family=Jost:wght@300;400;500&family=Caveat:wght@400;600&display=swap');
 *{box-sizing:border-box;margin:0;padding:0;}
@@ -1332,7 +1328,7 @@ function toggleFaq(el){
     filenameHe: '04_שמן_נים.md',
     filenameEn: '04_neem_oil.md',
     publishedAt: '2026-04-08',
-    images: null,
+    images: { hero: '/images/articles/neem.jpg' },
     htmlContent: `<style>
 @import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;700&family=Libre+Baskerville:ital,wght@0,400;0,700;1,400&family=Caveat:wght@400;600&display=swap');
 *{box-sizing:border-box;margin:0;padding:0;}
@@ -1524,7 +1520,7 @@ function toggleFaq(el){
     filenameHe: '22_חיפושיות_טובות.md',
     filenameEn: '22_beneficial_beetles.md',
     publishedAt: '2026-04-11',
-    images: null,
+    images: { hero: '/images/articles/beneficial-insects.jpg' },
     htmlContent: `<style>
 @import url('https://fonts.googleapis.com/css2?family=Nunito:ital,wght@0,400;0,700;0,800;1,400&family=Fraunces:ital,wght@0,400;0,600;1,400&family=Caveat:wght@400;600&display=swap');
 *{box-sizing:border-box;margin:0;padding:0;}
@@ -1718,7 +1714,7 @@ function toggleFaq(el){
     filenameHe: '23_מלכודות_צהובות.md',
     filenameEn: '23_yellow_traps.md',
     publishedAt: '2026-04-11',
-    images: null,
+    images: { hero: '/images/articles/yellow-traps.jpg' },
     htmlContent: `<style>
 @import url('https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@400;600;700;800&family=Barlow:wght@300;400;500&family=Caveat:wght@400;600&display=swap');
 *{box-sizing:border-box;margin:0;padding:0;}
@@ -1878,7 +1874,7 @@ function toggleFaq(el){
     filenameHe: '24_צמחי_מלווים.md',
     filenameEn: '24_companion_plants.md',
     publishedAt: '2026-04-11',
-    images: null,
+    images: { hero: '/images/articles/companion-plants.jpg' },
     htmlContent: `<style>
 @import url('https://fonts.googleapis.com/css2?family=Crimson+Pro:ital,wght@0,400;0,600;1,400;1,600&family=Mulish:wght@300;400;500&family=Caveat:wght@400;600&display=swap');
 *{box-sizing:border-box;margin:0;padding:0;}
@@ -2073,7 +2069,7 @@ function toggleFaq(el){
     filenameHe: '21_ערימת_קומפוסט.md',
     filenameEn: '21_compost_pile.md',
     publishedAt: '2026-04-11',
-    images: null,
+    images: { hero: '/images/articles/compost-pile.jpg' },
     htmlContent: `<style>
 @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;1,400&family=Lato:wght@300;400;700&family=Caveat:wght@400;600&display=swap');
 *{box-sizing:border-box;margin:0;padding:0;}
@@ -2283,7 +2279,7 @@ function toggleFaq(el){
     filenameHe: '22_ורמיקומפוסט.md',
     filenameEn: '22_vermicompost.md',
     publishedAt: '2026-04-11',
-    images: null,
+    images: { hero: '/images/articles/vermicompost.jpg' },
     htmlContent: `<style>
 @import url('https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:wght@300;400;500&family=Caveat:wght@400;600&display=swap');
 *{box-sizing:border-box;margin:0;padding:0;}
@@ -2464,7 +2460,7 @@ function toggleFaq(el){
     filenameHe: '23_מה_לא_לשים_בקומפוסט.md',
     filenameEn: '23_compost_dont.md',
     publishedAt: '2026-04-11',
-    images: null,
+    images: { hero: '/images/articles/compost-dont.jpg' },
     htmlContent: `<style>
 @import url('https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Inter:wght@300;400;500&family=Caveat:wght@400;600&display=swap');
 *{box-sizing:border-box;margin:0;padding:0;}
@@ -2643,7 +2639,7 @@ function toggleFaq(el){
     filenameHe: '24_BD500_קרן_הזבל.md',
     filenameEn: '24_bd500_horn_manure.md',
     publishedAt: '2026-04-11',
-    images: null,
+    images: { hero: '/images/articles/bd500.jpg' },
     htmlContent: `<style>
 @import url('https://fonts.googleapis.com/css2?family=IM+Fell+English:ital@0;1&family=Cinzel:wght@400;600&family=Jost:wght@300;400;500&family=Caveat:wght@400;600&display=swap');
 *{box-sizing:border-box;margin:0;padding:0;}
@@ -2851,7 +2847,7 @@ function toggleFaq(el){
     filenameHe: '25_BD501_קרן_הסיליקה.md',
     filenameEn: '25_bd501_horn_silica.md',
     publishedAt: '2026-04-11',
-    images: null,
+    images: { hero: '/images/articles/bd501.jpg' },
     htmlContent: `<style>
 @import url('https://fonts.googleapis.com/css2?family=Cormorant:ital,wght@0,400;0,600;1,400;1,600&family=Raleway:wght@300;400;500&family=Caveat:wght@400;600&display=swap');
 *{box-sizing:border-box;margin:0;padding:0;}
@@ -3063,7 +3059,7 @@ function toggleFaq(el){
     filenameHe: '26_CPP_בור_הזבל.md',
     filenameEn: '26_cpp_cow_pat_pit.md',
     publishedAt: '2026-04-11',
-    images: null,
+    images: { hero: '/images/articles/cpp.jpg' },
     htmlContent: `<style>
 @import url('https://fonts.googleapis.com/css2?family=Spectral:ital,wght@0,400;0,600;1,400&family=Work+Sans:wght@300;400;500&family=Caveat:wght@400;600&display=swap');
 *{box-sizing:border-box;margin:0;padding:0;}
@@ -3244,7 +3240,7 @@ function toggleFaq(el){
     filenameHe: '27_הלוח_הביודינמי.md',
     filenameEn: '27_biodynamic_calendar.md',
     publishedAt: '2026-04-11',
-    images: null,
+    images: { hero: '/images/articles/biodynamic-calendar.jpg' },
     htmlContent: `<style>
 @import url('https://fonts.googleapis.com/css2?family=Philosopher:ital,wght@0,400;0,700;1,400&family=Nunito+Sans:wght@300;400;500&family=Caveat:wght@400;600&display=swap');
 *{box-sizing:border-box;margin:0;padding:0;}
@@ -3475,7 +3471,7 @@ function toggleFaq(el){
     filenameHe: '28_עגבנייה_בזיליקום.md',
     filenameEn: '28_tomato_basil.md',
     publishedAt: '2026-04-12',
-    images: null,
+    images: { hero: '/images/articles/tomato-basil.jpg' },
     htmlContent: `<style>
 @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;1,400&family=Lato:wght@300;400;700&family=Caveat:wght@400;600&display=swap');
 *{box-sizing:border-box;margin:0;padding:0;}
@@ -3673,7 +3669,7 @@ function toggleFaq(el){
     filenameHe: '29_שלוש_האחיות.md',
     filenameEn: '29_three_sisters.md',
     publishedAt: '2026-04-12',
-    images: null,
+    images: { hero: '/images/articles/three-sisters.jpg' },
     htmlContent: `<style>
 @import url('https://fonts.googleapis.com/css2?family=Rokkitt:wght@300;400;600;700&family=Karla:ital,wght@0,300;0,400;1,400&family=Caveat:wght@400;600&display=swap');
 *{box-sizing:border-box;margin:0;padding:0;}
@@ -3891,7 +3887,7 @@ function toggleFaq(el){
     filenameHe: '30_פרחים_בין_ירקות.md',
     filenameEn: '30_flowers_vegetables.md',
     publishedAt: '2026-04-12',
-    images: null,
+    images: { hero: '/images/articles/flowers-vegetables.jpg' },
     htmlContent: `<style>
 @import url('https://fonts.googleapis.com/css2?family=Abril+Fatface&family=Quicksand:wght@300;400;500;600&family=Caveat:wght@400;600&display=swap');
 *{box-sizing:border-box;margin:0;padding:0;}

@@ -47,7 +47,10 @@
       "Bash(cp \"D:/harel/claude/StabilityMatrix-win-x64/Data/Images/Saved/00015-1519122490.png\" \"D:/harel/claude/gina-haya-main/articles/full_articles/images/compost-tea/steps.png\")",
       "Bash(cp \"D:/harel/claude/StabilityMatrix-win-x64/Data/Images/Saved/00016-370482635.png\" \"D:/harel/claude/gina-haya-main/articles/full_articles/images/compost-tea/results.png\")",
       "Bash(cp \"D:/harel/claude/gina-haya-main/articles/full_articles/images/compost-tea/hero.png\" \"D:/harel/claude/gina-haya-main/gina-haya-project/gina-haya/gina-haya/packages/web/public/articles/images/compost-tea/hero.png\")",
-      "Bash(xargs -I{} head -30 {})"
+      "Bash(xargs -I{} head -30 {})",
+      "Bash(npm list *)",
+      "Bash(git add *)",
+      "Bash(git commit *)"
     ]
   }
 }
