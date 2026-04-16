@@ -31,7 +31,7 @@ export const ARTICLES: ArticleEntry[] = [
     filenameHe: '01_תה_קומפוסט.md',
     filenameEn: '01_compost_tea.md',
     publishedAt: '2026-04-08',
-    images: { hero: '/images/articles/compost-tea.jpg' },
+    images: { hero: '/images/articles/compost-tea.png' },
     htmlContent: `<style>
 @import url('https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,400;0,600;1,400&family=Caveat:wght@400;600&family=DM+Sans:wght@300;400;500&display=swap');
 
