@@ -56,6 +56,7 @@ export function Navbar() {
   const [guidesOpen, setGuidesOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
   const guidesRef = useRef<HTMLDivElement>(null);
+  const guidesCloseTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const isHebrew = i18n.language === 'he';
 
   function toggleLanguage() {
@@ -204,8 +205,13 @@ export function Navbar() {
             <div
               ref={guidesRef}
               style={{ position: 'relative' }}
-              onMouseEnter={() => setGuidesOpen(true)}
-              onMouseLeave={() => setGuidesOpen(false)}
+              onMouseEnter={() => {
+                if (guidesCloseTimer.current) clearTimeout(guidesCloseTimer.current);
+                setGuidesOpen(true);
+              }}
+              onMouseLeave={() => {
+                guidesCloseTimer.current = setTimeout(() => setGuidesOpen(false), 200);
+              }}
             >
               <span
                 className="gina-nav-link"
