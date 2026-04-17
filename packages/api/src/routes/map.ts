@@ -313,12 +313,13 @@ ${spacingLine}
     // ── 7. Call Claude ───────────────────────────────────────────────────────
     const aiResponse = await anthropic.messages.create({
       model: 'claude-sonnet-4-6',
-      max_tokens: 4096,
+      max_tokens: 8192,
       system: systemPrompt,
       messages: [{ role: 'user', content: userPrompt }],
     });
 
     const rawText = (aiResponse.content.find(b => b.type === 'text') as any)?.text ?? '{}';
+    console.log('Wizard response length:', rawText.length, 'tokens approx:', Math.round(rawText.length / 4));
     const cleaned = rawText.replace(/^```(?:json)?\s*/i, '').replace(/\s*```\s*$/i, '').trim();
     let plan: any;
     try {
