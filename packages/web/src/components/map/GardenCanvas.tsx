@@ -806,6 +806,13 @@ export function GardenCanvas({
   const northRef = useRef({ active: false, scx: 0, scy: 0 });
   const touchRef = useRef({ lastDist: 0, lastX: 0, lastY: 0 });
 
+  // ── Diagnostic: log plant coords whenever mapData changes ─────────────────
+  useEffect(() => {
+    if (mapData.plants.length === 0) return;
+    console.log('[GardenCanvas] rendering', mapData.plants.length, 'plants (PX=50):');
+    mapData.plants.forEach(p => console.log(`  ${p.plantNameHe} id=${p.id?.slice(0,6)} x=${p.x} y=${p.y} → svgX=${p.x*50} svgY=${p.y*50}`));
+  }, [mapData.plants]);
+
   // ── Resize observer ────────────────────────────────────────────────────────
   useEffect(() => {
     const update = () => {
@@ -1243,17 +1250,26 @@ export function GardenCanvas({
           ))}
 
           {/* Plant markers */}
-          {mapData.plants.map(p => (
-            <g key={p.id}
-              style={{ cursor: selectedTool === 'select' ? 'move' : 'pointer', opacity: plantDrag?.id === p.id ? 0.7 : 1 }}
-              onClick={e => { if (selectedTool === 'select') { e.stopPropagation(); } }}>
-              <circle cx={p.x*PX} cy={p.y*PX} r={18}
-                fill="rgba(20,43,22,0.85)" stroke="rgba(125,192,132,0.5)"
-                strokeWidth={1.5} />
-              <text x={p.x*PX} y={p.y*PX+7} textAnchor="middle" fontSize={20}
-                style={{ userSelect: 'none', pointerEvents: 'none' }}>{p.emoji}</text>
-            </g>
-          ))}
+          {mapData.plants.map(p => {
+            const cx = p.x * PX;
+            const cy = p.y * PX;
+            if (!isFinite(cx) || !isFinite(cy)) {
+              console.warn('[GardenCanvas] plant has invalid coords — id:', p.id, 'x:', p.x, 'y:', p.y, 'name:', p.plantNameHe);
+            }
+            const safeCx = isFinite(cx) ? cx : 0;
+            const safeCy = isFinite(cy) ? cy : 0;
+            return (
+              <g key={p.id}
+                style={{ cursor: selectedTool === 'select' ? 'move' : 'pointer', opacity: plantDrag?.id === p.id ? 0.7 : 1 }}
+                onClick={e => { if (selectedTool === 'select') { e.stopPropagation(); } }}>
+                <circle cx={safeCx} cy={safeCy} r={18}
+                  fill="rgba(20,43,22,0.85)" stroke={!isFinite(cx) ? 'red' : 'rgba(125,192,132,0.5)'}
+                  strokeWidth={!isFinite(cx) ? 3 : 1.5} />
+                <text x={safeCx} y={safeCy + 7} textAnchor="middle" fontSize={20}
+                  style={{ userSelect: 'none', pointerEvents: 'none' }}>{p.emoji}</text>
+              </g>
+            );
+          })}
 
           {/* Preview plant markers */}
           {previewPlants.map((p, i) => (

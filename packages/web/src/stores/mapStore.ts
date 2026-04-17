@@ -159,9 +159,12 @@ export const useMapStore = create<MapState>((set, get) => ({
     try {
       const data = await api.get<any>('/api/map', token);
       if (!data.exists) { set({ isLoading: false }); return; }
+      const md = data.map_data ?? EMPTY_MAP;
+      console.log('[mapStore] raw map_data from API — objects:', md.objects?.length ?? 0, ', plants:', md.plants?.length ?? 0);
+      console.log('[mapStore] plant coords:', md.plants?.map((p: any) => ({ id: p.id?.slice(0,6), x: p.x, y: p.y })));
       set({
         mapId: data.id,
-        mapData: data.map_data ?? EMPTY_MAP,
+        mapData: md,
         northAngle: data.north_angle ?? 0,
         isLoading: false,
         isDirty: false,
@@ -175,6 +178,7 @@ export const useMapStore = create<MapState>((set, get) => ({
     const token = getToken();
     if (!token) return;
     const { mapId, mapData, northAngle } = get();
+    console.log('[mapStore] saveMap — plants being saved:', mapData.plants.map(p => ({ x: p.x, y: p.y, name: p.plantNameHe })));
     set({ isSaving: true });
     try {
       let saved: any;
@@ -243,6 +247,7 @@ export const useMapStore = create<MapState>((set, get) => ({
   },
 
   addPlant(plant) {
+    console.log('[mapStore] addPlant x=', plant.x, 'y=', plant.y, 'name=', plant.plantNameHe);
     const newPlant: PlantMarker = { ...plant, id: crypto.randomUUID() };
     set(s => {
       const history = [s.mapData, ...s.history].slice(0, MAX_HISTORY);

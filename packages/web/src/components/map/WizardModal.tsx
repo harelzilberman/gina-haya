@@ -137,6 +137,11 @@ function calculatePlantPositions(
 
   const GROWING_TYPES_FOR_MATCH = ['bed', 'raised-bed', 'hydroponics', 'aquaponics', 'vertical', 'pot-rect', 'pot-round', 'pergola'];
 
+  // Tracks how many plant-slots have already been filled inside each shape so that
+  // plants from different wizard beds that share the same physical shape continue
+  // from where the previous bed left off instead of all starting at slot 0.
+  const shapeSlotMap = new Map<string, number>();
+
   for (const bed of (plan.beds ?? [])) {
     const matchShape = mapData.objects.find(obj => {
       if (!GROWING_TYPES_FOR_MATCH.includes(obj.type)) return false;
@@ -150,6 +155,7 @@ function calculatePlantPositions(
     }) ?? growingShapes[fallbackShapeIdx % Math.max(1, growingShapes.length)];
     fallbackShapeIdx++;
     const si = getShapeInfo(matchShape);
+    const shapeKey = matchShape?.id ?? `__fallback_${fallbackShapeIdx}__`;
     console.log('[SHAPE INFO]', matchShape?.label, matchShape?.type,
       'shapeKind:', matchShape?.shapeKind,
       'x:', matchShape?.x, 'y:', matchShape?.y,
@@ -199,10 +205,12 @@ function calculatePlantPositions(
         let baseX: number, baseY: number;
 
         if (si) {
-          // Place inside the matching shape in a grid
+          // Place inside the matching shape, continuing from where previous beds left off
+          const slotBase = shapeSlotMap.get(shapeKey) ?? 0;
           const maxCols = Math.max(1, Math.floor(si.bw / colSpacingM));
-          const col = i % maxCols;
-          const row = Math.floor(i / maxCols);
+          const slot = slotBase + i;
+          const col = slot % maxCols;
+          const row = Math.floor(slot / maxCols);
           baseX = si.bx + col * colSpacingM + colSpacingM * 0.5;
           baseY = si.by + row * rowSpacingM + rowSpacingM * 0.5;
           if (si.bh < rowSpacingM * 2) {
@@ -238,6 +246,9 @@ function calculatePlantPositions(
           bedName: bed.name ?? bed.suggestedName ?? 'ערוגה',
         });
       }
+      // Advance slot counter so the next plant type (or next bed) using the same
+      // shape starts after the slots just consumed.
+      if (si) shapeSlotMap.set(shapeKey, (shapeSlotMap.get(shapeKey) ?? 0) + qty);
     }
   }
 
