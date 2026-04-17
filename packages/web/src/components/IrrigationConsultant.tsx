@@ -99,10 +99,7 @@ interface MapDataMin { objects?: MapObj[]; plants?: PlantMarkerMin[] }
 // ─── Tiny helpers ─────────────────────────────────────────────────────────────
 
 function sanitizeComponent(c: string): string {
-  return c
-    .replace(/\s*\(.*?NaN.*?\)/g, '')
-    .replace(/\s*\(.*?undefined.*?\)/g, '')
-    .trim()
+  return c.replace(/\s*\([^)]*NaN[^)]*\)/g, '').trim()
 }
 
 function Divider() {
@@ -288,7 +285,10 @@ function PlanView({ plan }: { plan: IrrigationPlan }) {
           )}
           <Divider />
           <p style={{ fontSize: 11, color: T.textMuted, fontFamily: T.fontUI }}>
-            {z.components.map(sanitizeComponent).filter(Boolean).join(' · ')}
+            {z.components
+            .map(c => c.replace(/\s*\([^)]*NaN[^)]*\)/g, '').trim())
+            .filter(Boolean)
+            .join(' · ')}
           </p>
           {z.notes && (
             <p style={{ fontSize: 11, color: T.textMuted, marginTop: 6, fontFamily: T.fontUI }}>{z.notes}</p>
@@ -385,7 +385,9 @@ export default function IrrigationConsultant({ supabase }: Props) {
 
   // Load data once when panel first opens
   useEffect(() => {
-    if (!open || initialized.current) return
+    if (!open) return
+    setPlanCache({})
+    if (initialized.current) return
     initialized.current = true
     loadData()
   }, [open]) // eslint-disable-line react-hooks/exhaustive-deps
