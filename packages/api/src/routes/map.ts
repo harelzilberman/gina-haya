@@ -280,35 +280,13 @@ ${spacingLine}
 אם יש כמה צמחים מאותו סוג, תן לכל אחד מיקום שונה עם המרחק הנכון ביניהם.
 
 החזר JSON בצורה הבאה בדיוק:
-{
-  "summary": "סיכום כללי של התכנית",
-  "beds": [
-    {
-      "name": "שם הערוגה",
-      "location": "תיאור מיקום בגינה",
-      "sunExposure": "שמש מלאה / צל חלקי / צל",
-      "plants": [
-        {
-          "nameHe": "שם עברי",
-          "nameEn": "English name",
-          "spacingCm": 60,
-          "quantity": 4,
-          "x": 5.3,
-          "y": 8.1,
-          "plantingTime": "ספטמבר-אוקטובר",
-          "bdDayType": "יום פרי",
-          "notes": "הערות"
-        }
-      ],
-      "notes": "הערות לערוגה"
-    }
-  ],
-  "generalTips": ["טיפ 1", "טיפ 2"],
-  "warnings": ["אזהרה 1"],
-  "companionNotes": ["הערה על חברים"],
-  "wateringAdvice": "עצת השקיה",
-  "seasonalNotes": "הערות עונתיות"
-}`;
+{"summary":"משפט אחד","beds":[{"name":"שם","location":"מיקום","sunExposure":"שמש מלאה","plants":[{"nameHe":"שם","nameEn":"name","spacingCm":50,"quantity":2,"x":5.0,"y":8.0,"plantingTime":"ספט-אוק","bdDayType":"פרי","notes":""}],"notes":""}],"generalTips":["טיפ"],"warnings":[],"companionNotes":[],"wateringAdvice":"","seasonalNotes":""}
+
+חוקים קריטיים לתגובה:
+1. החזר JSON תקני בלבד — ללא markdown, ללא backticks, ללא טקסט נוסף לפני או אחרי.
+2. כל ערך מחרוזת — עד 40 תווים.
+3. השמט שדות אופציונליים ריקים (notes, warnings, companionNotes, wateringAdvice, seasonalNotes) אם אין תוכן.
+4. התגובה הכוללת חייבת להיות קצרה מ-3000 טוקן.`;
 
     // ── 7. Call Claude ───────────────────────────────────────────────────────
     const aiResponse = await anthropic.messages.create({
