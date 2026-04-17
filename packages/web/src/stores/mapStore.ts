@@ -162,6 +162,7 @@ export const useMapStore = create<MapState>((set, get) => ({
       const md = data.map_data ?? EMPTY_MAP;
       console.log('[mapStore] raw map_data from API — objects:', md.objects?.length ?? 0, ', plants:', md.plants?.length ?? 0);
       console.log('[mapStore] plant coords:', md.plants?.map((p: any) => ({ id: p.id?.slice(0,6), x: p.x, y: p.y })));
+      console.log('RAW MAP_DATA ELEMENTS:', JSON.stringify((md.plants ?? []).slice(0, 3), null, 2));
       set({
         mapId: data.id,
         mapData: md,

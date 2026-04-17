@@ -204,7 +204,20 @@ function calculatePlantPositions(
       for (let i = 0; i < qty; i++) {
         let baseX: number, baseY: number;
 
-        if (si) {
+        const claudeX = typeof (plant as any).x === 'number' && isFinite((plant as any).x) ? (plant as any).x : null;
+        const claudeY = typeof (plant as any).y === 'number' && isFinite((plant as any).y) ? (plant as any).y : null;
+
+        if (claudeX != null && claudeY != null) {
+          // Use Claude's suggested position as primary; spread qty>1 in a ring
+          if (i === 0) {
+            baseX = claudeX;
+            baseY = claudeY;
+          } else {
+            const angle = (i / qty) * 2 * Math.PI;
+            baseX = claudeX + colSpacingM * Math.cos(angle);
+            baseY = claudeY + colSpacingM * Math.sin(angle);
+          }
+        } else if (si) {
           // Place inside the matching shape, continuing from where previous beds left off
           const slotBase = shapeSlotMap.get(shapeKey) ?? 0;
           const maxCols = Math.max(1, Math.floor(si.bw / colSpacingM));
@@ -218,16 +231,12 @@ function calculatePlantPositions(
           }
         } else {
           // NO SHAPE FOUND — spread plants across canvas in a grid
-          // Use bed index and plant index to spread them out
           const globalIndex = results.length;
           const col = globalIndex % 10;
           const row = Math.floor(globalIndex / 10);
           baseX = 2 + col * Math.max(colSpacingM, 0.5);
           baseY = 2 + row * Math.max(rowSpacingM, 0.5);
         }
-
-        baseX = baseX;
-        baseY = baseY;
 
         // Find free spot
         const [fx, fy] = findFreeNear(baseX, baseY, r, Math.max(colSpacingM, rowSpacingM) * 0.5);
