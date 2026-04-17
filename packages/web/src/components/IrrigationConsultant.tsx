@@ -98,8 +98,11 @@ interface MapDataMin { objects?: MapObj[]; plants?: PlantMarkerMin[] }
 
 // ─── Tiny helpers ─────────────────────────────────────────────────────────────
 
-function sanitizeComponent(s: string): string {
-  return s.replace(/\s*\((NaN|undefined|null)\s+[^)]*\)/g, '').trim()
+function sanitizeComponent(c: string): string {
+  return c
+    .replace(/\s*\(.*?NaN.*?\)/g, '')
+    .replace(/\s*\(.*?undefined.*?\)/g, '')
+    .trim()
 }
 
 function Divider() {
@@ -513,7 +516,7 @@ export default function IrrigationConsultant({ supabase }: Props) {
       "duration": "X דקות",
       "bestTime": "בוקר / ערב",
       "waterDepth": "X ס״מ",
-      "components": ["רשימת רכיבי חומרה"],
+      "components": ["שמות רכיבים בלבד ללא מידות, למשל: צינור טפטוף, מתזים, טיימר"],
       "notes": "הערת טיפול מיוחדת"
     }
   ],
