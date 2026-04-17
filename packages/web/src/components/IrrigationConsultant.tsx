@@ -99,7 +99,7 @@ interface MapDataMin { objects?: MapObj[]; plants?: PlantMarkerMin[] }
 // ─── Tiny helpers ─────────────────────────────────────────────────────────────
 
 function sanitizeComponent(c: string): string {
-  return c.replace(/\s*\([^)]*NaN[^)]*\)/g, '').trim()
+  return c.replace(/\s*\(.*?\)/g, '').trim()
 }
 
 function Divider() {
@@ -286,7 +286,7 @@ function PlanView({ plan }: { plan: IrrigationPlan }) {
           <Divider />
           <p style={{ fontSize: 11, color: T.textMuted, fontFamily: T.fontUI }}>
             {z.components
-            .map(c => c.replace(/\s*\([^)]*NaN[^)]*\)/g, '').trim())
+            .map(c => c.replace(/\s*\(.*?\)/g, '').trim())
             .filter(Boolean)
             .join(' · ')}
           </p>
@@ -387,6 +387,7 @@ export default function IrrigationConsultant({ supabase }: Props) {
   useEffect(() => {
     if (!open) return
     setPlanCache({})
+    setPlan(null)
     if (initialized.current) return
     initialized.current = true
     loadData()
@@ -518,7 +519,7 @@ export default function IrrigationConsultant({ supabase }: Props) {
       "duration": "X דקות",
       "bestTime": "בוקר / ערב",
       "waterDepth": "X ס״מ",
-      "components": ["שמות רכיבים בלבד ללא מידות, למשל: צינור טפטוף, מתזים, טיימר"],
+      "components": ["item name and quantity only, example: טיימר ×1, צינור טפטוף ×3 — NO measurements, NO cm, NO spacing"],
       "notes": "הערת טיפול מיוחדת"
     }
   ],
