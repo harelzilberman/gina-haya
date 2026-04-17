@@ -10,6 +10,7 @@ interface Props {
   object: MapObject;
   onUpdate: (changes: Partial<MapObject>) => void;
   onDelete: () => void;
+  onToggleLock: () => void;
 }
 
 function NumInput({ label, value, onChange, readOnly, unit = 'מ׳', step = 0.1, min = 0.1 }: {
@@ -68,7 +69,7 @@ function polyArea(pts: [number, number][]): number {
 
 // ── Component ────────────────────────────────────────────────────────────────
 
-export function ShapePropertiesPanel({ object, onUpdate, onDelete }: Props) {
+export function ShapePropertiesPanel({ object, onUpdate, onDelete, onToggleLock }: Props) {
   const cfg = SHAPE_CONFIGS[object.type];
   if (!cfg) return null;
 
@@ -86,9 +87,21 @@ export function ShapePropertiesPanel({ object, onUpdate, onDelete }: Props) {
       {/* Header */}
       <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
         <span style={{ fontSize: '16px' }}>{cfg.emoji}</span>
-        <span style={{ fontFamily: FRANK, color: GOLD, fontSize: '14px', fontWeight: 700 }}>
+        <span style={{ fontFamily: FRANK, color: GOLD, fontSize: '14px', fontWeight: 700, flex: 1 }}>
           {cfg.labelHe}
         </span>
+        <button
+          onClick={onToggleLock}
+          title={object.locked ? 'שחרר נעילה' : 'נעל במקום'}
+          style={{
+            background: 'none', border: 'none', cursor: 'pointer',
+            fontSize: '16px', padding: '2px 0', lineHeight: 1,
+            color: object.locked ? GOLD : `${PARCH}33`,
+            transition: 'color 0.15s',
+          }}
+        >
+          {object.locked ? '🔒' : '🔓'}
+        </button>
       </div>
 
       {/* Label */}

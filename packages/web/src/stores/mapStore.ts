@@ -46,6 +46,7 @@ export interface MapObject {
   isFruitTree?: boolean;
   fruitTreeName?: string;
   wallHeightM?: number;
+  locked?: boolean;
 }
 
 export interface PlantMarker {
@@ -111,6 +112,7 @@ interface MapState {
   updatePlant: (id: string, changes: Partial<PlantMarker>) => void;
   removePlant: (id: string) => void;
 
+  toggleLock: (id: string) => void;
   undo: () => void;
   loadWizardStatus: () => Promise<void>;
 
@@ -267,6 +269,14 @@ export const useMapStore = create<MapState>((set, get) => ({
 
   removePlant(id) {
     set(s => ({ mapData: { ...s.mapData, plants: s.mapData.plants.filter(p => p.id !== id) }, isDirty: true }));
+    scheduleSave();
+  },
+
+  toggleLock(id) {
+    set(s => ({
+      mapData: { ...s.mapData, objects: s.mapData.objects.map(o => o.id === id ? { ...o, locked: !o.locked } : o) },
+      isDirty: true,
+    }));
     scheduleSave();
   },
 

@@ -69,6 +69,7 @@ interface Props {
   onUpdatePlant: (id: string, changes: Partial<PlantMarker>) => void;
   onSelectObject: (id: string | null) => void;
   onSetNorthAngle: (angle: number) => void;
+  onToggleLock: (id: string) => void;
   previewPlants?: PlantPreview[];
   onConfirmPreview?: () => void;
   onCancelPreview?: () => void;
@@ -267,9 +268,10 @@ function renderShapeLabel(obj: MapObject) {
 // ── Selection overlay ─────────────────────────────────────────────────────────
 
 function SelectionOverlay({
-  obj, onStartResize,
+  obj, isLocked, onStartResize,
 }: {
   obj: MapObject;
+  isLocked: boolean;
   onStartResize: (handle: string, e: React.MouseEvent) => void;
 }) {
   const handleStyle = (cursor: string): React.CSSProperties => ({
@@ -285,15 +287,13 @@ function SelectionOverlay({
           points={ptsToStr(obj.points)}
           fill="none" stroke={GOLD} strokeWidth={1.5} strokeDasharray="6,3"
         />
-        {/* Vertex handles */}
-        {obj.points.map(([px, py], i) => (
+        {!isLocked && obj.points.map(([px, py], i) => (
           <circle key={i} cx={px*PX} cy={py*PX} r={5}
             style={handleStyle('move')}
             onMouseDown={e => { e.stopPropagation(); onStartResize(`v${i}`, e); }}
           />
         ))}
-        {/* Rotation handle above centroid */}
-        <RotationHandle cx={cx*PX} cy={cy*PX} onStart={e => onStartResize('rot', e)} />
+        {!isLocked && <RotationHandle cx={cx*PX} cy={cy*PX} onStart={e => onStartResize('rot', e)} />}
       </g>
     );
   }
@@ -318,14 +318,14 @@ function SelectionOverlay({
       <g transform={`rotate(${rot},${cx},${cy})`}>
         <rect x={rx} y={ry} width={rw} height={rh}
           fill="none" stroke={GOLD} strokeWidth={1.5} strokeDasharray="6,3" />
-        {handles.map(([id, hx, hy, cur]) => (
+        {!isLocked && handles.map(([id, hx, hy, cur]) => (
           <rect key={id} x={hx-H} y={hy-H} width={H*2} height={H*2}
             rx={2}
             style={handleStyle(cur)}
             onMouseDown={e => { e.stopPropagation(); onStartResize(id, e); }}
           />
         ))}
-        {obj.type !== 'pot-rect' && (
+        {!isLocked && obj.type !== 'pot-rect' && (
           <RotationHandle cx={cx} cy={ry - 20} onStart={e => onStartResize('rot', e)} />
         )}
       </g>
@@ -339,12 +339,13 @@ function SelectionOverlay({
       <g>
         <circle cx={cx} cy={cy} r={r}
           fill="none" stroke={GOLD} strokeWidth={1.5} strokeDasharray="6,3" />
-        {/* Edge handle (east) */}
-        <circle cx={cx+r} cy={cy} r={5}
-          style={handleStyle('ew-resize')}
-          onMouseDown={e => { e.stopPropagation(); onStartResize('r', e); }}
-        />
-        {obj.type !== 'pot-round' && (
+        {!isLocked && (
+          <circle cx={cx+r} cy={cy} r={5}
+            style={handleStyle('ew-resize')}
+            onMouseDown={e => { e.stopPropagation(); onStartResize('r', e); }}
+          />
+        )}
+        {!isLocked && obj.type !== 'pot-round' && (
           <RotationHandle cx={cx} cy={cy - r - 20} onStart={e => onStartResize('rot', e)} />
         )}
       </g>
@@ -783,7 +784,7 @@ function EmptyHint() {
 export function GardenCanvas({
   mapData, northAngle, selectedTool, activePlant, selectedObjectId, showSunZones,
   onAddObject, onUpdateObject, onDeleteObject, onAddPlant, onRemovePlant, onUpdatePlant,
-  onSelectObject, onSetNorthAngle,
+  onSelectObject, onSetNorthAngle, onToggleLock,
   previewPlants = [], onConfirmPreview, onCancelPreview,
 }: Props) {
   const svgRef       = useRef<SVGSVGElement>(null);
@@ -801,6 +802,7 @@ export function GardenCanvas({
   } | null>(null);
   const [selectedPlantId, setSelectedPlantId] = useState<string | null>(null);
   const [rotTip, setRotTip]   = useState<string | null>(null);
+  const [contextMenu, setContextMenu] = useState<{ sx: number; sy: number; objId: string } | null>(null);
 
   const panRef   = useRef({ active: false, sx: 0, sy: 0, tx: 0, ty: 0 });
   const northRef = useRef({ active: false, scx: 0, scy: 0 });
@@ -830,7 +832,7 @@ export function GardenCanvas({
   // ── Keyboard ───────────────────────────────────────────────────────────────
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') { setDrawing(null); setPopup(null); setSelectedPlantId(null); }
+      if (e.key === 'Escape') { setDrawing(null); setPopup(null); setSelectedPlantId(null); setContextMenu(null); }
       if (e.key === 'Delete' && selectedObjectId && !popup) {
         onDeleteObject(selectedObjectId);
         onSelectObject(null);
@@ -909,6 +911,7 @@ export function GardenCanvas({
       return;
     }
     if (e.button !== 0 || popup || selectedPlantId) return;
+    if (contextMenu) { setContextMenu(null); return; }
 
     const [mx, my] = toCanvas(e.clientX, e.clientY);
     const kind = TOOL_KIND[selectedTool];
@@ -930,13 +933,15 @@ export function GardenCanvas({
       const hit = [...mapData.objects].reverse().find(o => hitTest(o, mx, my));
       if (hit) {
         onSelectObject(hit.id);
-        if (hit.shapeKind === 'rect') {
-          setSelDrag({ id: hit.id, startMx: mx, startMy: my, origX: hit.x, origY: hit.y });
-        } else if (hit.shapeKind === 'circle') {
-          setSelDrag({ id: hit.id, startMx: mx, startMy: my, origCx: hit.cx, origCy: hit.cy });
-        } else {
-          setSelDrag({ id: hit.id, startMx: mx, startMy: my,
-            origPts: hit.points?.map(p => [...p] as [number, number]) });
+        if (!hit.locked) {
+          if (hit.shapeKind === 'rect') {
+            setSelDrag({ id: hit.id, startMx: mx, startMy: my, origX: hit.x, origY: hit.y });
+          } else if (hit.shapeKind === 'circle') {
+            setSelDrag({ id: hit.id, startMx: mx, startMy: my, origCx: hit.cx, origCy: hit.cy });
+          } else {
+            setSelDrag({ id: hit.id, startMx: mx, startMy: my,
+              origPts: hit.points?.map(p => [...p] as [number, number]) });
+          }
         }
       } else {
         onSelectObject(null);
@@ -1175,7 +1180,7 @@ export function GardenCanvas({
   const startResize = useCallback((id: string, handle: string, e: React.MouseEvent) => {
     e.stopPropagation();
     const obj = mapData.objects.find(o => o.id === id);
-    if (!obj) return;
+    if (!obj || obj.locked) return;
     const [mx, my] = toCanvas(e.clientX, e.clientY);
     setResDrag({ id, handle, startMx: mx, startMy: my, origObj: { ...obj } });
   }, [mapData.objects, toCanvas]);
@@ -1189,6 +1194,14 @@ export function GardenCanvas({
     const arrowY = 16 + arrowSize/2;
     northRef.current = { active: true, scx: arrowX, scy: arrowY };
   }, [svgSize]);
+
+  // ── Right-click context menu ───────────────────────────────────────────────
+  const onContextMenu = useCallback((e: React.MouseEvent<SVGSVGElement>) => {
+    e.preventDefault();
+    const [mx, my] = toCanvas(e.clientX, e.clientY);
+    const hit = [...mapData.objects].reverse().find(o => hitTest(o, mx, my));
+    if (hit) setContextMenu({ sx: e.clientX, sy: e.clientY, objId: hit.id });
+  }, [mapData.objects, toCanvas]);
 
   // ── Cursor style ───────────────────────────────────────────────────────────
   function getCursor() {
@@ -1225,6 +1238,7 @@ export function GardenCanvas({
         onTouchStart={onTouchStart}
         onTouchMove={onTouchMove}
         onTouchEnd={onTouchEnd}
+        onContextMenu={onContextMenu}
       >
         <SvgDefs />
 
@@ -1241,13 +1255,49 @@ export function GardenCanvas({
           {mapData.objects.map(obj => (
             <g
               key={obj.id}
-              style={{ cursor: selectedTool === 'select' ? 'move' : undefined, opacity: selDrag?.id === obj.id ? 0.7 : 1 }}
+              style={{
+                cursor: selectedTool === 'select' ? (obj.locked ? 'default' : 'move') : undefined,
+                opacity: selDrag?.id === obj.id ? 0.7 : 1,
+              }}
               onClick={e => { if (selectedTool === 'select') { e.stopPropagation(); onSelectObject(obj.id); } }}
             >
               {renderShapeFill(obj)}
               {renderShapeLabel(obj)}
             </g>
           ))}
+
+          {/* Lock icons */}
+          {mapData.objects.filter(o => o.locked).map(obj => {
+            if (obj.shapeKind === 'rect' && obj.x != null) {
+              const rx = obj.x * PX, ry = obj.y! * PX;
+              const rw = obj.width! * PX;
+              const cx = rx + rw / 2, cy = ry;
+              return (
+                <g key={`lock-${obj.id}`} transform={`rotate(${obj.rotation ?? 0},${cx + rw/2 - rw/2},${cy + (obj.height! * PX)/2})`}>
+                  <text x={rx + rw - 4} y={ry + 14} fontSize={12}
+                    textAnchor="end" style={{ userSelect: 'none', pointerEvents: 'none' }} opacity={0.75}>🔒</text>
+                </g>
+              );
+            }
+            if (obj.shapeKind === 'circle' && obj.cx != null) {
+              const r = (obj.radius ?? 0) * PX;
+              return (
+                <text key={`lock-${obj.id}`}
+                  x={obj.cx * PX + r * 0.65} y={obj.cy! * PX - r * 0.65 + 6}
+                  fontSize={12} style={{ userSelect: 'none', pointerEvents: 'none' }} opacity={0.75}>🔒</text>
+              );
+            }
+            if (obj.shapeKind === 'polygon' && obj.points) {
+              const maxX = Math.max(...obj.points.map(p => p[0])) * PX;
+              const minY = Math.min(...obj.points.map(p => p[1])) * PX;
+              return (
+                <text key={`lock-${obj.id}`}
+                  x={maxX - 2} y={minY + 14}
+                  fontSize={12} textAnchor="end" style={{ userSelect: 'none', pointerEvents: 'none' }} opacity={0.75}>🔒</text>
+              );
+            }
+            return null;
+          })}
 
           {/* Plant markers */}
           {mapData.plants.map(p => {
@@ -1311,6 +1361,7 @@ export function GardenCanvas({
           {selectedObj && (
             <SelectionOverlay
               obj={selectedObj}
+              isLocked={selectedObj.locked === true}
               onStartResize={(handle, e) => startResize(selectedObj.id, handle, e)}
             />
           )}
@@ -1355,8 +1406,45 @@ export function GardenCanvas({
           object={selectedObj}
           onUpdate={changes => onUpdateObject(selectedObj.id, changes)}
           onDelete={() => { onDeleteObject(selectedObj.id); onSelectObject(null); }}
+          onToggleLock={() => onToggleLock(selectedObj.id)}
         />
       )}
+
+      {/* Right-click context menu */}
+      {contextMenu && (() => {
+        const cmObj = mapData.objects.find(o => o.id === contextMenu.objId);
+        if (!cmObj) return null;
+        return (
+          <>
+            <div style={{ position: 'fixed', inset: 0, zIndex: 399 }} onMouseDown={() => setContextMenu(null)} />
+            <div
+              style={{
+                position: 'fixed', left: contextMenu.sx, top: contextMenu.sy, zIndex: 400,
+                background: 'rgba(14,30,15,0.97)', border: '1px solid rgba(245,200,64,0.25)',
+                borderRadius: '8px', padding: '4px',
+                boxShadow: '0 4px 16px rgba(0,0,0,0.5)',
+                fontFamily: ASSIST, direction: 'rtl',
+              }}
+              onMouseDown={e => e.stopPropagation()}
+            >
+              <button
+                onClick={() => { onToggleLock(cmObj.id); setContextMenu(null); }}
+                style={{
+                  display: 'block', width: '100%', padding: '8px 14px',
+                  background: 'none', border: 'none', cursor: 'pointer',
+                  color: cmObj.locked ? GOLD : PARCH,
+                  fontSize: '13px', textAlign: 'right', borderRadius: '5px',
+                  whiteSpace: 'nowrap',
+                }}
+                onMouseEnter={e => (e.currentTarget.style.background = 'rgba(245,200,64,0.1)')}
+                onMouseLeave={e => (e.currentTarget.style.background = 'none')}
+              >
+                {cmObj.locked ? '🔓 שחרר נעילה' : '🔒 נעל במקום'}
+              </button>
+            </div>
+          </>
+        );
+      })()}
 
       {/* Plant popup */}
       {selectedPlantId && (() => {

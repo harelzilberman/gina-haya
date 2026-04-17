@@ -14,6 +14,10 @@ export function MapPage() {
   const [toast, setToast] = useState<string | null>(null);
 
   const handleConfirmPreview = () => {
+    // Auto-lock all existing objects so the wizard layout is preserved
+    store.mapData.objects.forEach(o => {
+      if (!o.locked) store.updateObject(o.id, { locked: true });
+    });
     const count = store.previewPlants.length;
     store.confirmPlantPreview();
     setToast(`${count} צמחים נוספו למפה! 🌱`);
@@ -81,6 +85,7 @@ export function MapPage() {
             onRemovePlant={store.removePlant}
             onSelectObject={store.selectObject}
             onSetNorthAngle={store.setNorthAngle}
+            onToggleLock={store.toggleLock}
             previewPlants={store.previewPlants}
             onConfirmPreview={handleConfirmPreview}
             onCancelPreview={store.cancelPlantPreview}
