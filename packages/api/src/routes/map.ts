@@ -112,6 +112,7 @@ mapRouter.get('/wizard-status', async (req: any, res) => {
 
 // ── POST /api/map/:id/wizard ──────────────────────────────────────────────────
 mapRouter.post('/:id/wizard', async (req: any, res) => {
+  console.log('API KEY EXISTS:', !!process.env.ANTHROPIC_API_KEY, '| key prefix:', process.env.ANTHROPIC_API_KEY?.slice(0, 12));
   try {
     const { id: mapId } = req.params;
     const { plantWishlist = [] } = req.body;
