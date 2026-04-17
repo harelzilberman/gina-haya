@@ -182,7 +182,8 @@ mapRouter.post('/:id/wizard', async (req: any, res) => {
     const weather = await fetchWeatherForRegion(garden?.location_region ?? null);
 
     // ── 6. Build Claude prompt ───────────────────────────────────────────────
-    const bedObjects = mapData.objects.filter((o: any) => ['bed', 'raised', 'pot'].includes(o.type));
+    const GROWING_TYPES = ['bed', 'raised-bed', 'hydroponics', 'aquaponics', 'vertical', 'pot-rect', 'pot-round', 'pergola'];
+    const bedObjects = mapData.objects.filter((o: any) => GROWING_TYPES.includes(o.type));
     const treeObjects = mapData.objects.filter((o: any) => o.type === 'tree');
     const fruitTrees = treeObjects.filter((o: any) => o.isFruitTree).map((o: any) => o.fruitTreeName || 'עץ פרי');
 
@@ -221,6 +222,18 @@ mapRouter.post('/:id/wizard', async (req: any, res) => {
           };
           const spacing = spacings[name] ?? 30;
           return `- ${name}: ${spacing}ס"מ בין צמחים`;
+        }).join('\n')}`
+      : '';
+
+    const bedDimensionsLine = bedObjects.length > 0
+      ? `\nממדי ערוגות הגידול (השתמש בהם לחישוב מיקום כל צמח):\n${bedObjects.map((o: any) => {
+          if (o.shapeKind === 'rect') {
+            return `- "${o.label}": x=${o.x?.toFixed(2)}, y=${o.y?.toFixed(2)}, רוחב=${o.width?.toFixed(2)}מ', גובה=${o.height?.toFixed(2)}מ' (x_max=${((o.x ?? 0) + (o.width ?? 0)).toFixed(2)}, y_max=${((o.y ?? 0) + (o.height ?? 0)).toFixed(2)})`;
+          }
+          if (o.shapeKind === 'circle') {
+            return `- "${o.label}": מרכז x=${o.cx?.toFixed(2)}, y=${o.cy?.toFixed(2)}, רדיוס=${o.radius?.toFixed(2)}מ'`;
+          }
+          return `- "${o.label}": (${o.type})`;
         }).join('\n')}`
       : '';
 
@@ -264,20 +277,23 @@ ${calLine}
 ${objectsLine}
 ${wishlistLine}
 ${spacingLine}
+${bedDimensionsLine}
 
 חשוב מאוד: עבור כל צמח שאתה ממליץ, ציין את המיקום המדויק שלו על המפה
 בשדות x ו-y (במטרים). המיקום צריך להיות:
-1. בתוך האובייקט המתאים (ערוגה/עציץ/אזור גידול)
-2. במרחק הנכון מצמחים אחרים (spacingCm בין מרכז למרכז)
-3. מחוץ לאזורי הבית והגדרות
-4. מותאם לאזור השמש הנכון לסוג הצמח:
+1. בתוך האובייקט המתאים (ערוגה/עציץ/אזור גידול) — השתמש בממדים שצוינו למעלה.
+2. פרוס צמחים על כל רוחב הערוגה — חשב: x = bed.x + (index / total) * bed.width
+3. אל תצבור צמחים בתחילת הערוגה — לכל צמח x שונה לחלוטין.
+4. במרחק הנכון מצמחים אחרים (spacingCm/100 מטרים בין מרכז למרכז)
+5. מחוץ לאזורי הבית והגדרות
+6. מותאם לאזור השמש הנכון לסוג הצמח:
    - צמחי פרי (עגבנייה, פלפל, מלפפון): שמש מלאה → אזור דרומי
    - עלים (חסה, תרד): צל חלקי → אזור צפוני
    - שורשים (גזר, בצל): שמש בינונית
    - תבלינים (בזיליקום, נענע): שמש מלאה עד חלקית
 
-כל צמח חייב להיות במרחק של לפחות spacingCm/100 מטרים מהצמח הקודם.
-אם יש כמה צמחים מאותו סוג, תן לכל אחד מיקום שונה עם המרחק הנכון ביניהם.
+כל צמח חייב x שונה מכל צמח אחר באותה ערוגה.
+אם יש N צמחים בערוגה ברוחב W החל מ-x0: צמח i יקבל x = x0 + (i+0.5) * (W/N).
 
 החזר JSON בצורה הבאה בדיוק:
 {"summary":"משפט אחד","beds":[{"name":"שם","location":"מיקום","sunExposure":"שמש מלאה","plants":[{"nameHe":"שם","nameEn":"name","spacingCm":50,"quantity":2,"x":5.0,"y":8.0,"plantingTime":"ספט-אוק","bdDayType":"פרי","notes":""}],"notes":""}],"generalTips":["טיפ"],"warnings":[],"companionNotes":[],"wateringAdvice":"","seasonalNotes":""}
