@@ -51,7 +51,9 @@
       "Bash(npm list *)",
       "Bash(git add *)",
       "Bash(git commit *)",
-      "Bash(git mv *)"
+      "Bash(git mv *)",
+      "Read(//d/harel/**)",
+      "Read(//c/Users/harel/**)"
     ]
   }
 }

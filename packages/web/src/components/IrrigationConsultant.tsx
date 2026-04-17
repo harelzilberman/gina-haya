@@ -90,7 +90,17 @@ const SOIL_HE: Record<string, string> = {
 
 const ZONE_ACCENT = [T.green, T.teal, T.gold, 'rgba(200,150,255,0.8)', 'rgba(255,160,100,0.8)']
 
+// ─── Map data types (minimal subset of MapData from mapStore) ─────────────────
+
+interface MapObj { label?: string; fruitTreeName?: string; type?: string; x?: number; y?: number; cx?: number; cy?: number }
+interface PlantMarkerMin { plantNameHe?: string; plantNameEn?: string; x: number; y: number }
+interface MapDataMin { objects?: MapObj[]; plants?: PlantMarkerMin[] }
+
 // ─── Tiny helpers ─────────────────────────────────────────────────────────────
+
+function sanitizeComponent(s: string): string {
+  return s.replace(/\s*\((NaN|undefined|null)\s+[^)]*\)/g, '').trim()
+}
 
 function Divider() {
   return <div style={{ height: 1, background: T.goldBorder, margin: '10px 0' }} />
@@ -275,7 +285,7 @@ function PlanView({ plan }: { plan: IrrigationPlan }) {
           )}
           <Divider />
           <p style={{ fontSize: 11, color: T.textMuted, fontFamily: T.fontUI }}>
-            {z.components.join(' · ')}
+            {z.components.map(sanitizeComponent).filter(Boolean).join(' · ')}
           </p>
           {z.notes && (
             <p style={{ fontSize: 11, color: T.textMuted, marginTop: 6, fontFamily: T.fontUI }}>{z.notes}</p>
@@ -428,10 +438,63 @@ export default function IrrigationConsultant({ supabase }: Props) {
 
     const gardenPlants = plants[garden.id] ?? []
 
+    // Fetch garden map layout for spatial zone grouping
+    let spatialContext = ''
+    try {
+      const { data: mapRow } = await supabase
+        .from('garden_maps')
+        .select('map_data')
+        .eq('garden_id', garden.id)
+        .single()
+
+      if (mapRow?.map_data) {
+        const md: MapDataMin = typeof mapRow.map_data === 'string'
+          ? JSON.parse(mapRow.map_data)
+          : mapRow.map_data
+
+        type Pt = { name: string; x: number; y: number }
+        const items: Pt[] = []
+
+        for (const obj of md.objects ?? []) {
+          const name = obj.label || obj.fruitTreeName || obj.type
+          const x = obj.x ?? obj.cx
+          const y = obj.y ?? obj.cy
+          if (name && x != null && y != null) items.push({ name, x, y })
+        }
+        for (const p of md.plants ?? []) {
+          const name = p.plantNameHe || p.plantNameEn
+          if (name) items.push({ name, x: p.x, y: p.y })
+        }
+
+        if (items.length > 0) {
+          const xs = items.map(i => i.x)
+          const ys = items.map(i => i.y)
+          const minX = Math.min(...xs), maxX = Math.max(...xs)
+          const minY = Math.min(...ys), maxY = Math.max(...ys)
+          const w = maxX - minX || 1, h = maxY - minY || 1
+
+          const colLbl = (x: number) => { const t = (x - minX) / w; return t < 0.33 ? 'מערב' : t < 0.67 ? 'מרכז' : 'מזרח' }
+          const rowLbl = (y: number) => { const t = (y - minY) / h; return t < 0.33 ? 'צפון' : t < 0.67 ? 'אמצע' : 'דרום' }
+
+          const zones: Record<string, string[]> = {}
+          for (const item of items) {
+            const z = `${rowLbl(item.y)}-${colLbl(item.x)}`
+            ;(zones[z] ??= []).push(item.name)
+          }
+
+          const zoneLines = Object.entries(zones)
+            .map(([z, names]) => `  ${z}: ${[...new Set(names)].slice(0, 8).join(', ')}`)
+            .join('\n')
+
+          spatialContext = `\nפריסה מרחבית בגינה (מטרים, x=${minX.toFixed(1)}-${maxX.toFixed(1)}, y=${minY.toFixed(1)}-${maxY.toFixed(1)}):\n${zoneLines}\nחשוב: חלק את אזורי ההשקיה לפי הפריסה הזו, אל תאגד הכל לאזור אחד.`
+        }
+      }
+    } catch { /* map data is optional — continue without it */ }
+
     const prompt = `אתה מצ׳ופצ׳ו, יועץ השקיה ביודינמי של גינה חיה. ענה רק JSON תקני — ללא markdown, ללא backticks.
 
 גינה: "${garden.name}" | אזור: "${garden.location_region ?? 'ישראל'}" | קרקע: "${garden.soil_type ?? 'לא ידוע'}" | הערות: "${garden.notes ?? 'אין'}"
-צמחים: ${gardenPlants.length ? gardenPlants.slice(0, 30).join(', ') : 'טרם נרשמו'}
+צמחים: ${gardenPlants.length ? gardenPlants.slice(0, 30).join(', ') : 'טרם נרשמו'}${spatialContext}
 העדפות: מים=${prefs.water}, אוטומציה=${prefs.automation}, מטרה=${prefs.goal}, תקציב=${prefs.budget}
 
 החזר בדיוק:
