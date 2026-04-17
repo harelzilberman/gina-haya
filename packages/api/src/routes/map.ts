@@ -313,14 +313,20 @@ ${spacingLine}
     // ── 7. Call Claude ───────────────────────────────────────────────────────
     const aiResponse = await anthropic.messages.create({
       model: 'claude-sonnet-4-6',
-      max_tokens: 3000,
+      max_tokens: 4096,
       system: systemPrompt,
       messages: [{ role: 'user', content: userPrompt }],
     });
 
     const rawText = (aiResponse.content.find(b => b.type === 'text') as any)?.text ?? '{}';
     const cleaned = rawText.replace(/^```(?:json)?\s*/i, '').replace(/\s*```\s*$/i, '').trim();
-    const plan = JSON.parse(cleaned);
+    let plan: any;
+    try {
+      plan = JSON.parse(cleaned);
+    } catch (e) {
+      console.error('JSON parse failed, raw length:', rawText.length, 'last 200 chars:', rawText.slice(-200));
+      return res.status(422).json({ error: 'AI response was too long or malformed. Try a simpler garden layout.' });
+    }
 
     // ── 8. Save to wizard_runs ───────────────────────────────────────────────
     await db.from('wizard_runs').insert({
