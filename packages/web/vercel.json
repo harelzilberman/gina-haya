@@ -1,0 +1,7 @@
+{
+  "functions": {
+    "api/irrigation-plan.ts": {
+      "maxDuration": 30
+    }
+  }
+}
