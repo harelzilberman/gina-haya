@@ -16,6 +16,7 @@ const CATEGORY_FILTERS = [
   { id: 'BD Preps',     labelHe: 'פרפרטים BD',       labelEn: 'BD Preps',              emoji: '🌙' },
   { id: 'Companion Planting', labelHe: 'שיתופי פעולה', labelEn: 'Companion Planting',  emoji: '🤝' },
   { id: 'Irrigation',        labelHe: 'השקיה',         labelEn: 'Irrigation',           emoji: '💧' },
+  { id: 'Techniques',        labelHe: 'טכניקות גינון', labelEn: 'Techniques',           emoji: '🔧' },
 ] as const;
 
 function CrossNavLink({ to, label }: { to: string; label: string }) {

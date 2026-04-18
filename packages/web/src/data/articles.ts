@@ -4342,4 +4342,458 @@ function toggleFaq(el){
 </footer>
 </article>`,
   },
+
+  // ── Articles 05–20 (markdown-rendered, no embedded HTML) ───────────────────
+
+  {
+    id: 'beneficial-insects',
+    titleHe: 'חרקים מועילים בגינה — צוות ההגנה הטבעי שלכם',
+    titleEn: 'Beneficial Insects in the Garden — Your Natural Defense Team',
+    metaDescriptionHe: 'כך תעבדו עם חרקים מועילים כדי להפחית מזיקים באופן טבעי ולבנות גינה מאוזנת וחיה יותר.',
+    metaDescriptionEn: 'Work with beneficial insects to reduce pests naturally and build a more balanced, living garden.',
+    categoryHe: 'הדברה',
+    categoryEn: 'Pest Control',
+    filenameHe: '05_חרקים_מועילים.md',
+    filenameEn: '05_beneficial_insects.md',
+    publishedAt: '2026-04-08',
+    images: null,
+  },
+  {
+    id: 'mulching-soil',
+    titleHe: 'חיפוי קרקע — להגן ולהזין את האדמה',
+    titleEn: 'Mulching — Protect and Nourish Your Soil',
+    metaDescriptionHe: 'למדו איך חיפוי קרקע שומר על לחות, משפר פוריות ומגן על האדמה.',
+    metaDescriptionEn: 'Learn how mulching retains moisture, improves fertility, and protects the soil.',
+    categoryHe: 'טכניקות גינון',
+    categoryEn: 'Techniques',
+    filenameHe: '06_חיפוי_קרקע.md',
+    filenameEn: '06_mulching.md',
+    publishedAt: '2026-04-08',
+    images: null,
+  },
+  {
+    id: 'worm-compost',
+    titleHe: 'קומפוסט תולעים — להפוך פסולת לפוריות חיה',
+    titleEn: 'Worm Compost — Turning Waste into Living Fertility',
+    metaDescriptionHe: 'למדו איך תולעים הופכות שאריות למצע עשיר וחי.',
+    metaDescriptionEn: 'Learn how worms turn kitchen scraps into a rich, living growing medium.',
+    categoryHe: 'קומפוסט',
+    categoryEn: 'Compost',
+    filenameHe: '07_קומפוסט_תולעים.md',
+    filenameEn: '07_vermicompost.md',
+    publishedAt: '2026-04-08',
+    images: null,
+  },
+  {
+    id: 'biochar',
+    titleHe: 'ביו־צ׳אר — בניית קרקע לטווח ארוך',
+    titleEn: 'Biochar — Building Soil for the Long Term',
+    metaDescriptionHe: 'למדו איך ביו־צ׳אר משפר מבנה, אחיזת מים ודשנים לאורך זמן.',
+    metaDescriptionEn: 'Learn how biochar improves soil structure, water retention, and nutrient holding over time.',
+    categoryHe: 'טכניקות גינון',
+    categoryEn: 'Techniques',
+    filenameHe: '08_ביו_צאר.md',
+    filenameEn: '08_biochar.md',
+    publishedAt: '2026-04-08',
+    images: null,
+  },
+  {
+    id: 'deep-watering',
+    titleHe: 'השקיה עמוקה מול השקיה שטחית',
+    titleEn: 'Deep vs. Shallow Watering',
+    metaDescriptionHe: 'למדו איך עומק ההשקיה משפיע על שורשים וחוסן הצמח.',
+    metaDescriptionEn: 'Learn how watering depth affects root development and plant resilience.',
+    categoryHe: 'השקיה',
+    categoryEn: 'Irrigation',
+    filenameHe: '09_השקיה_עמוקה_מול_שטחית.md',
+    filenameEn: '09_deep_vs_shallow_watering.md',
+    publishedAt: '2026-04-08',
+    images: null,
+  },
+  {
+    id: 'drip-irrigation',
+    titleHe: 'השקיה בטפטוף — מערכת חכמה לגינה',
+    titleEn: 'Drip Irrigation — A Smart Garden System',
+    metaDescriptionHe: 'למדו איך להשקות ביעילות ישירות לשורשים ולחסוך מים.',
+    metaDescriptionEn: 'Learn how to water efficiently directly at the roots and conserve water.',
+    categoryHe: 'השקיה',
+    categoryEn: 'Irrigation',
+    filenameHe: '10_השקיה_בטפטוף.md',
+    filenameEn: '10_drip_irrigation.md',
+    publishedAt: '2026-04-08',
+    images: null,
+  },
+  {
+    id: 'compost-basics',
+    titleHe: 'קומפוסט — הבסיס לחיים בקרקע',
+    titleEn: 'Compost — The Foundation of Soil Life',
+    metaDescriptionHe: 'למדו איך להכין קומפוסט עשיר ולהניח יסוד לקרקע חיה.',
+    metaDescriptionEn: 'Learn how to make rich compost and lay the foundation for living soil.',
+    categoryHe: 'קומפוסט',
+    categoryEn: 'Compost',
+    filenameHe: '11_קומפוסט.md',
+    filenameEn: '11_compost.md',
+    publishedAt: '2026-04-08',
+    images: null,
+  },
+  {
+    id: 'raised-vs-ground',
+    titleHe: 'ערוגות מוגבהות מול שתילה בקרקע',
+    titleEn: 'Raised Beds vs. Ground Planting',
+    metaDescriptionHe: 'השוו בין שיטות כדי לבחור מה מתאים לגינה שלכם.',
+    metaDescriptionEn: 'Compare both methods to choose what suits your garden best.',
+    categoryHe: 'טכניקות גינון',
+    categoryEn: 'Techniques',
+    filenameHe: '12_ערוגות_מוגבהות_מול_קרקע.md',
+    filenameEn: '12_raised_vs_ground.md',
+    publishedAt: '2026-04-08',
+    images: null,
+  },
+  {
+    id: 'crop-rotation',
+    titleHe: 'מחזור זרעים — למה זה חשוב',
+    titleEn: 'Crop Rotation — Why It Matters',
+    metaDescriptionHe: 'למדו איך מחזור זרעים מונע דלדול קרקע ומפחית מזיקים.',
+    metaDescriptionEn: 'Learn how crop rotation prevents soil depletion and reduces pests.',
+    categoryHe: 'טכניקות גינון',
+    categoryEn: 'Techniques',
+    filenameHe: '13_מחזור_זרעים.md',
+    filenameEn: '13_crop_rotation.md',
+    publishedAt: '2026-04-08',
+    images: null,
+  },
+  {
+    id: 'weed-control',
+    titleHe: 'הדברת עשבים טבעית',
+    titleEn: 'Natural Weed Control',
+    metaDescriptionHe: 'למדו לשלוט בעשבים בעזרת חיפוי, תזמון ושיטות פשוטות.',
+    metaDescriptionEn: 'Learn to control weeds with mulching, timing, and simple natural methods.',
+    categoryHe: 'הדברה',
+    categoryEn: 'Pest Control',
+    filenameHe: '14_עשבים_טבעי.md',
+    filenameEn: '14_natural_weed_control.md',
+    publishedAt: '2026-04-08',
+    images: null,
+  },
+  {
+    id: 'companion-planting',
+    titleHe: 'שתילה משולבת — לעבוד עם הטבע',
+    titleEn: 'Companion Planting — Working with Nature',
+    metaDescriptionHe: 'למדו לשלב צמחים כך שיחזקו זה את זה ויפחיתו מזיקים.',
+    metaDescriptionEn: 'Learn to combine plants so they strengthen each other and reduce pests.',
+    categoryHe: 'שיתופי פעולה',
+    categoryEn: 'Companion Planting',
+    filenameHe: '15_שתילה_משולבת.md',
+    filenameEn: '15_companion_planting.md',
+    publishedAt: '2026-04-08',
+    images: null,
+  },
+  {
+    id: 'soil-structure',
+    titleHe: 'מבנה הקרקע — היסוד הנסתר',
+    titleEn: 'Soil Structure — The Hidden Foundation',
+    metaDescriptionHe: 'למדו איך מבנה הקרקע משפיע על מים, שורשים ובריאות הצמח.',
+    metaDescriptionEn: 'Learn how soil structure affects water, roots, and plant health.',
+    categoryHe: 'טכניקות גינון',
+    categoryEn: 'Techniques',
+    filenameHe: '16_מבנה_קרקע.md',
+    filenameEn: '16_soil_structure.md',
+    publishedAt: '2026-04-08',
+    images: null,
+  },
+  {
+    id: 'mycorrhizae',
+    titleHe: 'מיקוריזה — הרשת התת־קרקעית',
+    titleEn: 'Mycorrhizae — The Underground Network',
+    metaDescriptionHe: 'הבינו איך פטריות מחברות שורשים ומשפרות קליטה.',
+    metaDescriptionEn: 'Understand how fungi connect roots and improve nutrient uptake.',
+    categoryHe: 'טכניקות גינון',
+    categoryEn: 'Techniques',
+    filenameHe: '17_מיקוריזה.md',
+    filenameEn: '17_mycorrhizae.md',
+    publishedAt: '2026-04-08',
+    images: null,
+  },
+  {
+    id: 'plant-stress',
+    titleHe: 'סימני סטרס בצמחים — לקרוא את הגינה',
+    titleEn: 'Plant Stress Signals — Reading Your Garden',
+    metaDescriptionHe: 'לזהות סימני סטרס מוקדם ולטפל לפני שהנזק גדל.',
+    metaDescriptionEn: 'Identify early stress signals and treat before damage grows.',
+    categoryHe: 'טכניקות גינון',
+    categoryEn: 'Techniques',
+    filenameHe: '18_סימני_סטרס_בצמחים.md',
+    filenameEn: '18_plant_stress_signals.md',
+    publishedAt: '2026-04-08',
+    images: null,
+  },
+  {
+    id: 'plant-immunity',
+    titleHe: 'חסינות טבעית בצמחים',
+    titleEn: 'Natural Plant Immunity',
+    metaDescriptionHe: 'לבנות צמחים חזקים באופן טבעי שעומדים בפני מחלות ומזיקים.',
+    metaDescriptionEn: 'Build naturally strong plants that resist diseases and pests.',
+    categoryHe: 'טכניקות גינון',
+    categoryEn: 'Techniques',
+    filenameHe: '19_חסינות_צמחים.md',
+    filenameEn: '19_plant_immunity.md',
+    publishedAt: '2026-04-08',
+    images: null,
+  },
+  {
+    id: 'seasonal-rhythm',
+    titleHe: 'קצב עונתי בגינה',
+    titleEn: 'Seasonal Rhythm in the Garden',
+    metaDescriptionHe: 'לעבוד עם עונות השנה ולתזמן פעולות לפי הקצב הטבעי.',
+    metaDescriptionEn: 'Work with the seasons and time your actions by the natural rhythm.',
+    categoryHe: 'טכניקות גינון',
+    categoryEn: 'Techniques',
+    filenameHe: '20_קצב_עונתי.md',
+    filenameEn: '20_seasonal_rhythm.md',
+    publishedAt: '2026-04-08',
+    images: null,
+  },
+
+  // ── Article 22 — Ground Mulching (full HTML) ───────────────────────────────
+
+  {
+    id: 'ground-mulching',
+    titleHe: 'חיפוי קרקע לחיסכון במים ולהפחתת עשבייה',
+    titleEn: 'Ground Mulching for Water Saving and Weed Reduction',
+    metaDescriptionHe: 'חיפוי קרקע הוא דרך טבעית ויעילה לחסוך במים, להפחית עשבייה, לשמור על לחות הקרקע ולשפר את פוריות האדמה. מדריך מקצועי בגישה ביודינמית.',
+    metaDescriptionEn: 'Ground mulching is a natural and effective way to save water, reduce weeds, retain soil moisture, and improve soil fertility. A professional guide in the biodynamic approach.',
+    categoryHe: 'השקיה',
+    categoryEn: 'Irrigation',
+    filenameHe: 'חיפוי_קרקע.md',
+    filenameEn: '06_mulching.md',
+    publishedAt: '2026-04-18',
+    images: null,
+    htmlContent: `<style>
+@import url('https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,400;0,600;1,400&family=Assistant:wght@300;400;600&family=Caveat:wght@400;600&display=swap');
+*{box-sizing:border-box;margin:0;padding:0;}
+.art{
+  --earth:#3a2010;
+  --earth-mid:#5a3820;
+  --earth-light:#8a6040;
+  --straw:#c8a84b;
+  --straw-pale:#f0e8c8;
+  --green:#2a4a1a;
+  --green-mid:#4a7a2a;
+  --green-pale:#d0e8b0;
+  --cream:#f8f4ec;
+  --cream-dark:#ede4d0;
+  --ink:#1a1008;
+  font-family:'Assistant',sans-serif;
+  background:var(--cream);
+  color:var(--ink);
+}
+.hero{
+  background:linear-gradient(135deg,var(--green) 0%,#3a6020 60%,var(--earth) 100%);
+  padding:3rem 2.5rem 2.5rem;
+  position:relative;
+  overflow:hidden;
+  direction:rtl;
+}
+.hero::before{content:'🌿';position:absolute;top:-10px;left:-10px;font-size:130px;opacity:0.08;transform:rotate(-20deg);}
+.hero-tag{display:inline-block;background:rgba(255,255,255,0.15);color:rgba(255,255,255,0.9);font-size:10px;font-weight:600;letter-spacing:0.12em;text-transform:uppercase;padding:3px 11px;border-radius:2px;margin-bottom:0.9rem;}
+.hero h1{font-family:'Lora',serif;font-size:2.2rem;font-weight:600;color:#fff;line-height:1.1;margin-bottom:0.3rem;}
+.hero-en{font-family:'Lora',serif;font-size:0.9rem;font-style:italic;color:rgba(255,255,255,0.6);margin-bottom:1.1rem;}
+.hero-meta{display:flex;gap:1.25rem;font-size:11px;color:rgba(255,255,255,0.5);font-weight:300;}
+.body{padding:0 2.5rem;}
+.intro{font-family:'Lora',serif;font-size:1.05rem;line-height:1.9;color:var(--green);border-right:3px solid var(--green-mid);padding:0.25rem 1.1rem;margin:1.75rem 0;direction:rtl;}
+.section{margin:2.25rem 0 0;}
+.sh{display:flex;align-items:center;gap:0.7rem;margin-bottom:0.5rem;direction:rtl;}
+.sn{width:26px;height:26px;border-radius:50%;background:var(--green);color:#fff;font-family:'Lora',serif;font-size:12px;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+.sh h2{font-family:'Lora',serif;font-size:1.2rem;font-weight:600;color:var(--green);}
+.div{border:none;border-top:1px solid rgba(42,74,26,0.15);margin-bottom:1.1rem;}
+.p{font-size:0.93rem;line-height:1.85;color:var(--earth-mid);direction:rtl;margin-bottom:0.9rem;}
+.p strong{color:var(--green);font-weight:600;}
+.steps{display:flex;flex-direction:column;gap:12px;margin:1.25rem 0;}
+.step{background:#fff;border:1px solid rgba(42,74,26,0.15);border-radius:8px;padding:14px 16px;direction:rtl;border-right:4px solid var(--green-mid);}
+.step-head{display:flex;align-items:center;gap:10px;margin-bottom:6px;}
+.step-num{width:28px;height:28px;border-radius:50%;background:var(--green);color:#fff;font-size:12px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+.step-title{font-size:0.95rem;font-weight:700;color:var(--green);}
+.step-row{font-size:0.85rem;line-height:1.65;color:var(--earth-mid);margin-bottom:4px;}
+.step-row strong{color:var(--ink);font-weight:600;}
+.mistakes{display:flex;flex-direction:column;gap:10px;margin:1.25rem 0;}
+.mistake{background:#fff8f0;border:1px solid rgba(139,90,42,0.2);border-radius:8px;padding:12px 14px;direction:rtl;border-right:4px solid var(--earth-light);}
+.m-title{font-size:0.9rem;font-weight:700;color:var(--earth);margin-bottom:6px;}
+.m-row{font-size:0.82rem;line-height:1.6;color:var(--earth-mid);margin-bottom:3px;}
+.m-fix{font-size:0.82rem;color:var(--green);font-weight:600;margin-top:4px;}
+.materials{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:1.25rem 0;}
+.mat{background:var(--green-pale);border:1px solid rgba(42,74,26,0.2);border-radius:8px;padding:12px 14px;direction:rtl;}
+.mat-name{font-size:0.88rem;font-weight:700;color:var(--green);margin-bottom:4px;}
+.mat-desc{font-size:0.8rem;color:var(--earth-mid);line-height:1.5;}
+.summary{background:var(--straw-pale);border:1px solid rgba(200,168,75,0.3);border-radius:8px;padding:1.2rem 1.4rem;margin:1.5rem 0;direction:rtl;}
+.sum-row{display:flex;gap:8px;align-items:flex-start;margin-bottom:6px;font-size:0.88rem;line-height:1.6;}
+.sum-label{color:var(--earth);font-weight:700;white-space:nowrap;flex-shrink:0;}
+.sum-val{color:var(--earth-mid);}
+.insight{background:linear-gradient(135deg,rgba(42,74,26,0.06),rgba(58,32,16,0.04));border:1px solid rgba(42,74,26,0.15);border-radius:8px;padding:1.2rem 1.4rem;margin:1.5rem 0;direction:rtl;}
+.insight-tag{font-size:10px;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;color:var(--green-mid);margin-bottom:0.5rem;}
+.insight-text{font-family:'Lora',serif;font-style:italic;font-size:0.95rem;line-height:1.8;color:var(--earth-mid);}
+.result{margin:1.5rem 0;direction:rtl;}
+.result-line{display:flex;align-items:flex-start;gap:8px;font-size:0.9rem;line-height:1.65;color:var(--earth-mid);margin-bottom:6px;}
+.result-dot{width:6px;height:6px;border-radius:50%;background:var(--green-mid);flex-shrink:0;margin-top:7px;}
+.chupchu{background:var(--cream-dark);border:1px solid rgba(139,90,42,0.2);border-radius:8px;padding:1rem 1.2rem;margin:1.75rem 0;display:flex;gap:0.9rem;align-items:flex-start;direction:rtl;}
+.chupchu-img{width:42px;height:42px;border-radius:50%;object-fit:cover;border:1px solid rgba(139,90,42,0.3);flex-shrink:0;}
+.chupchu-name{font-family:'Caveat',cursive;font-size:13px;font-weight:600;color:var(--earth-light);margin-bottom:3px;}
+.chupchu-text{font-family:'Caveat',cursive;font-size:1rem;line-height:1.55;color:var(--earth-mid);}
+.related{margin:1.75rem 0;direction:rtl;}
+.related-title{font-size:0.8rem;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;color:var(--earth-light);margin-bottom:0.75rem;}
+.related-links{display:flex;flex-wrap:wrap;gap:8px;}
+.related-link{font-size:0.82rem;color:var(--green);border:1px solid rgba(42,74,26,0.25);border-radius:99px;padding:5px 14px;text-decoration:none;}
+.footer-cta{background:var(--green);padding:2rem 2.5rem;display:flex;gap:1rem;align-items:center;direction:rtl;margin-top:2rem;}
+.footer-img{width:48px;height:48px;border-radius:50%;object-fit:cover;border:2px solid rgba(255,255,255,0.3);flex-shrink:0;}
+.footer-text{font-size:0.9rem;line-height:1.6;color:rgba(255,255,255,0.85);flex:1;}
+.footer-text em{color:rgba(255,255,255,0.5);font-size:0.8rem;}
+.footer-btn{background:#fff;color:var(--green);font-weight:700;font-size:0.85rem;padding:10px 20px;border-radius:6px;text-decoration:none;white-space:nowrap;flex-shrink:0;}
+</style>
+<article class="art">
+<div class="hero">
+  <div class="hero-tag">🌿 השקיה וקרקע</div>
+  <h1>חיפוי קרקע</h1>
+  <div class="hero-en">Ground Mulching for Water Saving &amp; Weed Reduction</div>
+  <div class="hero-meta">
+    <span>🌱 גינה חיה</span>
+    <span>📅 אפריל 2026</span>
+    <span>⏱ 5 דקות קריאה</span>
+  </div>
+</div>
+<div class="body">
+  <div class="intro">
+    יש פעולות קטנות בגינה שיוצרות שינוי גדול.<br>
+    חיפוי קרקע הוא אחת מהן.<br>
+    כאשר האדמה נשארת חשופה — הלחות בורחת, עשבים נובטים, והקרקע נחלשת. כיסוי נכון משנה את המשוואה.
+  </div>
+
+  <div class="section">
+    <div class="sh"><div class="sn">1</div><h2>הסבר ברור</h2></div>
+    <hr class="div">
+    <p class="p">חיפוי קרקע הוא שכבה של חומר אורגני או טבעי שמונחת על פני האדמה. המטרה שלו: <strong>להגן על הקרקע, להפחית אידוי, לצמצם עשבייה</strong>, וליצור תנאים טובים יותר לחיים הביולוגיים שבאדמה.</p>
+    <p class="p">בחקלאות ביודינמית נעדיף חומרים טבעיים, פשוטים ומקומיים ככל האפשר — חומרים שממשיכים את מחזור החיים של המקום. הקרקע אינה רק מצע לצמח — היא מערכת חיה.</p>
+    <div class="materials">
+      <div class="mat"><div class="mat-name">🌾 קש ועלים יבשים</div><div class="mat-desc">קלים, טבעיים, מעולים לירקות ועשבי תיבול</div></div>
+      <div class="mat"><div class="mat-name">🪵 גזם מרוסק ושבבי עץ</div><div class="mat-desc">מחזיקים זמן רב — מתאים לעצים ושיחים</div></div>
+      <div class="mat"><div class="mat-name">♻️ קומפוסט גס</div><div class="mat-desc">מזין ומגן בו-זמנית</div></div>
+      <div class="mat"><div class="mat-name">🌿 חומר צמחי מקומי</div><div class="mat-desc">הכי זול, הכי מחובר למקום</div></div>
+    </div>
+  </div>
+
+  <div class="section">
+    <div class="sh"><div class="sn">2</div><h2>מדריך שלב-אחר-שלב</h2></div>
+    <hr class="div">
+    <div class="steps">
+      <div class="step">
+        <div class="step-head"><div class="step-num">1</div><div class="step-title">השקו לפני החיפוי</div></div>
+        <div class="step-row"><strong>פעולה:</strong> השקו את הקרקע היטב לפני הנחת החיפוי</div>
+        <div class="step-row"><strong>למה:</strong> חיפוי מעל קרקע יבשה ישמור בעיקר על היובש הקיים</div>
+        <div class="step-row"><strong>טיפ:</strong> הזמן הטוב ביותר הוא אחרי גשם או אחרי השקיה עמוקה</div>
+      </div>
+      <div class="step">
+        <div class="step-head"><div class="step-num">2</div><div class="step-title">בחרו את חומר החיפוי</div></div>
+        <div class="step-row"><strong>ירקות ועשבי תיבול:</strong> קש, עלים יבשים או קומפוסט גס</div>
+        <div class="step-row"><strong>עצים ושיחים:</strong> גזם מרוסק ושבבי עץ — מחזיקים זמן רב יותר</div>
+        <div class="step-row"><strong>חשוב:</strong> עדיף חומר נקי יחסית מזרעים כדי לא להכניס עשבייה חדשה</div>
+      </div>
+      <div class="step">
+        <div class="step-head"><div class="step-num">3</div><div class="step-title">פזרו שכבה אחידה</div></div>
+        <div class="step-row"><strong>עובי:</strong> 5–10 ס"מ על פני הקרקע</div>
+        <div class="step-row"><strong>שימו לב:</strong> אל תצמידו את החיפוי לגזע — השאירו מרווח של 5–10 ס"מ</div>
+        <div class="step-row"><strong>מטרה:</strong> אוורור סביב אזור הצוואר מונע ריקבון</div>
+      </div>
+      <div class="step">
+        <div class="step-head"><div class="step-num">4</div><div class="step-title">חדשו לפי הצורך</div></div>
+        <div class="step-row"><strong>תדירות:</strong> בדקו את שכבת החיפוי פעם בחודש-חודשיים</div>
+        <div class="step-row"><strong>מה לחפש:</strong> שכבה שהתדקקה מתחת ל-3 ס"מ — זמן לחדש</div>
+        <div class="step-row"><strong>יתרון:</strong> חיפוי שמתפרק הופך לחלק ממחזור החיים של הקרקע</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="section">
+    <div class="sh"><div class="sn">3</div><h2>טעויות נפוצות</h2></div>
+    <hr class="div">
+    <div class="mistakes">
+      <div class="mistake">
+        <div class="m-title">❌ חיפוי על קרקע יבשה</div>
+        <div class="m-row">מניחים חיפוי בלי להשקות לפני — החיפוי נועל את היובש בפנים</div>
+        <div class="m-fix">✓ תמיד להשקות עמוק לפני הנחת החיפוי</div>
+      </div>
+      <div class="mistake">
+        <div class="m-title">❌ הצמדה לגזע</div>
+        <div class="m-row">לחות תמידית בצוואר הצמח גורמת לריקבון ומחלות</div>
+        <div class="m-fix">✓ להשאיר מרווח של 5–10 ס"מ סביב הגזע</div>
+      </div>
+      <div class="mistake">
+        <div class="m-title">❌ שכבה דקה מדי (1–2 ס"מ)</div>
+        <div class="m-row">לא מספיק כדי לחסום אור לעשבים או לשמור על לחות</div>
+        <div class="m-fix">✓ שכבה של 5–10 ס"מ לתוצאות אמיתיות</div>
+      </div>
+      <div class="mistake">
+        <div class="m-title">❌ חומר עם זרעים</div>
+        <div class="m-row">קש או גזם שמכיל זרעי עשבים מביא גל חדש של עשבייה</div>
+        <div class="m-fix">✓ לבחור חומר יבש ונקי, או קומפוסט בשל היטב</div>
+      </div>
+      <div class="mistake">
+        <div class="m-title">❌ לא מחדשים</div>
+        <div class="m-row">החיפוי מתפרק ומאבד יעילות תוך חודשים</div>
+        <div class="m-fix">✓ לבדוק ולחדש את השכבה לפחות פעמיים בשנה</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="section">
+    <div class="sh"><div class="sn">4</div><h2>תובנה ביודינמית</h2></div>
+    <hr class="div">
+    <div class="insight">
+      <div class="insight-tag">🌕 ביודינמי</div>
+      <div class="insight-text">בגינה הביודינמית, חיפוי קרקע הוא יותר מטכניקה — הוא ביטוי של עיקרון.<br><br>האדמה אינה אמורה להיות חשופה. ביערות, בשדות טבעיים — הקרקע תמיד מכוסה. עלים נושרים, חומר אורגני מצטבר. זה לא בלגן — זה הגנה. כשאנחנו מחפים קרקע בגינה, אנחנו מחקים תהליך שהטבע מכיר היטב.</div>
+    </div>
+  </div>
+
+  <div class="section">
+    <div class="sh"><div class="sn">5</div><h2>תוצאה — גינה עם חיפוי</h2></div>
+    <hr class="div">
+    <div class="result">
+      <div class="result-line"><div class="result-dot"></div><span>הקרקע שומרת על לחות גם בחום — כל השקיה הופכת יעילה יותר</span></div>
+      <div class="result-line"><div class="result-dot"></div><span>עשבים פחות — פחות עבודת תחזוקה</span></div>
+      <div class="result-line"><div class="result-dot"></div><span>האדמה עם הזמן הופכת עשירה ורופפת יותר מפירוק החיפוי</span></div>
+      <div class="result-line"><div class="result-dot"></div><span>אחת ההשקעות הפשוטות ביותר בגינה, עם אחד מהתמורות הגבוהות ביותר</span></div>
+    </div>
+  </div>
+
+  <div class="section">
+    <div class="sh"><div class="sn">6</div><h2>סיכום מהיר</h2></div>
+    <hr class="div">
+    <div class="summary">
+      <div class="sum-row"><span class="sum-label">מה לעשות:</span><span class="sum-val">לכסות את הקרקע בשכבת חומר אורגני של 5–10 ס"מ</span></div>
+      <div class="sum-row"><span class="sum-label">מתי:</span><span class="sum-val">אחרי השקיה טובה או אחרי גשם</span></div>
+      <div class="sum-row"><span class="sum-label">איזה חומר:</span><span class="sum-val">קש, עלים, גזם — בהתאם לגידול</span></div>
+      <div class="sum-row"><span class="sum-label">למה זה עובד:</span><span class="sum-val">מפחית אידוי, חוסם אור לעשבים, מזין את הקרקע לאורך זמן</span></div>
+    </div>
+  </div>
+
+  <div class="chupchu">
+    <img class="chupchu-img" src="https://gina-haya.vercel.app/chupchu_final.png" alt="צ'ופצ'ו">
+    <div>
+      <div class="chupchu-name">הסוד של צ'ופצ'ו:</div>
+      <div class="chupchu-text">לפי הלוח הביודינמי — יום שורש הוא הזמן הטוב ביותר לפרוש חיפוי קרקע. הקרקע קולטת טוב יותר ביום הזה. פתח גינה חיה לבדוק!</div>
+    </div>
+  </div>
+  <div class="related">
+    <div class="related-title">מאמרים קשורים</div>
+    <div class="related-links">
+      <a class="related-link" href="/articles/watering-pots">השקיית עציצים</a>
+      <a class="related-link" href="/articles/deep-watering">השקיה עמוקה מול שטחית</a>
+      <a class="related-link" href="/articles/weed-control">הדברת עשבים טבעית</a>
+    </div>
+  </div>
+</div>
+<footer class="footer-cta">
+  <img class="footer-img" src="https://gina-haya.vercel.app/chupchu_final.png" alt="צ'ופצ'ו">
+  <div class="footer-text">מתי יום השורש הביודינמי הבא — הזמן הכי טוב לפרוש חיפוי?<br><em>Check the biodynamic root day for mulching.</em></div>
+  <a class="footer-btn" href="https://gina-haya.vercel.app">פתח גינה חיה ←</a>
+</footer>
+</article>`,
+  },
 ];
