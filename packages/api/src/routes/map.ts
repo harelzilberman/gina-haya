@@ -302,7 +302,8 @@ ${bedDimensionsLine}
 1. החזר JSON תקני בלבד — ללא markdown, ללא backticks, ללא טקסט נוסף לפני או אחרי.
 2. כל ערך מחרוזת — עד 40 תווים.
 3. השמט שדות אופציונליים ריקים (notes, warnings, companionNotes, wateringAdvice, seasonalNotes) אם אין תוכן.
-4. התגובה הכוללת חייבת להיות קצרה מ-3000 טוקן.`;
+4. התגובה הכוללת חייבת להיות קצרה מ-3000 טוקן.
+5. spacingCm חייב להיות מספר שלם חיובי (כגון 30, 50) — לעולם לא null, לא undefined, לא מחרוזת.`;
 
     // ── 7. Call Claude ───────────────────────────────────────────────────────
     const aiResponse = await anthropic.messages.create({
