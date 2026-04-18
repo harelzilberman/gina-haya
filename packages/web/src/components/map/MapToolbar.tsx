@@ -1,8 +1,6 @@
 import { useState, useRef, useEffect } from 'react';
-import type { SupabaseClient } from '@supabase/supabase-js';
 import type { MapTool } from '../../stores/mapStore';
 import type { WizardStatus } from '../../stores/mapStore';
-import IrrigationConsultant from '../IrrigationConsultant';
 
 const GOLD   = '#F5C840';
 const PARCH  = '#EDE0C4';
@@ -24,7 +22,6 @@ interface Props {
   onWizard: () => void;
   wizardStatus: WizardStatus | null;
   hasSavedMap: boolean;
-  supabase: SupabaseClient;
 }
 
 interface DropItem { tool: MapTool; emoji: string; label: string }
@@ -176,7 +173,7 @@ function CategoryDropdown({
 export function MapToolbar({
   selectedTool, onToolChange, showSunZones, onToggleSunZones,
   northAngle, onNorthAngleChange, isSaving, isDirty, onSave, onUndo,
-  onWizard, wizardStatus, hasSavedMap, supabase,
+  onWizard, wizardStatus, hasSavedMap,
 }: Props) {
   const canWizard = hasSavedMap && (wizardStatus?.canRun ?? true);
   const wizardLabel = wizardStatus
@@ -304,8 +301,6 @@ export function MapToolbar({
           {wizardLabel}
         </button>
 
-        {/* Irrigation consultant */}
-        <IrrigationConsultant supabase={supabase} />
       </div>
     </div>
   );

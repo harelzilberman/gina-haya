@@ -1,6 +1,5 @@
 import { useEffect, useState } from 'react';
 import { useMapStore } from '../stores/mapStore';
-import { supabase } from '../lib/supabase';
 import { MapToolbar } from '../components/map/MapToolbar';
 import { GardenCanvas } from '../components/map/GardenCanvas';
 import { PlantPicker } from '../components/map/PlantPicker';
@@ -64,7 +63,6 @@ export function MapPage() {
         onWizard={() => setShowWizard(true)}
         wizardStatus={store.wizardStatus}
         hasSavedMap={true}
-        supabase={supabase}
       />
 
       {/* Canvas area — starts at 116px (64 navbar + 52 toolbar), fills rest of viewport */}
