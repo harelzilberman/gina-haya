@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef, useCallback } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import ReactMarkdown from 'react-markdown';
 import { useTranslation } from 'react-i18next';
@@ -9,11 +9,19 @@ const PAGE_BG  = '#050c05';
 const GOLD     = '#c8a84b';
 const GOLD_DIM = 'rgba(180,150,60,0.4)';
 const TITLE_C  = '#f0e4c0';
-const LEAD_C   = '#d4c9a8';
-const BODY_C   = '#c0b48e';
-const HEAD_C   = '#d4a843';
 const SERIF    = 'Georgia, serif';
 const SANS     = '"Assistant", "Heebo", sans-serif';
+
+// ── Cream-theme tokens (article body) ────────────────────────────────────────
+const CREAM   = '#faf5e8';
+const INK     = '#2a1f0e';
+const INK_M   = '#4a3520';
+const INK_L   = '#7a5c3a';
+const AMBER   = '#c8851a';
+const PARCH   = '#f5edd8';
+const DASHED  = 'rgba(122,92,58,0.3)';
+const C_SERIF = "'Lora', Georgia, serif";
+const C_SANS  = "'DM Sans', 'Assistant', sans-serif";
 
 // ── Reading time ──────────────────────────────────────────────────────────────
 function readingTime(text: string, lang: 'he' | 'en'): string {
@@ -39,118 +47,139 @@ const SECTION_IMG_MAP = [
   { heKw: 'תוצאות',      enKw: 'result',        key: 'results' as const, captionHe: 'תוצאות בגינה',         captionEn: 'Results in the garden'       },
 ];
 
-// ── Ornamental divider ────────────────────────────────────────────────────────
-function OrnamentalHr() {
+// ── Cream-theme helpers ───────────────────────────────────────────────────────
+function extractText(node: unknown): string {
+  if (typeof node === 'string') return node;
+  if (typeof node === 'number') return String(node);
+  if (Array.isArray(node)) return (node as unknown[]).map(extractText).join('');
+  if (node && typeof node === 'object' && 'props' in (node as object))
+    return extractText((node as { props?: { children?: unknown } }).props?.children);
+  return '';
+}
+
+function ChupChuBox({ children }: { children: React.ReactNode }) {
   return (
-    <div style={{ display: 'flex', alignItems: 'center', gap: '14px', margin: '2.8rem 0', color: GOLD_DIM }}>
-      <div style={{ flex: 1, height: '1px', background: GOLD_DIM }} />
-      <span style={{ fontSize: '14px', color: GOLD_DIM, flexShrink: 0 }}>✦</span>
-      <div style={{ flex: 1, height: '1px', background: GOLD_DIM }} />
+    <div style={{
+      background: '#fffdf5',
+      border: '1px solid rgba(200,133,26,0.35)',
+      borderRadius: '10px',
+      padding: '1.1rem 1.3rem',
+      margin: '1.75rem 0',
+      display: 'flex', gap: '1rem',
+      alignItems: 'flex-start', direction: 'rtl',
+    }}>
+      <img
+        src="https://gina-haya.vercel.app/chupchu_final.png"
+        alt="צ'ופצ'ו"
+        style={{
+          width: '46px', height: '46px', borderRadius: '50%',
+          objectFit: 'cover' as const, objectPosition: 'center 15%',
+          border: '1px solid rgba(200,133,26,0.35)',
+          flexShrink: 0,
+        }}
+      />
+      <div>
+        <div style={{ fontFamily: "'Caveat', cursive", fontSize: '13px', fontWeight: 600 as const, color: AMBER, marginBottom: '4px' }}>
+          {`צ'ופצ'ו אומר:`}
+        </div>
+        <div style={{ fontFamily: "'Caveat', cursive", fontSize: '1.05rem', lineHeight: 1.6, color: INK_M }}>
+          {children}
+        </div>
+      </div>
     </div>
   );
 }
 
-// ── Markdown component factory ────────────────────────────────────────────────
+function SectionBadge({ n }: { n: string }) {
+  return (
+    <div style={{
+      width: '28px', height: '28px', borderRadius: '50%',
+      background: INK, color: PARCH,
+      fontFamily: C_SERIF, fontSize: '13px',
+      display: 'flex', alignItems: 'center', justifyContent: 'center',
+      flexShrink: 0,
+    }}>
+      {n}
+    </div>
+  );
+}
+
+// ── Markdown component factory (cream theme) ─────────────────────────────────
 function makeMD(
   lang: 'he' | 'en',
   images: Record<string, string> | null,
 ): Record<string, React.ComponentType<any>> {
   const isRTL = lang === 'he';
-  // Mutable state shared across all component calls within one render pass
-  const state = { firstP: true };
+  const state = { inSubsection: false };
 
   return {
     h1: () => null,
 
     h2: ({ children }) => {
-      const text    = typeof children === 'string' ? children : String(children ?? '');
-      const textLow = text.toLowerCase();
-      const match   = SECTION_IMG_MAP.find(s => textLow.includes(s.heKw) || textLow.includes(s.enKw));
-      const imgSrc  = match && images ? images[match.key] : null;
-      const caption = match ? (lang === 'he' ? match.captionHe : match.captionEn) : null;
+      state.inSubsection = false;
+      const text     = extractText(children);
+      const numMatch = text.match(/^(\d+)\.\s*(.+)$/);
+      const label    = numMatch ? numMatch[2] : text;
+      const textLow  = text.toLowerCase();
+      const imgMatch = SECTION_IMG_MAP.find(s => textLow.includes(s.heKw) || textLow.includes(s.enKw));
+      const imgSrc   = imgMatch && images ? images[imgMatch.key] : null;
+      const caption  = imgMatch ? (lang === 'he' ? imgMatch.captionHe : imgMatch.captionEn) : null;
 
       return (
-        <>
-          <h2 style={{
-            fontFamily: SERIF, fontSize: '26px', fontWeight: 400,
-            color: HEAD_C, margin: '2.8rem 0 0.9rem', lineHeight: 1.35,
+        <div style={{ margin: '2.5rem 0 0' }}>
+          <div style={{
+            display: 'flex', alignItems: 'center', gap: '0.7rem',
+            direction: isRTL ? 'rtl' : 'ltr', marginBottom: '0.5rem',
           }}>
-            {children}
-          </h2>
+            {numMatch && <SectionBadge n={numMatch[1]} />}
+            <h2 style={{
+              fontFamily: C_SERIF, fontSize: '1.25rem', fontWeight: 600,
+              color: INK, lineHeight: 1.35, margin: 0,
+            }}>
+              {label}
+            </h2>
+          </div>
+          <hr style={{ border: 'none', borderTop: `1px dashed ${DASHED}`, marginBottom: '1.25rem' }} />
           {imgSrc && (
-            <figure style={{ margin: '1rem 0 1.8rem' }}>
-              <img
-                src={imgSrc}
-                alt={caption ?? text}
-                style={{ width: '100%', borderRadius: '4px', display: 'block' }}
-              />
+            <figure style={{ margin: '0 0 1.5rem' }}>
+              <img src={imgSrc} alt={caption ?? label}
+                style={{ width: '100%', borderRadius: '6px', display: 'block' }} />
               {caption && (
                 <figcaption style={{
-                  fontFamily: SERIF, fontSize: '13px', fontStyle: 'italic',
-                  color: 'rgba(180,160,110,0.6)', textAlign: 'center', marginTop: '10px',
+                  fontFamily: C_SANS, fontSize: '12px', fontStyle: 'italic',
+                  color: INK_L, textAlign: 'center', marginTop: '8px',
                 }}>
                   {caption}
                 </figcaption>
               )}
             </figure>
           )}
-        </>
+        </div>
       );
     },
 
-    h3: ({ children }) => (
-      <h3 style={{
-        fontFamily: SERIF, fontSize: '20px', fontWeight: 400,
-        color: LEAD_C, margin: '2.2rem 0 0.6rem', lineHeight: 1.35,
-      }}>
-        {children}
-      </h3>
-    ),
+    h3: ({ children }) => {
+      state.inSubsection = true;
+      return (
+        <h3 style={{
+          fontFamily: C_SERIF, fontSize: '0.875rem', fontWeight: 400,
+          color: INK_L, fontStyle: 'italic',
+          margin: '1.5rem 0 0.5rem', direction: isRTL ? 'rtl' : 'ltr',
+        }}>
+          {children}
+        </h3>
+      );
+    },
 
     p: ({ children }) => {
-      const isFirst = state.firstP;
-      if (isFirst) state.firstP = false;
-
-      if (isFirst) {
-        // Lead paragraph + drop cap on first letter
-        const kids     = Array.isArray(children) ? children : [children];
-        const firstKid = kids[0];
-        if (typeof firstKid === 'string' && firstKid.length > 0) {
-          return (
-            <p style={{
-              fontFamily: SERIF, fontSize: '20px', fontStyle: 'italic',
-              color: LEAD_C, lineHeight: 1.9, margin: '0 0 1.6rem', overflow: 'hidden',
-            }}>
-              <span style={{
-                float: isRTL ? 'right' : 'left',
-                fontSize: '72px', lineHeight: '0.82',
-                color: GOLD,
-                fontFamily: SERIF, fontWeight: 400, fontStyle: 'normal',
-                marginInlineStart: '10px',
-                marginBottom: '4px', paddingTop: '2px',
-              }}>
-                {firstKid[0]}
-              </span>
-              {firstKid.slice(1)}
-              {kids.slice(1)}
-            </p>
-          );
-        }
-        // Fallback: lead without drop cap
-        return (
-          <p style={{
-            fontFamily: SERIF, fontSize: '20px', fontStyle: 'italic',
-            color: LEAD_C, lineHeight: 1.9, margin: '0 0 1.6rem',
-          }}>
-            {children}
-          </p>
-        );
+      if (/^מצ'ופצ'ו/.test(extractText(children))) {
+        return <ChupChuBox>{children}</ChupChuBox>;
       }
-
       return (
         <p style={{
-          fontFamily: SERIF, fontSize: '17px', color: BODY_C,
-          lineHeight: 1.9, margin: '0 0 1.3rem',
+          fontFamily: C_SANS, fontSize: '0.95rem', lineHeight: 1.85,
+          color: INK_M, direction: isRTL ? 'rtl' : 'ltr',
+          marginBottom: '1rem',
         }}>
           {children}
         </p>
@@ -159,24 +188,24 @@ function makeMD(
 
     blockquote: ({ children }) => (
       <blockquote style={{
-        borderInlineStart: `3px solid ${GOLD}`,
-        paddingInlineStart: '24px',
-        margin: '2rem 0',
-        fontFamily: SERIF, fontSize: '22px', fontStyle: 'italic',
-        color: LEAD_C, lineHeight: 1.55,
+        borderInlineStart: `3px solid ${AMBER}`,
+        paddingInlineStart: '1.25rem',
+        margin: '1.75rem 0',
+        fontFamily: C_SERIF, fontSize: '1.05rem', fontStyle: 'italic',
+        color: INK_M, lineHeight: 1.75,
       }}>
         {children}
       </blockquote>
     ),
 
     ul: ({ children }) => (
-      <ul style={{ listStyle: 'none', padding: 0, margin: '0 0 1.3rem' }}>
+      <ul style={{ listStyle: 'none', padding: 0, margin: '0.5rem 0 1rem' }}>
         {children}
       </ul>
     ),
 
     ol: ({ children }) => (
-      <ol style={{ listStyle: 'none', padding: 0, margin: '0 0 1.3rem' }}>
+      <ol style={{ listStyle: 'none', padding: 0, margin: '0.5rem 0 1rem' }}>
         {children}
       </ol>
     ),
@@ -187,36 +216,49 @@ function makeMD(
         return (
           <li style={{
             display: 'flex', alignItems: 'flex-start',
-            gap: '16px', marginBottom: '18px', listStyle: 'none',
+            gap: '12px', marginBottom: '12px', listStyle: 'none',
           }}>
             <span style={{
               flexShrink: 0,
-              width: '36px', height: '36px', borderRadius: '50%',
-              border: '1px solid rgba(180,150,60,0.5)',
-              color: GOLD, fontFamily: SERIF, fontSize: '15px',
+              width: '32px', height: '32px', borderRadius: '50%',
+              background: AMBER, color: '#fff',
+              fontFamily: C_SERIF, fontSize: '14px', fontWeight: 600,
               display: 'flex', alignItems: 'center', justifyContent: 'center',
             }}>
               {num}
             </span>
             <div style={{
-              fontFamily: SERIF, fontSize: '16px',
-              color: '#b8ac88', lineHeight: 1.75, paddingTop: '7px',
+              fontFamily: C_SANS, fontSize: '0.9rem',
+              color: INK_M, lineHeight: 1.7, paddingTop: '6px',
             }}>
               {children}
             </div>
           </li>
         );
       }
+      if (state.inSubsection) {
+        return (
+          <div style={{
+            background: PARCH,
+            border: `1px solid ${DASHED}`,
+            borderRadius: '7px',
+            padding: '10px 14px',
+            marginBottom: '6px',
+            direction: isRTL ? 'rtl' : 'ltr',
+            fontFamily: C_SANS, fontSize: '0.88rem',
+            color: INK_M, lineHeight: 1.65,
+          }}>
+            {children}
+          </div>
+        );
+      }
       return (
         <li style={{
-          fontFamily: SERIF, fontSize: '17px', color: BODY_C,
-          lineHeight: 1.85, marginBottom: '0.5rem',
+          fontFamily: C_SANS, fontSize: '0.95rem', color: INK_M,
+          lineHeight: 1.85, marginBottom: '0.4rem',
           position: 'relative', paddingInlineStart: '1.4rem', listStyle: 'none',
         }}>
-          <span style={{
-            position: 'absolute', insetInlineStart: 0,
-            color: GOLD, fontWeight: 700,
-          }}>
+          <span style={{ position: 'absolute', insetInlineStart: 0, color: AMBER, fontWeight: 700 }}>
             •
           </span>
           {children}
@@ -224,19 +266,21 @@ function makeMD(
       );
     },
 
-    hr: () => <OrnamentalHr />,
+    hr: () => (
+      <hr style={{ border: 'none', borderTop: `1px dashed ${DASHED}`, margin: '2rem 0' }} />
+    ),
 
     strong: ({ children }) => (
-      <strong style={{ color: GOLD, fontWeight: 700 }}>{children}</strong>
+      <strong style={{ color: INK, fontWeight: 500 }}>{children}</strong>
     ),
     em: ({ children }) => (
-      <em style={{ color: LEAD_C, fontStyle: 'italic' }}>{children}</em>
+      <em style={{ color: INK_L, fontStyle: 'italic' }}>{children}</em>
     ),
     code: ({ children }) => (
       <code style={{
-        fontFamily: 'monospace', fontSize: '14px',
-        background: 'rgba(255,255,255,0.06)', color: LEAD_C,
-        borderRadius: '3px', padding: '2px 6px',
+        fontFamily: 'monospace', fontSize: '13px',
+        background: 'rgba(122,92,58,0.12)', color: INK,
+        borderRadius: '3px', padding: '2px 5px',
       }}>
         {children}
       </code>
@@ -244,24 +288,24 @@ function makeMD(
 
     table: ({ children }) => (
       <div style={{ overflowX: 'auto', margin: '1.5rem 0' }}>
-        <table style={{ width: '100%', borderCollapse: 'collapse', fontFamily: SERIF, fontSize: '15px' }}>
+        <table style={{ width: '100%', borderCollapse: 'collapse', fontFamily: C_SANS, fontSize: '0.9rem' }}>
           {children}
         </table>
       </div>
     ),
     th: ({ children }) => (
       <th style={{
-        color: GOLD, borderBottom: `1px solid ${GOLD_DIM}`,
-        padding: '10px 14px', textAlign: 'start',
+        color: INK, fontWeight: 600, borderBottom: `2px solid ${DASHED}`,
+        padding: '8px 12px', textAlign: 'start',
       }}>
         {children}
       </th>
     ),
     td: ({ children }) => (
       <td style={{
-        color: BODY_C,
-        borderBottom: '1px solid rgba(255,255,255,0.04)',
-        padding: '10px 14px',
+        color: INK_M,
+        borderBottom: `1px dashed ${DASHED}`,
+        padding: '8px 12px',
       }}>
         {children}
       </td>
@@ -333,6 +377,16 @@ export function ArticlePage() {
   const [progress,    setProgress]    = useState(0);
   const [heroError,   setHeroError]   = useState(false);
 
+  useEffect(() => {
+    const id = 'cream-article-fonts';
+    if (!document.getElementById(id)) {
+      const link = document.createElement('link');
+      link.id = id; link.rel = 'stylesheet';
+      link.href = 'https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,400;0,600;1,400&family=Caveat:wght@400;600&family=DM+Sans:wght@300;400;500&display=swap';
+      document.head.appendChild(link);
+    }
+  }, []);
+
   const scrollRef = useRef<HTMLDivElement>(null);
   const entry     = ARTICLES.find(a => a.id === slug);
   const heroSrc   = entry?.images?.hero ?? null;
@@ -384,7 +438,7 @@ export function ArticlePage() {
   const showHero      = heroSrc && !heroError;
   const readTime      = content ? readingTime(content, lang) : '';
 
-  // Created fresh each render so state.firstP resets correctly
+  // Created fresh each render so state.inSubsection resets correctly
   const MD       = makeMD(lang, imageMap);
   const sections = content ? splitSections(content) : [];
 
@@ -571,65 +625,63 @@ export function ArticlePage() {
             </div>
           )}
 
-          {/* Article body */}
-          <div style={{ maxWidth: '720px', margin: '0 auto', padding: '56px 24px 0' }}>
-            {/* Meta description as styled intro */}
-            {description && (
-              <p style={{
-                fontFamily: SERIF, fontSize: '17px', fontStyle: 'italic',
-                color: `${LEAD_C}AA`,
-                lineHeight: 1.75, margin: '0 0 40px',
-                borderInlineStart: `3px solid ${GOLD_DIM}`,
-                paddingInlineStart: '18px',
-              }}>
-                {description}
-              </p>
-            )}
+          {/* Article body — cream theme */}
+          <div style={{ background: CREAM }}>
+            <div style={{ maxWidth: '760px', margin: '0 auto', padding: '44px 24px 56px' }}>
+              {/* Meta description as styled intro */}
+              {description && (
+                <p style={{
+                  fontFamily: C_SERIF, fontSize: '1.05rem', fontStyle: 'italic',
+                  color: INK_M, lineHeight: 1.85, margin: '0 0 2rem',
+                  borderInlineStart: `3px solid ${AMBER}`,
+                  paddingInlineStart: '1.25rem',
+                  direction: isRTL ? 'rtl' : 'ltr',
+                }}>
+                  {description}
+                </p>
+              )}
 
-            {/* Section-split rendering with biodynamic box wrapping */}
-            {sections.map((sec, i) => {
-              const headingText = sec.heading?.replace(/^## /, '') ?? '';
-              // Skip production-only visual-asset guide sections
-              if (sec.heading && /מדריך חזותי|visual.?guide|הצעות לנכסים/i.test(headingText)) return null;
-              const isBio       = sec.heading !== null && BIO_RE.test(headingText);
-              const sectionMd   = sec.heading ? `${sec.heading}\n${sec.body}` : sec.body;
+              {/* Section-split rendering */}
+              {sections.map((sec, i) => {
+                const headingText = sec.heading?.replace(/^## /, '') ?? '';
+                if (sec.heading && /מדריך חזותי|visual.?guide|הצעות לנכסים/i.test(headingText)) return null;
+                const isBio     = sec.heading !== null && BIO_RE.test(headingText);
+                const sectionMd = sec.heading ? `${sec.heading}\n${sec.body}` : sec.body;
 
-              return isBio ? (
-                <div
-                  key={i}
-                  style={{
-                    background: 'rgba(180,150,60,0.06)',
-                    border: '1px solid rgba(180,150,60,0.2)',
-                    borderRadius: '6px',
-                    padding: '24px',
+                return isBio ? (
+                  <div key={i} style={{
+                    background: 'rgba(200,133,26,0.06)',
+                    border: '1px solid rgba(200,133,26,0.2)',
+                    borderRadius: '8px',
+                    padding: '20px 24px',
                     margin: '0 0 0.5rem',
-                  }}
-                >
-                  <ReactMarkdown components={MD}>{sectionMd}</ReactMarkdown>
-                </div>
-              ) : (
-                <ReactMarkdown key={i} components={MD}>{sectionMd}</ReactMarkdown>
-              );
-            })}
+                  }}>
+                    <ReactMarkdown components={MD}>{sectionMd}</ReactMarkdown>
+                  </div>
+                ) : (
+                  <ReactMarkdown key={i} components={MD}>{sectionMd}</ReactMarkdown>
+                );
+              })}
+            </div>
           </div>
 
           {/* Footer back nav */}
           <div style={{
-            maxWidth: '720px', margin: '56px auto 0',
-            padding: '24px 24px 80px',
-            borderTop: `1px solid ${GOLD_DIM}`,
+            background: PARCH,
+            borderTop: `1px dashed ${DASHED}`,
             textAlign: 'center',
+            padding: '24px 24px 64px',
           }}>
             <button
               onClick={() => navigate('/articles')}
               style={{
-                fontFamily: SERIF, fontSize: '14px',
-                color: `${GOLD}88`, background: 'none', border: 'none',
+                fontFamily: C_SERIF, fontSize: '14px',
+                color: INK_L, background: 'none', border: 'none',
                 cursor: 'pointer', letterSpacing: '0.03em',
                 transition: 'color 0.15s',
               }}
-              onMouseEnter={e => { (e.currentTarget as HTMLElement).style.color = GOLD; }}
-              onMouseLeave={e => { (e.currentTarget as HTMLElement).style.color = `${GOLD}88`; }}
+              onMouseEnter={e => { (e.currentTarget as HTMLElement).style.color = AMBER; }}
+              onMouseLeave={e => { (e.currentTarget as HTMLElement).style.color = INK_L; }}
             >
               {backLabel}
             </button>
