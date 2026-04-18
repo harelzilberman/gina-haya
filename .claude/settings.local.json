@@ -54,7 +54,12 @@
       "Bash(git mv *)",
       "Read(//d/harel/**)",
       "Read(//c/Users/harel/**)",
-      "Bash(grep -rn \"Object.assign\\\\|{.*\\\\.\\\\.\\\\..*}\" \"/d/harel/claude/gina-haya-main/gina-haya-project/gina-haya/gina-haya/packages/web/src/stores/mapStore.ts\")"
+      "Bash(grep -rn \"Object.assign\\\\|{.*\\\\.\\\\.\\\\..*}\" \"/d/harel/claude/gina-haya-main/gina-haya-project/gina-haya/gina-haya/packages/web/src/stores/mapStore.ts\")",
+      "Bash(railway status *)",
+      "Bash(railway logs *)",
+      "Bash(curl -s -o /dev/null -w \"%{http_code}\" https://powerful-embrace-production-95ea.up.railway.app/api/map/health)",
+      "Bash(curl -s https://powerful-embrace-production-95ea.up.railway.app/)",
+      "Bash(curl *)"
     ]
   }
 }

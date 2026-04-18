@@ -1,0 +1,5 @@
+[build]
+watchPatterns = ["packages/api/**", "packages/shared/**", "Dockerfile"]
+
+[deploy]
+watchPatterns = ["packages/api/**", "packages/shared/**", "Dockerfile"]
