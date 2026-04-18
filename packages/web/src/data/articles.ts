@@ -4356,7 +4356,7 @@ function toggleFaq(el){
     filenameHe: 'חיפוי_קרקע.md',
     filenameEn: '06_mulching.md',
     publishedAt: '2026-04-18',
-    images: { hero: '/images/articles/22_multching.png' },
+    images: { hero: '/articles/images/22_multching.png' },
     htmlContent: `<style>
 @import url('https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,400;0,600;1,400&family=Assistant:wght@300;400;600&family=Caveat:wght@400;600&display=swap');
 *{box-sizing:border-box;margin:0;padding:0;}
