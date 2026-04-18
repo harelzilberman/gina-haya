@@ -1,6 +1,5 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
 import ReactMarkdown from 'react-markdown';
-import { api } from '../api/client';
 import i18n from '../i18n';
 import { ARTICLES } from '../data/articles';
 
@@ -137,12 +136,32 @@ export function ArticleReader({ slug, onClose }: Props) {
   const scrollRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
+    const lang = i18n.language === 'en' ? 'en' : 'he';
+    const localEntry = ARTICLES.find(a => a.id === slug);
+
+    // If article has pre-built HTML content, use it directly — no network needed
+    if (localEntry?.htmlContent) {
+      const title = lang === 'en' ? localEntry.titleEn : localEntry.titleHe;
+      const description = lang === 'en' ? localEntry.metaDescriptionEn : localEntry.metaDescriptionHe;
+      setArticle({ slug, title, description, content: '', readTimeMinutes: 5, category: localEntry.categoryEn });
+      setLoading(false);
+      return;
+    }
+
+    // Fallback: fetch raw markdown from Vercel function (relative URL, not Railway)
     setLoading(true);
     setError(false);
     setArticle(null);
-    const lang = i18n.language === 'en' ? 'en' : 'he';
-    api.get<Article>(`/api/articles/${slug}?lang=${lang}`)
-      .then(setArticle)
+    fetch(`/api/articles?slug=${encodeURIComponent(slug)}&lang=${lang}`)
+      .then(r => { if (!r.ok) throw new Error('not found'); return r.json(); })
+      .then((data: any) => setArticle({
+        slug: data.slug,
+        title: data.slug,
+        description: '',
+        content: data.content,
+        readTimeMinutes: Math.ceil((data.content?.length || 0) / 1000),
+        category: null,
+      }))
       .catch(() => setError(true))
       .finally(() => setLoading(false));
   }, [slug]);
