@@ -51,9 +51,9 @@ articlesRouter.get('/', async (req, res) => {
     const lang = getLangDir(req.query.lang);
     // Use GitHub API to list files in the directory
     const apiUrl = `https://api.github.com/repos/harelzilberman/gina-haya/contents/packages/web/public/articles/${lang}`;
-    const apiRes = await fetch(apiUrl, {
-      headers: { 'Accept': 'application/vnd.github.v3+json' },
-    });
+    const ghHeaders: Record<string, string> = { 'Accept': 'application/vnd.github.v3+json' };
+    if (process.env.GITHUB_TOKEN) ghHeaders['Authorization'] = `token ${process.env.GITHUB_TOKEN}`;
+    const apiRes = await fetch(apiUrl, { headers: ghHeaders });
     if (!apiRes.ok) return res.json([]);
 
     const files: { name: string }[] = await apiRes.json();
