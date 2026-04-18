@@ -4107,4 +4107,239 @@ function toggleFaq(el){
 </footer>
 </article>`,
   },
+  {
+    id: 'watering-pots',
+    titleHe: 'השקיית עציצים — המדריך המקצועי',
+    titleEn: 'Watering Potted Plants — The Professional Guide',
+    metaDescriptionHe: 'למדו את הדרך המקצועית להשקות עציצים — עמוק, לעיתים רחוקות, ובמועד הנכון.',
+    metaDescriptionEn: 'Learn the professional way to water potted plants — deep, infrequent, and at the right moment.',
+    categoryHe: 'השקיה',
+    categoryEn: 'Irrigation',
+    filenameHe: '21_השקיה_עציצים.md',
+    filenameEn: '21_watering_pots.md',
+    publishedAt: '2026-04-18',
+    images: null,
+    htmlContent: `<style>
+@import url('https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,400;0,600;1,400&family=Assistant:wght@300;400;600&family=Caveat:wght@400;600&display=swap');
+*{box-sizing:border-box;margin:0;padding:0;}
+.art{
+  --water:#1a4a6a;
+  --water-mid:#2a6a9a;
+  --water-light:#4a9aca;
+  --water-pale:#d0eaf8;
+  --clay:#8b5a2a;
+  --clay-light:#c8a870;
+  --soil:#2d1a08;
+  --cream:#f8f4ee;
+  --cream-dark:#ede4d4;
+  --ink:#1a1408;
+  --ink-mid:#3d2e10;
+  --ink-light:#7a6040;
+  --sage:#3a5a30;
+  font-family:'Assistant',sans-serif;
+  background:var(--cream);
+  color:var(--ink);
+}
+.hero{
+  background:linear-gradient(135deg,var(--water) 0%,var(--water-mid) 60%,#1a6a4a 100%);
+  padding:3rem 2.5rem 2.5rem;
+  position:relative;
+  overflow:hidden;
+  direction:rtl;
+}
+.hero::before{content:'💧';position:absolute;top:-20px;left:-10px;font-size:140px;opacity:0.07;transform:rotate(-15deg);}
+.hero-tag{display:inline-block;background:rgba(255,255,255,0.15);color:rgba(255,255,255,0.9);font-size:10px;font-weight:600;letter-spacing:0.12em;text-transform:uppercase;padding:3px 11px;border-radius:2px;margin-bottom:0.9rem;}
+.hero h1{font-family:'Lora',serif;font-size:2.4rem;font-weight:600;color:#fff;line-height:1.1;margin-bottom:0.3rem;}
+.hero-en{font-family:'Lora',serif;font-size:0.9rem;font-style:italic;color:rgba(255,255,255,0.65);margin-bottom:1.1rem;}
+.hero-meta{display:flex;gap:1.25rem;font-size:11px;color:rgba(255,255,255,0.55);font-weight:300;}
+.body{padding:0 2.5rem;}
+.intro{font-family:'Lora',serif;font-size:1.05rem;line-height:1.9;color:var(--water);border-right:3px solid var(--water-light);padding:0.25rem 1.1rem;margin:1.75rem 0;direction:rtl;}
+.section{margin:2.25rem 0 0;}
+.sh{display:flex;align-items:center;gap:0.7rem;margin-bottom:0.5rem;direction:rtl;}
+.sn{width:26px;height:26px;border-radius:50%;background:var(--water);color:#fff;font-family:'Lora',serif;font-size:12px;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+.sh h2{font-family:'Lora',serif;font-size:1.2rem;font-weight:600;color:var(--water);}
+.div{border:none;border-top:1px solid rgba(26,74,106,0.15);margin-bottom:1.1rem;}
+.p{font-size:0.93rem;line-height:1.85;color:var(--ink-mid);direction:rtl;margin-bottom:0.9rem;}
+.p strong{color:var(--water);font-weight:600;}
+.steps{display:flex;flex-direction:column;gap:12px;margin:1.25rem 0;}
+.step{background:#fff;border:1px solid rgba(26,74,106,0.15);border-radius:8px;padding:14px 16px;direction:rtl;border-right:4px solid var(--water-light);}
+.step-head{display:flex;align-items:center;gap:10px;margin-bottom:6px;}
+.step-num{width:28px;height:28px;border-radius:50%;background:var(--water);color:#fff;font-size:12px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+.step-title{font-size:0.95rem;font-weight:700;color:var(--water);}
+.step-row{font-size:0.85rem;line-height:1.65;color:var(--ink-mid);margin-bottom:4px;}
+.step-row strong{color:var(--ink);font-weight:600;}
+.mistakes{display:flex;flex-direction:column;gap:10px;margin:1.25rem 0;}
+.mistake{background:#fff3f0;border:1px solid rgba(139,58,26,0.2);border-radius:8px;padding:12px 14px;direction:rtl;border-right:4px solid #c0503a;}
+.m-title{font-size:0.9rem;font-weight:700;color:#8b3a1a;margin-bottom:6px;}
+.m-row{font-size:0.82rem;line-height:1.6;color:var(--ink-mid);margin-bottom:3px;}
+.m-row strong{color:var(--ink);font-weight:600;}
+.m-fix{font-size:0.82rem;color:var(--sage);font-weight:600;margin-top:4px;}
+.summary{background:var(--water-pale);border:1px solid rgba(26,74,106,0.2);border-radius:8px;padding:1.2rem 1.4rem;margin:1.5rem 0;direction:rtl;}
+.sum-row{display:flex;gap:8px;align-items:flex-start;margin-bottom:6px;font-size:0.88rem;line-height:1.6;}
+.sum-label{color:var(--water);font-weight:700;white-space:nowrap;flex-shrink:0;}
+.sum-val{color:var(--ink-mid);}
+.insight{background:linear-gradient(135deg,rgba(26,74,106,0.06),rgba(58,90,48,0.06));border:1px solid rgba(26,74,106,0.15);border-radius:8px;padding:1.2rem 1.4rem;margin:1.5rem 0;direction:rtl;}
+.insight-tag{font-size:10px;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;color:var(--water-mid);margin-bottom:0.5rem;}
+.insight-text{font-family:'Lora',serif;font-style:italic;font-size:0.95rem;line-height:1.8;color:var(--ink-mid);}
+.result{margin:1.5rem 0;direction:rtl;}
+.result-line{display:flex;align-items:flex-start;gap:8px;font-size:0.9rem;line-height:1.65;color:var(--ink-mid);margin-bottom:6px;}
+.result-dot{width:6px;height:6px;border-radius:50%;background:var(--water-light);flex-shrink:0;margin-top:7px;}
+.chupchu{background:var(--cream-dark);border:1px solid rgba(139,90,42,0.2);border-radius:8px;padding:1rem 1.2rem;margin:1.75rem 0;display:flex;gap:0.9rem;align-items:flex-start;direction:rtl;}
+.chupchu-img{width:42px;height:42px;border-radius:50%;object-fit:cover;object-position:center 15%;border:1px solid rgba(139,90,42,0.3);flex-shrink:0;}
+.chupchu-name{font-family:'Caveat',cursive;font-size:13px;font-weight:600;color:var(--clay);margin-bottom:3px;}
+.chupchu-text{font-family:'Caveat',cursive;font-size:1rem;line-height:1.55;color:var(--ink-mid);}
+.related{margin:1.75rem 0;direction:rtl;}
+.related-title{font-size:0.8rem;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;color:var(--ink-light);margin-bottom:0.75rem;}
+.related-links{display:flex;flex-wrap:wrap;gap:8px;}
+.related-link{font-size:0.82rem;color:var(--water);border:1px solid rgba(26,74,106,0.25);border-radius:99px;padding:5px 14px;text-decoration:none;transition:background 0.15s;}
+.related-link:hover{background:rgba(26,74,106,0.08);}
+.footer-cta{background:var(--water);padding:2rem 2.5rem;display:flex;gap:1rem;align-items:center;direction:rtl;margin-top:2rem;}
+.footer-img{width:48px;height:48px;border-radius:50%;object-fit:cover;border:2px solid rgba(255,255,255,0.3);flex-shrink:0;}
+.footer-text{font-size:0.9rem;line-height:1.6;color:rgba(255,255,255,0.85);flex:1;}
+.footer-text em{color:rgba(255,255,255,0.55);font-size:0.8rem;}
+.footer-btn{background:#fff;color:var(--water);font-weight:700;font-size:0.85rem;padding:10px 20px;border-radius:6px;text-decoration:none;white-space:nowrap;flex-shrink:0;}
+</style>
+<article class="art">
+<div class="hero">
+  <div class="hero-tag">💧 השקיה</div>
+  <h1>השקיית עציצים</h1>
+  <div class="hero-en">Watering Potted Plants — The Professional Guide</div>
+  <div class="hero-meta">
+    <span>🌱 גינה חיה</span>
+    <span>📅 אפריל 2026</span>
+    <span>⏱ 5 דקות קריאה</span>
+  </div>
+</div>
+<div class="body">
+  <div class="intro">
+    עציץ הוא עולם קטן.<br>
+    הקרקע בתוכו מוגבלת, הניקוז מהיר, והצמח תלוי כולו בידיים שלכם.<br>
+    המפתח להשקיית עציצים אינו תדירות — אלא שיפוט.
+  </div>
+
+  <div class="section">
+    <div class="sh"><div class="sn">1</div><h2>הסבר ברור</h2></div>
+    <hr class="div">
+    <p class="p">בשדה, הקרקע היא מאגר גדול — שורשים יכולים להעמיק, הלחות מתפזרת לאזורים רחבים, ויש תמיד עתודה.</p>
+    <p class="p">בעציץ, אין כל זה. האדמה מוגבלת, ומה שלא נספג יורד ויוצא. לכן, המטרה אינה לשמור על לחות תמידית — אלא ליצור מחזור של <strong>השקיה עמוקה, ואז ייבוש חלקי</strong>. כך מתפתחות שורשים בריאים, ומניעים ריקבון שורשים מעודף מים.</p>
+  </div>
+
+  <div class="section">
+    <div class="sh"><div class="sn">2</div><h2>מדריך שלב-אחר-שלב</h2></div>
+    <hr class="div">
+    <div class="steps">
+      <div class="step">
+        <div class="step-head"><div class="step-num">1</div><div class="step-title">בדקו לפני שאתם משקים</div></div>
+        <div class="step-row"><strong>פעולה:</strong> הכניסו אצבע 2–4 ס"מ לתוך האדמה</div>
+        <div class="step-row"><strong>מה לחפש:</strong> אם השכבה יבשה — השקו. אם עדיין לחה — המתינו</div>
+        <div class="step-row"><strong>סימן נוסף:</strong> הרימו את העציץ — עציץ קל הוא עציץ צמא</div>
+        <div class="step-row"><strong>זכרו:</strong> עציצים קטנים מתייבשים מהר; גדולים שומרים לחות זמן רב יותר</div>
+      </div>
+      <div class="step">
+        <div class="step-head"><div class="step-num">2</div><div class="step-title">השקו עמוק ולאט</div></div>
+        <div class="step-row"><strong>פעולה:</strong> השקו לאט על פני כל שטח האדמה</div>
+        <div class="step-row"><strong>כמה:</strong> המשיכו עד שמים יוצאים מחורי הניקוז</div>
+        <div class="step-row"><strong>טיפ:</strong> המתינו דקה-שתיים ואז הוסיפו עוד מעט — הריווי מגיע בגלים</div>
+      </div>
+      <div class="step">
+        <div class="step-head"><div class="step-num">3</div><div class="step-title">רוקנו את הצלחית</div></div>
+        <div class="step-row"><strong>פעולה:</strong> כ-20 דקות לאחר ההשקיה — ודאו שאין מים עומדים בצלחית</div>
+        <div class="step-row"><strong>למה:</strong> שורשים שעומדים במים ללא חמצן נרקבים</div>
+        <div class="step-row"><strong>הקו הדק:</strong> צלחית בסדר — מים עומדים שעות, זה בעיה</div>
+      </div>
+      <div class="step">
+        <div class="step-head"><div class="step-num">4</div><div class="step-title">המתינו לייבוש חלקי</div></div>
+        <div class="step-row"><strong>פעולה:</strong> אל תשקו שוב עד שהשכבה העליונה מתחילה להתייבש</div>
+        <div class="step-row"><strong>מה לחפש:</strong> אדמה שמתנתקת מדפנות הכלי, צבע בהיר יותר בפני השטח</div>
+        <div class="step-row"><strong>עיקרון:</strong> ייבוש חלקי — כן. ייבוש מוחלט — לא</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="section">
+    <div class="sh"><div class="sn">3</div><h2>טעויות נפוצות</h2></div>
+    <hr class="div">
+    <div class="mistakes">
+      <div class="mistake">
+        <div class="m-title">❌ מים מעט כל יום</div>
+        <div class="m-row">"מרדדים" מים על פני השטח בכל בוקר — השכבה העליונה לחה, השורשים יבשים</div>
+        <div class="m-fix">✓ השקיה עמוקה, פחות תכופה</div>
+      </div>
+      <div class="mistake">
+        <div class="m-title">❌ מים לפי לוח זמנים קבוע</div>
+        <div class="m-row">משקים כל יומיים ללא קשר למצב האדמה — עציצים שונים מתייבשים בקצבים שונים</div>
+        <div class="m-fix">✓ בדקו את האדמה, לא את הלוח</div>
+      </div>
+      <div class="mistake">
+        <div class="m-title">❌ להשאיר מים בצלחית</div>
+        <div class="m-row">שוכחים לרוקן — שורשים ספוגים בלי חמצן, ריקבון, צהבה</div>
+        <div class="m-fix">✓ לרוקן תמיד. אחרי לילה — חובה</div>
+      </div>
+      <div class="mistake">
+        <div class="m-title">❌ אדמת גינה בעציץ</div>
+        <div class="m-row">אדמה רגילה מתדחסת בכלי, לא מאפשרת ניקוז, חונקת שורשים</div>
+        <div class="m-fix">✓ תערובת עציצים מוכנה — מחזיקה לחות אך גם מנקזת</div>
+      </div>
+      <div class="mistake">
+        <div class="m-title">❌ להתעלם מסוג הכלי</div>
+        <div class="m-row">עציץ חרס מתייבש פי שניים מהר יותר מפלסטיק; עציץ בד — אפילו מהר יותר</div>
+        <div class="m-fix">✓ התאימו את תדירות הבדיקה לחומר הכלי</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="section">
+    <div class="sh"><div class="sn">4</div><h2>תובנה ביודינמית</h2></div>
+    <hr class="div">
+    <div class="insight">
+      <div class="insight-tag">🌕 ביודינמי</div>
+      <div class="insight-text">בגינה הביודינמית, השקיה אינה רק תחזוקה — היא מגע. כשאתם נוגעים באדמה, מרגישים את הלחות, מרימים את העציץ ומחושים את משקלו — אתם בשיח עם הצמח.<br><br>זמן ההשקיה הטוב ביותר לרוב הצמחים הוא <strong>הבוקר המוקדם</strong>. בימים חמים במיוחד — בדקו גם בין-הצהרים. לא כדי להשקות בהכרח — אלא כדי לדעת.</div>
+    </div>
+  </div>
+
+  <div class="section">
+    <div class="sh"><div class="sn">5</div><h2>תוצאה — כשמשקים נכון</h2></div>
+    <hr class="div">
+    <div class="result">
+      <div class="result-line"><div class="result-dot"></div><span>העלים זקופים יותר ובגוון עמוק יותר</span></div>
+      <div class="result-line"><div class="result-dot"></div><span>הצמיחה מסודרת, לא עצבנית</span></div>
+      <div class="result-line"><div class="result-dot"></div><span>האדמה ריחנית — ריח אדמה לאחר גשם, לא ריח עיפוש</span></div>
+      <div class="result-line"><div class="result-dot"></div><span>הרמה של עציץ לח ורמה של עציץ יבש הופכות לשפה — אחת המיומנויות הכי שימושיות לגנן ביתי</span></div>
+    </div>
+  </div>
+
+  <div class="section">
+    <div class="sh"><div class="sn">6</div><h2>סיכום מהיר</h2></div>
+    <hr class="div">
+    <div class="summary">
+      <div class="sum-row"><span class="sum-label">מה לעשות:</span><span class="sum-val">בדקו לפני שאתם משקים — אצבע לאדמה, הרגישו את משקל הכלי</span></div>
+      <div class="sum-row"><span class="sum-label">איך להשקות:</span><span class="sum-val">עמוק ולאט, עד שמים יוצאים מהניקוז</span></div>
+      <div class="sum-row"><span class="sum-label">מתי:</span><span class="sum-val">כשהשכבה העליונה מתחילה להתייבש — לא לפי שעון</span></div>
+      <div class="sum-row"><span class="sum-label">למה זה עובד:</span><span class="sum-val">שורשים עמוקים ובריאים, מניעת ריקבון, צמח חזק יותר</span></div>
+    </div>
+  </div>
+
+  <div class="chupchu">
+    <img class="chupchu-img" src="https://gina-haya.vercel.app/chupchu_final.png" alt="צ'ופצ'ו">
+    <div>
+      <div class="chupchu-name">הסוד של צ'ופצ'ו:</div>
+      <div class="chupchu-text">לפי הלוח הביודינמי — יום שורש הוא הזמן הטוב ביותר לעבוד עם אדמת העציץ ולהשקות לעומק. האדמה קולטת טוב יותר. פתח גינה חיה לבדוק!</div>
+    </div>
+  </div>
+  <div class="related">
+    <div class="related-title">מאמרים קשורים</div>
+    <div class="related-links">
+      <a class="related-link" href="/articles/deep-vs-shallow-watering">השקיה עמוקה מול שטחית</a>
+      <a class="related-link" href="/articles/drip-irrigation">השקיה בטפטוף</a>
+      <a class="related-link" href="/articles/biodynamic-calendar">הלוח הביודינמי</a>
+    </div>
+  </div>
+</div>
+<footer class="footer-cta">
+  <img class="footer-img" src="https://gina-haya.vercel.app/chupchu_final.png" alt="צ'ופצ'ו">
+  <div class="footer-text">מתי יום השורש הביודינמי הבא — הזמן הכי טוב להשקות לעומק?<br><em>Check the biodynamic root day for deep watering.</em></div>
+  <a class="footer-btn" href="https://gina-haya.vercel.app">פתח גינה חיה ←</a>
+</footer>
+</article>`,
+  },
 ];
