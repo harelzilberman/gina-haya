@@ -4596,6 +4596,6 @@ function toggleFaq(el){
     filenameHe: '23_סימני_סטרס_בצמחים.md',
     filenameEn: '23_plant_stress_signs.md',
     publishedAt: '2026-04-18',
-    images: { hero: '/articles/images/23_plant_stress_signs.jpg' },
+    images: { hero: '/articles/images/23_plant_stress_signs.png' },
   },
 ];
