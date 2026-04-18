@@ -1,14 +1,8 @@
 import { Router, type IRouter } from 'express';
-import fs from 'fs';
-import path from 'path';
 
 export const articlesRouter: IRouter = Router();
 
-// Articles folder: packages/web/public/articles/{lang}/
-// __dirname = packages/api/src/routes/ → ../../../web/public/articles
-const ARTICLES_DIR: string =
-  process.env.ARTICLES_DIR ||
-  path.resolve(__dirname, '../../../web/public/articles');
+const BASE = 'https://raw.githubusercontent.com/harelzilberman/gina-haya/main/packages/web/public/articles';
 
 const SLUG_CATEGORY: Record<string, string> = {
   'calendar':         'bd-preps',
@@ -23,17 +17,14 @@ function getLangDir(raw: unknown): 'he' | 'en' {
 }
 
 function parseArticle(content: string, slug: string, lang: 'he' | 'en') {
-  // Extract title from first # heading
   const titleMatch = content.match(/^#\s+(.+)$/m);
   const title = titleMatch ? titleMatch[1].trim() : slug;
 
-  // Extract description from ## תיאור מטא section
   const descMatch = content.match(/## תיאור מטא\n(.+)/);
   const description = descMatch ? descMatch[1].trim() : '';
 
-  // Clean content: strip metadata sections and noise
   const cleanContent = content
-    .replace(/^#\s.+$/m, '')                  // remove h1 (shown in reader header)
+    .replace(/^#\s.+$/m, '')
     .replace(/## כותרת SEO\n.+/g, '')
     .replace(/## תיאור מטא\n.+/g, '')
     .replace(/ComfyUI Prompt:\n"[^"]*"/g, '')
@@ -41,57 +32,71 @@ function parseArticle(content: string, slug: string, lang: 'he' | 'en') {
     .replace(/🌍 Read.+/g, '')
     .trim();
 
-  // Estimate read time (avg 200 words/min Hebrew, 250 English)
   const wordCount = content.split(/\s+/).length;
   const readTimeMinutes = Math.ceil(wordCount / (lang === 'he' ? 200 : 250));
 
   return { title, description, cleanContent, readTimeMinutes };
 }
 
-// GET /api/articles?lang=he  — list all article metadata (no content)
-articlesRouter.get('/', (req, res) => {
+async function fetchArticle(lang: 'he' | 'en', filename: string): Promise<string> {
+  const url = `${BASE}/${lang}/${filename}`;
+  const res = await fetch(url);
+  if (!res.ok) throw new Error(`GitHub fetch failed: ${res.status} ${url}`);
+  return res.text();
+}
+
+// GET /api/articles?lang=he  — list article metadata from GitHub directory listing
+articlesRouter.get('/', async (req, res) => {
   try {
     const lang = getLangDir(req.query.lang);
-    const dir = path.join(ARTICLES_DIR, lang);
-    if (!fs.existsSync(dir)) return res.json([]);
+    // Use GitHub API to list files in the directory
+    const apiUrl = `https://api.github.com/repos/harelzilberman/gina-haya/contents/packages/web/public/articles/${lang}`;
+    const apiRes = await fetch(apiUrl, {
+      headers: { 'Accept': 'application/vnd.github.v3+json' },
+    });
+    if (!apiRes.ok) return res.json([]);
 
-    const files = fs.readdirSync(dir).filter(f => f.endsWith('.md'));
-    const metas = files.map(file => {
-      const slug = file.replace(/\.md$/, '');
-      try {
-        const raw = fs.readFileSync(path.join(dir, file), 'utf-8');
-        const { title, description, readTimeMinutes } = parseArticle(raw, slug, lang);
-        return { slug, title, description, readTimeMinutes, category: SLUG_CATEGORY[slug] ?? null };
-      } catch {
-        return null;
-      }
-    }).filter(Boolean);
+    const files: { name: string }[] = await apiRes.json();
+    const mdFiles = files.filter(f => f.name.endsWith('.md'));
 
-    res.json(metas);
+    const metas = await Promise.all(
+      mdFiles.map(async f => {
+        const slug = f.name.replace(/\.md$/, '');
+        try {
+          const raw = await fetchArticle(lang, f.name);
+          const { title, description, readTimeMinutes } = parseArticle(raw, slug, lang);
+          return { slug, title, description, readTimeMinutes, category: SLUG_CATEGORY[slug] ?? null };
+        } catch {
+          return null;
+        }
+      })
+    );
+
+    res.json(metas.filter(Boolean));
   } catch (err: any) {
     console.error('[GET /api/articles]', err);
     res.status(500).json({ error: err.message });
   }
 });
 
-// GET /api/articles/:slug?lang=he  — full article including markdown content
-articlesRouter.get('/:slug', (req, res) => {
+// GET /api/articles/:slug?lang=he  — full article from GitHub raw
+articlesRouter.get('/:slug', async (req, res) => {
   try {
     const { slug } = req.params;
 
-    // Sanitise: only allow alphanumeric, hyphens, underscores
-    if (!/^[a-z0-9_-]+$/i.test(slug)) {
+    if (!/^[a-z0-9_\u0590-\u05FF-]+$/i.test(slug)) {
       return res.status(400).json({ error: 'Invalid slug' });
     }
 
     const lang = getLangDir(req.query.lang);
-    const filePath = path.join(ARTICLES_DIR, lang, `${slug}.md`);
 
-    if (!fs.existsSync(filePath)) {
+    let raw: string;
+    try {
+      raw = await fetchArticle(lang, `${slug}.md`);
+    } catch {
       return res.status(404).json({ error: 'Article not found' });
     }
 
-    const raw = fs.readFileSync(filePath, 'utf-8');
     const { title, description, cleanContent, readTimeMinutes } = parseArticle(raw, slug, lang);
 
     res.json({
