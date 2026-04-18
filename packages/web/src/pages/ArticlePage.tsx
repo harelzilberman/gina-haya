@@ -271,18 +271,24 @@ function makeMD(
 
 // ── Markdown parser ───────────────────────────────────────────────────────────
 function parseMarkdown(raw: string, lang: 'he' | 'en') {
-  const titleMatch = raw.match(/^#\s+(.+)$/m);
-  const title = titleMatch ? titleMatch[1].trim() : '';
+  // Title: standard # heading, or plain first non-metadata line
+  const headingMatch = raw.match(/^#\s+(.+)$/m);
+  let title = headingMatch ? headingMatch[1].trim() : '';
+  if (!title) {
+    const plainMatch = raw.match(/^(?![#\s])(?!כותרת|תיאור|SEO|Meta)(.+)$/m);
+    if (plainMatch) title = plainMatch[1].trim();
+  }
 
-  const descMatch = raw.match(
-    lang === 'he' ? /## תיאור מטא\n(.+)/ : /## Meta Description\n(.+)/
-  );
-  const description = descMatch ? descMatch[1].trim() : '';
+  // Description: ## heading format or inline colon format
+  const descHMatch = raw.match(lang === 'he' ? /## תיאור מטא\n(.+)/ : /## Meta Description\n(.+)/);
+  const descCMatch = raw.match(lang === 'he' ? /^תיאור מטא:\s*(.+)$/m : /^Meta Description:\s*(.+)$/m);
+  const description = (descHMatch ?? descCMatch)?.[1]?.trim() ?? '';
 
-  // Strip internal production sections
+  // Strip internal production sections (everything from matched heading to EOF)
   const internalHeadings = [
     /^##\s+פרומפטים ל-ComfyUI/m,
     /^##\s+SUGGESTED VISUAL ASSETS/im,
+    /^##\s+הצעות לנכסים חזותיים/m,
   ];
   let stripped = raw;
   for (const p of internalHeadings) {
@@ -290,15 +296,23 @@ function parseMarkdown(raw: string, lang: 'he' | 'en') {
     if (m !== -1) stripped = stripped.slice(0, m);
   }
 
-  const content = stripped
+  let content = stripped
     .replace(/^#\s.+$/m, '')
     .replace(/## (כותרת SEO|SEO Title)\n.+/g, '')
     .replace(/## (תיאור מטא|Meta Description)\n.+/g, '')
+    .replace(/^כותרת SEO:.*$/mg, '')
+    .replace(/^תיאור מטא:.*$/mg, '')
+    .replace(/^SEO Title:.*$/mg, '')
+    .replace(/^Meta Description:.*$/mg, '')
     .replace(/ComfyUI Prompt:\n"[^"]*"/g, '')
-    .replace(/🌍.+/g, '')
-    .trim();
+    .replace(/🌍.+/g, '');
 
-  return { title, description, content };
+  // For plain-title format (no # heading): strip preamble before first ## section
+  if (!headingMatch) {
+    content = content.replace(/^[^]*?(?=^## )/m, '');
+  }
+
+  return { title, description, content: content.trim() };
 }
 
 const BIO_RE = /ביודינמי|biodynamic/i;
@@ -575,6 +589,8 @@ export function ArticlePage() {
             {/* Section-split rendering with biodynamic box wrapping */}
             {sections.map((sec, i) => {
               const headingText = sec.heading?.replace(/^## /, '') ?? '';
+              // Skip production-only visual-asset guide sections
+              if (sec.heading && /מדריך חזותי|visual.?guide|הצעות לנכסים/i.test(headingText)) return null;
               const isBio       = sec.heading !== null && BIO_RE.test(headingText);
               const sectionMd   = sec.heading ? `${sec.heading}\n${sec.body}` : sec.body;
 
