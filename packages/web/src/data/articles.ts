@@ -4585,4 +4585,17 @@ function toggleFaq(el){
 </footer>
 </article>`,
   },
+  {
+    id: 'plant-stress-signs',
+    titleHe: 'סימני סטרס בצמחים — מה הגינה מנסה להגיד לך',
+    titleEn: 'Plant Stress Signs — What Your Garden Is Trying to Tell You',
+    metaDescriptionHe: 'למדו לזהות סימני סטרס בצמחים — צהבה, כמישה, כתמים ועוד — ומה הם אומרים על מצב הגינה שלכם בגישה ביודינמית.',
+    metaDescriptionEn: 'Learn to identify plant stress signs — yellowing, wilting, spots and more — and what they say about your biodynamic garden.',
+    categoryHe: 'טכניקות גינון',
+    categoryEn: 'Techniques',
+    filenameHe: '23_סימני_סטרס_בצמחים.md',
+    filenameEn: '23_plant_stress_signs.md',
+    publishedAt: '2026-04-18',
+    images: { hero: '/articles/images/23_plant_stress_signs.jpg' },
+  },
 ];

@@ -5,11 +5,15 @@ export const articlesRouter: IRouter = Router();
 const BASE = 'https://raw.githubusercontent.com/harelzilberman/gina-haya/main/packages/web/public/articles';
 
 const SLUG_CATEGORY: Record<string, string> = {
-  'calendar':         'bd-preps',
-  'compost':          'compost',
-  'pest-management':  'pest-control',
-  'soil-preparation': 'techniques',
-  'trees':            'techniques',
+  'calendar':                    'bd-preps',
+  'compost':                     'compost',
+  'pest-management':             'pest-control',
+  'soil-preparation':            'techniques',
+  'trees':                       'techniques',
+  '23_סימני_סטרס_בצמחים':       'Techniques',
+  '21_השקיה_עציצים':            'Irrigation',
+  'חיפוי_קרקע':                 'Irrigation',
+  '01_תה_קומפוסט':              'Natural Fertilizers',
 };
 
 function getLangDir(raw: unknown): 'he' | 'en' {

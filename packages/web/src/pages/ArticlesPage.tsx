@@ -1,7 +1,10 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { ARTICLES, type ArticleEntry } from '../data/articles';
+
+const API_BASE = (import.meta.env.VITE_API_URL as string | undefined)?.replace(/\/$/, '')
+  || 'https://powerful-embrace-production-95ea.up.railway.app';
 
 const GOLD   = '#c8a84b';
 const PARCH  = '#d4c9a8';
@@ -50,10 +53,36 @@ export function ArticlesPage() {
   const isRTL = lang === 'he';
 
   const [activeFilter, setActiveFilter] = useState<string>('all');
+  const [extraArticles, setExtraArticles] = useState<ArticleEntry[]>([]);
 
+  useEffect(() => {
+    fetch(`${API_BASE}/api/articles?lang=he`)
+      .then(r => r.ok ? r.json() : [])
+      .then((results: Array<{ slug: string; title: string; description: string; category: string | null }>) => {
+        const extras = results
+          .filter(r => !ARTICLES.some(a => a.filenameHe === `${r.slug}.md`))
+          .map(r => ({
+            id: r.slug,
+            titleHe: r.title,
+            titleEn: r.title,
+            metaDescriptionHe: r.description,
+            metaDescriptionEn: r.description,
+            categoryHe: r.category ?? '',
+            categoryEn: r.category ?? '',
+            filenameHe: `${r.slug}.md`,
+            filenameEn: `${r.slug}.md`,
+            publishedAt: new Date().toISOString().split('T')[0],
+            images: null,
+          } as ArticleEntry));
+        setExtraArticles(extras);
+      })
+      .catch(() => {});
+  }, []);
+
+  const allArticles = [...ARTICLES, ...extraArticles];
   const filtered = activeFilter === 'all'
-    ? ARTICLES
-    : ARTICLES.filter(a => a.categoryEn === activeFilter);
+    ? allArticles
+    : allArticles.filter(a => a.categoryEn === activeFilter);
 
   const heading    = lang === 'he' ? '📖 מאמרים' : '📖 Articles';
   const subheading = lang === 'he'
