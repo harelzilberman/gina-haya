@@ -10,6 +10,7 @@ interface UserProfile {
   subscription_tier: string;
   onboarding_complete: boolean;
   daily_tip_email: boolean;
+  latitude?: number;
 }
 
 interface AuthState {

@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useDirection } from '../../hooks/useDirection';
+import { useAuthStore } from '../../stores/authStore';
 import type { BiodynamicDay } from '@gina-haya/shared';
 
 const SCORE_COLOURS: Record<string, string> = {
@@ -53,7 +54,7 @@ export function getMoonTilt(phaseAngle: number, lat: number): number {
   return baseTilt + phaseTilt;
 }
 
-export function drawMoon(canvas: HTMLCanvasElement, phasePct: number, phaseAngle: number, tiltDeg: number) {
+export function drawMoon(canvas: HTMLCanvasElement, phasePct: number, phaseAngle: number, tiltDeg: number, lat = 31.7) {
   const ctx = canvas.getContext('2d');
   if (!ctx) return;
   const size = canvas.width;
@@ -68,6 +69,8 @@ export function drawMoon(canvas: HTMLCanvasElement, phasePct: number, phaseAngle
     ctx.save();
     ctx.translate(cx, cy);
     ctx.rotate(tiltDeg * Math.PI / 180);
+    // Northern Hemisphere: lit side is on the RIGHT for waxing — mirror horizontally
+    if (lat > 0) ctx.scale(-1, 1);
     ctx.translate(-cx, -cy);
 
     // Clip to circle
@@ -158,8 +161,8 @@ export function MoonPhaseDisplay({ phaseAngle, phasePct, phaseHe, moonSignHe, as
   const canvasRef = useRef<HTMLCanvasElement>(null);
 
   useEffect(() => {
-    if (canvasRef.current) drawMoon(canvasRef.current, phasePct, phaseAngle, tiltDeg);
-  }, [phasePct, phaseAngle, tiltDeg]);
+    if (canvasRef.current) drawMoon(canvasRef.current, phasePct, phaseAngle, tiltDeg, lat);
+  }, [phasePct, phaseAngle, tiltDeg, lat]);
 
   return (
     <div style={{
@@ -249,6 +252,8 @@ export function TodayCard({ day }: Props) {
   const { dir } = useDirection();
   const isHe = i18n.language === 'he';
   const [mounted, setMounted] = useState(false);
+  const { profile, user } = useAuthStore();
+  const userLat: number = profile?.latitude ?? (user?.user_metadata?.latitude as number | undefined) ?? 31.7;
 
   useEffect(() => {
     const id = requestAnimationFrame(() => setMounted(true));
@@ -287,6 +292,7 @@ export function TodayCard({ day }: Props) {
           phaseHe={day.moonPhaseNameHe ?? day.moonPhaseHe ?? 'ירח'}
           moonSignHe={day.moonSignHe ?? ''}
           ascending={day.ascendingDescending === 'ascending'}
+          lat={userLat}
         />
 
         <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', marginBottom: '20px' }}>
