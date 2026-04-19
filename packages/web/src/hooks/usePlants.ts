@@ -11,6 +11,7 @@ export interface PlantSummary {
   day_type_affinity: string[];
   description_he: string;
   description_en: string;
+  emoji: string | null;
 }
 
 export interface PlantDetail extends PlantSummary {

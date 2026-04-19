@@ -14,7 +14,7 @@ plantsRouter.get('/', async (req, res) => {
 
     let query = db
       .from('plants')
-      .select('id, common_name_he, common_name_en, latin_name, category, day_type_affinity, description_he, description_en')
+      .select('id, common_name_he, common_name_en, latin_name, category, day_type_affinity, description_he, description_en, emoji')
       .limit(50);
 
     if (search && search.trim()) {

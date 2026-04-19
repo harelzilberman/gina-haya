@@ -314,7 +314,7 @@ export function PlantDetailModal({ plant, onClose }: Props) {
     ? (detail?.description_he ?? plant.description_he)
     : (detail?.description_en ?? plant.description_en);
 
-  const categoryEmoji = CATEGORY_EMOJIS[plant.category ?? 'other'] ?? '🌱';
+  const categoryEmoji = plant.emoji ?? CATEGORY_EMOJIS[plant.category ?? 'other'] ?? '🌱';
 
   return (
     <>

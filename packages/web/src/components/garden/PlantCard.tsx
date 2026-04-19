@@ -37,7 +37,7 @@ const DAY_TYPE_EMOJIS: Record<string, string> = {
 
 export function PlantCard({ plant, index = 0, onClick }: Props) {
   const { t, i18n } = useTranslation('garden');
-  const categoryEmoji = CATEGORY_EMOJIS[plant.category ?? 'other'] ?? '🌱';
+  const categoryEmoji = plant.emoji ?? CATEGORY_EMOJIS[plant.category ?? 'other'] ?? '🌱';
   const delay = `${index * 35}ms`;
 
   return (
