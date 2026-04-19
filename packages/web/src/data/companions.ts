@@ -16,8 +16,8 @@ export const PLANTS: PlantData[] = [
   { id: 'eggplant',  nameHe: 'חציל',         nameEn: 'Eggplant',   emoji: '🍆', category: 'fruit', spacingCm: 50, goodCompanions: ['basil','bean','thyme'], badCompanions: ['fennel'] },
   { id: 'cucumber',  nameHe: 'מלפפון',       nameEn: 'Cucumber',   emoji: '🥒', category: 'fruit', spacingCm: 40, goodCompanions: ['bean','dill','sunflower','pea'], badCompanions: ['sage','potato'] },
   { id: 'zucchini',  nameHe: 'קישוא',        nameEn: 'Zucchini',   emoji: '🥬', category: 'fruit', spacingCm: 80, goodCompanions: ['bean','nasturtium','marigold'], badCompanions: ['potato'] },
-  { id: 'bean',      nameHe: 'שעועית',       nameEn: 'Bean',       emoji: '🫘', category: 'fruit', spacingCm: 20, goodCompanions: ['carrot','cucumber','beet','zucchini','corn'], badCompanions: ['onion','garlic','fennel'] },
-  { id: 'pea',       nameHe: 'אפונה',        nameEn: 'Pea',        emoji: '🫛', category: 'fruit', spacingCm: 10, goodCompanions: ['carrot','radish','cucumber','turnip'], badCompanions: ['onion','garlic'] },
+  { id: 'bean',      nameHe: 'שעועית',       nameEn: 'Bean',       emoji: '🌿', category: 'fruit', spacingCm: 20, goodCompanions: ['carrot','cucumber','beet','zucchini','corn'], badCompanions: ['onion','garlic','fennel'] },
+  { id: 'pea',       nameHe: 'אפונה',        nameEn: 'Pea',        emoji: '🌱', category: 'fruit', spacingCm: 10, goodCompanions: ['carrot','radish','cucumber','turnip'], badCompanions: ['onion','garlic'] },
   { id: 'strawberry',nameHe: 'תות שדה',      nameEn: 'Strawberry', emoji: '🍓', category: 'fruit', spacingCm: 30, goodCompanions: ['lettuce','spinach','garlic','borage'], badCompanions: [] },
   { id: 'corn',      nameHe: 'תירס',         nameEn: 'Corn',       emoji: '🌽', category: 'fruit', spacingCm: 35, goodCompanions: ['bean','zucchini','pumpkin'], badCompanions: ['tomato'] },
   // ── Root vegetables ───────────────────────────────────────────────────────
@@ -25,9 +25,9 @@ export const PLANTS: PlantData[] = [
   { id: 'onion',     nameHe: 'בצל',          nameEn: 'Onion',      emoji: '🧅', category: 'root',  spacingCm: 15, goodCompanions: ['carrot','beet','lettuce','chamomile'], badCompanions: ['bean','pea','sage'] },
   { id: 'garlic',    nameHe: 'שום',          nameEn: 'Garlic',     emoji: '🧄', category: 'root',  spacingCm: 15, goodCompanions: ['tomato','strawberry','rose'], badCompanions: ['bean','pea'] },
   { id: 'potato',    nameHe: 'תפוח אדמה',   nameEn: 'Potato',     emoji: '🥔', category: 'root',  spacingCm: 30, goodCompanions: ['bean','corn','horseradish'], badCompanions: ['tomato','cucumber','zucchini'] },
-  { id: 'beet',      nameHe: 'סלק',          nameEn: 'Beet',       emoji: '🫚', category: 'root',  spacingCm: 15, goodCompanions: ['onion','lettuce','cabbage'], badCompanions: ['bean'] },
+  { id: 'beet',      nameHe: 'סלק',          nameEn: 'Beet',       emoji: '🌱', category: 'root',  spacingCm: 15, goodCompanions: ['onion','lettuce','cabbage'], badCompanions: ['bean'] },
   { id: 'radish',    nameHe: 'צנון',         nameEn: 'Radish',     emoji: '🌱', category: 'root',  spacingCm:  8, goodCompanions: ['lettuce','pea','cucumber'], badCompanions: [] },
-  { id: 'turnip',    nameHe: 'לפת',          nameEn: 'Turnip',     emoji: '🫚', category: 'root',  spacingCm: 15, goodCompanions: ['pea','spinach'], badCompanions: [] },
+  { id: 'turnip',    nameHe: 'לפת',          nameEn: 'Turnip',     emoji: '🌱', category: 'root',  spacingCm: 15, goodCompanions: ['pea','spinach'], badCompanions: [] },
   // ── Leafy vegetables ──────────────────────────────────────────────────────
   { id: 'lettuce',   nameHe: 'חסה',          nameEn: 'Lettuce',    emoji: '🥬', category: 'leaf',  spacingCm: 25, goodCompanions: ['carrot','radish','strawberry','chive','dill'], badCompanions: [] },
   { id: 'spinach',   nameHe: 'תרד',          nameEn: 'Spinach',    emoji: '🥬', category: 'leaf',  spacingCm: 20, goodCompanions: ['strawberry','bean','pea'], badCompanions: [] },
