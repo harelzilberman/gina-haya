@@ -59,83 +59,107 @@ export function drawMoon(canvas: HTMLCanvasElement, phasePct: number, phaseAngle
   if (!ctx) return;
   const size = canvas.width;
   const cx = size / 2, cy = size / 2, r = size / 2 - 2;
-  ctx.clearRect(0, 0, size, size);
-
-  const isWaning = phaseAngle > 180;
-  const tRx = r * Math.abs(Math.cos(phaseAngle * Math.PI / 180));
 
   const render = () => {
-    ctx.clearRect(0, 0, size, size);
     ctx.save();
+    ctx.clearRect(0, 0, size, size);
+
     ctx.translate(cx, cy);
     ctx.rotate(tiltDeg * Math.PI / 180);
-    // Northern Hemisphere: lit side is on the RIGHT for waxing — mirror horizontally
-    if (lat > 0) ctx.scale(-1, 1);
     ctx.translate(-cx, -cy);
 
-    // Clip to circle
+    // Clip entire rendering to the moon disc
     ctx.beginPath();
     ctx.arc(cx, cy, r, 0, Math.PI * 2);
     ctx.clip();
 
-    // Dark base
     ctx.fillStyle = '#060a08';
     ctx.fillRect(0, 0, size, size);
 
-    if (phasePct < 2) {
-      ctx.restore();
-      return;
-    }
+    if (phasePct < 2) { ctx.restore(); return; }
 
-    // Draw full moon texture
-    ctx.drawImage(moonImg, 0, 0, size, size);
+    const f        = phasePct / 100;
+    const isWaning = phaseAngle > 180;
+    // tRx: x-radius of terminator ellipse — 0 at quarter, r at new/full
+    const tRx      = r * Math.abs(1 - 2 * f);
+    console.log('[moon] phasePct:', phasePct, '| isWaning:', isWaning, '| tRx:', tRx.toFixed(1));
 
-    if (phasePct < 98) {
-      // Step 1: paint dark half on correct side
-      ctx.beginPath();
-      if (isWaning) {
-        ctx.arc(cx, cy, r, -Math.PI / 2, Math.PI / 2);
-        ctx.lineTo(cx, cy - r);
-      } else {
-        ctx.arc(cx, cy, r, Math.PI / 2, 3 * Math.PI / 2);
-        ctx.lineTo(cx, cy - r);
-      }
-      ctx.closePath();
-      ctx.fillStyle = 'rgba(4, 8, 20, 0.95)';
-      ctx.fill();
-
-      // Step 2: restore lit area using terminator ellipse
+    if (phasePct >= 98) {
+      ctx.drawImage(moonImg, 0, 0, size, size);
+    } else if (!isWaning) {
+      // ── WAXING: lit on RIGHT ──────────────────────────────
+      // Base: draw moon texture in the right half
       ctx.save();
-      ctx.beginPath();
-      if (isWaning) {
-        ctx.ellipse(cx, cy, tRx, r, 0, -Math.PI / 2, Math.PI / 2);
-        ctx.lineTo(cx, cy - r);
-      } else {
-        ctx.ellipse(cx, cy, tRx, r, 0, Math.PI / 2, 3 * Math.PI / 2);
-        ctx.lineTo(cx, cy - r);
-      }
-      ctx.closePath();
-      ctx.clip();
+      ctx.beginPath(); ctx.rect(cx, 0, size, size); ctx.clip();
       ctx.drawImage(moonImg, 0, 0, size, size);
       ctx.restore();
+
+      if (f < 0.5) {
+        // Waxing crescent: shadow eats into right side.
+        // Darken the right half of the terminator ellipse, leaving only a thin right sliver.
+        ctx.save();
+        ctx.beginPath();
+        ctx.ellipse(cx, cy, tRx, r, 0, -Math.PI / 2, Math.PI / 2);
+        ctx.lineTo(cx, cy - r);
+        ctx.closePath();
+        ctx.fillStyle = 'rgba(4, 8, 20, 0.95)';
+        ctx.fill();
+        ctx.restore();
+      } else if (tRx > 1) {
+        // Waxing gibbous: restore the left half-ellipse as lit (spills past center).
+        ctx.save();
+        ctx.beginPath();
+        ctx.ellipse(cx, cy, tRx, r, 0, Math.PI / 2, 3 * Math.PI / 2);
+        ctx.lineTo(cx, cy - r);
+        ctx.closePath();
+        ctx.clip();
+        ctx.drawImage(moonImg, 0, 0, size, size);
+        ctx.restore();
+      }
+    } else {
+      // ── WANING: lit on LEFT ───────────────────────────────
+      // Base: draw moon texture in the left half
+      ctx.save();
+      ctx.beginPath(); ctx.rect(0, 0, cx, size); ctx.clip();
+      ctx.drawImage(moonImg, 0, 0, size, size);
+      ctx.restore();
+
+      if (f < 0.5) {
+        // Waning crescent: shadow eats into left side.
+        // Darken the left half of the terminator ellipse, leaving only a thin left sliver.
+        ctx.save();
+        ctx.beginPath();
+        ctx.ellipse(cx, cy, tRx, r, 0, Math.PI / 2, 3 * Math.PI / 2);
+        ctx.lineTo(cx, cy - r);
+        ctx.closePath();
+        ctx.fillStyle = 'rgba(4, 8, 20, 0.95)';
+        ctx.fill();
+        ctx.restore();
+      } else if (tRx > 1) {
+        // Waning gibbous: restore the right half-ellipse as lit (spills past center).
+        ctx.save();
+        ctx.beginPath();
+        ctx.ellipse(cx, cy, tRx, r, 0, -Math.PI / 2, Math.PI / 2);
+        ctx.lineTo(cx, cy - r);
+        ctx.closePath();
+        ctx.clip();
+        ctx.drawImage(moonImg, 0, 0, size, size);
+        ctx.restore();
+      }
     }
 
-    // Spherical shading
+    // Spherical shading overlay
     const grad = ctx.createRadialGradient(cx * 0.65, cy * 0.65, 0, cx, cy, r);
-    grad.addColorStop(0, 'rgba(255,245,200,0.08)');
+    grad.addColorStop(0,   'rgba(255,245,200,0.08)');
     grad.addColorStop(0.5, 'rgba(0,0,0,0)');
-    grad.addColorStop(1, 'rgba(0,0,0,0.5)');
+    grad.addColorStop(1,   'rgba(0,0,0,0.5)');
     ctx.fillStyle = grad;
     ctx.fillRect(0, 0, size, size);
 
     ctx.restore();
   };
 
-  if (moonImg.complete) {
-    render();
-  } else {
-    moonImg.onload = render;
-  }
+  if (moonImg.complete) { render(); } else { moonImg.onload = render; }
 }
 
 // ─────────────────────────────────────────────
