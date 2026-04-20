@@ -94,10 +94,10 @@ tasksRouter.post('/from-plan', async (req, res) => {
       }
       for (const day of (plan.days ?? [])) {
         if (day.prep500) {
-          taskRows.push({ date: day.date, title: 'הכנת BD 500 — קרן הזבל', type: 'biodynamic', source_action: 'prep500' });
+          taskRows.push({ date: day.date, title: 'הכנת פרפרט 500', type: 'biodynamic', source_action: 'prep500' });
         }
         if (day.prep501) {
-          taskRows.push({ date: day.date, title: 'הכנת BD 501 — קרן הסיליקה', type: 'biodynamic', source_action: 'prep501' });
+          taskRows.push({ date: day.date, title: 'הכנת פרפרט 501', type: 'biodynamic', source_action: 'prep501' });
         }
         for (const action of (day.recommendedActions ?? []).slice(0, 2)) {
           taskRows.push({ date: day.date, title: String(action), type: 'maintenance', source_action: String(action) });

@@ -609,7 +609,7 @@ export const ARTICLES: ArticleEntry[] = [
         <a class="related-link" href="#">ריסוס אצות ים — איך ומתי</a>
         <a class="related-link" href="#">ערימת קומפוסט — המדריך המלא</a>
         <a class="related-link" href="#">הלוח הביודינמי — מה זה ואיך משתמשים</a>
-        <a class="related-link" href="#">BD 500 — קרן הזבל</a>
+        <a class="related-link" href="#">פרפרט 500</a>
       </div>
     </div>
 
@@ -2630,7 +2630,7 @@ function toggleFaq(el){
   },
   {
     id: 'bd500',
-    titleHe: 'BD 500 — קרן הזבל',
+    titleHe: 'פרפרט 500',
     titleEn: "Horn Manure — The Earth's Awakening",
     metaDescriptionHe: 'בסתיו, קרן פרה מלאה בזבל נקברת בעומק האדמה. באביב, כשחופרים, מה שיצא הוא לא זבל — זה משהו אחר לגמרי.',
     metaDescriptionEn: 'Bury cow manure in a horn through winter and unlock the most powerful biodynamic soil preparation.',
@@ -2742,7 +2742,7 @@ function toggleFaq(el){
   <div class="hero-num">500</div>
   <div class="hero-content">
     <span class="hero-tag">פרפרטים ביודינמיים · Biodynamic Preparations</span>
-    <h1 itemprop="headline">BD 500 — קרן הזבל</h1>
+    <h1 itemprop="headline">פרפרט 500</h1>
     <div class="hero-en">Horn Manure — The Earth's Awakening</div>
     <div class="hero-meta"><span>קריאה: 12 דקות</span><span>רמה: מתקדם</span><span>עונה: סתיו–אביב</span></div>
     <img class="hero-img" src="https://gina-haya.vercel.app/chupchu_final.png" alt="צ'ופצ'ו" itemprop="image">
@@ -2823,7 +2823,7 @@ function toggleFaq(el){
   <div class="related">
     <div class="related-title">מאמרים קשורים</div>
     <div class="related-links">
-      <a class="related-link" href="/articles/bd501">BD 501 — קרן הסיליקה</a>
+      <a class="related-link" href="/articles/bd501">פרפרט 501</a>
       <a class="related-link" href="/articles/cpp">CPP — בור הזבל</a>
       <a class="related-link" href="/articles/biodynamic-calendar">הלוח הביודינמי</a>
     </div>
@@ -2831,16 +2831,16 @@ function toggleFaq(el){
 </div>
 <footer class="footer-cta">
   <img class="footer-img" src="https://gina-haya.vercel.app/chupchu_final.png" alt="צ'ופצ'ו">
-  <div class="footer-text">מתי יום השורש הבא לרסס BD 500?<br><em>Find the biodynamic root day for horn manure application.</em></div>
+  <div class="footer-text">מתי יום השורש הבא לרסס פרפרט 500?<br><em>Find the biodynamic root day for horn manure application.</em></div>
   <a class="footer-btn" href="https://gina-haya.vercel.app">פתח גינה חיה</a>
 </footer>
 </article>`,
   },
   {
     id: 'bd501',
-    titleHe: 'BD 501 — קרן הסיליקה',
+    titleHe: 'פרפרט 501',
     titleEn: 'Horn Silica — The Light Preparation',
-    metaDescriptionHe: 'אם BD 500 הוא כוח האדמה — BD 501 הוא כוח האור. אבקת קוורץ בקרן פרה, קבורה בקיץ, סופגת כוחות קוסמיים של אור.',
+    metaDescriptionHe: 'אם פרפרט 500 הוא כוח האדמה — פרפרט 501 הוא כוח האור. אבקת קוורץ בקרן פרה, קבורה בקיץ, סופגת כוחות קוסמיים של אור.',
     metaDescriptionEn: 'Pack quartz powder into a cow horn, bury it through summer, and harvest the biodynamic light preparation.',
     categoryHe: 'פרפרטים BD',
     categoryEn: 'BD Preps',
@@ -2952,7 +2952,7 @@ function toggleFaq(el){
   <div class="hero-num">501</div>
   <div class="hero-content">
     <span class="hero-tag">פרפרטים ביודינמיים · Biodynamic Preparations</span>
-    <h1 itemprop="headline">BD 501 — קרן הסיליקה</h1>
+    <h1 itemprop="headline">פרפרט 501</h1>
     <div class="hero-en">Horn Silica — The Light Preparation</div>
     <div class="hero-meta"><span>קריאה: 8 דקות</span><span>רמה: מתקדם</span><span>עונה: אביב–קיץ</span></div>
     <img class="hero-img" src="https://gina-haya.vercel.app/chupchu_final.png" alt="צ'ופצ'ו" itemprop="image">
@@ -2968,19 +2968,19 @@ function toggleFaq(el){
   </div>
 </header>
 <div class="body">
-  <p class="intro" itemprop="description">אם BD 500 הוא כוח האדמה — BD 501 הוא כוח האור. אבקת קוורץ טחונה דק, ממולאת בקרן פרה, קבורה בקיץ כשהשמש בשיאה. היא סופגת את הכוחות הקוסמיים של האור.</p>
+  <p class="intro" itemprop="description">אם פרפרט 500 הוא כוח האדמה — פרפרט 501 הוא כוח האור. אבקת קוורץ טחונה דק, ממולאת בקרן פרה, קבורה בקיץ כשהשמש בשיאה. היא סופגת את הכוחות הקוסמיים של האור.</p>
   <div class="section">
     <div class="sh"><div class="sn">א</div><h2>500 מול 501 — שני כוחות</h2><span class="sh-en">The two poles</span></div>
     <hr class="div">
     <div class="contrast-box">
       <div class="cb-500">
-        <div class="cb-label">BD 500</div>
-        <div class="cb-name">קרן הזבל</div>
+        <div class="cb-label">פרפרט 500</div>
+        <div class="cb-name">פרפרט 500</div>
         <div class="cb-desc">כוחות הארץ. שורשים. חנקן. לחות. חורף. שקיעה. מדבר עם האדמה.</div>
       </div>
       <div class="cb-501">
-        <div class="cb-label">BD 501</div>
-        <div class="cb-name">קרן הסיליקה</div>
+        <div class="cb-label">פרפרט 501</div>
+        <div class="cb-name">פרפרט 501</div>
         <div class="cb-desc">כוחות האור. עלים. פרחים. יובש. קיץ. זריחה. מדבר עם הצמח.</div>
       </div>
     </div>
@@ -2990,7 +2990,7 @@ function toggleFaq(el){
     <img class="chupchu-img" src="https://gina-haya.vercel.app/chupchu_final.png" alt="צ'ופצ'ו">
     <div>
       <div class="chupchu-name">צ'ופצ'ו אומר:</div>
-      <div class="chupchu-text">העיניים שלי זוהרות בצהוב-ענבר — הן רואות את האור כמו הצמחים רואים. BD 501 הוא זה שמלמד את הצמח להשתמש באור בצורה הטובה ביותר.</div>
+      <div class="chupchu-text">העיניים שלי זוהרות בצהוב-ענבר — הן רואות את האור כמו הצמחים רואים. פרפרט 501 הוא זה שמלמד את הצמח להשתמש באור בצורה הטובה ביותר.</div>
     </div>
   </div>
   <div class="section">
@@ -3010,7 +3010,7 @@ function toggleFaq(el){
       <div class="tg-card tg-morning">
         <span class="tg-time">זריחה</span>
         <div class="tg-label">זמן השימוש</div>
-        <div class="tg-desc">בניגוד ל-500 — BD 501 משתמשים בבוקר מוקדם, כשהאור עולה</div>
+        <div class="tg-desc">בניגוד ל-500 — פרפרט 501 משתמשים בבוקר מוקדם, כשהאור עולה</div>
       </div>
       <div class="tg-card tg-evening">
         <span class="tg-time">1:30L</span>
@@ -3023,19 +3023,19 @@ function toggleFaq(el){
   <div class="section">
     <div class="sh"><div class="sn">ד</div><h2>מתי להשתמש</h2><span class="sh-en">When to use</span></div>
     <hr class="div">
-    <p class="p">BD 501 מיועד לחיזוק צמחים שכבר מבוססים — לא לשתילים צעירים. עוזר בשלב הפריחה, הפירות ובגרות הצמח. ביום פרח או פרי לפי הלוח הביודינמי — תוצאות מקסימליות.</p>
+    <p class="p">פרפרט 501 מיועד לחיזוק צמחים שכבר מבוססים — לא לשתילים צעירים. עוזר בשלב הפריחה, הפירות ובגרות הצמח. ביום פרח או פרי לפי הלוח הביודינמי — תוצאות מקסימליות.</p>
   </div>
   <div class="chupchu">
     <img class="chupchu-img" src="https://gina-haya.vercel.app/chupchu_final.png" alt="צ'ופצ'ו">
     <div>
       <div class="chupchu-name">הסוד של צ'ופצ'ו:</div>
-      <div class="chupchu-text">BD 501 ביום פרח — כשהצמח פתוח לאור, כשהפרחים מחפשים שמש. זה הזמן שבו הסיליקה עושה את הקסם. פתח גינה חיה!</div>
+      <div class="chupchu-text">פרפרט 501 ביום פרח — כשהצמח פתוח לאור, כשהפרחים מחפשים שמש. זה הזמן שבו הסיליקה עושה את הקסם. פתח גינה חיה!</div>
     </div>
   </div>
   <div class="related">
     <div class="related-title">מאמרים קשורים</div>
     <div class="related-links">
-      <a class="related-link" href="/articles/bd500">BD 500 — קרן הזבל, הכוח הנגדי</a>
+      <a class="related-link" href="/articles/bd500">פרפרט 500 — הכוח הנגדי</a>
       <a class="related-link" href="/articles/biodynamic-calendar">הלוח הביודינמי — ימי פרח ופרי</a>
       <a class="related-link" href="/articles/cpp">CPP — השלמה שלישית</a>
     </div>
@@ -3043,7 +3043,7 @@ function toggleFaq(el){
 </div>
 <footer class="footer-cta">
   <img class="footer-img" src="https://gina-haya.vercel.app/chupchu_final.png" alt="צ'ופצ'ו">
-  <div class="footer-text">מתי יום הפרח הבא לרסס BD 501?<br><em>Find the biodynamic flower day for silica application.</em></div>
+  <div class="footer-text">מתי יום הפרח הבא לרסס פרפרט 501?<br><em>Find the biodynamic flower day for silica application.</em></div>
   <a class="footer-btn" href="https://gina-haya.vercel.app">פתח גינה חיה</a>
 </footer>
 </article>`,
@@ -3052,8 +3052,8 @@ function toggleFaq(el){
     id: 'cpp',
     titleHe: 'CPP',
     titleEn: 'Cow Pat Pit — Fermented Medicine for Soil',
-    metaDescriptionHe: 'CPP הוא הפרפרט הנגיש ביותר — זבל פרה, עשבי מרפא ואגרוף של BD 500 שמייצרים דשן מרוכז בפחות זמן.',
-    metaDescriptionEn: 'Make CPP at home — the most accessible biodynamic preparation that works like BD 500 without the horn.',
+    metaDescriptionHe: 'CPP הוא הפרפרט הנגיש ביותר — זבל פרה, עשבי מרפא ואגרוף של פרפרט 500 שמייצרים דשן מרוכז בפחות זמן.',
+    metaDescriptionEn: 'Make CPP at home — the most accessible biodynamic preparation that works like BD-500 without the horn.',
     categoryHe: 'פרפרטים BD',
     categoryEn: 'BD Preps',
     filenameHe: '26_CPP_בור_הזבל.md',
@@ -3154,16 +3154,16 @@ function toggleFaq(el){
   <img class="hero-img" src="https://gina-haya.vercel.app/chupchu_final.png" alt="צ'ופצ'ו" itemprop="image">
 </header>
 <div class="body">
-  <p class="intro" itemprop="description">CPP הוא הפרפרט הנגיש ביותר — לא צריך קרן, לא צריך לחכות חורף שלם. זבל פרה, עשבי מרפא, ואגרוף של BD 500 — יחד הם מייצרים דשן מרוכז שעושה את אותו הקסם בפחות זמן.</p>
+  <p class="intro" itemprop="description">CPP הוא הפרפרט הנגיש ביותר — לא צריך קרן, לא צריך לחכות חורף שלם. זבל פרה, עשבי מרפא, ואגרוף של פרפרט 500 — יחד הם מייצרים דשן מרוכז שעושה את אותו הקסם בפחות זמן.</p>
   <div class="section">
     <div class="sh"><div class="sn">א</div><h2>מה נכנס לבור?</h2><span class="sh-en">Ingredients</span></div>
     <hr class="div">
     <div class="ingredients">
       <div class="ing-row"><span class="ing-name">זבל פרה טרי</span><span class="ing-role">הבסיס — מרכז חיידקים ומינרלים</span></div>
-      <div class="ing-row"><span class="ing-name">BD 500 (קצת)</span><span class="ing-role">מחמם ומגביר את התסיסה</span></div>
-      <div class="ing-row"><span class="ing-name">ולריאן (BD 507)</span><span class="ing-role">מאזן, מרגיע, מסדיר זרחן</span></div>
-      <div class="ing-row"><span class="ing-name">קמומיל (BD 503)</span><span class="ing-role">מייצב חנקן, מחזק מבנה</span></div>
-      <div class="ing-row"><span class="ing-name">ירטה (BD 504)</span><span class="ing-role">מוסיפה סיליקה ומינרלים</span></div>
+      <div class="ing-row"><span class="ing-name">פרפרט 500 (קצת)</span><span class="ing-role">מחמם ומגביר את התסיסה</span></div>
+      <div class="ing-row"><span class="ing-name">ולריאן (פרפרט 507)</span><span class="ing-role">מאזן, מרגיע, מסדיר זרחן</span></div>
+      <div class="ing-row"><span class="ing-name">קמומיל (פרפרט 503)</span><span class="ing-role">מייצב חנקן, מחזק מבנה</span></div>
+      <div class="ing-row"><span class="ing-name">ירטה (פרפרט 504)</span><span class="ing-role">מוסיפה סיליקה ומינרלים</span></div>
       <div class="ing-row"><span class="ing-name">אפר עץ (קצת)</span><span class="ing-role">אשלגן, pH, מינרלים</span></div>
     </div>
   </div>
@@ -3185,7 +3185,7 @@ function toggleFaq(el){
     </div>
   </div>
   <div class="section">
-    <div class="sh"><div class="sn">ג</div><h2>CPP מול BD 500</h2><span class="sh-en">Comparison</span></div>
+    <div class="sh"><div class="sn">ג</div><h2>CPP מול פרפרט 500</h2><span class="sh-en">Comparison</span></div>
     <hr class="div">
     <div class="vs-box">
       <div class="vs-card vs-cpp">
@@ -3197,7 +3197,7 @@ function toggleFaq(el){
         <div class="vs-point">מרוסס על האדמה</div>
       </div>
       <div class="vs-card vs-500">
-        <div class="vs-title">BD 500</div>
+        <div class="vs-title">פרפרט 500</div>
         <div class="vs-point">6 חודשי חורף</div>
         <div class="vs-point">קרן פרה נדרשת</div>
         <div class="vs-point">עוצמה גבוהה יותר</div>
@@ -3216,8 +3216,8 @@ function toggleFaq(el){
   <div class="related">
     <div class="related-title">מאמרים קשורים</div>
     <div class="related-links">
-      <a class="related-link" href="/articles/bd500">BD 500 — קרן הזבל</a>
-      <a class="related-link" href="/articles/bd501">BD 501 — קרן הסיליקה</a>
+      <a class="related-link" href="/articles/bd500">פרפרט 500</a>
+      <a class="related-link" href="/articles/bd501">פרפרט 501</a>
       <a class="related-link" href="/articles/biodynamic-calendar">הלוח הביודינמי</a>
     </div>
   </div>
@@ -3446,8 +3446,8 @@ function toggleFaq(el){
   <div class="related">
     <div class="related-title">מאמרים קשורים</div>
     <div class="related-links">
-      <a class="related-link" href="/articles/bd500">BD 500 — ריסוס ביום שורש</a>
-      <a class="related-link" href="/articles/bd501">BD 501 — ריסוס ביום פרח</a>
+      <a class="related-link" href="/articles/bd500">פרפרט 500 — ריסוס ביום שורש</a>
+      <a class="related-link" href="/articles/bd501">פרפרט 501 — ריסוס ביום פרח</a>
       <a class="related-link" href="/articles/compost-tea">תה קומפוסט — ביום פרח</a>
       <a class="related-link" href="/articles/seaweed-spray">אצות ים — ביום עלה</a>
     </div>

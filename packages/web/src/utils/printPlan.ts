@@ -57,8 +57,8 @@ function dayCardHTML(day: DayPlan, today: string, widthPct: string): string {
   const plants = day.recommendedPlants.slice(0, 6).join('، ');
 
   const bdPreps = [
-    day.prep500 ? '<span style="color:#2d6e3e;font-weight:bold;background:#e8f5e8;padding:1px 6px;border-radius:3px;">BD 500 ✓</span>' : '',
-    day.prep501 ? '<span style="color:#2d6e3e;font-weight:bold;background:#e8f5e8;padding:1px 6px;border-radius:3px;">BD 501 ✓</span>' : '',
+    day.prep500 ? '<span style="color:#2d6e3e;font-weight:bold;background:#e8f5e8;padding:1px 6px;border-radius:3px;">פרפרט 500 ✓</span>' : '',
+    day.prep501 ? '<span style="color:#2d6e3e;font-weight:bold;background:#e8f5e8;padding:1px 6px;border-radius:3px;">פרפרט 501 ✓</span>' : '',
   ].filter(Boolean).join(' ');
 
   const chupChu = day.chupChuTip

@@ -134,8 +134,8 @@ function buildVisionSystemPrompt(context: AnalysisContext): string {
 - סוג יום: ${cal.dayType}
 - מזל הירח: ${cal.moonSign}
 - ציון זריעה: ${cal.plantingScore}/10 (${cal.scoreColour})
-- BD 500 מומלץ: ${prep500Str}
-- BD 501 מומלץ: ${prep501Str}
+- פרפרט 500 מומלץ: ${prep500Str}
+- פרפרט 501 מומלץ: ${prep501Str}
 - ירח בפריגיאה: ${cal.perigeeActive ? 'כן' : 'לא'}`;
   }
 

@@ -124,8 +124,8 @@ export function DashboardPage() {
 
   // BD prep advisory items
   const prepItems: string[] = [];
-  if (day?.prep500Recommended) prepItems.push('מומלץ: BD 500 — קרן הזבל 💧');
-  if (day?.prep501Recommended) prepItems.push('מומלץ: BD 501 — קרן הסיליקה ☀️');
+  if (day?.prep500Recommended) prepItems.push('מומלץ: פרפרט 500 💧');
+  if (day?.prep501Recommended) prepItems.push('מומלץ: פרפרט 501 ☀️');
   if (day?.nodeActive)         prepItems.push('⚠️ יום צומת — הימנע משתילה');
   if (day?.perigeeActive)      prepItems.push('⚠️ ירח בפריגיאה — הכוחות חלשים');
 

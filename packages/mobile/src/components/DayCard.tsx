@@ -56,12 +56,12 @@ export function DayCard({ day }: Props) {
         <View style={styles.badgeRow}>
           {day.prep500Recommended && (
             <View style={styles.badge}>
-              <Text style={styles.badgeText}>BD 500 ✓</Text>
+              <Text style={styles.badgeText}>פרפרט 500 ✓</Text>
             </View>
           )}
           {day.prep501Recommended && (
             <View style={styles.badge}>
-              <Text style={styles.badgeText}>BD 501 ✓</Text>
+              <Text style={styles.badgeText}>פרפרט 501 ✓</Text>
             </View>
           )}
         </View>

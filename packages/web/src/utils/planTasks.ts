@@ -21,8 +21,8 @@ export function synthesizePlanTasks(plan: WeeklyPlan): PlanTaskRow[] {
   });
 
   plan.days.forEach((day: any) => {
-    if (day.prep500) rows.push({ date: day.date, title: 'הכנת BD 500 — קרן הזבל',    type: 'biodynamic', source_action: 'prep500' });
-    if (day.prep501) rows.push({ date: day.date, title: 'הכנת BD 501 — קרן הסיליקה', type: 'biodynamic', source_action: 'prep501' });
+    if (day.prep500) rows.push({ date: day.date, title: 'הכנת פרפרט 500',    type: 'biodynamic', source_action: 'prep500' });
+    if (day.prep501) rows.push({ date: day.date, title: 'הכנת פרפרט 501', type: 'biodynamic', source_action: 'prep501' });
     day.recommendedActions?.slice(0, 2).forEach((action: string) => {
       rows.push({ date: day.date, title: action, type: 'biodynamic', source_action: action });
     });

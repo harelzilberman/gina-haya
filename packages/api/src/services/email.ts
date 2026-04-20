@@ -95,13 +95,13 @@ export async function sendDailyTip(user: EmailUser, day: BiodynamicDay): Promise
   const dateFormatted = isHe ? formatDateHe(day.date) : formatDateEn(day.date);
 
   const prep500Row = day.prep500Recommended
-    ? (isHe ? '<tr><td style="padding:8px 0;font-size:14px;color:#4A7C59;font-family:Arial;text-align:right;">✅ זמן מומלץ למריחת BD 500 (16:00–19:00)</td></tr>'
-            : '<tr><td style="padding:8px 0;font-size:14px;color:#4A7C59;font-family:Arial;">✅ Recommended time for BD 500 (16:00–19:00)</td></tr>')
+    ? (isHe ? '<tr><td style="padding:8px 0;font-size:14px;color:#4A7C59;font-family:Arial;text-align:right;">✅ זמן מומלץ למריחת פרפרט 500 (16:00–19:00)</td></tr>'
+            : '<tr><td style="padding:8px 0;font-size:14px;color:#4A7C59;font-family:Arial;">✅ Recommended time for BD-500 (16:00–19:00)</td></tr>')
     : '';
 
   const prep501Row = day.prep501Recommended
-    ? (isHe ? '<tr><td style="padding:8px 0;font-size:14px;color:#4A7C59;font-family:Arial;text-align:right;">✅ זמן מומלץ למריחת BD 501 (עלות השחר–09:00)</td></tr>'
-            : '<tr><td style="padding:8px 0;font-size:14px;color:#4A7C59;font-family:Arial;">✅ Recommended time for BD 501 (sunrise–09:00)</td></tr>')
+    ? (isHe ? '<tr><td style="padding:8px 0;font-size:14px;color:#4A7C59;font-family:Arial;text-align:right;">✅ זמן מומלץ למריחת פרפרט 501 (עלות השחר–09:00)</td></tr>'
+            : '<tr><td style="padding:8px 0;font-size:14px;color:#4A7C59;font-family:Arial;">✅ Recommended time for BD-501 (sunrise–09:00)</td></tr>')
     : '';
 
   const subject = isHe

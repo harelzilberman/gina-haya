@@ -289,8 +289,8 @@ def calculate_planting_score(
 def prep_recommendations(ascending, is_node, is_full_moon,
                           is_pre_full_moon, moon_opposite_saturn):
     """
-    BD 500 (Horn Manure): Descending moon, afternoon soil application.
-    BD 501 (Horn Silica): Ascending moon, early morning foliar spray.
+    BD-500 (Horn Manure): Descending moon, afternoon soil application.
+    BD-501 (Horn Silica): Ascending moon, early morning foliar spray.
                           Also: full moon and moon-opposite-saturn days (BDI).
     CPP (Cow Pat Pit):    Descending moon, soil application (BDI).
     """
@@ -357,11 +357,11 @@ def get_mon_summary(day_type, ascending, is_node, is_full_moon,
 
     # Prep recommendations
     if prep500 and prep501:
-        parts.append('מומלץ: BD 500 אחה"צ על הקרקע, BD 501 בזריחה על העלווה')
+        parts.append('מומלץ: פרפרט 500 אחה"צ על הקרקע, פרפרט 501 בזריחה על העלווה')
     elif prep500:
-        parts.append('מומלץ למרוח פרפרט BD 500 על הקרקע אחה"צ (16:00-19:00)')
+        parts.append('מומלץ למרוח פרפרט 500 על הקרקע אחה"צ (16:00-19:00)')
     elif prep501:
-        parts.append('מומלץ למרוח פרפרט BD 501 בבוקר על העלווה (עד 09:00)')
+        parts.append('מומלץ למרוח פרפרט 501 בבוקר על העלווה (עד 09:00)')
 
     return '. '.join(parts) if parts else f'יום {dt_he} — עבוד בגינה בהתאם לאנרגיית הירח'
 

@@ -267,7 +267,7 @@ export function DayPlanCard({ day, isToday, isExpanded, onToggle, forceExpanded 
                   color:           GOLD,
                   backgroundColor: `${GOLD}06`,
                 }}>
-                  🌱 BD 500 — יישום מומלץ
+                  🌱 פרפרט 500 — יישום מומלץ
                 </span>
               )}
               {day.prep501 && (
@@ -280,7 +280,7 @@ export function DayPlanCard({ day, isToday, isExpanded, onToggle, forceExpanded 
                   color:           GOLD,
                   backgroundColor: `${GOLD}06`,
                 }}>
-                  ☀️ BD 501 — יישום מומלץ
+                  ☀️ פרפרט 501 — יישום מומלץ
                 </span>
               )}
             </div>

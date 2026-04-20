@@ -48,8 +48,8 @@ const VIDEOS: Video[] = [
   { id: 'c3', titleHe: 'מה לא לשים בקומפוסט', descHe: 'הטעויות הנפוצות ואיך להימנע מהן', category: 'compost', format: 'reel', duration: '0:45', comingSoon: true },
 
   // BD preparations
-  { id: 'bd1', titleHe: 'BD 500 — קרן הזבל', descHe: 'הכנה ושימון בפרפרט ביודינמי 500', category: 'bd', format: 'yt', duration: '12:00', youtubeId: 'dQw4w9WgXcQ' },
-  { id: 'bd2', titleHe: 'BD 501 — קרן הסיליקה', descHe: 'הכנה ושימון בפרפרט ביודינמי 501', category: 'bd', format: 'yt', duration: '8:00', comingSoon: true },
+  { id: 'bd1', titleHe: 'פרפרט 500', descHe: 'הכנה ושימון בפרפרט ביודינמי 500', category: 'bd', format: 'yt', duration: '12:00', youtubeId: 'dQw4w9WgXcQ' },
+  { id: 'bd2', titleHe: 'פרפרט 501', descHe: 'הכנה ושימון בפרפרט ביודינמי 501', category: 'bd', format: 'yt', duration: '8:00', comingSoon: true },
   { id: 'bd3', titleHe: 'CPP — תמצית גללים', descHe: 'הכנת ושימון ב-CPP לחיזוק החיות בקרקע', category: 'bd', format: 'reel', duration: '1:00', comingSoon: true },
   { id: 'bd4', titleHe: 'הלוח הביודינמי — איך קוראים', descHe: 'מדריך מעשי לקריאת הלוח הביודינמי', category: 'bd', format: 'both', duration: '4:00', comingSoon: true },
 

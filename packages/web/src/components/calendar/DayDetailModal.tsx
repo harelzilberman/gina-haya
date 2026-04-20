@@ -353,8 +353,8 @@ export function DayDetailModal({ day, onClose }: Props) {
                 }}>
                   <p style={{ fontFamily: ASSIST, fontSize: '13px', color: GOLD, margin: 0 }}>
                     {isHe
-                      ? '✅ זמן מומלץ למריחת BD 500 (16:00–19:00)'
-                      : '✅ Recommended time to apply BD 500 (16:00–19:00)'}
+                      ? '✅ זמן מומלץ למריחת פרפרט 500 (16:00–19:00)'
+                      : '✅ Recommended time to apply BD-500 (16:00–19:00)'}
                   </p>
                 </div>
               )}
@@ -367,8 +367,8 @@ export function DayDetailModal({ day, onClose }: Props) {
                 }}>
                   <p style={{ fontFamily: ASSIST, fontSize: '13px', color: GOLD, margin: 0 }}>
                     {isHe
-                      ? '✅ זמן מומלץ למריחת BD 501 (עלות השחר–09:00)'
-                      : '✅ Recommended time to apply BD 501 (dawn–09:00)'}
+                      ? '✅ זמן מומלץ למריחת פרפרט 501 (עלות השחר–09:00)'
+                      : '✅ Recommended time to apply BD-501 (dawn–09:00)'}
                   </p>
                 </div>
               )}
