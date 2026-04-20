@@ -293,10 +293,51 @@ def prep_recommendations(ascending, is_node, is_full_moon,
     BD-501 (Horn Silica): Ascending moon, early morning foliar spray.
                           Also: full moon and moon-opposite-saturn days (BDI).
     CPP (Cow Pat Pit):    Descending moon, soil application (BDI).
+    Returns raw astronomical conditions only — cooldown is applied separately.
     """
     prep500 = not ascending and not is_node
     prep501 = (ascending or is_full_moon or moon_opposite_saturn) and not is_node
     cpp     = not ascending and not is_node
+
+    return prep500, prep501, cpp
+
+
+def apply_prep_cooldowns(raw_500, raw_501, raw_cpp, current_date,
+                         last_500, last_501, last_cpp,
+                         season_500_counts, month_501_counts):
+    """
+    Enforce biodynamic prep spacing rules:
+      פרפרט 500: min 28 days between windows, max 2 per 3-month season.
+      פרפרט 501: min 14 days between windows, max 1 per calendar month.
+                 Also: 7-day buffer after any 500 window.
+      CPP:       min 21 days between windows.
+      500 and 501 must never fall on the same day.
+    Returns (prep500, prep501, cpp).
+    """
+    season_key = (current_date.year, (current_date.month - 1) // 3)
+    month_key  = (current_date.year, current_date.month)
+
+    # פרפרט 500
+    prep500 = (
+        raw_500
+        and (last_500 is None or (current_date - last_500).days >= 28)
+        and season_500_counts.get(season_key, 0) < 2
+    )
+
+    # פרפרט 501 (also blocked for 7 days after a 500 window)
+    prep501 = (
+        raw_501
+        and not prep500
+        and (last_501 is None or (current_date - last_501).days >= 14)
+        and month_501_counts.get(month_key, 0) < 1
+        and (last_500 is None or (current_date - last_500).days >= 7)
+    )
+
+    # CPP
+    cpp = (
+        raw_cpp
+        and (last_cpp is None or (current_date - last_cpp).days >= 21)
+    )
 
     return prep500, prep501, cpp
 
@@ -387,9 +428,22 @@ def is_israel_dst(dt):
 def generate_calendar_data(start_date, days):
     rows = []
 
+    # Cooldown state
+    last_500 = None   # date of last prep_500_recommended = True
+    last_501 = None   # date of last prep_501_recommended = True
+    last_cpp = None   # date of last cpp_recommended = True
+    season_500_counts = {}  # (year, quarter) -> count; max 2/season
+    month_501_counts  = {}  # (year, month) -> count; max 1/month
+
+    # Scheduling summary
+    scheduled_500 = []
+    scheduled_501 = []
+    scheduled_cpp = []
+
     for offset in range(days):
         dt = start_date + timedelta(days=offset)
         date_str = dt.strftime('%Y-%m-%d')
+        current_date = dt.date()
 
         tz_offset = 3 if is_israel_dst(dt) else 2
         hour_utc = 12.0 - tz_offset  # noon Israel time in UTC
@@ -415,13 +469,34 @@ def generate_calendar_data(start_date, days):
             phase_angle          = moon_phase['angle'],
         )
 
-        prep500, prep501, cpp = prep_recommendations(
+        raw_500, raw_501, raw_cpp = prep_recommendations(
             ascending            = moon_decl['ascending'],
             is_node              = node_data['is_node_day'],
             is_full_moon         = moon_phase['is_full_moon'],
             is_pre_full_moon     = moon_phase['is_pre_full_moon'],
             moon_opposite_saturn = saturn_data['moon_opposite_saturn'],
         )
+
+        prep500, prep501, cpp = apply_prep_cooldowns(
+            raw_500, raw_501, raw_cpp, current_date,
+            last_500, last_501, last_cpp,
+            season_500_counts, month_501_counts,
+        )
+
+        # Update cooldown state after approval
+        if prep500:
+            last_500 = current_date
+            season_key = (dt.year, (dt.month - 1) // 3)
+            season_500_counts[season_key] = season_500_counts.get(season_key, 0) + 1
+            scheduled_500.append(date_str)
+        if prep501:
+            last_501 = current_date
+            month_key = (dt.year, dt.month)
+            month_501_counts[month_key] = month_501_counts.get(month_key, 0) + 1
+            scheduled_501.append(date_str)
+        if cpp:
+            last_cpp = current_date
+            scheduled_cpp.append(date_str)
 
         mon = get_mon_summary(
             day_type             = moon_pos['day_type'],
@@ -471,7 +546,72 @@ def generate_calendar_data(start_date, days):
         if offset % 30 == 0:
             print(f'  {offset}/{days} days ({date_str}) — {moon_pos["sign_he"]} {DAY_TYPE_HE[moon_pos["day_type"]]} score={score}')
 
-    return rows
+    return rows, scheduled_500, scheduled_501, scheduled_cpp
+
+def generate_cleanup_sql():
+    """
+    Returns SQL that removes duplicate garden_tasks prep rows that fall within
+    the cooldown window of an earlier row with the same prep title.
+    Keeps the earliest occurrence per cooldown window.
+    """
+    return """-- BD Prep cooldown cleanup: remove duplicate garden_tasks
+-- Run this once to clean up tasks seeded before cooldown logic was applied.
+
+-- פרפרט 500: keep earliest, delete rows within 28 days of a prior row
+DELETE FROM garden_tasks
+WHERE id IN (
+  SELECT t2.id
+  FROM garden_tasks t1
+  JOIN garden_tasks t2
+    ON t1.user_id = t2.user_id
+   AND t1.title LIKE '%פרפרט 500%'
+   AND t2.title LIKE '%פרפרט 500%'
+   AND t2.date > t1.date
+   AND (t2.date::date - t1.date::date) < 28
+   AND t2.id <> t1.id
+);
+
+-- פרפרט 501: keep earliest, delete rows within 14 days of a prior row
+DELETE FROM garden_tasks
+WHERE id IN (
+  SELECT t2.id
+  FROM garden_tasks t1
+  JOIN garden_tasks t2
+    ON t1.user_id = t2.user_id
+   AND t1.title LIKE '%פרפרט 501%'
+   AND t2.title LIKE '%פרפרט 501%'
+   AND t2.date > t1.date
+   AND (t2.date::date - t1.date::date) < 14
+   AND t2.id <> t1.id
+);
+
+-- CPP: keep earliest, delete rows within 21 days of a prior row
+DELETE FROM garden_tasks
+WHERE id IN (
+  SELECT t2.id
+  FROM garden_tasks t1
+  JOIN garden_tasks t2
+    ON t1.user_id = t2.user_id
+   AND (t1.title ILIKE '%cpp%' OR t1.title ILIKE '%cow pat%')
+   AND (t2.title ILIKE '%cpp%' OR t2.title ILIKE '%cow pat%')
+   AND t2.date > t1.date
+   AND (t2.date::date - t1.date::date) < 21
+   AND t2.id <> t1.id
+);
+
+-- Remove 500 and 501 tasks that fall on the same date (keep 500, drop 501)
+DELETE FROM garden_tasks
+WHERE id IN (
+  SELECT t501.id
+  FROM garden_tasks t500
+  JOIN garden_tasks t501
+    ON t500.user_id = t501.user_id
+   AND t500.date = t501.date
+   AND t500.title LIKE '%פרפרט 500%'
+   AND t501.title LIKE '%פרפרט 501%'
+);
+"""
+
 
 def upsert_to_supabase(rows):
     if not SUPABASE_URL or not SUPABASE_KEY:
@@ -518,7 +658,7 @@ def main():
     print(f'pyswisseph version: {swe.version}')
     print()
 
-    rows = generate_calendar_data(start_date, days)
+    rows, scheduled_500, scheduled_501, scheduled_cpp = generate_calendar_data(start_date, days)
 
     print(f'\n✓ Generated {len(rows)} calendar rows')
 
@@ -532,6 +672,50 @@ def main():
               f"{r['moon_phase_he']:8} | {r['planting_score']}/10 {r['score_colour']:6} "
               f"{sat}{node}")
         print(f"    מון: {r['mon_daily_summary'][:80]}...")
+
+    # BD prep spacing summary
+    print('\n' + '═' * 55)
+    print('BD PREP SCHEDULING SUMMARY (after cooldown rules)')
+    print('═' * 55)
+    print(f'פרפרט 500 ({len(scheduled_500)} windows, min 28d gap, max 2/season):')
+    for d in scheduled_500:
+        print(f'  {d}')
+    print(f'\nפרפרט 501 ({len(scheduled_501)} windows, min 14d gap, max 1/month):')
+    for d in scheduled_501:
+        print(f'  {d}')
+    print(f'\nCPP ({len(scheduled_cpp)} windows, min 21d gap):')
+    for d in scheduled_cpp:
+        print(f'  {d}')
+
+    # Verify spacing
+    def verify_spacing(dates, min_days, label):
+        for i in range(1, len(dates)):
+            from datetime import date as _date
+            d1 = datetime.strptime(dates[i-1], '%Y-%m-%d').date()
+            d2 = datetime.strptime(dates[i],   '%Y-%m-%d').date()
+            gap = (d2 - d1).days
+            if gap < min_days:
+                print(f'  WARNING: {label} spacing violation — {dates[i-1]} → {dates[i]} = {gap}d (min {min_days}d)')
+
+    verify_spacing(scheduled_500, 28, 'פרפרט 500')
+    verify_spacing(scheduled_501, 14, 'פרפרט 501')
+    verify_spacing(scheduled_cpp, 21, 'CPP')
+
+    # Check 500/501 never on same day
+    set_500 = set(scheduled_500)
+    overlap = [d for d in scheduled_501 if d in set_500]
+    if overlap:
+        print(f'  WARNING: 500 and 501 scheduled on same day: {overlap}')
+    else:
+        print('\n✓ No 500/501 same-day conflicts')
+
+    # Save and print cleanup SQL
+    cleanup_sql = generate_cleanup_sql()
+    sql_path = os.path.join(os.path.dirname(__file__), 'cleanup_prep_tasks.sql')
+    with open(sql_path, 'w', encoding='utf-8') as f:
+        f.write(cleanup_sql)
+    print(f'\nCleanup SQL saved to: {sql_path}')
+    print('Run it in your Supabase SQL editor to remove duplicate garden_tasks.')
 
     # Upsert
     print(f'\nUpserting to Supabase...')
