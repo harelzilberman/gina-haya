@@ -17,6 +17,7 @@ export interface PlantTableEntry {
   germinationDays: string | null;
   daysToTransplant: string | null;
   daysToHarvest: string | null;
+  images?: string[];
 }
 
 export const PLANT_TABLE: PlantTableEntry[] = [
@@ -42,7 +43,8 @@ export const PLANT_TABLE: PlantTableEntry[] = [
     "method": "זריעה",
     "germinationDays": "7",
     "daysToTransplant": null,
-    "daysToHarvest": "120-160"
+    "daysToHarvest": "120-160",
+    "images": ["/images/plants/Carrot_stage1_00001_.png", "/images/plants/Carrot_stage2_00001_.png", "/images/plants/Carrot_stage3_00001_.png"]
   },
   {
     "nameHe": "כוסברה",
@@ -234,7 +236,8 @@ export const PLANT_TABLE: PlantTableEntry[] = [
     "method": "שתילה",
     "germinationDays": "7-8",
     "daysToTransplant": "35",
-    "daysToHarvest": "90-120"
+    "daysToHarvest": "90-120",
+    "images": ["/images/plants/Eggplant_stage1_00001_.png", "/images/plants/Eggplant_stage2_00001_.png", "/images/plants/Eggplant_stage3_00001_.png"]
   },
   {
     "nameHe": "עגבניה",
@@ -446,7 +449,8 @@ export const PLANT_TABLE: PlantTableEntry[] = [
     "method": "זריעה",
     "germinationDays": "8-16",
     "daysToTransplant": "30",
-    "daysToHarvest": "120-160"
+    "daysToHarvest": "120-160",
+    "images": ["/images/plants/Onion_stage1_00001_.png", "/images/plants/Onion_stage2_00001_.png", "/images/plants/Onion_stage3_00001_.png"]
   },
   {
     "nameHe": "בצל ירוק",
@@ -473,7 +477,8 @@ export const PLANT_TABLE: PlantTableEntry[] = [
     "method": "זריעה",
     "germinationDays": "8-16",
     "daysToTransplant": "30",
-    "daysToHarvest": "60"
+    "daysToHarvest": "60",
+    "images": ["/images/plants/Spring_Onion_stage1_00001_.png", "/images/plants/Spring_Onion_stage2_00001_.png", "/images/plants/Spring_Onion_stage3_00001_.png"]
   },
   {
     "nameHe": "לוף",
@@ -500,7 +505,8 @@ export const PLANT_TABLE: PlantTableEntry[] = [
     "method": "זריעה",
     "germinationDays": "8-10",
     "daysToTransplant": "60",
-    "daysToHarvest": "90"
+    "daysToHarvest": "90",
+    "images": ["/images/plants/Leek_stage1_00001_.png", "/images/plants/Leek_stage2_00001_.png", "/images/plants/Leek_stage3_00001_.png"]
   },
   {
     "nameHe": "שום",
@@ -543,7 +549,8 @@ export const PLANT_TABLE: PlantTableEntry[] = [
     "method": "גם זריעה וגם שתילה",
     "germinationDays": "7-16",
     "daysToTransplant": "30",
-    "daysToHarvest": "45"
+    "daysToHarvest": "45",
+    "images": ["/images/plants/Basil_stage1_00001_.png", "/images/plants/Basil_stage2_00001_.png", "/images/plants/Basil_stage3_00001_.png"]
   },
   {
     "nameHe": "תירס",
@@ -586,7 +593,8 @@ export const PLANT_TABLE: PlantTableEntry[] = [
     "method": "שתילה",
     "germinationDays": "4-5",
     "daysToTransplant": "14",
-    "daysToHarvest": "60-70"
+    "daysToHarvest": "60-70",
+    "images": ["/images/plants/Pumpkin_stage1_00001_.png", "/images/plants/Pumpkin_stage2_00001_.png", "/images/plants/Pumpkin_stage3_00001_.png"]
   },
   {
     "nameHe": "דלעת ערמונים",
@@ -646,7 +654,8 @@ export const PLANT_TABLE: PlantTableEntry[] = [
     "method": "זריעה",
     "germinationDays": "6",
     "daysToTransplant": "14",
-    "daysToHarvest": "30-60"
+    "daysToHarvest": "30-60",
+    "images": ["/images/plants/Cucumber_stage1_00001_.png", "/images/plants/Cucumber_stage2_00001_.png", "/images/plants/Cucumber_stage3_00001_.png"]
   },
   {
     "nameHe": "קישוא",
@@ -688,7 +697,8 @@ export const PLANT_TABLE: PlantTableEntry[] = [
     "method": "זריעה",
     "germinationDays": "6",
     "daysToTransplant": "14",
-    "daysToHarvest": "30-60"
+    "daysToHarvest": "30-60",
+    "images": ["/images/plants/Watermelon_stage1_00001_.png", "/images/plants/Watermelon_stage2_00001_.png", "/images/plants/Watermelon_stage3_00001_.png"]
   },
   {
     "nameHe": "מלון",
@@ -710,7 +720,8 @@ export const PLANT_TABLE: PlantTableEntry[] = [
     "method": "זריעה",
     "germinationDays": "6",
     "daysToTransplant": "14",
-    "daysToHarvest": "35-50"
+    "daysToHarvest": "35-50",
+    "images": ["/images/plants/Melon_stage1_00001_.png", "/images/plants/Melon_stage2_00001_.png", "/images/plants/Melon_stage3_00001_.png"]
   },
   {
     "nameHe": "תות שדה",
@@ -752,7 +763,8 @@ export const PLANT_TABLE: PlantTableEntry[] = [
     "method": "שתילה",
     "germinationDays": null,
     "daysToTransplant": null,
-    "daysToHarvest": "100-120"
+    "daysToHarvest": "100-120",
+    "images": ["/images/plants/Sweet_Potato_stage1_00001_.png", "/images/plants/Sweet_Potato_stage2_00001_.png", "/images/plants/Sweet_Potato_stage3_00001_.png"]
   },
   {
     "nameHe": "ארטישוק",
@@ -771,7 +783,8 @@ export const PLANT_TABLE: PlantTableEntry[] = [
     "method": "שתילה",
     "germinationDays": null,
     "daysToTransplant": null,
-    "daysToHarvest": "120"
+    "daysToHarvest": "120",
+    "images": ["/images/plants/Artichoke_stage1_00001_.png", "/images/plants/Artichoke_stage2_00001_.png", "/images/plants/Artichoke_stage3_00001_.png"]
   },
   {
     "nameHe": "ארטישוק ירושלמי",
@@ -830,7 +843,8 @@ export const PLANT_TABLE: PlantTableEntry[] = [
     "method": "זריעה",
     "germinationDays": "5",
     "daysToTransplant": null,
-    "daysToHarvest": "120"
+    "daysToHarvest": "120",
+    "images": ["/images/plants/Sunflower_stage1_00001_.png", "/images/plants/Sunflower_stage2_00001_.png", "/images/plants/Sunflower_stage3_00001_.png"]
   },
   {
     "nameHe": "חסה",
@@ -858,7 +872,8 @@ export const PLANT_TABLE: PlantTableEntry[] = [
     "method": "שתילה",
     "germinationDays": "7-8",
     "daysToTransplant": "30",
-    "daysToHarvest": "35-60"
+    "daysToHarvest": "35-60",
+    "images": ["/images/plants/Lettuce_stage1_00001_.png", "/images/plants/Lettuce_stage2_00001_.png", "/images/plants/Lettuce_stage3_00001_.png"]
   },
   {
     "nameHe": "כרוב סיני",
@@ -949,7 +964,8 @@ export const PLANT_TABLE: PlantTableEntry[] = [
     "method": "שתילה",
     "germinationDays": "7-8",
     "daysToTransplant": "30",
-    "daysToHarvest": "60-90"
+    "daysToHarvest": "60-90",
+    "images": ["/images/plants/Broccoli_stage1_00001_.png", "/images/plants/Broccoli_stage2_00001_.png", "/images/plants/Broccoli_stage3_00001_.png"]
   },
   {
     "nameHe": "כרובית",
@@ -972,7 +988,8 @@ export const PLANT_TABLE: PlantTableEntry[] = [
     "method": "שתילה",
     "germinationDays": "7-8",
     "daysToTransplant": "30",
-    "daysToHarvest": "60-90"
+    "daysToHarvest": "60-90",
+    "images": ["/images/plants/Cauliflower_stage1_00001_.png", "/images/plants/Cauliflower_stage2_00001_.png", "/images/plants/Cauliflower_stage3_00001_.png"]
   },
   {
     "nameHe": "כרוב",
@@ -997,7 +1014,8 @@ export const PLANT_TABLE: PlantTableEntry[] = [
     "method": "שתילה",
     "germinationDays": "5-8",
     "daysToTransplant": "30",
-    "daysToHarvest": "60-120"
+    "daysToHarvest": "60-120",
+    "images": ["/images/plants/Cabbage_stage1_00001_.png", "/images/plants/Cabbage_stage2_00001_.png", "/images/plants/Cabbage_stage3_00001_.png"]
   },
   {
     "nameHe": "כרוב אדום",
@@ -1114,7 +1132,8 @@ export const PLANT_TABLE: PlantTableEntry[] = [
     "method": "שתילה",
     "germinationDays": "5",
     "daysToTransplant": "30",
-    "daysToHarvest": "45-60"
+    "daysToHarvest": "45-60",
+    "images": ["/images/plants/Kohlrabi_stage1_00001_.png", "/images/plants/Kohlrabi_stage2_00001_.png", "/images/plants/Kohlrabi_stage3_00001_.png"]
   },
   {
     "nameHe": "קייל",
@@ -1134,7 +1153,8 @@ export const PLANT_TABLE: PlantTableEntry[] = [
     "method": "שתילה",
     "germinationDays": "5-8",
     "daysToTransplant": "30",
-    "daysToHarvest": "60-120"
+    "daysToHarvest": "60-120",
+    "images": ["/images/plants/Kale_stage1_00001_.png", "/images/plants/Kale_stage2_00001_.png", "/images/plants/Kale_stage3_00001_.png"]
   },
   {
     "nameHe": "רוקולה",

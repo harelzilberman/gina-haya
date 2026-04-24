@@ -59,7 +59,10 @@
       "Bash(railway logs *)",
       "Bash(curl -s -o /dev/null -w \"%{http_code}\" https://powerful-embrace-production-95ea.up.railway.app/api/map/health)",
       "Bash(curl -s https://powerful-embrace-production-95ea.up.railway.app/)",
-      "Bash(curl *)"
+      "Bash(curl *)",
+      "Bash(grep -E \"_stage.*\\\\.png$\")",
+      "Bash(mkdir -p /d/harel/claude/gina-haya-main/gina-haya-project/gina-haya/gina-haya/packages/web/public/images/plants)",
+      "Bash(cp /d/Ai/StabilityMatrix/data/Packages/ComfyUI/output/*_stage*.png /d/harel/claude/gina-haya-main/gina-haya-project/gina-haya/gina-haya/packages/web/public/images/plants/)"
     ]
   }
 }

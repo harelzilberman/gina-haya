@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import type { PlantSummary, PlantDetail } from '../../hooks/usePlants';
 import { fetchPlantDetail } from '../../hooks/usePlants';
+import { getPlantByName } from '../../data/plantTable';
 import { useAuthStore } from '../../stores/authStore';
 import { useGardenStore } from '../../stores/gardenStore';
 import { useToastStore } from '../../stores/toastStore';
@@ -80,15 +81,17 @@ function PlantPhotoGallery({
   nameEn,
   categoryEmoji,
   isHe,
+  localImages,
 }: {
   nameEn: string;
   categoryEmoji: string;
   isHe: boolean;
+  localImages?: string[];
 }) {
   const [lightbox, setLightbox]   = useState<string | null>(null);
   const [loaded,   setLoaded]     = useState<Record<number, boolean>>({});
   const [errored,  setErrored]    = useState<Record<number, boolean>>({});
-  const urls = getPhotoUrls(nameEn);
+  const urls = localImages?.length ? localImages : getPhotoUrls(nameEn);
 
   return (
     <>
@@ -315,6 +318,7 @@ export function PlantDetailModal({ plant, onClose }: Props) {
     : (detail?.description_en ?? plant.description_en);
 
   const categoryEmoji = plant.emoji ?? CATEGORY_EMOJIS[plant.category ?? 'other'] ?? '🌱';
+  const tableEntry = plant.common_name_en ? getPlantByName(plant.common_name_en) : undefined;
 
   return (
     <>
@@ -451,6 +455,7 @@ export function PlantDetailModal({ plant, onClose }: Props) {
               nameEn={plant.common_name_en}
               categoryEmoji={categoryEmoji}
               isHe={isHe}
+              localImages={tableEntry?.images}
             />
           )}
 
