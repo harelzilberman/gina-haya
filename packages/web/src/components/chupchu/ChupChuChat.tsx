@@ -33,7 +33,7 @@ const CHAT_CSS = `
 `;
 
 // ── Typing indicator ──────────────────────────────────────────────────────────
-function TypingDots() {
+function TypingDots({ isRTL }: { isRTL: boolean }) {
   return (
     <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
       <div style={{ display: 'flex', alignItems: 'flex-end', gap: '8px' }}>
@@ -321,7 +321,7 @@ export function ChupChuChat({ compact, initialMessage, onInitialMessageConsumed 
             <MessageBubble key={idx} message={msg} isRTL={isRTL} />
           ))}
 
-          {isLoading && <TypingDots />}
+          {isLoading && <TypingDots isRTL={isRTL} />}
 
           <div ref={messagesEndRef} />
         </div>

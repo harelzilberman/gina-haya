@@ -173,7 +173,7 @@ export function DashboardPage() {
       )}
 
       <button
-        onClick={openChupChu}
+        onClick={() => openChupChu()}
         style={{
           fontFamily: FRANK, fontSize: '14px', fontWeight: 700,
           color: EARTH, background: GOLD,
