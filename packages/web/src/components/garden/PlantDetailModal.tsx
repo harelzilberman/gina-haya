@@ -91,7 +91,7 @@ function PlantPhotoGallery({
   const [lightbox, setLightbox]   = useState<string | null>(null);
   const [loaded,   setLoaded]     = useState<Record<number, boolean>>({});
   const [errored,  setErrored]    = useState<Record<number, boolean>>({});
-  const urls = localImages?.length ? localImages : getPhotoUrls(nameEn);
+  const fallbackUrls = localImages ? null : getPhotoUrls(nameEn);
 
   return (
     <>
@@ -155,59 +155,66 @@ function PlantPhotoGallery({
         {isHe ? 'תמונות' : 'Photos'}
       </p>
 
-      {/* Photos row */}
+      {/* Photos row — always 3 slots; local images fill slots, missing slots show emoji */}
       <div style={{ display: 'flex', gap: '8px', marginBottom: '20px' }}>
-        {urls.map((url, i) => (
-          <div
-            key={i}
-            onClick={() => { if (!errored[i]) setLightbox(url); }}
-            style={{
-              position:     'relative',
-              width:        '32%',
-              height:       '120px',
-              borderRadius: '8px',
-              overflow:     'hidden',
-              cursor:       errored[i] ? 'default' : 'pointer',
-              flexShrink:   0,
-              backgroundColor: 'rgba(20,43,22,0.7)',
-            }}
-          >
-            {/* Shimmer while loading */}
-            {!loaded[i] && !errored[i] && (
-              <div className="plant-photo-shimmer" style={{ position: 'absolute', inset: 0 }} />
-            )}
-            {/* Error placeholder */}
-            {errored[i] && (
-              <div style={{
-                position:       'absolute',
-                inset:          0,
-                display:        'flex',
-                alignItems:     'center',
-                justifyContent: 'center',
-                fontSize:       '36px',
-              }}>
-                {categoryEmoji}
-              </div>
-            )}
-            {/* Photo */}
-            {!errored[i] && (
-              <img
-                src={url}
-                alt=""
-                onLoad={() =>  setLoaded(p  => ({ ...p, [i]: true }))}
-                onError={() => setErrored(p => ({ ...p, [i]: true }))}
-                style={{
-                  width:     '100%',
-                  height:    '100%',
-                  objectFit: 'cover',
-                  opacity:   loaded[i] ? 1 : 0,
-                  transition:'opacity 0.3s ease',
-                  display:   'block',
-                }}
-              />
-            )}
-          </div>
-        ))}
+        {[0, 1, 2].map(i => {
+          const localUrl    = localImages?.[i];
+          const fallbackUrl = fallbackUrls?.[i];
+          const url         = localUrl ?? fallbackUrl;
+          const isPlaceholder = !url;
+
+          return (
+            <div
+              key={i}
+              onClick={() => { if (url && !errored[i]) setLightbox(url); }}
+              style={{
+                position:        'relative',
+                width:           '32%',
+                height:          '120px',
+                borderRadius:    '8px',
+                overflow:        'hidden',
+                cursor:          url && !errored[i] ? 'pointer' : 'default',
+                flexShrink:      0,
+                backgroundColor: 'rgba(20,43,22,0.7)',
+              }}
+            >
+              {/* Shimmer — only for remote fallback URLs while loading */}
+              {fallbackUrl && !loaded[i] && !errored[i] && (
+                <div className="plant-photo-shimmer" style={{ position: 'absolute', inset: 0 }} />
+              )}
+              {/* Placeholder — empty slot or errored image */}
+              {(isPlaceholder || errored[i]) && (
+                <div style={{
+                  position:       'absolute',
+                  inset:          0,
+                  display:        'flex',
+                  alignItems:     'center',
+                  justifyContent: 'center',
+                  fontSize:       '36px',
+                }}>
+                  {categoryEmoji}
+                </div>
+              )}
+              {/* Photo */}
+              {url && !errored[i] && (
+                <img
+                  src={url}
+                  alt=""
+                  onLoad={() =>  setLoaded(p  => ({ ...p, [i]: true }))}
+                  onError={() => setErrored(p => ({ ...p, [i]: true }))}
+                  style={{
+                    width:     '100%',
+                    height:    '100%',
+                    objectFit: 'cover',
+                    opacity:   localUrl ? 1 : (loaded[i] ? 1 : 0),
+                    transition:'opacity 0.3s ease',
+                    display:   'block',
+                  }}
+                />
+              )}
+            </div>
+          );
+        })}
       </div>
     </>
   );
