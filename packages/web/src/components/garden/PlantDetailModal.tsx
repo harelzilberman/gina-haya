@@ -49,41 +49,20 @@ const MODAL_CSS = `
   from { opacity: 0; transform: scale(0.95); }
   to   { opacity: 1; transform: scale(1); }
 }
-@keyframes photo-shimmer {
-  0%   { background-position: -400px 0; }
-  100% { background-position:  400px 0; }
-}
 .plant-modal-card {
   animation: modal-scale-in 0.2s ease-out both;
 }
 .plant-modal-scroll::-webkit-scrollbar { width: 4px; }
 .plant-modal-scroll::-webkit-scrollbar-track { background: rgba(255,255,255,0.03); }
 .plant-modal-scroll::-webkit-scrollbar-thumb { background: rgba(125,192,132,0.2); border-radius: 2px; }
-.plant-photo-shimmer {
-  background: linear-gradient(90deg, rgba(20,43,22,0.7) 25%, rgba(40,75,42,0.85) 50%, rgba(20,43,22,0.7) 75%);
-  background-size: 800px 100%;
-  animation: photo-shimmer 1.5s ease-in-out infinite;
-  border-radius: 8px;
-}
 `;
 
 // ── Photo gallery ─────────────────────────────────────────────────────────────
-function getPhotoUrls(plantNameEn: string) {
-  const search = encodeURIComponent(plantNameEn.toLowerCase() + ' plant');
-  return [
-    `https://source.unsplash.com/400x300/?${search}&sig=1`,
-    `https://source.unsplash.com/400x300/?${search}&sig=2`,
-    `https://source.unsplash.com/400x300/?${search}&sig=3`,
-  ];
-}
-
 function PlantPhotoGallery({
-  nameEn,
   categoryEmoji,
   isHe,
   localImages,
 }: {
-  nameEn: string;
   categoryEmoji: string;
   isHe: boolean;
   localImages?: string[];
@@ -91,7 +70,6 @@ function PlantPhotoGallery({
   const [lightbox, setLightbox]   = useState<string | null>(null);
   const [loaded,   setLoaded]     = useState<Record<number, boolean>>({});
   const [errored,  setErrored]    = useState<Record<number, boolean>>({});
-  const fallbackUrls = localImages ? null : getPhotoUrls(nameEn);
 
   return (
     <>
@@ -158,10 +136,7 @@ function PlantPhotoGallery({
       {/* Photos row — always 3 slots; local images fill slots, missing slots show emoji */}
       <div style={{ display: 'flex', gap: '8px', marginBottom: '20px' }}>
         {[0, 1, 2].map(i => {
-          const localUrl    = localImages?.[i];
-          const fallbackUrl = fallbackUrls?.[i];
-          const url         = localUrl ?? fallbackUrl;
-          const isPlaceholder = !url;
+          const url = localImages?.[i];
 
           return (
             <div
@@ -178,12 +153,8 @@ function PlantPhotoGallery({
                 backgroundColor: 'rgba(20,43,22,0.7)',
               }}
             >
-              {/* Shimmer — only for remote fallback URLs while loading */}
-              {fallbackUrl && !loaded[i] && !errored[i] && (
-                <div className="plant-photo-shimmer" style={{ position: 'absolute', inset: 0 }} />
-              )}
-              {/* Placeholder — empty slot or errored image */}
-              {(isPlaceholder || errored[i]) && (
+              {/* Placeholder — no image for this slot, or image errored */}
+              {(!url || errored[i]) && (
                 <div style={{
                   position:       'absolute',
                   inset:          0,
@@ -195,7 +166,7 @@ function PlantPhotoGallery({
                   {categoryEmoji}
                 </div>
               )}
-              {/* Photo */}
+              {/* Local image */}
               {url && !errored[i] && (
                 <img
                   src={url}
@@ -203,12 +174,12 @@ function PlantPhotoGallery({
                   onLoad={() =>  setLoaded(p  => ({ ...p, [i]: true }))}
                   onError={() => setErrored(p => ({ ...p, [i]: true }))}
                   style={{
-                    width:     '100%',
-                    height:    '100%',
-                    objectFit: 'cover',
-                    opacity:   localUrl ? 1 : (loaded[i] ? 1 : 0),
-                    transition:'opacity 0.3s ease',
-                    display:   'block',
+                    width:      '100%',
+                    height:     '100%',
+                    objectFit:  'cover',
+                    opacity:    loaded[i] ? 1 : 0,
+                    transition: 'opacity 0.3s ease',
+                    display:    'block',
                   }}
                 />
               )}
@@ -459,7 +430,6 @@ export function PlantDetailModal({ plant, onClose }: Props) {
           {/* Photo gallery */}
           {plant.common_name_en && (
             <PlantPhotoGallery
-              nameEn={plant.common_name_en}
               categoryEmoji={categoryEmoji}
               isHe={isHe}
               localImages={tableEntry?.images}
