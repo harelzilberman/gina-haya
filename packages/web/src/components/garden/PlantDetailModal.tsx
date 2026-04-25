@@ -2,7 +2,6 @@ import { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import type { PlantSummary, PlantDetail } from '../../hooks/usePlants';
 import { fetchPlantDetail } from '../../hooks/usePlants';
-import { getPlantByName } from '../../data/plantTable';
 import { useAuthStore } from '../../stores/authStore';
 import { useGardenStore } from '../../stores/gardenStore';
 import { useToastStore } from '../../stores/toastStore';
@@ -58,18 +57,26 @@ const MODAL_CSS = `
 `;
 
 // ── Photo gallery ─────────────────────────────────────────────────────────────
+
+// Derives the 3 candidate image paths from a plant's English name.
+// Spaces → underscores to match the ComfyUI filename convention.
+function buildImagePaths(nameEn: string): string[] {
+  const key = nameEn.replace(/\s+/g, '_');
+  return [1, 2, 3].map(n => `/images/plants/${key}_stage${n}_00001_.png`);
+}
+
 function PlantPhotoGallery({
   categoryEmoji,
   isHe,
-  localImages,
+  imagePaths,
 }: {
   categoryEmoji: string;
   isHe: boolean;
-  localImages?: string[];
+  imagePaths: string[];
 }) {
-  const [lightbox, setLightbox]   = useState<string | null>(null);
-  const [loaded,   setLoaded]     = useState<Record<number, boolean>>({});
-  const [errored,  setErrored]    = useState<Record<number, boolean>>({});
+  const [lightbox, setLightbox] = useState<string | null>(null);
+  const [loaded,   setLoaded]   = useState<Record<number, boolean>>({});
+  const [errored,  setErrored]  = useState<Record<number, boolean>>({});
 
   return (
     <>
@@ -91,17 +98,17 @@ function PlantPhotoGallery({
             onClick={() => setLightbox(null)}
             aria-label="Close"
             style={{
-              position:        'absolute',
-              top:             '20px',
-              right:           '20px',
-              background:      'none',
-              border:          'none',
-              color:           '#fff',
-              fontSize:        '28px',
-              cursor:          'pointer',
-              lineHeight:      1,
-              padding:         '4px 8px',
-              opacity:         0.8,
+              position:   'absolute',
+              top:        '20px',
+              right:      '20px',
+              background: 'none',
+              border:     'none',
+              color:      '#fff',
+              fontSize:   '28px',
+              cursor:     'pointer',
+              lineHeight: 1,
+              padding:    '4px 8px',
+              opacity:    0.8,
             }}
             onMouseEnter={e => { (e.currentTarget as HTMLElement).style.opacity = '1'; }}
             onMouseLeave={e => { (e.currentTarget as HTMLElement).style.opacity = '0.8'; }}
@@ -112,72 +119,63 @@ function PlantPhotoGallery({
             src={lightbox}
             onClick={e => e.stopPropagation()}
             alt=""
-            style={{
-              maxWidth:    '90vw',
-              maxHeight:   '85vh',
-              objectFit:   'contain',
-              borderRadius:'4px',
-            }}
+            style={{ maxWidth: '90vw', maxHeight: '85vh', objectFit: 'contain', borderRadius: '4px' }}
           />
         </div>
       )}
 
       {/* Label */}
-      <p style={{
-        fontFamily: FRANK,
-        fontSize:   '12px',
-        fontWeight: 400,
-        color:      `${PARCH}50`,
-        margin:     '0 0 8px',
-      }}>
+      <p style={{ fontFamily: FRANK, fontSize: '12px', fontWeight: 400, color: `${PARCH}50`, margin: '0 0 8px' }}>
         {isHe ? 'תמונות' : 'Photos'}
       </p>
 
-      {/* Photos row — always 3 slots; local images fill slots, missing slots show emoji */}
+      {/* 3-slot row — emoji always visible as base; image fades in on load, stays hidden on 404 */}
       <div style={{ display: 'flex', gap: '8px', marginBottom: '20px' }}>
         {[0, 1, 2].map(i => {
-          const url = localImages?.[i];
+          const url       = imagePaths[i];
+          const isLoaded  = loaded[i];
+          const isErrored = errored[i];
 
           return (
             <div
               key={i}
-              onClick={() => { if (url && !errored[i]) setLightbox(url); }}
+              onClick={() => { if (isLoaded && !isErrored) setLightbox(url); }}
               style={{
                 position:        'relative',
                 width:           '32%',
                 height:          '120px',
                 borderRadius:    '8px',
                 overflow:        'hidden',
-                cursor:          url && !errored[i] ? 'pointer' : 'default',
+                cursor:          isLoaded && !isErrored ? 'pointer' : 'default',
                 flexShrink:      0,
                 backgroundColor: 'rgba(20,43,22,0.7)',
               }}
             >
-              {/* Placeholder — no image for this slot, or image errored */}
-              {(!url || errored[i]) && (
-                <div style={{
-                  position:       'absolute',
-                  inset:          0,
-                  display:        'flex',
-                  alignItems:     'center',
-                  justifyContent: 'center',
-                  fontSize:       '36px',
-                }}>
-                  {categoryEmoji}
-                </div>
-              )}
-              {/* Local image */}
-              {url && !errored[i] && (
+              {/* Emoji always as base layer */}
+              <div style={{
+                position:       'absolute',
+                inset:          0,
+                display:        'flex',
+                alignItems:     'center',
+                justifyContent: 'center',
+                fontSize:       '36px',
+              }}>
+                {categoryEmoji}
+              </div>
+              {/* Image overlays emoji; fades in on load, unmounts on 404 */}
+              {!isErrored && (
                 <img
                   src={url}
                   alt=""
                   onLoad={() =>  setLoaded(p  => ({ ...p, [i]: true }))}
                   onError={() => setErrored(p => ({ ...p, [i]: true }))}
                   style={{
+                    position:   'absolute',
+                    inset:      0,
                     width:      '100%',
                     height:     '100%',
                     objectFit:  'cover',
-                    opacity:    loaded[i] ? 1 : 0,
+                    opacity:    isLoaded ? 1 : 0,
                     transition: 'opacity 0.3s ease',
                     display:    'block',
                   }}
@@ -296,8 +294,6 @@ export function PlantDetailModal({ plant, onClose }: Props) {
     : (detail?.description_en ?? plant.description_en);
 
   const categoryEmoji = plant.emoji ?? CATEGORY_EMOJIS[plant.category ?? 'other'] ?? '🌱';
-  const tableEntry = plant.common_name_en ? getPlantByName(plant.common_name_en) : undefined;
-
   return (
     <>
       <style>{MODAL_CSS}</style>
@@ -432,7 +428,7 @@ export function PlantDetailModal({ plant, onClose }: Props) {
             <PlantPhotoGallery
               categoryEmoji={categoryEmoji}
               isHe={isHe}
-              localImages={tableEntry?.images}
+              imagePaths={plant.common_name_en ? buildImagePaths(plant.common_name_en) : []}
             />
           )}
 
