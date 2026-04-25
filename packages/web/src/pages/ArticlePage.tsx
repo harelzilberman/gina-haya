@@ -406,6 +406,7 @@ export function ArticlePage() {
     }
 
     setLoading(true); setError(false); setHeroError(false); setProgress(0);
+    setContent(''); setTitle(''); setDescription('');
 
     const filename = lang === 'en'
       ? (entry?.filenameEn ?? `${slug}.md`)
