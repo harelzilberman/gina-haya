@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { usePlanStore } from '../stores/planStore';
 import { useGardenStore } from '../stores/gardenStore';
 import { useAuthStore } from '../stores/authStore';
@@ -32,6 +33,7 @@ function todayISO(): string {
 }
 
 function LoadingState() {
+  const { t } = useTranslation('plan');
   return (
     <div dir="rtl" style={{
       display: 'flex', flexDirection: 'column', alignItems: 'center',
@@ -40,16 +42,17 @@ function LoadingState() {
     }}>
       <span style={{ fontSize: '56px', animation: 'plan-moon-pulse 2.5s ease-in-out infinite' }}>🌕</span>
       <p style={{ fontFamily: FRANK, fontSize: '20px', color: GOLD, margin: '20px 0 8px' }}>
-        צ'ופצ'ו מכין את תכנית השבוע שלך...
+        {t('loading.title')}
       </p>
       <p style={{ fontFamily: ASSIST, fontSize: '14px', color: `${PARCH}66`, margin: 0 }}>
-        זה לוקח כ-20 שניות
+        {t('loading.subtitle')}
       </p>
     </div>
   );
 }
 
 function ErrorState({ error, onRetry }: { error: string; onRetry: () => void }) {
+  const { t } = useTranslation('plan');
   return (
     <div dir="rtl" style={{
       display: 'flex', flexDirection: 'column', alignItems: 'center',
@@ -58,7 +61,7 @@ function ErrorState({ error, onRetry }: { error: string; onRetry: () => void }) 
     }}>
       <span style={{ fontSize: '48px', marginBottom: '16px' }}>⚠️</span>
       <p style={{ fontFamily: FRANK, fontSize: '18px', color: `${PARCH}CC`, margin: '0 0 8px' }}>
-        לא הצלחנו להכין את התכנית
+        {t('error.title')}
       </p>
       <p style={{ fontFamily: ASSIST, fontSize: '13px', color: `${PARCH}55`, margin: '0 0 24px', maxWidth: '300px' }}>
         {error}
@@ -72,13 +75,14 @@ function ErrorState({ error, onRetry }: { error: string; onRetry: () => void }) 
           backgroundColor: 'transparent', cursor: 'pointer',
         }}
       >
-        נסה שוב
+        {t('error.retry')}
       </button>
     </div>
   );
 }
 
 function NoGardenPrompt({ onNavigate }: { onNavigate: () => void }) {
+  const { t } = useTranslation('plan');
   return (
     <div dir="rtl" style={{
       display: 'flex', flexDirection: 'column', alignItems: 'center',
@@ -87,10 +91,10 @@ function NoGardenPrompt({ onNavigate }: { onNavigate: () => void }) {
     }}>
       <span style={{ fontSize: '56px', marginBottom: '16px' }}>🌿</span>
       <h2 style={{ fontFamily: FRANK, fontSize: '22px', color: GOLD, margin: '0 0 10px' }}>
-        צור גינה תחילה
+        {t('noGarden.title')}
       </h2>
       <p style={{ fontFamily: ASSIST, fontSize: '14px', color: `${PARCH}88`, margin: '0 0 28px', maxWidth: '300px', lineHeight: 1.4 }}>
-        כדי שצ'ופצ'ו יוכל להכין תכנית שבועית מותאמת אישית, עליך קודם להגדיר את הגינה שלך
+        {t('noGarden.desc')}
       </p>
       <button
         onClick={onNavigate}
@@ -100,7 +104,7 @@ function NoGardenPrompt({ onNavigate }: { onNavigate: () => void }) {
           backgroundColor: GOLD, color: '#142B16', cursor: 'pointer',
         }}
       >
-        צור את הגינה שלי
+        {t('noGarden.cta')}
       </button>
     </div>
   );
@@ -108,6 +112,7 @@ function NoGardenPrompt({ onNavigate }: { onNavigate: () => void }) {
 
 export function PlanPage() {
   const navigate    = useNavigate();
+  const { t }       = useTranslation('plan');
   const planStore   = usePlanStore();
   const gardenStore = useGardenStore();
   const { session } = useAuthStore();
@@ -226,7 +231,7 @@ export function PlanPage() {
         <div style={{ textAlign: 'center', marginTop: '32px' }}>
           <button
             onClick={() => printWeeklyPlan(plan, today)}
-            title="מדפיס בפורמט קומפקטי — שומר על הטבע 🌱"
+            title={t('printButton')}
             style={{
               fontFamily: ASSIST, fontSize: '14px', fontWeight: 500,
               padding: '11px 28px', borderRadius: '8px',
@@ -243,7 +248,7 @@ export function PlanPage() {
               (e.currentTarget as HTMLElement).style.borderColor = 'rgba(245,200,64,0.25)';
             }}
           >
-            הורד תכנית PDF 📄
+            {t('printButton')}
           </button>
         </div>
       </div>

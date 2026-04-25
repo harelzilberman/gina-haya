@@ -1,0 +1,15 @@
+{
+  "title": "Growth Tracker",
+  "subtitle": "Photograph plants and Chupchu will build you a biodynamic growth plan 🌕",
+  "trackerCount": "{{count}}/{{max}} trackers",
+  "trackerCountUpgrade": "{{count}}/{{max}} trackers — upgrade for more",
+  "trackerCountUnlimited": "{{count}} active trackers",
+  "limitTooltip": "You have reached the tracker limit — upgrade to a larger plan",
+  "addButton": "+ New plant to track",
+  "loading": "Loading trackers...",
+  "empty": {
+    "title": "No plants tracked yet",
+    "desc": "Photograph a plant from your garden and Chupchu will build you a personalised growing plan",
+    "cta": "Start first tracker 🌱"
+  }
+}

@@ -1,0 +1,67 @@
+{
+  "greeting": {
+    "morning": "Good morning 🌱",
+    "afternoon": "Good afternoon ☀️",
+    "evening": "Good evening 🌙",
+    "hello": "Hello, {{name}}!",
+    "helloGuest": "Hello!"
+  },
+  "chupchu": {
+    "subtitle": "Chupchu — your biodynamic gardener",
+    "button": "💬 Talk to Chupchu"
+  },
+  "dayTypes": {
+    "fruit": "Fruit",
+    "root": "Root",
+    "flower": "Flower",
+    "leaf": "Leaf"
+  },
+  "dayTypePrefix": "Day",
+  "todayTasks": {
+    "title": "Your tasks for today",
+    "seeAll": "See all tasks ›",
+    "none": "No tasks for today"
+  },
+  "quickNav": "Quick navigation",
+  "nav": {
+    "calendar": "Biodynamic Calendar",
+    "tasks": "Task Board",
+    "map": "Garden Map",
+    "tracker": "Growth Tracker",
+    "plants": "Encyclopedia",
+    "guides": "Guides"
+  },
+  "biodynamic": {
+    "subtitle": "Daily biodynamic calendar",
+    "plantingScore": "Planting score",
+    "moonPhase": "Moon phase",
+    "dayType": "Day type",
+    "moonSign": "Moon sign",
+    "moonrise": "Moonrise",
+    "moonset": "Moonset",
+    "moonDirection": "Moon direction",
+    "moonPhaseName": "Phase name",
+    "ascending": "↑ Ascending",
+    "descending": "↓ Descending",
+    "noData": "No calendar data found for today"
+  },
+  "prep": {
+    "title": "Biodynamic recommendations for today",
+    "bd500": "Recommended: BD-500 💧",
+    "bd501": "Recommended: BD-501 ☀️",
+    "node": "⚠️ Node day — avoid planting",
+    "perigee": "⚠️ Moon at perigee — forces are weak"
+  },
+  "warnings": {
+    "node": "Node day — avoid planting",
+    "perigee": "Moon at perigee — forces are weak"
+  },
+  "weeklyTasks": {
+    "title": "This week's tasks",
+    "seeAll": "All ›",
+    "none": "No tasks this week",
+    "createPlan": "Create weekly plan →",
+    "today": "⬤ Today — ",
+    "addTask": "+ Add task"
+  }
+}

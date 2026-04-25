@@ -1,0 +1,22 @@
+{
+  "title": "Settings",
+  "emailPrefs": {
+    "sectionTitle": "Email Preferences",
+    "dailyTipLabel": "Receive daily garden tip by email",
+    "dailyTipDesc": "Chupchu will send you the biodynamic day data every morning",
+    "languageLabel": "Email language"
+  },
+  "saveButton": "Save Settings",
+  "savingButton": "Saving...",
+  "saveSuccess": "Preferences saved successfully ✓",
+  "saveError": "Failed to save",
+  "notifications": {
+    "title": "🔔 Notifications",
+    "pushLabel": "Push notifications",
+    "blocked": "Blocked in browser — change in browser settings",
+    "active": "Active — you will receive daily reminders",
+    "inactive": "Inactive",
+    "enable": "Enable notifications",
+    "disable": "Disable notifications"
+  }
+}

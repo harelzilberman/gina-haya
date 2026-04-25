@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { useToday } from '../hooks/useCalendar';
 import { useTasks } from '../hooks/useTasks';
 import { useAuthStore } from '../stores/authStore';
@@ -29,12 +30,12 @@ const SCORE_COLOR: Record<string, string> = {
 };
 
 const NAV_BUTTONS = [
-  { emoji: '📅', label: 'לוח ביודינמי', to: '/calendar'    },
-  { emoji: '✅', label: 'לוח משימות',   to: '/tasks'       },
-  { emoji: '🗺️', label: 'מפת גינה',    to: '/map'         },
-  { emoji: '🌱', label: 'מעקב גידול',  to: '/tracker'     },
-  { emoji: '📖', label: 'אנציקלופדיה', to: '/plants'      },
-  { emoji: '🎬', label: 'מדריכים',     to: '/guides'      },
+  { emoji: '📅', tKey: 'nav.calendar', to: '/calendar' },
+  { emoji: '✅', tKey: 'nav.tasks',    to: '/tasks'    },
+  { emoji: '🗺️', tKey: 'nav.map',     to: '/map'      },
+  { emoji: '🌱', tKey: 'nav.tracker', to: '/tracker'  },
+  { emoji: '📖', tKey: 'nav.plants',  to: '/plants'   },
+  { emoji: '🎬', tKey: 'nav.guides',  to: '/guides'   },
 ];
 
 // ── Helpers ────────────────────────────────────────────────────────────────
@@ -54,11 +55,11 @@ function todayISO() {
   return new Date().toLocaleDateString('en-CA', { timeZone: 'Asia/Jerusalem' });
 }
 
-function getGreeting() {
+function getGreetingKey(): string {
   const h = new Date().getHours();
-  if (h < 12) return 'בוקר טוב 🌱';
-  if (h < 17) return 'צהריים טובים ☀️';
-  return 'ערב טוב 🌙';
+  if (h < 12) return 'greeting.morning';
+  if (h < 17) return 'greeting.afternoon';
+  return 'greeting.evening';
 }
 
 function moonEmoji(pct: number): string {
@@ -99,6 +100,8 @@ function MoonCanvas({ phasePct, phaseAngle }: { phasePct: number; phaseAngle: nu
 
 // ── Dashboard ──────────────────────────────────────────────────────────────
 export function DashboardPage() {
+  const { t, i18n } = useTranslation('dashboard');
+  const isHe = i18n.language === 'he';
   const isMobile = useIsMobile();
   const { day, isLoading: calLoading } = useToday();
   const { tasks, updateStatus } = useTasks();
@@ -124,10 +127,10 @@ export function DashboardPage() {
 
   // BD prep advisory items
   const prepItems: string[] = [];
-  if (day?.prep500Recommended) prepItems.push('מומלץ: פרפרט 500 💧');
-  if (day?.prep501Recommended) prepItems.push('מומלץ: פרפרט 501 ☀️');
-  if (day?.nodeActive)         prepItems.push('⚠️ יום צומת — הימנע משתילה');
-  if (day?.perigeeActive)      prepItems.push('⚠️ ירח בפריגיאה — הכוחות חלשים');
+  if (day?.prep500Recommended) prepItems.push(t('prep.bd500'));
+  if (day?.prep501Recommended) prepItems.push(t('prep.bd501'));
+  if (day?.nodeActive)         prepItems.push(t('prep.node'));
+  if (day?.perigeeActive)      prepItems.push(t('prep.perigee'));
 
   // ── Shared: Chupchu greeting card ─────────────────────────────────────
   const ChupChuCard = (
@@ -153,10 +156,10 @@ export function DashboardPage() {
         </div>
         <div>
           <div style={{ fontFamily: FRANK, fontSize: '20px', color: GOLD, fontWeight: 700, lineHeight: 1.2 }}>
-            {firstName ? `שלום ${firstName}!` : 'שלום!'} {getGreeting()}
+            {firstName ? t('greeting.hello', { name: firstName }) : t('greeting.helloGuest')} {t(getGreetingKey())}
           </div>
           <div style={{ fontFamily: ASST, fontSize: '12px', color: `${PARCH}70`, marginTop: '3px' }}>
-            צ'ופצ'ו — הגנן הביודינמי שלך
+            {t('chupchu.subtitle')}
           </div>
         </div>
       </div>
@@ -186,7 +189,7 @@ export function DashboardPage() {
         onMouseEnter={e => { (e.currentTarget).style.filter = 'brightness(1.1)'; }}
         onMouseLeave={e => { (e.currentTarget).style.filter = 'none'; }}
       >
-        💬 דבר עם צ'ופצ'ו
+        {t('chupchu.button')}
       </button>
     </div>
   );
@@ -194,7 +197,7 @@ export function DashboardPage() {
   // ── MOBILE LAYOUT ──────────────────────────────────────────────────────
   if (isMobile) {
     return (
-      <div dir="rtl" style={{
+      <div dir={isHe ? 'rtl' : 'ltr'} style={{
         minHeight: '100vh', backgroundColor: EARTH,
         padding: '16px 12px 100px',
         fontFamily: ASST,
@@ -222,7 +225,7 @@ export function DashboardPage() {
               }}>
                 <span style={{ fontSize: '15px' }}>{dayType.emoji}</span>
                 <span style={{ fontFamily: ASST, fontSize: '12px', fontWeight: 600, color: dayType.color }}>
-                  יום {dayType.label}
+                  {t('dayTypePrefix')} {t('dayTypes.' + day!.dayType)}
                 </span>
               </div>
             )}
@@ -256,19 +259,19 @@ export function DashboardPage() {
         }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px' }}>
             <h2 style={{ fontFamily: FRANK, fontSize: '16px', color: GOLD, margin: 0 }}>
-              המשימות שלך להיום
+              {t('todayTasks.title')}
             </h2>
             <Link
               to="/tasks"
               style={{ fontFamily: ASST, fontSize: '12px', color: `${PARCH}65`, textDecoration: 'none' }}
             >
-              לכל המשימות ›
+              {t('todayTasks.seeAll')}
             </Link>
           </div>
 
           {todayTasks.length === 0 ? (
             <p style={{ fontFamily: ASST, fontSize: '13px', color: `${PARCH}50`, margin: 0 }}>
-              אין משימות להיום
+              {t('todayTasks.none')}
             </p>
           ) : (
             todayTasks.slice(0, 4).map(task => (
@@ -331,7 +334,7 @@ export function DashboardPage() {
               >
                 <span style={{ fontSize: '32px', lineHeight: 1 }}>{btn.emoji}</span>
                 <span style={{ fontFamily: ASST, fontSize: '13px', color: GOLD, fontWeight: 600 }}>
-                  {btn.label}
+                  {t(btn.tKey)}
                 </span>
               </div>
             </Link>
@@ -343,7 +346,7 @@ export function DashboardPage() {
 
   // ── DESKTOP LAYOUT ─────────────────────────────────────────────────────
   return (
-    <div dir="rtl" style={{
+    <div dir={isHe ? 'rtl' : 'ltr'} style={{
       minHeight: '100vh', backgroundColor: EARTH,
       padding: '28px 28px 60px',
       fontFamily: ASST,
@@ -371,7 +374,7 @@ export function DashboardPage() {
               color: `${PARCH}50`, margin: '0 0 10px',
               textTransform: 'uppercase', letterSpacing: '0.1em',
             }}>
-              ניווט מהיר
+              {t('quickNav')}
             </h3>
             {NAV_BUTTONS.map(btn => (
               <Link
@@ -389,7 +392,7 @@ export function DashboardPage() {
                 <span style={{ fontSize: '18px', width: '26px', textAlign: 'center', lineHeight: 1 }}>
                   {btn.emoji}
                 </span>
-                <span style={{ fontFamily: ASST, fontSize: '14px', flex: 1 }}>{btn.label}</span>
+                <span style={{ fontFamily: ASST, fontSize: '14px', flex: 1 }}>{t(btn.tKey)}</span>
                 <span style={{ color: `${PARCH}35`, fontSize: '14px' }}>‹</span>
               </Link>
             ))}
@@ -408,7 +411,7 @@ export function DashboardPage() {
               {todayDateHe}
             </h1>
             <p style={{ fontFamily: ASST, fontSize: '13px', color: `${PARCH}55`, margin: 0 }}>
-              לוח ביודינמי יומי
+              {t('biodynamic.subtitle')}
             </p>
           </div>
 
@@ -426,7 +429,7 @@ export function DashboardPage() {
                 }}>
                   {/* Row 1 — planting score */}
                   <div style={{ background: `${scoreColor}14`, border: `1px solid ${scoreColor}44`, borderRadius: '12px', padding: '14px 16px' }}>
-                    <div style={{ fontFamily: ASST, fontSize: '11px', color: `${PARCH}60`, marginBottom: '4px' }}>ציון שתילה</div>
+                    <div style={{ fontFamily: ASST, fontSize: '11px', color: `${PARCH}60`, marginBottom: '4px' }}>{t('biodynamic.plantingScore')}</div>
                     <div style={{ fontFamily: FRANK, fontSize: '28px', color: scoreColor, fontWeight: 700, lineHeight: 1 }}>
                       {day.plantingScore}
                       <span style={{ fontFamily: ASST, fontSize: '11px', color: `${PARCH}40`, fontWeight: 400 }}> /10</span>
@@ -435,7 +438,7 @@ export function DashboardPage() {
 
                   {/* Row 1 — moon phase % */}
                   <div style={{ background: 'rgba(245,200,64,0.08)', border: '1px solid rgba(245,200,64,0.2)', borderRadius: '12px', padding: '14px 16px' }}>
-                    <div style={{ fontFamily: ASST, fontSize: '11px', color: `${PARCH}60`, marginBottom: '4px' }}>שלב הירח</div>
+                    <div style={{ fontFamily: ASST, fontSize: '11px', color: `${PARCH}60`, marginBottom: '4px' }}>{t('biodynamic.moonPhase')}</div>
                     <div style={{ fontFamily: FRANK, fontSize: '22px', color: GOLD }}>
                       {moonEmoji(day.moonPhasePct)} {day.moonPhasePct}%
                     </div>
@@ -444,22 +447,22 @@ export function DashboardPage() {
                   {/* Row 1 — day type */}
                   {dayType ? (
                     <div style={{ background: dayType.bg, border: `1px solid ${dayType.color}55`, borderRadius: '12px', padding: '14px 16px' }}>
-                      <div style={{ fontFamily: ASST, fontSize: '11px', color: `${PARCH}60`, marginBottom: '4px' }}>סוג היום</div>
+                      <div style={{ fontFamily: ASST, fontSize: '11px', color: `${PARCH}60`, marginBottom: '4px' }}>{t('biodynamic.dayType')}</div>
                       <div style={{ fontFamily: FRANK, fontSize: '18px', color: dayType.color, fontWeight: 700 }}>
-                        {dayType.emoji} יום {dayType.label}
+                        {dayType.emoji} {t('dayTypePrefix')} {t('dayTypes.' + day!.dayType)}
                       </div>
                     </div>
                   ) : <div />}
 
                   {/* Row 2 — moon sign */}
                   <div style={{ background: 'rgba(255,255,255,0.04)', borderRadius: '10px', padding: '14px 16px' }}>
-                    <div style={{ fontFamily: ASST, fontSize: '11px', color: `${PARCH}50`, marginBottom: '5px' }}>מזל הירח</div>
+                    <div style={{ fontFamily: ASST, fontSize: '11px', color: `${PARCH}50`, marginBottom: '5px' }}>{t('biodynamic.moonSign')}</div>
                     <div style={{ fontFamily: FRANK, fontSize: '16px', color: PARCH }}>{day.moonSignHe}</div>
                   </div>
 
                   {/* Row 2 — rise time */}
                   <div style={{ background: 'rgba(255,255,255,0.04)', borderRadius: '10px', padding: '14px 16px' }}>
-                    <div style={{ fontFamily: ASST, fontSize: '11px', color: `${PARCH}50`, marginBottom: '5px' }}>זריחת ירח</div>
+                    <div style={{ fontFamily: ASST, fontSize: '11px', color: `${PARCH}50`, marginBottom: '5px' }}>{t('biodynamic.moonrise')}</div>
                     <div style={{ fontFamily: FRANK, fontSize: '16px', color: PARCH }}>{day.moonriseTime ?? '—'}</div>
                   </div>
 

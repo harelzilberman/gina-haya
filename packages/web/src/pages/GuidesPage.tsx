@@ -1,6 +1,6 @@
 import { useState, useRef } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import i18n from '../i18n';
+import { useTranslation } from 'react-i18next';
 
 const GOLD   = '#F5C840';
 const PARCH  = '#EDE0C4';
@@ -113,6 +113,7 @@ const SUBJECT_MODAL_CSS = `
 `;
 
 function VideoCard({ video, onClick }: { video: Video; onClick: () => void }) {
+  const { t } = useTranslation('guides');
   const [hovered, setHovered] = useState(false);
 
   const thumbnailUrl = video.youtubeId
@@ -180,7 +181,7 @@ function VideoCard({ video, onClick }: { video: Video; onClick: () => void }) {
             borderRadius: '4px', padding: '2px 8px',
             fontFamily: ASSIST, fontSize: '10px', color: 'rgba(237,224,196,0.7)',
           }}>
-            בקרוב
+            {t('comingSoon')}
           </div>
         )}
         {/* Format badge */}
@@ -228,6 +229,7 @@ function VideoRow({ category, videos, onSelect }: {
   videos: Video[];
   onSelect: (v: Video) => void;
 }) {
+  const { t } = useTranslation('guides');
   const rowRef = useRef<HTMLDivElement>(null);
 
   function scroll(dir: 'left' | 'right') {
@@ -242,7 +244,7 @@ function VideoRow({ category, videos, onSelect }: {
         fontFamily: FRANK, fontSize: '18px', color: GOLD,
         margin: '0 0 16px', fontWeight: 700,
       }}>
-        {category.labelHe}
+        {t('filters.' + category.id)}
       </h2>
       <div style={{ position: 'relative' }}>
         {/* Scroll left */}
@@ -287,6 +289,7 @@ function VideoRow({ category, videos, onSelect }: {
 }
 
 function VideoModal({ video, onClose }: { video: Video; onClose: () => void }) {
+  const { t } = useTranslation('guides');
   return (
     <div
       onClick={onClose}
@@ -325,10 +328,10 @@ function VideoModal({ video, onClose }: { video: Video; onClose: () => void }) {
           }}>
             <div style={{ fontSize: '48px', marginBottom: '16px' }}>🌱</div>
             <p style={{ fontFamily: FRANK, fontSize: '18px', color: GOLD, margin: '0 0 8px' }}>
-              הסרטון בהכנה
+              {t('videoModal.inProgress')}
             </p>
             <p style={{ fontFamily: ASSIST, fontSize: '13px', color: 'rgba(237,224,196,0.5)', margin: 0 }}>
-              מגיע בקרוב — עוקבים אחרינו ביוטיוב?
+              {t('videoModal.followYouTube')}
             </p>
           </div>
         )}
@@ -376,7 +379,7 @@ function VideoModal({ video, onClose }: { video: Video; onClose: () => void }) {
                 textDecoration: 'none',
               }}
             >
-              🔔 עקבו בYouTube לעדכון
+              {t('videoModal.subscribe')}
             </a>
           )}
         </div>
@@ -397,6 +400,8 @@ function SubjectModal({
   onPlayVideo: (v: Video) => void;
   onOpenArticle: (slug: string) => void;
 }) {
+  const { t, i18n } = useTranslation('guides');
+  const isHe = i18n.language === 'he';
   const [articleMsg, setArticleMsg] = useState(false);
 
   const content    = GUIDE_CONTENT[video.id] ?? { comingSoon: ['סרטון', 'מאמר', 'וובינר'] };
@@ -436,7 +441,7 @@ function SubjectModal({
             borderRadius: '16px', overflow: 'hidden',
             maxWidth: '500px', width: '92%',
             maxHeight: '90vh', overflowY: 'auto',
-            direction: 'rtl',
+            direction: isHe ? 'rtl' : 'ltr',
             boxShadow: '0 24px 80px rgba(0,0,0,0.7)',
             animation: 'subjectModalIn 0.2s ease-out',
           }}
@@ -475,7 +480,7 @@ function SubjectModal({
                   border: '1px solid rgba(245,200,64,0.25)',
                   borderRadius: '99px', padding: '2px 10px',
                 }}>
-                  {category.labelHe}
+                  {t('filters.' + category.id)}
                 </span>
               )}
             </div>
@@ -484,7 +489,7 @@ function SubjectModal({
           {/* Content options */}
           <div style={{ padding: '20px 18px' }}>
             <p style={{ fontFamily: ASSIST, fontSize: '12px', color: `${PARCH}55`, margin: '0 0 14px', letterSpacing: '0.06em', textTransform: 'uppercase' as const }}>
-              תוכן זמין
+              {t('subjectModal.available')}
             </p>
 
             {/* Video row */}
@@ -503,7 +508,7 @@ function SubjectModal({
               >
                 <span style={{ fontSize: '26px', flexShrink: 0 }}>🎬</span>
                 <div style={{ flex: 1 }}>
-                  <div style={{ fontFamily: FRANK, fontSize: '15px', color: GOLD }}>סרטון הדרכה</div>
+                  <div style={{ fontFamily: FRANK, fontSize: '15px', color: GOLD }}>{t('subjectModal.video')}</div>
                   <div style={{ fontFamily: ASSIST, fontSize: '12px', color: `${PARCH}55` }}>⏱ {content.video.duration}</div>
                 </div>
                 <span style={{ color: GOLD, fontSize: '20px', flexShrink: 0 }}>▶</span>
@@ -535,9 +540,9 @@ function SubjectModal({
                 <span style={{ fontSize: '26px', flexShrink: 0 }}>📖</span>
                 <div style={{ flex: 1 }}>
                   <div style={{ fontFamily: FRANK, fontSize: '15px', color: content.article.ready ? GOLD : PARCH }}>
-                    מאמר מפורט
+                    {t('subjectModal.article')}
                   </div>
-                  <div style={{ fontFamily: ASSIST, fontSize: '12px', color: `${PARCH}55` }}>על ידי צ'ופצ'ו</div>
+                  <div style={{ fontFamily: ASSIST, fontSize: '12px', color: `${PARCH}55` }}>{t('subjectModal.byChupchu')}</div>
                 </div>
                 {content.article.ready ? (
                   <span style={{ color: GOLD, fontSize: '20px', flexShrink: 0 }}>→</span>
@@ -547,7 +552,7 @@ function SubjectModal({
                     background: 'rgba(245,200,64,0.1)', color: GOLD,
                     border: '1px solid rgba(245,200,64,0.2)',
                     borderRadius: '4px', padding: '2px 7px', flexShrink: 0,
-                  }}>בקרוב</span>
+                  }}>{t('comingSoon')}</span>
                 )}
               </div>
             )}
@@ -559,7 +564,7 @@ function SubjectModal({
                 textAlign: 'center', padding: '6px 0 2px',
                 animation: 'subjectModalIn 0.15s ease-out',
               }}>
-                ✏️ המאמר בהכנה — יגיע בקרוב!
+                {t('subjectModal.articleInProgress')}
               </div>
             )}
 
@@ -577,7 +582,7 @@ function SubjectModal({
                   fontFamily: ASSIST, fontSize: '10px',
                   background: 'rgba(255,255,255,0.08)', color: `${PARCH}60`,
                   borderRadius: '4px', padding: '2px 7px', flexShrink: 0,
-                }}>בקרוב</span>
+                }}>{t('comingSoon')}</span>
               </div>
             ))}
           </div>
@@ -591,7 +596,7 @@ function SubjectModal({
             <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
               <span style={{ fontSize: '22px' }}>🌕</span>
               <span style={{ fontFamily: ASSIST, fontSize: '11px', color: `${PARCH}50` }}>
-                צ'ופצ'ו ממליץ על התוכן הזה 🌿
+                {t('subjectModal.chupChuRecommends')}
               </span>
             </div>
             <button
@@ -602,7 +607,7 @@ function SubjectModal({
                 borderRadius: '8px', padding: '8px 18px', cursor: 'pointer', flexShrink: 0,
               }}
             >
-              סגור
+              {t('subjectModal.close')}
             </button>
           </div>
         </div>
@@ -637,6 +642,8 @@ function CrossNavLink({ to, label }: { to: string; label: string }) {
 }
 
 export function GuidesPage() {
+  const { t, i18n } = useTranslation('guides');
+  const isHe = i18n.language === 'he';
   const navigate = useNavigate();
   const [subjectVideo, setSubjectVideo] = useState<Video | null>(null);  // subject popup
   const [playVideo,    setPlayVideo]    = useState<Video | null>(null);  // YouTube embed
@@ -646,9 +653,11 @@ export function GuidesPage() {
     ? CATEGORIES
     : CATEGORIES.filter(c => c.id === activeFilter);
 
+  const allCategories = [{ id: 'all' }, ...CATEGORIES];
+
   return (
     <div
-      dir="rtl"
+      dir={isHe ? 'rtl' : 'ltr'}
       style={{
         minHeight: '100vh',
         background: 'linear-gradient(180deg, #0e1e0f 0%, #142B16 30%, #0a1a0c 100%)',
@@ -659,21 +668,21 @@ export function GuidesPage() {
       {/* Header */}
       <div style={{ marginBottom: '20px' }}>
         <h1 style={{ fontFamily: FRANK, fontSize: '32px', color: GOLD, margin: '0 0 8px' }}>
-          🎬 מדריכי גינה
+          {t('title')}
         </h1>
         <p style={{ fontFamily: ASSIST, fontSize: '15px', color: 'rgba(237,224,196,0.6)', margin: 0 }}>
-          סרטונים מעשיים לגינון ביודינמי — טבעי, חי ונושם
+          {t('subtitle')}
         </p>
       </div>
 
       {/* Cross-nav to articles */}
       <div style={{ marginBottom: '28px' }}>
-        <CrossNavLink to="/articles" label="📖 למאמרים ←" />
+        <CrossNavLink to="/articles" label={t('toArticles')} />
       </div>
 
       {/* Category filter pills */}
       <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap', marginBottom: '36px' }}>
-        {[{ id: 'all', labelHe: '✨ הכל' }, ...CATEGORIES].map(cat => (
+        {allCategories.map(cat => (
           <button
             key={cat.id}
             onClick={() => setActiveFilter(cat.id)}
@@ -686,7 +695,7 @@ export function GuidesPage() {
               cursor: 'pointer', transition: 'all 0.15s',
             }}
           >
-            {cat.labelHe}
+            {t('filters.' + cat.id)}
           </button>
         ))}
       </div>

@@ -1,0 +1,65 @@
+{
+  "title": "📋 לוח משימות",
+  "completedOf": "{{done}} מתוך {{total}} הושלמו",
+  "views": {
+    "week": "שבוע",
+    "month": "חודש"
+  },
+  "nav": {
+    "prev": "‹ הקודם",
+    "next": "הבא ›",
+    "today": "היום"
+  },
+  "filters": {
+    "all": "הכל",
+    "pending": "ממתינות",
+    "done": "הושלמו"
+  },
+  "sources": {
+    "biodynamic": "לוח ביודינמי",
+    "weekly_plan": "תכנית שבועית",
+    "growing_tracker": "מעקב גידול",
+    "manual": "אישי"
+  },
+  "dayNames": ["שני", "שלישי", "רביעי", "חמישי", "שישי", "שבת", "ראשון"],
+  "dayTypes": {
+    "fruit": "פרי",
+    "root": "שורש",
+    "flower": "פרח",
+    "leaf": "עלה"
+  },
+  "bootstrapping": "צ'ופצ'ו מכין את משימות השבוע מהתכנית...",
+  "noTasks": {
+    "title": "אין משימות לתקופה זו",
+    "desc": "צור תכנית שבועית תחילה ומשימות ייווצרו אוטומטית",
+    "cta": "צור תכנית שבועית 🌕"
+  },
+  "loading": "טוען לוח משימות...",
+  "modal": {
+    "newTask": "משימה חדשה",
+    "editTask": "עריכת משימה",
+    "titlePlaceholder": "שם המשימה...",
+    "notesPlaceholder": "הערות (אופציונלי)...",
+    "statuses": {
+      "pending": "ממתין",
+      "done": "הושלם",
+      "skipped": "דולג"
+    },
+    "delete": "מחק",
+    "cancel": "ביטול",
+    "save": "שמור"
+  },
+  "dayModal": {
+    "restDay": "יום מנוחה בגינה",
+    "noTasksMsg": "אין משימות מתוכננות להיום.\nזה הזמן המושלם לשבת, להקשיב לגינה,\nולפשוט את הנשמה בין הצמחים.",
+    "chupchu": "— צ'ופצ'ו 🤖",
+    "done": "הושלמו ✓",
+    "addTaskForDay": "+ הוסף משימה ליום זה",
+    "close": "סגור",
+    "dayTypePrefix": "יום",
+    "addTaskPlaceholder": "שם המשימה...",
+    "add": "הוסף"
+  },
+  "moreCount": "+{{count}} עוד...",
+  "addButton": "+ הוסף"
+}

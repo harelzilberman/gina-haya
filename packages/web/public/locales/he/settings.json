@@ -1,0 +1,22 @@
+{
+  "title": "הגדרות",
+  "emailPrefs": {
+    "sectionTitle": "העדפות מייל",
+    "dailyTipLabel": "קבל טיפ יומי מהגינה במייל",
+    "dailyTipDesc": "צ'ופצ'ו ישלח לך כל בוקר את נתוני היום הביודינמי",
+    "languageLabel": "שפת המייל"
+  },
+  "saveButton": "שמור הגדרות",
+  "savingButton": "שומר...",
+  "saveSuccess": "ההעדפות נשמרו בהצלחה ✓",
+  "saveError": "שגיאה בשמירה",
+  "notifications": {
+    "title": "🔔 התראות",
+    "pushLabel": "התראות דחיפה",
+    "blocked": "חסומות בדפדפן — שנה בהגדרות הדפדפן",
+    "active": "פעילות — תקבל תזכורות יומיות",
+    "inactive": "לא פעילות",
+    "enable": "הפעל התראות",
+    "disable": "בטל התראות"
+  }
+}

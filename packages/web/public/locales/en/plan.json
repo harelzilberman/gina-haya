@@ -1,0 +1,16 @@
+{
+  "loading": {
+    "title": "Chupchu is preparing your weekly plan...",
+    "subtitle": "This takes about 20 seconds"
+  },
+  "error": {
+    "title": "We couldn't prepare the plan",
+    "retry": "Try again"
+  },
+  "noGarden": {
+    "title": "Create a garden first",
+    "desc": "For Chupchu to prepare a personalised weekly plan, you need to set up your garden first",
+    "cta": "Create my garden"
+  },
+  "printButton": "Download PDF plan 📄"
+}

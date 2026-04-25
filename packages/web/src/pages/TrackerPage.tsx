@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { useTrackerStore, type CheckinResult } from '../stores/trackerStore';
 import { useAuthStore } from '../stores/authStore';
 import { useGardenStore } from '../stores/gardenStore';
@@ -21,6 +22,8 @@ const TIER_TRACKER_LIMITS: Record<string, number | null> = {
 };
 
 export function TrackerPage() {
+  const { t, i18n } = useTranslation('tracker');
+  const isHe = i18n.language === 'he';
   const { trackers, isLoading, loadTrackers } = useTrackerStore();
   const { profile } = useAuthStore();
   const { activeGarden, loadGardens } = useGardenStore();
@@ -45,12 +48,18 @@ export function TrackerPage() {
   }
 
   const photoTracker = photoUploadTrackerId
-    ? trackers.find(t => t.id === photoUploadTrackerId)
+    ? trackers.find(tr => tr.id === photoUploadTrackerId)
     : null;
+
+  const trackerCountLabel = maxTrackers !== null
+    ? (atLimit
+        ? t('trackerCountUpgrade', { count: trackerCount, max: maxTrackers })
+        : t('trackerCount', { count: trackerCount, max: maxTrackers }))
+    : t('trackerCountUnlimited', { count: trackerCount });
 
   return (
     <div
-      dir="rtl"
+      dir={isHe ? 'rtl' : 'ltr'}
       style={{
         minHeight: '100vh',
         backgroundColor: EARTH,
@@ -71,20 +80,17 @@ export function TrackerPage() {
         }}>
           <div>
             <h1 style={{ fontFamily: FRANK, fontSize: '32px', color: GOLD, margin: '0 0 6px' }}>
-              מעקב גידול
+              {t('title')}
             </h1>
             <p style={{ fontFamily: ASST, fontSize: '14px', color: 'rgba(237,224,196,0.55)', margin: 0 }}>
-              צלם צמחים וצ'ופצ'ו יבנה לך תכנית גידול ביודינמית 🌕
+              {t('subtitle')}
             </p>
           </div>
 
           <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start', gap: '8px' }}>
             {/* Tier indicator */}
             <p style={{ fontFamily: ASST, fontSize: '12px', color: 'rgba(237,224,196,0.45)', margin: 0 }}>
-              {maxTrackers !== null
-                ? `${trackerCount}/${maxTrackers} מעקבים${atLimit ? ' — שדרג לעוד' : ''}`
-                : `${trackerCount} מעקבים פעילים`
-              }
+              {trackerCountLabel}
             </p>
 
             {/* Add tracker button */}
@@ -106,9 +112,9 @@ export function TrackerPage() {
               }}
               onMouseEnter={e => { if (!atLimit) (e.currentTarget as HTMLElement).style.filter = 'brightness(1.1)'; }}
               onMouseLeave={e => { (e.currentTarget as HTMLElement).style.filter = 'none'; }}
-              title={atLimit ? 'הגעת למגבלת המעקבים — שדרג לתכנית גדולה יותר' : ''}
+              title={atLimit ? t('limitTooltip') : ''}
             >
-              + צמח חדש למעקב
+              {t('addButton')}
             </button>
           </div>
         </div>
@@ -118,7 +124,7 @@ export function TrackerPage() {
           <div style={{ textAlign: 'center', padding: '80px 0' }}>
             <div style={{ fontSize: '48px', marginBottom: '16px' }} className="animate-pulse">🌕</div>
             <p style={{ fontFamily: ASST, fontSize: '14px', color: 'rgba(237,224,196,0.45)' }}>
-              טוען מעקבים...
+              {t('loading')}
             </p>
           </div>
         ) : trackers.length === 0 ? (
@@ -132,10 +138,10 @@ export function TrackerPage() {
           }}>
             <div style={{ fontSize: '64px', marginBottom: '20px' }}>🌱</div>
             <h2 style={{ fontFamily: FRANK, fontSize: '22px', color: GOLD, marginBottom: '12px' }}>
-              עדיין אין צמחים במעקב
+              {t('empty.title')}
             </h2>
             <p style={{ fontFamily: ASST, fontSize: '15px', color: 'rgba(237,224,196,0.6)', marginBottom: '28px', lineHeight: 1.7, maxWidth: '400px', margin: '0 auto 28px' }}>
-              צלם צמח מהגינה שלך וצ'ופצ'ו יבנה לך תכנית גידול מותאמת אישית
+              {t('empty.desc')}
             </p>
             <button
               onClick={() => setShowNewTracker(true)}
@@ -149,7 +155,7 @@ export function TrackerPage() {
               onMouseEnter={e => { (e.currentTarget as HTMLElement).style.filter = 'brightness(1.1)'; }}
               onMouseLeave={e => { (e.currentTarget as HTMLElement).style.filter = 'none'; }}
             >
-              התחל מעקב ראשון 🌱
+              {t('empty.cta')}
             </button>
           </div>
         ) : (

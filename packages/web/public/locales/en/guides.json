@@ -1,0 +1,29 @@
+{
+  "title": "🎬 Garden Guides",
+  "subtitle": "Practical videos for biodynamic gardening — natural, alive and breathing",
+  "toArticles": "📖 To Articles ←",
+  "filters": {
+    "all": "✨ All",
+    "fertilizer": "🌿 Natural Fertilizers",
+    "pest": "🐛 Organic Pest Control",
+    "compost": "♻️ Compost",
+    "bd": "🌕 Biodynamic Preparations",
+    "companion": "🤝 Companion Planting",
+    "technique": "🌱 Gardening Techniques"
+  },
+  "comingSoon": "Coming soon",
+  "videoModal": {
+    "inProgress": "Video in production",
+    "followYouTube": "Coming soon — follow us on YouTube?",
+    "subscribe": "🔔 Follow on YouTube for updates"
+  },
+  "subjectModal": {
+    "available": "Available content",
+    "video": "Tutorial video",
+    "article": "Detailed article",
+    "byChupchu": "by Chupchu",
+    "articleInProgress": "✏️ Article in preparation — coming soon!",
+    "chupChuRecommends": "Chupchu recommends this content 🌿",
+    "close": "Close"
+  }
+}

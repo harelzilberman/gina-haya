@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { api } from '../api/client';
 import { useAuthStore } from '../stores/authStore';
 import { useToastStore } from '../stores/toastStore';
@@ -14,6 +15,8 @@ const ASSIST = '"Assistant", "Heebo", sans-serif';
 const NOISE_BG = `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='250' height='250'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.75' numOctaves='4' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='250' height='250' filter='url(%23n)' opacity='0.55'/%3E%3C/svg%3E")`;
 
 export function SettingsPage() {
+  const { t, i18n } = useTranslation('settings');
+  const isHe = i18n.language === 'he';
   const { profile, session } = useAuthStore();
   const { show: showToast }  = useToastStore();
   const { isSubscribed, permission, subscribe, unsubscribe, isLoading: pushLoading } = usePushNotifications();
@@ -39,9 +42,9 @@ export function SettingsPage() {
       if (currentSession) {
         useAuthStore.getState().loadProfile();
       }
-      showToast('ההעדפות נשמרו בהצלחה ✓', 'success');
+      showToast(t('saveSuccess'), 'success');
     } catch (err: any) {
-      showToast(err.message || 'שגיאה בשמירה', 'error');
+      showToast(err.message || t('saveError'), 'error');
     } finally {
       setIsSaving(false);
     }
@@ -63,7 +66,7 @@ export function SettingsPage() {
         }}
       />
 
-      <div style={{ backgroundColor: EARTH, minHeight: '100vh', position: 'relative', zIndex: 0 }}>
+      <div dir={isHe ? 'rtl' : 'ltr'} style={{ backgroundColor: EARTH, minHeight: '100vh', position: 'relative', zIndex: 0 }}>
         <div style={{ maxWidth: '600px', margin: '0 auto', padding: '28px 16px 60px' }}>
 
           {/* Page title */}
@@ -75,7 +78,7 @@ export function SettingsPage() {
             margin:      '0 0 24px',
             lineHeight:  1.1,
           }}>
-            הגדרות
+            {t('title')}
           </h1>
 
           {/* Settings card */}
@@ -95,7 +98,7 @@ export function SettingsPage() {
               color:       PARCH,
               margin:      '0 0 24px',
             }}>
-              העדפות מייל
+              {t('emailPrefs.sectionTitle')}
             </h2>
 
             {/* Daily tip toggle */}
@@ -108,10 +111,10 @@ export function SettingsPage() {
             }}>
               <div>
                 <div style={{ fontFamily: ASSIST, fontSize: '14px', fontWeight: 500, color: PARCH, marginBottom: '4px' }}>
-                  קבל טיפ יומי מהגינה במייל
+                  {t('emailPrefs.dailyTipLabel')}
                 </div>
                 <div style={{ fontFamily: ASSIST, fontSize: '12px', fontWeight: 300, color: `${PARCH}55` }}>
-                  צ'ופצ'ו ישלח לך כל בוקר את נתוני היום הביודינמי
+                  {t('emailPrefs.dailyTipDesc')}
                 </div>
               </div>
 
@@ -150,7 +153,7 @@ export function SettingsPage() {
             {/* Language selector — pill style */}
             <div style={{ marginBottom: '32px' }}>
               <div style={{ fontFamily: ASSIST, fontSize: '14px', fontWeight: 500, color: PARCH, marginBottom: '12px' }}>
-                שפת המייל
+                {t('emailPrefs.languageLabel')}
               </div>
               <div style={{ display: 'flex', gap: '8px' }}>
                 {(['he', 'en'] as const).map(lang => {
@@ -217,20 +220,24 @@ export function SettingsPage() {
               onMouseEnter={e => { if (!isSaving) (e.currentTarget as HTMLElement).style.filter = 'brightness(1.1)'; }}
               onMouseLeave={e => { (e.currentTarget as HTMLElement).style.filter = 'none'; }}
             >
-              {isSaving ? 'שומר...' : 'שמור הגדרות'}
+              {isSaving ? t('savingButton') : t('saveButton')}
             </button>
 
           </div>
 
           {/* Notifications section */}
           <div style={{ background: 'rgba(28,58,30,0.5)', border: '1px solid rgba(245,200,64,0.12)', borderRadius: '12px', padding: '20px', marginTop: '16px' }}>
-            <h3 style={{ fontFamily: FRANK, fontSize: '16px', color: GOLD, margin: '0 0 16px' }}>🔔 התראות</h3>
+            <h3 style={{ fontFamily: FRANK, fontSize: '16px', color: GOLD, margin: '0 0 16px' }}>{t('notifications.title')}</h3>
 
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
               <div>
-                <p style={{ fontFamily: ASSIST, fontSize: '14px', color: PARCH, margin: '0 0 2px' }}>התראות דחיפה</p>
+                <p style={{ fontFamily: ASSIST, fontSize: '14px', color: PARCH, margin: '0 0 2px' }}>{t('notifications.pushLabel')}</p>
                 <p style={{ fontFamily: ASSIST, fontSize: '12px', color: `${PARCH}60`, margin: 0 }}>
-                  {permission === 'denied' ? 'חסומות בדפדפן — שנה בהגדרות הדפדפן' : isSubscribed ? 'פעילות — תקבל תזכורות יומיות' : 'לא פעילות'}
+                  {permission === 'denied'
+                    ? t('notifications.blocked')
+                    : isSubscribed
+                      ? t('notifications.active')
+                      : t('notifications.inactive')}
                 </p>
               </div>
               {permission !== 'denied' && (
@@ -247,7 +254,7 @@ export function SettingsPage() {
                     opacity: pushLoading ? 0.7 : 1,
                   }}
                 >
-                  {pushLoading ? '...' : isSubscribed ? 'בטל התראות' : 'הפעל התראות'}
+                  {pushLoading ? '...' : isSubscribed ? t('notifications.disable') : t('notifications.enable')}
                 </button>
               )}
             </div>

@@ -1,0 +1,29 @@
+{
+  "title": "🎬 מדריכי גינה",
+  "subtitle": "סרטונים מעשיים לגינון ביודינמי — טבעי, חי ונושם",
+  "toArticles": "📖 למאמרים ←",
+  "filters": {
+    "all": "✨ הכל",
+    "fertilizer": "🌿 דשנים טבעיים",
+    "pest": "🐛 הדברה אורגנית",
+    "compost": "♻️ קומפוסט",
+    "bd": "🌕 פרפרטים ביודינמיים",
+    "companion": "🤝 שיתופי פעולה",
+    "technique": "🌱 טכניקות גינון"
+  },
+  "comingSoon": "בקרוב",
+  "videoModal": {
+    "inProgress": "הסרטון בהכנה",
+    "followYouTube": "מגיע בקרוב — עוקבים אחרינו ביוטיוב?",
+    "subscribe": "🔔 עקבו בYouTube לעדכון"
+  },
+  "subjectModal": {
+    "available": "תוכן זמין",
+    "video": "סרטון הדרכה",
+    "article": "מאמר מפורט",
+    "byChupchu": "על ידי צ'ופצ'ו",
+    "articleInProgress": "✏️ המאמר בהכנה — יגיע בקרוב!",
+    "chupChuRecommends": "צ'ופצ'ו ממליץ על התוכן הזה 🌿",
+    "close": "סגור"
+  }
+}

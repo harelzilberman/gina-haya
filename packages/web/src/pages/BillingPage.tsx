@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { useAuthStore } from '../stores/authStore';
 import { useUpgradeModalStore } from '../stores/upgradeModalStore';
 import { useTier } from '../hooks/useTier';
@@ -16,18 +17,32 @@ const PLAYFAIR = '"Playfair Display", Georgia, serif';
 
 const NOISE_BG = `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='250' height='250'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.75' numOctaves='4' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='250' height='250' filter='url(%23n)' opacity='0.55'/%3E%3C/svg%3E")`;
 
-const TIER_NAMES: Record<string, string> = {
+const TIER_NAMES_HE: Record<string, string> = {
   free:         'חינמי',
   grower:       'גדל',
   gardener_pro: 'גנן פרו',
   professional: 'מקצועי',
 };
 
+const TIER_NAMES_EN: Record<string, string> = {
+  free:         'Free',
+  grower:       'Grower',
+  gardener_pro: 'Gardener Pro',
+  professional: 'Professional',
+};
+
 const TIER_FEATURES_HE: Record<string, string[]> = {
-  free:         ['לוח ביודינמי יומי', 'אנציקלופדיית צמחים', 'גינה אחת', 'שיחה עם צ\'ופצ\'ו (20/חודש)', 'פרסומות'],
-  grower:       ['גישה מלאה לאפליקציה', '5 אבחנות צמחים / חודש', 'שיחה עם צ\'ופצ\'ו (50/חודש)'],
-  gardener_pro: ['ללא פרסומות', 'אבחנות ללא הגבלה', 'שיחה עם צ\'ופצ\'ו ללא הגבלה', 'גינות מרובות'],
+  free:         ['לוח ביודינמי יומי', 'אנציקלופדיית צמחים', 'גינה אחת', "שיחה עם צ'ופצ'ו (20/חודש)", 'פרסומות'],
+  grower:       ['גישה מלאה לאפליקציה', '5 אבחנות צמחים / חודש', "שיחה עם צ'ופצ'ו (50/חודש)"],
+  gardener_pro: ['ללא פרסומות', 'אבחנות ללא הגבלה', "שיחה עם צ'ופצ'ו ללא הגבלה", 'גינות מרובות'],
   professional: ['לוח לקוחות', 'white-label', 'תמיכה מועדפת'],
+};
+
+const TIER_FEATURES_EN: Record<string, string[]> = {
+  free:         ['Daily biodynamic calendar', 'Plant encyclopedia', 'One garden', 'Chupchu chat (20/month)', 'Ads'],
+  grower:       ['Full app access', '5 plant diagnoses/month', 'Chupchu chat (50/month)'],
+  gardener_pro: ['No ads', 'Unlimited diagnoses', 'Unlimited Chupchu chat', 'Multiple gardens'],
+  professional: ['Client dashboard', 'White-label', 'Priority support'],
 };
 
 const cardStyle = (highlight?: boolean): React.CSSProperties => ({
@@ -39,6 +54,8 @@ const cardStyle = (highlight?: boolean): React.CSSProperties => ({
 });
 
 export function BillingPage() {
+  const { t, i18n } = useTranslation('billing');
+  const isHe = i18n.language === 'he';
   const [searchParams] = useSearchParams();
   const status = searchParams.get('status');
   const { session } = useAuthStore();
@@ -73,10 +90,12 @@ export function BillingPage() {
     }
   };
 
-  const tierName = TIER_NAMES[tier] ?? tier;
-  const features = TIER_FEATURES_HE[tier] ?? [];
+  const tierNames = isHe ? TIER_NAMES_HE : TIER_NAMES_EN;
+  const tierFeatures = isHe ? TIER_FEATURES_HE : TIER_FEATURES_EN;
+  const tierName = tierNames[tier] ?? tier;
+  const features = tierFeatures[tier] ?? [];
   const nextTier = canUpgradeTo;
-  const nextName = nextTier ? TIER_NAMES[nextTier] : null;
+  const nextName = nextTier ? (tierNames[nextTier] ?? nextTier) : null;
 
   return (
     <>
@@ -94,7 +113,7 @@ export function BillingPage() {
         }}
       />
 
-      <div style={{ backgroundColor: EARTH, minHeight: '100vh', position: 'relative', zIndex: 0 }}>
+      <div dir={isHe ? 'rtl' : 'ltr'} style={{ backgroundColor: EARTH, minHeight: '100vh', position: 'relative', zIndex: 0 }}>
         <div style={{ maxWidth: '900px', margin: '0 auto', padding: '28px 16px 60px', display: 'flex', flexDirection: 'column', gap: '16px' }}>
 
           {/* Page title */}
@@ -106,7 +125,7 @@ export function BillingPage() {
             margin:     '0 0 4px',
             lineHeight: 1.1,
           }}>
-            חיוב ותוכניות
+            {t('title')}
           </h1>
 
           {/* Status banners */}
@@ -119,7 +138,7 @@ export function BillingPage() {
               fontSize:        '14px',
               color:           SAGE,
             }}>
-              🎉 שדרוג הצליח! ברוך הבא לתוכנית {tierName}.
+              {t('status.success', { name: tierName })}
             </div>
           )}
           {status === 'cancelled' && (
@@ -131,7 +150,7 @@ export function BillingPage() {
               fontSize:        '14px',
               color:           `${PARCH}CC`,
             }}>
-              אין בעיה — נשארת בתוכנית {tierName}. תוכל לשדרג מתי שתרצה.
+              {t('status.cancelled', { name: tierName })}
             </div>
           )}
           {cancelledAt && (
@@ -143,7 +162,9 @@ export function BillingPage() {
               fontSize:        '14px',
               color:           `${PARCH}CC`,
             }}>
-              המנוי יבוטל בתאריך {new Date(cancelledAt).toLocaleDateString('he-IL')}. ניתן להמשיך להשתמש עד אז.
+              {t('status.cancelledAt', {
+                date: new Date(cancelledAt).toLocaleDateString(isHe ? 'he-IL' : 'en-US'),
+              })}
             </div>
           )}
 
@@ -152,7 +173,7 @@ export function BillingPage() {
             <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', marginBottom: '16px' }}>
               <div>
                 <p style={{ fontFamily: ASSIST, fontSize: '11px', fontWeight: 600, letterSpacing: '0.1em', textTransform: 'uppercase', color: `${PARCH}44`, margin: '0 0 4px' }}>
-                  התוכנית הנוכחית שלך
+                  {t('currentPlan')}
                 </p>
                 <h2 style={{ fontFamily: FRANK, fontWeight: 700, fontSize: '26px', color: GOLD, margin: 0 }}>
                   {tierName}
@@ -164,7 +185,7 @@ export function BillingPage() {
                 fontSize:   '18px',
                 color:      monthlyPrice ? PARCH : `${PARCH}44`,
               }}>
-                {monthlyPrice ? `₪${monthlyPrice}/חודש` : 'חינם'}
+                {monthlyPrice ? `₪${monthlyPrice}${t('perMonth')}` : t('free')}
               </span>
             </div>
             <ul style={{ display: 'flex', flexDirection: 'column', gap: '8px', margin: 0, padding: 0, listStyle: 'none' }}>
@@ -181,10 +202,10 @@ export function BillingPage() {
           {nextTier && (
             <div style={cardStyle()}>
               <h3 style={{ fontFamily: FRANK, fontWeight: 600, fontSize: '18px', color: PARCH, margin: '0 0 6px' }}>
-                שדרג ל{nextName}
+                {t('upgradeTitle', { name: nextName })}
               </h3>
               <p style={{ fontFamily: ASSIST, fontSize: '13px', color: `${PARCH}66`, margin: '0 0 16px' }}>
-                קבל גישה לתכונות מתקדמות ותמיכה מלאה
+                {t('upgradeDesc')}
               </p>
               <button
                 onClick={() => openUpgradeModal('billing_page')}
@@ -204,7 +225,7 @@ export function BillingPage() {
                 onMouseEnter={e => { (e.currentTarget as HTMLElement).style.filter = 'brightness(1.1)'; }}
                 onMouseLeave={e => { (e.currentTarget as HTMLElement).style.filter = 'none'; }}
               >
-                ראה את כל התוכניות
+                {t('upgradeCta')}
               </button>
             </div>
           )}
@@ -213,10 +234,10 @@ export function BillingPage() {
           {tier !== 'free' && !cancelledAt && (
             <div style={cardStyle()}>
               <h3 style={{ fontFamily: FRANK, fontWeight: 600, fontSize: '16px', color: PARCH, margin: '0 0 6px' }}>
-                ביטול מנוי
+                {t('cancel.title')}
               </h3>
               <p style={{ fontFamily: ASSIST, fontSize: '13px', color: `${PARCH}66`, margin: '0 0 14px' }}>
-                ביטול ייכנס לתוקף בסוף תקופת החיוב הנוכחית.
+                {t('cancel.desc')}
               </p>
 
               {!showCancelConfirm ? (
@@ -237,7 +258,7 @@ export function BillingPage() {
                   onMouseEnter={e => { (e.currentTarget as HTMLElement).style.backgroundColor = 'rgba(155,122,72,0.12)'; }}
                   onMouseLeave={e => { (e.currentTarget as HTMLElement).style.backgroundColor = 'transparent'; }}
                 >
-                  בטל מנוי
+                  {t('cancel.button')}
                 </button>
               ) : (
                 <div style={{
@@ -250,7 +271,7 @@ export function BillingPage() {
                   gap:             '12px',
                 }}>
                   <p style={{ fontFamily: ASSIST, fontSize: '13px', color: PARCH, margin: 0 }}>
-                    בטוח? המנוי יבוטל בסוף התקופה הנוכחית.
+                    {t('cancel.confirm')}
                   </p>
                   <div style={{ display: 'flex', gap: '10px' }}>
                     <button
@@ -267,7 +288,7 @@ export function BillingPage() {
                         cursor:          'pointer',
                       }}
                     >
-                      לא, השאר אותי
+                      {t('cancel.no')}
                     </button>
                     <button
                       onClick={handleCancel}
@@ -286,7 +307,7 @@ export function BillingPage() {
                         opacity:         cancelling ? 0.7 : 1,
                       }}
                     >
-                      {cancelling ? '...' : 'כן, בטל'}
+                      {cancelling ? '...' : t('cancel.yes')}
                     </button>
                   </div>
                 </div>

@@ -1,0 +1,22 @@
+{
+  "title": "Billing & Plans",
+  "currentPlan": "Your current plan",
+  "free": "Free",
+  "perMonth": "/mo",
+  "upgradeTitle": "Upgrade to {{name}}",
+  "upgradeDesc": "Get access to advanced features and full support",
+  "upgradeCta": "See all plans",
+  "cancel": {
+    "title": "Cancel subscription",
+    "desc": "Cancellation takes effect at the end of the current billing period.",
+    "button": "Cancel subscription",
+    "confirm": "Are you sure? The subscription will be cancelled at the end of the current period.",
+    "yes": "Yes, cancel",
+    "no": "No, keep it"
+  },
+  "status": {
+    "success": "🎉 Upgrade successful! Welcome to the {{name}} plan.",
+    "cancelled": "No problem — you stayed on the {{name}} plan. You can upgrade whenever you want.",
+    "cancelledAt": "Your subscription will be cancelled on {{date}}. You can continue using it until then."
+  }
+}

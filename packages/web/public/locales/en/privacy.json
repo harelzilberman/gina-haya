@@ -1,0 +1,16 @@
+{
+  "title": "Privacy Policy",
+  "lastUpdated": "Last updated: March 2026",
+  "intro": "Gina Haya is committed to protecting your privacy. This document explains in plain language what we collect, how we use it, and what your rights are.",
+  "summary": "In short: we are a small garden, not a big-data company. Your data stays yours and is used only to help your garden grow better.",
+  "summaryLabel": "In short:",
+  "sections": [
+    { "title": "What we collect", "body": "We collect your email address, display name, and garden information you enter (plants, location, preferences). We do not collect medical, financial, or other sensitive data." },
+    { "title": "How we use your information", "body": "Your information is used solely to provide the service — your personal biodynamic calendar, Chupchu conversations, and garden management. We do not sell or share your data with third parties for advertising purposes." },
+    { "title": "Data storage", "body": "All data is stored on Supabase's secure servers (EU region). Data is encrypted in transit and at rest. Backups are performed daily." },
+    { "title": "Cookies and tracking", "body": "We use only essential cookies to maintain your login state. We do not use advertising trackers or third-party cookies." },
+    { "title": "Your rights", "body": "At any time you may request a copy of your data, correct it, or delete your account entirely. For such requests email hello@gina-haya.com and we will respond within 14 business days." },
+    { "title": "Policy changes", "body": "If we make material changes to this policy, we will send an email notification and show the update date at the top of the page. Continued use after the change constitutes acceptance of the updated policy." },
+    { "title": "Contact us", "body": "For any privacy questions: hello@gina-haya.com" }
+  ]
+}
