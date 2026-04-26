@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { useMapStore } from '../stores/mapStore';
 import { MapToolbar } from '../components/map/MapToolbar';
 import { GardenCanvas } from '../components/map/GardenCanvas';
@@ -8,18 +9,19 @@ import { WizardModal } from '../components/map/WizardModal';
 
 export function MapPage() {
   const store = useMapStore();
+  const { i18n } = useTranslation();
+  const isHe = i18n.language === 'he';
   const [showTour, setShowTour]     = useState(false);
   const [showWizard, setShowWizard] = useState(false);
   const [toast, setToast] = useState<string | null>(null);
 
   const handleConfirmPreview = () => {
-    // Auto-lock all existing objects so the wizard layout is preserved
     store.mapData.objects.forEach(o => {
       if (!o.locked) store.updateObject(o.id, { locked: true });
     });
     const count = store.previewPlants.length;
     store.confirmPlantPreview();
-    setToast(`${count} צמחים נוספו למפה! 🌱`);
+    setToast(isHe ? `${count} צמחים נוספו למפה! 🌱` : `${count} plants added to the map! 🌱`);
     setTimeout(() => setToast(null), 3000);
   };
 
@@ -47,7 +49,7 @@ export function MapPage() {
   }
 
   return (
-    <div dir="rtl" style={{ background: '#142B16' }}>
+    <div dir={isHe ? 'rtl' : 'ltr'} style={{ background: '#142B16' }}>
       {/* Toolbar — fixed, sits below the 64px navbar */}
       <MapToolbar
         selectedTool={store.selectedTool}

@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { useTranslation } from 'react-i18next';
 
 const STORAGE_KEY = 'map-grid-info-seen';
 
@@ -7,10 +8,11 @@ const ASSIST = '"Assistant", "Heebo", sans-serif';
 const GOLD = '#F5C840';
 
 export function GridInfoBox() {
+  const { i18n } = useTranslation();
+  const isHe = i18n.language === 'he';
   const [visible, setVisible] = useState(false);
 
   useEffect(() => {
-    // Show each session until dismissed this session
     const dismissed = sessionStorage.getItem(STORAGE_KEY);
     if (!dismissed) setVisible(true);
   }, []);
@@ -33,7 +35,7 @@ export function GridInfoBox() {
       whiteSpace: 'nowrap',
     }}>
       <span style={{ fontFamily: FRANK, color: GOLD, fontSize: '13px' }}>
-        הרשת מייצגת 1מטר × 1מטר
+        {isHe ? 'הרשת מייצגת 1מטר × 1מטר' : 'Grid represents 1m × 1m'}
       </span>
       <button
         onClick={dismiss}
@@ -44,7 +46,7 @@ export function GridInfoBox() {
           background: 'none', border: 'none', cursor: 'pointer', lineHeight: 1,
           padding: '2px 4px',
         }}
-        title="סגור"
+        title={isHe ? 'סגור' : 'Close'}
       >
         ✕
       </button>

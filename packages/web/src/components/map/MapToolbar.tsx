@@ -1,4 +1,5 @@
 import { useState, useRef, useEffect } from 'react';
+import { useTranslation } from 'react-i18next';
 import type { MapTool } from '../../stores/mapStore';
 import type { WizardStatus } from '../../stores/mapStore';
 
@@ -24,56 +25,56 @@ interface Props {
   hasSavedMap: boolean;
 }
 
-interface DropItem { tool: MapTool; emoji: string; label: string }
-interface Category { id: string; label: string; items: DropItem[] }
+interface DropItem { tool: MapTool; emoji: string; labelHe: string; labelEn: string }
+interface Category { id: string; labelHe: string; labelEn: string; items: DropItem[] }
 
 const CATEGORIES: Category[] = [
   {
-    id: 'buildings', label: 'מבנים',
+    id: 'buildings', labelHe: 'מבנים', labelEn: 'Structures',
     items: [
-      { tool: 'house',    emoji: '🏠', label: 'בית' },
-      { tool: 'fence',    emoji: '🚧', label: 'גדר' },
-      { tool: 'wall',     emoji: '🧱', label: 'קיר' },
-      { tool: 'pergola',  emoji: '⛺', label: 'פרגולה' },
-      { tool: 'deadzone', emoji: '❌', label: 'אזור מת' },
-      { tool: 'walkway',  emoji: '🛤️', label: 'שביל' },
+      { tool: 'house',    emoji: '🏠', labelHe: 'בית',      labelEn: 'House' },
+      { tool: 'fence',    emoji: '🚧', labelHe: 'גדר',      labelEn: 'Fence' },
+      { tool: 'wall',     emoji: '🧱', labelHe: 'קיר',      labelEn: 'Wall' },
+      { tool: 'pergola',  emoji: '⛺', labelHe: 'פרגולה',   labelEn: 'Pergola' },
+      { tool: 'deadzone', emoji: '❌', labelHe: 'אזור מת',  labelEn: 'Dead zone' },
+      { tool: 'walkway',  emoji: '🛤️', labelHe: 'שביל',    labelEn: 'Walkway' },
     ],
   },
   {
-    id: 'plants', label: 'צמחים',
+    id: 'plants', labelHe: 'צמחים', labelEn: 'Plants',
     items: [
-      { tool: 'plant', emoji: '🌱', label: 'הוסף צמח' },
+      { tool: 'plant', emoji: '🌱', labelHe: 'הוסף צמח', labelEn: 'Add plant' },
     ],
   },
   {
-    id: 'trees', label: 'עצים',
+    id: 'trees', labelHe: 'עצים', labelEn: 'Trees',
     items: [
-      { tool: 'fruit-tree', emoji: '🍊', label: 'עץ פרי' },
-      { tool: 'tree',       emoji: '🌳', label: 'עץ נוי' },
+      { tool: 'fruit-tree', emoji: '🍊', labelHe: 'עץ פרי', labelEn: 'Fruit tree' },
+      { tool: 'tree',       emoji: '🌳', labelHe: 'עץ נוי', labelEn: 'Ornamental tree' },
     ],
   },
   {
-    id: 'growing', label: 'גידול',
+    id: 'growing', labelHe: 'גידול', labelEn: 'Growing',
     items: [
-      { tool: 'bed',         emoji: '🌱', label: 'ערוגת גידול' },
-      { tool: 'hydroponics', emoji: '💧', label: 'הידרופוניקה' },
-      { tool: 'aquaponics',  emoji: '🐟', label: 'אקווופוניקה' },
-      { tool: 'raised-bed',  emoji: '🧱', label: 'ערוגה מוגבהת' },
-      { tool: 'vertical',    emoji: '🌿', label: 'גידול אנכי' },
+      { tool: 'bed',         emoji: '🌱', labelHe: 'ערוגת גידול',   labelEn: 'Growing bed' },
+      { tool: 'hydroponics', emoji: '💧', labelHe: 'הידרופוניקה',   labelEn: 'Hydroponics' },
+      { tool: 'aquaponics',  emoji: '🐟', labelHe: 'אקווופוניקה',   labelEn: 'Aquaponics' },
+      { tool: 'raised-bed',  emoji: '🧱', labelHe: 'ערוגה מוגבהת', labelEn: 'Raised bed' },
+      { tool: 'vertical',    emoji: '🌿', labelHe: 'גידול אנכי',    labelEn: 'Vertical growing' },
     ],
   },
   {
-    id: 'pots', label: 'עציצים',
+    id: 'pots', labelHe: 'עציצים', labelEn: 'Pots',
     items: [
-      { tool: 'pot-rect',  emoji: '🪴', label: 'עציץ מלבני' },
-      { tool: 'pot-round', emoji: '🪴', label: 'עציץ עגול' },
+      { tool: 'pot-rect',  emoji: '🪴', labelHe: 'עציץ מלבני', labelEn: 'Rectangular pot' },
+      { tool: 'pot-round', emoji: '🪴', labelHe: 'עציץ עגול',  labelEn: 'Round pot' },
     ],
   },
 ];
 
 function CategoryDropdown({
-  category, selectedTool, onSelect,
-}: { category: Category; selectedTool: MapTool; onSelect: (t: MapTool) => void }) {
+  category, selectedTool, onSelect, isHe,
+}: { category: Category; selectedTool: MapTool; onSelect: (t: MapTool) => void; isHe: boolean }) {
   const [open, setOpen] = useState(false);
   const ref = useRef<HTMLDivElement>(null);
   const isActive = category.items.some(i => i.tool === selectedTool);
@@ -87,6 +88,9 @@ function CategoryDropdown({
     document.addEventListener('mousedown', handler);
     return () => document.removeEventListener('mousedown', handler);
   }, [open]);
+
+  const catLabel = isHe ? category.labelHe : category.labelEn;
+  const activeLabel = activeItem ? `${activeItem.emoji} ${isHe ? activeItem.labelHe : activeItem.labelEn}` : catLabel;
 
   return (
     <div ref={ref} style={{ position: 'static', flexShrink: 0 }}>
@@ -109,7 +113,7 @@ function CategoryDropdown({
           whiteSpace: 'nowrap',
         }}
       >
-        {activeItem ? `${activeItem.emoji} ${activeItem.label}` : category.label}
+        {activeLabel}
         <span style={{ fontSize: '9px', opacity: 0.5, marginTop: '1px' }}>▾</span>
       </button>
 
@@ -138,7 +142,7 @@ function CategoryDropdown({
                 lineHeight: '1.4',
                 padding: '10px 16px',
                 borderRadius: '6px',
-                textAlign: 'right',
+                textAlign: isHe ? 'right' : 'left',
                 border: 'none',
                 background: selectedTool === item.tool
                   ? 'rgba(245,200,64,0.15)'
@@ -149,7 +153,7 @@ function CategoryDropdown({
                 alignItems: 'center',
                 gap: '10px',
                 whiteSpace: 'nowrap',
-                direction: 'rtl',
+                direction: isHe ? 'rtl' : 'ltr',
               }}
               onMouseEnter={e => {
                 if (selectedTool !== item.tool)
@@ -161,7 +165,7 @@ function CategoryDropdown({
               }}
             >
               <span style={{ fontSize: '18px' }}>{item.emoji}</span>
-              <span>{item.label}</span>
+              <span>{isHe ? item.labelHe : item.labelEn}</span>
             </button>
           ))}
         </div>
@@ -175,13 +179,17 @@ export function MapToolbar({
   northAngle, onNorthAngleChange, isSaving, isDirty, onSave, onUndo,
   onWizard, wizardStatus, hasSavedMap,
 }: Props) {
+  const { i18n } = useTranslation();
+  const isHe = i18n.language === 'he';
   const canWizard = hasSavedMap && (wizardStatus?.canRun ?? true);
   const wizardLabel = wizardStatus
-    ? `🌕 מצ'ופצ'ו (${wizardStatus.runsUsedThisMonth}/${wizardStatus.limit ?? '∞'})`
-    : '🌕 מצ\'ופצ\'ו';
+    ? (isHe
+        ? `🌕 מצ'ופצ'ו (${wizardStatus.runsUsedThisMonth}/${wizardStatus.limit ?? '∞'})`
+        : `🌕 Chupchu (${wizardStatus.runsUsedThisMonth}/${wizardStatus.limit ?? '∞'})`)
+    : (isHe ? "🌕 מצ'ופצ'ו" : '🌕 Chupchu');
 
   return (
-    <div dir="rtl" style={{
+    <div dir={isHe ? 'rtl' : 'ltr'} style={{
       position: 'fixed',
       top: '64px',
       left: 0,
@@ -204,6 +212,7 @@ export function MapToolbar({
           category={cat}
           selectedTool={selectedTool}
           onSelect={onToolChange}
+          isHe={isHe}
         />
       ))}
 
@@ -223,11 +232,11 @@ export function MapToolbar({
             fontWeight: selectedTool === 'select' ? 700 : 400,
           }}
         >
-          🖱️ בחר
+          🖱️ {isHe ? 'בחר' : 'Select'}
         </button>
 
         {/* Undo */}
-        <button onClick={onUndo} title="בטל (Ctrl+Z)" style={ghostBtn}>↩️</button>
+        <button onClick={onUndo} title="Ctrl+Z" style={ghostBtn}>↩️</button>
 
         <div style={{ width: '1px', height: '28px', background: 'rgba(245,200,64,0.15)' }} />
 
@@ -241,7 +250,7 @@ export function MapToolbar({
             background: showSunZones ? 'rgba(245,200,64,0.1)' : 'transparent',
           }}
         >
-          ☀️ שמש
+          ☀️ {isHe ? 'שמש' : 'Sun'}
         </button>
 
         {/* North angle */}
@@ -270,13 +279,17 @@ export function MapToolbar({
 
         {/* Save status */}
         {isSaving ? (
-          <span style={{ fontFamily: ASSIST, fontSize: '12px', color: `${PARCH}55` }}>שומר...</span>
+          <span style={{ fontFamily: ASSIST, fontSize: '12px', color: `${PARCH}55` }}>
+            {isHe ? 'שומר...' : 'Saving...'}
+          </span>
         ) : isDirty ? (
           <button onClick={onSave} style={{ ...ghostBtn, color: GOLD, border: `1px solid ${GOLD}55`, padding: '5px 14px' }}>
-            💾 שמור
+            💾 {isHe ? 'שמור' : 'Save'}
           </button>
         ) : (
-          <span style={{ fontFamily: ASSIST, fontSize: '12px', color: `${PARCH}44` }}>נשמר ✓</span>
+          <span style={{ fontFamily: ASSIST, fontSize: '12px', color: `${PARCH}44` }}>
+            {isHe ? 'נשמר ✓' : 'Saved ✓'}
+          </span>
         )}
 
         {/* Wizard */}

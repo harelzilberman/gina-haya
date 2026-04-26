@@ -1,4 +1,5 @@
 import { useRef, useState, useCallback, useEffect } from 'react';
+import { useTranslation } from 'react-i18next';
 import type { MapObject, PlantMarker, MapData, MapTool, PlantPreview } from '../../stores/mapStore';
 import { SHAPE_CONFIGS, type ShapeType } from '../../data/mapObjects';
 import { GridInfoBox } from './GridInfoBox';
@@ -463,8 +464,8 @@ function Grid() {
 
 // ── North arrow ───────────────────────────────────────────────────────────────
 
-function NorthArrow({ angle, svgW, onDragStart }: {
-  angle: number; svgW: number;
+function NorthArrow({ angle, svgW, onDragStart, isHe }: {
+  angle: number; svgW: number; isHe: boolean;
   onDragStart: (e: React.MouseEvent) => void;
 }) {
   const size = 44;
@@ -493,7 +494,7 @@ function NorthArrow({ angle, svgW, onDragStart }: {
       {/* N label */}
       <text x={size/2} y={size + 12} textAnchor="middle"
         fontFamily={FRANK} fontSize={10} fill={GOLD}>
-        צ {angle}°
+        {isHe ? 'צ' : 'N'} {angle}°
       </text>
     </g>
   );
@@ -501,7 +502,7 @@ function NorthArrow({ angle, svgW, onDragStart }: {
 
 // ── Scale bar ─────────────────────────────────────────────────────────────────
 
-function ScaleBar({ svgH }: { svgH: number }) {
+function ScaleBar({ svgH, isHe }: { svgH: number; isHe: boolean }) {
   const x = 16, y = svgH - 30;
   const barW = PX; // 50px = 1m
   return (
@@ -513,7 +514,7 @@ function ScaleBar({ svgH }: { svgH: number }) {
       <text x={x+barW/2} y={y+14} textAnchor="middle"
         fontFamily={ASSIST} fontSize={10} fill="white"
         style={{ filter: 'drop-shadow(0 0 2px rgba(0,0,0,0.8))' }}>
-        1מ׳
+        {isHe ? "1מ׳" : '1m'}
       </text>
     </g>
   );
@@ -521,15 +522,15 @@ function ScaleBar({ svgH }: { svgH: number }) {
 
 // ── Sun zones ─────────────────────────────────────────────────────────────────
 
-function SunZones({ northAngle, svgW, svgH }: { northAngle: number; svgW: number; svgH: number }) {
+function SunZones({ northAngle, svgW, svgH, isHe }: { northAngle: number; svgW: number; svgH: number; isHe: boolean }) {
   const n = rad(northAngle);
   const cx = svgW / 2, cy = svgH / 2;
   const R = Math.max(svgW, svgH);
   const zones = [
-    { dir: n + rad(180), color: 'rgba(255,200,50,0.10)',  label: '☀️ שמש מלאה', size: 0.45 },
-    { dir: n + rad(90),  color: 'rgba(255,165,0,0.07)',   label: '🌅 שמש בוקר', size: 0.25 },
-    { dir: n - rad(90),  color: 'rgba(255,120,0,0.07)',   label: '🌇 שמש אחה״צ', size: 0.25 },
-    { dir: n,            color: 'rgba(100,100,150,0.08)', label: '🌑 צל', size: 0.20 },
+    { dir: n + rad(180), color: 'rgba(255,200,50,0.10)',  label: isHe ? '☀️ שמש מלאה' : '☀️ Full sun',       size: 0.45 },
+    { dir: n + rad(90),  color: 'rgba(255,165,0,0.07)',   label: isHe ? '🌅 שמש בוקר' : '🌅 Morning sun',   size: 0.25 },
+    { dir: n - rad(90),  color: 'rgba(255,120,0,0.07)',   label: isHe ? '🌇 שמש אחה״צ' : '🌇 Afternoon sun', size: 0.25 },
+    { dir: n,            color: 'rgba(100,100,150,0.08)', label: isHe ? '🌑 צל' : '🌑 Shade',               size: 0.20 },
   ];
 
   return (
@@ -560,14 +561,15 @@ function SunZones({ northAngle, svgW, svgH }: { northAngle: number; svgW: number
 // ── Post-draw popup ───────────────────────────────────────────────────────────
 
 function PostDrawPopup({
-  popup, onConfirm, onCancel,
+  popup, onConfirm, onCancel, isHe,
 }: {
   popup: PostPopup;
   onConfirm: (obj: Omit<MapObject, 'id'>) => void;
   onCancel: () => void;
+  isHe: boolean;
 }) {
   const cfg = SHAPE_CONFIGS[popup.obj.type];
-  const [label, setLabel] = useState(cfg?.labelHe ?? '');
+  const [label, setLabel] = useState(isHe ? (cfg?.labelHe ?? '') : (cfg?.labelEn ?? ''));
   const [treeName, setTreeName] = useState('');
   const [isFruit, setIsFruit] = useState(popup.obj.type === 'fruit-tree');
 
@@ -594,17 +596,17 @@ function PostDrawPopup({
         border: `1px solid rgba(245,200,64,0.30)`,
         borderRadius: '12px', padding: '14px',
         width: '220px', boxShadow: '0 4px 20px rgba(0,0,0,0.5)',
-        fontFamily: ASSIST, direction: 'rtl',
+        fontFamily: ASSIST, direction: isHe ? 'rtl' : 'ltr',
         display: 'flex', flexDirection: 'column', gap: '10px',
       }}
       onMouseDown={e => e.stopPropagation()}
     >
       <div style={{ fontFamily: FRANK, color: GOLD, fontSize: '14px' }}>
-        {cfg?.emoji} {cfg?.labelHe}
+        {cfg?.emoji} {isHe ? cfg?.labelHe : cfg?.labelEn}
       </div>
 
       <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
-        <label style={{ fontSize: '11px', color: `${PARCH}66` }}>שם</label>
+        <label style={{ fontSize: '11px', color: `${PARCH}66` }}>{isHe ? 'שם' : 'Name'}</label>
         <input
           autoFocus
           value={label} onChange={e => setLabel(e.target.value)}
@@ -620,10 +622,10 @@ function PostDrawPopup({
       {isTree && (
         <>
           <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
-            <label style={{ fontSize: '11px', color: `${PARCH}66` }}>שם העץ</label>
+            <label style={{ fontSize: '11px', color: `${PARCH}66` }}>{isHe ? 'שם העץ' : 'Tree name'}</label>
             <input
               value={treeName} onChange={e => setTreeName(e.target.value)}
-              placeholder='למשל: לימון, זית...'
+              placeholder={isHe ? 'למשל: לימון, זית...' : 'e.g. lemon, olive...'}
               style={{
                 fontFamily: ASSIST, fontSize: '13px', color: PARCH,
                 background: 'rgba(245,200,64,0.08)', border: '1px solid rgba(245,200,64,0.25)',
@@ -636,7 +638,7 @@ function PostDrawPopup({
               <input type="checkbox" checked={isFruit}
                 onChange={e => setIsFruit(e.target.checked)}
                 style={{ accentColor: GOLD }} />
-              <span style={{ fontSize: '12px', color: `${PARCH}88` }}>עץ פרי</span>
+              <span style={{ fontSize: '12px', color: `${PARCH}88` }}>{isHe ? 'עץ פרי' : 'Fruit tree'}</span>
             </label>
           )}
         </>
@@ -647,12 +649,12 @@ function PostDrawPopup({
           flex: 1, padding: '7px', borderRadius: '7px', border: 'none',
           background: GOLD, color: '#142B16', fontFamily: ASSIST, fontSize: '12px',
           fontWeight: 700, cursor: 'pointer',
-        }}>אישור</button>
+        }}>{isHe ? 'אישור' : 'OK'}</button>
         <button onClick={onCancel} style={{
           flex: 1, padding: '7px', borderRadius: '7px',
           border: '1px solid rgba(245,200,64,0.25)', background: 'transparent',
           color: `${PARCH}77`, fontFamily: ASSIST, fontSize: '12px', cursor: 'pointer',
-        }}>ביטול</button>
+        }}>{isHe ? 'ביטול' : 'Cancel'}</button>
       </div>
     </div>
   );
@@ -661,12 +663,13 @@ function PostDrawPopup({
 // ── Plant popup ───────────────────────────────────────────────────────────────
 
 function PlantPopup({
-  plant, onUpdate, onDelete, onClose,
+  plant, onUpdate, onDelete, onClose, isHe,
 }: {
   plant: PlantMarker;
   onUpdate: (id: string, changes: Partial<PlantMarker>) => void;
   onDelete: (id: string) => void;
   onClose: () => void;
+  isHe: boolean;
 }) {
   const [notes, setNotes] = useState(plant.notes ?? '');
 
@@ -687,7 +690,7 @@ function PlantPopup({
           borderRadius: '12px', padding: '16px',
           width: '240px',
           boxShadow: '0 4px 24px rgba(0,0,0,0.6)',
-          fontFamily: ASSIST, direction: 'rtl',
+          fontFamily: ASSIST, direction: isHe ? 'rtl' : 'ltr',
           display: 'flex', flexDirection: 'column', gap: '12px',
         }}
         onMouseDown={e => e.stopPropagation()}
@@ -713,16 +716,16 @@ function PlantPopup({
 
         {/* Spacing info */}
         <div style={{ fontSize: '12px', color: `${PARCH}66`, textAlign: 'center' }}>
-          ריווח: {plant.spacing < 2 ? Math.round(plant.spacing * 100) : Math.round(plant.spacing)}cm
+          {isHe ? 'ריווח:' : 'Spacing:'} {plant.spacing < 2 ? Math.round(plant.spacing * 100) : Math.round(plant.spacing)}cm
         </div>
 
         {/* Notes */}
         <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
-          <label style={{ fontSize: '11px', color: `${PARCH}66` }}>הערות</label>
+          <label style={{ fontSize: '11px', color: `${PARCH}66` }}>{isHe ? 'הערות' : 'Notes'}</label>
           <textarea
             value={notes}
             rows={3}
-            placeholder="למשל: שתלתי ב-15/3, צריך השקיה יומית..."
+            placeholder={isHe ? 'למשל: שתלתי ב-15/3, צריך השקיה יומית...' : 'e.g. planted 15/3, needs daily watering...'}
             onChange={e => setNotes(e.target.value)}
             style={{
               fontFamily: ASSIST, fontSize: '12px', color: PARCH, resize: 'none',
@@ -741,7 +744,7 @@ function PlantPopup({
               background: GOLD, color: '#142B16', fontFamily: ASSIST,
               fontSize: '12px', fontWeight: 700, cursor: 'pointer',
             }}
-          >שמור</button>
+          >{isHe ? 'שמור' : 'Save'}</button>
           <button
             onClick={() => { onDelete(plant.id); onClose(); }}
             style={{
@@ -750,7 +753,7 @@ function PlantPopup({
               color: 'rgba(220,80,80,0.85)', fontFamily: ASSIST,
               fontSize: '12px', cursor: 'pointer',
             }}
-          >מחק צמח</button>
+          >{isHe ? 'מחק צמח' : 'Remove plant'}</button>
         </div>
       </div>
     </>
@@ -759,19 +762,19 @@ function PlantPopup({
 
 // ── Empty state hint ──────────────────────────────────────────────────────────
 
-function EmptyHint() {
+function EmptyHint({ isHe }: { isHe: boolean }) {
   return (
     <div style={{
       position: 'absolute', inset: 0, display: 'flex', flexDirection: 'column',
       alignItems: 'center', justifyContent: 'center', pointerEvents: 'none',
-      gap: '10px', direction: 'rtl',
+      gap: '10px', direction: isHe ? 'rtl' : 'ltr',
     }}>
       <span style={{ fontSize: '60px' }}>🗺️</span>
       <span style={{ fontFamily: FRANK, color: GOLD, fontSize: '20px', fontWeight: 700 }}>
-        התחל לשרטט את הנכס שלך
+        {isHe ? 'התחל לשרטט את הנכס שלך' : 'Start drawing your property'}
       </span>
       <span style={{ fontFamily: ASSIST, color: `${PARCH}60`, fontSize: '14px' }}>
-        בחר כלי מהסרגל למעלה
+        {isHe ? 'בחר כלי מהסרגל למעלה' : 'Choose a tool from the toolbar above'}
       </span>
       <span style={{ fontSize: '24px', animation: 'pulse 1.5s ease-in-out infinite' }}>↑</span>
       <style>{`@keyframes pulse { 0%,100%{opacity:0.4;transform:translateY(0)} 50%{opacity:1;transform:translateY(-6px)} }`}</style>
@@ -787,6 +790,8 @@ export function GardenCanvas({
   onSelectObject, onSetNorthAngle, onToggleLock,
   previewPlants = [], onConfirmPreview, onCancelPreview,
 }: Props) {
+  const { i18n } = useTranslation();
+  const isHe = i18n.language === 'he';
   const svgRef       = useRef<SVGSVGElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
 
@@ -1224,7 +1229,7 @@ export function GardenCanvas({
           background: 'rgba(0,0,0,0.5)', color: '#F5C840', border: 'none', cursor: 'pointer',
         }}
       >
-        ↺ איפוס
+        ↺ {isHe ? 'איפוס' : 'Reset'}
       </button>
       <svg
         ref={svgRef}
@@ -1249,7 +1254,7 @@ export function GardenCanvas({
           <Grid />
 
           {/* Sun zones */}
-          {showSunZones && <SunZones northAngle={northAngle} svgW={svgSize.w/t.s} svgH={svgSize.h/t.s} />}
+          {showSunZones && <SunZones northAngle={northAngle} svgW={svgSize.w/t.s} svgH={svgSize.h/t.s} isHe={isHe} />}
 
           {/* Shapes */}
           {mapData.objects.map(obj => (
@@ -1370,11 +1375,11 @@ export function GardenCanvas({
           {drawing && <DrawPreview drawing={drawing} cursor={cursor} />}
 
           {/* Scale bar (rendered in canvas space, unscaled) */}
-          <ScaleBar svgH={svgSize.h / t.s} />
+          <ScaleBar svgH={svgSize.h / t.s} isHe={isHe} />
         </g>
 
         {/* North arrow (in SVG space, unaffected by pan/zoom) */}
-        <NorthArrow angle={northAngle} svgW={svgSize.w} onDragStart={startNorthDrag} />
+        <NorthArrow angle={northAngle} svgW={svgSize.w} onDragStart={startNorthDrag} isHe={isHe} />
 
         {/* Rotation tooltip */}
         {rotTip && (
@@ -1389,7 +1394,7 @@ export function GardenCanvas({
       <GridInfoBox />
 
       {/* Empty state */}
-      {isEmpty && !drawing && <EmptyHint />}
+      {isEmpty && !drawing && <EmptyHint isHe={isHe} />}
 
       {/* Post-draw popup */}
       {popup && (
@@ -1397,6 +1402,7 @@ export function GardenCanvas({
           popup={popup}
           onConfirm={obj => { onAddObject(obj); setPopup(null); }}
           onCancel={() => setPopup(null)}
+          isHe={isHe}
         />
       )}
 
@@ -1423,7 +1429,7 @@ export function GardenCanvas({
                 background: 'rgba(14,30,15,0.97)', border: '1px solid rgba(245,200,64,0.25)',
                 borderRadius: '8px', padding: '4px',
                 boxShadow: '0 4px 16px rgba(0,0,0,0.5)',
-                fontFamily: ASSIST, direction: 'rtl',
+                fontFamily: ASSIST, direction: isHe ? 'rtl' : 'ltr',
               }}
               onMouseDown={e => e.stopPropagation()}
             >
@@ -1433,13 +1439,13 @@ export function GardenCanvas({
                   display: 'block', width: '100%', padding: '8px 14px',
                   background: 'none', border: 'none', cursor: 'pointer',
                   color: cmObj.locked ? GOLD : PARCH,
-                  fontSize: '13px', textAlign: 'right', borderRadius: '5px',
+                  fontSize: '13px', textAlign: isHe ? 'right' : 'left', borderRadius: '5px',
                   whiteSpace: 'nowrap',
                 }}
                 onMouseEnter={e => (e.currentTarget.style.background = 'rgba(245,200,64,0.1)')}
                 onMouseLeave={e => (e.currentTarget.style.background = 'none')}
               >
-                {cmObj.locked ? '🔓 שחרר נעילה' : '🔒 נעל במקום'}
+                {cmObj.locked ? (isHe ? '🔓 שחרר נעילה' : '🔓 Unlock') : (isHe ? '🔒 נעל במקום' : '🔒 Lock')}
               </button>
             </div>
           </>
@@ -1456,6 +1462,7 @@ export function GardenCanvas({
             onUpdate={(id, changes) => onUpdatePlant(id, changes)}
             onDelete={(id) => { onRemovePlant(id); }}
             onClose={() => setSelectedPlantId(null)}
+            isHe={isHe}
           />
         );
       })()}
@@ -1474,15 +1481,17 @@ export function GardenCanvas({
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'space-between',
-          direction: 'rtl',
+          direction: isHe ? 'rtl' : 'ltr',
           fontFamily: '"Assistant","Heebo",sans-serif',
         }}>
           <div>
             <span style={{ color: '#F5C840', fontSize: '14px', fontWeight: 600 }}>
-              🌕 צ'ופצ'ו ממליץ למקם {previewPlants.length} צמחים
+              {isHe
+                ? `🌕 צ'ופצ'ו ממליץ למקם ${previewPlants.length} צמחים`
+                : `🌕 Chupchu recommends placing ${previewPlants.length} plants`}
             </span>
             <span style={{ color: 'rgba(237,224,196,0.6)', fontSize: '12px', marginRight: '8px' }}>
-              — מאשר?
+              {isHe ? '— מאשר?' : '— confirm?'}
             </span>
           </div>
           <div style={{ display: 'flex', gap: '8px' }}>
@@ -1497,7 +1506,7 @@ export function GardenCanvas({
                 fontSize: '13px', cursor: 'pointer',
               }}
             >
-              בטל
+              {isHe ? 'בטל' : 'Cancel'}
             </button>
             <button
               onClick={onConfirmPreview}
@@ -1508,7 +1517,7 @@ export function GardenCanvas({
                 fontSize: '13px', fontWeight: 700, cursor: 'pointer',
               }}
             >
-              אשר והנח 🌱
+              {isHe ? 'אשר והנח 🌱' : 'Confirm & place 🌱'}
             </button>
           </div>
         </div>

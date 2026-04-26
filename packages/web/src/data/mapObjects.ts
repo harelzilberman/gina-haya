@@ -11,6 +11,7 @@ export interface ShapeConfig {
   type: ShapeType;
   shapeKind: ShapeKind;
   labelHe: string;
+  labelEn: string;
   emoji: string;
   fill: string;
   stroke: string;
@@ -32,13 +33,13 @@ export interface ShapeConfig {
 export const SHAPE_CONFIGS: Record<ShapeType, ShapeConfig> = {
   'house': {
     type: 'house', shapeKind: 'polygon',
-    labelHe: 'בית', emoji: '🏠',
+    labelHe: 'בית', labelEn: 'House', emoji: '🏠',
     fill: 'rgba(180,140,100,0.35)', stroke: '#8B6914', strokeWidth: 3,
     defaultWallHeightM: 3,
   },
   'fence': {
     type: 'fence', shapeKind: 'rect',
-    labelHe: 'גדר', emoji: '🚧',
+    labelHe: 'גדר', labelEn: 'Fence', emoji: '🚧',
     fill: 'rgba(155,122,72,0.4)', stroke: '#9B7A48', strokeWidth: 2,
     strokeDash: [8, 4],
     fixedWidth: 0.1, defaultHeight: 2,
@@ -46,14 +47,14 @@ export const SHAPE_CONFIGS: Record<ShapeType, ShapeConfig> = {
   },
   'wall': {
     type: 'wall', shapeKind: 'rect',
-    labelHe: 'קיר', emoji: '🧱',
+    labelHe: 'קיר', labelEn: 'Wall', emoji: '🧱',
     fill: 'rgba(120,100,80,0.6)', stroke: '#8B6914', strokeWidth: 4,
     fixedWidth: 0.2, defaultHeight: 2,
     defaultWallHeightM: 2,
   },
   'pergola': {
     type: 'pergola', shapeKind: 'rect',
-    labelHe: 'פרגולה', emoji: '⛺',
+    labelHe: 'פרגולה', labelEn: 'Pergola', emoji: '⛺',
     fill: 'transparent', stroke: '#9B7A48', strokeWidth: 2,
     strokeDash: [4, 4],
     defaultWidth: 3, defaultHeight: 3,
@@ -61,7 +62,7 @@ export const SHAPE_CONFIGS: Record<ShapeType, ShapeConfig> = {
   },
   'deadzone': {
     type: 'deadzone', shapeKind: 'rect',
-    labelHe: 'אזור מת', emoji: '❌',
+    labelHe: 'אזור מת', labelEn: 'Dead zone', emoji: '❌',
     fill: 'rgba(60,60,60,0.35)', stroke: '#555', strokeWidth: 1,
     strokeDash: [4, 4],
     defaultWidth: 2, defaultHeight: 2,
@@ -69,43 +70,43 @@ export const SHAPE_CONFIGS: Record<ShapeType, ShapeConfig> = {
   },
   'walkway': {
     type: 'walkway', shapeKind: 'polygon',
-    labelHe: 'שביל', emoji: '🛤️',
+    labelHe: 'שביל', labelEn: 'Walkway', emoji: '🛤️',
     fill: 'transparent', stroke: '#9B7A48', strokeWidth: 1,
     pattern: 'concrete',
   },
   'fruit-tree': {
     type: 'fruit-tree', shapeKind: 'circle',
-    labelHe: 'עץ פרי', emoji: '🍊',
+    labelHe: 'עץ פרי', labelEn: 'Fruit tree', emoji: '🍊',
     fill: 'rgba(34,100,34,0.45)', stroke: '#2d6e3e', strokeWidth: 2,
     defaultRadius: 1.5,
   },
   'tree': {
     type: 'tree', shapeKind: 'circle',
-    labelHe: 'עץ נוי', emoji: '🌳',
+    labelHe: 'עץ נוי', labelEn: 'Ornamental tree', emoji: '🌳',
     fill: 'rgba(20,80,20,0.4)', stroke: '#2d6e3e', strokeWidth: 2,
     defaultRadius: 1.5,
   },
   'pot-rect': {
     type: 'pot-rect', shapeKind: 'rect',
-    labelHe: 'עציץ מלבני', emoji: '🪴',
+    labelHe: 'עציץ מלבני', labelEn: 'Rectangular pot', emoji: '🪴',
     fill: 'rgba(180,100,40,0.45)', stroke: '#C0622A', strokeWidth: 2,
     defaultWidth: 0.3, defaultHeight: 0.3,
   },
   'pot-round': {
     type: 'pot-round', shapeKind: 'circle',
-    labelHe: 'עציץ עגול', emoji: '🪴',
+    labelHe: 'עציץ עגול', labelEn: 'Round pot', emoji: '🪴',
     fill: 'rgba(180,100,40,0.45)', stroke: '#C0622A', strokeWidth: 2,
     defaultRadius: 0.1,
   },
   'bed': {
     type: 'bed', shapeKind: 'rect',
-    labelHe: 'ערוגת גידול', emoji: '🌱',
+    labelHe: 'ערוגת גידול', labelEn: 'Growing bed', emoji: '🌱',
     fill: 'rgba(74,128,80,0.35)', stroke: '#7DC084', strokeWidth: 2,
     defaultWidth: 2, defaultHeight: 1,
   },
   'hydroponics': {
     type: 'hydroponics', shapeKind: 'rect',
-    labelHe: 'הידרופוניקה', emoji: '💧',
+    labelHe: 'הידרופוניקה', labelEn: 'Hydroponics', emoji: '💧',
     fill: 'rgba(30,100,200,0.25)', stroke: '#4A90D9', strokeWidth: 2,
     strokeDash: [4, 2],
     defaultWidth: 1.5, defaultHeight: 0.5,
@@ -113,7 +114,7 @@ export const SHAPE_CONFIGS: Record<ShapeType, ShapeConfig> = {
   },
   'aquaponics': {
     type: 'aquaponics', shapeKind: 'rect',
-    labelHe: 'אקווופוניקה', emoji: '🐟',
+    labelHe: 'אקווופוניקה', labelEn: 'Aquaponics', emoji: '🐟',
     fill: 'rgba(20,120,180,0.30)', stroke: '#2E86AB', strokeWidth: 2,
     strokeDash: [6, 3],
     defaultWidth: 2, defaultHeight: 1,
@@ -121,14 +122,14 @@ export const SHAPE_CONFIGS: Record<ShapeType, ShapeConfig> = {
   },
   'raised-bed': {
     type: 'raised-bed', shapeKind: 'rect',
-    labelHe: 'ערוגה מוגבהת', emoji: '🧱',
+    labelHe: 'ערוגה מוגבהת', labelEn: 'Raised bed', emoji: '🧱',
     fill: 'rgba(139,90,43,0.35)', stroke: '#8B5E2A', strokeWidth: 3,
     defaultWidth: 2, defaultHeight: 1,
     pattern: 'wood',
   },
   'vertical': {
     type: 'vertical', shapeKind: 'rect',
-    labelHe: 'גידול אנכי', emoji: '🌿',
+    labelHe: 'גידול אנכי', labelEn: 'Vertical growing', emoji: '🌿',
     fill: 'rgba(34,100,34,0.25)', stroke: '#4A7C59', strokeWidth: 2,
     strokeDash: [3, 3],
     defaultWidth: 0.3, defaultHeight: 2,

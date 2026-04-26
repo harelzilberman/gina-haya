@@ -1,3 +1,4 @@
+import { useTranslation } from 'react-i18next';
 import type { MapObject } from '../../stores/mapStore';
 import { SHAPE_CONFIGS } from '../../data/mapObjects';
 
@@ -57,7 +58,6 @@ function TextInput({ label, value, onChange }: { label: string; value: string; o
   );
 }
 
-// ── Polygon area (shoelace) ──────────────────────────────────────────────────
 function polyArea(pts: [number, number][]): number {
   let s = 0;
   for (let i = 0; i < pts.length; i++) {
@@ -67,13 +67,14 @@ function polyArea(pts: [number, number][]): number {
   return Math.abs(s / 2);
 }
 
-// ── Component ────────────────────────────────────────────────────────────────
-
 export function ShapePropertiesPanel({ object, onUpdate, onDelete, onToggleLock }: Props) {
+  const { i18n } = useTranslation();
+  const isHe = i18n.language === 'he';
   const cfg = SHAPE_CONFIGS[object.type];
   if (!cfg) return null;
 
   const isFixedWidth = cfg.fixedWidth != null;
+  const mUnit = isHe ? "מ׳" : 'm';
 
   return (
     <div style={{
@@ -82,17 +83,17 @@ export function ShapePropertiesPanel({ object, onUpdate, onDelete, onToggleLock 
       background: 'rgba(20,43,22,0.95)', border: '1px solid rgba(245,200,64,0.20)',
       borderRadius: '14px', padding: '14px',
       display: 'flex', flexDirection: 'column', gap: '10px',
-      fontFamily: ASSIST, direction: 'rtl',
+      fontFamily: ASSIST, direction: isHe ? 'rtl' : 'ltr',
     }}>
       {/* Header */}
       <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
         <span style={{ fontSize: '16px' }}>{cfg.emoji}</span>
         <span style={{ fontFamily: FRANK, color: GOLD, fontSize: '14px', fontWeight: 700, flex: 1 }}>
-          {cfg.labelHe}
+          {isHe ? cfg.labelHe : cfg.labelEn}
         </span>
         <button
           onClick={onToggleLock}
-          title={object.locked ? 'שחרר נעילה' : 'נעל במקום'}
+          title={object.locked ? (isHe ? 'שחרר נעילה' : 'Unlock') : (isHe ? 'נעל במקום' : 'Lock')}
           style={{
             background: 'none', border: 'none', cursor: 'pointer',
             fontSize: '16px', padding: '2px 0', lineHeight: 1,
@@ -106,7 +107,7 @@ export function ShapePropertiesPanel({ object, onUpdate, onDelete, onToggleLock 
 
       {/* Label */}
       <TextInput
-        label="שם"
+        label={isHe ? 'שם' : 'Name'}
         value={object.label}
         onChange={v => onUpdate({ label: v })}
       />
@@ -115,30 +116,33 @@ export function ShapePropertiesPanel({ object, onUpdate, onDelete, onToggleLock 
       {object.shapeKind === 'rect' && (
         <>
           {isFixedWidth ? (
-            <NumInput label="עובי (קבוע)" value={cfg.fixedWidth!} readOnly unit="מ׳" />
+            <NumInput label={isHe ? 'עובי (קבוע)' : 'Width (fixed)'} value={cfg.fixedWidth!} readOnly unit={mUnit} />
           ) : (
             <NumInput
-              label="רוחב"
+              label={isHe ? 'רוחב' : 'Width'}
               value={object.width ?? cfg.defaultWidth ?? 1}
               onChange={v => onUpdate({ width: v })}
+              unit={mUnit}
             />
           )}
           <NumInput
-            label="אורך"
+            label={isHe ? 'אורך' : 'Length'}
             value={object.height ?? cfg.defaultHeight ?? 1}
             onChange={v => onUpdate({ height: v })}
+            unit={mUnit}
           />
           <NumInput
-            label="סיבוב"
+            label={isHe ? 'סיבוב' : 'Rotation'}
             value={object.rotation ?? 0}
             onChange={v => onUpdate({ rotation: v })}
             unit="°" step={1} min={0}
           />
           {object.wallHeightM != null && (
             <NumInput
-              label="גובה קיר"
+              label={isHe ? 'גובה קיר' : 'Wall height'}
               value={object.wallHeightM}
               onChange={v => onUpdate({ wallHeightM: v })}
+              unit={mUnit}
             />
           )}
         </>
@@ -148,13 +152,14 @@ export function ShapePropertiesPanel({ object, onUpdate, onDelete, onToggleLock 
       {object.shapeKind === 'circle' && (
         <>
           <NumInput
-            label="קוטר"
+            label={isHe ? 'קוטר' : 'Diameter'}
             value={(object.radius ?? cfg.defaultRadius ?? 1) * 2}
             onChange={v => onUpdate({ radius: Math.max(0.1, v / 2) })}
+            unit={mUnit}
           />
           {(object.type === 'fruit-tree' || object.type === 'tree') && (
             <TextInput
-              label="שם העץ"
+              label={isHe ? 'שם העץ' : 'Tree name'}
               value={object.fruitTreeName ?? ''}
               onChange={v => onUpdate({ fruitTreeName: v })}
             />
@@ -167,7 +172,9 @@ export function ShapePropertiesPanel({ object, onUpdate, onDelete, onToggleLock 
                 onChange={e => onUpdate({ isFruitTree: e.target.checked })}
                 style={{ accentColor: GOLD }}
               />
-              <span style={{ fontFamily: ASSIST, fontSize: '12px', color: `${PARCH}88` }}>עץ פרי</span>
+              <span style={{ fontFamily: ASSIST, fontSize: '12px', color: `${PARCH}88` }}>
+                {isHe ? 'עץ פרי' : 'Fruit tree'}
+              </span>
             </label>
           )}
         </>
@@ -176,7 +183,7 @@ export function ShapePropertiesPanel({ object, onUpdate, onDelete, onToggleLock 
       {/* Polygon fields */}
       {object.shapeKind === 'polygon' && object.points && (
         <div style={{ fontFamily: ASSIST, fontSize: '12px', color: `${PARCH}66` }}>
-          שטח: {polyArea(object.points).toFixed(1)} מ״ר
+          {isHe ? 'שטח:' : 'Area:'} {polyArea(object.points).toFixed(1)} {isHe ? 'מ״ר' : 'm²'}
         </div>
       )}
 
@@ -190,7 +197,7 @@ export function ShapePropertiesPanel({ object, onUpdate, onDelete, onToggleLock 
           cursor: 'pointer',
         }}
       >
-        מחק צורה
+        {isHe ? 'מחק צורה' : 'Delete shape'}
       </button>
     </div>
   );
