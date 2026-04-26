@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 
 const GOLD   = '#F5C840';
 const PARCH  = '#EDE0C4';
@@ -12,6 +13,9 @@ interface Props {
 }
 
 export function WeeklyTaskList({ tasks, weekStart }: Props) {
+  const { i18n } = useTranslation();
+  const isHe = i18n.language === 'he';
+
   const storageKey = `gina-haya-plan-tasks-${weekStart}`;
 
   const [checked, setChecked] = useState<boolean[]>(() => {
@@ -19,7 +23,6 @@ export function WeeklyTaskList({ tasks, weekStart }: Props) {
       const stored = localStorage.getItem(storageKey);
       if (stored) {
         const parsed = JSON.parse(stored) as boolean[];
-        // Ensure correct length
         return tasks.map((_, i) => parsed[i] ?? false);
       }
     } catch { /* ignore */ }
@@ -37,9 +40,12 @@ export function WeeklyTaskList({ tasks, weekStart }: Props) {
 
   if (tasks.length === 0) return null;
 
+  const done  = checked.filter(Boolean).length;
+  const total = tasks.length;
+
   return (
     <div
-      dir="rtl"
+      dir={isHe ? 'rtl' : 'ltr'}
       style={{
         background:    'linear-gradient(145deg, rgba(28,58,30,0.7) 0%, rgba(20,43,22,0.82) 100%)',
         border:        '1px solid rgba(245,200,64,0.12)',
@@ -55,9 +61,9 @@ export function WeeklyTaskList({ tasks, weekStart }: Props) {
         fontWeight:  700,
         color:       GOLD,
         margin:      '0 0 14px',
-        textAlign:   'right',
+        textAlign:   isHe ? 'right' : 'left',
       }}>
-        משימות לשבוע
+        {isHe ? 'משימות לשבוע' : 'Weekly Tasks'}
       </h2>
 
       <ol style={{ listStyle: 'none', margin: 0, padding: 0 }}>
@@ -131,7 +137,9 @@ export function WeeklyTaskList({ tasks, weekStart }: Props) {
         textAlign:  'center',
         margin:     '12px 0 0',
       }}>
-        {checked.filter(Boolean).length} מתוך {tasks.length} משימות הושלמו
+        {isHe
+          ? `${done} מתוך ${total} משימות הושלמו`
+          : `${done} of ${total} tasks completed`}
       </p>
     </div>
   );

@@ -40,8 +40,8 @@ interface PlanState {
   isRegenerating: boolean;
   error: string | null;
   lastGenerated: string | null;
-  loadWeeklyPlan: () => Promise<void>;
-  regeneratePlan: () => Promise<void>;
+  loadWeeklyPlan: (lang?: string) => Promise<void>;
+  regeneratePlan: (lang?: string) => Promise<void>;
 }
 
 function getToken() {
@@ -55,12 +55,12 @@ export const usePlanStore = create<PlanState>((set) => ({
   error:         null,
   lastGenerated: null,
 
-  loadWeeklyPlan: async () => {
+  loadWeeklyPlan: async (lang = 'he') => {
     const token = getToken();
     if (!token) return;
     set({ isLoading: true, error: null });
     try {
-      const plan = await api.get<WeeklyPlan>('/api/plans/weekly', token);
+      const plan = await api.get<WeeklyPlan>(`/api/plans/weekly?lang=${lang}`, token);
       set({ weeklyPlan: plan, lastGenerated: plan.generatedAt ?? null });
     } catch (err: any) {
       set({ error: err.message });
@@ -69,12 +69,12 @@ export const usePlanStore = create<PlanState>((set) => ({
     }
   },
 
-  regeneratePlan: async () => {
+  regeneratePlan: async (lang = 'he') => {
     const token = getToken();
     if (!token) return;
     set({ isRegenerating: true, error: null });
     try {
-      const plan = await api.post<WeeklyPlan>('/api/plans/weekly/regenerate', {}, token);
+      const plan = await api.post<WeeklyPlan>('/api/plans/weekly/regenerate', { lang }, token);
       set({ weeklyPlan: plan, lastGenerated: plan.generatedAt ?? null });
     } catch (err: any) {
       set({ error: err.message });

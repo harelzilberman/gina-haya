@@ -59,7 +59,8 @@ export async function generateWeeklyPlan(
   userId: string,
   garden: any,
   calendarDays: BiodynamicDay[],
-  weather: WeatherData | null
+  weather: WeatherData | null,
+  language: 'he' | 'en' = 'he'
 ): Promise<WeeklyPlan> {
   const weekStart = calendarDays[0].date;
   const weekEnd   = calendarDays[calendarDays.length - 1].date;
@@ -92,7 +93,64 @@ export async function generateWeeklyPlan(
     perigeeActive:       d.perigeeActive,
   }));
 
-  const userPrompt = `הכן תכנית שבועית לגינה:
+  const isEn = language === 'en';
+
+  const userPrompt = isEn
+    ? `Prepare a weekly garden plan:
+
+**Garden details:**
+- Name: ${garden?.name ?? 'My Garden'}
+- Location: ${locationRegion}
+- Soil type: ${soilType}
+- Plants in garden: ${plants.length > 0 ? plants.join(', ') : 'not specified'}
+
+**Weekly weather:**
+${weatherStr}
+
+**Biodynamic calendar data (${weekStart} to ${weekEnd}):**
+${JSON.stringify(daysJson, null, 2)}
+
+Return JSON in exactly this format with no extra text:
+
+{
+  "weekStart": "${weekStart}",
+  "weekEnd": "${weekEnd}",
+  "weekSummary": "General description of the week (2-3 sentences in English)",
+  "bestDayForPlanting": "YYYY-MM-DD",
+  "bestDayForHarvest": "YYYY-MM-DD",
+  "days": [
+    {
+      "date": "YYYY-MM-DD",
+      "dateHe": "date in Hebrew",
+      "dayOfWeek": "Hebrew day name",
+      "dayType": "fruit/root/flower/leaf",
+      "dayTypeHe": "Hebrew day type name",
+      "dayTypeEmoji": "emoji",
+      "plantingScore": 0,
+      "scoreColour": "green/yellow/orange/red/black",
+      "nodeActive": false,
+      "moonDirection": "ascending/descending",
+      "moonDirectionHe": "עולה/יורד",
+      "prep500": false,
+      "prep501": false,
+      "recommendedActions": ["Action 1 in English", "Action 2 in English"],
+      "recommendedPlants": ["Plant 1"],
+      "avoidActions": [],
+      "chupChuTip": "Short personal tip in English (1-2 sentences)"
+    }
+  ],
+  "gardenTasks": ["Task 1 in English", "Task 2 in English", "Task 3 in English"],
+  "weatherSummary": "Summary of the weather and its effect on the garden in English"
+}
+
+Instructions:
+- bestDayForPlanting: day with highest score that is not a node day
+- bestDayForHarvest: ascending moon day with score 5 or higher
+- recommendedPlants: plants from the garden suitable for the day type; if none — general ones
+- On node days: recommendedActions=["Garden rest day"], avoidActions=["sowing","planting","harvesting"]
+- chupChuTip: warm, personal, brief (1-2 sentences in English)
+- Exactly 7 days in days array, in chronological order`
+    : `הכן תכנית שבועית לגינה:
 
 **פרטי הגינה:**
 - שם: ${garden?.name ?? 'הגינה שלי'}
@@ -147,10 +205,14 @@ ${JSON.stringify(daysJson, null, 2)}
 - chupChuTip: חם, אישי, קצר (משפט אחד עד שניים)
 - 7 ימים בדיוק ב-days, בסדר כרונולוגי`;
 
+  const systemPrompt = isEn
+    ? "You are Chupchu — a biodynamic gardening expert. You prepare personalized weekly garden plans. Respond entirely in English. Return only valid JSON."
+    : "אתה צ'ופצ'ו — המומחה הביודינמי שלך. מומחה גידול ביודינמי ישראלי. אתה מכין תכנית שבועית מותאמת אישית. כתוב בעברית. החזר JSON תקני בלבד.";
+
   const response = await anthropic.messages.create({
     model:      'claude-sonnet-4-20250514',
     max_tokens: 4096,
-    system:     "אתה צ'ופצ'ו — המומחה הביודינמי שלך. מומחה גידול ביודינמי ישראלי. אתה מכין תכנית שבועית מותאמת אישית. כתוב בעברית. החזר JSON תקני בלבד.",
+    system:     systemPrompt,
     messages:   [{ role: 'user', content: userPrompt }],
   });
 

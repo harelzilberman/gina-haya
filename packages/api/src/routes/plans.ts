@@ -15,7 +15,7 @@ function todayISO(): string {
   return new Date().toLocaleDateString('en-CA', { timeZone: ISRAEL_TIMEZONE });
 }
 
-async function getOrGeneratePlan(userId: string, forceRegenerate = false) {
+async function getOrGeneratePlan(userId: string, forceRegenerate = false, language: 'he' | 'en' = 'he') {
   const today = todayISO();
   const endDate = new Date(today + 'T00:00:00');
   endDate.setDate(endDate.getDate() + 6);
@@ -53,7 +53,7 @@ async function getOrGeneratePlan(userId: string, forceRegenerate = false) {
 
   const garden  = gardens[0] ?? null;
   const weather = await fetchWeatherForRegion(garden?.locationRegion ?? null);
-  const plan    = await generateWeeklyPlan(userId, garden, calendarDays, weather);
+  const plan    = await generateWeeklyPlan(userId, garden, calendarDays, weather, language);
 
   const generatedAt = new Date().toISOString();
 
@@ -83,7 +83,8 @@ async function getOrGeneratePlan(userId: string, forceRegenerate = false) {
 // GET /api/plans/weekly
 plansRouter.get('/weekly', async (req, res) => {
   try {
-    const plan = await getOrGeneratePlan(req.user!.id);
+    const lang = (req.query.lang as string) === 'en' ? 'en' : 'he';
+    const plan = await getOrGeneratePlan(req.user!.id, false, lang);
     res.json(plan);
   } catch (err: any) {
     console.error('[GET /api/plans/weekly]', err);
@@ -97,7 +98,8 @@ plansRouter.get('/weekly', async (req, res) => {
 // POST /api/plans/weekly/regenerate
 plansRouter.post('/weekly/regenerate', async (req, res) => {
   try {
-    const plan = await getOrGeneratePlan(req.user!.id, true);
+    const lang = (req.body?.lang as string) === 'en' ? 'en' : 'he';
+    const plan = await getOrGeneratePlan(req.user!.id, true, lang);
     res.json(plan);
   } catch (err: any) {
     console.error('[POST /api/plans/weekly/regenerate]', err);

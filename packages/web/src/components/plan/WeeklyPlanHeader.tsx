@@ -1,3 +1,4 @@
+import { useTranslation } from 'react-i18next';
 import { usePlanStore, type WeeklyPlan } from '../../stores/planStore';
 
 const GOLD   = '#F5C840';
@@ -6,24 +7,36 @@ const FRANK  = '"Frank Ruhl Libre", Georgia, serif';
 const ASSIST = '"Assistant", "Heebo", sans-serif';
 
 const HE_DAYS = ['ראשון', 'שני', 'שלישי', 'רביעי', 'חמישי', 'שישי', 'שבת'];
+const EN_DAYS = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
 
-function formatWeekRange(weekStart: string, weekEnd: string): string {
-  const start    = new Date(weekStart + 'T12:00:00');
-  const end      = new Date(weekEnd   + 'T12:00:00');
-  const startDay = start.getDate();
-  const endDay   = end.getDate();
-  const monthHe  = end.toLocaleDateString('he-IL', { month: 'long' });
-  const year     = end.getFullYear();
-  return `${startDay}–${endDay} ב${monthHe} ${year}`;
+const DAY_NAME_EN: Record<string, string> = {
+  'יום ראשון': 'Sunday', 'יום שני': 'Monday', 'יום שלישי': 'Tuesday',
+  'יום רביעי': 'Wednesday', 'יום חמישי': 'Thursday', 'יום שישי': 'Friday', 'שבת': 'Saturday',
+};
+
+function formatWeekRange(weekStart: string, weekEnd: string, isHe: boolean): string {
+  const start = new Date(weekStart + 'T12:00:00');
+  const end   = new Date(weekEnd   + 'T12:00:00');
+  if (isHe) {
+    const startDay = start.getDate();
+    const endDay   = end.getDate();
+    const monthHe  = end.toLocaleDateString('he-IL', { month: 'long' });
+    const year     = end.getFullYear();
+    return `${startDay}–${endDay} ב${monthHe} ${year}`;
+  }
+  return `${start.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })} – ${end.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}`;
 }
 
-function formatBestDay(dateStr: string): string {
+function formatBestDay(dateStr: string, isHe: boolean): string {
   const d = new Date(dateStr + 'T12:00:00');
-  return `יום ${HE_DAYS[d.getDay()]} ${d.getDate()}.${String(d.getMonth() + 1).padStart(2, '0')}`;
+  if (isHe) {
+    return `יום ${HE_DAYS[d.getDay()]} ${d.getDate()}.${String(d.getMonth() + 1).padStart(2, '0')}`;
+  }
+  return `${EN_DAYS[d.getDay()]}, ${d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}`;
 }
 
-function formatGeneratedTime(iso: string): string {
-  return new Date(iso).toLocaleTimeString('he-IL', {
+function formatGeneratedTime(iso: string, isHe: boolean): string {
+  return new Date(iso).toLocaleTimeString(isHe ? 'he-IL' : 'en-US', {
     hour: '2-digit', minute: '2-digit', timeZone: 'Asia/Jerusalem',
   });
 }
@@ -33,10 +46,12 @@ interface Props {
 }
 
 export function WeeklyPlanHeader({ plan }: Props) {
+  const { i18n } = useTranslation();
+  const isHe = i18n.language === 'he';
   const { isRegenerating, regeneratePlan } = usePlanStore();
 
   return (
-    <div dir="rtl" style={{ marginBottom: '20px' }}>
+    <div dir={isHe ? 'rtl' : 'ltr'} style={{ marginBottom: '20px' }}>
       {/* Title row */}
       <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', marginBottom: '4px', gap: '12px' }}>
         <h1 style={{
@@ -46,14 +61,14 @@ export function WeeklyPlanHeader({ plan }: Props) {
           color:       GOLD,
           margin:      0,
           lineHeight:  1.2,
-          textAlign:   'right',
+          textAlign:   isHe ? 'right' : 'left',
         }}>
-          תכנית השבוע שלך
+          {isHe ? 'תכנית השבוע שלך' : 'Your Weekly Plan'}
         </h1>
 
         {/* Regenerate button */}
         <button
-          onClick={regeneratePlan}
+          onClick={() => regeneratePlan(i18n.language)}
           disabled={isRegenerating}
           style={{
             flexShrink:      0,
@@ -86,10 +101,10 @@ export function WeeklyPlanHeader({ plan }: Props) {
           {isRegenerating ? (
             <>
               <span style={{ animation: 'spin 1s linear infinite', display: 'inline-block' }}>⟳</span>
-              מרענן...
+              {isHe ? 'מרענן...' : 'Refreshing...'}
             </>
           ) : (
-            <>⟳ רענן תכנית</>
+            <>{isHe ? '⟳ רענן תכנית' : '⟳ Refresh plan'}</>
           )}
         </button>
       </div>
@@ -97,11 +112,13 @@ export function WeeklyPlanHeader({ plan }: Props) {
       {/* Date range + timestamp */}
       <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '16px', flexWrap: 'wrap' }}>
         <span style={{ fontFamily: ASSIST, fontSize: '14px', color: `${PARCH}88` }}>
-          {formatWeekRange(plan.weekStart, plan.weekEnd)}
+          {formatWeekRange(plan.weekStart, plan.weekEnd, isHe)}
         </span>
         {plan.generatedAt && (
           <span style={{ fontFamily: ASSIST, fontSize: '11px', color: `${PARCH}44` }}>
-            · תכנית מהיום ב-{formatGeneratedTime(plan.generatedAt)}
+            · {isHe
+              ? `תכנית מהיום ב-${formatGeneratedTime(plan.generatedAt, isHe)}`
+              : `Plan generated today at ${formatGeneratedTime(plan.generatedAt, isHe)}`}
           </span>
         )}
       </div>
@@ -121,7 +138,7 @@ export function WeeklyPlanHeader({ plan }: Props) {
           lineHeight: 1.65,
           color:      `${PARCH}CC`,
           margin:     0,
-          textAlign:  'right',
+          textAlign:  isHe ? 'right' : 'left',
         }}>
           {plan.weekSummary}
         </p>
@@ -131,7 +148,7 @@ export function WeeklyPlanHeader({ plan }: Props) {
             fontSize:   '12px',
             color:      `${PARCH}66`,
             margin:     '10px 0 0',
-            textAlign:  'right',
+            textAlign:  isHe ? 'right' : 'left',
             borderTop:  '1px solid rgba(245,200,64,0.08)',
             paddingTop: '10px',
           }}>
@@ -143,16 +160,16 @@ export function WeeklyPlanHeader({ plan }: Props) {
       {/* Best-day cards */}
       <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px' }}>
         <BestDayCard
-          label="היום הטוב ביותר לשתילה"
+          label={isHe ? 'היום הטוב ביותר לשתילה' : 'Best day for planting'}
           emoji="🌱"
           date={plan.bestDayForPlanting}
-          formatter={formatBestDay}
+          isHe={isHe}
         />
         <BestDayCard
-          label="היום הטוב ביותר לקציר"
+          label={isHe ? 'היום הטוב ביותר לקציר' : 'Best day for harvest'}
           emoji="🌾"
           date={plan.bestDayForHarvest}
-          formatter={formatBestDay}
+          isHe={isHe}
         />
       </div>
 
@@ -164,9 +181,9 @@ export function WeeklyPlanHeader({ plan }: Props) {
 }
 
 function BestDayCard({
-  label, emoji, date, formatter,
+  label, emoji, date, isHe,
 }: {
-  label: string; emoji: string; date: string; formatter: (d: string) => string;
+  label: string; emoji: string; date: string; isHe: boolean;
 }) {
   return (
     <div style={{
@@ -174,13 +191,13 @@ function BestDayCard({
       border:        '1px solid rgba(245,200,64,0.1)',
       borderRadius:  '10px',
       padding:       '14px 14px 12px',
-      textAlign:     'right',
+      textAlign:     isHe ? 'right' : 'left',
     }}>
       <p style={{ fontFamily: ASSIST, fontSize: '11px', color: `${PARCH}55`, margin: '0 0 6px', lineHeight: 1.3 }}>
         {emoji} {label}
       </p>
       <p style={{ fontFamily: FRANK, fontSize: '16px', fontWeight: 700, color: GOLD, margin: 0 }}>
-        {formatter(date)}
+        {formatBestDay(date, isHe)}
       </p>
     </div>
   );

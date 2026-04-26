@@ -112,7 +112,8 @@ function NoGardenPrompt({ onNavigate }: { onNavigate: () => void }) {
 
 export function PlanPage() {
   const navigate    = useNavigate();
-  const { t }       = useTranslation('plan');
+  const { t, i18n } = useTranslation('plan');
+  const isHe        = i18n.language === 'he';
   const planStore   = usePlanStore();
   const gardenStore = useGardenStore();
   const { session } = useAuthStore();
@@ -138,7 +139,7 @@ export function PlanPage() {
       !planStore.weeklyPlan &&
       !planStore.isLoading
     ) {
-      planStore.loadWeeklyPlan();
+      planStore.loadWeeklyPlan(i18n.language);
     }
   }, [gardenCheckStarted, gardenStore.isLoading, gardenStore.gardens.length]);
 
@@ -192,7 +193,7 @@ export function PlanPage() {
   const plan = planStore.weeklyPlan!;
 
   return (
-    <div dir="rtl" style={{ background: '#142B16', minHeight: '100vh', paddingTop: '80px', paddingBottom: '64px' }}>
+    <div dir={isHe ? 'rtl' : 'ltr'} style={{ background: '#142B16', minHeight: '100vh', paddingTop: '80px', paddingBottom: '64px' }}>
       <style>{PLAN_CSS}</style>
 
       {/* Noise overlay */}

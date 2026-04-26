@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import type { GardenTask } from '../../api/tasks';
 
 const GOLD  = '#F5C840';
@@ -7,9 +8,13 @@ const ASSIST = '"Assistant", "Heebo", sans-serif';
 const FRANK  = '"Frank Ruhl Libre", Georgia, serif';
 
 const TYPE_CONFIG = {
-  biodynamic: { emoji: '🌙', label: 'ביודינמי', color: '#7DC084' },
-  maintenance: { emoji: '🔧', label: 'תחזוקה', color: '#C8A040' },
-  custom:      { emoji: '✏️', label: 'אישי', color: '#C884C8' },
+  biodynamic: { emoji: '🌙', labelHe: 'ביודינמי',  labelEn: 'Biodynamic',   color: '#7DC084' },
+  maintenance: { emoji: '🔧', labelHe: 'תחזוקה',    labelEn: 'Maintenance',  color: '#C8A040' },
+  custom:      { emoji: '✏️', labelHe: 'אישי',      labelEn: 'Personal',     color: '#C884C8' },
+};
+
+const REST_DAY_TITLES: Record<string, string> = {
+  'יום מנוחה לגינה': 'Garden rest day',
 };
 
 interface Props {
@@ -28,13 +33,16 @@ function groupByDate(tasks: GardenTask[]): Record<string, GardenTask[]> {
   }, {} as Record<string, GardenTask[]>);
 }
 
-function formatDate(dateStr: string): string {
-  return new Date(dateStr + 'T12:00:00').toLocaleDateString('he-IL', {
+function formatDate(dateStr: string, isHe: boolean): string {
+  return new Date(dateStr + 'T12:00:00').toLocaleDateString(isHe ? 'he-IL' : 'en-US', {
     weekday: 'long', day: 'numeric', month: 'long',
   });
 }
 
 export function TaskManager({ tasks, onUpdateStatus, onDelete, onAdd, isLoading }: Props) {
+  const { i18n } = useTranslation();
+  const isHe = i18n.language === 'he';
+
   const [newTaskDate, setNewTaskDate] = useState('');
   const [newTaskTitle, setNewTaskTitle] = useState('');
   const [showAddForm, setShowAddForm] = useState(false);
@@ -58,12 +66,18 @@ export function TaskManager({ tasks, onUpdateStatus, onDelete, onAdd, isLoading 
     setShowAddForm(false);
   };
 
+  const filterLabels = {
+    all:     isHe ? 'הכל'     : 'All',
+    pending: isHe ? 'ממתינות' : 'Pending',
+    done:    isHe ? 'הושלמו'  : 'Completed',
+  };
+
   return (
-    <div style={{ marginBottom: '24px' }}>
+    <div dir={isHe ? 'rtl' : 'ltr'} style={{ marginBottom: '24px' }}>
       {/* Header */}
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
         <h2 style={{ fontFamily: FRANK, fontSize: '20px', color: GOLD, margin: 0 }}>
-          📋 משימות השבוע
+          📋 {isHe ? 'משימות השבוע' : "This Week's Tasks"}
         </h2>
         <button
           onClick={() => setShowAddForm(v => !v)}
@@ -73,7 +87,7 @@ export function TaskManager({ tasks, onUpdateStatus, onDelete, onAdd, isLoading 
             color: GOLD, background: 'rgba(245,200,64,0.08)', cursor: 'pointer',
           }}
         >
-          + הוסף משימה
+          {isHe ? '+ הוסף משימה' : '+ Add task'}
         </button>
       </div>
 
@@ -82,10 +96,10 @@ export function TaskManager({ tasks, onUpdateStatus, onDelete, onAdd, isLoading 
         <div style={{ marginBottom: '16px' }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '6px' }}>
             <span style={{ fontFamily: ASSIST, fontSize: '12px', color: `${PARCH}70` }}>
-              {done} מתוך {total} משימות הושלמו
+              {isHe ? `${done} מתוך ${total} משימות הושלמו` : `${done} of ${total} tasks completed`}
             </span>
             <span style={{ fontFamily: ASSIST, fontSize: '12px', color: `${PARCH}50` }}>
-              {pending} ממתינות
+              {isHe ? `${pending} ממתינות` : `${pending} pending`}
             </span>
           </div>
           <div style={{ height: '4px', background: 'rgba(255,255,255,0.08)', borderRadius: '99px', overflow: 'hidden' }}>
@@ -114,7 +128,7 @@ export function TaskManager({ tasks, onUpdateStatus, onDelete, onAdd, isLoading 
               cursor: 'pointer',
             }}
           >
-            {f === 'all' ? 'הכל' : f === 'pending' ? 'ממתינות' : 'הושלמו'}
+            {filterLabels[f]}
           </button>
         ))}
       </div>
@@ -130,11 +144,12 @@ export function TaskManager({ tasks, onUpdateStatus, onDelete, onAdd, isLoading 
               type="text"
               value={newTaskTitle}
               onChange={e => setNewTaskTitle(e.target.value)}
-              placeholder="שם המשימה..."
+              placeholder={isHe ? 'שם המשימה...' : 'Task name...'}
               style={{
                 fontFamily: ASSIST, fontSize: '14px', color: PARCH,
                 background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)',
-                borderRadius: '8px', padding: '8px 12px', outline: 'none', direction: 'rtl',
+                borderRadius: '8px', padding: '8px 12px', outline: 'none',
+                direction: isHe ? 'rtl' : 'ltr',
               }}
             />
             <input
@@ -152,13 +167,13 @@ export function TaskManager({ tasks, onUpdateStatus, onDelete, onAdd, isLoading 
                 onClick={() => setShowAddForm(false)}
                 style={{ fontFamily: ASSIST, fontSize: '13px', padding: '6px 14px', borderRadius: '8px', border: '1px solid rgba(255,255,255,0.1)', color: `${PARCH}60`, background: 'transparent', cursor: 'pointer' }}
               >
-                ביטול
+                {isHe ? 'ביטול' : 'Cancel'}
               </button>
               <button
                 onClick={handleAdd}
                 style={{ fontFamily: ASSIST, fontSize: '13px', fontWeight: 600, padding: '6px 14px', borderRadius: '8px', border: 'none', background: GOLD, color: '#142B16', cursor: 'pointer' }}
               >
-                הוסף
+                {isHe ? 'הוסף' : 'Add'}
               </button>
             </div>
           </div>
@@ -168,23 +183,28 @@ export function TaskManager({ tasks, onUpdateStatus, onDelete, onAdd, isLoading 
       {/* Tasks by date */}
       {isLoading ? (
         <p style={{ fontFamily: ASSIST, fontSize: '14px', color: `${PARCH}50`, textAlign: 'center', padding: '20px' }}>
-          טוען משימות...
+          {isHe ? 'טוען משימות...' : 'Loading tasks...'}
         </p>
       ) : dates.length === 0 ? (
         <p style={{ fontFamily: ASSIST, fontSize: '14px', color: `${PARCH}50`, textAlign: 'center', padding: '20px' }}>
-          {filter === 'done' ? 'עדיין לא הושלמו משימות השבוע' : 'אין משימות לשבוע זה'}
+          {filter === 'done'
+            ? (isHe ? 'עדיין לא הושלמו משימות השבוע' : 'No tasks completed yet')
+            : (isHe ? 'אין משימות לשבוע זה' : 'No tasks this week')}
         </p>
       ) : (
         dates.map(date => (
           <div key={date} style={{ marginBottom: '20px' }}>
-            <p style={{ fontFamily: FRANK, fontSize: '14px', color: `${PARCH}80`, marginBottom: '8px', paddingRight: '4px' }}>
-              {formatDate(date)}
+            <p style={{ fontFamily: FRANK, fontSize: '14px', color: `${PARCH}80`, marginBottom: '8px', paddingRight: isHe ? '4px' : 0, paddingLeft: isHe ? 0 : '4px' }}>
+              {formatDate(date, isHe)}
             </p>
             <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
               {grouped[date].map(task => {
                 const cfg = TYPE_CONFIG[task.type];
                 const isDone = task.status === 'done';
                 const isSkipped = task.status === 'skipped';
+                const taskTitle = !isHe && task.type !== 'custom'
+                  ? (REST_DAY_TITLES[task.title] ?? task.title)
+                  : task.title;
                 return (
                   <div
                     key={task.id}
@@ -218,9 +238,9 @@ export function TaskManager({ tasks, onUpdateStatus, onDelete, onAdd, isLoading 
                     <span style={{
                       fontFamily: ASSIST, fontSize: '14px', color: isDone ? `${PARCH}70` : PARCH,
                       flex: 1, textDecoration: isDone ? 'line-through' : 'none',
-                      direction: 'rtl', textAlign: 'right',
+                      direction: isHe ? 'rtl' : 'ltr', textAlign: isHe ? 'right' : 'left',
                     }}>
-                      {task.title}
+                      {taskTitle}
                     </span>
 
                     {/* Type badge */}
@@ -229,7 +249,7 @@ export function TaskManager({ tasks, onUpdateStatus, onDelete, onAdd, isLoading 
                       padding: '2px 8px', borderRadius: '99px',
                       background: `${cfg.color}22`, color: cfg.color, flexShrink: 0,
                     }}>
-                      {cfg.label}
+                      {isHe ? cfg.labelHe : cfg.labelEn}
                     </span>
 
                     {/* Tracker origin badge */}
@@ -239,7 +259,7 @@ export function TaskManager({ tasks, onUpdateStatus, onDelete, onAdd, isLoading 
                         padding: '2px 8px', borderRadius: '99px',
                         background: 'rgba(74,124,89,0.2)', color: '#7DC084', flexShrink: 0,
                       }}>
-                        🌱 ממעקב הגידול
+                        {isHe ? '🌱 ממעקב הגידול' : '🌱 From growth tracker'}
                       </span>
                     )}
 
@@ -248,7 +268,7 @@ export function TaskManager({ tasks, onUpdateStatus, onDelete, onAdd, isLoading 
                       {!isDone && (
                         <button
                           onClick={() => onUpdateStatus(task.id, isSkipped ? 'pending' : 'skipped')}
-                          title={isSkipped ? 'בטל דילוג' : 'דלג'}
+                          title={isSkipped ? (isHe ? 'בטל דילוג' : 'Undo skip') : (isHe ? 'דלג' : 'Skip')}
                           style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: '14px', opacity: 0.5, padding: '2px' }}
                         >
                           {isSkipped ? '↩️' : '⏭️'}
@@ -257,7 +277,7 @@ export function TaskManager({ tasks, onUpdateStatus, onDelete, onAdd, isLoading 
                       {task.type === 'custom' && (
                         <button
                           onClick={() => onDelete(task.id)}
-                          title="מחק"
+                          title={isHe ? 'מחק' : 'Delete'}
                           style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: '14px', opacity: 0.4, padding: '2px' }}
                         >
                           🗑️

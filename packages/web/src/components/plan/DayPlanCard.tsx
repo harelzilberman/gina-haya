@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { useTranslation } from 'react-i18next';
 import type { DayPlan } from '../../stores/planStore';
 
 const GOLD      = '#F5C840';
@@ -23,6 +24,10 @@ const DAY_TYPE_STYLES: Record<string, { bg: string; color: string }> = {
   leaf:   { bg: 'rgba(74,128,80,0.22)',  color: SAGE      },
 };
 
+const DAY_TYPE_EN: Record<string, string> = {
+  fruit: 'Fruit', root: 'Root', flower: 'Flower', leaf: 'Leaf',
+};
+
 const SMALL_R = 22;
 const SMALL_C = 2 * Math.PI * SMALL_R;
 
@@ -35,6 +40,9 @@ interface Props {
 }
 
 export function DayPlanCard({ day, isToday, isExpanded, onToggle, forceExpanded }: Props) {
+  const { i18n } = useTranslation();
+  const isHe = i18n.language === 'he';
+
   const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
@@ -56,9 +64,13 @@ export function DayPlanCard({ day, isToday, isExpanded, onToggle, forceExpanded 
     ? 'linear-gradient(145deg, rgba(163,48,48,0.12) 0%, rgba(20,43,22,0.85) 100%)'
     : 'linear-gradient(145deg, rgba(28,58,30,0.7) 0%, rgba(20,43,22,0.82) 100%)';
 
+  const dayNameEn = new Date(day.date + 'T12:00:00').toLocaleDateString('en-US', { weekday: 'long' });
+  const dateEn    = new Date(day.date + 'T12:00:00').toLocaleDateString('en-US', { day: 'numeric', month: 'long' });
+  const dayTypeLabel = isHe ? day.dayTypeHe : (DAY_TYPE_EN[day.dayType] ?? day.dayType);
+
   return (
     <div
-      dir="rtl"
+      dir={isHe ? 'rtl' : 'ltr'}
       className="day-plan-card"
       style={{
         background:    cardBg,
@@ -82,13 +94,13 @@ export function DayPlanCard({ day, isToday, isExpanded, onToggle, forceExpanded 
           background:      'none',
           border:          'none',
           cursor:          'pointer',
-          textAlign:       'right',
+          textAlign:       isHe ? 'right' : 'left',
           gap:             '12px',
         }}
       >
-        {/* Right: day name + date */}
-        <div style={{ flex: 1, textAlign: 'right' }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '8px', justifyContent: 'flex-end', flexWrap: 'wrap' }}>
+        {/* Day name + date */}
+        <div style={{ flex: 1, textAlign: isHe ? 'right' : 'left' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '8px', justifyContent: isHe ? 'flex-end' : 'flex-start', flexWrap: 'wrap' }}>
             {isToday && (
               <span style={{
                 fontFamily:    ASSIST,
@@ -101,19 +113,19 @@ export function DayPlanCard({ day, isToday, isExpanded, onToggle, forceExpanded 
                 border:        `1px solid ${GOLD}44`,
                 letterSpacing: '0.05em',
               }}>
-                היום
+                {isHe ? 'היום' : 'Today'}
               </span>
             )}
             <span className="day-header" style={{ fontFamily: FRANK, fontSize: '17px', fontWeight: 700, color: isToday ? GOLD : PARCH }}>
-              יום {day.dayOfWeek}
+              {isHe ? `יום ${day.dayOfWeek}` : dayNameEn}
             </span>
             <span style={{ fontFamily: ASSIST, fontSize: '13px', color: `${PARCH}66` }}>
-              {day.dateHe}
+              {isHe ? day.dateHe : dateEn}
             </span>
           </div>
 
           {/* Day type badge */}
-          <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: '5px' }}>
+          <div style={{ display: 'flex', justifyContent: isHe ? 'flex-end' : 'flex-start', marginTop: '5px' }}>
             <span style={{
               fontFamily:      ASSIST,
               fontSize:        '12px',
@@ -124,14 +136,14 @@ export function DayPlanCard({ day, isToday, isExpanded, onToggle, forceExpanded 
               color:           dtStyle.color,
               border:          `1px solid ${dtStyle.color}33`,
             }}>
-              {day.dayTypeEmoji} {day.dayTypeHe}
+              {day.dayTypeEmoji} {dayTypeLabel}
             </span>
           </div>
         </div>
 
-        {/* Left: score ring + chevron */}
+        {/* Score ring + chevron */}
         <div style={{ display: 'flex', alignItems: 'center', gap: '10px', flexShrink: 0 }}>
-          <svg className="score-circle" width="52" height="52" viewBox="0 0 52 52" aria-label={`ציון ${day.plantingScore}`}>
+          <svg className="score-circle" width="52" height="52" viewBox="0 0 52 52" aria-label={`Score ${day.plantingScore}`}>
             <circle cx="26" cy="26" r={SMALL_R} fill="none" stroke="rgba(255,255,255,0.06)" strokeWidth="5" />
             <circle
               cx="26" cy="26" r={SMALL_R}
@@ -198,10 +210,12 @@ export function DayPlanCard({ day, isToday, isExpanded, onToggle, forceExpanded 
               <span style={{ fontSize: '16px' }}>⚫</span>
               <div>
                 <p style={{ fontFamily: ASSIST, fontSize: '13px', fontWeight: 600, color: '#E07070', margin: 0 }}>
-                  יום צומת — מנוחה לגינה
+                  {isHe ? 'יום צומת — מנוחה לגינה' : 'Node Day — rest for the garden'}
                 </p>
                 <p style={{ fontFamily: ASSIST, fontSize: '12px', color: `${NODE_RED}CC`, margin: '2px 0 0' }}>
-                  הירח בצומת — לא מומלץ לשתול, לקצור או לזרוע
+                  {isHe
+                    ? 'הירח בצומת — לא מומלץ לשתול, לקצור או לזרוע'
+                    : 'Moon at node — planting, harvesting and sowing not recommended'}
                 </p>
               </div>
             </div>
@@ -209,11 +223,13 @@ export function DayPlanCard({ day, isToday, isExpanded, onToggle, forceExpanded 
 
           {/* Recommended actions */}
           {day.recommendedActions.length > 0 && (
-            <Section title="פעולות מומלצות">
+            <Section title={isHe ? 'פעולות מומלצות' : 'Recommended actions'}>
               {day.recommendedActions.map((action, i) => (
                 <div key={i} style={{ display: 'flex', alignItems: 'flex-start', gap: '8px', marginBottom: '6px' }}>
                   <span style={{ color: SAGE, fontSize: '13px', flexShrink: 0, marginTop: '1px' }}>✓</span>
-                  <span style={{ fontFamily: ASSIST, fontSize: '13px', color: `${PARCH}CC` }}>{action}</span>
+                  <span style={{ fontFamily: ASSIST, fontSize: '13px', color: `${PARCH}CC` }}>
+                    {!isHe && action === 'יום מנוחה לגינה' ? 'Garden rest day' : action}
+                  </span>
                 </div>
               ))}
             </Section>
@@ -221,7 +237,7 @@ export function DayPlanCard({ day, isToday, isExpanded, onToggle, forceExpanded 
 
           {/* Recommended plants */}
           {day.recommendedPlants.length > 0 && (
-            <Section title="צמחים מומלצים להיום">
+            <Section title={isHe ? 'צמחים מומלצים להיום' : 'Recommended plants for today'}>
               <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px' }}>
                 {day.recommendedPlants.map((plant, i) => (
                   <span key={i} style={{
@@ -243,7 +259,7 @@ export function DayPlanCard({ day, isToday, isExpanded, onToggle, forceExpanded 
           {/* Avoid actions */}
           {day.avoidActions.length > 0 && (
             <div className="avoid-section">
-              <Section title="להימנע מ...">
+              <Section title={isHe ? 'להימנע מ...' : 'Avoid...'}>
                 {day.avoidActions.map((action, i) => (
                   <div key={i} style={{ display: 'flex', alignItems: 'flex-start', gap: '8px', marginBottom: '6px' }}>
                     <span style={{ color: 'rgba(220,100,100,0.7)', fontSize: '13px', flexShrink: 0, marginTop: '1px' }}>✗</span>
@@ -267,7 +283,7 @@ export function DayPlanCard({ day, isToday, isExpanded, onToggle, forceExpanded 
                   color:           GOLD,
                   backgroundColor: `${GOLD}06`,
                 }}>
-                  🌱 פרפרט 500 — יישום מומלץ
+                  {isHe ? '🌱 פרפרט 500 — יישום מומלץ' : '🌱 Prep 500 — application recommended'}
                 </span>
               )}
               {day.prep501 && (
@@ -280,7 +296,7 @@ export function DayPlanCard({ day, isToday, isExpanded, onToggle, forceExpanded 
                   color:           GOLD,
                   backgroundColor: `${GOLD}06`,
                 }}>
-                  ☀️ פרפרט 501 — יישום מומלץ
+                  {isHe ? '☀️ פרפרט 501 — יישום מומלץ' : '☀️ Prep 501 — application recommended'}
                 </span>
               )}
             </div>
@@ -301,10 +317,9 @@ export function DayPlanCard({ day, isToday, isExpanded, onToggle, forceExpanded 
               {day.moonDirection === 'ascending' ? '↑' : '↓'}
             </span>
             <span style={{ fontFamily: ASSIST, fontSize: '12px', color: `${PARCH}88` }}>
-              ירח {day.moonDirectionHe} ·{' '}
-              {day.moonDirection === 'ascending'
-                ? 'הארץ נושמת החוצה — זמן לקציר'
-                : 'הארץ נושמת פנימה — זמן לשתילה'}
+              {isHe
+                ? `ירח ${day.moonDirectionHe} · ${day.moonDirection === 'ascending' ? 'הארץ נושמת החוצה — זמן לקציר' : 'הארץ נושמת פנימה — זמן לשתילה'}`
+                : `Moon ${day.moonDirection} · ${day.moonDirection === 'ascending' ? 'Earth breathes out — time to harvest' : 'Earth breathes in — time to plant'}`}
             </span>
           </div>
 
