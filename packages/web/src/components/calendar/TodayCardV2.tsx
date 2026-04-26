@@ -173,6 +173,8 @@ export function MoonPhaseDisplay({ phaseAngle, phasePct, phaseHe, moonSignHe, as
   ascending: boolean;
   lat?: number;
 }) {
+  const { i18n } = useTranslation('calendar');
+  const isHe = i18n.language === 'he';
   const illumination = phasePct;
   const isFullMoon = phasePct > 95;
 
@@ -212,7 +214,7 @@ export function MoonPhaseDisplay({ phaseAngle, phasePct, phaseHe, moonSignHe, as
       </div>
 
       <div style={{ fontFamily: ASSIST, fontSize: '13px', color: `${PARCH}60` }}>
-        מזל הירח: {moonSignHe}
+        {isHe ? 'מזל הירח:' : 'Moon sign:'} {moonSignHe}
       </div>
 
       <div style={{
@@ -221,7 +223,7 @@ export function MoonPhaseDisplay({ phaseAngle, phasePct, phaseHe, moonSignHe, as
         borderRadius: '99px', padding: '4px 14px',
         fontFamily: ASSIST, fontSize: '12px', color: GOLD,
       }}>
-        {ascending ? '↑ ירח עולה' : '↓ ירח יורד'}
+        {ascending ? (isHe ? '↑ ירח עולה' : '↑ Ascending') : (isHe ? '↓ ירח יורד' : '↓ Descending')}
       </div>
 
       <div style={{ width: '100%', maxWidth: '200px' }}>
@@ -248,13 +250,13 @@ export function MoonPhaseDisplay({ phaseAngle, phasePct, phaseHe, moonSignHe, as
         display: 'flex', gap: '16px',
         fontFamily: ASSIST, fontSize: '11px', color: `${PARCH}50`,
       }}>
-        <span>ירח מלא: {daysToFull === 0 ? 'היום!' : `${daysToFull} ימים`}</span>
+        <span>{isHe ? 'ירח מלא:' : 'Full moon:'} {daysToFull === 0 ? (isHe ? 'היום!' : 'Today!') : (isHe ? `${daysToFull} ימים` : `${daysToFull} days`)}</span>
         <span>·</span>
-        <span>ירח חדש: {daysToNew === 0 ? 'היום!' : `${daysToNew} ימים`}</span>
+        <span>{isHe ? 'ירח חדש:' : 'New moon:'} {daysToNew === 0 ? (isHe ? 'היום!' : 'Today!') : (isHe ? `${daysToNew} ימים` : `${daysToNew} days`)}</span>
       </div>
 
       <div style={{ fontFamily: ASSIST, fontSize: '11px', color: `${PARCH}40` }}>
-        תאורה: {illumination}%
+        {isHe ? 'תאורה:' : 'Illumination:'} {illumination}%
       </div>
     </div>
   );

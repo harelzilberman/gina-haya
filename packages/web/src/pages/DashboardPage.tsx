@@ -114,7 +114,7 @@ export function DashboardPage() {
   const dayType    = day ? DAY_TYPE_MAP[day.dayType] ?? null : null;
   const scoreColor = day ? (SCORE_COLOR[day.scoreColour] ?? GOLD) : GOLD;
 
-  const todayDateHe = new Date().toLocaleDateString('he-IL', {
+  const todayDateStr = new Date().toLocaleDateString(isHe ? 'he-IL' : 'en-US', {
     weekday: 'long', day: 'numeric', month: 'long', year: 'numeric',
   });
 
@@ -408,7 +408,7 @@ export function DashboardPage() {
           {/* Date header */}
           <div>
             <h1 style={{ fontFamily: FRANK, fontSize: '28px', color: GOLD, margin: '0 0 4px', lineHeight: 1.2 }}>
-              {todayDateHe}
+              {todayDateStr}
             </h1>
             <p style={{ fontFamily: ASST, fontSize: '13px', color: `${PARCH}55`, margin: 0 }}>
               {t('biodynamic.subtitle')}
@@ -468,7 +468,7 @@ export function DashboardPage() {
 
                   {/* Row 2 — set time */}
                   <div style={{ background: 'rgba(255,255,255,0.04)', borderRadius: '10px', padding: '14px 16px' }}>
-                    <div style={{ fontFamily: ASST, fontSize: '11px', color: `${PARCH}50`, marginBottom: '5px' }}>שקיעת ירח</div>
+                    <div style={{ fontFamily: ASST, fontSize: '11px', color: `${PARCH}50`, marginBottom: '5px' }}>{isHe ? 'שקיעת ירח' : 'Moonset'}</div>
                     <div style={{ fontFamily: FRANK, fontSize: '16px', color: PARCH }}>{day.moonsetTime ?? '—'}</div>
                   </div>
 
@@ -479,13 +479,13 @@ export function DashboardPage() {
                     display: 'flex', justifyContent: 'space-between', alignItems: 'center',
                   }}>
                     <div>
-                      <div style={{ fontFamily: ASST, fontSize: '11px', color: `${PARCH}50`, marginBottom: '5px' }}>כיוון הירח</div>
+                      <div style={{ fontFamily: ASST, fontSize: '11px', color: `${PARCH}50`, marginBottom: '5px' }}>{isHe ? 'כיוון הירח' : 'Moon direction'}</div>
                       <div style={{ fontFamily: FRANK, fontSize: '16px', color: PARCH }}>
-                        {day.ascendingDescending === 'ascending' ? '↑ עולה' : '↓ יורד'}
+                        {day.ascendingDescending === 'ascending' ? (isHe ? '↑ עולה' : '↑ Ascending') : (isHe ? '↓ יורד' : '↓ Descending')}
                       </div>
                     </div>
                     <div style={{ textAlign: 'right' }}>
-                      <div style={{ fontFamily: ASST, fontSize: '11px', color: `${PARCH}50`, marginBottom: '5px' }}>שם הפאזה</div>
+                      <div style={{ fontFamily: ASST, fontSize: '11px', color: `${PARCH}50`, marginBottom: '5px' }}>{isHe ? 'שם הפאזה' : 'Phase name'}</div>
                       <div style={{ fontFamily: FRANK, fontSize: '16px', color: PARCH }}>{day.moonPhaseNameHe}</div>
                     </div>
                   </div>
@@ -507,7 +507,7 @@ export function DashboardPage() {
                   borderRadius: '12px', padding: '18px',
                 }}>
                   <h3 style={{ fontFamily: FRANK, fontSize: '15px', color: GOLD, margin: '0 0 12px' }}>
-                    המלצות ביודינמיות להיום
+                    {isHe ? 'המלצות ביודינמיות להיום' : "Today's biodynamic recommendations"}
                   </h3>
                   {prepItems.map((item, i) => (
                     <div key={i} style={{
@@ -531,14 +531,16 @@ export function DashboardPage() {
                 }}>
                   <span style={{ fontSize: '22px' }}>⚠️</span>
                   <div style={{ fontFamily: ASST, fontSize: '13px', color: '#E8956A' }}>
-                    {day.nodeActive ? 'יום צומת — הימנע משתילה' : 'ירח בפריגיאה — הכוחות חלשים'}
+                    {day.nodeActive
+                      ? (isHe ? 'יום צומת — הימנע משתילה' : 'Node day — avoid planting')
+                      : (isHe ? 'ירח בפריגיאה — הכוחות חלשים' : 'Moon at perigee — forces are weak')}
                   </div>
                 </div>
               )}
             </>
           ) : (
             <p style={{ fontFamily: ASST, fontSize: '14px', color: `${PARCH}50` }}>
-              לא נמצאו נתוני לוח להיום
+              {isHe ? 'לא נמצאו נתוני לוח להיום' : 'No calendar data found for today'}
             </p>
           )}
         </div>
@@ -553,26 +555,26 @@ export function DashboardPage() {
         }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
             <h2 style={{ fontFamily: FRANK, fontSize: '18px', color: GOLD, margin: 0 }}>
-              משימות השבוע
+              {isHe ? 'משימות השבוע' : "This Week's Tasks"}
             </h2>
             <Link
               to="/tasks"
               style={{ fontFamily: ASST, fontSize: '12px', color: `${PARCH}60`, textDecoration: 'none' }}
             >
-              הכל ›
+              {isHe ? 'הכל ›' : 'All ›'}
             </Link>
           </div>
 
           {tasks.length === 0 ? (
             <div style={{ textAlign: 'center', padding: '24px 0' }}>
               <p style={{ fontFamily: ASST, fontSize: '13px', color: `${PARCH}50`, marginBottom: '12px' }}>
-                אין משימות לשבוע זה
+                {isHe ? 'אין משימות לשבוע זה' : 'No tasks this week'}
               </p>
               <Link
                 to="/plan"
                 style={{ fontFamily: FRANK, fontSize: '13px', color: GOLD, textDecoration: 'none' }}
               >
-                צור תכנית שבועית →
+                {isHe ? 'צור תכנית שבועית →' : 'Create weekly plan →'}
               </Link>
             </div>
           ) : (
@@ -580,7 +582,7 @@ export function DashboardPage() {
               const isToday   = date === today;
               const dateTasks = tasksByDate[date];
               const d = new Date(date + 'T12:00:00');
-              const dateLabel = d.toLocaleDateString('he-IL', {
+              const dateLabel = d.toLocaleDateString(isHe ? 'he-IL' : 'en-US', {
                 weekday: 'long', day: 'numeric', month: 'short',
               });
               return (
@@ -592,7 +594,7 @@ export function DashboardPage() {
                     paddingBottom: '4px',
                     borderBottom: `1px solid ${isToday ? 'rgba(245,200,64,0.2)' : 'rgba(255,255,255,0.06)'}`,
                   }}>
-                    {isToday ? '⬤ היום — ' : ''}{dateLabel}
+                    {isToday ? (isHe ? '⬤ היום — ' : '⬤ Today — ') : ''}{dateLabel}
                   </div>
                   {dateTasks.map(task => (
                     <div key={task.id} style={{
@@ -640,7 +642,7 @@ export function DashboardPage() {
             onMouseEnter={e => { (e.currentTarget as HTMLElement).style.filter = 'brightness(1.1)'; }}
             onMouseLeave={e => { (e.currentTarget as HTMLElement).style.filter = 'none'; }}
           >
-            + הוסף משימה
+            {isHe ? '+ הוסף משימה' : '+ Add task'}
           </Link>
         </div>
       </div>
