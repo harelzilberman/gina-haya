@@ -29,6 +29,36 @@ const SCORE_COLOR: Record<string, string> = {
   black:  '#555555',
 };
 
+const MOON_SIGN_EN: Record<string, string> = {
+  'טלה': 'Aries', 'שור': 'Taurus', 'תאומים': 'Gemini',
+  'סרטן': 'Cancer', 'אריה': 'Leo', 'בתולה': 'Virgo',
+  'מאזניים': 'Libra', 'עקרב': 'Scorpio', 'קשת': 'Sagittarius',
+  'גדי': 'Capricorn', 'דלי': 'Aquarius', 'דגים': 'Pisces',
+};
+
+const PHASE_NAME_EN: Record<string, string> = {
+  'ירח חדש': 'New Moon',
+  'סהר גדל': 'Waxing Crescent',
+  'רבע ראשון': 'First Quarter',
+  'גיבנת גדלה': 'Waxing Gibbous',
+  'ירח מלא': 'Full Moon',
+  'כמעט מלא': 'Almost Full',
+  'גיבנת דועכת': 'Waning Gibbous',
+  'רבע אחרון': 'Last Quarter',
+  'סהר דועך': 'Waning Crescent',
+};
+
+const CHUPCHU_SUMMARIES_EN: Record<string, string> = {
+  fruit:  'Today is a Fruit day — ideal for planting tomatoes, cucumbers and peppers.',
+  root:   'Today is a Root day — great for carrots, beets and onions.',
+  flower: 'Today is a Flower day — perfect for flowers and aromatic herbs.',
+  leaf:   'Today is a Leaf day — good time to prune and harvest leafy vegetables.',
+};
+
+const REST_DAY_TITLES: Record<string, string> = {
+  'יום מנוחה לגינה': 'Garden rest day',
+};
+
 const NAV_BUTTONS = [
   { emoji: '📅', tKey: 'nav.calendar', to: '/calendar' },
   { emoji: '✅', tKey: 'nav.tasks',    to: '/tasks'    },
@@ -164,14 +194,16 @@ export function DashboardPage() {
         </div>
       </div>
 
-      {day?.chupChuDailySummary && (
+      {(day?.chupChuDailySummary || day?.dayType) && (
         <p style={{
           fontFamily: ASST, fontSize: '13px', color: `${PARCH}CC`,
           margin: 0, lineHeight: 1.6,
           borderRight: `3px solid ${GOLD}55`,
           paddingRight: '12px',
         }}>
-          {day.chupChuDailySummary}
+          {isHe
+            ? (day!.chupChuDailySummary || '')
+            : (CHUPCHU_SUMMARIES_EN[day!.dayType] ?? day!.chupChuDailySummary ?? '')}
         </p>
       )}
 
@@ -299,7 +331,7 @@ export function DashboardPage() {
                   textDecoration: task.status === 'done' ? 'line-through' : 'none',
                   flex: 1, overflow: 'hidden', whiteSpace: 'nowrap', textOverflow: 'ellipsis',
                 }}>
-                  {task.title}
+                  {isHe ? task.title : (REST_DAY_TITLES[task.title] ?? task.title)}
                 </span>
               </div>
             ))
@@ -457,7 +489,9 @@ export function DashboardPage() {
                   {/* Row 2 — moon sign */}
                   <div style={{ background: 'rgba(255,255,255,0.04)', borderRadius: '10px', padding: '14px 16px' }}>
                     <div style={{ fontFamily: ASST, fontSize: '11px', color: `${PARCH}50`, marginBottom: '5px' }}>{t('biodynamic.moonSign')}</div>
-                    <div style={{ fontFamily: FRANK, fontSize: '16px', color: PARCH }}>{day.moonSignHe}</div>
+                    <div style={{ fontFamily: FRANK, fontSize: '16px', color: PARCH }}>
+                      {isHe ? day.moonSignHe : (MOON_SIGN_EN[day.moonSignHe] ?? day.moonSignHe)}
+                    </div>
                   </div>
 
                   {/* Row 2 — rise time */}
@@ -486,7 +520,9 @@ export function DashboardPage() {
                     </div>
                     <div style={{ textAlign: 'right' }}>
                       <div style={{ fontFamily: ASST, fontSize: '11px', color: `${PARCH}50`, marginBottom: '5px' }}>{isHe ? 'שם הפאזה' : 'Phase name'}</div>
-                      <div style={{ fontFamily: FRANK, fontSize: '16px', color: PARCH }}>{day.moonPhaseNameHe}</div>
+                      <div style={{ fontFamily: FRANK, fontSize: '16px', color: PARCH }}>
+                        {isHe ? day.moonPhaseNameHe : (PHASE_NAME_EN[day.moonPhaseNameHe] ?? day.moonPhaseNameHe)}
+                      </div>
                     </div>
                   </div>
                 </div>

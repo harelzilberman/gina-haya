@@ -176,6 +176,22 @@ export function MoonPhaseDisplay({ phaseAngle, phasePct, phaseHe, moonSignHe, as
   const { i18n } = useTranslation('calendar');
   const isHe = i18n.language === 'he';
   const illumination = phasePct;
+
+  const MOON_SIGN_EN: Record<string, string> = {
+    'טלה': 'Aries', 'שור': 'Taurus', 'תאומים': 'Gemini',
+    'סרטן': 'Cancer', 'אריה': 'Leo', 'בתולה': 'Virgo',
+    'מאזניים': 'Libra', 'עקרב': 'Scorpio', 'קשת': 'Sagittarius',
+    'גדי': 'Capricorn', 'דלי': 'Aquarius', 'דגים': 'Pisces',
+  };
+  const PHASE_NAME_EN: Record<string, string> = {
+    'ירח חדש': 'New Moon', 'סהר גדל': 'Waxing Crescent',
+    'רבע ראשון': 'First Quarter', 'גיבנת גדלה': 'Waxing Gibbous',
+    'ירח מלא': 'Full Moon', 'כמעט מלא': 'Almost Full',
+    'גיבנת דועכת': 'Waning Gibbous', 'רבע אחרון': 'Last Quarter',
+    'סהר דועך': 'Waning Crescent',
+  };
+  const moonSignLabel = isHe ? moonSignHe : (MOON_SIGN_EN[moonSignHe] ?? moonSignHe);
+  const phaseNameLabel = isHe ? phaseHe : (PHASE_NAME_EN[phaseHe] ?? phaseHe);
   const isFullMoon = phasePct > 95;
 
   const daysToFull = phaseAngle <= 180
@@ -210,11 +226,11 @@ export function MoonPhaseDisplay({ phaseAngle, phasePct, phaseHe, moonSignHe, as
       />
 
       <div style={{ fontFamily: FRANK, fontSize: '18px', fontWeight: 700, color: GOLD }}>
-        {phaseHe}
+        {phaseNameLabel}
       </div>
 
       <div style={{ fontFamily: ASSIST, fontSize: '13px', color: `${PARCH}60` }}>
-        {isHe ? 'מזל הירח:' : 'Moon sign:'} {moonSignHe}
+        {isHe ? 'מזל הירח:' : 'Moon sign:'} {moonSignLabel}
       </div>
 
       <div style={{
