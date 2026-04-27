@@ -124,17 +124,6 @@ export function PlantsPage() {
 
           {/* Page header */}
           <div style={{ marginBottom: '28px' }}>
-            <p style={{
-              fontFamily:    ASSIST,
-              fontSize:      '12px',
-              fontWeight:    600,
-              letterSpacing: '0.14em',
-              textTransform: 'uppercase',
-              color:         `${PARCH}55`,
-              marginBottom:  '6px',
-            }}>
-              100+ {t('encyclopedia.title')} ביודינמיים
-            </p>
             <h1 style={{
               fontFamily: FRANK,
               fontWeight: 700,
