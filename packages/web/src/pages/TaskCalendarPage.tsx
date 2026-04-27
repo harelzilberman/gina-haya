@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
+import { useTranslation } from 'react-i18next';
 import {
   DndContext,
   DragEndEvent,
@@ -36,16 +37,16 @@ const FRANK = '"Frank Ruhl Libre", Georgia, serif';
 const ASST  = '"Assistant", "Heebo", sans-serif';
 
 const TYPE_CONFIG = {
-  biodynamic: { emoji: '🌙', label: 'ביודינמי', color: '#7DC084' },
-  maintenance: { emoji: '🔧', label: 'תחזוקה',   color: '#C8A040' },
-  custom:      { emoji: '✏️', label: 'אישי',      color: '#C884C8' },
+  biodynamic: { emoji: '🌙', label: 'biodynamic', color: '#7DC084' },
+  maintenance: { emoji: '🔧', label: 'maintenance', color: '#C8A040' },
+  custom:      { emoji: '✏️', label: 'custom',      color: '#C884C8' },
 };
 
-const DAY_TYPE_STYLES: Record<string, { bg: string; color: string; emoji: string; label: string }> = {
-  fruit:  { bg: 'rgba(239,116,90,0.18)',  color: '#EF745A', emoji: '🍎', label: 'פרי'   },
-  root:   { bg: 'rgba(181,136,99,0.18)',  color: '#B58863', emoji: '🥕', label: 'שורש'  },
-  flower: { bg: 'rgba(196,132,200,0.18)', color: '#C884C8', emoji: '🌸', label: 'פרח'   },
-  leaf:   { bg: 'rgba(125,192,132,0.18)', color: '#7DC084', emoji: '🌿', label: 'עלה'   },
+const DAY_TYPE_STYLES: Record<string, { bg: string; color: string; emoji: string; labelKey: string }> = {
+  fruit:  { bg: 'rgba(239,116,90,0.18)',  color: '#EF745A', emoji: '🍎', labelKey: 'dayTypes.fruit'  },
+  root:   { bg: 'rgba(181,136,99,0.18)',  color: '#B58863', emoji: '🥕', labelKey: 'dayTypes.root'   },
+  flower: { bg: 'rgba(196,132,200,0.18)', color: '#C884C8', emoji: '🌸', labelKey: 'dayTypes.flower' },
+  leaf:   { bg: 'rgba(125,192,132,0.18)', color: '#7DC084', emoji: '🌿', labelKey: 'dayTypes.leaf'   },
 };
 
 // ── Source detection + styles ──────────────────────────────────────────────
@@ -69,7 +70,7 @@ const SOURCE_STYLES = {
     badgeBg:     'rgba(55,138,221,0.2)',
     badgeColor:  '#85B7EB',
     icon:        '🌙',
-    labelHe:     'לוח ביודינמי',
+    labelKey:    'sources.biodynamic',
   },
   weekly_plan: {
     bg:          'rgba(127,119,221,0.12)',
@@ -77,7 +78,7 @@ const SOURCE_STYLES = {
     badgeBg:     'rgba(127,119,221,0.2)',
     badgeColor:  '#AFA9EC',
     icon:        '✨',
-    labelHe:     'תכנית שבועית',
+    labelKey:    'sources.weekly_plan',
   },
   growing_tracker: {
     bg:          'rgba(29,158,117,0.12)',
@@ -85,7 +86,7 @@ const SOURCE_STYLES = {
     badgeBg:     'rgba(29,158,117,0.2)',
     badgeColor:  '#5DCAA5',
     icon:        '🌱',
-    labelHe:     'מעקב גידול',
+    labelKey:    'sources.growing_tracker',
   },
   manual: {
     bg:          'rgba(186,117,23,0.12)',
@@ -93,7 +94,7 @@ const SOURCE_STYLES = {
     badgeBg:     'rgba(186,117,23,0.2)',
     badgeColor:  '#EF9F27',
     icon:        '✋',
-    labelHe:     'אישי',
+    labelKey:    'sources.manual',
   },
 } as const;
 
@@ -120,7 +121,7 @@ function addDays(d: Date, n: number): Date {
 }
 
 function startOfWeek(d: Date): Date {
-  const day = d.getDay(); // 0=Sun
+  const day = d.getDay();
   const diff = (day + 1) % 7; // Mon=0
   return addDays(d, -diff);
 }
@@ -142,7 +143,6 @@ function computeWeekRange(anchor: Date): { from: string; to: string; days: strin
 function computeMonthRange(anchor: Date): { from: string; to: string; days: string[]; weeks: string[][] } {
   const first = startOfMonth(anchor);
   const last  = endOfMonth(anchor);
-  // Pad to full weeks (Mon-based)
   const gridStart = startOfWeek(first);
   const gridEnd   = addDays(startOfWeek(last), 6);
 
@@ -153,7 +153,6 @@ function computeMonthRange(anchor: Date): { from: string; to: string; days: stri
     cur = addDays(cur, 1);
   }
 
-  // Split into weeks
   const weeks: string[][] = [];
   for (let i = 0; i < days.length; i += 7) {
     weeks.push(days.slice(i, i + 7));
@@ -162,15 +161,13 @@ function computeMonthRange(anchor: Date): { from: string; to: string; days: stri
   return { from: days[0], to: days[days.length - 1], days, weeks };
 }
 
-const DAY_NAMES_HE = ['שני', 'שלישי', 'רביעי', 'חמישי', 'שישי', 'שבת', 'ראשון'];
-
-function formatDateHe(dateStr: string): { day: string; num: string; month: string } {
+function formatDate(dateStr: string, dayNames: string[], locale: string): { day: string; num: string; month: string } {
   const d = new Date(dateStr + 'T12:00:00');
   const dayIdx = (d.getDay() + 6) % 7; // Mon=0
   return {
-    day:   DAY_NAMES_HE[dayIdx],
+    day:   dayNames[dayIdx],
     num:   String(d.getDate()),
-    month: d.toLocaleDateString('he-IL', { month: 'short' }),
+    month: d.toLocaleDateString(locale, { month: 'short' }),
   };
 }
 
@@ -188,6 +185,8 @@ function DraggableTaskCard({
   onDelete: (id: string) => void;
   isDragging?: boolean;
 }) {
+  const { t, i18n } = useTranslation('tasks');
+  const isHe = i18n.language === 'he';
   const { attributes, listeners, setNodeRef, transform } = useDraggable({ id: task.id });
 
   const isDone    = task.status === 'done';
@@ -218,7 +217,7 @@ function DraggableTaskCard({
 
   return (
     <div ref={setNodeRef} style={cardStyle} {...listeners} {...attributes} onClick={e => e.stopPropagation()}>
-      {/* Source badge — top row, aligned to RTL start (right) */}
+      {/* Source badge */}
       <span style={{
         alignSelf: 'flex-start',
         fontFamily: ASST, fontSize: '9px',
@@ -227,12 +226,12 @@ function DraggableTaskCard({
         display: 'inline-flex', alignItems: 'center', gap: '3px',
         lineHeight: 1.4,
       }}>
-        {src.icon} {src.labelHe}
+        {src.icon} {t(src.labelKey)}
       </span>
 
       {/* Content row */}
       <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-        {/* Checkbox — 44px touch target */}
+        {/* Checkbox */}
         <button
           onPointerDown={e => e.stopPropagation()}
           onClick={e => { e.stopPropagation(); onStatusToggle(task); }}
@@ -262,7 +261,7 @@ function DraggableTaskCard({
             fontFamily: ASST, fontSize: '12px',
             color: isDone ? `${PARCH}60` : PARCH,
             flex: 1, textDecoration: isDone ? 'line-through' : 'none',
-            direction: 'rtl', textAlign: 'right',
+            direction: isHe ? 'rtl' : 'ltr', textAlign: isHe ? 'right' : 'left',
             cursor: 'pointer', overflow: 'hidden',
             whiteSpace: 'nowrap', textOverflow: 'ellipsis',
             minWidth: 0,
@@ -272,12 +271,10 @@ function DraggableTaskCard({
           {task.title}
         </span>
 
-        {/* Priority dot */}
         {priorityColor && (
           <span style={{ width: '6px', height: '6px', borderRadius: '50%', background: priorityColor, flexShrink: 0 }} />
         )}
 
-        {/* Delete (custom tasks only) */}
         {task.type === 'custom' && (
           <button
             onPointerDown={e => e.stopPropagation()}
@@ -322,14 +319,17 @@ function DroppableDayCell({
   onDayClick: (date: string) => void;
   draggingId: string | null;
 }) {
+  const { t, i18n } = useTranslation('tasks');
+  const isHe = i18n.language === 'he';
+  const locale = isHe ? 'he-IL' : 'en-US';
+  const DAY_NAMES = t('dayNames', { returnObjects: true }) as string[];
+
   const { setNodeRef, isOver } = useDroppable({ id: date });
   const dayStyle = bd ? DAY_TYPE_STYLES[bd.dayType] : null;
-  const { num, day, month } = formatDateHe(date);
+  const { num, day, month } = formatDate(date, DAY_NAMES, locale);
 
-  const pending = tasks.filter(t => t.status === 'pending').length;
-  const done    = tasks.filter(t => t.status === 'done').length;
+  const done = tasks.filter(t => t.status === 'done').length;
 
-  // On mobile month view: ultra-compact — just date number + BD dot + task badge
   if (isMobileView && compact) {
     return (
       <div
@@ -391,21 +391,20 @@ function DroppableDayCell({
         cursor: 'pointer',
       }}
     >
-      {/* Day header — full centred layout for week view, compact row for month view */}
       {compact ? (
         <>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2px' }}>
             <div style={{ display: 'flex', gap: '4px', alignItems: 'center' }}>
               {dayStyle && (
-                <span title={dayStyle.label} style={{ fontSize: '10px', padding: '1px 5px', borderRadius: '99px', background: dayStyle.bg, color: dayStyle.color, fontFamily: ASST, fontWeight: 600 }}>
+                <span title={t(dayStyle.labelKey)} style={{ fontSize: '10px', padding: '1px 5px', borderRadius: '99px', background: dayStyle.bg, color: dayStyle.color, fontFamily: ASST, fontWeight: 600 }}>
                   {dayStyle.emoji}
                 </span>
               )}
               {bd && <span title={bd.moonPhaseNameHe} style={{ fontSize: '11px', lineHeight: 1 }}>{moonEmoji(bd.moonPhasePct)}</span>}
             </div>
-            <div style={{ textAlign: 'right' }}>
+            <div style={{ textAlign: isHe ? 'right' : 'left' }}>
               <span style={{ fontFamily: FRANK, fontSize: '14px', color: isToday ? GOLD : isCurrentMonth ? PARCH : `${PARCH}50`, fontWeight: isToday ? 700 : 400 }}>{num}</span>
-              <span style={{ fontFamily: ASST, fontSize: '10px', color: `${PARCH}60`, marginRight: '3px' }}>{day}</span>
+              <span style={{ fontFamily: ASST, fontSize: '10px', color: `${PARCH}60`, marginRight: isHe ? '3px' : 0, marginLeft: isHe ? 0 : '3px' }}>{day}</span>
             </div>
           </div>
           {bd && bd.plantingScore > 0 && (
@@ -422,7 +421,7 @@ function DroppableDayCell({
           <div style={{ fontFamily: FRANK, fontSize: '16px', color: isToday ? GOLD : isCurrentMonth ? PARCH : `${PARCH}50`, fontWeight: isToday ? 700 : 400 }}>{num}</div>
           <div style={{ fontFamily: ASST, fontSize: '10px', color: `${PARCH}40` }}>{month}</div>
           <div style={{ display: 'flex', gap: '4px', justifyContent: 'center', alignItems: 'center', marginTop: '2px' }}>
-            {dayStyle && <span style={{ fontSize: '12px' }} title={dayStyle.label}>{dayStyle.emoji}</span>}
+            {dayStyle && <span style={{ fontSize: '12px' }} title={t(dayStyle.labelKey)}>{dayStyle.emoji}</span>}
             {bd && <span style={{ fontSize: '12px' }} title={bd.moonPhaseNameHe}>{moonEmoji(bd.moonPhasePct)}</span>}
           </div>
           {bd && bd.plantingScore > 0 && (
@@ -449,12 +448,12 @@ function DroppableDayCell({
         ))}
         {compact && tasks.length > 3 && (
           <span style={{ fontFamily: ASST, fontSize: '10px', color: `${PARCH}50` }}>
-            +{tasks.length - 3} עוד...
+            {t('moreCount', { count: tasks.length - 3 })}
           </span>
         )}
       </div>
 
-      {/* Footer: add + summary */}
+      {/* Footer */}
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: 'auto' }}>
         <button
           onClick={e => { e.stopPropagation(); onAdd(date); }}
@@ -466,7 +465,7 @@ function DroppableDayCell({
           onMouseEnter={e => { (e.currentTarget as HTMLElement).style.color = GOLD; }}
           onMouseLeave={e => { (e.currentTarget as HTMLElement).style.color = `${PARCH}40`; }}
         >
-          + הוסף
+          {t('addButton')}
         </button>
         {tasks.length > 0 && (
           <span style={{ fontFamily: ASST, fontSize: '10px', color: `${PARCH}40` }}>
@@ -492,6 +491,9 @@ function TaskModal({
   onClose: () => void;
   onDelete?: () => void;
 }) {
+  const { t, i18n } = useTranslation('tasks');
+  const isHe = i18n.language === 'he';
+
   const [title, setTitle]   = useState(task?.title ?? '');
   const [date,  setDate]    = useState(task?.date ?? initialDate);
   const [notes, setNotes]   = useState(task?.notes ?? '');
@@ -502,7 +504,7 @@ function TaskModal({
     background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(245,200,64,0.2)',
     borderRadius: '6px', padding: '8px 10px',
     fontFamily: ASST, fontSize: '14px', color: PARCH,
-    outline: 'none', direction: 'rtl',
+    outline: 'none', direction: isHe ? 'rtl' : 'ltr',
   };
 
   return (
@@ -517,11 +519,11 @@ function TaskModal({
       <div style={{
         background: '#1a3a1c', border: '1px solid rgba(245,200,64,0.2)',
         borderRadius: '12px', padding: '24px', width: '100%', maxWidth: '400px',
-        direction: 'rtl',
+        direction: isHe ? 'rtl' : 'ltr',
       }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
           <h3 style={{ fontFamily: FRANK, fontSize: '18px', color: GOLD, margin: 0 }}>
-            {task ? 'עריכת משימה' : 'משימה חדשה'}
+            {task ? t('modal.editTask') : t('modal.newTask')}
           </h3>
           <button onClick={onClose} style={{ background: 'none', border: 'none', color: `${PARCH}60`, cursor: 'pointer', fontSize: '18px' }}>✕</button>
         </div>
@@ -531,7 +533,7 @@ function TaskModal({
             type="text"
             value={title}
             onChange={e => setTitle(e.target.value)}
-            placeholder="שם המשימה..."
+            placeholder={t('modal.titlePlaceholder')}
             style={inputStyle}
             autoFocus
             onKeyDown={e => { if (e.key === 'Enter' && title.trim()) onSave({ date, title: title.trim(), notes: notes || undefined, status }); }}
@@ -547,7 +549,7 @@ function TaskModal({
           <textarea
             value={notes}
             onChange={e => setNotes(e.target.value)}
-            placeholder="הערות (אופציונלי)..."
+            placeholder={t('modal.notesPlaceholder')}
             rows={2}
             style={{ ...inputStyle, resize: 'vertical', minHeight: '60px' }}
           />
@@ -566,7 +568,7 @@ function TaskModal({
                     fontFamily: ASST, fontSize: '11px',
                   }}
                 >
-                  {s === 'pending' ? 'ממתין' : s === 'done' ? 'הושלם' : 'דולג'}
+                  {t(`modal.statuses.${s}`)}
                 </button>
               ))}
             </div>
@@ -582,7 +584,7 @@ function TaskModal({
                 color: 'rgba(220,80,80,0.8)', background: 'transparent', cursor: 'pointer', fontFamily: ASST, fontSize: '13px',
               }}
             >
-              מחק
+              {t('modal.delete')}
             </button>
           )}
           <div style={{ display: 'flex', gap: '8px', marginInlineStart: 'auto' }}>
@@ -593,7 +595,7 @@ function TaskModal({
                 color: `${PARCH}60`, background: 'transparent', cursor: 'pointer', fontFamily: ASST, fontSize: '13px',
               }}
             >
-              ביטול
+              {t('modal.cancel')}
             </button>
             <button
               onClick={() => { if (title.trim()) onSave({ date, title: title.trim(), notes: notes || undefined, status }); }}
@@ -605,7 +607,7 @@ function TaskModal({
                 fontFamily: FRANK, fontSize: '14px', fontWeight: 700,
               }}
             >
-              שמור
+              {t('modal.save')}
             </button>
           </div>
         </div>
@@ -623,6 +625,7 @@ const MODAL_CSS = `
 `;
 
 function ModalTaskRow({ task, onStatusToggle }: { task: GardenTask; onStatusToggle: (t: GardenTask) => void }) {
+  const { t } = useTranslation('tasks');
   const isDone = task.status === 'done';
   const source = getTaskSource(task);
   const src    = SOURCE_STYLES[source];
@@ -658,7 +661,6 @@ function ModalTaskRow({ task, onStatusToggle }: { task: GardenTask; onStatusTogg
       }}>
         {task.title}
       </span>
-      {/* Source badge */}
       <span style={{
         fontFamily: ASST, fontSize: '10px',
         background: src.badgeBg, color: src.badgeColor,
@@ -666,7 +668,7 @@ function ModalTaskRow({ task, onStatusToggle }: { task: GardenTask; onStatusTogg
         display: 'inline-flex', alignItems: 'center', gap: '3px',
         flexShrink: 0, whiteSpace: 'nowrap',
       }}>
-        {src.icon} {src.labelHe}
+        {src.icon} {t(src.labelKey)}
       </span>
       {priorityColor && (
         <span style={{ width: '7px', height: '7px', borderRadius: '50%', background: priorityColor, flexShrink: 0 }} />
@@ -683,6 +685,10 @@ function DayDetailModal({ date, tasks, bd, onClose, onStatusToggle, onAddTask }:
   onStatusToggle: (t: GardenTask) => void;
   onAddTask: (date: string, title: string) => void;
 }) {
+  const { t, i18n } = useTranslation('tasks');
+  const isHe = i18n.language === 'he';
+  const locale = isHe ? 'he-IL' : 'en-US';
+
   const [addingTask, setAddingTask] = useState(false);
   const [newTitle,   setNewTitle]   = useState('');
 
@@ -690,7 +696,7 @@ function DayDetailModal({ date, tasks, bd, onClose, onStatusToggle, onAddTask }:
   const doneTasks    = tasks.filter(t => t.status === 'done');
   const dayStyle     = bd ? DAY_TYPE_STYLES[bd.dayType] : null;
 
-  const fullDateHe = new Date(date + 'T12:00:00').toLocaleDateString('he-IL', {
+  const fullDate = new Date(date + 'T12:00:00').toLocaleDateString(locale, {
     weekday: 'long', day: 'numeric', month: 'long',
   });
 
@@ -704,7 +710,6 @@ function DayDetailModal({ date, tasks, bd, onClose, onStatusToggle, onAddTask }:
   return (
     <>
       <style>{MODAL_CSS}</style>
-      {/* Backdrop */}
       <div
         onClick={onClose}
         style={{
@@ -712,14 +717,13 @@ function DayDetailModal({ date, tasks, bd, onClose, onStatusToggle, onAddTask }:
           display: 'flex', alignItems: 'center', justifyContent: 'center',
         }}
       >
-        {/* Modal card */}
         <div
           onClick={e => e.stopPropagation()}
           style={{
             background: 'rgba(20,43,22,0.98)', border: '1px solid rgba(245,200,64,0.25)',
             borderRadius: '16px', padding: '24px',
             maxWidth: '480px', width: '90%', maxHeight: '80vh', overflowY: 'auto',
-            direction: 'rtl',
+            direction: isHe ? 'rtl' : 'ltr',
             animation: 'modalIn 0.2s ease-out',
           }}
         >
@@ -727,7 +731,7 @@ function DayDetailModal({ date, tasks, bd, onClose, onStatusToggle, onAddTask }:
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '16px' }}>
             <div>
               <h2 style={{ fontFamily: FRANK, fontSize: '20px', color: GOLD, margin: '0 0 8px' }}>
-                {fullDateHe}
+                {fullDate}
               </h2>
               <div style={{ display: 'flex', gap: '8px', alignItems: 'center', flexWrap: 'wrap' }}>
                 {dayStyle && (
@@ -735,7 +739,7 @@ function DayDetailModal({ date, tasks, bd, onClose, onStatusToggle, onAddTask }:
                     fontFamily: ASST, fontSize: '12px', padding: '3px 10px',
                     borderRadius: '99px', background: dayStyle.bg, color: dayStyle.color,
                   }}>
-                    {dayStyle.emoji} יום {dayStyle.label}
+                    {dayStyle.emoji} {t('dayModal.dayTypePrefix')} {t(dayStyle.labelKey)}
                   </span>
                 )}
                 {bd && (
@@ -758,23 +762,19 @@ function DayDetailModal({ date, tasks, bd, onClose, onStatusToggle, onAddTask }:
 
           {/* Content */}
           {tasks.length === 0 ? (
-            /* Empty state — Chupchu relaxation message */
             <div style={{ textAlign: 'center', padding: '20px 0 28px' }}>
               <div style={{ fontSize: '44px', marginBottom: '14px' }}>🌿</div>
               <h3 style={{ fontFamily: FRANK, fontSize: '20px', color: GOLD, margin: '0 0 12px' }}>
-                יום מנוחה בגינה
+                {t('dayModal.restDay')}
               </h3>
-              <p style={{ fontFamily: ASST, fontSize: '14px', color: `${PARCH}80`, lineHeight: 1.8, margin: '0 0 14px' }}>
-                אין משימות מתוכננות להיום.<br />
-                זה הזמן המושלם לשבת, להקשיב לגינה,<br />
-                ולפשוט את הנשמה בין הצמחים.
+              <p style={{ fontFamily: ASST, fontSize: '14px', color: `${PARCH}80`, lineHeight: 1.8, margin: '0 0 14px', whiteSpace: 'pre-line' }}>
+                {t('dayModal.noTasksMsg')}
               </p>
               <p style={{ fontFamily: FRANK, fontSize: '15px', color: GOLD, margin: 0 }}>
-                — צ'ופצ'ו 🤖
+                {t('dayModal.chupchu')}
               </p>
             </div>
           ) : (
-            /* Task list */
             <div style={{ marginBottom: '4px' }}>
               {pendingTasks.map(task => (
                 <ModalTaskRow key={task.id} task={task} onStatusToggle={onStatusToggle} />
@@ -787,7 +787,7 @@ function DayDetailModal({ date, tasks, bd, onClose, onStatusToggle, onAddTask }:
                     color: `${PARCH}40`, fontFamily: ASST, fontSize: '11px',
                   }}>
                     <div style={{ flex: 1, height: '1px', background: 'rgba(255,255,255,0.07)' }} />
-                    <span>הושלמו ✓</span>
+                    <span>{t('dayModal.done')}</span>
                     <div style={{ flex: 1, height: '1px', background: 'rgba(255,255,255,0.07)' }} />
                   </div>
                   {doneTasks.map(task => (
@@ -798,7 +798,7 @@ function DayDetailModal({ date, tasks, bd, onClose, onStatusToggle, onAddTask }:
             </div>
           )}
 
-          {/* Inline add task input */}
+          {/* Inline add task */}
           {addingTask && (
             <div style={{ display: 'flex', gap: '8px', margin: '12px 0' }}>
               <input
@@ -810,13 +810,13 @@ function DayDetailModal({ date, tasks, bd, onClose, onStatusToggle, onAddTask }:
                   if (e.key === 'Enter') handleAddSubmit();
                   if (e.key === 'Escape') { setAddingTask(false); setNewTitle(''); }
                 }}
-                placeholder="שם המשימה..."
+                placeholder={t('dayModal.addTaskPlaceholder')}
                 style={{
                   flex: 1, background: 'rgba(255,255,255,0.05)',
                   border: '1px solid rgba(245,200,64,0.25)',
                   borderRadius: '8px', padding: '8px 12px',
                   fontFamily: ASST, fontSize: '13px', color: PARCH,
-                  outline: 'none', direction: 'rtl',
+                  outline: 'none', direction: isHe ? 'rtl' : 'ltr',
                 }}
               />
               <button
@@ -829,7 +829,7 @@ function DayDetailModal({ date, tasks, bd, onClose, onStatusToggle, onAddTask }:
                   cursor: newTitle.trim() ? 'pointer' : 'not-allowed',
                 }}
               >
-                הוסף
+                {t('dayModal.add')}
               </button>
             </div>
           )}
@@ -844,7 +844,7 @@ function DayDetailModal({ date, tasks, bd, onClose, onStatusToggle, onAddTask }:
                 borderRadius: '8px', padding: '9px 14px', cursor: 'pointer',
               }}
             >
-              + הוסף משימה ליום זה
+              {t('dayModal.addTaskForDay')}
             </button>
             <button
               onClick={onClose}
@@ -854,7 +854,7 @@ function DayDetailModal({ date, tasks, bd, onClose, onStatusToggle, onAddTask }:
                 borderRadius: '8px', padding: '9px 16px', cursor: 'pointer',
               }}
             >
-              סגור
+              {t('dayModal.close')}
             </button>
           </div>
         </div>
@@ -865,6 +865,11 @@ function DayDetailModal({ date, tasks, bd, onClose, onStatusToggle, onAddTask }:
 
 // ── Main Page ─────────────────────────────────────────────────────────────────
 export function TaskCalendarPage() {
+  const { t, i18n } = useTranslation('tasks');
+  const isHe = i18n.language === 'he';
+  const locale = isHe ? 'he-IL' : 'en-US';
+  const DAY_NAMES = t('dayNames', { returnObjects: true }) as string[];
+
   const { session } = useAuthStore();
   const token = session?.access_token ?? '';
   const windowWidth = useWindowWidth();
@@ -874,9 +879,9 @@ export function TaskCalendarPage() {
   const [anchor,     setAnchor]     = useState(() => { const d = new Date(); d.setHours(0,0,0,0); return d; });
   const [tasks,      setTasks]      = useState<GardenTask[]>([]);
   const [bdMap,      setBdMap]      = useState<Record<string, BiodynamicDay>>({});
-  const [isLoading,      setIsLoading]      = useState(true);
+  const [isLoading,       setIsLoading]       = useState(true);
   const [isBootstrapping, setIsBootstrapping] = useState(false);
-  const [noPlan,          setNoPlan]          = useState(false);
+  const [noPlan,           setNoPlan]          = useState(false);
   const [addDate,      setAddDate]      = useState<string | null>(null);
   const [editTask,     setEditTask]     = useState<GardenTask | null>(null);
   const [draggingId,   setDraggingId]   = useState<string | null>(null);
@@ -913,7 +918,6 @@ export function TaskCalendarPage() {
       for (const bd of fetchedBd) map[bd.date] = bd;
       setBdMap(map);
 
-      // If no tasks exist and we're viewing the current week, auto-seed from plan
       if (fetchedTasks.length === 0 && rangeIncludesToday) {
         setIsLoading(false);
         setIsBootstrapping(true);
@@ -939,7 +943,6 @@ export function TaskCalendarPage() {
 
   useEffect(() => { loadData(); }, [loadData]);
 
-  // Navigate
   const navigate = (dir: -1 | 1) => {
     setAnchor(prev => {
       const d = new Date(prev);
@@ -955,7 +958,6 @@ export function TaskCalendarPage() {
     setAnchor(d);
   };
 
-  // DnD handlers
   const handleDragStart = (event: DragStartEvent) => {
     setDraggingId(String(event.active.id));
   };
@@ -969,17 +971,14 @@ export function TaskCalendarPage() {
     const task    = tasks.find(t => t.id === taskId);
     if (!task || task.date === newDate) return;
 
-    // Optimistic update
     setTasks(prev => prev.map(t => t.id === taskId ? { ...t, date: newDate } : t));
     try {
       await tasksApi.reschedule(taskId, newDate, token);
     } catch {
-      // Revert on failure
       setTasks(prev => prev.map(t => t.id === taskId ? { ...t, date: task.date } : t));
     }
   };
 
-  // Task actions
   const handleStatusToggle = async (task: GardenTask) => {
     const newStatus = task.status === 'done' ? 'pending' : 'done';
     setTasks(prev => prev.map(t => t.id === task.id ? { ...t, status: newStatus } : t));
@@ -1022,7 +1021,6 @@ export function TaskCalendarPage() {
     setEditTask(null);
   };
 
-  // Day detail modal
   const handleDayClick = (date: string) => setSelectedDate(date);
 
   const handleAddFromModal = async (date: string, title: string) => {
@@ -1034,31 +1032,28 @@ export function TaskCalendarPage() {
     }
   };
 
-  // Filter tasks
   const filteredTasks = tasks.filter(t =>
     filter === 'all' ? true : filter === 'pending' ? t.status === 'pending' : t.status === 'done'
   );
 
   const tasksForDate = (date: string) => filteredTasks.filter(t => t.date === date);
 
-  // Overlay dragged task card
   const draggingTask = draggingId ? tasks.find(t => t.id === draggingId) : null;
 
-  // Header label
   const headerLabel = (() => {
     if (view === 'week') {
       const start = new Date(from + 'T12:00:00');
       const end   = new Date(to   + 'T12:00:00');
-      return `${start.toLocaleDateString('he-IL', { day: 'numeric', month: 'long' })} – ${end.toLocaleDateString('he-IL', { day: 'numeric', month: 'long', year: 'numeric' })}`;
+      return `${start.toLocaleDateString(locale, { day: 'numeric', month: 'long' })} – ${end.toLocaleDateString(locale, { day: 'numeric', month: 'long', year: 'numeric' })}`;
     }
-    return anchor.toLocaleDateString('he-IL', { month: 'long', year: 'numeric' });
+    return anchor.toLocaleDateString(locale, { month: 'long', year: 'numeric' });
   })();
 
   const totalPending = tasks.filter(t => t.status === 'pending').length;
   const totalDone    = tasks.filter(t => t.status === 'done').length;
 
   return (
-    <div dir="rtl" style={{ minHeight: '100vh', backgroundColor: EARTH, padding: isMobile ? '16px 8px 80px' : '28px 16px 80px', fontFamily: ASST, overflowX: 'hidden', width: '100%', boxSizing: 'border-box' }}>
+    <div dir={isHe ? 'rtl' : 'ltr'} style={{ minHeight: '100vh', backgroundColor: EARTH, padding: isMobile ? '16px 8px 80px' : '28px 16px 80px', fontFamily: ASST, overflowX: 'hidden', width: '100%', boxSizing: 'border-box' }}>
       <div style={{ maxWidth: '1200px', margin: '0 auto', width: '100%', boxSizing: 'border-box' }}>
 
         {/* Page header */}
@@ -1067,16 +1062,16 @@ export function TaskCalendarPage() {
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '10px', flexWrap: 'wrap', gap: '8px' }}>
             <div>
               <h1 style={{ fontFamily: FRANK, fontSize: isMobile ? '22px' : '28px', color: GOLD, margin: '0 0 2px' }}>
-                📋 לוח משימות
+                {t('title')}
               </h1>
               {tasks.length > 0 && (
                 <p style={{ fontFamily: ASST, fontSize: '12px', color: `${PARCH}55`, margin: 0 }}>
-                  {totalDone} מתוך {totalDone + totalPending} הושלמו
+                  {t('completedOf', { done: totalDone, total: totalDone + totalPending })}
                 </p>
               )}
             </div>
 
-            {/* View toggle — always top-right */}
+            {/* View toggle */}
             <div style={{ display: 'flex', border: '1px solid rgba(245,200,64,0.2)', borderRadius: '8px', overflow: 'hidden', flexShrink: 0 }}>
               {(['week', 'month'] as const).map(v => (
                 <button
@@ -1089,7 +1084,7 @@ export function TaskCalendarPage() {
                     color: view === v ? GOLD : `${PARCH}60`,
                   }}
                 >
-                  {v === 'week' ? 'שבוע' : 'חודש'}
+                  {t(`views.${v}`)}
                 </button>
               ))}
             </div>
@@ -1101,7 +1096,7 @@ export function TaskCalendarPage() {
               onClick={() => navigate(-1)}
               style={{ background: 'none', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '6px', color: PARCH, cursor: 'pointer', padding: isMobile ? '8px 12px' : '6px 12px', fontFamily: ASST, fontSize: '14px', minWidth: '44px', minHeight: '44px' }}
             >
-              ‹ הקודם
+              {t('nav.prev')}
             </button>
 
             <div style={{ display: 'flex', gap: '8px', alignItems: 'center', flex: 1, justifyContent: 'center' }}>
@@ -1110,7 +1105,7 @@ export function TaskCalendarPage() {
                 onClick={goToday}
                 style={{ background: 'none', border: '1px solid rgba(245,200,64,0.25)', borderRadius: '6px', color: GOLD, cursor: 'pointer', padding: '4px 8px', fontFamily: ASST, fontSize: '11px', fontWeight: 600, flexShrink: 0 }}
               >
-                היום
+                {t('nav.today')}
               </button>
             </div>
 
@@ -1118,7 +1113,7 @@ export function TaskCalendarPage() {
               onClick={() => navigate(1)}
               style={{ background: 'none', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '6px', color: PARCH, cursor: 'pointer', padding: isMobile ? '8px 12px' : '6px 12px', fontFamily: ASST, fontSize: '14px', minWidth: '44px', minHeight: '44px' }}
             >
-              הבא ›
+              {t('nav.next')}
             </button>
           </div>
 
@@ -1137,16 +1132,16 @@ export function TaskCalendarPage() {
                   cursor: 'pointer',
                 }}
               >
-                {f === 'all' ? 'הכל' : f === 'pending' ? 'ממתינות' : 'הושלמו'}
+                {t(`filters.${f}`)}
               </button>
             ))}
             <span style={{ color: `${PARCH}20` }}>|</span>
             {Object.values(DAY_TYPE_STYLES).map(s => (
               <span
-                key={s.label}
+                key={s.labelKey}
                 style={{ fontFamily: ASST, fontSize: '10px', padding: '2px 6px', borderRadius: '99px', background: s.bg, color: s.color }}
               >
-                {s.emoji}{!isMobile && ` ${s.label}`}
+                {s.emoji}{!isMobile && ` ${t(s.labelKey)}`}
               </span>
             ))}
           </div>
@@ -1160,7 +1155,7 @@ export function TaskCalendarPage() {
                 borderRadius: '4px', padding: '2px 7px',
                 display: 'inline-flex', alignItems: 'center', gap: '3px',
               }}>
-                {s.icon}{!isMobile && ` ${s.labelHe}`}
+                {s.icon}{!isMobile && ` ${t(s.labelKey)}`}
               </span>
             ))}
           </div>
@@ -1169,7 +1164,7 @@ export function TaskCalendarPage() {
         {/* Week day name headers (month view) */}
         {view === 'month' && (
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(7, 1fr)', gap: isMobile ? '3px' : '6px', marginBottom: '4px' }}>
-            {DAY_NAMES_HE.map(d => (
+            {DAY_NAMES.map(d => (
               <div key={d} style={{ textAlign: 'center', fontFamily: ASST, fontSize: isMobile ? '9px' : '11px', color: `${PARCH}50`, padding: '4px 0' }}>
                 {isMobile ? d.slice(0, 1) : d}
               </div>
@@ -1177,7 +1172,7 @@ export function TaskCalendarPage() {
           </div>
         )}
 
-        {/* Bootstrapping banner — auto-seeding tasks from weekly plan */}
+        {/* Bootstrapping banner */}
         {isBootstrapping && (
           <div style={{
             display: 'flex', alignItems: 'center', gap: '10px',
@@ -1186,7 +1181,7 @@ export function TaskCalendarPage() {
           }}>
             <span style={{ fontSize: '20px', animation: 'spin 2s linear infinite' }}>🌕</span>
             <span style={{ fontFamily: ASST, fontSize: '13px', color: `${PARCH}80` }}>
-              צ'ופצ'ו מכין את משימות השבוע מהתכנית...
+              {t('bootstrapping')}
             </span>
           </div>
         )}
@@ -1200,10 +1195,10 @@ export function TaskCalendarPage() {
           }}>
             <div style={{ fontSize: '56px', marginBottom: '16px' }}>📋</div>
             <h2 style={{ fontFamily: FRANK, fontSize: '20px', color: GOLD, marginBottom: '10px' }}>
-              אין משימות לתקופה זו
+              {t('noTasks.title')}
             </h2>
             <p style={{ fontFamily: ASST, fontSize: '14px', color: `${PARCH}70`, marginBottom: '24px', lineHeight: 1.6 }}>
-              צור תכנית שבועית תחילה ומשימות ייווצרו אוטומטית
+              {t('noTasks.desc')}
             </p>
             <Link
               to="/plan"
@@ -1214,7 +1209,7 @@ export function TaskCalendarPage() {
                 textDecoration: 'none', display: 'inline-block',
               }}
             >
-              צור תכנית שבועית 🌕
+              {t('noTasks.cta')}
             </Link>
           </div>
         )}
@@ -1223,12 +1218,11 @@ export function TaskCalendarPage() {
         {isLoading ? (
           <div style={{ textAlign: 'center', padding: '60px 0' }}>
             <div style={{ fontSize: '48px' }} className="animate-pulse">🌕</div>
-            <p style={{ fontFamily: ASST, fontSize: '14px', color: `${PARCH}50`, marginTop: '12px' }}>טוען לוח משימות...</p>
+            <p style={{ fontFamily: ASST, fontSize: '14px', color: `${PARCH}50`, marginTop: '12px' }}>{t('loading')}</p>
           </div>
         ) : noPlan && tasks.length === 0 ? null : (
           <DndContext sensors={sensors} onDragStart={handleDragStart} onDragEnd={handleDragEnd}>
             {view === 'week' ? (
-              /* Week view — 2-col vertical grid on mobile, 7-col on desktop */
               <div style={{
                 display: 'grid',
                 gridTemplateColumns: isMobile ? '1fr 1fr' : 'repeat(7, 1fr)',
@@ -1238,7 +1232,6 @@ export function TaskCalendarPage() {
                 width: '100%',
               }}>
                 {days.map((date, idx) => {
-                  // On mobile: last day (index 6) spans both columns
                   const isLast = isMobile && idx === 6;
                   return (
                     <div key={date} style={{ gridColumn: isLast ? '1 / -1' : undefined, boxSizing: 'border-box', overflow: 'hidden', width: '100%' }}>
@@ -1261,7 +1254,6 @@ export function TaskCalendarPage() {
                 })}
               </div>
             ) : (
-              /* Month view — grid of weeks */
               <div style={{ display: 'flex', flexDirection: 'column', gap: isMobile ? '3px' : '6px' }}>
                 {weeks.map((week, wi) => (
                   <div key={wi} style={{ display: 'grid', gridTemplateColumns: 'repeat(7, 1fr)', gap: isMobile ? '3px' : '6px' }}>
@@ -1288,7 +1280,7 @@ export function TaskCalendarPage() {
               </div>
             )}
 
-            {/* DnD overlay — renders the dragged card at pointer */}
+            {/* DnD overlay */}
             <DragOverlay>
               {draggingTask && (
                 <div style={{
