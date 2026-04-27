@@ -20,8 +20,10 @@ export interface PlantAnalysis {
   confidence: 'high' | 'medium' | 'low';
   growthStage: 'seed' | 'seedling' | 'vegetative' | 'flowering' | 'fruiting' | 'harvest' | 'dormant';
   growthStageHe: string;
+  growthStageEn: string;
   health: 'excellent' | 'good' | 'fair' | 'poor';
   healthHe: string;
+  healthEn: string;
   issues: Array<{
     type: string;
     severity: 'low' | 'medium' | 'high';
@@ -304,6 +306,30 @@ due_in_days: מתי לבצע את המשימה (1-14 ימים). priority: high=�
   // Ensure arrays exist
   parsed.analysis.issues = parsed.analysis.issues ?? [];
   parsed.analysis.immediateActions = parsed.analysis.immediateActions ?? [];
+
+  // Add English translations for growth stage and health
+  const STAGE_MAP: Record<string, string> = {
+    'שתיל צעיר': 'Young seedling',
+    'שתיל': 'Seedling',
+    'צמיחה': 'Growing',
+    'צמיחה וגטטיבית': 'Vegetative growth',
+    'צמח בוגר': 'Mature plant',
+    'בוגר': 'Mature',
+    'פריחה': 'Flowering',
+    'פירות': 'Fruiting',
+    'רדום': 'Dormant',
+    'נבט': 'Sprout',
+    'זרע': 'Seed',
+    'קציר': 'Harvest',
+  };
+  const HEALTH_MAP: Record<string, string> = {
+    'מצוין': 'Excellent',
+    'טוב': 'Good',
+    'סביר': 'Fair',
+    'גרוע': 'Poor',
+  };
+  parsed.analysis.growthStageEn = STAGE_MAP[parsed.analysis.growthStageHe] ?? parsed.analysis.growthStageHe;
+  parsed.analysis.healthEn = HEALTH_MAP[parsed.analysis.healthHe] ?? parsed.analysis.health;
   parsed.growingPlan.steps = parsed.growingPlan.steps ?? [];
   parsed.growingPlan.pestPrevention = parsed.growingPlan.pestPrevention ?? [];
   parsed.growingPlan.naturalFertilizers = parsed.growingPlan.naturalFertilizers ?? [];

@@ -45,6 +45,8 @@ export function TrackerCard({ tracker, onAddCheckin, onDeleted }: Props) {
   const latest = tracker.latest_checkin;
   const analysis = latest?.ai_analysis;
   const healthColor = analysis ? (HEALTH_COLOURS[analysis.health] ?? SAGE) : 'rgba(237,224,196,0.2)';
+  const healthLabel = analysis ? (isHe ? analysis.healthHe : ((analysis as any).healthEn ?? analysis.health)) : null;
+  const stageLabel  = analysis ? (isHe ? analysis.growthStageHe : ((analysis as any).growthStageEn ?? analysis.growthStageHe)) : null;
 
   async function handleExpand() {
     if (!isExpanded && checkins.length === 0 && session?.access_token) {
@@ -125,13 +127,13 @@ export function TrackerCard({ tracker, onAddCheckin, onDeleted }: Props) {
                   padding: '2px 10px', borderRadius: '12px', fontFamily: ASST, fontSize: '11px', fontWeight: 600,
                   backgroundColor: `${healthColor}22`, border: `1px solid ${healthColor}55`, color: healthColor,
                 }}>
-                  {isHe ? analysis.healthHe : (analysis.health ?? analysis.healthHe)}
+                  {healthLabel}
                 </span>
                 <span style={{
                   padding: '2px 10px', borderRadius: '12px', fontFamily: ASST, fontSize: '11px',
                   backgroundColor: 'rgba(74,124,89,0.2)', border: '1px solid rgba(74,124,89,0.4)', color: '#7DC084',
                 }}>
-                  {isHe ? analysis.growthStageHe : ((analysis as any).growthStageEn ?? analysis.growthStageHe)}
+                  {stageLabel}
                 </span>
               </>
             )}
