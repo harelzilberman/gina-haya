@@ -1,4 +1,19 @@
 {
+  "card": {
+    "lastCheckin": "Last check: {{count}} days ago",
+    "neverChecked": "Not yet checked",
+    "deleteConfirm": "Delete this tracker?",
+    "cancel": "Cancel",
+    "delete": "Delete",
+    "addCheckin": "Add check +",
+    "locations": {
+      "garden": "🌿 Garden",
+      "pot": "🪴 Pot",
+      "balcony": "🏠 Balcony",
+      "greenhouse": "🏡 Greenhouse",
+      "other": "📍 Other"
+    }
+  },
   "title": "Growth Tracker",
   "subtitle": "Photograph plants and Chupchu will build you a biodynamic growth plan 🌕",
   "trackerCount": "{{count}}/{{max}} trackers",

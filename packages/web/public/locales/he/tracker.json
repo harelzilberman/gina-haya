@@ -1,4 +1,19 @@
 {
+  "card": {
+    "lastCheckin": "בדיקה אחרונה: לפני {{count}} ימים",
+    "neverChecked": "עדיין לא נבדק",
+    "deleteConfirm": "למחוק את המעקב?",
+    "cancel": "ביטול",
+    "delete": "מחק",
+    "addCheckin": "הוסף בדיקה +",
+    "locations": {
+      "garden": "🌿 גינה",
+      "pot": "🪴 עציץ",
+      "balcony": "🏠 מרפסת",
+      "greenhouse": "🏡 חממה",
+      "other": "📍 אחר"
+    }
+  },
   "title": "מעקב גידול",
   "subtitle": "צלם צמחים וצ'ופצ'ו יבנה לך תכנית גידול ביודינמית 🌕",
   "trackerCount": "{{count}}/{{max}} מעקבים",

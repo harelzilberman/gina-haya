@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import type { Tracker, TrackerCheckin } from '../../stores/trackerStore';
 import { CheckinHistory } from './CheckinHistory';
 import { useTrackerStore } from '../../stores/trackerStore';
@@ -18,14 +19,6 @@ const HEALTH_COLOURS: Record<string, string> = {
   poor:      '#d9534f',
 };
 
-const LOCATION_LABELS: Record<string, string> = {
-  garden:     '🌿 גינה',
-  pot:        '🪴 עציץ',
-  balcony:    '🏠 מרפסת',
-  greenhouse: '🏡 חממה',
-  other:      '📍 אחר',
-};
-
 function daysSince(dateStr: string): number {
   const d = new Date(dateStr);
   const now = new Date();
@@ -39,6 +32,8 @@ interface Props {
 }
 
 export function TrackerCard({ tracker, onAddCheckin, onDeleted }: Props) {
+  const { t, i18n } = useTranslation('tracker');
+  const isHe = i18n.language === 'he';
   const { deleteTracker } = useTrackerStore();
   const { session } = useAuthStore();
 
@@ -99,7 +94,7 @@ export function TrackerCard({ tracker, onAddCheckin, onDeleted }: Props) {
                 boxShadow: `0 0 6px ${healthColor}88`,
               }} />
               <span style={{ fontFamily: ASST, fontSize: '12px', color: 'rgba(237,224,196,0.5)' }}>
-                {LOCATION_LABELS[tracker.location_type] ?? tracker.location_type}
+                {t(`card.locations.${tracker.location_type}`, { defaultValue: tracker.location_type })}
               </span>
             </div>
             {tracker.location_description && (
@@ -112,17 +107,17 @@ export function TrackerCard({ tracker, onAddCheckin, onDeleted }: Props) {
           {/* Left side: plant name */}
           <div style={{ textAlign: 'right' }}>
             <h3 style={{ fontFamily: FRANK, fontSize: '18px', color: GOLD, margin: '0 0 2px' }}>
-              {tracker.plant_name_he}
+              {isHe ? tracker.plant_name_he : (tracker.plant_name_en || tracker.plant_name_he)}
             </h3>
             <p style={{ fontFamily: ASST, fontSize: '12px', color: 'rgba(237,224,196,0.5)', margin: 0, fontStyle: 'italic' }}>
-              {tracker.plant_name_en}
+              {isHe ? tracker.plant_name_en : tracker.plant_name_he}
             </p>
           </div>
         </div>
 
         {/* Badges row */}
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-          {/* Last checkin date + health/stage badges */}
+          {/* Health + stage badges */}
           <div style={{ display: 'flex', gap: '6px', flexWrap: 'wrap' }}>
             {analysis && (
               <>
@@ -130,13 +125,13 @@ export function TrackerCard({ tracker, onAddCheckin, onDeleted }: Props) {
                   padding: '2px 10px', borderRadius: '12px', fontFamily: ASST, fontSize: '11px', fontWeight: 600,
                   backgroundColor: `${healthColor}22`, border: `1px solid ${healthColor}55`, color: healthColor,
                 }}>
-                  {analysis.healthHe}
+                  {isHe ? analysis.healthHe : (analysis.health ?? analysis.healthHe)}
                 </span>
                 <span style={{
                   padding: '2px 10px', borderRadius: '12px', fontFamily: ASST, fontSize: '11px',
                   backgroundColor: 'rgba(74,124,89,0.2)', border: '1px solid rgba(74,124,89,0.4)', color: '#7DC084',
                 }}>
-                  {analysis.growthStageHe}
+                  {isHe ? analysis.growthStageHe : ((analysis as any).growthStageEn ?? analysis.growthStageHe)}
                 </span>
               </>
             )}
@@ -146,11 +141,11 @@ export function TrackerCard({ tracker, onAddCheckin, onDeleted }: Props) {
           <div style={{ textAlign: 'right' }}>
             {latest ? (
               <p style={{ fontFamily: ASST, fontSize: '11px', color: 'rgba(237,224,196,0.45)', margin: 0 }}>
-                בדיקה אחרונה: {daysSince(latest.checkin_date)} ימים
+                {t('card.lastCheckin', { count: daysSince(latest.checkin_date) })}
               </p>
             ) : (
               <p style={{ fontFamily: ASST, fontSize: '11px', color: 'rgba(237,224,196,0.3)', margin: 0 }}>
-                עדיין לא נבדק
+                {t('card.neverChecked')}
               </p>
             )}
           </div>
@@ -176,19 +171,19 @@ export function TrackerCard({ tracker, onAddCheckin, onDeleted }: Props) {
         {confirmDelete ? (
           <div style={{ display: 'flex', gap: '8px', alignItems: 'center', width: '100%', justifyContent: 'flex-end' }}>
             <span style={{ fontFamily: ASST, fontSize: '12px', color: 'rgba(237,224,196,0.6)' }}>
-              למחוק את המעקב?
+              {t('card.deleteConfirm')}
             </span>
             <button
               onClick={() => setConfirmDelete(false)}
               style={{ fontFamily: ASST, fontSize: '12px', color: 'rgba(237,224,196,0.6)', background: 'none', border: 'none', cursor: 'pointer' }}
             >
-              ביטול
+              {t('card.cancel')}
             </button>
             <button
               onClick={handleDelete}
               style={{ fontFamily: ASST, fontSize: '12px', color: '#e06060', background: 'none', border: 'none', cursor: 'pointer', fontWeight: 600 }}
             >
-              מחק
+              {t('card.delete')}
             </button>
           </div>
         ) : (
@@ -204,7 +199,7 @@ export function TrackerCard({ tracker, onAddCheckin, onDeleted }: Props) {
               onMouseEnter={e => { (e.currentTarget as HTMLElement).style.color = '#e06060'; }}
               onMouseLeave={e => { (e.currentTarget as HTMLElement).style.color = 'rgba(220,100,100,0.5)'; }}
             >
-              מחק
+              {t('card.delete')}
             </button>
             <button
               onClick={(e) => { e.stopPropagation(); onAddCheckin(tracker.id); }}
@@ -221,7 +216,7 @@ export function TrackerCard({ tracker, onAddCheckin, onDeleted }: Props) {
               onMouseEnter={e => { (e.currentTarget as HTMLElement).style.filter = 'brightness(1.1)'; }}
               onMouseLeave={e => { (e.currentTarget as HTMLElement).style.filter = 'none'; }}
             >
-              הוסף בדיקה +
+              {t('card.addCheckin')}
             </button>
           </>
         )}
