@@ -5,6 +5,7 @@ import { db } from '../db/client';
 import { verifyToken } from '../middleware/auth';
 import { fetchWeatherForRegion } from '../services/weather';
 import { todayInIsrael } from '@gina-haya/shared';
+import { extractJson } from '../services/jsonUtils';
 
 export const mapRouter: IRouter = Router();
 mapRouter.use(verifyToken);
@@ -315,10 +316,9 @@ ${bedDimensionsLine}
 
     const rawText = (aiResponse.content.find(b => b.type === 'text') as any)?.text ?? '{}';
     console.log('Wizard response length:', rawText.length, 'tokens approx:', Math.round(rawText.length / 4));
-    const cleaned = rawText.replace(/^```(?:json)?\s*/i, '').replace(/\s*```\s*$/i, '').trim();
     let plan: any;
     try {
-      plan = JSON.parse(cleaned);
+      plan = JSON.parse(extractJson(rawText));
     } catch (e) {
       console.error('JSON parse failed, raw length:', rawText.length, 'last 200 chars:', rawText.slice(-200));
       return res.status(422).json({ error: 'AI response was too long or malformed. Try a simpler garden layout.' });

@@ -1,5 +1,6 @@
 import Anthropic from '@anthropic-ai/sdk';
 import sharp from 'sharp';
+import { extractJson } from './jsonUtils';
 
 const anthropic = new Anthropic({
   apiKey: process.env.ANTHROPIC_API_KEY!,
@@ -179,16 +180,6 @@ IMPORTANT: Return raw JSON only. No markdown, no code fences, no explanation. Fi
   return prompt;
 }
 
-function extractJson(text: string): string {
-  const s = text.trim();
-  // Strip markdown code fences (```json ... ``` or ``` ... ```)
-  const fenceMatch = s.match(/^```(?:json)?\s*\r?\n([\s\S]*?)\r?\n?```\s*$/);
-  if (fenceMatch) return fenceMatch[1].trim();
-  // Fallback: extract the outermost JSON object
-  const jsonMatch = s.match(/\{[\s\S]*\}/);
-  if (jsonMatch) return jsonMatch[0];
-  return s;
-}
 
 export async function analyzePlantImage(
   imageBase64: string,

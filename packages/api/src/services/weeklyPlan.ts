@@ -1,6 +1,7 @@
 import Anthropic from '@anthropic-ai/sdk';
 import type { BiodynamicDay } from '@gina-haya/shared';
 import type { WeatherData } from './weather';
+import { extractJson } from './jsonUtils';
 
 const anthropic = new Anthropic({
   apiKey: process.env.ANTHROPIC_API_KEY!,
@@ -206,8 +207,8 @@ ${JSON.stringify(daysJson, null, 2)}
 - 7 ימים בדיוק ב-days, בסדר כרונולוגי`;
 
   const systemPrompt = isEn
-    ? "You are Chupchu — a biodynamic gardening expert. You prepare personalized weekly garden plans. Respond entirely in English. Return only valid JSON."
-    : "אתה צ'ופצ'ו — המומחה הביודינמי שלך. מומחה גידול ביודינמי ישראלי. אתה מכין תכנית שבועית מותאמת אישית. כתוב בעברית. החזר JSON תקני בלבד.";
+    ? "You are Chupchu — a biodynamic gardening expert. You prepare personalized weekly garden plans. Respond entirely in English. Return raw JSON only — no markdown, no code fences, no backticks, no explanation before or after. The first character of your response must be { and the last must be }."
+    : "אתה צ'ופצ'ו — המומחה הביודינמי שלך. מומחה גידול ביודינמי ישראלי. אתה מכין תכנית שבועית מותאמת אישית. כתוב בעברית. החזר JSON גולמי בלבד — ללא markdown, ללא code fences, ללא backticks, ללא טקסט לפני או אחרי. התו הראשון חייב להיות { והאחרון }.";
 
   const response = await anthropic.messages.create({
     model:      'claude-sonnet-4-20250514',
@@ -219,11 +220,13 @@ ${JSON.stringify(daysJson, null, 2)}
   const textBlock = response.content.find(b => b.type === 'text');
   if (!textBlock || textBlock.type !== 'text') throw new Error('No response from Claude');
 
-  let jsonText = textBlock.text.trim();
-  const fenceMatch = jsonText.match(/```(?:json)?\s*([\s\S]*?)```/);
-  if (fenceMatch) jsonText = fenceMatch[1].trim();
-
-  const raw = JSON.parse(jsonText) as WeeklyPlan;
+  const jsonStr = extractJson(textBlock.text);
+  let raw: WeeklyPlan;
+  try {
+    raw = JSON.parse(jsonStr) as WeeklyPlan;
+  } catch {
+    throw new Error(`Failed to parse weekly plan JSON: ${textBlock.text.slice(0, 200)}`);
+  }
 
   // Ensure per-day fields are accurate (calendar data is source of truth)
   raw.days = raw.days.map((d, i) => {
