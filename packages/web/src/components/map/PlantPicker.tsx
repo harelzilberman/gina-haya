@@ -11,6 +11,7 @@ const ASSIST = '"Assistant", "Heebo", sans-serif';
 
 const CAT_LABELS: Record<string, string> = {
   fruit: 'פרי 🍅', root: 'שורש 🥕', leaf: 'עלה 🥬', flower: 'פרח 🌸',
+  house_plant: 'צמחי בית 🌿', succulent: 'עסיסינים 🪴', cactus: 'צברים 🌵', medicinal: 'צמחי מרפא 🌸',
 };
 
 interface ActivePlant {
