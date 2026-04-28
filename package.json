@@ -13,8 +13,10 @@
     "db:migrate": "pnpm --filter @gina-haya/api db:migrate"
   },
   "devDependencies": {
+    "@supabase/supabase-js": "^2.39.0",
     "@typescript-eslint/eslint-plugin": "^7.3.0",
     "@typescript-eslint/parser": "^7.3.0",
+    "dotenv": "^16.0.0",
     "eslint": "^8.57.0",
     "prettier": "^3.2.0",
     "tsx": "^4.7.0",

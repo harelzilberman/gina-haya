@@ -8,12 +8,18 @@ importers:
 
   .:
     devDependencies:
+      '@supabase/supabase-js':
+        specifier: ^2.39.0
+        version: 2.99.1
       '@typescript-eslint/eslint-plugin':
         specifier: ^7.3.0
         version: 7.18.0(@typescript-eslint/parser@7.18.0(eslint@8.57.1)(typescript@5.9.3))(eslint@8.57.1)(typescript@5.9.3)
       '@typescript-eslint/parser':
         specifier: ^7.3.0
         version: 7.18.0(eslint@8.57.1)(typescript@5.9.3)
+      dotenv:
+        specifier: ^16.0.0
+        version: 16.6.1
       eslint:
         specifier: ^8.57.0
         version: 8.57.1
