@@ -1,4 +1,7 @@
-import 'dotenv/config';
+import dotenv from 'dotenv';
+dotenv.config({ path: '.env.local' });
+dotenv.config({ path: '.env' });
+dotenv.config({ path: 'packages/api/.env' }); // fallback for monorepo root
 import { createClient } from '@supabase/supabase-js';
 
 const supabase = createClient(
