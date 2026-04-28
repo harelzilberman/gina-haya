@@ -172,19 +172,22 @@ function buildVisionSystemPrompt(context: AnalysisContext): string {
 
 ## הוראות לניתוח
 ענה ONLY ב-JSON תקין בלבד. אל תוסיף שום טקסט לפני או אחרי ה-JSON.
+אסור בהחלט לעטוף את התשובה ב-markdown code fences (כגון \`\`\`json או \`\`\`). החזר JSON גולמי בלבד — התו הראשון חייב להיות { והתו האחרון }.
+IMPORTANT: Return raw JSON only. No markdown, no code fences, no explanation. First character must be { and last character must be }.
 הצהרת אחריות: כלול בשדה observations הצהרה שהניתוח אינו מחליף ייעוץ מקצועי של אגרונום.`;
 
   return prompt;
 }
 
 function extractJson(text: string): string {
-  // Handle markdown code blocks
-  const codeBlockMatch = text.match(/```(?:json)?\s*\n?([\s\S]+?)\n?```/);
-  if (codeBlockMatch) return codeBlockMatch[1].trim();
-  // Extract JSON object
-  const jsonMatch = text.match(/\{[\s\S]+\}/);
+  const s = text.trim();
+  // Strip markdown code fences (```json ... ``` or ``` ... ```)
+  const fenceMatch = s.match(/^```(?:json)?\s*\r?\n([\s\S]*?)\r?\n?```\s*$/);
+  if (fenceMatch) return fenceMatch[1].trim();
+  // Fallback: extract the outermost JSON object
+  const jsonMatch = s.match(/\{[\s\S]*\}/);
   if (jsonMatch) return jsonMatch[0];
-  return text.trim();
+  return s;
 }
 
 export async function analyzePlantImage(
