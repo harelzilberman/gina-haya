@@ -208,6 +208,14 @@ export async function analyzePlantImage(
 
 החזר JSON תקין בלבד בפורמט הבא, ללא שום טקסט נוסף:
 
+CRITICAL — growthStage MUST be exactly one of these 7 values (no other value is allowed):
+"seed" | "seedling" | "vegetative" | "flowering" | "fruiting" | "harvest" | "dormant"
+
+CRITICAL — health MUST be exactly one of these 4 values (no other value is allowed):
+"excellent" | "good" | "fair" | "poor"
+
+CRITICAL — confidence MUST be exactly one of: "high" | "medium" | "low"
+
 {
   "analysis": {
     "plantIdentified": "שם עברי של הצמח",
@@ -309,6 +317,20 @@ due_in_days: מתי לבצע את המשימה (1-14 ימים). priority: high=�
   // Ensure arrays exist
   parsed.analysis.issues = parsed.analysis.issues ?? [];
   parsed.analysis.immediateActions = parsed.analysis.immediateActions ?? [];
+
+  // Clamp growthStage to the exact DB enum values — never let an unexpected value reach the constraint
+  const VALID_GROWTH_STAGES = new Set(['seed', 'seedling', 'vegetative', 'flowering', 'fruiting', 'harvest', 'dormant']);
+  if (!VALID_GROWTH_STAGES.has(parsed.analysis.growthStage)) {
+    console.warn(`[plantVision] Unexpected growthStage "${parsed.analysis.growthStage}" — falling back to "vegetative"`);
+    parsed.analysis.growthStage = 'vegetative';
+  }
+
+  // Clamp health to the exact DB enum values
+  const VALID_HEALTH = new Set(['excellent', 'good', 'fair', 'poor']);
+  if (!VALID_HEALTH.has(parsed.analysis.health)) {
+    console.warn(`[plantVision] Unexpected health "${parsed.analysis.health}" — falling back to "good"`);
+    parsed.analysis.health = 'good';
+  }
 
   // Add English translations for growth stage and health
   const STAGE_MAP: Record<string, string> = {
