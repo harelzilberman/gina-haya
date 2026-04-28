@@ -40,7 +40,11 @@
       "vegetables": "ירקות",
       "herbs": "עשבי תיבול",
       "fruit_trees": "פירות",
-      "flowers": "פרחים"
+      "flowers": "פרחים",
+      "house_plant": "צמחי בית",
+      "succulent": "עסיסינים",
+      "cactus": "צברים",
+      "medicinal": "צמחי מרפא"
     },
     "dayTypes": {
       "fruit": "🍅 פרי",

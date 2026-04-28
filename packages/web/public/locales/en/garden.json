@@ -40,7 +40,11 @@
       "vegetables": "Vegetables",
       "herbs": "Herbs",
       "fruit_trees": "Fruit trees",
-      "flowers": "Flowers"
+      "flowers": "Flowers",
+      "house_plant": "House Plants",
+      "succulent": "Succulents",
+      "cactus": "Cacti",
+      "medicinal": "Medicinal"
     },
     "dayTypes": {
       "fruit": "🍅 Fruit",

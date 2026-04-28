@@ -9,7 +9,7 @@ interface Props {
   onDayTypeChange: (v: string) => void;
 }
 
-const CATEGORIES = ['all', 'vegetables', 'herbs', 'fruit_trees', 'flowers'] as const;
+const CATEGORIES = ['all', 'vegetables', 'herbs', 'fruit_trees', 'flowers', 'house_plant', 'succulent', 'cactus', 'medicinal'] as const;
 
 const DAY_TYPES = [
   { key: 'fruit',  emoji: '🍅' },
