@@ -3,19 +3,30 @@ import express, { Express } from 'express';
 import cors from 'cors';
 import { rateLimit } from 'express-rate-limit';
 
+// Fail fast on missing critical env vars
+if (!process.env.ANTHROPIC_API_KEY) {
+  console.error('FATAL: ANTHROPIC_API_KEY is not set. Plant analysis will not work.');
+  process.exit(1);
+}
+
 const app: Express = express();
 app.set('trust proxy', 1);
 const PORT = process.env.PORT || 3001;
 
+// CORS_ORIGINS env var overrides defaults (comma-separated list)
+const productionOrigins = process.env.CORS_ORIGINS
+  ? process.env.CORS_ORIGINS.split(',').map(o => o.trim())
+  : ['https://gina-haya.com', 'https://www.gina-haya.com', 'https://gina-haya.vercel.app'];
+
+const allowedOrigins = process.env.NODE_ENV === 'development'
+  ? ['http://localhost:5173', 'http://127.0.0.1:5173']
+  : productionOrigins;
+
+console.log(`[CORS] NODE_ENV=${process.env.NODE_ENV ?? 'unset'}, allowed origins:`, allowedOrigins);
+
 app.use(express.json({ limit: '20mb' }));
 app.use(cors({
-    origin: process.env.NODE_ENV === 'production'
-        ? [
-            'https://gina-haya.com',
-            'https://www.gina-haya.com',
-            'https://gina-haya.vercel.app',
-        ]
-        : ['http://localhost:5173', 'http://127.0.0.1:5173'],
+  origin: allowedOrigins,
   credentials: true,
 }));
 
