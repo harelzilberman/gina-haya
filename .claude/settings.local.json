@@ -66,7 +66,10 @@
       "Bash(git check-ignore *)",
       "Bash(awk '{sum+=$5; count++} END {print \"Total files:\", count-1, \"Total size:\", sum/1024/1024, \"MB\"}')",
       "WebFetch(domain:gina-haya.vercel.app)",
-      "Bash(git push *)"
+      "Bash(git push *)",
+      "Bash(git -C \"D:/harel/claude/gina-haya-main/gina-haya-project/gina-haya/gina-haya\" log --all --oneline --grep=\"tracker\")",
+      "Bash(git *)",
+      "Bash(DOTENV_CONFIG_PATH=packages/api/.env node scripts/seed-new-plants.mjs)"
     ]
   }
 }
