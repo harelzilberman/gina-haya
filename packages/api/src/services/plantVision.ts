@@ -6,7 +6,7 @@ const anthropic = new Anthropic({
   apiKey: process.env.ANTHROPIC_API_KEY!,
 });
 
-async function compressImageForClaude(base64: string): Promise<{ data: string; mimeType: 'image/jpeg'; buffer: Buffer }> {
+export async function compressImageForClaude(base64: string): Promise<{ data: string; mimeType: 'image/jpeg'; buffer: Buffer }> {
   const buffer = Buffer.from(base64, 'base64');
   const compressed = await sharp(buffer)
     .resize(1568, 1568, { fit: 'inside', withoutEnlargement: true })
@@ -189,12 +189,14 @@ IMPORTANT: Return raw JSON only. No markdown, no code fences, no explanation. Fi
 export async function analyzePlantImage(
   imageBase64: string,
   mimeType: string,
-  context: AnalysisContext
+  context: AnalysisContext,
+  preCompressed?: { data: string; mimeType: 'image/jpeg' }
 ): Promise<{ analysis: PlantAnalysis; growingPlan: GrowingPlan; tasks: TrackerTask[] }> {
   const systemPrompt = buildVisionSystemPrompt(context);
 
-  // Compress image to stay under Claude's 5MB base64 limit
-  const { data: compressedImage, mimeType: compressedMimeType } = await compressImageForClaude(imageBase64);
+  // Use pre-compressed data if provided (avoids double compression when caller already compressed)
+  const { data: compressedImage, mimeType: compressedMimeType } = preCompressed
+    ?? await compressImageForClaude(imageBase64);
 
   const hint = context.plantNameHint
     ? ` (רמז: ייתכן שזה ${context.plantNameHint})`

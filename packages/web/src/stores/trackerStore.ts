@@ -53,6 +53,7 @@ export interface TrackerCheckin {
   ai_analysis: PlantAnalysis | null;
   growing_plan: GrowingPlan | null;
   notes: string | null;
+  photo_path: string | null;
   created_at: string;
 }
 

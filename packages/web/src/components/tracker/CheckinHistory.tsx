@@ -1,6 +1,7 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import type { TrackerCheckin, PlantAnalysis, GrowingPlan } from '../../stores/trackerStore';
 import { AnalysisResult } from './AnalysisResult';
+import { supabase } from '../../lib/supabase';
 
 const GOLD  = '#F5C840';
 const PARCH = '#EDE0C4';
@@ -57,6 +58,35 @@ function getComparisonNote(current: TrackerCheckin, previous: TrackerCheckin): s
   }
 
   return parts.length > 0 ? parts.join(' | ') : null;
+}
+
+function CheckinPhoto({ photoPath }: { photoPath: string }) {
+  const [url, setUrl] = useState<string | null>(null);
+
+  useEffect(() => {
+    supabase.storage
+      .from('tracker-photos')
+      .createSignedUrl(photoPath, 3600)
+      .then(({ data }) => { if (data?.signedUrl) setUrl(data.signedUrl); });
+  }, [photoPath]);
+
+  if (!url) return null;
+
+  return (
+    <div style={{ marginTop: '8px' }}>
+      <img
+        src={url}
+        alt="תמונת בדיקה"
+        style={{
+          width: '72px',
+          height: '72px',
+          objectFit: 'cover',
+          borderRadius: '6px',
+          border: '1px solid rgba(245,200,64,0.25)',
+        }}
+      />
+    </div>
+  );
 }
 
 interface Props {
@@ -181,6 +211,9 @@ export function CheckinHistory({ checkins }: Props) {
                     💬 {checkin.notes}
                   </p>
                 )}
+
+                {/* Photo thumbnail */}
+                {checkin.photo_path && <CheckinPhoto photoPath={checkin.photo_path} />}
 
                 {/* Expand hint */}
                 <div style={{ textAlign: 'left', marginTop: '6px' }}>
