@@ -809,10 +809,11 @@ export function GardenCanvas({
   const [rotTip, setRotTip]   = useState<string | null>(null);
   const [contextMenu, setContextMenu] = useState<{ sx: number; sy: number; objId: string } | null>(null);
 
-  const panRef      = useRef({ active: false, sx: 0, sy: 0, tx: 0, ty: 0 });
-  const northRef    = useRef({ active: false, scx: 0, scy: 0 });
-  const touchRef    = useRef({ lastDist: 0, lastX: 0, lastY: 0 });
+  const panRef       = useRef({ active: false, sx: 0, sy: 0, tx: 0, ty: 0 });
+  const northRef     = useRef({ active: false, scx: 0, scy: 0 });
+  const touchRef     = useRef({ lastDist: 0, lastX: 0, lastY: 0 });
   const isPanningRef = useRef(false);
+  const touchStartPos = useRef({ x: 0, y: 0 });
 
   // ── Diagnostic: log plant coords whenever mapData changes ─────────────────
   useEffect(() => {
@@ -1135,6 +1136,9 @@ export function GardenCanvas({
 
   // ── Touch pan / pinch-zoom ─────────────────────────────────────────────────
   const onTouchStart = useCallback((e: React.TouchEvent<SVGSVGElement>) => {
+    // Prevent synthetic mouse events (mousedown/mousemove) that would fire before
+    // isPanningRef is set, causing accidental object selection/drag during panning.
+    e.preventDefault();
     if (e.touches.length === 2) {
       isPanningRef.current = true;
       touchRef.current.lastDist = Math.hypot(
@@ -1144,6 +1148,7 @@ export function GardenCanvas({
       touchRef.current.lastX = (e.touches[0].clientX + e.touches[1].clientX) / 2;
       touchRef.current.lastY = (e.touches[0].clientY + e.touches[1].clientY) / 2;
     } else if (e.touches.length === 1) {
+      touchStartPos.current = { x: e.touches[0].clientX, y: e.touches[0].clientY };
       touchRef.current.lastX = e.touches[0].clientX;
       touchRef.current.lastY = e.touches[0].clientY;
       panRef.current = { active: true, sx: e.touches[0].clientX, sy: e.touches[0].clientY, tx: t.x, ty: t.y };
@@ -1184,11 +1189,57 @@ export function GardenCanvas({
     }
   }, []);
 
-  const onTouchEnd = useCallback(() => {
+  const onTouchEnd = useCallback((e: React.TouchEvent<SVGSVGElement>) => {
     panRef.current.active = false;
-    // Keep isPanning true briefly so synthetic mouse events fired after touchend are blocked
-    setTimeout(() => { isPanningRef.current = false; }, 50);
-  }, []);
+
+    // Handle tap: single finger lifted with no significant movement (isPanning not triggered)
+    if (!isPanningRef.current && e.changedTouches.length === 1 && !popup && !selectedPlantId) {
+      const [mx, my] = toCanvas(touchStartPos.current.x, touchStartPos.current.y);
+
+      if (contextMenu) {
+        setContextMenu(null);
+      } else if (selectedTool === 'select') {
+        const hitPlant = [...mapData.plants].reverse().find(p => {
+          const dx = mx - p.x, dy = my - p.y;
+          return Math.sqrt(dx * dx + dy * dy) <= 18 / PX;
+        });
+        if (hitPlant) {
+          setSelectedPlantId(hitPlant.id);
+        } else {
+          setSelectedPlantId(null);
+          const hit = [...mapData.objects].reverse().find(o => hitTest(o, mx, my));
+          onSelectObject(hit ? hit.id : null);
+        }
+      } else if (selectedTool === 'plant' && activePlant) {
+        onAddPlant({
+          plantNameHe: activePlant.nameHe, plantNameEn: activePlant.nameEn,
+          emoji: activePlant.emoji, spacing: activePlant.spacing, x: mx, y: my,
+        });
+      } else {
+        const kind = TOOL_KIND[selectedTool];
+        const shapeType = selectedTool as ShapeType;
+        if (kind === 'polygon') {
+          if (!drawing || drawing.kind !== 'polygon') {
+            setDrawing({ kind: 'polygon', tool: shapeType, pts: [[mx, my]] });
+          } else {
+            const pts = drawing.pts;
+            if (pts.length >= 3 && dist([mx, my], pts[0]) < 12 / t.s / PX) {
+              finishDrawing(drawing);
+            } else {
+              setDrawing({ ...drawing, pts: [...pts, [mx, my]] });
+            }
+          }
+        } else if (kind === 'rect') {
+          setDrawing({ kind: 'rect', tool: shapeType, start: [mx, my], end: [mx, my] });
+        } else if (kind === 'circle') {
+          setDrawing({ kind: 'circle', tool: shapeType, center: [mx, my], end: [mx, my] });
+        }
+      }
+    }
+
+    isPanningRef.current = false;
+  }, [toCanvas, mapData.plants, mapData.objects, selectedTool, activePlant, popup, selectedPlantId,
+      contextMenu, drawing, t, onSelectObject, onAddPlant, finishDrawing]);
 
   // ── Resize handle drag start ───────────────────────────────────────────────
   const startResize = useCallback((id: string, handle: string, e: React.MouseEvent) => {
