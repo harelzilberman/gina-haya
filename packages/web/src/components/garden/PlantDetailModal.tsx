@@ -5,6 +5,7 @@ import { fetchPlantDetail } from '../../hooks/usePlants';
 import { useAuthStore } from '../../stores/authStore';
 import { useGardenStore } from '../../stores/gardenStore';
 import { useToastStore } from '../../stores/toastStore';
+import { PLANT_TABLE } from '../../data/plantTable';
 
 interface Props {
   plant:   PlantSummary;
@@ -58,9 +59,9 @@ const MODAL_CSS = `
 
 // ── Photo gallery ─────────────────────────────────────────────────────────────
 
-// Derives the 3 candidate image paths from a plant's English name.
-// Spaces → underscores to match the ComfyUI filename convention.
-function buildImagePaths(nameEn: string): string[] {
+function buildImagePaths(nameEn: string): (string | null)[] {
+  const entry = PLANT_TABLE.find(p => p.nameEn.toLowerCase() === nameEn.toLowerCase());
+  if (entry?.images) return entry.images;
   const key = nameEn.replace(/\s+/g, '_');
   return [1, 2, 3].map(n => `/images/plants/${key}_stage${n}_00001_.png`);
 }
@@ -72,7 +73,7 @@ function PlantPhotoGallery({
 }: {
   categoryEmoji: string;
   isHe: boolean;
-  imagePaths: string[];
+  imagePaths: (string | null)[];
 }) {
   const [lightbox, setLightbox] = useState<string | null>(null);
   const [loaded,   setLoaded]   = useState<Record<number, boolean>>({});
@@ -129,17 +130,17 @@ function PlantPhotoGallery({
         {isHe ? 'תמונות' : 'Photos'}
       </p>
 
-      {/* 3-slot row — emoji always visible as base; image fades in on load, stays hidden on 404 */}
+      {/* 3-slot row — emoji always visible as base; image fades in on load, stays hidden on 404 or null */}
       <div style={{ display: 'flex', gap: '8px', marginBottom: '20px' }}>
         {[0, 1, 2].map(i => {
-          const url       = imagePaths[i];
+          const url       = imagePaths[i] ?? null;
           const isLoaded  = loaded[i];
-          const isErrored = errored[i];
+          const isErrored = errored[i] || url === null;
 
           return (
             <div
               key={i}
-              onClick={() => { if (isLoaded && !isErrored) setLightbox(url); }}
+              onClick={() => { if (isLoaded && !isErrored && url) setLightbox(url); }}
               style={{
                 position:        'relative',
                 width:           '32%',
@@ -162,8 +163,8 @@ function PlantPhotoGallery({
               }}>
                 {categoryEmoji}
               </div>
-              {/* Image overlays emoji; fades in on load, unmounts on 404 */}
-              {!isErrored && (
+              {/* Image overlays emoji; fades in on load, unmounts on 404 or null */}
+              {url && !errored[i] && (
                 <img
                   src={url}
                   alt=""
