@@ -65,8 +65,8 @@ export function NewTrackerModal({ onClose, onCreated }: Props) {
   function handleFileSelect(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0];
     if (!file) return;
-    if (file.size > 10 * 1024 * 1024) {
-      setError('התמונה גדולה מדי — מקסימום 10MB');
+    if (file.size > 8 * 1024 * 1024) {
+      setError('התמונה גדולה מדי. אנא בחר תמונה קטנה מ-8MB');
       return;
     }
     setImageFile(file);
@@ -320,7 +320,7 @@ export function NewTrackerModal({ onClose, onCreated }: Props) {
                     צ'ופצ'ו ינתח את הצמח ויבנה תכנית גידול מותאמת
                   </p>
                   <p style={{ fontFamily: ASST, fontSize: '11px', color: 'rgba(237,224,196,0.35)', margin: '6px 0 0' }}>
-                    JPG, PNG, WEBP עד 10MB
+                    JPG, PNG, WEBP עד 8MB
                   </p>
                 </div>
               ) : (

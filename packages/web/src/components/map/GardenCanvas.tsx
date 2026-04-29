@@ -809,9 +809,10 @@ export function GardenCanvas({
   const [rotTip, setRotTip]   = useState<string | null>(null);
   const [contextMenu, setContextMenu] = useState<{ sx: number; sy: number; objId: string } | null>(null);
 
-  const panRef   = useRef({ active: false, sx: 0, sy: 0, tx: 0, ty: 0 });
-  const northRef = useRef({ active: false, scx: 0, scy: 0 });
-  const touchRef = useRef({ lastDist: 0, lastX: 0, lastY: 0 });
+  const panRef      = useRef({ active: false, sx: 0, sy: 0, tx: 0, ty: 0 });
+  const northRef    = useRef({ active: false, scx: 0, scy: 0 });
+  const touchRef    = useRef({ lastDist: 0, lastX: 0, lastY: 0 });
+  const isPanningRef = useRef(false);
 
   // ── Diagnostic: log plant coords whenever mapData changes ─────────────────
   useEffect(() => {
@@ -911,6 +912,7 @@ export function GardenCanvas({
 
   // ── Mouse down ─────────────────────────────────────────────────────────────
   const onMouseDown = useCallback((e: React.MouseEvent<SVGSVGElement>) => {
+    if (isPanningRef.current) return;
     if (e.button === 1) {
       panRef.current = { active: true, sx: e.clientX, sy: e.clientY, tx: t.x, ty: t.y };
       return;
@@ -1134,6 +1136,7 @@ export function GardenCanvas({
   // ── Touch pan / pinch-zoom ─────────────────────────────────────────────────
   const onTouchStart = useCallback((e: React.TouchEvent<SVGSVGElement>) => {
     if (e.touches.length === 2) {
+      isPanningRef.current = true;
       touchRef.current.lastDist = Math.hypot(
         e.touches[0].clientX - e.touches[1].clientX,
         e.touches[0].clientY - e.touches[1].clientY
@@ -1150,6 +1153,7 @@ export function GardenCanvas({
   const onTouchMove = useCallback((e: React.TouchEvent<SVGSVGElement>) => {
     e.preventDefault();
     if (e.touches.length === 2) {
+      isPanningRef.current = true;
       const d = Math.hypot(
         e.touches[0].clientX - e.touches[1].clientX,
         e.touches[0].clientY - e.touches[1].clientY
@@ -1173,12 +1177,17 @@ export function GardenCanvas({
     } else if (e.touches.length === 1 && panRef.current.active) {
       const dx = e.touches[0].clientX - panRef.current.sx;
       const dy = e.touches[0].clientY - panRef.current.sy;
+      if (!isPanningRef.current && Math.hypot(dx, dy) > 8) {
+        isPanningRef.current = true;
+      }
       setT(prev => ({ ...prev, x: panRef.current.tx + dx, y: panRef.current.ty + dy }));
     }
   }, []);
 
   const onTouchEnd = useCallback(() => {
     panRef.current.active = false;
+    // Keep isPanning true briefly so synthetic mouse events fired after touchend are blocked
+    setTimeout(() => { isPanningRef.current = false; }, 50);
   }, []);
 
   // ── Resize handle drag start ───────────────────────────────────────────────
@@ -1333,7 +1342,7 @@ export function GardenCanvas({
               <circle
                 cx={p.x * PX}
                 cy={p.y * PX}
-                r={Math.min(40, Math.max(10, (p.spacing * PX) / 2))}
+                r={Math.max(2, (p.spacing * PX) / 2)}
                 fill="rgba(245,200,64,0.06)"
                 stroke="rgba(245,200,64,0.3)"
                 strokeWidth={1}

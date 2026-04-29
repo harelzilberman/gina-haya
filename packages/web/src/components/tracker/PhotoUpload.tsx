@@ -43,7 +43,7 @@ export function PhotoUpload({ trackerId, plantNameHe, onClose, onComplete }: Pro
       return;
     }
     if (file.size > MAX_FILE_BYTES) {
-      setError('גודל הקובץ המקסימלי הוא 8MB');
+      setError('התמונה גדולה מדי. אנא בחר תמונה קטנה מ-8MB');
       return;
     }
     const reader = new FileReader();

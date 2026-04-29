@@ -285,18 +285,27 @@ trackersRouter.post('/:id/checkin', async (req: any, res) => {
     const previousAnalysis = previousCheckin?.ai_analysis ?? undefined;
     const previousCheckinDate = previousCheckin?.checkin_date ?? undefined;
 
-    // Call Claude vision
-    const { analysis, growingPlan, tasks } = await analyzePlantImage(imageBase64, mimeType, {
-      plantNameHint:       tracker.plant_name_he,
-      locationType:        tracker.location_type,
-      locationDescription: tracker.location_description ?? undefined,
-      gardenSoilType:      garden?.soil_type ?? undefined,
-      gardenRegion:        garden?.location_region ?? undefined,
-      previousAnalysis,
-      previousCheckinDate,
-      todayCalendar,
-      weather: weather ?? undefined,
-    });
+    // Call Claude vision — may throw image_too_large if compressed size > 4.5MB
+    let analysisResult: Awaited<ReturnType<typeof analyzePlantImage>>;
+    try {
+      analysisResult = await analyzePlantImage(imageBase64, mimeType, {
+        plantNameHint:       tracker.plant_name_he,
+        locationType:        tracker.location_type,
+        locationDescription: tracker.location_description ?? undefined,
+        gardenSoilType:      garden?.soil_type ?? undefined,
+        gardenRegion:        garden?.location_region ?? undefined,
+        previousAnalysis,
+        previousCheckinDate,
+        todayCalendar,
+        weather: weather ?? undefined,
+      });
+    } catch (visionErr: any) {
+      if (visionErr.code === 'image_too_large') {
+        return res.status(422).json({ error: 'image_too_large', message: 'התמונה גדולה מדי לניתוח' });
+      }
+      throw visionErr;
+    }
+    const { analysis, growingPlan, tasks } = analysisResult;
 
     // Save checkin (no image stored)
     const { data: checkin, error: checkinError } = await db

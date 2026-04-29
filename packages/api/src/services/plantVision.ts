@@ -6,13 +6,18 @@ const anthropic = new Anthropic({
   apiKey: process.env.ANTHROPIC_API_KEY!,
 });
 
-async function compressImageForClaude(base64: string): Promise<{ data: string; mimeType: 'image/jpeg' }> {
+async function compressImageForClaude(base64: string): Promise<{ data: string; mimeType: 'image/jpeg'; buffer: Buffer }> {
   const buffer = Buffer.from(base64, 'base64');
   const compressed = await sharp(buffer)
     .resize(1568, 1568, { fit: 'inside', withoutEnlargement: true })
     .jpeg({ quality: 85 })
     .toBuffer();
-  return { data: compressed.toString('base64'), mimeType: 'image/jpeg' };
+  if (compressed.length > 4.5 * 1024 * 1024) {
+    const err: any = new Error('image_too_large');
+    err.code = 'image_too_large';
+    throw err;
+  }
+  return { data: compressed.toString('base64'), mimeType: 'image/jpeg', buffer: compressed };
 }
 
 export interface PlantAnalysis {
