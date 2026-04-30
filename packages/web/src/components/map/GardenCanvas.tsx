@@ -7,7 +7,7 @@ import { ShapePropertiesPanel } from './ShapePropertiesPanel';
 
 // ── Constants ─────────────────────────────────────────────────────────────────
 
-const PX = 50;            // px per meter
+const PX = 50; // pixels per meter — 1 m of real space = 50 px in the virtual canvas coordinate system
 const CANVAS_W = 2000;    // virtual canvas px
 const CANVAS_H = 1600;
 const MIN_SCALE = 0.2;
@@ -1040,10 +1040,12 @@ export function GardenCanvas({
       return;
     }
 
-    // Move plant
+    // Move plant (clamped to canvas bounds)
     if (plantDrag) {
       const dx = mx - plantDrag.startMx, dy = my - plantDrag.startMy;
-      onUpdatePlant(plantDrag.id, { x: plantDrag.origX + dx, y: plantDrag.origY + dy });
+      const newX = Math.max(0, Math.min(CANVAS_W / PX, plantDrag.origX + dx));
+      const newY = Math.max(0, Math.min(CANVAS_H / PX, plantDrag.origY + dy));
+      onUpdatePlant(plantDrag.id, { x: newX, y: newY });
       return;
     }
 
@@ -1316,7 +1318,8 @@ export function GardenCanvas({
           {/* Sun zones */}
           {showSunZones && <SunZones northAngle={northAngle} svgW={svgSize.w/t.s} svgH={svgSize.h/t.s} isHe={isHe} />}
 
-          {/* Shapes */}
+          {/* Shapes — rendered in mapData.objects array order (index 0 = bottom, last = top).
+              SVG has no z-index; bring-forward/backward would require re-ordering the array. */}
           {mapData.objects.map(obj => (
             <g
               key={obj.id}
@@ -1369,18 +1372,16 @@ export function GardenCanvas({
             const cx = p.x * PX;
             const cy = p.y * PX;
             if (!isFinite(cx) || !isFinite(cy)) {
-              console.warn('[GardenCanvas] plant has invalid coords — id:', p.id, 'x:', p.x, 'y:', p.y, 'name:', p.plantNameHe);
+              console.warn('[GardenCanvas] skipping plant with invalid coords — id:', p.id, 'x:', p.x, 'y:', p.y);
+              return null;
             }
-            const safeCx = isFinite(cx) ? cx : 0;
-            const safeCy = isFinite(cy) ? cy : 0;
             return (
               <g key={p.id}
                 style={{ cursor: selectedTool === 'select' ? 'move' : 'pointer', opacity: plantDrag?.id === p.id ? 0.7 : 1 }}
                 onClick={e => { if (selectedTool === 'select') { e.stopPropagation(); } }}>
-                <circle cx={safeCx} cy={safeCy} r={18}
-                  fill="rgba(20,43,22,0.85)" stroke={!isFinite(cx) ? 'red' : 'rgba(125,192,132,0.5)'}
-                  strokeWidth={!isFinite(cx) ? 3 : 1.5} />
-                <text x={safeCx} y={safeCy + 7} textAnchor="middle" fontSize={20}
+                <circle cx={cx} cy={cy} r={18}
+                  fill="rgba(20,43,22,0.85)" stroke="rgba(125,192,132,0.5)" strokeWidth={1.5} />
+                <text x={cx} y={cy + 7} textAnchor="middle" fontSize={20}
                   style={{ userSelect: 'none', pointerEvents: 'none' }}>{p.emoji}</text>
               </g>
             );

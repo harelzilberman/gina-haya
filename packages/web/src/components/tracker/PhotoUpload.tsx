@@ -88,7 +88,15 @@ export function PhotoUpload({ trackerId, plantNameHe, onClose, onComplete }: Pro
           setError('הגעת למגבלת המעקבים. שדרג לקבלת עוד מעקבים.');
         }
       } else {
-        setError(err.message || 'שגיאה בניתוח התמונה');
+        const isNetworkError = !navigator.onLine
+          || err.message?.includes('Failed to fetch')
+          || err.message?.includes('NetworkError')
+          || err.message?.includes('net::');
+        if (isNetworkError) {
+          setError('לא ניתן להתחבר לשרת. בדוק את החיבור לאינטרנט ונסה שוב.');
+        } else {
+          setError(err.message || 'שגיאה בניתוח התמונה. אנא נסה תמונה אחרת.');
+        }
       }
     }
   }
