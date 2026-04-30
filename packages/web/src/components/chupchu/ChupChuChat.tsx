@@ -305,11 +305,11 @@ export function ChupChuChat({ compact, initialMessage, onInitialMessageConsumed 
         <div
           className="chupchu-scroll"
           style={{
-            flex:      '1 1 auto',
+            flex:      1,
+            minHeight: compact ? 0 : '400px',
+            maxHeight: compact ? 'none' : '520px',
             overflowY: 'auto',
             padding:   '20px 16px',
-            minHeight: compact ? '160px' : '400px',
-            maxHeight: compact ? '280px' : '520px',
             display:   'flex',
             flexDirection: 'column',
             gap:       '12px',
@@ -358,6 +358,9 @@ export function ChupChuChat({ compact, initialMessage, onInitialMessageConsumed 
 
         {/* Input bar */}
         <div style={{
+          flexShrink:      0,
+          position:        'sticky',
+          bottom:          0,
           padding:         '12px 14px 14px',
           backgroundColor: 'rgba(20,43,22,0.9)',
           borderTop:       '1px solid rgba(125,192,132,0.1)',

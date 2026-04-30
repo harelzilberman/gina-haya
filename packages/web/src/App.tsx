@@ -217,14 +217,17 @@ export default function App() {
         <>
           {isChupChuPanelOpen && (
             <div style={{
-              position:      'fixed',
-              bottom:        '92px',
-              left:          '20px',
-              width:         '400px',
-              zIndex:        9999,
-              borderRadius:  '16px',
-              boxShadow:     '0 16px 60px rgba(0,0,0,0.55)',
-              overflow:      'hidden',
+              position:        'fixed',
+              bottom:          'calc(92px + env(safe-area-inset-bottom))',
+              insetInlineStart: '12px',
+              width:           'min(400px, calc(100vw - 24px))',
+              maxHeight:       'calc(100dvh - 160px)',
+              zIndex:          9999,
+              borderRadius:    '16px',
+              boxShadow:       '0 16px 60px rgba(0,0,0,0.55)',
+              overflow:        'hidden',
+              display:         'flex',
+              flexDirection:   'column',
             }}>
               <ChupChuChat
                 compact
