@@ -70,7 +70,8 @@
       "Bash(git -C \"D:/harel/claude/gina-haya-main/gina-haya-project/gina-haya/gina-haya\" log --all --oneline --grep=\"tracker\")",
       "Bash(git *)",
       "Bash(DOTENV_CONFIG_PATH=packages/api/.env node scripts/seed-new-plants.mjs)",
-      "Bash(grep -i \"\\\\.png$\")"
+      "Bash(grep -i \"\\\\.png$\")",
+      "Bash(grep -E \"\\\\.\\(ts|js\\)$\")"
     ]
   }
 }
