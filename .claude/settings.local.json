@@ -72,7 +72,10 @@
       "Bash(DOTENV_CONFIG_PATH=packages/api/.env node scripts/seed-new-plants.mjs)",
       "Bash(grep -i \"\\\\.png$\")",
       "Bash(grep -E \"\\\\.\\(ts|js\\)$\")",
-      "Bash(pnpm --filter @gina-haya/web build)"
+      "Bash(pnpm --filter @gina-haya/web build)",
+      "mcp__claude_ai_Google_Calendar__list_events",
+      "mcp__claude_ai_Google_Calendar__list_calendars",
+      "mcp__claude_ai_Google_Calendar__delete_event"
     ]
   }
 }
