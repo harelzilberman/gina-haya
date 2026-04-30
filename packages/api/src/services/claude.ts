@@ -245,7 +245,7 @@ export async function askChupChu(
   for (let i = 0; i < MAX_TOOL_ITERATIONS; i++) {
     const response = await anthropic.messages.create({
       model: 'claude-sonnet-4-20250514',
-      max_tokens: 1024,
+      max_tokens: 2048,
       system: systemPrompt,
       tools: MOOSH_TOOLS,
       messages: apiMessages,
@@ -272,7 +272,15 @@ export async function askChupChu(
       continue;
     }
 
-    // Unexpected stop reason (max_tokens, stop_sequence, etc.)
+    if (response.stop_reason === 'max_tokens' || response.stop_reason === 'stop_sequence') {
+      const partial = response.content
+        .filter((b): b is Anthropic.Messages.TextBlock => b.type === 'text')
+        .map(b => b.text)
+        .join('');
+      return (partial || '') + '\n\n_(התגובה קוצרה — שאל אותי שוב לפרטים נוספים)_';
+    }
+
+    // Unknown stop reason — exit loop and throw below
     break;
   }
 

@@ -53,8 +53,8 @@ chupChuRouter.delete('/history', async (req: any, res) => {
       .eq('user_id', req.user.id);
     res.json({ success: true });
   } catch (err: any) {
-    console.error('[DELETE /api/chupchu/history]', err.message);
-    res.status(500).json({ error: err.message });
+    console.error('[Chupchu] Error:', err.message);
+    res.status(500).json({ error: 'אירעה שגיאה. נסה שוב מאוחר יותר.' });
   }
 });
 
@@ -298,7 +298,7 @@ chupChuRouter.post('/chat', async (req: any, res) => {
     });
 
   } catch (err: any) {
-    console.error('[POST /api/chupchu/chat]', err.message);
-    res.status(500).json({ error: err.message });
+    console.error('[Chupchu] Error:', err.message);
+    res.status(500).json({ error: 'אירעה שגיאה. נסה שוב מאוחר יותר.' });
   }
 });
