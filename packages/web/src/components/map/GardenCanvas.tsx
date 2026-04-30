@@ -814,6 +814,8 @@ export function GardenCanvas({
   const touchRef     = useRef({ lastDist: 0, lastX: 0, lastY: 0 });
   const isPanningRef = useRef(false);
   const touchStartPos = useRef({ x: 0, y: 0 });
+  const clampFlashTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const [clampFlashId, setClampFlashId] = useState<string | null>(null);
 
   // ── Diagnostic: log plant coords whenever mapData changes ─────────────────
   useEffect(() => {
@@ -931,6 +933,7 @@ export function GardenCanvas({
         return Math.sqrt(dx*dx + dy*dy) <= 18 / PX;
       });
       if (hitPlant) {
+        if (clampFlashTimerRef.current) { clearTimeout(clampFlashTimerRef.current); clampFlashTimerRef.current = null; setClampFlashId(null); }
         setSelectedPlantId(hitPlant.id);
         setPlantDrag({ id: hitPlant.id, startMx: mx, startMy: my, origX: hitPlant.x, origY: hitPlant.y });
         return;
@@ -1040,12 +1043,21 @@ export function GardenCanvas({
       return;
     }
 
-    // Move plant (clamped to canvas bounds)
+    // Move plant (clamped to canvas bounds; flash orange border when clamped)
     if (plantDrag) {
       const dx = mx - plantDrag.startMx, dy = my - plantDrag.startMy;
-      const newX = Math.max(0, Math.min(CANVAS_W / PX, plantDrag.origX + dx));
-      const newY = Math.max(0, Math.min(CANVAS_H / PX, plantDrag.origY + dy));
+      const rawX = plantDrag.origX + dx;
+      const rawY = plantDrag.origY + dy;
+      const newX = Math.max(0, Math.min(CANVAS_W / PX, rawX));
+      const newY = Math.max(0, Math.min(CANVAS_H / PX, rawY));
       onUpdatePlant(plantDrag.id, { x: newX, y: newY });
+      if ((rawX !== newX || rawY !== newY) && !clampFlashTimerRef.current) {
+        setClampFlashId(plantDrag.id);
+        clampFlashTimerRef.current = setTimeout(() => {
+          setClampFlashId(null);
+          clampFlashTimerRef.current = null;
+        }, 1000);
+      }
       return;
     }
 
@@ -1318,9 +1330,8 @@ export function GardenCanvas({
           {/* Sun zones */}
           {showSunZones && <SunZones northAngle={northAngle} svgW={svgSize.w/t.s} svgH={svgSize.h/t.s} isHe={isHe} />}
 
-          {/* Shapes — rendered in mapData.objects array order (index 0 = bottom, last = top).
-              SVG has no z-index; bring-forward/backward would require re-ordering the array. */}
-          {mapData.objects.map(obj => (
+          {/* Shapes — sorted by z field (default 0). SVG paint order = z-order. */}
+          {[...mapData.objects].sort((a, b) => (a.z ?? 0) - (b.z ?? 0)).map(obj => (
             <g
               key={obj.id}
               style={{
@@ -1371,8 +1382,8 @@ export function GardenCanvas({
           {mapData.plants.map(p => {
             const cx = p.x * PX;
             const cy = p.y * PX;
-            if (!isFinite(cx) || !isFinite(cy)) {
-              console.warn('[GardenCanvas] skipping plant with invalid coords — id:', p.id, 'x:', p.x, 'y:', p.y);
+            if (p.x == null || p.y == null || !isFinite(p.x) || !isFinite(p.y)) {
+              console.warn('Skipping plant with invalid coords:', p.id);
               return null;
             }
             return (
@@ -1380,7 +1391,9 @@ export function GardenCanvas({
                 style={{ cursor: selectedTool === 'select' ? 'move' : 'pointer', opacity: plantDrag?.id === p.id ? 0.7 : 1 }}
                 onClick={e => { if (selectedTool === 'select') { e.stopPropagation(); } }}>
                 <circle cx={cx} cy={cy} r={18}
-                  fill="rgba(20,43,22,0.85)" stroke="rgba(125,192,132,0.5)" strokeWidth={1.5} />
+                  fill="rgba(20,43,22,0.85)"
+                  stroke={clampFlashId === p.id ? '#e6a817' : 'rgba(125,192,132,0.5)'}
+                  strokeWidth={clampFlashId === p.id ? 2.5 : 1.5} />
                 <text x={cx} y={cy + 7} textAnchor="middle" fontSize={20}
                   style={{ userSelect: 'none', pointerEvents: 'none' }}>{p.emoji}</text>
               </g>
@@ -1494,20 +1507,27 @@ export function GardenCanvas({
               }}
               onMouseDown={e => e.stopPropagation()}
             >
-              <button
-                onClick={() => { onToggleLock(cmObj.id); setContextMenu(null); }}
-                style={{
-                  display: 'block', width: '100%', padding: '8px 14px',
-                  background: 'none', border: 'none', cursor: 'pointer',
-                  color: cmObj.locked ? GOLD : PARCH,
-                  fontSize: '13px', textAlign: isHe ? 'right' : 'left', borderRadius: '5px',
-                  whiteSpace: 'nowrap',
-                }}
-                onMouseEnter={e => (e.currentTarget.style.background = 'rgba(245,200,64,0.1)')}
-                onMouseLeave={e => (e.currentTarget.style.background = 'none')}
-              >
-                {cmObj.locked ? (isHe ? '🔓 שחרר נעילה' : '🔓 Unlock') : (isHe ? '🔒 נעל במקום' : '🔒 Lock')}
-              </button>
+              {[
+                { label: isHe ? '🔝 הבא קדימה' : '🔝 Bring forward', action: () => { onUpdateObject(cmObj.id, { z: (cmObj.z ?? 0) + 1 }); setContextMenu(null); } },
+                { label: isHe ? '🔙 שלח אחורה'  : '🔙 Send back',    action: () => { onUpdateObject(cmObj.id, { z: (cmObj.z ?? 0) - 1 }); setContextMenu(null); } },
+                { label: cmObj.locked ? (isHe ? '🔓 שחרר נעילה' : '🔓 Unlock') : (isHe ? '🔒 נעל במקום' : '🔒 Lock'), action: () => { onToggleLock(cmObj.id); setContextMenu(null); } },
+              ].map(item => (
+                <button
+                  key={item.label}
+                  onClick={item.action}
+                  style={{
+                    display: 'block', width: '100%', padding: '8px 14px',
+                    background: 'none', border: 'none', cursor: 'pointer',
+                    color: PARCH, fontSize: '13px',
+                    textAlign: isHe ? 'right' : 'left', borderRadius: '5px',
+                    whiteSpace: 'nowrap',
+                  }}
+                  onMouseEnter={e => (e.currentTarget.style.background = 'rgba(245,200,64,0.1)')}
+                  onMouseLeave={e => (e.currentTarget.style.background = 'none')}
+                >
+                  {item.label}
+                </button>
+              ))}
             </div>
           </>
         );

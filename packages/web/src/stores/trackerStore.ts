@@ -195,14 +195,16 @@ export const useTrackerStore = create<TrackerState>((set, get) => ({
 
       if (res.status === 422) {
         const data = await res.json().catch(() => ({}));
-        if (data.error === 'image_too_large') {
-          throw new Error(data.message || 'התמונה גדולה מדי לניתוח');
-        }
+        const err: any = new Error(data.message || 'התמונה גדולה מדי לניתוח');
+        err.errorCode = data.error_code || 'image_too_large';
+        throw err;
       }
 
       if (!res.ok) {
         const data = await res.json().catch(() => ({}));
-        throw new Error(data.message || data.error || `HTTP ${res.status}`);
+        const err: any = new Error(data.message || data.error || `HTTP ${res.status}`);
+        err.errorCode = data.error_code || 'unknown';
+        throw err;
       }
 
       const result: CheckinResult = await res.json();

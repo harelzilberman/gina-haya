@@ -95,7 +95,13 @@ export function PhotoUpload({ trackerId, plantNameHe, onClose, onComplete }: Pro
         if (isNetworkError) {
           setError('לא ניתן להתחבר לשרת. בדוק את החיבור לאינטרנט ונסה שוב.');
         } else {
-          setError(err.message || 'שגיאה בניתוח התמונה. אנא נסה תמונה אחרת.');
+          const ERROR_MESSAGES: Record<string, string> = {
+            api_unavailable: 'השירות אינו זמין כרגע. נסה שוב מאוחר יותר.',
+            image_too_large: 'התמונה גדולה מדי לניתוח.',
+            analysis_failed: 'לא הצלחנו לנתח את התמונה. נסה תמונה אחרת.',
+            unknown:         'אירעה שגיאה. נסה שוב.',
+          };
+          setError(ERROR_MESSAGES[err.errorCode] ?? err.message ?? ERROR_MESSAGES.unknown);
         }
       }
     }

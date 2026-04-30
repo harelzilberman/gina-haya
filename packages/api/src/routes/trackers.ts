@@ -291,7 +291,7 @@ trackersRouter.post('/:id/checkin', async (req: any, res) => {
       compressed = await compressImageForClaude(imageBase64);
     } catch (compressErr: any) {
       if (compressErr.code === 'image_too_large') {
-        return res.status(422).json({ error: 'image_too_large', message: 'התמונה גדולה מדי לניתוח' });
+        return res.status(422).json({ error: 'image_too_large', error_code: 'image_too_large', message: 'התמונה גדולה מדי לניתוח' });
       }
       throw compressErr;
     }
@@ -328,9 +328,13 @@ trackersRouter.post('/:id/checkin', async (req: any, res) => {
       }, { data: compressed.data, mimeType: 'image/jpeg' });
     } catch (visionErr: any) {
       if (visionErr.code === 'image_too_large') {
-        return res.status(422).json({ error: 'image_too_large', message: 'התמונה גדולה מדי לניתוח' });
+        return res.status(422).json({ error: 'image_too_large', error_code: 'image_too_large', message: 'התמונה גדולה מדי לניתוח' });
       }
-      throw visionErr;
+      const isParseFailure = visionErr.message?.includes('Failed to parse') || visionErr.message?.includes('Invalid response');
+      return res.status(503).json({
+        error: visionErr.message,
+        error_code: isParseFailure ? 'analysis_failed' : 'api_unavailable',
+      });
     }
     const { analysis, growingPlan, tasks } = analysisResult;
 
@@ -355,7 +359,7 @@ trackersRouter.post('/:id/checkin', async (req: any, res) => {
     res.status(201).json({ checkin, analysis, growingPlan, suggested_tasks: tasks });
   } catch (err: any) {
     console.error('[POST /api/trackers/:id/checkin]', err.message);
-    res.status(500).json({ error: err.message });
+    res.status(500).json({ error: err.message, error_code: 'unknown' });
   }
 });
 

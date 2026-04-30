@@ -47,6 +47,7 @@ export interface MapObject {
   fruitTreeName?: string;
   wallHeightM?: number;
   locked?: boolean;
+  z?: number;
 }
 
 export interface PlantMarker {
