@@ -21,6 +21,9 @@ const MONTHLY_LIMITS: Record<string, number | null> = {
   professional:   null, // unlimited
 };
 
+// In-memory lock: one in-flight request per user at a time
+const inFlight = new Set<string>();
+
 // ── GET /api/chupchu/history ────────────────────────────────────────────────
 chupChuRouter.get('/history', async (req: any, res) => {
   try {
@@ -68,6 +71,13 @@ chupChuRouter.post('/chat', async (req: any, res) => {
     }
 
     const userId = req.user.id;
+
+    if (inFlight.has(userId)) {
+      return res.status(429).json({ error: 'אירעה שגיאה. נסה שוב מאוחר יותר.' });
+    }
+    inFlight.add(userId);
+
+    try {
 
     // ── 1. Load user profile ──────────────────────────────────────────────
     const { data: userProfile } = await db
@@ -286,6 +296,10 @@ chupChuRouter.post('/chat', async (req: any, res) => {
       messagesUsedThisMonth,
       monthlyLimit,
     });
+
+    } finally {
+      inFlight.delete(userId);
+    }
 
   } catch (err: any) {
     console.error('[Chupchu] Error:', err.message);

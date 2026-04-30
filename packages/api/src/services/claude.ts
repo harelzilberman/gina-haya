@@ -5,6 +5,8 @@ const anthropic = new Anthropic({
   apiKey: process.env.ANTHROPIC_API_KEY!,
 });
 
+const MODEL = process.env.CLAUDE_MODEL ?? 'claude-sonnet-4-20250514';
+
 const MAX_TOOL_ITERATIONS = 8;
 
 // ── Static knowledge bases ─────────────────────────────────────────────────
@@ -211,11 +213,15 @@ function handleToolCall(
 
     case 'get_plant_info': {
       const plantName = String(input.plant_name ?? '').trim();
-      const lines = PLANT_SPACING_KNOWLEDGE.split('\n').filter(l => l.includes(plantName));
-      if (lines.length === 0) {
-        return `הצמח "${plantName}" אינו נמצא בבסיס הנתונים שלנו עדיין.`;
-      }
-      return lines.join('\n');
+      if (!plantName) return 'לא סופק שם צמח.';
+      const allLines = PLANT_SPACING_KNOWLEDGE.split('\n');
+      // Primary: line starts with the plant name
+      const exactLines = allLines.filter(l => l.trimStart().startsWith(plantName));
+      if (exactLines.length > 0) return exactLines.join('\n');
+      // Fallback: case-insensitive includes
+      const fuzzyLines = allLines.filter(l => l.toLowerCase().includes(plantName.toLowerCase()));
+      if (fuzzyLines.length > 0) return fuzzyLines.join('\n');
+      return `הצמח "${plantName}" אינו נמצא בבסיס הנתונים שלנו עדיין.`;
     }
 
     case 'get_bd_prep_info': {
@@ -262,7 +268,7 @@ export async function askChupChu(
 
   for (let i = 0; i < MAX_TOOL_ITERATIONS; i++) {
     const response = await anthropic.messages.create({
-      model: 'claude-sonnet-4-20250514',
+      model: MODEL,
       max_tokens: 2048,
       system: systemPrompt,
       tools: MOOSH_TOOLS,

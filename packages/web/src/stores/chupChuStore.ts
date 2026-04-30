@@ -9,6 +9,20 @@ function getToken(): string | null {
   return useAuthStore.getState().session?.access_token ?? null;
 }
 
+export type ChupChuExpression = 'default' | 'happy' | 'surprised' | 'thinking' | 'wise';
+
+const WISE_KEYWORDS = ['לוח', 'ירח', 'moon', 'calendar', 'biodynamic', 'BD prep'];
+
+let expressionTimer: ReturnType<typeof setTimeout> | null = null;
+
+function scheduleExpressionReset(set: (partial: Partial<ChupChuState>) => void, delay = 3000) {
+  if (expressionTimer) clearTimeout(expressionTimer);
+  expressionTimer = setTimeout(() => {
+    set({ expression: 'default' });
+    expressionTimer = null;
+  }, delay);
+}
+
 interface ChupChuState {
   messages: ChupChuMessage[];
   pendingMessage: ChupChuMessage | null;
@@ -18,11 +32,13 @@ interface ChupChuState {
   rateLimitTier: string | null;
   usageThisMonth: number;
   monthlyLimit: number | null;
+  expression: ChupChuExpression;
 
   sendMessage: (text: string, gardenId?: string) => Promise<void>;
   loadHistory: () => Promise<void>;
   clearHistory: () => Promise<void>;
   clearError: () => void;
+  setExpression: (e: ChupChuExpression) => void;
 }
 
 export const useChupChuStore = create<ChupChuState>((set, get) => ({
@@ -34,8 +50,10 @@ export const useChupChuStore = create<ChupChuState>((set, get) => ({
   rateLimitTier:  null,
   usageThisMonth: 0,
   monthlyLimit:   20,
+  expression:     'default',
 
-  clearError: () => set({ error: null }),
+  clearError:     () => set({ error: null }),
+  setExpression:  (e) => set({ expression: e }),
 
   sendMessage: async (text, gardenId) => {
     const token = getToken();
@@ -47,7 +65,7 @@ export const useChupChuStore = create<ChupChuState>((set, get) => ({
       timestamp: new Date().toISOString(),
     };
     // Track as pending — not yet confirmed by server
-    set({ pendingMessage: userMsg, isLoading: true, error: null });
+    set({ pendingMessage: userMsg, isLoading: true, error: null, expression: 'thinking' });
 
     try {
       const res = await fetch(`${API_BASE}/api/chupchu/chat`, {
@@ -68,13 +86,16 @@ export const useChupChuStore = create<ChupChuState>((set, get) => ({
           rateLimitTier:  data.tier ?? null,
           usageThisMonth: data.messagesUsedThisMonth ?? get().usageThisMonth,
           monthlyLimit:   data.monthlyLimit ?? get().monthlyLimit,
+          expression:     'surprised',
         });
+        scheduleExpressionReset(set);
         return;
       }
 
       if (!res.ok) {
         const data = await res.json().catch(() => ({}));
-        set({ pendingMessage: null, isLoading: false, error: data.error ?? 'שגיאה בשליחת ההודעה' });
+        set({ pendingMessage: null, isLoading: false, error: data.error ?? 'שגיאה בשליחת ההודעה', expression: 'surprised' });
+        scheduleExpressionReset(set);
         return;
       }
 
@@ -85,6 +106,8 @@ export const useChupChuStore = create<ChupChuState>((set, get) => ({
         timestamp: new Date().toISOString(),
       };
 
+      const isWise = WISE_KEYWORDS.some(kw => data.response.toLowerCase().includes(kw.toLowerCase()));
+
       set(s => ({
         messages:       [...s.messages, userMsg, assistantMsg],
         pendingMessage: null,
@@ -92,9 +115,12 @@ export const useChupChuStore = create<ChupChuState>((set, get) => ({
         rateLimited:    false,
         usageThisMonth: data.messagesUsedThisMonth ?? s.usageThisMonth,
         monthlyLimit:   data.monthlyLimit           ?? s.monthlyLimit,
+        expression:     isWise ? 'wise' : 'happy',
       }));
+      scheduleExpressionReset(set);
     } catch (err: any) {
-      set({ pendingMessage: null, isLoading: false, error: err.message ?? 'שגיאה בשליחת ההודעה' });
+      set({ pendingMessage: null, isLoading: false, error: err.message ?? 'שגיאה בשליחת ההודעה', expression: 'surprised' });
+      scheduleExpressionReset(set);
     }
   },
 
