@@ -36,10 +36,11 @@ interface Props {
   checkinDate?: string;
   suggestedTasksCount?: number;
   onReviewTasks?: () => void;
+  onRetry?: () => void;
   onClose: () => void;
 }
 
-export function AnalysisResult({ analysis, growingPlan, checkinDate, suggestedTasksCount, onReviewTasks, onClose }: Props) {
+export function AnalysisResult({ analysis, growingPlan, checkinDate, suggestedTasksCount, onReviewTasks, onRetry, onClose }: Props) {
   const [expandedWeeks, setExpandedWeeks] = useState<Set<number>>(new Set([1]));
 
   if (!analysis || !growingPlan) {
@@ -61,14 +62,26 @@ export function AnalysisResult({ analysis, growingPlan, checkinDate, suggestedTa
           <p style={{ fontFamily: ASST, fontSize: '14px', color: 'rgba(237,224,196,0.7)', lineHeight: 1.6 }}>
             לא ניתן להציג את תוצאות הניתוח. אנא נסה שנית.
           </p>
-          <button onClick={onClose} style={{
-            marginTop: '20px', padding: '10px 24px',
-            backgroundColor: GOLD, color: '#142B16',
-            border: 'none', borderRadius: '8px',
-            fontFamily: FRANK, fontSize: '15px', fontWeight: 700, cursor: 'pointer',
-          }}>
-            סגור
-          </button>
+          <div style={{ display: 'flex', gap: '10px', justifyContent: 'center', marginTop: '20px' }}>
+            {onRetry && (
+              <button onClick={onRetry} style={{
+                padding: '10px 24px',
+                backgroundColor: GOLD, color: '#142B16',
+                border: 'none', borderRadius: '8px',
+                fontFamily: FRANK, fontSize: '15px', fontWeight: 700, cursor: 'pointer',
+              }}>
+                נסה שנית
+              </button>
+            )}
+            <button onClick={onClose} style={{
+              padding: '10px 24px',
+              backgroundColor: 'transparent', color: 'rgba(237,224,196,0.6)',
+              border: '1px solid rgba(237,224,196,0.2)', borderRadius: '8px',
+              fontFamily: FRANK, fontSize: '15px', cursor: 'pointer',
+            }}>
+              סגור
+            </button>
+          </div>
         </div>
       </div>
     );
@@ -90,7 +103,7 @@ export function AnalysisResult({ analysis, growingPlan, checkinDate, suggestedTa
     const stageHe = analysis.growthStageHe || GROWTH_STAGE_HE_MAP[analysis.growthStage] || analysis.growthStage;
     const dateStr = checkinDate ? new Date(checkinDate).toLocaleDateString('he-IL') : '';
 
-    const stepsHtml = growingPlan.steps.map(step => `
+    const stepsHtml = (growingPlan.steps ?? []).map(step => `
       <div class="week-card">
         <h4>שבוע ${step.week}: ${step.title}</h4>
         <ul>${step.actions.map(a => `<li>${a}</li>`).join('')}</ul>
@@ -140,10 +153,10 @@ export function AnalysisResult({ analysis, growingPlan, checkinDate, suggestedTa
 <p>${analysis.observations}</p>
 </div>
 
-${analysis.issues.length > 0 ? `
+${(analysis.issues ?? []).length > 0 ? `
 <div class="section">
 <h2>בעיות שזוהו</h2>
-${analysis.issues.map(issue => `
+${(analysis.issues ?? []).map(issue => `
 <div class="issue-card ${issue.severity}">
   <strong>${issue.type}</strong> (${issue.severity === 'high' ? 'חמור' : issue.severity === 'medium' ? 'בינוני' : 'קל'})
   <p>${issue.description}</p>
@@ -153,10 +166,10 @@ ${analysis.issues.map(issue => `
 </div>
 ` : ''}
 
-${analysis.immediateActions.length > 0 ? `
+${(analysis.immediateActions ?? []).length > 0 ? `
 <div class="section">
 <h2>פעולות מיידיות</h2>
-<ol>${analysis.immediateActions.map(a => `<li>${a}</li>`).join('')}</ol>
+<ol>${(analysis.immediateActions ?? []).map(a => `<li>${a}</li>`).join('')}</ol>
 </div>
 ` : ''}
 
@@ -185,17 +198,17 @@ ${stepsHtml}
 </div>
 </div>
 
-${growingPlan.pestPrevention.length > 0 ? `
+${(growingPlan.pestPrevention ?? []).length > 0 ? `
 <div class="section">
 <h2>מניעת מזיקים</h2>
-<ul>${growingPlan.pestPrevention.map(p => `<li>${p}</li>`).join('')}</ul>
+<ul>${(growingPlan.pestPrevention ?? []).map(p => `<li>${p}</li>`).join('')}</ul>
 </div>
 ` : ''}
 
-${growingPlan.naturalFertilizers.length > 0 ? `
+${(growingPlan.naturalFertilizers ?? []).length > 0 ? `
 <div class="section">
 <h2>דשנים טבעיים</h2>
-<ul>${growingPlan.naturalFertilizers.map(f => `<li>${f}</li>`).join('')}</ul>
+<ul>${(growingPlan.naturalFertilizers ?? []).map(f => `<li>${f}</li>`).join('')}</ul>
 </div>
 ` : ''}
 
@@ -312,10 +325,10 @@ ${growingPlan.naturalFertilizers.length > 0 ? `
         </div>
 
         {/* Section 2: Issues */}
-        {analysis.issues.length > 0 && (
+        {(analysis.issues ?? []).length > 0 && (
           <>
             {sectionTitle('⚠️ בעיות שזוהו')}
-            {analysis.issues.map((issue, i) => (
+            {(analysis.issues ?? []).map((issue, i) => (
               <div
                 key={i}
                 style={{
@@ -349,11 +362,11 @@ ${growingPlan.naturalFertilizers.length > 0 ? `
         )}
 
         {/* Section 3: Immediate actions */}
-        {analysis.immediateActions.length > 0 && (
+        {(analysis.immediateActions ?? []).length > 0 && (
           <>
             {sectionTitle('✅ פעולות מיידיות')}
             <ol style={{ margin: 0, padding: '0 20px 0 0', listStyle: 'decimal' }}>
-              {analysis.immediateActions.map((action, i) => (
+              {(analysis.immediateActions ?? []).map((action, i) => (
                 <li key={i} style={{
                   fontFamily: ASST, fontSize: '14px', color: PARCH, lineHeight: 1.7,
                   marginBottom: '8px',
@@ -382,7 +395,7 @@ ${growingPlan.naturalFertilizers.length > 0 ? `
         </div>
 
         {/* Week timeline */}
-        {growingPlan.steps.map(step => (
+        {(growingPlan.steps ?? []).map(step => (
           <div
             key={step.week}
             style={{
@@ -427,9 +440,9 @@ ${growingPlan.naturalFertilizers.length > 0 ? `
                     🌙 {step.biodynamicTip}
                   </p>
                 )}
-                {step.preparations.length > 0 && (
+                {(step.preparations ?? []).length > 0 && (
                   <p style={{ fontFamily: ASST, fontSize: '12px', color: SAGE, margin: '4px 0 0' }}>
-                    פרפרטים: {step.preparations.join(', ')}
+                    פרפרטים: {(step.preparations ?? []).join(', ')}
                   </p>
                 )}
               </div>
@@ -462,19 +475,19 @@ ${growingPlan.naturalFertilizers.length > 0 ? `
           <p style={{ fontFamily: ASST, fontSize: '13px', color: PARCH, margin: '0 0 4px' }}>
             <strong>תזמון:</strong> {growingPlan.fertilising.timing}
           </p>
-          {growingPlan.fertilising.preparations.length > 0 && (
+          {(growingPlan.fertilising?.preparations ?? []).length > 0 && (
             <p style={{ fontFamily: ASST, fontSize: '12px', color: SAGE, margin: 0 }}>
-              פרפרטים: {growingPlan.fertilising.preparations.join(', ')}
+              פרפרטים: {(growingPlan.fertilising?.preparations ?? []).join(', ')}
             </p>
           )}
         </div>
 
         {/* Pest prevention */}
-        {growingPlan.pestPrevention.length > 0 && (
+        {(growingPlan.pestPrevention ?? []).length > 0 && (
           <>
             {sectionTitle('🐛 מניעת מזיקים')}
             <ul style={{ margin: '0 0 16px', padding: '0 18px 0 0' }}>
-              {growingPlan.pestPrevention.map((tip, i) => (
+              {(growingPlan.pestPrevention ?? []).map((tip, i) => (
                 <li key={i} style={{ fontFamily: ASST, fontSize: '13px', color: PARCH, lineHeight: 1.7, marginBottom: '4px' }}>
                   {tip}
                 </li>
@@ -484,11 +497,11 @@ ${growingPlan.naturalFertilizers.length > 0 ? `
         )}
 
         {/* Natural fertilizers */}
-        {growingPlan.naturalFertilizers.length > 0 && (
+        {(growingPlan.naturalFertilizers ?? []).length > 0 && (
           <>
             {sectionTitle('🌿 דשנים טבעיים')}
             <ul style={{ margin: '0 0 24px', padding: '0 18px 0 0' }}>
-              {growingPlan.naturalFertilizers.map((fert, i) => (
+              {(growingPlan.naturalFertilizers ?? []).map((fert, i) => (
                 <li key={i} style={{ fontFamily: ASST, fontSize: '13px', color: PARCH, lineHeight: 1.7, marginBottom: '4px' }}>
                   {fert}
                 </li>

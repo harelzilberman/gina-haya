@@ -1,6 +1,7 @@
 import { useState, useRef } from 'react';
 import { useTrackerStore, type CheckinResult } from '../../stores/trackerStore';
 import { useGardenStore } from '../../stores/gardenStore';
+import { MAX_PHOTO_SIZE_BYTES, MAX_PHOTO_SIZE_LABEL } from '@gina-haya/shared';
 
 const EARTH  = '#142B16';
 const GOLD   = '#F5C840';
@@ -65,8 +66,8 @@ export function NewTrackerModal({ onClose, onCreated }: Props) {
   function handleFileSelect(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0];
     if (!file) return;
-    if (file.size > 8 * 1024 * 1024) {
-      setError('התמונה גדולה מדי. אנא בחר תמונה קטנה מ-8MB');
+    if (file.size > MAX_PHOTO_SIZE_BYTES) {
+      setError(`התמונה גדולה מדי. אנא בחר תמונה קטנה מ-${MAX_PHOTO_SIZE_LABEL}`);
       return;
     }
     setImageFile(file);

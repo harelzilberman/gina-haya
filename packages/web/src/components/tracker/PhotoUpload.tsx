@@ -1,5 +1,6 @@
 import { useState, useRef } from 'react';
 import { useTrackerStore, type CheckinResult } from '../../stores/trackerStore';
+import { MAX_PHOTO_SIZE_BYTES, MAX_PHOTO_SIZE_LABEL } from '@gina-haya/shared';
 
 const EARTH = '#142B16';
 const GOLD  = '#F5C840';
@@ -7,7 +8,6 @@ const PARCH = '#EDE0C4';
 const FRANK = '"Frank Ruhl Libre", Georgia, serif';
 const ASST  = '"Assistant", "Heebo", sans-serif';
 
-const MAX_FILE_BYTES = 8 * 1024 * 1024; // 8 MB safe limit for base64 under server 20MB limit
 const ACCEPTED_TYPES = ['image/jpeg', 'image/png', 'image/webp'];
 
 const MOOSH_PULSE_CSS = `
@@ -42,8 +42,8 @@ export function PhotoUpload({ trackerId, plantNameHe, onClose, onComplete }: Pro
       setError('קבצים מותרים: JPG, PNG, WEBP בלבד');
       return;
     }
-    if (file.size > MAX_FILE_BYTES) {
-      setError('התמונה גדולה מדי. אנא בחר תמונה קטנה מ-8MB');
+    if (file.size > MAX_PHOTO_SIZE_BYTES) {
+      setError(`התמונה גדולה מדי. אנא בחר תמונה קטנה מ-${MAX_PHOTO_SIZE_LABEL}`);
       return;
     }
     const reader = new FileReader();
@@ -204,7 +204,7 @@ export function PhotoUpload({ trackerId, plantNameHe, onClose, onComplete }: Pro
                       צלם או העלה תמונה של הצמח
                     </p>
                     <p style={{ fontFamily: ASST, fontSize: '12px', color: 'rgba(237,224,196,0.45)' }}>
-                      JPG / PNG / WEBP עד 8MB
+                      {`JPG / PNG / WEBP עד ${MAX_PHOTO_SIZE_LABEL}`}
                     </p>
                     <p style={{ fontFamily: ASST, fontSize: '12px', color: 'rgba(237,224,196,0.45)', marginTop: '4px' }}>
                       גרור ושחרר כאן
