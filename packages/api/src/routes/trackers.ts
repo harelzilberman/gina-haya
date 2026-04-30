@@ -352,35 +352,69 @@ trackersRouter.post('/:id/checkin', async (req: any, res) => {
 
     if (checkinError) throw checkinError;
 
-    // Insert AI-generated tasks into garden_tasks
-    let tasksAdded = 0;
-    if (tasks && tasks.length > 0) {
-      try {
-        const taskRows = tasks.map((t: any) => {
-          const [y, m, d] = today.split('-').map(Number);
-          const daysOut = Math.max(0, Math.min(Number(t.due_in_days) || 1, 30));
-          const dueDate = new Date(Date.UTC(y, m - 1, d + daysOut)).toISOString().slice(0, 10);
-          return {
-            user_id:       userId,
-            plan_id:       null,
-            date:          dueDate,
-            title:         String(t.title),
-            type:          'maintenance' as const,
-            status:        'pending' as const,
-            notes:         t.description ? String(t.description) : null,
-            source_action: 'growing_tracker',
-          };
-        });
-        const { data: inserted } = await db.from('garden_tasks').insert(taskRows).select('id');
-        tasksAdded = inserted?.length ?? 0;
-      } catch (taskErr: any) {
-        console.warn('[checkin] Failed to insert tracker tasks:', taskErr.message);
-      }
-    }
-
-    res.status(201).json({ checkin, analysis, growingPlan, tasks_added: tasksAdded });
+    res.status(201).json({ checkin, analysis, growingPlan, suggested_tasks: tasks });
   } catch (err: any) {
     console.error('[POST /api/trackers/:id/checkin]', err.message);
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// ── POST /api/trackers/:id/approve-tasks ─────────────────────────────────
+trackersRouter.post('/:id/approve-tasks', async (req: any, res) => {
+  try {
+    const userId = req.user.id;
+    const { id: trackerId } = req.params;
+    const { tasks } = req.body;
+
+    if (!Array.isArray(tasks) || tasks.length === 0) {
+      return res.json({ tasks_added: 0, tasks_error: null });
+    }
+
+    // Verify tracker ownership
+    const { data: tracker, error: trackerError } = await db
+      .from('plant_trackers')
+      .select('id')
+      .eq('id', trackerId)
+      .eq('user_id', userId)
+      .single();
+
+    if (trackerError || !tracker) {
+      return res.status(404).json({ error: 'Tracker not found' });
+    }
+
+    const today = todayInIsrael();
+    const [y, m, d] = today.split('-').map(Number);
+
+    const taskRows = tasks.map((t: any, i: number) => {
+      const rawTitle = t.title ? String(t.title).trim() : '';
+      const title = rawTitle && rawTitle !== 'undefined' ? rawTitle : `משימה ${i + 1}`;
+      const daysOut = Math.max(0, Math.min(Number(t.due_in_days) || 1, 30));
+      const dueDate = new Date(Date.UTC(y, m - 1, d + daysOut)).toISOString().slice(0, 10);
+      return {
+        user_id:       userId,
+        plan_id:       null,
+        date:          dueDate,
+        title,
+        type:          'maintenance' as const,
+        status:        'pending' as const,
+        notes:         t.description ? String(t.description) : null,
+        source_action: 'growing_tracker',
+      };
+    });
+
+    const { data: inserted, error: insertError } = await db
+      .from('garden_tasks')
+      .insert(taskRows)
+      .select('id');
+
+    if (insertError) {
+      console.error('[approve-tasks] Insert failed:', insertError.message);
+      return res.status(500).json({ tasks_added: 0, tasks_error: insertError.message });
+    }
+
+    res.json({ tasks_added: inserted?.length ?? 0, tasks_error: null });
+  } catch (err: any) {
+    console.error('[POST /api/trackers/:id/approve-tasks]', err.message);
     res.status(500).json({ error: err.message });
   }
 });

@@ -72,11 +72,18 @@ export interface Tracker {
   checkins?: TrackerCheckin[];
 }
 
+export interface TrackerTask {
+  title: string;
+  description: string;
+  priority: 'high' | 'medium' | 'low';
+  due_in_days: number;
+}
+
 export interface CheckinResult {
   checkin: TrackerCheckin;
   analysis: PlantAnalysis;
   growingPlan: GrowingPlan;
-  tasks_added?: number;
+  suggested_tasks?: TrackerTask[];
 }
 
 export interface LimitError {
@@ -107,6 +114,10 @@ interface TrackerState {
     mimeType: string,
     notes?: string
   ) => Promise<CheckinResult>;
+  approveTasks: (
+    trackerId: string,
+    tasks: TrackerTask[]
+  ) => Promise<{ tasks_added: number; tasks_error: string | null }>;
   setActiveTrackerId: (id: string | null) => void;
 }
 
@@ -209,5 +220,15 @@ export const useTrackerStore = create<TrackerState>((set, get) => ({
     } finally {
       set({ isAnalyzing: false });
     }
+  },
+
+  approveTasks: async (trackerId, tasks) => {
+    const token = getToken();
+    if (!token) throw new Error('Not authenticated');
+    return api.post<{ tasks_added: number; tasks_error: string | null }>(
+      `/api/trackers/${trackerId}/approve-tasks`,
+      { tasks },
+      token
+    );
   },
 }));

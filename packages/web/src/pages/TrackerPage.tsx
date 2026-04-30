@@ -1,12 +1,13 @@
 import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { useTrackerStore, type CheckinResult } from '../stores/trackerStore';
+import { useTrackerStore, type CheckinResult, type TrackerTask } from '../stores/trackerStore';
 import { useAuthStore } from '../stores/authStore';
 import { useGardenStore } from '../stores/gardenStore';
 import { TrackerCard } from '../components/tracker/TrackerCard';
 import { NewTrackerModal } from '../components/tracker/NewTrackerModal';
 import { PhotoUpload } from '../components/tracker/PhotoUpload';
 import { AnalysisResult } from '../components/tracker/AnalysisResult';
+import { TaskApprovalModal } from '../components/tracker/TaskApprovalModal';
 
 const EARTH = '#142B16';
 const GOLD  = '#F5C840';
@@ -31,6 +32,7 @@ export function TrackerPage() {
   const [showNewTracker, setShowNewTracker] = useState(false);
   const [photoUploadTrackerId, setPhotoUploadTrackerId] = useState<string | null>(null);
   const [analysisResult, setAnalysisResult] = useState<CheckinResult | null>(null);
+  const [pendingApproval, setPendingApproval] = useState<{ trackerId: string; tasks: TrackerTask[] } | null>(null);
 
   const tier = profile?.subscription_tier ?? 'free';
   const maxTrackers = TIER_TRACKER_LIMITS[tier] ?? null;
@@ -199,8 +201,23 @@ export function TrackerPage() {
           analysis={analysisResult.analysis}
           growingPlan={analysisResult.growingPlan}
           checkinDate={analysisResult.checkin.checkin_date}
-          tasksAdded={analysisResult.tasks_added}
+          suggestedTasksCount={analysisResult.suggested_tasks?.length ?? 0}
+          onReviewTasks={() => {
+            const tasks = analysisResult.suggested_tasks;
+            const trackerId = analysisResult.checkin.tracker_id;
+            setAnalysisResult(null);
+            if (tasks && tasks.length > 0) setPendingApproval({ trackerId, tasks });
+            else loadTrackers();
+          }}
           onClose={() => { setAnalysisResult(null); loadTrackers(); }}
+        />
+      )}
+
+      {pendingApproval && (
+        <TaskApprovalModal
+          trackerId={pendingApproval.trackerId}
+          tasks={pendingApproval.tasks}
+          onClose={() => { setPendingApproval(null); loadTrackers(); }}
         />
       )}
     </div>

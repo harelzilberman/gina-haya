@@ -206,14 +206,6 @@ export async function analyzePlantImage(
 
 החזר JSON תקין בלבד בפורמט הבא, ללא שום טקסט נוסף:
 
-CRITICAL — growthStage MUST be exactly one of these 7 values (no other value is allowed):
-"seed" | "seedling" | "vegetative" | "flowering" | "fruiting" | "harvest" | "dormant"
-
-CRITICAL — health MUST be exactly one of these 4 values (no other value is allowed):
-"excellent" | "good" | "fair" | "poor"
-
-CRITICAL — confidence MUST be exactly one of: "high" | "medium" | "low"
-
 {
   "analysis": {
     "plantIdentified": "שם עברי של הצמח",
@@ -356,7 +348,17 @@ due_in_days: מתי לבצע את המשימה (1-14 ימים). priority: high=�
   parsed.growingPlan.steps = parsed.growingPlan.steps ?? [];
   parsed.growingPlan.pestPrevention = parsed.growingPlan.pestPrevention ?? [];
   parsed.growingPlan.naturalFertilizers = parsed.growingPlan.naturalFertilizers ?? [];
-  const tasks: TrackerTask[] = (Array.isArray(parsed.tasks) ? parsed.tasks : []).slice(0, 7);
+  const tasks: TrackerTask[] = (Array.isArray(parsed.tasks) ? parsed.tasks : [])
+    .slice(0, 7)
+    .map((t: any, i: number) => {
+      const rawTitle = t.title ? String(t.title).trim() : '';
+      return {
+        title: rawTitle && rawTitle !== 'undefined' ? rawTitle : `משימה ${i + 1}`,
+        description: t.description ? String(t.description) : '',
+        priority: (['high', 'medium', 'low'] as const).includes(t.priority) ? t.priority : 'medium',
+        due_in_days: Math.max(1, Math.min(30, Number(t.due_in_days) || 3)),
+      };
+    });
 
   return {
     analysis: parsed.analysis as PlantAnalysis,

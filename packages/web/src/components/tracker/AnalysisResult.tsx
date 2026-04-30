@@ -34,12 +34,45 @@ interface Props {
   analysis: PlantAnalysis;
   growingPlan: GrowingPlan;
   checkinDate?: string;
-  tasksAdded?: number;
+  suggestedTasksCount?: number;
+  onReviewTasks?: () => void;
   onClose: () => void;
 }
 
-export function AnalysisResult({ analysis, growingPlan, checkinDate, tasksAdded, onClose }: Props) {
+export function AnalysisResult({ analysis, growingPlan, checkinDate, suggestedTasksCount, onReviewTasks, onClose }: Props) {
   const [expandedWeeks, setExpandedWeeks] = useState<Set<number>>(new Set([1]));
+
+  if (!analysis || !growingPlan) {
+    return (
+      <div role="dialog" aria-modal="true" style={{
+        position: 'fixed', inset: 0, zIndex: 200,
+        display: 'flex', alignItems: 'center', justifyContent: 'center',
+        backgroundColor: 'rgba(0,0,0,0.7)', backdropFilter: 'blur(4px)', padding: '16px',
+      }} onClick={e => { if (e.target === e.currentTarget) onClose(); }}>
+        <div style={{
+          backgroundColor: '#152f17', border: '1px solid rgba(245,200,64,0.2)',
+          borderRadius: '12px', padding: '32px 24px', maxWidth: '400px', width: '100%',
+          direction: 'rtl', textAlign: 'center',
+        }}>
+          <div style={{ fontSize: '48px', marginBottom: '16px' }}>⚠️</div>
+          <h2 style={{ fontFamily: FRANK, fontSize: '20px', color: GOLD, marginBottom: '12px' }}>
+            שגיאה בניתוח
+          </h2>
+          <p style={{ fontFamily: ASST, fontSize: '14px', color: 'rgba(237,224,196,0.7)', lineHeight: 1.6 }}>
+            לא ניתן להציג את תוצאות הניתוח. אנא נסה שנית.
+          </p>
+          <button onClick={onClose} style={{
+            marginTop: '20px', padding: '10px 24px',
+            backgroundColor: GOLD, color: '#142B16',
+            border: 'none', borderRadius: '8px',
+            fontFamily: FRANK, fontSize: '15px', fontWeight: 700, cursor: 'pointer',
+          }}>
+            סגור
+          </button>
+        </div>
+      </div>
+    );
+  }
 
   function toggleWeek(week: number) {
     setExpandedWeeks(prev => {
@@ -250,24 +283,22 @@ ${growingPlan.naturalFertilizers.length > 0 ? `
           </span>
         </div>
 
-        {/* Tasks added banner */}
-        {tasksAdded != null && tasksAdded > 0 && (
-          <div style={{
-            display: 'flex', alignItems: 'center', gap: '10px',
-            backgroundColor: 'rgba(74,124,89,0.18)', border: '1px solid rgba(74,124,89,0.4)',
-            borderRadius: '10px', padding: '10px 14px', marginBottom: '16px',
-          }}>
-            <span style={{ fontSize: '18px', flexShrink: 0 }}>✓</span>
-            <span style={{ fontFamily: ASST, fontSize: '13px', color: '#7DC084', fontWeight: 600 }}>
-              {tasksAdded} משימות נוספו לתכנית השבועית
+        {/* Suggested tasks banner */}
+        {suggestedTasksCount != null && suggestedTasksCount > 0 && onReviewTasks && (
+          <button
+            onClick={onReviewTasks}
+            style={{
+              display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '10px',
+              width: '100%', textAlign: 'right',
+              backgroundColor: 'rgba(245,200,64,0.08)', border: '1px solid rgba(245,200,64,0.35)',
+              borderRadius: '10px', padding: '10px 14px', marginBottom: '16px', cursor: 'pointer',
+            }}
+          >
+            <span style={{ fontFamily: ASST, fontSize: '12px', color: GOLD }}>אישור משימות ←</span>
+            <span style={{ fontFamily: ASST, fontSize: '13px', color: GOLD, fontWeight: 600 }}>
+              🗒️ {suggestedTasksCount} משימות מוצעות לאישור
             </span>
-            <a
-              href="/plan"
-              style={{ fontFamily: ASST, fontSize: '12px', color: GOLD, marginRight: 'auto', textDecoration: 'none', flexShrink: 0 }}
-            >
-              לתכנית ←
-            </a>
-          </div>
+          </button>
         )}
 
         {/* Observations */}
