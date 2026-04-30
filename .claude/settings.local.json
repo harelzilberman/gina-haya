@@ -71,7 +71,8 @@
       "Bash(git *)",
       "Bash(DOTENV_CONFIG_PATH=packages/api/.env node scripts/seed-new-plants.mjs)",
       "Bash(grep -i \"\\\\.png$\")",
-      "Bash(grep -E \"\\\\.\\(ts|js\\)$\")"
+      "Bash(grep -E \"\\\\.\\(ts|js\\)$\")",
+      "Bash(pnpm --filter @gina-haya/web build)"
     ]
   }
 }
