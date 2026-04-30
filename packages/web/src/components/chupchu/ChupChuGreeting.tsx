@@ -2,6 +2,10 @@ import { useTranslation } from 'react-i18next';
 import { useToday } from '../../hooks/useCalendar';
 
 const MOON_GOLD = '#B7924A';
+const GOLD      = '#F5C840';
+const PARCH     = '#EDE0C4';
+const PLAYFAIR  = '"Playfair Display", Georgia, serif';
+const ASSIST    = '"Assistant", "Heebo", sans-serif';
 
 const DAY_TYPE_HE: Record<string, string> = {
   fruit:  'יום פרי 🍅',
@@ -23,12 +27,23 @@ export function ChupChuGreeting() {
     : null;
 
   return (
-    <div className="flex justify-start">
-      <div className="flex items-end gap-2 max-w-[85%]">
+    <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
+      <div style={{ display: 'flex', alignItems: 'flex-end', gap: '8px', maxWidth: '85%' }}>
         {/* Avatar */}
         <div
-          className="flex-shrink-0 w-8 h-8 rounded-full flex items-center justify-center text-sm mb-0.5"
-          style={{ backgroundColor: MOON_GOLD }}
+          style={{
+            flexShrink:     0,
+            width:          '28px',
+            height:         '28px',
+            borderRadius:   '50%',
+            background:     `radial-gradient(circle at 40% 40%, #F5D060, ${GOLD}, #C8960A)`,
+            display:        'flex',
+            alignItems:     'center',
+            justifyContent: 'center',
+            fontSize:       '13px',
+            lineHeight:     1,
+            marginBottom:   '2px',
+          }}
           aria-hidden="true"
         >
           🌕
@@ -36,16 +51,22 @@ export function ChupChuGreeting() {
 
         {/* Bubble */}
         <div
-          className="rounded-2xl rounded-bl-none px-4 py-3 text-sm leading-relaxed"
           style={{
-            backgroundColor: '#FFFFFF',
-            border:          '1px solid rgba(74,124,89,0.3)',
-            color:           '#1B2A4A',
+            borderRadius:    '16px',
+            borderTopLeftRadius: '4px',
+            padding:         '10px 14px',
+            fontSize:        '14px',
+            lineHeight:      1.65,
+            backgroundColor: 'var(--color-background-secondary, rgba(28,58,30,0.8))',
+            border:          '1px solid rgba(245,200,64,0.15)',
+            borderInlineEnd: `2px solid ${GOLD}`,
+            color:           `var(--color-text-primary, ${PARCH})`,
+            fontFamily:      PLAYFAIR,
           }}
         >
-          <p>{t('greeting')}</p>
+          <p style={{ margin: 0 }}>{t('greeting')}</p>
           {calendarLine && (
-            <p className="mt-1 text-xs" style={{ color: '#6B7280' }}>
+            <p style={{ margin: '4px 0 0', fontSize: '12px', fontFamily: ASSIST, color: `${PARCH}99` }}>
               {calendarLine}
             </p>
           )}
