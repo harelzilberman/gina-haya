@@ -411,10 +411,11 @@ function DroppableDayCell({
             </div>
           </div>
           {bd && bd.plantingScore > 0 && (
-            <div style={{ display: 'flex', gap: '2px', marginBottom: '2px' }}>
-              {Array.from({ length: 5 }, (_, i) => (
-                <div key={i} style={{ flex: 1, height: '3px', borderRadius: '99px', background: i < bd.plantingScore ? (dayStyle?.color ?? GOLD) : 'rgba(255,255,255,0.08)' }} />
+            <div style={{ display: 'flex', gap: '1px', marginBottom: '2px', alignItems: 'center' }}>
+              {Array.from({ length: 10 }, (_, i) => (
+                <div key={i} style={{ width: '4px', height: '4px', borderRadius: '50%', background: i < bd.plantingScore ? (bd.plantingScore <= 3 ? '#E24B4A' : bd.plantingScore <= 6 ? '#EF9F27' : '#639922') : 'rgba(255,255,255,0.08)' }} />
               ))}
+              <span style={{ fontFamily: ASST, fontSize: '8px', color: `${PARCH}50`, marginInlineStart: '2px' }}>{bd.plantingScore}</span>
             </div>
           )}
         </>
@@ -428,10 +429,14 @@ function DroppableDayCell({
             {bd && <span style={{ fontSize: '12px' }} title={bd.moonPhaseNameHe}>{moonEmoji(bd.moonPhasePct, (bd.moonPhaseAngle ?? 90) <= 180)}</span>}
           </div>
           {bd && bd.plantingScore > 0 && (
-            <div style={{ display: 'flex', gap: '1px', justifyContent: 'center', marginTop: '2px' }}>
-              {Array.from({ length: 5 }, (_, i) => (
-                <div key={i} style={{ width: '8px', height: '3px', borderRadius: '1px', background: i < bd.plantingScore ? (dayStyle?.color ?? GOLD) : 'rgba(255,255,255,0.08)' }} />
-              ))}
+            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '2px', marginTop: '2px' }}>
+              <div style={{ display: 'flex', gap: '1px', justifyContent: 'center', alignItems: 'center' }}>
+                {Array.from({ length: 10 }, (_, i) => (
+                  <div key={i} style={{ width: '5px', height: '5px', borderRadius: '50%', background: i < bd.plantingScore ? (bd.plantingScore <= 3 ? '#E24B4A' : bd.plantingScore <= 6 ? '#EF9F27' : '#639922') : 'rgba(255,255,255,0.08)' }} />
+                ))}
+                <span style={{ fontFamily: ASST, fontSize: '10px', color: `${PARCH}60`, marginInlineStart: '4px' }}>{bd.plantingScore}/10</span>
+              </div>
+              <span style={{ fontFamily: ASST, fontSize: '9px', color: `${PARCH}30` }}>ציון שתילה ביודינמי</span>
             </div>
           )}
         </div>

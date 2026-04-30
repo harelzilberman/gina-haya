@@ -107,11 +107,11 @@ def get_moon_phase(jd):
     if angle < 20 or angle > 340:    name, name_he = 'new_moon',       'ירח חדש'
     elif angle < 90:                  name, name_he = 'waxing_crescent', 'סהר גדל'
     elif angle < 100:                 name, name_he = 'first_quarter',   'רבע ראשון'
-    elif angle < 180:                 name, name_he = 'waxing_gibbous',  'כמעט מלא'
+    elif angle < 180:                 name, name_he = 'waxing_gibbous',  'גיבנת גדלה'
     elif angle < 200:                 name, name_he = 'full_moon',       'ירח מלא'
-    elif angle < 270:                 name, name_he = 'waning_gibbous',  'מתמעט'
+    elif angle < 270:                 name, name_he = 'waning_gibbous',  'גיבנת קטנה'
     elif angle < 280:                 name, name_he = 'last_quarter',    'רבע אחרון'
-    else:                             name, name_he = 'waning_crescent', 'סהר פוחת'
+    else:                             name, name_he = 'waning_crescent', 'סהר קטן'
 
     return {
         'angle': angle,

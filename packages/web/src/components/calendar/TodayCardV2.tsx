@@ -205,11 +205,14 @@ export function MoonPhaseDisplay({ phaseAngle, phasePct, phaseHe, moonSignHe, as
     'גדי': 'Capricorn', 'דלי': 'Aquarius', 'דגים': 'Pisces',
   };
   const PHASE_NAME_EN: Record<string, string> = {
-    'ירח חדש': 'New Moon', 'סהר גדל': 'Waxing Crescent',
-    'רבע ראשון': 'First Quarter', 'גיבנת גדלה': 'Waxing Gibbous',
-    'ירח מלא': 'Full Moon', 'כמעט מלא': 'Almost Full',
-    'גיבנת דועכת': 'Waning Gibbous', 'רבע אחרון': 'Last Quarter',
-    'סהר דועך': 'Waning Crescent',
+    'ירח חדש':    'New Moon',
+    'סהר גדל':    'Waxing Crescent',
+    'רבע ראשון':  'First Quarter',
+    'גיבנת גדלה': 'Waxing Gibbous',
+    'ירח מלא':    'Full Moon',
+    'גיבנת קטנה': 'Waning Gibbous',
+    'רבע אחרון':  'Last Quarter',
+    'סהר קטן':    'Waning Crescent',
   };
   const moonSignLabel = isHe ? moonSignHe : (MOON_SIGN_EN[moonSignHe] ?? moonSignHe);
   const phaseNameLabel = isHe ? phaseHe : (PHASE_NAME_EN[phaseHe] ?? phaseHe);
