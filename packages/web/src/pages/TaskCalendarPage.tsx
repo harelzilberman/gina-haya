@@ -98,16 +98,19 @@ const SOURCE_STYLES = {
   },
 } as const;
 
-function moonEmoji(pct: number): string {
-  if (pct < 6)  return '🌑';
-  if (pct < 25) return '🌒';
-  if (pct < 45) return '🌓';
-  if (pct < 55) return '🌔';
-  if (pct < 60) return '🌕';
-  if (pct < 75) return '🌖';
-  if (pct < 90) return '🌗';
-  if (pct < 97) return '🌘';
-  return '🌑';
+function moonEmoji(pct: number, isWaxing: boolean): string {
+  if (isWaxing) {
+    if (pct <= 2)  return '🌑';
+    if (pct <= 48) return '🌒';
+    if (pct <= 52) return '🌓';
+    if (pct <= 97) return '🌔';
+    return '🌕';
+  }
+  if (pct <= 2)  return '🌑';
+  if (pct <= 48) return '🌘';
+  if (pct <= 52) return '🌗';
+  if (pct <= 97) return '🌖';
+  return '🌕';
 }
 
 function toISO(d: Date): string {
@@ -400,7 +403,7 @@ function DroppableDayCell({
                   {dayStyle.emoji}
                 </span>
               )}
-              {bd && <span title={bd.moonPhaseNameHe} style={{ fontSize: '11px', lineHeight: 1 }}>{moonEmoji(bd.moonPhasePct)}</span>}
+              {bd && <span title={bd.moonPhaseNameHe} style={{ fontSize: '11px', lineHeight: 1 }}>{moonEmoji(bd.moonPhasePct, (bd.moonPhaseAngle ?? 90) <= 180)}</span>}
             </div>
             <div style={{ textAlign: isHe ? 'right' : 'left' }}>
               <span style={{ fontFamily: FRANK, fontSize: '14px', color: isToday ? GOLD : isCurrentMonth ? PARCH : `${PARCH}50`, fontWeight: isToday ? 700 : 400 }}>{num}</span>
@@ -422,7 +425,7 @@ function DroppableDayCell({
           <div style={{ fontFamily: ASST, fontSize: '10px', color: `${PARCH}40` }}>{month}</div>
           <div style={{ display: 'flex', gap: '4px', justifyContent: 'center', alignItems: 'center', marginTop: '2px' }}>
             {dayStyle && <span style={{ fontSize: '12px' }} title={t(dayStyle.labelKey)}>{dayStyle.emoji}</span>}
-            {bd && <span style={{ fontSize: '12px' }} title={bd.moonPhaseNameHe}>{moonEmoji(bd.moonPhasePct)}</span>}
+            {bd && <span style={{ fontSize: '12px' }} title={bd.moonPhaseNameHe}>{moonEmoji(bd.moonPhasePct, (bd.moonPhaseAngle ?? 90) <= 180)}</span>}
           </div>
           {bd && bd.plantingScore > 0 && (
             <div style={{ display: 'flex', gap: '1px', justifyContent: 'center', marginTop: '2px' }}>
@@ -744,7 +747,7 @@ function DayDetailModal({ date, tasks, bd, onClose, onStatusToggle, onAddTask }:
                 )}
                 {bd && (
                   <span style={{ fontFamily: ASST, fontSize: '12px', color: `${PARCH}70` }}>
-                    {moonEmoji(bd.moonPhasePct)} {bd.moonPhasePct}%
+                    {moonEmoji(bd.moonPhasePct, (bd.moonPhaseAngle ?? 90) <= 180)} {bd.moonPhasePct}%
                   </span>
                 )}
               </div>

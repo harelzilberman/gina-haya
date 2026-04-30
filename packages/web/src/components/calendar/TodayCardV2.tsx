@@ -40,12 +40,32 @@ const CARD_CSS = `
 }
 `;
 
+let moonImgFailed = false;
+let lastRender: (() => void) | null = null;
+
 const moonImg = new Image();
 moonImg.src = '/moon.jpg';
+moonImg.onerror = () => {
+  moonImgFailed = true;
+  lastRender?.();
+};
 
 // ─────────────────────────────────────────────
 // MOON PHASE HELPERS
 // ─────────────────────────────────────────────
+function drawMoonSurface(ctx: CanvasRenderingContext2D, size: number) {
+  if (moonImgFailed) {
+    const grad = ctx.createRadialGradient(size * 0.35, size * 0.35, 0, size / 2, size / 2, size / 2);
+    grad.addColorStop(0,   '#F5E6C8');
+    grad.addColorStop(0.6, '#C4A87A');
+    grad.addColorStop(1,   '#1B2A1C');
+    ctx.fillStyle = grad;
+    ctx.fillRect(0, 0, size, size);
+  } else {
+    ctx.drawImage(moonImg, 0, 0, size, size);
+  }
+}
+
 export function getMoonTilt(phaseAngle: number, lat: number): number {
   const latFactor = (lat / 90);
   const baseTilt = -90 * latFactor;
@@ -85,13 +105,13 @@ export function drawMoon(canvas: HTMLCanvasElement, phasePct: number, phaseAngle
     console.log('[moon] phasePct:', phasePct, '| isWaning:', isWaning, '| tRx:', tRx.toFixed(1));
 
     if (phasePct >= 98) {
-      ctx.drawImage(moonImg, 0, 0, size, size);
+      drawMoonSurface(ctx, size);
     } else if (!isWaning) {
       // ── WAXING: lit on RIGHT ──────────────────────────────
       // Base: draw moon texture in the right half
       ctx.save();
       ctx.beginPath(); ctx.rect(cx, 0, size, size); ctx.clip();
-      ctx.drawImage(moonImg, 0, 0, size, size);
+      drawMoonSurface(ctx, size);
       ctx.restore();
 
       if (f < 0.5) {
@@ -113,7 +133,7 @@ export function drawMoon(canvas: HTMLCanvasElement, phasePct: number, phaseAngle
         ctx.lineTo(cx, cy - r);
         ctx.closePath();
         ctx.clip();
-        ctx.drawImage(moonImg, 0, 0, size, size);
+        drawMoonSurface(ctx, size);
         ctx.restore();
       }
     } else {
@@ -121,7 +141,7 @@ export function drawMoon(canvas: HTMLCanvasElement, phasePct: number, phaseAngle
       // Base: draw moon texture in the left half
       ctx.save();
       ctx.beginPath(); ctx.rect(0, 0, cx, size); ctx.clip();
-      ctx.drawImage(moonImg, 0, 0, size, size);
+      drawMoonSurface(ctx, size);
       ctx.restore();
 
       if (f < 0.5) {
@@ -143,7 +163,7 @@ export function drawMoon(canvas: HTMLCanvasElement, phasePct: number, phaseAngle
         ctx.lineTo(cx, cy - r);
         ctx.closePath();
         ctx.clip();
-        ctx.drawImage(moonImg, 0, 0, size, size);
+        drawMoonSurface(ctx, size);
         ctx.restore();
       }
     }
@@ -159,6 +179,7 @@ export function drawMoon(canvas: HTMLCanvasElement, phasePct: number, phaseAngle
     ctx.restore();
   };
 
+  lastRender = render;
   if (moonImg.complete) { render(); } else { moonImg.onload = render; }
 }
 
@@ -330,7 +351,9 @@ export function TodayCard({ day }: Props) {
 
         <MoonPhaseDisplay
           phasePct={day.moonPhasePct ?? 0}
-          phaseAngle={day.moonPhaseAngle ?? (day.moonPhasePct ?? 0) / 100 * 360}
+          phaseAngle={day.moonPhaseAngle !== undefined
+            ? day.moonPhaseAngle
+            : Math.acos(Math.max(-1, Math.min(1, 1 - 2 * (day.moonPhasePct ?? 0) / 100))) * (180 / Math.PI)}
           phaseHe={day.moonPhaseNameHe ?? day.moonPhaseHe ?? 'ירח'}
           moonSignHe={day.moonSignHe ?? ''}
           ascending={day.ascendingDescending === 'ascending'}
