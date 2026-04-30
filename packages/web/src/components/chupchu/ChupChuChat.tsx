@@ -188,6 +188,7 @@ export function ChupChuChat({ compact, initialMessage, onInitialMessageConsumed 
 
   const {
     messages,
+    pendingMessage,
     isLoading,
     error,
     rateLimited,
@@ -320,6 +321,12 @@ export function ChupChuChat({ compact, initialMessage, onInitialMessageConsumed 
           {messages.map((msg, idx) => (
             <MessageBubble key={idx} message={msg} isRTL={isRTL} />
           ))}
+
+          {pendingMessage && (
+            <div style={{ opacity: 0.6 }}>
+              <MessageBubble message={pendingMessage} isRTL={isRTL} />
+            </div>
+          )}
 
           {isLoading && <TypingDots isRTL={isRTL} />}
 

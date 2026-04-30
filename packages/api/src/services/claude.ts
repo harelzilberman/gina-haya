@@ -136,6 +136,7 @@ function handleToolCall(
   switch (name) {
     case 'get_today_calendar': {
       const cal = context.todayCalendar;
+      if (!cal) return 'אין נתוני לוח ביודינמי להיום. ענה על סמך עקרונות כלליים בלבד.';
       return JSON.stringify({
         ascendingDescending: cal.ascendingDescending,
         nodeActive: cal.nodeActive,

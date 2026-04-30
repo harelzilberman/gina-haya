@@ -11,6 +11,7 @@ function getToken(): string | null {
 
 interface ChupChuState {
   messages: ChupChuMessage[];
+  pendingMessage: ChupChuMessage | null;
   isLoading: boolean;
   error: string | null;
   rateLimited: boolean;
@@ -26,6 +27,7 @@ interface ChupChuState {
 
 export const useChupChuStore = create<ChupChuState>((set, get) => ({
   messages:       [],
+  pendingMessage: null,
   isLoading:      false,
   error:          null,
   rateLimited:    false,
@@ -39,13 +41,13 @@ export const useChupChuStore = create<ChupChuState>((set, get) => ({
     const token = getToken();
     if (!token || !text.trim()) return;
 
-    // Optimistic: append user message immediately
     const userMsg: ChupChuMessage = {
       role:      'user',
       content:   text.trim(),
       timestamp: new Date().toISOString(),
     };
-    set(s => ({ messages: [...s.messages, userMsg], isLoading: true, error: null }));
+    // Track as pending — not yet confirmed by server
+    set({ pendingMessage: userMsg, isLoading: true, error: null });
 
     try {
       const res = await fetch(`${API_BASE}/api/chupchu/chat`, {
@@ -60,6 +62,7 @@ export const useChupChuStore = create<ChupChuState>((set, get) => ({
       if (res.status === 429) {
         const data = await res.json();
         set({
+          pendingMessage: null,
           isLoading:      false,
           rateLimited:    true,
           rateLimitTier:  data.tier ?? null,
@@ -71,32 +74,34 @@ export const useChupChuStore = create<ChupChuState>((set, get) => ({
 
       if (!res.ok) {
         const data = await res.json().catch(() => ({}));
-        set({ isLoading: false, error: data.error ?? 'שגיאה בשליחת ההודעה' });
+        set({ pendingMessage: null, isLoading: false, error: data.error ?? 'שגיאה בשליחת ההודעה' });
         return;
       }
 
       const data = await res.json();
-      const monMsg: ChupChuMessage = {
+      const assistantMsg: ChupChuMessage = {
         role:      'assistant',
         content:   data.response,
         timestamp: new Date().toISOString(),
       };
 
       set(s => ({
-        messages:       [...s.messages, monMsg],
+        messages:       [...s.messages, userMsg, assistantMsg],
+        pendingMessage: null,
         isLoading:      false,
         rateLimited:    false,
         usageThisMonth: data.messagesUsedThisMonth ?? s.usageThisMonth,
         monthlyLimit:   data.monthlyLimit           ?? s.monthlyLimit,
       }));
     } catch (err: any) {
-      set({ isLoading: false, error: err.message ?? 'שגיאה בשליחת ההודעה' });
+      set({ pendingMessage: null, isLoading: false, error: err.message ?? 'שגיאה בשליחת ההודעה' });
     }
   },
 
   loadHistory: async () => {
     const token = getToken();
     if (!token) return;
+    if (get().messages.length > 0) return; // already loaded
     try {
       const data = await api.get<ChupChuMessage[]>('/api/chupchu/history', token);
       set({ messages: data });

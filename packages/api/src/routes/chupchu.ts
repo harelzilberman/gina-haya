@@ -205,18 +205,7 @@ chupChuRouter.post('/chat', async (req: any, res) => {
         prep500Recommended: calendarDay.prep_500_recommended,
         prep501Recommended: calendarDay.prep_501_recommended,
         perigeeActive: calendarDay.perigee_active,
-      } : {
-        ascendingDescending: 'descending',
-        nodeActive: false,
-        nodeBlackoutEnd: null,
-        dayType: 'fruit',
-        moonSign: '',
-        plantingScore: 5,
-        scoreColour: 'yellow',
-        prep500Recommended: false,
-        prep501Recommended: false,
-        perigeeActive: false,
-      },
+      } : null,
       userLanguage: lang as 'he' | 'en',
       weather: weather ?? null,
       recentHarvests: recentHarvests.length > 0 ? recentHarvests : null,
@@ -233,7 +222,8 @@ chupChuRouter.post('/chat', async (req: any, res) => {
       .single();
 
     const existingMessages: ChupChuMessage[] = convRecord?.messages || [];
-    const last10Messages = existingMessages.slice(-10);
+    // Must match frontend display limit in chupChuStore history endpoint
+    const last20Messages = existingMessages.slice(-20);
 
     // ── 7b. Fetch recent completed tasks ─────────────────────────────────
     const completedTasks = await getRecentCompletedTasks(userId, 7);
@@ -249,7 +239,7 @@ chupChuRouter.post('/chat', async (req: any, res) => {
     };
 
     const chupChuResponse = await askChupChu(
-      [...last10Messages, newUserMessage],
+      [...last20Messages, newUserMessage],
       context,
       taskContext || undefined
     );

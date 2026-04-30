@@ -14,6 +14,7 @@ export function useChupChu() {
 
   return {
     messages:       store.messages,
+    pendingMessage: store.pendingMessage,
     isLoading:      store.isLoading,
     error:          store.error,
     rateLimited:    store.rateLimited,

@@ -31,6 +31,7 @@ import { useUpgradeModalStore } from './stores/upgradeModalStore';
 import { useAuthStore } from './stores/authStore';
 import { useOnboardingStore } from './stores/onboardingStore';
 import { useChupChuPanelStore } from './stores/chupChuPanelStore';
+import { useChupChu } from './hooks/useChupChu';
 import { supabase } from './lib/supabase';
 
 export default function App() {
@@ -48,6 +49,7 @@ export default function App() {
     close:              closeChupChuPanel,
     clearInitialMessage,
   } = useChupChuPanelStore();
+  const { loadHistory } = useChupChu();
 
   // Central RTL/LTR management
   useEffect(() => {
@@ -62,6 +64,11 @@ export default function App() {
       loadProfile();
     }
   }, [user, profile, loadProfile]);
+
+  // Load Chupchu history when the floating panel first opens
+  useEffect(() => {
+    if (isChupChuPanelOpen && user) loadHistory();
+  }, [isChupChuPanelOpen, user]);
 
   // Show onboarding wizard if profile loaded and not complete
   const showOnboarding =
