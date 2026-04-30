@@ -195,8 +195,10 @@ export function TrackerCard({ tracker, onAddCheckin, onDeleted }: Props) {
               style={{
                 fontFamily: ASST, fontSize: '12px', color: 'rgba(220,100,100,0.5)',
                 background: 'none', border: 'none', cursor: 'pointer',
-                padding: '4px 8px', borderRadius: '4px',
+                padding: '0 8px', borderRadius: '4px',
                 transition: 'color 0.15s',
+                minWidth: '44px', minHeight: '44px',
+                display: 'flex', alignItems: 'center', justifyContent: 'center',
               }}
               onMouseEnter={e => { (e.currentTarget as HTMLElement).style.color = '#e06060'; }}
               onMouseLeave={e => { (e.currentTarget as HTMLElement).style.color = 'rgba(220,100,100,0.5)'; }}

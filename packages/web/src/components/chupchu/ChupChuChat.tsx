@@ -403,8 +403,8 @@ export function ChupChuChat({ compact, initialMessage, onInitialMessageConsumed 
               aria-label={t('sendButton')}
               style={{
                 flexShrink:      0,
-                width:           '36px',
-                height:          '36px',
+                width:           '44px',
+                height:          '44px',
                 borderRadius:    '8px',
                 border:          'none',
                 backgroundColor: GOLD,

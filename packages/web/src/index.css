@@ -4,6 +4,8 @@
 
 @layer base {
   :root {
+    --navbar-height:     64px;
+    --bottomnav-height:  64px;
     --color-sage:       #4A7C59;
     --color-moon-gold:  #B7924A;
     --color-navy:       #1B2A4A;

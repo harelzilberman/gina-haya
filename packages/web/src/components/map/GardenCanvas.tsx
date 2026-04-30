@@ -1494,12 +1494,16 @@ export function GardenCanvas({
       {contextMenu && (() => {
         const cmObj = mapData.objects.find(o => o.id === contextMenu.objId);
         if (!cmObj) return null;
+        const MENU_W = 160;
+        const MENU_H = 200;
+        const clampedX = Math.min(contextMenu.sx, window.innerWidth - MENU_W - 8);
+        const clampedY = Math.min(contextMenu.sy, window.innerHeight - MENU_H - 8);
         return (
           <>
             <div style={{ position: 'fixed', inset: 0, zIndex: 399 }} onMouseDown={() => setContextMenu(null)} />
             <div
               style={{
-                position: 'fixed', left: contextMenu.sx, top: contextMenu.sy, zIndex: 400,
+                position: 'fixed', insetInlineStart: clampedX, insetBlockStart: clampedY, zIndex: 400,
                 background: 'rgba(14,30,15,0.97)', border: '1px solid rgba(245,200,64,0.25)',
                 borderRadius: '8px', padding: '4px',
                 boxShadow: '0 4px 16px rgba(0,0,0,0.5)',

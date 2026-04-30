@@ -26,11 +26,11 @@ interface Props {
 }
 
 interface DropItem { tool: MapTool; emoji: string; labelHe: string; labelEn: string }
-interface Category { id: string; labelHe: string; labelEn: string; items: DropItem[] }
+interface Category { id: string; emoji: string; labelHe: string; labelEn: string; items: DropItem[] }
 
 const CATEGORIES: Category[] = [
   {
-    id: 'buildings', labelHe: 'מבנים', labelEn: 'Structures',
+    id: 'buildings', emoji: '🏠', labelHe: 'מבנים', labelEn: 'Structures',
     items: [
       { tool: 'house',    emoji: '🏠', labelHe: 'בית',      labelEn: 'House' },
       { tool: 'fence',    emoji: '🚧', labelHe: 'גדר',      labelEn: 'Fence' },
@@ -41,20 +41,20 @@ const CATEGORIES: Category[] = [
     ],
   },
   {
-    id: 'plants', labelHe: 'צמחים', labelEn: 'Plants',
+    id: 'plants', emoji: '🌱', labelHe: 'צמחים', labelEn: 'Plants',
     items: [
       { tool: 'plant', emoji: '🌱', labelHe: 'הוסף צמח', labelEn: 'Add plant' },
     ],
   },
   {
-    id: 'trees', labelHe: 'עצים', labelEn: 'Trees',
+    id: 'trees', emoji: '🌳', labelHe: 'עצים', labelEn: 'Trees',
     items: [
       { tool: 'fruit-tree', emoji: '🍊', labelHe: 'עץ פרי', labelEn: 'Fruit tree' },
       { tool: 'tree',       emoji: '🌳', labelHe: 'עץ נוי', labelEn: 'Ornamental tree' },
     ],
   },
   {
-    id: 'growing', labelHe: 'גידול', labelEn: 'Growing',
+    id: 'growing', emoji: '🌿', labelHe: 'גידול', labelEn: 'Growing',
     items: [
       { tool: 'bed',         emoji: '🌱', labelHe: 'ערוגת גידול',   labelEn: 'Growing bed' },
       { tool: 'hydroponics', emoji: '💧', labelHe: 'הידרופוניקה',   labelEn: 'Hydroponics' },
@@ -64,7 +64,7 @@ const CATEGORIES: Category[] = [
     ],
   },
   {
-    id: 'pots', labelHe: 'עציצים', labelEn: 'Pots',
+    id: 'pots', emoji: '🪴', labelHe: 'עציצים', labelEn: 'Pots',
     items: [
       { tool: 'pot-rect',  emoji: '🪴', labelHe: 'עציץ מלבני', labelEn: 'Rectangular pot' },
       { tool: 'pot-round', emoji: '🪴', labelHe: 'עציץ עגול',  labelEn: 'Round pot' },
@@ -73,10 +73,12 @@ const CATEGORIES: Category[] = [
 ];
 
 function CategoryDropdown({
-  category, selectedTool, onSelect, isHe,
-}: { category: Category; selectedTool: MapTool; onSelect: (t: MapTool) => void; isHe: boolean }) {
+  category, selectedTool, onSelect, isHe, isMobile,
+}: { category: Category; selectedTool: MapTool; onSelect: (t: MapTool) => void; isHe: boolean; isMobile: boolean }) {
   const [open, setOpen] = useState(false);
+  const [dropPos, setDropPos] = useState({ top: 0, left: 0 });
   const ref = useRef<HTMLDivElement>(null);
+  const btnRef = useRef<HTMLButtonElement>(null);
   const isActive = category.items.some(i => i.tool === selectedTool);
   const activeItem = category.items.find(i => i.tool === selectedTool);
 
@@ -89,49 +91,69 @@ function CategoryDropdown({
     return () => document.removeEventListener('mousedown', handler);
   }, [open]);
 
-  const catLabel = isHe ? category.labelHe : category.labelEn;
-  const activeLabel = activeItem ? `${activeItem.emoji} ${isHe ? activeItem.labelHe : activeItem.labelEn}` : catLabel;
+  function handleToggle() {
+    if (btnRef.current) {
+      const r = btnRef.current.getBoundingClientRect();
+      setDropPos({ top: r.bottom + 4, left: r.left });
+    }
+    setOpen(o => !o);
+  }
+
+  const catEmoji = activeItem ? activeItem.emoji : category.emoji;
+  const catLabel = isHe
+    ? (activeItem?.labelHe ?? category.labelHe)
+    : (activeItem?.labelEn ?? category.labelEn);
 
   return (
-    <div ref={ref} style={{ position: 'static', flexShrink: 0 }}>
+    <div ref={ref} style={{ position: 'relative', flexShrink: 0 }}>
       <button
-        onClick={() => setOpen(o => !o)}
+        ref={btnRef}
+        onClick={handleToggle}
         style={{
           fontFamily: ASSIST,
           fontSize: '13px',
           fontWeight: isActive ? 700 : 400,
-          padding: '6px 12px',
+          padding: '0 12px',
           borderRadius: '6px',
           border: `1px solid ${isActive ? GOLD : 'rgba(245,200,64,0.2)'}`,
           color: isActive ? GOLD : `${PARCH}99`,
           backgroundColor: isActive ? 'rgba(245,200,64,0.1)' : 'transparent',
           cursor: 'pointer',
-          height: '36px',
+          minHeight: '44px',
+          minWidth: '44px',
           display: 'flex',
           alignItems: 'center',
           gap: '5px',
           whiteSpace: 'nowrap',
         }}
       >
-        {activeLabel}
-        <span style={{ fontSize: '9px', opacity: 0.5, marginTop: '1px' }}>▾</span>
+        <span style={{ fontSize: '16px' }}>{catEmoji}</span>
+        {!isMobile && (
+          <>
+            <span>{catLabel}</span>
+            <span style={{ fontSize: '9px', opacity: 0.5, marginTop: '1px' }}>▾</span>
+          </>
+        )}
       </button>
 
       {open && (
-        <div style={{
-          position: 'fixed',
-          top: '116px',
-          backgroundColor: 'rgba(10,24,11,0.99)',
-          border: '1px solid rgba(245,200,64,0.3)',
-          borderRadius: '10px',
-          padding: '6px',
-          minWidth: '180px',
-          zIndex: 9999,
-          display: 'flex',
-          flexDirection: 'column',
-          gap: '2px',
-          boxShadow: '0 8px 32px rgba(0,0,0,0.6)',
-        }}>
+        <div
+          style={{
+            position: 'fixed',
+            top: dropPos.top,
+            left: dropPos.left,
+            backgroundColor: 'rgba(10,24,11,0.99)',
+            border: '1px solid rgba(245,200,64,0.3)',
+            borderRadius: '10px',
+            padding: '6px',
+            minWidth: '180px',
+            zIndex: 9999,
+            display: 'flex',
+            flexDirection: 'column',
+            gap: '2px',
+            boxShadow: '0 8px 32px rgba(0,0,0,0.6)',
+          }}
+        >
           {category.items.map(item => (
             <button
               key={item.tool}
@@ -181,6 +203,15 @@ export function MapToolbar({
 }: Props) {
   const { i18n } = useTranslation();
   const isHe = i18n.language === 'he';
+  const [isMobile, setIsMobile] = useState(() => window.innerWidth <= 640);
+
+  useEffect(() => {
+    const mq = window.matchMedia('(max-width: 640px)');
+    const handler = (e: MediaQueryListEvent) => setIsMobile(e.matches);
+    mq.addEventListener('change', handler);
+    return () => mq.removeEventListener('change', handler);
+  }, []);
+
   const canWizard = hasSavedMap && (wizardStatus?.canRun ?? true);
   const wizardLabel = wizardStatus
     ? (isHe
@@ -190,19 +221,20 @@ export function MapToolbar({
 
   return (
     <div dir={isHe ? 'rtl' : 'ltr'} style={{
-      position: 'fixed',
-      top: '64px',
-      left: 0,
-      right: 0,
+      position: 'absolute',
+      top: '12px',
+      insetInlineStart: '12px',
       zIndex: 200,
-      height: '52px',
       display: 'flex',
       alignItems: 'center',
-      padding: '0 16px',
-      gap: '8px',
-      background: FOREST,
-      borderBottom: '1px solid rgba(245,200,64,0.2)',
-      flexShrink: 0,
+      flexWrap: 'wrap',
+      padding: '4px 8px',
+      gap: '6px',
+      background: 'rgba(20,43,22,0.94)',
+      border: '1px solid rgba(245,200,64,0.2)',
+      borderRadius: '10px',
+      boxShadow: '0 4px 16px rgba(0,0,0,0.5)',
+      maxWidth: isMobile ? '240px' : 'none',
     }}>
 
       {/* Category dropdowns */}
@@ -213,13 +245,14 @@ export function MapToolbar({
           selectedTool={selectedTool}
           onSelect={onToolChange}
           isHe={isHe}
+          isMobile={isMobile}
         />
       ))}
 
       <div style={{ width: '1px', height: '28px', background: 'rgba(245,200,64,0.15)', flexShrink: 0 }} />
 
       {/* Right section */}
-      <div style={{ marginInlineStart: 'auto', display: 'flex', alignItems: 'center', gap: '8px', flexShrink: 0 }}>
+      <div style={{ display: 'flex', alignItems: 'center', gap: '6px', flexShrink: 0, flexWrap: 'wrap' }}>
 
         {/* Select */}
         <button
@@ -231,76 +264,83 @@ export function MapToolbar({
             border: `1px solid ${selectedTool === 'select' ? GOLD : 'rgba(245,200,64,0.2)'}`,
             fontWeight: selectedTool === 'select' ? 700 : 400,
           }}
+          title={isHe ? 'בחר' : 'Select'}
         >
-          🖱️ {isHe ? 'בחר' : 'Select'}
+          🖱️{!isMobile && ` ${isHe ? 'בחר' : 'Select'}`}
         </button>
 
         {/* Undo */}
         <button onClick={onUndo} title="Ctrl+Z" style={ghostBtn}>↩️</button>
 
-        <div style={{ width: '1px', height: '28px', background: 'rgba(245,200,64,0.15)' }} />
+        {!isMobile && (
+          <>
+            <div style={{ width: '1px', height: '28px', background: 'rgba(245,200,64,0.15)' }} />
 
-        {/* Sun zones */}
-        <button
-          onClick={onToggleSunZones}
-          style={{
-            ...ghostBtn,
-            color: showSunZones ? GOLD : `${PARCH}66`,
-            border: `1px solid ${showSunZones ? `${GOLD}66` : 'rgba(245,200,64,0.2)'}`,
-            background: showSunZones ? 'rgba(245,200,64,0.1)' : 'transparent',
-          }}
-        >
-          ☀️ {isHe ? 'שמש' : 'Sun'}
-        </button>
+            {/* Sun zones */}
+            <button
+              onClick={onToggleSunZones}
+              title={isHe ? 'אזורי שמש' : 'Sun zones'}
+              style={{
+                ...ghostBtn,
+                color: showSunZones ? GOLD : `${PARCH}66`,
+                border: `1px solid ${showSunZones ? `${GOLD}66` : 'rgba(245,200,64,0.2)'}`,
+                background: showSunZones ? 'rgba(245,200,64,0.1)' : 'transparent',
+              }}
+            >
+              ☀️ {isHe ? 'שמש' : 'Sun'}
+            </button>
 
-        {/* North angle */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
-          <span style={{ fontFamily: ASSIST, fontSize: '12px', color: `${PARCH}55` }}>🧭</span>
-          <input
-            type="number" min={0} max={359} value={northAngle}
-            onChange={e => onNorthAngleChange(Number(e.target.value))}
-            style={{
-              width: '54px',
-              fontFamily: ASSIST,
-              fontSize: '13px',
-              color: PARCH,
-              background: 'rgba(245,200,64,0.06)',
-              border: '1px solid rgba(245,200,64,0.2)',
-              borderRadius: '5px',
-              padding: '4px 6px',
-              outline: 'none',
-              textAlign: 'center',
-            }}
-          />
-          <span style={{ fontFamily: ASSIST, fontSize: '11px', color: `${PARCH}44` }}>°</span>
-        </div>
+            {/* North angle */}
+            <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+              <span style={{ fontFamily: ASSIST, fontSize: '12px', color: `${PARCH}55` }}>🧭</span>
+              <input
+                type="number" min={0} max={359} value={northAngle}
+                onChange={e => onNorthAngleChange(Number(e.target.value))}
+                style={{
+                  width: '54px',
+                  fontFamily: ASSIST,
+                  fontSize: '13px',
+                  color: PARCH,
+                  background: 'rgba(245,200,64,0.06)',
+                  border: '1px solid rgba(245,200,64,0.2)',
+                  borderRadius: '5px',
+                  padding: '4px 6px',
+                  outline: 'none',
+                  textAlign: 'center',
+                }}
+              />
+              <span style={{ fontFamily: ASSIST, fontSize: '11px', color: `${PARCH}44` }}>°</span>
+            </div>
 
-        <div style={{ width: '1px', height: '28px', background: 'rgba(245,200,64,0.15)' }} />
+            <div style={{ width: '1px', height: '28px', background: 'rgba(245,200,64,0.15)' }} />
 
-        {/* Save status */}
-        {isSaving ? (
-          <span style={{ fontFamily: ASSIST, fontSize: '12px', color: `${PARCH}55` }}>
-            {isHe ? 'שומר...' : 'Saving...'}
-          </span>
-        ) : isDirty ? (
-          <button onClick={onSave} style={{ ...ghostBtn, color: GOLD, border: `1px solid ${GOLD}55`, padding: '5px 14px' }}>
-            💾 {isHe ? 'שמור' : 'Save'}
-          </button>
-        ) : (
-          <span style={{ fontFamily: ASSIST, fontSize: '12px', color: `${PARCH}44` }}>
-            {isHe ? 'נשמר ✓' : 'Saved ✓'}
-          </span>
+            {/* Save status */}
+            {isSaving ? (
+              <span style={{ fontFamily: ASSIST, fontSize: '12px', color: `${PARCH}55` }}>
+                {isHe ? 'שומר...' : 'Saving...'}
+              </span>
+            ) : isDirty ? (
+              <button onClick={onSave} style={{ ...ghostBtn, color: GOLD, border: `1px solid ${GOLD}55`, padding: '5px 14px' }}>
+                💾 {isHe ? 'שמור' : 'Save'}
+              </button>
+            ) : (
+              <span style={{ fontFamily: ASSIST, fontSize: '12px', color: `${PARCH}44` }}>
+                {isHe ? 'נשמר ✓' : 'Saved ✓'}
+              </span>
+            )}
+          </>
         )}
 
         {/* Wizard */}
         <button
           onClick={canWizard ? onWizard : undefined}
           disabled={!canWizard}
+          title={isHe ? "מצ'ופצ'ו" : 'Chupchu wizard'}
           style={{
             fontFamily: FRANK,
             fontSize: '13px',
             fontWeight: 700,
-            padding: '6px 14px',
+            padding: '0 12px',
             borderRadius: '6px',
             flexShrink: 0,
             border: 'none',
@@ -309,9 +349,13 @@ export function MapToolbar({
             cursor: canWizard ? 'pointer' : 'not-allowed',
             opacity: canWizard ? 1 : 0.5,
             whiteSpace: 'nowrap',
+            minHeight: '44px',
+            minWidth: '44px',
+            display: 'flex',
+            alignItems: 'center',
           }}
         >
-          {wizardLabel}
+          {isMobile ? '🌕' : wizardLabel}
         </button>
 
       </div>
@@ -322,13 +366,17 @@ export function MapToolbar({
 const ghostBtn: React.CSSProperties = {
   fontFamily: ASSIST,
   fontSize: '13px',
-  padding: '5px 10px',
+  padding: '0 10px',
   borderRadius: '6px',
   border: '1px solid rgba(245,200,64,0.2)',
   color: `${PARCH}88`,
   backgroundColor: 'transparent',
   cursor: 'pointer',
   flexShrink: 0,
-  height: '36px',
+  minHeight: '44px',
+  minWidth: '44px',
   whiteSpace: 'nowrap',
+  display: 'flex',
+  alignItems: 'center',
+  justifyContent: 'center',
 };

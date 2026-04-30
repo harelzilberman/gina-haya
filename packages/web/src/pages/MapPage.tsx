@@ -115,25 +115,23 @@ export function MapPage() {
 
   return (
     <div dir={isHe ? 'rtl' : 'ltr'} style={{ background: '#142B16' }}>
-      {/* Toolbar — fixed, sits below the 64px navbar */}
-      <MapToolbar
-        selectedTool={store.selectedTool}
-        onToolChange={store.setTool}
-        showSunZones={store.showSunZones}
-        onToggleSunZones={store.toggleSunZones}
-        northAngle={store.northAngle}
-        onNorthAngleChange={store.setNorthAngle}
-        isSaving={store.isSaving}
-        isDirty={store.isDirty}
-        onSave={store.saveMap}
-        onUndo={store.undo}
-        onWizard={() => setShowWizard(true)}
-        wizardStatus={store.wizardStatus}
-        hasSavedMap={true}
-      />
-
-      {/* Canvas area — starts at 116px (64 navbar + 52 toolbar), fills rest of viewport */}
-      <div style={{ position: 'fixed', top: '116px', left: 0, right: 0, bottom: 0, display: 'flex', overflow: 'hidden' }}>
+      {/* Canvas area — fills viewport between navbar and bottom nav */}
+      <div style={{ position: 'fixed', top: 'var(--navbar-height)', left: 0, right: 0, height: 'calc(100dvh - var(--navbar-height) - var(--bottomnav-height))', display: 'flex', overflow: 'hidden' }}>
+        <MapToolbar
+          selectedTool={store.selectedTool}
+          onToolChange={store.setTool}
+          showSunZones={store.showSunZones}
+          onToggleSunZones={store.toggleSunZones}
+          northAngle={store.northAngle}
+          onNorthAngleChange={store.setNorthAngle}
+          isSaving={store.isSaving}
+          isDirty={store.isDirty}
+          onSave={store.saveMap}
+          onUndo={store.undo}
+          onWizard={() => setShowWizard(true)}
+          wizardStatus={store.wizardStatus}
+          hasSavedMap={true}
+        />
         <div style={{ flex: 1, position: 'relative', overflow: 'hidden' }}>
           <SaveIndicator
             isSaving={store.isSaving}

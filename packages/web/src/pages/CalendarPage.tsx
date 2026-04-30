@@ -204,8 +204,8 @@ export function CalendarPage() {
                 disabled={!quickAsk.trim()}
                 style={{
                   flexShrink:      0,
-                  width:           '34px',
-                  height:          '34px',
+                  width:           '44px',
+                  height:          '44px',
                   borderRadius:    '8px',
                   border:          'none',
                   backgroundColor: GOLD,
