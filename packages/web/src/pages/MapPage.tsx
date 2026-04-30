@@ -1,6 +1,71 @@
 import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useMapStore } from '../stores/mapStore';
+
+const SPIN_CSS = `@keyframes mapSpin { to { transform: rotate(360deg); } }`;
+
+function SaveIndicator({ isSaving, lastSaved, saveError, onRetry }: {
+  isSaving: boolean;
+  lastSaved: Date | null;
+  saveError: string | null;
+  onRetry: () => void;
+}) {
+  const [showSaved, setShowSaved] = useState(false);
+
+  useEffect(() => {
+    if (!lastSaved) return;
+    setShowSaved(true);
+    const t = setTimeout(() => setShowSaved(false), 2000);
+    return () => clearTimeout(t);
+  }, [lastSaved]);
+
+  if (!isSaving && !showSaved && !saveError) return null;
+
+  const ASST = '"Assistant","Heebo",sans-serif';
+
+  return (
+    <>
+      <style>{SPIN_CSS}</style>
+      <div style={{
+        position: 'absolute', top: '12px', left: '12px',
+        display: 'flex', alignItems: 'center', gap: '6px',
+        backgroundColor: 'rgba(20,43,22,0.92)',
+        border: `1px solid ${saveError ? 'rgba(217,83,79,0.4)' : 'rgba(245,200,64,0.2)'}`,
+        borderRadius: '6px', padding: '5px 10px', zIndex: 100,
+        boxShadow: '0 2px 8px rgba(0,0,0,0.3)',
+      }}>
+        {isSaving && (
+          <>
+            <span style={{
+              width: '11px', height: '11px', border: '2px solid rgba(237,224,196,0.2)',
+              borderTopColor: 'rgba(237,224,196,0.6)', borderRadius: '50%',
+              display: 'inline-block', animation: 'mapSpin 0.8s linear infinite', flexShrink: 0,
+            }} />
+            <span style={{ fontFamily: ASST, fontSize: '12px', color: 'rgba(237,224,196,0.55)' }}>שומר...</span>
+          </>
+        )}
+        {!isSaving && showSaved && !saveError && (
+          <span style={{ fontFamily: ASST, fontSize: '12px', color: '#7DC084' }}>נשמר ✓</span>
+        )}
+        {saveError && (
+          <>
+            <span style={{ fontFamily: ASST, fontSize: '12px', color: '#d9534f' }}>שגיאה בשמירה</span>
+            <button
+              onClick={onRetry}
+              style={{
+                fontFamily: ASST, fontSize: '11px', color: '#F5C840',
+                background: 'none', border: '1px solid rgba(245,200,64,0.35)',
+                borderRadius: '4px', padding: '2px 7px', cursor: 'pointer', marginRight: '2px',
+              }}
+            >
+              נסה שנית
+            </button>
+          </>
+        )}
+      </div>
+    </>
+  );
+}
 import { MapToolbar } from '../components/map/MapToolbar';
 import { GardenCanvas } from '../components/map/GardenCanvas';
 import { PlantPicker } from '../components/map/PlantPicker';
@@ -70,6 +135,12 @@ export function MapPage() {
       {/* Canvas area — starts at 116px (64 navbar + 52 toolbar), fills rest of viewport */}
       <div style={{ position: 'fixed', top: '116px', left: 0, right: 0, bottom: 0, display: 'flex', overflow: 'hidden' }}>
         <div style={{ flex: 1, position: 'relative', overflow: 'hidden' }}>
+          <SaveIndicator
+            isSaving={store.isSaving}
+            lastSaved={store.lastSaved}
+            saveError={store.saveError}
+            onRetry={store.saveMap}
+          />
           <GardenCanvas
             mapData={store.mapData}
             northAngle={store.northAngle}

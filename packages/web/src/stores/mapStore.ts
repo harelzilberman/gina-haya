@@ -84,6 +84,8 @@ interface MapState {
   northAngle: number;
   isLoading: boolean;
   isSaving: boolean;
+  lastSaved: Date | null;
+  saveError: string | null;
   isDirty: boolean;
   selectedTool: MapTool;
   activePlant: ActivePlant | null;
@@ -144,6 +146,8 @@ export const useMapStore = create<MapState>((set, get) => ({
   northAngle: 0,
   isLoading: false,
   isSaving: false,
+  lastSaved: null,
+  saveError: null,
   isDirty: false,
   selectedTool: 'select',
   activePlant: null,
@@ -191,9 +195,9 @@ export const useMapStore = create<MapState>((set, get) => ({
         saved = await api.post<any>('/api/map', { mapData, northAngle }, token);
         set({ mapId: saved.id });
       }
-      set({ isSaving: false, isDirty: false });
+      set({ isSaving: false, isDirty: false, lastSaved: new Date(), saveError: null });
     } catch (err: any) {
-      set({ isSaving: false, error: err.message });
+      set({ isSaving: false, saveError: err.message });
     }
   },
 

@@ -24,10 +24,10 @@ export interface PlantAnalysis {
   plantIdentified: string;
   plantIdentifiedEn: string;
   confidence: 'high' | 'medium' | 'low';
-  growthStage: 'seed' | 'seedling' | 'vegetative' | 'flowering' | 'fruiting' | 'harvest' | 'dormant';
+  growthStage: 'seedling' | 'vegetative' | 'flowering' | 'fruiting' | 'dormant';
   growthStageHe: string;
   growthStageEn: string;
-  health: 'excellent' | 'good' | 'fair' | 'poor';
+  health: 'excellent' | 'good' | 'fair' | 'poor' | 'critical';
   healthHe: string;
   healthEn: string;
   issues: Array<{
@@ -204,7 +204,13 @@ export async function analyzePlantImage(
 
   const userMessage = `נתח את הצמח בתמונה${hint}.
 
-החזר JSON תקין בלבד בפורמט הבא, ללא שום טקסט נוסף:
+החזר JSON תקין בלבד בפורמט הבא, ללא שום טקסט נוסף.
+// Single source of truth for all enum constraints:
+// confidence: high | medium | low
+// growthStage: seedling | vegetative | flowering | fruiting | dormant
+// health: excellent | good | fair | poor | critical
+// severity: low | medium | high
+// priority: high | medium | low
 
 {
   "analysis": {
@@ -308,15 +314,14 @@ due_in_days: מתי לבצע את המשימה (1-14 ימים). priority: high=�
   parsed.analysis.issues = parsed.analysis.issues ?? [];
   parsed.analysis.immediateActions = parsed.analysis.immediateActions ?? [];
 
-  // Clamp growthStage to the exact DB enum values — never let an unexpected value reach the constraint
-  const VALID_GROWTH_STAGES = new Set(['seed', 'seedling', 'vegetative', 'flowering', 'fruiting', 'harvest', 'dormant']);
+  // Single source of truth for all enum constraints
+  const VALID_GROWTH_STAGES = new Set(['seedling', 'vegetative', 'flowering', 'fruiting', 'dormant']);
   if (!VALID_GROWTH_STAGES.has(parsed.analysis.growthStage)) {
     console.warn(`[plantVision] Unexpected growthStage "${parsed.analysis.growthStage}" — falling back to "vegetative"`);
     parsed.analysis.growthStage = 'vegetative';
   }
 
-  // Clamp health to the exact DB enum values
-  const VALID_HEALTH = new Set(['excellent', 'good', 'fair', 'poor']);
+  const VALID_HEALTH = new Set(['excellent', 'good', 'fair', 'poor', 'critical']);
   if (!VALID_HEALTH.has(parsed.analysis.health)) {
     console.warn(`[plantVision] Unexpected health "${parsed.analysis.health}" — falling back to "good"`);
     parsed.analysis.health = 'good';
