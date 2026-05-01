@@ -206,18 +206,13 @@ export function MoonPhaseDisplay({ phaseAngle, phasePct, phaseHe, moonSignHe, as
         height: '165px',
         flexShrink: 0,
         position: 'relative',
+        backgroundColor: 'red',
         boxShadow: isFullMoon
           ? '0 0 0 2px rgba(245,200,64,0.40), 0 0 32px rgba(245,200,64,0.35)'
           : '0 0 0 2px rgba(245,200,64,0.40), 0 0 16px rgba(245,200,64,0.18)',
       }}>
-        <img
-          src="/moon.jpg"
-          alt="moon"
-          style={{
-            position: 'absolute', top: 0, left: 0,
-            width: '100%', height: '100%', objectFit: 'cover',
-            zIndex: 1,
-          }}
+        <img src="/moon.jpg" width="165" height="165"
+          style={{ borderRadius: '50%', display: 'block' }}
         />
         {/* DEBUG: canvas hidden to test img rendering
         <canvas
