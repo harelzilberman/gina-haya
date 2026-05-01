@@ -46,13 +46,16 @@ moonImg.onerror = () => {
 // MOON PHASE HELPERS
 // ─────────────────────────────────────────────
 function drawMoonSurface(ctx: CanvasRenderingContext2D, size: number) {
+  const cx = size / 2, cy = size / 2, r = size / 2;
   if (moonImgFailed) {
-    const grad = ctx.createRadialGradient(size * 0.35, size * 0.35, 0, size / 2, size / 2, size / 2);
+    const grad = ctx.createRadialGradient(size * 0.35, size * 0.35, 0, cx, cy, r);
     grad.addColorStop(0,   '#F5E6C8');
     grad.addColorStop(0.6, '#C4A87A');
     grad.addColorStop(1,   '#1B2A1C');
+    ctx.beginPath();
+    ctx.arc(cx, cy, r, 0, Math.PI * 2);
     ctx.fillStyle = grad;
-    ctx.fillRect(0, 0, size, size);
+    ctx.fill();
   } else {
     ctx.drawImage(moonImg, 0, 0, size, size);
   }
@@ -238,6 +241,8 @@ export function MoonPhaseDisplay({ phaseAngle, phasePct, phaseHe, moonSignHe, as
       gap: '10px', padding: '20px 0 12px',
     }}>
       <div style={{
+        width: '165px',
+        height: '165px',
         borderRadius: '50%',
         overflow: 'hidden',
         flexShrink: 0,
@@ -249,7 +254,7 @@ export function MoonPhaseDisplay({ phaseAngle, phasePct, phaseHe, moonSignHe, as
           ref={canvasRef}
           width={165}
           height={165}
-          style={{ display: 'block' }}
+          style={{ display: 'block', width: '165px', height: '165px' }}
         />
       </div>
 
