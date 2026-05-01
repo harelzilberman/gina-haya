@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
 import ReactMarkdown from 'react-markdown';
 import i18n from '../i18n';
-import { ARTICLES } from '../data/articles';
+import { ARTICLES } from '../data/articlesIndex';
 
 // ── Local type ─────────────────────────────────────────────────────────────
 interface Article {

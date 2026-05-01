@@ -4329,8 +4329,8 @@ function toggleFaq(el){
   <div class="related">
     <div class="related-title">מאמרים קשורים</div>
     <div class="related-links">
-      <a class="related-link" href="/articles/deep-vs-shallow-watering">השקיה עמוקה מול שטחית</a>
-      <a class="related-link" href="/articles/drip-irrigation">השקיה בטפטוף</a>
+      <span class="related-link">השקיה עמוקה מול שטחית</span>
+      <span class="related-link">השקיה בטפטוף</span>
       <a class="related-link" href="/articles/biodynamic-calendar">הלוח הביודינמי</a>
     </div>
   </div>
@@ -4573,8 +4573,8 @@ function toggleFaq(el){
     <div class="related-title">מאמרים קשורים</div>
     <div class="related-links">
       <a class="related-link" href="/articles/watering-pots">השקיית עציצים</a>
-      <a class="related-link" href="/articles/deep-watering">השקיה עמוקה מול שטחית</a>
-      <a class="related-link" href="/articles/weed-control">הדברת עשבים טבעית</a>
+      <span class="related-link">השקיה עמוקה מול שטחית</span>
+      <span class="related-link">הדברת עשבים טבעית</span>
     </div>
   </div>
 </div>

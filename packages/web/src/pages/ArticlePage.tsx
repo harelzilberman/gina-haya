@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import ReactMarkdown from 'react-markdown';
 import { useTranslation } from 'react-i18next';
-import { ARTICLES } from '../data/articles';
+import { ARTICLES } from '../data/articlesIndex';
 
 // ── Tokens ────────────────────────────────────────────────────────────────────
 const PAGE_BG  = '#050c05';
@@ -372,6 +372,7 @@ export function ArticlePage() {
   const [title,       setTitle]       = useState('');
   const [description, setDescription] = useState('');
   const [content,     setContent]     = useState('');
+  const [htmlContent, setHtmlContent] = useState<string | null>(null);
   const [loading,     setLoading]     = useState(true);
   const [error,       setError]       = useState(false);
   const [progress,    setProgress]    = useState(0);
@@ -399,33 +400,36 @@ export function ArticlePage() {
   useEffect(() => {
     if (!slug) { setError(true); setLoading(false); return; }
 
-    // If article has embedded HTML, skip markdown fetch
-    if (entry?.htmlContent) {
-      setLoading(false);
-      return;
-    }
-
     setLoading(true); setError(false); setHeroError(false); setProgress(0);
-    setContent(''); setTitle(''); setDescription('');
+    setContent(''); setTitle(''); setDescription(''); setHtmlContent(null);
 
-    const filename = lang === 'en'
-      ? (entry?.filenameEn ?? `${slug}.md`)
-      : (entry?.filenameHe ?? `${slug}.md`);
+    import('../data/articlesContent').then(({ getArticleContent }) => {
+      const html = getArticleContent(slug);
+      if (html) {
+        setHtmlContent(html);
+        setLoading(false);
+        return;
+      }
 
-    fetch(`/articles/${lang}/${filename}`)
-      .then(r => { if (!r.ok) throw new Error(); return r.text(); })
-      .then(raw => {
-        const p = parseMarkdown(raw, lang);
-        setTitle(p.title || (lang === 'he' ? entry?.titleHe : entry?.titleEn) || slug!);
-        setDescription(
-          p.description ||
-          (lang === 'he' ? entry?.metaDescriptionHe : entry?.metaDescriptionEn) ||
-          ''
-        );
-        setContent(p.content);
-      })
-      .catch(() => setError(true))
-      .finally(() => setLoading(false));
+      const filename = lang === 'en'
+        ? (entry?.filenameEn ?? `${slug}.md`)
+        : (entry?.filenameHe ?? `${slug}.md`);
+
+      fetch(`/articles/${lang}/${filename}`)
+        .then(r => { if (!r.ok) throw new Error(); return r.text(); })
+        .then(raw => {
+          const p = parseMarkdown(raw, lang);
+          setTitle(p.title || (lang === 'he' ? entry?.titleHe : entry?.titleEn) || slug!);
+          setDescription(
+            p.description ||
+            (lang === 'he' ? entry?.metaDescriptionHe : entry?.metaDescriptionEn) ||
+            ''
+          );
+          setContent(p.content);
+        })
+        .catch(() => setError(true))
+        .finally(() => setLoading(false));
+    }).catch(() => setError(true));
   }, [slug, lang]);
 
   const handleScroll = useCallback(() => {
@@ -520,9 +524,9 @@ export function ArticlePage() {
       )}
 
       {/* ── Article ───────────────────────────────────────────────────────── */}
-      {!loading && !error && entry?.htmlContent && (
+      {!loading && !error && htmlContent && (
         <iframe
-          srcDoc={entry.htmlContent}
+          srcDoc={htmlContent}
           style={{ width: '100%', border: 'none', minHeight: '100vh' }}
           onLoad={(e) => {
             const iframe = e.target as HTMLIFrameElement;
@@ -530,11 +534,11 @@ export function ArticlePage() {
               iframe.style.height = iframe.contentWindow.document.body.scrollHeight + 'px';
             }
           }}
-          title={entry.titleHe}
+          title={entry?.titleHe ?? ''}
         />
       )}
 
-      {!loading && !error && !entry?.htmlContent && (
+      {!loading && !error && !htmlContent && (
         <>
           {/* Hero image */}
           {showHero ? (

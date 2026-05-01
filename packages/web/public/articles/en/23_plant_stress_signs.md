@@ -1,165 +1,155 @@
-# 23 plant stress signs
+# Plant Stress Signs — What Your Garden Is Trying to Tell You
 
-<!-- TODO: translate from 23_סימני_סטרס_בצמחים.md -->
+SEO Title: Plant Stress Signs — A Guide to Identification and Treatment
+Meta Description: Learn to identify plant stress signs — yellowing, wilting, spots and more — and what they say about your biodynamic garden.
 
-סימני סטרס בצמחים — מה הגינה מנסה להגיד לך
+## 1. Introduction
 
-כותרת SEO: סימני סטרס בצמחים — מדריך לזיהוי וטיפול
-תיאור מטא: למדו לזהות סימני סטרס בצמחים — צהבה, כמישה, כתמים ועוד — ומה הם אומרים על מצב הגינה שלכם בגישה ביודינמית.
+A plant doesn't speak.
 
-## 1. פתיחה
+But it communicates constantly.
 
-צמח לא מדבר.
+A leaf that changes color, a stem that bends, brown edges, flowers that drop before their time — each of these is a message. Not a random malfunction. Not bad luck. A message.
 
-אבל הוא כל הזמן מתקשר.
+Someone who learns to read these signs transforms from a reactive gardener into a listening gardener. And in a biodynamic garden, listening is one of the most important skills there is.
 
-עלה שמשנה צבע, גבעול שמתכופף, קצוות חומים, פרחים שנושרים לפני הזמן — כל אחד מאלה הוא מסר. לא תקלה אקראית. לא רע מזל. מסר.
+Chupchu, the biodynamic gardener of Gina Haya, says: "Before you ask what to give a plant — ask what the plant is trying to tell you."
 
-מי שלומד לקרוא את הסימנים האלה הופך מגנן תגובתי לגנן מקשיב. ובגינה ביודינמית, הקשבה היא אחת המיומנויות החשובות ביותר שיש.
+## 2. Visual Guide
 
-מצ'ופצ'ו, הגנן הביודינמי של גינה חיה, אומר: "לפני שאתה שואל מה לתת לצמח — שאל מה הצמח מנסה להגיד לך."
+### Visual 1
+- **Type:** Opening image
+- **Description:** Yellow leaves and healthy leaves on the same plant, natural light, garden background
+- **Purpose:** To illustrate the clear visual difference between a healthy plant and a stressed plant
 
-## 2. מדריך חזותי
+### Visual 2
+- **Type:** Visual identification grid
+- **Description:** 6 photos in a grid — yellowing, wilting, brown tips, early leaf drop, curling leaves, stunted growth
+- **Purpose:** To enable quick identification based on what you see
 
-### ויזואל 1
-- **סוג:** תמונת פתיחה
-- **תיאור:** עלים צהובים ועלים בריאים על אותו צמח, אור טבעי, רקע גינה
-- **מטרה:** להמחיש את ההבדל הויזואלי הברור בין צמח בריא לצמח בסטרס
+### Visual 3
+- **Type:** Macro photograph
+- **Description:** Close-up of a leaf with a yellow spot surrounded by green — the border between healthy and damaged tissue
+- **Purpose:** To show what the sign looks like up close
 
-### ויזואל 2
-- **סוג:** טבלת זיהוי ויזואלית
-- **תיאור:** 6 תמונות בגריד — צהבה, כמישה, כתמים חומים, נשירה מוקדמת, עלים מסולסלים, גדילה עצורה
-- **מטרה:** לאפשר זיהוי מהיר לפי מה שרואים
+### Visual 4
+- **Type:** Before/after
+- **Description:** A stressed plant next to the same plant two weeks after proper treatment
+- **Purpose:** To connect identifying the sign to the outcome of correct intervention
 
-### ויזואל 3
-- **סוג:** צילום מקרו
-- **תיאור:** תקריב על עלה עם כתם צהוב מוקף ירוק — הגבול בין הבריא לפגוע
-- **מטרה:** להראות כיצד נראה הסימן מקרוב
+## 3. Clear Explanation
 
-### ויזואל 4
-- **סוג:** לפני/אחרי
-- **תיאור:** צמח בסטרס לצד אותו צמח שבועיים לאחר טיפול נכון
-- **מטרה:** לחבר בין זיהוי הסימן לתוצאה של התערבות נכונה
+Plant stress is a state in which the plant expends more energy on defense and survival than on growth and productivity.
 
-## 3. הסבר ברור
+The causes can be many — lack of water, excess water, mineral deficiency, extreme heat, sudden cold, insect damage, fungal disease, root congestion, compacted soil, or simply — a sudden change in conditions.
 
-סטרס בצמח הוא מצב שבו הצמח מוציא יותר אנרגיה על הגנה והישרדות מאשר על גדילה ופוריות.
+The plant's body responds to each of these in different ways, which is why each sign points in a different direction. The most common mistake is trying to fix a symptom instead of understanding the cause — adding fertilizer when the problem is overwatering, or watering more when the problem is poor drainage.
 
-הגורמים יכולים להיות רבים — חוסר מים, עודף מים, מחסור במינרלים, חום קיצוני, קור פתאומי, פגיעת חרקים, מחלה פטרייתית, עומס שורשים, קרקע מדוחסת, או פשוט — שינוי פתאומי בתנאים.
+In the biodynamic approach, every sign is an invitation to observation — not to panic and not to a sequence of actions. First you look, then you understand, and only then you act.
 
-הגוף של הצמח מגיב לכל אלה בדרכים שונות, ולכן כל סימן מצביע על כיוון שונה. הטעות הנפוצה ביותר היא לנסות לתקן תסמין במקום להבין את הסיבה — להוסיף דשן כשהבעיה היא יתר-השקיה, או להשקות יותר כשהבעיה היא ניקוז לקוי.
+## 4. Step-by-Step Guide — Reading the Signs
 
-בגישה ביודינמית, כל סימן הוא הזמנה להתבוננות — לא לפאניקה ולא לרצף פעולות. תחילה מסתכלים, אחר כך מבינים, ורק אז פועלים.
+### Step 1 — Stop and Look Before You Do Anything
+- **Action:** Sit beside the plant and examine it quietly for a minute
+- **What to look for:** Where is the sign — old leaves, new leaves, the stem, visible roots, the flowers
+- **Important:** The location of the sign tells you a lot — old leaves at the bottom differ from new leaves at the tip
+- **Chupchu's tip:** "A plant that cries in silence — only someone who stops and looks can hear it"
 
-## 4. מדריך שלב-אחר-שלב — קריאת הסימנים
+### Step 2 — Check the Soil
+- **Action:** Insert your finger 3–5 cm into the soil
+- **What to look for:** Moist, dry, or too wet? Neutral smell or a rotting odor?
+- **Also:** Check the surface — cracked? Hard? Covered in green algae?
+- **Why:** 70% of stress signs originate in the soil — not in the plant itself
 
-### שלב 1 — עצרו ותסתכלו לפני שתעשו משהו
-- **פעולה:** שבו ליד הצמח ובחנו אותו בשקט למשך דקה
-- **מה לחפש:** איפה הסימן — עלים ישנים, עלים חדשים, הגזע, השורשים הנראים לעין, הפרחים
-- **חשוב:** מיקום הסימן מספר הרבה — עלים ישנים בתחתית שונה מעלים חדשים בקצה
-- **טיפ של מצ'ופצ'ו:** "צמח שצועק בשקט — רק מי שנעמד ומסתכל שומע אותו"
+### Step 3 — Identify the Specific Sign
+- **Uniform yellowing in old leaves** → Nitrogen deficiency, overwatering, or damaged roots
+- **Yellowing between the veins in new leaves** → Iron deficiency (chlorosis) — usually due to high pH
+- **Brown leaf tips and edges** → Potassium deficiency, high salt, or wind damage
+- **Wilting at midday** → Thirst, extreme heat, or roots not functioning properly
+- **Wilting when soil is moist** → Root rot — a dangerous sign
+- **Leaves curling inward** → Protection from heat, water deficiency, sometimes a virus
+- **Leaves curling outward** → Pest issue, usually aphids or mites
+- **Silvery-white spots** → Powdery mildew (fungus), spider mites
+- **Transparent-black spots** → Sucking insect damage — check beneath the leaf
 
-### שלב 2 — בדקו את האדמה
-- **פעולה:** הכניסו אצבע 3–5 ס"מ לתוך האדמה
-- **מה לחפש:** לחה, יבשה, או רטובה מדי? ריח נייטרלי או ריח עיפוש?
-- **גם:** בדקו את פני השטח — סדוקה? קשה? מכוסה אצות ירוקות?
-- **למה:** 70% מסימני הסטרס מקורם בקרקע — לא בצמח עצמו
+### Step 4 — Check the History
+- **Action:** Think about what has changed recently
+- **Key questions:** Was there a heat wave? Did you change the watering schedule? Did you move a pot? Did heavy rain fall?
+- **Why it matters:** Stress is usually not sudden — it has a history of days to weeks
 
-### שלב 3 — זהו את הסימן הספציפי
-- **צהבה אחידה בעלים ישנים** → מחסור בחנקן, השקיה יתרה, או שורשים פגועים
-- **צהבה בין הגידים בעלים חדשים** → מחסור בברזל (כלורוזיס) — לרוב בגלל pH גבוה
-- **קצוות ועצות חומות** → מחסור באשלגן, מלח גבוה, או נזק מרוח
-- **כמישה בשעות הצהריים** → צמא, חום קיצוני, או שורשים שאינם פועלים תקין
-- **כמישה כשהאדמה לחה** → ריקבון שורשים — סימן מסוכן
-- **עלים מסולסלים פנימה** → הגנה מחום, מחסור במים, לפעמים וירוס
-- **עלים מסולסלים החוצה** → בעיית הדברה, לרוב כנימות או קרדית
-- **נקודות כסופות-לבנות** → קמח לבן (פטרייה), קרדית עכביש
-- **נקודות שקופות-שחורות** → פגיעת חרקים מוצצים — בדקו מתחת לעלה
+### Step 5 — Act One Step at a Time
+- **Action:** Fix one factor and wait 5–7 days before adding any more changes
+- **Why:** Multiple simultaneous changes make it hard to understand what helped
+- **Biodynamic principle:** "Less is more — a plant needs stability, not experiments"
 
-### שלב 4 — בדקו את ההיסטוריה
-- **פעולה:** חשבו על מה השתנה לאחרונה
-- **שאלות מפתח:** האם הייתה גל חום? האם שיניתם שגרת ההשקיה? האם הזזתם עציץ? האם ירד גשם כבד?
-- **למה חשוב:** לרוב הסטרס אינו פתאומי — יש לו היסטוריה של ימים עד שבועות
+## 5. Common Mistakes
 
-### שלב 5 — פעלו בצעד אחד בכל פעם
-- **פעולה:** תקנו גורם אחד ותמתינו 5–7 ימים לפני שמוסיפים עוד שינוי
-- **למה:** ריבוי שינויים בו-זמנית מקשה על הבנה מה עזר
-- **עיקרון ביודינמי:** "פחות זה יותר — צמח צריך יציבות, לא ניסויים"
+### Mistake 1 — Fertilizing When the Plant Is Stressed
+- **What people do:** They see yellow leaves and add fertilizer
+- **Why it fails:** Fertilizer during acute stress makes things worse — the roots cannot absorb it
+- **The right way:** First stabilize the cause (water, drainage, shade), and only then think about nutrition
 
-## 5. טעויות נפוצות
+### Mistake 2 — Watering When You See Wilting
+- **What people do:** Wilting plant = water immediately
+- **Why it fails:** Wilting can result from root rot — additional watering will kill it
+- **The right way:** First check the soil — if it's moist, do not water
 
-### טעות 1 — לדשן כשהצמח בסטרס
-- **מה עושים:** רואים עלים צהובים ומוסיפים דשן
-- **למה נכשל:** דשן בזמן סטרס חריף מחמיר את המצב — השורשים לא יכולים לקלוט
-- **הדרך הנכונה:** תחילה לייצב את הסיבה (מים, ניקוז, צל), ורק אחר כך לחשוב על תזונה
+### Mistake 3 — Cutting Damaged Leaves Immediately
+- **What people do:** Yellow leaf or spots — cut it off
+- **Why it fails:** You lose the sign before you understood what it was saying
+- **The right way:** Read the sign first. After identification — then you can clean up
 
-### טעות 2 — להשקות כשרואים כמישה
-- **מה עושים:** צמח כמוש = מיד משקים
-- **למה נכשל:** כמישה יכולה לנבוע מריקבון שורשים — השקיה נוספת תהרוג אותו
-- **הדרך הנכונה:** קודם לבדוק את האדמה — אם לחה, אל תשקו
+### Mistake 4 — Focusing on the Symptom Instead of the Cause
+- **What people do:** Treat the leaves without treating the soil
+- **Why it fails:** The sign will keep returning as long as the cause exists
+- **The right way:** A leaf is like a blood test result — the problem is elsewhere
 
-### טעות 3 — לחתוך עלים פגועים מיד
-- **מה עושים:** עלה צהוב או כתמים — חותכים
-- **למה נכשל:** מאבדים את הסימן לפני שהבנתם מה הוא אומר
-- **הדרך הנכונה:** קראו את הסימן קודם. לאחר הזיהוי — אפשר לנקות
+### Mistake 5 — Waiting Too Long
+- **What people do:** "Maybe it will pass on its own"
+- **Why it fails:** Untreated stress weakens the plant and opens it to further damage
+- **The right way:** Early identification + a small first step — beats waiting
 
-### טעות 4 — להתמקד בתסמין ולא בסיבה
-- **מה עושים:** מטפלים בעלים בלי לטפל בקרקע
-- **למה נכשל:** הסימן יחזור שוב ושוב כל עוד הסיבה קיימת
-- **הדרך הנכונה:** עלה הוא כמו תוצאה של בדיקת דם — הבעיה היא במקום אחר
+## 6. Biodynamic Insight
 
-### טעות 5 — לחכות יותר מדי
-- **מה עושים:** "אולי זה יעבור מעצמו"
-- **למה נכשל:** סטרס לא מטופל מחלש את הצמח ומפתח אותו לפגיעות נוספות
-- **הדרך הנכונה:** זיהוי מוקדם + צעד קטן ראשון — עדיף מהמתנה
+In biodynamic agriculture, the plant is seen as a whole being — not just a body that grows, but an entity that responds to its environment, to soil conditions, to the energy of a place, and to the time of year.
 
-## 6. תובנה ביודינמית
+Plant stress, from a biodynamic perspective, is often an expression of a broader imbalance — in the soil, in the cycles, in the relationship between neighboring plants, or in the timing of gardening activities.
 
-בחקלאות הביודינמית, הצמח נתפס כיצור שלם — לא רק גוף שגדל, אלא ישות שמגיבה לסביבתה, לתנאי הקרקע, לאנרגיה של המקום ולזמן בשנה.
+Chupchu reminds us: "Root days, leaf days, fruit days and flower days in the biodynamic calendar are not only for planting — they are also for diagnosis. On a leaf day, pay attention to the leaves. On a root day — to the soil. The plant speaks differently on each day."
 
-סטרס בצמח, מבחינה ביודינמית, הוא לרוב ביטוי של חוסר איזון רחב יותר — בקרקע, במחזוריות, בקשר בין צמחים שכנים, או בתזמון של פעולות הגינון.
+When a plant is stressed — check what day it is on the calendar. Sometimes the sign you see today began a few days earlier, on a day when the soil or the air were more vulnerable.
 
-מצ'ופצ'ו מזכיר: "ימי שורש, עלה, פרי ופרח בלוח הביודינמי אינם רק לשתילה — הם גם לאבחון. ביום עלה, שימו לב לעלים. ביום שורש — לקרקע. הצמח מדבר אחרת בכל יום."
+## 7. Outcome / Change
 
-כשצמח בסטרס — בדקו מה היום בלוח. לפעמים הסימן שאתם רואים היום החל כמה ימים קודם, ביום שבו הקרקע או האוויר היו פגיעים יותר.
+A gardener who learns to read stress signs becomes an entirely different gardener.
 
-## 7. תוצאה / שינוי
+They don't run around with spray bottles. They don't add and subtract in a panic. They look, they read, and they understand.
 
-גנן שלומד לקרוא סימני סטרס הופך לגנן אחר לגמרי.
+Their garden calms down — because the gardener has also calmed down.
 
-הוא לא מתרוצץ עם בקבוקי ריסוס. הוא לא מוסיף ומגרע בפאניקה. הוא מסתכל, קורא, ומבין.
+Over time, the plants begin to look different: steady growth, leaves that broaden, flowers that hold. Not because you did more — because you did the right thing at the right time.
 
-הגינה שלו נרגעת — כי גם הגינן נרגע.
+## 8. Quick Summary
 
-עם הזמן, הצמחים מתחילים להיראות שונה: גדילה יציבה, עלים שמרחיבים, פרחים שמחזיקים. לא כי עשיתם יותר — כי עשיתם את הדבר הנכון בזמן הנכון.
+- **What to do:** Look before you act — identify the sign and its location
+- **What to check:** The soil first, always
+- **Principle:** A sign = a message, not a malfunction — read it before you fix it
+- **Chupchu's tip:** "A balanced plant doesn't shout — it whispers. Only those who slow down can hear."
 
-## 8. סיכום מהיר
+## SUGGESTED VISUAL ASSETS
 
-- **מה לעשות:** להסתכל לפני לפעול — לזהות את הסימן ואת מקומו
-- **מה לבדוק:** האדמה קודם, תמיד
-- **עיקרון:** סימן = מסר, לא תקלה — קראו אותו לפני שאתם מתקנים
-- **טיפ של מצ'ופצ'ו:** "צמח מאוזן לא צועק — הוא לוחש. רק מי שמאט שומע."
+1. **Type:** Opening image
+   **Search description:** plant stress symptoms yellowing leaves garden close up natural light
+   **Position:** Introduction
 
-## הצעות לנכסים חזותיים
+2. **Type:** Identification grid
+   **Search description:** plant stress symptoms visual guide yellowing wilting brown tips curling leaves
+   **Position:** Step-by-step guide step 3
 
-1. **סוג:** תמונת פתיחה
-   **תיאור לחיפוש:** plant stress symptoms yellowing leaves garden close up natural light
-   **מיקום:** פתיחה
+3. **Type:** Macro photograph
+   **Search description:** close up yellowing leaf chlorosis macro garden photography
+   **Position:** Clear explanation
 
-2. **סוג:** גריד זיהוי
-   **תיאור לחיפוש:** plant stress symptoms visual guide yellowing wilting brown tips curling leaves
-   **מיקום:** מדריך שלב-אחר-שלב שלב 3
-
-3. **סוג:** צילום מקרו
-   **תיאור לחיפוש:** close up yellowing leaf chlorosis macro garden photography
-   **מיקום:** הסבר ברור
-
-4. **סוג:** לפני/אחרי
-   **תיאור לחיפוש:** stressed plant recovery before after treatment healthy garden
-   **מיקום:** תוצאה / שינוי
-
-## פרומפטים ל-ComfyUI
-
-- cinematic close-up of a garden plant showing stress signs — yellow leaves next to healthy green leaves, soft natural morning light, shallow depth of field, realistic educational photography
-- split image: stressed wilting plant with yellowing leaves on left, same plant recovered and thriving on right, warm garden light, realistic before-and-after
-- overhead view of vegetable garden bed with one plant showing stress among healthy neighbours, morning light, biodynamic garden aesthetic, realistic
+4. **Type:** Before/after
+   **Search description:** stressed plant recovery before after treatment healthy garden
+   **Position:** Outcome / Change

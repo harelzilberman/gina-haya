@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { ARTICLES, type ArticleEntry } from '../data/articles';
+import { ARTICLES, type ArticleEntry } from '../data/articlesIndex';
 
 const API_BASE = (import.meta.env.VITE_API_URL as string | undefined)?.replace(/\/$/, '')
   || 'https://powerful-embrace-production-95ea.up.railway.app';

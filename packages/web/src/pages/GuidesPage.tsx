@@ -31,35 +31,35 @@ const CATEGORIES = [
 
 const VIDEOS: Video[] = [
   // Fertilizer
-  { id: 'f1', titleHe: 'תה קומפוסט — הכנה ושימון', descHe: 'איך להכין תה קומפוסט ביתי ולהשתמש בו כדשן נוזלי לגינה', category: 'fertilizer', format: 'both', duration: '3:20', youtubeId: 'dQw4w9WgXcQ' },
+  { id: 'f1', titleHe: 'תה קומפוסט — הכנה ושימון', descHe: 'איך להכין תה קומפוסט ביתי ולהשתמש בו כדשן נוזלי לגינה', category: 'fertilizer', format: 'both', duration: '3:20', comingSoon: true },
   { id: 'f2', titleHe: 'ריסוס אצות ים', descHe: 'מתכון פשוט לנוזל ריסוס מאצות ים לחיזוק הצמחים', category: 'fertilizer', format: 'reel', duration: '1:00', comingSoon: true },
   { id: 'f3', titleHe: 'דשן ירוק — כיסוי אדמה', descHe: 'כיצד לגדל ולשלב דשן ירוק בגינה הביודינמית', category: 'fertilizer', format: 'yt', duration: '8:15', comingSoon: true },
   { id: 'f4', titleHe: 'שתן מדולל כדשן', descHe: 'השימון בשתן מדולל כדשן טבעי עשיר באזוט', category: 'fertilizer', format: 'reel', duration: '0:45', comingSoon: true },
 
   // Pest control
-  { id: 'p1', titleHe: 'שמן נים — מתכון בסיסי', descHe: 'הכנת תרסיס שמן נים אורגני להדברת מזיקים', category: 'pest', format: 'both', duration: '2:30', youtubeId: 'dQw4w9WgXcQ' },
+  { id: 'p1', titleHe: 'שמן נים — מתכון בסיסי', descHe: 'הכנת תרסיס שמן נים אורגני להדברת מזיקים', category: 'pest', format: 'both', duration: '2:30', comingSoon: true },
   { id: 'p2', titleHe: 'חיפושיות טובות לגינה', descHe: 'כיצד למשוך חיפושיות אבקניות וציד טבעיות לגינה', category: 'pest', format: 'reel', duration: '1:00', comingSoon: true },
   { id: 'p3', titleHe: 'מלכודות צהובות דביקות', descHe: 'שימון במלכודות דביקות לניטור ולכידת מזיקים', category: 'pest', format: 'reel', duration: '0:30', comingSoon: true },
   { id: 'p4', titleHe: 'צמחי מלווים להדברה', descHe: 'אילו צמחים להשתיל לידי כדי לדחות מזיקים', category: 'pest', format: 'yt', duration: '6:00', comingSoon: true },
 
   // Compost
-  { id: 'c1', titleHe: 'ערימת קומפוסט — איך מתחילים', descHe: 'מדריך מלא לבניית ערימת קומפוסט ביתית', category: 'compost', format: 'yt', duration: '10:30', youtubeId: 'dQw4w9WgXcQ' },
+  { id: 'c1', titleHe: 'ערימת קומפוסט — איך מתחילים', descHe: 'מדריך מלא לבניית ערימת קומפוסט ביתית', category: 'compost', format: 'yt', duration: '10:30', comingSoon: true },
   { id: 'c2', titleHe: 'ורמיקומפוסט בבית', descHe: 'גידול תולעים בבית לייצור קומפוסט עשיר', category: 'compost', format: 'both', duration: '3:00', comingSoon: true },
   { id: 'c3', titleHe: 'מה לא לשים בקומפוסט', descHe: 'הטעויות הנפוצות ואיך להימנע מהן', category: 'compost', format: 'reel', duration: '0:45', comingSoon: true },
 
   // BD preparations
-  { id: 'bd1', titleHe: 'פרפרט 500', descHe: 'הכנה ושימון בפרפרט ביודינמי 500', category: 'bd', format: 'yt', duration: '12:00', youtubeId: 'dQw4w9WgXcQ' },
+  { id: 'bd1', titleHe: 'פרפרט 500', descHe: 'הכנה ושימון בפרפרט ביודינמי 500', category: 'bd', format: 'yt', duration: '12:00', comingSoon: true },
   { id: 'bd2', titleHe: 'פרפרט 501', descHe: 'הכנה ושימון בפרפרט ביודינמי 501', category: 'bd', format: 'yt', duration: '8:00', comingSoon: true },
   { id: 'bd3', titleHe: 'CPP — תמצית גללים', descHe: 'הכנת ושימון ב-CPP לחיזוק החיות בקרקע', category: 'bd', format: 'reel', duration: '1:00', comingSoon: true },
   { id: 'bd4', titleHe: 'הלוח הביודינמי — איך קוראים', descHe: 'מדריך מעשי לקריאת הלוח הביודינמי', category: 'bd', format: 'both', duration: '4:00', comingSoon: true },
 
   // Companions
-  { id: 'co1', titleHe: 'עגבנייה + בזיליקום', descHe: 'שיתוף הפעולה הקלאסי — למה זה עובד', category: 'companion', format: 'reel', duration: '0:45', youtubeId: 'dQw4w9WgXcQ' },
+  { id: 'co1', titleHe: 'עגבנייה + בזיליקום', descHe: 'שיתוף הפעולה הקלאסי — למה זה עובד', category: 'companion', format: 'reel', duration: '0:45', comingSoon: true },
   { id: 'co2', titleHe: '3 האחיות — תירס, שעועית, דלעת', descHe: 'השיטה העתיקה של גידול שלושה צמחים ביחד', category: 'companion', format: 'yt', duration: '7:00', comingSoon: true },
   { id: 'co3', titleHe: 'פרחים בין הירקות', descHe: 'אילו פרחים להשתיל בגינת ירק ולמה', category: 'companion', format: 'reel', duration: '1:00', comingSoon: true },
 
   // Techniques
-  { id: 't1', titleHe: 'גיזום עצי פרי — בסיסי', descHe: 'מדריך גיזום לעצי פרי בחורף', category: 'technique', format: 'yt', duration: '15:00', youtubeId: 'dQw4w9WgXcQ' },
+  { id: 't1', titleHe: 'גיזום עצי פרי — בסיסי', descHe: 'מדריך גיזום לעצי פרי בחורף', category: 'technique', format: 'yt', duration: '15:00', comingSoon: true },
   { id: 't2', titleHe: 'הכנת ערוגה לזריעה', descHe: 'שלבי הכנת הקרקע לפני זריעה ושתילה', category: 'technique', format: 'both', duration: '3:00', comingSoon: true },
   { id: 't3', titleHe: 'השקיה בטפטוף — התקנה', descHe: 'כיצד להתקין מערכת טפטוף חסכונית', category: 'technique', format: 'yt', duration: '10:00', comingSoon: true },
   { id: 't4', titleHe: 'ריבוי מחוטרים', descHe: 'הכנת שתלים מחוטרים מהורים קיימים', category: 'technique', format: 'reel', duration: '1:00', comingSoon: true },
@@ -75,30 +75,30 @@ interface GuideContent {
 
 const GUIDE_CONTENT: Record<string, GuideContent> = {
   // Fertilizer
-  f1:  { video: { youtubeId: 'dQw4w9WgXcQ', duration: '3:20' }, article: { slug: 'compost-tea', ready: true }, comingSoon: ['וובינר חי'] },
+  f1:  { article: { slug: 'compost-tea', ready: true }, comingSoon: ['סרטון', 'וובינר חי'] },
   f2:  { article: { slug: 'seaweed-spray', ready: true }, comingSoon: ['סרטון', 'וובינר'] },
   f3:  { article: { slug: 'green-manure', ready: true }, comingSoon: ['סרטון'] },
   f4:  { comingSoon: ['סרטון', 'מאמר'] },
   // Pest control
-  p1:  { video: { youtubeId: 'dQw4w9WgXcQ', duration: '2:30' }, article: { slug: 'neem-oil', ready: true }, comingSoon: ['וובינר'] },
+  p1:  { article: { slug: 'neem-oil', ready: true }, comingSoon: ['סרטון', 'וובינר'] },
   p2:  { comingSoon: ['סרטון', 'מאמר'] },
   p3:  { comingSoon: ['סרטון', 'מאמר'] },
   p4:  { comingSoon: ['סרטון', 'מאמר'] },
   // Compost
-  c1:  { video: { youtubeId: 'dQw4w9WgXcQ', duration: '10:30' }, article: { slug: 'compost-pile', ready: true } },
+  c1:  { article: { slug: 'compost-pile', ready: true }, comingSoon: ['סרטון'] },
   c2:  { article: { slug: 'vermicompost', ready: true }, comingSoon: ['סרטון'] },
   c3:  { article: { slug: 'compost-dont', ready: true }, comingSoon: ['סרטון'] },
   // BD preparations
-  bd1: { video: { youtubeId: 'dQw4w9WgXcQ', duration: '12:00' }, article: { slug: 'bd500', ready: true } },
+  bd1: { article: { slug: 'bd500', ready: true }, comingSoon: ['סרטון'] },
   bd2: { article: { slug: 'bd501', ready: true }, comingSoon: ['סרטון'] },
   bd3: { article: { slug: 'cpp', ready: true }, comingSoon: ['סרטון'] },
   bd4: { article: { slug: 'biodynamic-calendar', ready: true }, comingSoon: ['סרטון'] },
   // Companions
-  co1: { video: { youtubeId: 'dQw4w9WgXcQ', duration: '0:45' }, article: { slug: 'tomato-basil', ready: true } },
+  co1: { article: { slug: 'tomato-basil', ready: true }, comingSoon: ['סרטון'] },
   co2: { article: { slug: 'three-sisters', ready: true }, comingSoon: ['סרטון'] },
   co3: { article: { slug: 'flowers-vegetables', ready: true }, comingSoon: ['סרטון'] },
   // Techniques
-  t1:  { video: { youtubeId: 'dQw4w9WgXcQ', duration: '15:00' }, comingSoon: ['מאמר'] },
+  t1:  { comingSoon: ['סרטון', 'מאמר'] },
   t2:  { comingSoon: ['סרטון', 'מאמר'] },
   t3:  { comingSoon: ['סרטון', 'מאמר'] },
   t4:  { comingSoon: ['סרטון', 'מאמר'] },
@@ -181,7 +181,7 @@ function VideoCard({ video, onClick }: { video: Video; onClick: () => void }) {
             borderRadius: '4px', padding: '2px 8px',
             fontFamily: ASSIST, fontSize: '10px', color: 'rgba(237,224,196,0.7)',
           }}>
-            {t('comingSoon')}
+            {'בקרוב 🎬'}
           </div>
         )}
         {/* Format badge */}
