@@ -32,32 +32,9 @@ const FRANK  = '"Frank Ruhl Libre", Georgia, serif';
 const ASSIST = '"Assistant", "Heebo", sans-serif';
 
 
-let moonImgFailed = false;
-let lastRender: (() => void) | null = null;
-
-const moonImg = new Image();
-moonImg.src = '/moon.jpg';
-moonImg.onerror = () => {
-  moonImgFailed = true;
-  lastRender?.();
-};
-
 // ─────────────────────────────────────────────
 // MOON PHASE HELPERS
 // ─────────────────────────────────────────────
-function drawMoonSurface(ctx: CanvasRenderingContext2D, size: number) {
-  if (moonImgFailed) {
-    const grad = ctx.createRadialGradient(size * 0.35, size * 0.35, 0, size / 2, size / 2, size / 2);
-    grad.addColorStop(0,   '#F5E6C8');
-    grad.addColorStop(0.6, '#C4A87A');
-    grad.addColorStop(1,   '#1B2A1C');
-    ctx.fillStyle = grad;
-    ctx.fillRect(0, 0, size, size);
-  } else {
-    ctx.drawImage(moonImg, 0, 0, size, size);
-  }
-}
-
 export function getMoonTilt(phaseAngle: number, lat: number): number {
   const latFactor = (lat / 90);
   const baseTilt = -90 * latFactor;
@@ -66,112 +43,91 @@ export function getMoonTilt(phaseAngle: number, lat: number): number {
   return baseTilt + phaseTilt;
 }
 
-export function drawMoon(canvas: HTMLCanvasElement, phasePct: number, phaseAngle: number, tiltDeg: number, lat = 31.7) {
+// Canvas draws only the dark shadow overlay — the moon photo is an <img> underneath.
+export function drawMoon(canvas: HTMLCanvasElement, phasePct: number, phaseAngle: number, tiltDeg: number) {
   const ctx = canvas.getContext('2d');
   if (!ctx) return;
   const size = canvas.width / (window.devicePixelRatio || 1);
   const cx = size / 2, cy = size / 2, r = size / 2;
 
-  const render = () => {
-    ctx.save();
+  ctx.save();
+  ctx.clearRect(0, 0, size, size);
 
-    ctx.translate(cx, cy);
-    ctx.rotate(tiltDeg * Math.PI / 180);
-    ctx.translate(-cx, -cy);
+  ctx.translate(cx, cy);
+  ctx.rotate(tiltDeg * Math.PI / 180);
+  ctx.translate(-cx, -cy);
 
-    // Clip entire rendering to the moon disc
-    ctx.beginPath();
-    ctx.arc(cx, cy, r, 0, Math.PI * 2);
-    ctx.clip();
+  ctx.beginPath();
+  ctx.arc(cx, cy, r, 0, Math.PI * 2);
+  ctx.clip();
 
-    // Fill disc via path (guaranteed full coverage — fillRect in rotated coords can miss edge slivers)
-    ctx.fillStyle = '#060a08';
+  const SHADOW = 'rgba(0, 0, 0, 0.92)';
+  const f      = phasePct / 100;
+  const isWaning = phaseAngle > 180;
+  const tRx    = r * Math.abs(1 - 2 * f);
+
+  if (phasePct < 2) {
+    // New moon: entire disc dark
+    ctx.fillStyle = SHADOW;
     ctx.fill();
-
-    if (phasePct < 2) { ctx.restore(); return; }
-
-    const f        = phasePct / 100;
-    const isWaning = phaseAngle > 180;
-    // tRx: x-radius of terminator ellipse — 0 at quarter, r at new/full
-    const tRx      = r * Math.abs(1 - 2 * f);
-
-    if (phasePct >= 98) {
-      drawMoonSurface(ctx, size);
-    } else if (!isWaning) {
-      // ── WAXING: lit on RIGHT ──────────────────────────────
-      // Base: draw moon texture in the right half
-      ctx.save();
-      ctx.beginPath(); ctx.rect(cx, 0, size, size); ctx.clip();
-      drawMoonSurface(ctx, size);
-      ctx.restore();
-
+  } else if (phasePct < 98) {
+    if (!isWaning) {
       if (f < 0.5) {
-        // Waxing crescent: shadow eats into right side.
-        // Darken the right half of the terminator ellipse, leaving only a thin right sliver.
+        // Waxing crescent: shadow fills left half + centre-to-terminator D in right half
         ctx.save();
-        ctx.beginPath();
-        ctx.ellipse(cx, cy, tRx, r, 0, -Math.PI / 2, Math.PI / 2);
-        ctx.lineTo(cx, cy - r);
-        ctx.closePath();
-        ctx.fillStyle = 'rgba(4, 8, 20, 0.95)';
-        ctx.fill();
+        ctx.beginPath(); ctx.rect(0, 0, cx, size); ctx.clip();
+        ctx.fillStyle = SHADOW; ctx.fillRect(0, 0, size, size);
         ctx.restore();
-      } else if (tRx > 1) {
-        // Waxing gibbous: restore the left half-ellipse as lit (spills past center).
-        ctx.save();
         ctx.beginPath();
-        ctx.ellipse(cx, cy, tRx, r, 0, Math.PI / 2, 3 * Math.PI / 2);
-        ctx.lineTo(cx, cy - r);
+        ctx.moveTo(cx, cy - r);
+        ctx.lineTo(cx, cy + r);
+        ctx.ellipse(cx, cy, tRx, r, 0, Math.PI / 2, -Math.PI / 2, true); // right arc
         ctx.closePath();
-        ctx.clip();
-        drawMoonSurface(ctx, size);
-        ctx.restore();
+        ctx.fillStyle = SHADOW; ctx.fill();
+      } else {
+        // Waxing gibbous: shadow is left crescent between disc edge and terminator
+        ctx.beginPath();
+        ctx.arc(cx, cy, r, Math.PI / 2, -Math.PI / 2, true);            // disc left arc
+        ctx.ellipse(cx, cy, tRx, r, 0, -Math.PI / 2, Math.PI / 2, true); // ellipse left arc back
+        ctx.closePath();
+        ctx.fillStyle = SHADOW; ctx.fill();
       }
     } else {
-      // ── WANING: lit on LEFT ───────────────────────────────
-      // Base: draw moon texture in the left half
-      ctx.save();
-      ctx.beginPath(); ctx.rect(0, 0, cx, size); ctx.clip();
-      drawMoonSurface(ctx, size);
-      ctx.restore();
-
       if (f < 0.5) {
-        // Waning crescent: shadow eats into left side.
-        // Darken the left half of the terminator ellipse, leaving only a thin left sliver.
+        // Waning crescent: shadow fills right half + centre-to-terminator D in left half
         ctx.save();
-        ctx.beginPath();
-        ctx.ellipse(cx, cy, tRx, r, 0, Math.PI / 2, 3 * Math.PI / 2);
-        ctx.lineTo(cx, cy - r);
-        ctx.closePath();
-        ctx.fillStyle = 'rgba(4, 8, 20, 0.95)';
-        ctx.fill();
+        ctx.beginPath(); ctx.rect(cx, 0, size, size); ctx.clip();
+        ctx.fillStyle = SHADOW; ctx.fillRect(0, 0, size, size);
         ctx.restore();
-      } else if (tRx > 1) {
-        // Waning gibbous: restore the right half-ellipse as lit (spills past center).
-        ctx.save();
         ctx.beginPath();
-        ctx.ellipse(cx, cy, tRx, r, 0, -Math.PI / 2, Math.PI / 2);
-        ctx.lineTo(cx, cy - r);
+        ctx.moveTo(cx, cy - r);
+        ctx.lineTo(cx, cy + r);
+        ctx.ellipse(cx, cy, tRx, r, 0, Math.PI / 2, -Math.PI / 2, false); // left arc
         ctx.closePath();
-        ctx.clip();
-        drawMoonSurface(ctx, size);
-        ctx.restore();
+        ctx.fillStyle = SHADOW; ctx.fill();
+      } else {
+        // Waning gibbous: shadow is right crescent between disc edge and terminator
+        ctx.beginPath();
+        ctx.arc(cx, cy, r, -Math.PI / 2, Math.PI / 2, false);            // disc right arc
+        ctx.ellipse(cx, cy, tRx, r, 0, Math.PI / 2, -Math.PI / 2, true); // ellipse right arc back
+        ctx.closePath();
+        ctx.fillStyle = SHADOW; ctx.fill();
       }
     }
+  }
+  // phasePct >= 98 (full moon): no shadow, canvas stays transparent
 
-    // Spherical shading overlay
-    const grad = ctx.createRadialGradient(cx * 0.65, cy * 0.65, 0, cx, cy, r);
-    grad.addColorStop(0,   'rgba(255,245,200,0.08)');
-    grad.addColorStop(0.5, 'rgba(0,0,0,0)');
-    grad.addColorStop(1,   'rgba(0,0,0,0.5)');
-    ctx.fillStyle = grad;
-    ctx.fillRect(0, 0, size, size);
+  // Spherical shading overlay across full disc
+  const grad = ctx.createRadialGradient(cx * 0.65, cy * 0.65, 0, cx, cy, r);
+  grad.addColorStop(0,   'rgba(255,245,200,0.08)');
+  grad.addColorStop(0.5, 'rgba(0,0,0,0)');
+  grad.addColorStop(1,   'rgba(0,0,0,0.5)');
+  ctx.beginPath();
+  ctx.arc(cx, cy, r, 0, Math.PI * 2);
+  ctx.fillStyle = grad;
+  ctx.fill();
 
-    ctx.restore();
-  };
-
-  lastRender = render;
-  if (moonImg.complete) { render(); } else { moonImg.onload = render; }
+  ctx.restore();
 }
 
 // ─────────────────────────────────────────────
@@ -223,11 +179,9 @@ export function MoonPhaseDisplay({ phaseAngle, phasePct, phaseHe, moonSignHe, as
     const dpr = window.devicePixelRatio || 1;
     canvas.width = 165 * dpr;
     canvas.height = 165 * dpr;
-    canvas.style.width = '165px';
-    canvas.style.height = '165px';
     const ctx = canvas.getContext('2d');
     if (ctx) ctx.scale(dpr, dpr);
-    drawMoon(canvas, phasePct, phaseAngle, tiltDeg, lat);
+    drawMoon(canvas, phasePct, phaseAngle, tiltDeg);
   }, [phasePct, phaseAngle, tiltDeg, lat]);
 
   return (
@@ -241,15 +195,25 @@ export function MoonPhaseDisplay({ phaseAngle, phasePct, phaseHe, moonSignHe, as
         width: '165px',
         height: '165px',
         flexShrink: 0,
+        position: 'relative',
         boxShadow: isFullMoon
           ? '0 0 0 2px rgba(245,200,64,0.40), 0 0 32px rgba(245,200,64,0.35)'
           : '0 0 0 2px rgba(245,200,64,0.40), 0 0 16px rgba(245,200,64,0.18)',
       }}>
+        <img
+          src="/moon.jpg"
+          alt="moon"
+          style={{
+            position: 'absolute', top: 0, left: 0,
+            width: '100%', height: '100%', objectFit: 'cover',
+          }}
+        />
         <canvas
           ref={canvasRef}
-          width={165}
-          height={165}
-          style={{ display: 'block', width: '165px', height: '165px' }}
+          style={{
+            position: 'absolute', top: 0, left: 0,
+            width: '100%', height: '100%',
+          }}
         />
       </div>
 

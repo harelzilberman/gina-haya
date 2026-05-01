@@ -75,7 +75,9 @@
       "Bash(pnpm --filter @gina-haya/web build)",
       "mcp__claude_ai_Google_Calendar__list_events",
       "mcp__claude_ai_Google_Calendar__list_calendars",
-      "mcp__claude_ai_Google_Calendar__delete_event"
+      "mcp__claude_ai_Google_Calendar__delete_event",
+      "Bash(python3 *)",
+      "Bash(python3.11 -c \"from PIL import Image; img = Image.open\\(r'D:\\\\\\\\harel\\\\\\\\claude\\\\\\\\gina-haya-main\\\\\\\\gina-haya-project\\\\\\\\gina-haya\\\\\\\\gina-haya\\\\\\\\packages\\\\\\\\web\\\\\\\\public\\\\\\\\moon.jpg'\\); print\\('Size:', img.size\\)\")"
     ]
   }
 }
