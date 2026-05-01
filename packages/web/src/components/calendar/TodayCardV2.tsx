@@ -70,7 +70,7 @@ export function drawMoon(canvas: HTMLCanvasElement, phasePct: number, phaseAngle
   const ctx = canvas.getContext('2d');
   if (!ctx) return;
   const size = canvas.width / (window.devicePixelRatio || 1);
-  const cx = size / 2, cy = size / 2, r = size / 2 - 2;
+  const cx = size / 2, cy = size / 2, r = size / 2 - 1;
 
   const render = () => {
     ctx.save();
