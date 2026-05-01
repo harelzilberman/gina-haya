@@ -50,9 +50,20 @@ export function drawMoon(canvas: HTMLCanvasElement, phasePct: number, phaseAngle
   const size = canvas.width / (window.devicePixelRatio || 1);
   const cx = size / 2, cy = size / 2, r = size / 2;
 
-  // Full moon — canvas stays fully transparent, let img show through
-  if (phasePct >= 98) {
+  // Full moon or nearly full — canvas stays fully transparent, let img show through
+  const isFullMoon = (phaseAngle >= 160 && phaseAngle <= 200) || (phasePct >= 95);
+  if (isFullMoon) {
     ctx.clearRect(0, 0, size, size);
+    return;
+  }
+
+  // New moon — fill entire disc dark
+  const isNewMoon = phasePct <= 2;
+  if (isNewMoon) {
+    ctx.beginPath();
+    ctx.arc(cx, cy, r, 0, Math.PI * 2);
+    ctx.fillStyle = 'rgba(0,0,0,0.92)';
+    ctx.fill();
     return;
   }
 
@@ -72,57 +83,51 @@ export function drawMoon(canvas: HTMLCanvasElement, phasePct: number, phaseAngle
   const isWaning = phaseAngle > 180;
   const tRx    = r * Math.abs(1 - 2 * f);
 
-  if (phasePct < 2) {
-    // New moon: entire disc dark
-    ctx.fillStyle = SHADOW;
-    ctx.fill();
-  } else if (phasePct < 98) {
-    if (!isWaning) {
-      if (f < 0.5) {
-        // Waxing crescent: shadow fills left half + centre-to-terminator D in right half
-        ctx.save();
-        ctx.beginPath(); ctx.rect(0, 0, cx, size); ctx.clip();
-        ctx.fillStyle = SHADOW; ctx.fillRect(0, 0, size, size);
-        ctx.restore();
-        ctx.beginPath();
-        ctx.moveTo(cx, cy - r);
-        ctx.lineTo(cx, cy + r);
-        ctx.ellipse(cx, cy, tRx, r, 0, Math.PI / 2, -Math.PI / 2, true); // right arc
-        ctx.closePath();
-        ctx.fillStyle = SHADOW; ctx.fill();
-      } else {
-        // Waxing gibbous: shadow is left crescent between disc edge and terminator
-        ctx.beginPath();
-        ctx.arc(cx, cy, r, Math.PI / 2, -Math.PI / 2, true);            // disc left arc
-        ctx.ellipse(cx, cy, tRx, r, 0, -Math.PI / 2, Math.PI / 2, true); // ellipse left arc back
-        ctx.closePath();
-        ctx.fillStyle = SHADOW; ctx.fill();
-      }
+  if (!isWaning) {
+    if (f < 0.5) {
+      // Waxing crescent: shadow fills left half + D-shape in right half
+      ctx.save();
+      ctx.beginPath(); ctx.rect(0, 0, cx, size); ctx.clip();
+      ctx.fillStyle = SHADOW; ctx.fillRect(0, 0, size, size);
+      ctx.restore();
+      ctx.beginPath();
+      ctx.moveTo(cx, cy - r);
+      ctx.lineTo(cx, cy + r);
+      ctx.ellipse(cx, cy, tRx, r, 0, Math.PI / 2, -Math.PI / 2, true);
+      ctx.closePath();
+      ctx.fillStyle = SHADOW; ctx.fill();
     } else {
-      if (f < 0.5) {
-        // Waning crescent: shadow fills right half + centre-to-terminator D in left half
-        ctx.save();
-        ctx.beginPath(); ctx.rect(cx, 0, size, size); ctx.clip();
-        ctx.fillStyle = SHADOW; ctx.fillRect(0, 0, size, size);
-        ctx.restore();
-        ctx.beginPath();
-        ctx.moveTo(cx, cy - r);
-        ctx.lineTo(cx, cy + r);
-        ctx.ellipse(cx, cy, tRx, r, 0, Math.PI / 2, -Math.PI / 2, false); // left arc
-        ctx.closePath();
-        ctx.fillStyle = SHADOW; ctx.fill();
-      } else {
-        // Waning gibbous: shadow is right crescent between disc edge and terminator
-        ctx.beginPath();
-        ctx.arc(cx, cy, r, -Math.PI / 2, Math.PI / 2, false);            // disc right arc
-        ctx.ellipse(cx, cy, tRx, r, 0, Math.PI / 2, -Math.PI / 2, true); // ellipse right arc back
-        ctx.closePath();
-        ctx.fillStyle = SHADOW; ctx.fill();
-      }
+      // Waxing gibbous: shadow is left crescent between disc edge and terminator
+      ctx.beginPath();
+      ctx.arc(cx, cy, r, Math.PI / 2, -Math.PI / 2, true);
+      ctx.ellipse(cx, cy, tRx, r, 0, -Math.PI / 2, Math.PI / 2, true);
+      ctx.closePath();
+      ctx.fillStyle = SHADOW; ctx.fill();
+    }
+  } else {
+    if (f < 0.5) {
+      // Waning crescent: shadow fills right half + D-shape in left half
+      ctx.save();
+      ctx.beginPath(); ctx.rect(cx, 0, size, size); ctx.clip();
+      ctx.fillStyle = SHADOW; ctx.fillRect(0, 0, size, size);
+      ctx.restore();
+      ctx.beginPath();
+      ctx.moveTo(cx, cy - r);
+      ctx.lineTo(cx, cy + r);
+      ctx.ellipse(cx, cy, tRx, r, 0, Math.PI / 2, -Math.PI / 2, false);
+      ctx.closePath();
+      ctx.fillStyle = SHADOW; ctx.fill();
+    } else {
+      // Waning gibbous: shadow is right crescent between disc edge and terminator
+      ctx.beginPath();
+      ctx.arc(cx, cy, r, -Math.PI / 2, Math.PI / 2, false);
+      ctx.ellipse(cx, cy, tRx, r, 0, Math.PI / 2, -Math.PI / 2, true);
+      ctx.closePath();
+      ctx.fillStyle = SHADOW; ctx.fill();
     }
   }
 
-  // Spherical shading overlay across full disc
+  // Spherical shading overlay — crescent/gibbous phases only
   const grad = ctx.createRadialGradient(cx * 0.65, cy * 0.65, 0, cx, cy, r);
   grad.addColorStop(0,   'rgba(255,245,200,0.08)');
   grad.addColorStop(0.5, 'rgba(0,0,0,0)');
