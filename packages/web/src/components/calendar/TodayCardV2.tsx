@@ -3,6 +3,7 @@ import { useTranslation } from 'react-i18next';
 import { useDirection } from '../../hooks/useDirection';
 import { useAuthStore } from '../../stores/authStore';
 import type { BiodynamicDay } from '@gina-haya/shared';
+import './today-card.css';
 
 const SCORE_COLOURS: Record<string, string> = {
   green:  '#4A7C59',
@@ -30,15 +31,6 @@ const PARCH  = '#EDE0C4';
 const FRANK  = '"Frank Ruhl Libre", Georgia, serif';
 const ASSIST = '"Assistant", "Heebo", sans-serif';
 
-const CARD_CSS = `
-@keyframes tc-ring-in {
-  from { stroke-dashoffset: ${RING_CIRCUMFERENCE}; }
-}
-@keyframes moonGlowSpin {
-  from { transform: rotate(0deg); }
-  to   { transform: rotate(360deg); }
-}
-`;
 
 let moonImgFailed = false;
 let lastRender: (() => void) | null = null;
@@ -77,7 +69,7 @@ export function getMoonTilt(phaseAngle: number, lat: number): number {
 export function drawMoon(canvas: HTMLCanvasElement, phasePct: number, phaseAngle: number, tiltDeg: number, lat = 31.7) {
   const ctx = canvas.getContext('2d');
   if (!ctx) return;
-  const size = canvas.width;
+  const size = canvas.width / (window.devicePixelRatio || 1);
   const cx = size / 2, cy = size / 2, r = size / 2 - 2;
 
   const render = () => {
@@ -102,7 +94,6 @@ export function drawMoon(canvas: HTMLCanvasElement, phasePct: number, phaseAngle
     const isWaning = phaseAngle > 180;
     // tRx: x-radius of terminator ellipse — 0 at quarter, r at new/full
     const tRx      = r * Math.abs(1 - 2 * f);
-    console.log('[moon] phasePct:', phasePct, '| isWaning:', isWaning, '| tRx:', tRx.toFixed(1));
 
     if (phasePct >= 98) {
       drawMoonSurface(ctx, size);
@@ -227,7 +218,16 @@ export function MoonPhaseDisplay({ phaseAngle, phasePct, phaseHe, moonSignHe, as
   const canvasRef = useRef<HTMLCanvasElement>(null);
 
   useEffect(() => {
-    if (canvasRef.current) drawMoon(canvasRef.current, phasePct, phaseAngle, tiltDeg, lat);
+    if (!canvasRef.current) return;
+    const canvas = canvasRef.current;
+    const dpr = window.devicePixelRatio || 1;
+    canvas.width = 165 * dpr;
+    canvas.height = 165 * dpr;
+    canvas.style.width = '165px';
+    canvas.style.height = '165px';
+    const ctx = canvas.getContext('2d');
+    if (ctx) ctx.scale(dpr, dpr);
+    drawMoon(canvas, phasePct, phaseAngle, tiltDeg, lat);
   }, [phasePct, phaseAngle, tiltDeg, lat]);
 
   return (
@@ -302,6 +302,13 @@ export function MoonPhaseDisplay({ phaseAngle, phasePct, phaseHe, moonSignHe, as
   );
 }
 
+const DAY_TYPE_LEGEND = [
+  { emoji: '🌿', name: 'יום עלים',   desc: 'השקיה, דישון עלים, קטיף עלים' },
+  { emoji: '🍎', name: 'יום פירות', desc: 'קטיף פירות, זריעת פירות וזרעים' },
+  { emoji: '🌸', name: 'יום פרחים', desc: 'קטיף פרחים, ייבוש צמחים' },
+  { emoji: '🥕', name: 'יום שורשים', desc: 'עיבוד קרקע, שתילת שורשים, קטיף שורשים' },
+];
+
 function FormattedDate({ dateStr, locale }: { dateStr: string; locale: string }) {
   const date = new Date(dateStr + 'T12:00:00');
   return (
@@ -318,8 +325,21 @@ export function TodayCard({ day }: Props) {
   const { dir } = useDirection();
   const isHe = i18n.language === 'he';
   const [mounted, setMounted] = useState(false);
+  const [localLat, setLocalLat] = useState<number | null>(null);
+  const [locationError, setLocationError] = useState<string | null>(null);
+  const [showDayTypeLegend, setShowDayTypeLegend] = useState(false);
   const { profile, user } = useAuthStore();
   const userLat: number = profile?.latitude ?? (user?.user_metadata?.latitude as number | undefined) ?? 31.7;
+  const displayLat = localLat ?? userLat;
+  const isDefaultLat = !localLat && userLat === 31.7;
+
+  const handleRequestLocation = () => {
+    if (!navigator.geolocation) { setLocationError('הדפדפן אינו תומך במיקום'); return; }
+    navigator.geolocation.getCurrentPosition(
+      pos => { setLocalLat(pos.coords.latitude); setLocationError(null); },
+      () => setLocationError('לא ניתן לקבל מיקום'),
+    );
+  };
 
   useEffect(() => {
     const id = requestAnimationFrame(() => setMounted(true));
@@ -337,9 +357,7 @@ export function TodayCard({ day }: Props) {
   const dayTypeLabel = isHe ? day.dayTypeHe : (DAY_TYPE_EN[day.dayType] ?? day.dayType);
 
   return (
-    <>
-      <style>{CARD_CSS}</style>
-      <div dir={dir} style={{
+    <div dir={dir} style={{
         background:     'linear-gradient(145deg, rgba(28,58,30,0.85) 0%, rgba(20,43,22,0.95) 100%)',
         border:         '1px solid rgba(245,200,64,0.12)',
         borderRadius:   '16px', padding: '24px 20px',
@@ -360,8 +378,28 @@ export function TodayCard({ day }: Props) {
           phaseHe={day.moonPhaseNameHe ?? day.moonPhaseHe ?? 'ירח'}
           moonSignHe={day.moonSignHe ?? ''}
           ascending={day.ascendingDescending === 'ascending'}
-          lat={userLat}
+          lat={displayLat}
         />
+
+        {isDefaultLat && (
+          <div style={{ textAlign: 'center', marginTop: '-8px', marginBottom: '8px' }}>
+            <button
+              onClick={handleRequestLocation}
+              style={{
+                background: 'none', border: `1px solid rgba(245,200,64,0.25)`,
+                borderRadius: '99px', padding: '4px 14px',
+                fontFamily: ASSIST, fontSize: '12px', color: `${GOLD}aa`, cursor: 'pointer',
+              }}
+            >
+              📍 עדכן מיקום לתצוגה מדויקת
+            </button>
+            {locationError && (
+              <div style={{ fontFamily: ASSIST, fontSize: '11px', color: '#E24B4A', marginTop: '4px' }}>
+                {locationError}
+              </div>
+            )}
+          </div>
+        )}
 
         <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', marginBottom: '20px' }}>
           <svg width="140" height="140" viewBox="0 0 140 140"
@@ -392,7 +430,7 @@ export function TodayCard({ day }: Props) {
           </p>
         </div>
 
-        <div style={{ display: 'flex', justifyContent: 'center', marginBottom: '16px' }}>
+        <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '8px', marginBottom: showDayTypeLegend ? '8px' : '16px' }}>
           <span style={{
             fontFamily: ASSIST, fontSize: '14px', fontWeight: 600,
             padding: '6px 20px', borderRadius: '50px',
@@ -401,7 +439,32 @@ export function TodayCard({ day }: Props) {
           }}>
             {dtStyle.emoji} {dayTypeLabel}
           </span>
+          <button
+            onClick={() => setShowDayTypeLegend(v => !v)}
+            style={{ background: 'none', border: 'none', cursor: 'pointer', padding: '4px', fontSize: '16px', opacity: 0.5, lineHeight: 1 }}
+            title="מה זה?"
+          >
+            ℹ️
+          </button>
         </div>
+
+        {showDayTypeLegend && (
+          <div style={{
+            marginBottom: '16px', padding: '12px 16px',
+            background: 'rgba(0,0,0,0.25)', borderRadius: '10px',
+            border: '1px solid rgba(245,200,64,0.12)',
+          }}>
+            {DAY_TYPE_LEGEND.map(({ emoji, name, desc }) => (
+              <div key={name} style={{ display: 'flex', gap: '8px', marginBottom: '6px', fontFamily: ASSIST, alignItems: 'flex-start' }}>
+                <span style={{ fontSize: '14px' }}>{emoji}</span>
+                <div>
+                  <span style={{ fontSize: '12px', fontWeight: 600, color: PARCH }}>{name}</span>
+                  <span style={{ fontSize: '11px', color: `${PARCH}60` }}> — {desc}</span>
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
 
         {(day.prep500Recommended || day.prep501Recommended) && (
           <div style={{ display: 'flex', flexWrap: 'wrap', justifyContent: dir === 'rtl' ? 'flex-end' : 'flex-start', gap: '8px' }}>
@@ -427,7 +490,6 @@ export function TodayCard({ day }: Props) {
             )}
           </div>
         )}
-      </div>
-    </>
+    </div>
   );
 }

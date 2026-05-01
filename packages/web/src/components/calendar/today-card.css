@@ -1,0 +1,7 @@
+@keyframes tc-ring-in {
+  from { stroke-dashoffset: 377; }
+}
+@keyframes moonGlowSpin {
+  from { transform: rotate(0deg); }
+  to   { transform: rotate(360deg); }
+}

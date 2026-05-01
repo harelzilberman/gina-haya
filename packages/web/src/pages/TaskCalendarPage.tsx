@@ -49,6 +49,13 @@ const DAY_TYPE_STYLES: Record<string, { bg: string; color: string; emoji: string
   leaf:   { bg: 'rgba(125,192,132,0.18)', color: '#7DC084', emoji: '🌿', labelKey: 'dayTypes.leaf'   },
 };
 
+const DAY_TYPE_DESCS_HE: Record<string, string> = {
+  fruit:  'קטיף פירות, זריעת פירות וזרעים',
+  root:   'עיבוד קרקע, שתילת שורשים, קטיף שורשים',
+  flower: 'קטיף פרחים, ייבוש צמחים',
+  leaf:   'השקיה, דישון עלים, קטיף עלים',
+};
+
 // ── Source detection + styles ──────────────────────────────────────────────
 function getTaskSource(task: GardenTask): 'biodynamic' | 'weekly_plan' | 'growing_tracker' | 'manual' {
   if (task.type === 'biodynamic' || task.source_action === 'prep500' || task.source_action === 'prep501') {
@@ -399,7 +406,7 @@ function DroppableDayCell({
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2px' }}>
             <div style={{ display: 'flex', gap: '4px', alignItems: 'center' }}>
               {dayStyle && (
-                <span title={t(dayStyle.labelKey)} style={{ fontSize: '10px', padding: '1px 5px', borderRadius: '99px', background: dayStyle.bg, color: dayStyle.color, fontFamily: ASST, fontWeight: 600 }}>
+                <span title={`${t(dayStyle.labelKey)} — ${DAY_TYPE_DESCS_HE[bd!.dayType] ?? ''}`} style={{ fontSize: '10px', padding: '1px 5px', borderRadius: '99px', background: dayStyle.bg, color: dayStyle.color, fontFamily: ASST, fontWeight: 600 }}>
                   {dayStyle.emoji}
                 </span>
               )}
@@ -425,7 +432,7 @@ function DroppableDayCell({
           <div style={{ fontFamily: FRANK, fontSize: '16px', color: isToday ? GOLD : isCurrentMonth ? PARCH : `${PARCH}50`, fontWeight: isToday ? 700 : 400 }}>{num}</div>
           <div style={{ fontFamily: ASST, fontSize: '10px', color: `${PARCH}40` }}>{month}</div>
           <div style={{ display: 'flex', gap: '4px', justifyContent: 'center', alignItems: 'center', marginTop: '2px' }}>
-            {dayStyle && <span style={{ fontSize: '12px' }} title={t(dayStyle.labelKey)}>{dayStyle.emoji}</span>}
+            {dayStyle && <span style={{ fontSize: '12px' }} title={`${t(dayStyle.labelKey)} — ${DAY_TYPE_DESCS_HE[bd!.dayType] ?? ''}`}>{dayStyle.emoji}</span>}
             {bd && <span style={{ fontSize: '12px' }} title={bd.moonPhaseNameHe}>{moonEmoji(bd.moonPhasePct, (bd.moonPhaseAngle ?? 90) <= 180)}</span>}
           </div>
           {bd && bd.plantingScore > 0 && (
@@ -893,8 +900,9 @@ export function TaskCalendarPage() {
   const [addDate,      setAddDate]      = useState<string | null>(null);
   const [editTask,     setEditTask]     = useState<GardenTask | null>(null);
   const [draggingId,   setDraggingId]   = useState<string | null>(null);
-  const [filter,       setFilter]       = useState<'all' | 'pending' | 'done'>('all');
-  const [selectedDate, setSelectedDate] = useState<string | null>(null);
+  const [filter,        setFilter]        = useState<'all' | 'pending' | 'done'>('all');
+  const [selectedDate,  setSelectedDate]  = useState<string | null>(null);
+  const [showDayLegend, setShowDayLegend] = useState(false);
 
   const sensors = useSensors(useSensor(PointerSensor, { activationConstraint: { distance: 6 } }));
 
@@ -1152,7 +1160,37 @@ export function TaskCalendarPage() {
                 {s.emoji}{!isMobile && ` ${t(s.labelKey)}`}
               </span>
             ))}
+            <button
+              onClick={() => setShowDayLegend(v => !v)}
+              style={{ background: 'none', border: 'none', cursor: 'pointer', padding: '2px', fontSize: '14px', opacity: 0.5, lineHeight: 1 }}
+              title="מה זה?"
+            >
+              ℹ️
+            </button>
           </div>
+
+          {showDayLegend && (
+            <div style={{
+              marginTop: '4px', marginBottom: '4px', padding: '10px 14px',
+              background: 'rgba(0,0,0,0.2)', borderRadius: '8px',
+              border: '1px solid rgba(245,200,64,0.1)',
+              display: 'flex', flexWrap: 'wrap', gap: '10px',
+            }}>
+              {Object.entries(DAY_TYPE_DESCS_HE).map(([type, desc]) => {
+                const s = DAY_TYPE_STYLES[type];
+                if (!s) return null;
+                return (
+                  <div key={type} style={{ display: 'flex', gap: '6px', alignItems: 'flex-start', minWidth: '180px' }}>
+                    <span style={{ fontSize: '13px' }}>{s.emoji}</span>
+                    <div style={{ fontFamily: ASST }}>
+                      <span style={{ fontSize: '11px', fontWeight: 600, color: s.color }}>{t(s.labelKey)}</span>
+                      <span style={{ fontSize: '10px', color: `${PARCH}55` }}> — {desc}</span>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          )}
 
           {/* Row 4: source legend */}
           <div style={{ display: 'flex', gap: '6px', flexWrap: 'wrap', alignItems: 'center', marginTop: '4px' }}>
