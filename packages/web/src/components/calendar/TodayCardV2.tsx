@@ -50,6 +50,12 @@ export function drawMoon(canvas: HTMLCanvasElement, phasePct: number, phaseAngle
   const size = canvas.width / (window.devicePixelRatio || 1);
   const cx = size / 2, cy = size / 2, r = size / 2;
 
+  // Full moon — canvas stays fully transparent, let img show through
+  if (phasePct >= 98) {
+    ctx.clearRect(0, 0, size, size);
+    return;
+  }
+
   ctx.save();
   ctx.clearRect(0, 0, size, size);
 
@@ -115,7 +121,6 @@ export function drawMoon(canvas: HTMLCanvasElement, phasePct: number, phaseAngle
       }
     }
   }
-  // phasePct >= 98 (full moon): no shadow, canvas stays transparent
 
   // Spherical shading overlay across full disc
   const grad = ctx.createRadialGradient(cx * 0.65, cy * 0.65, 0, cx, cy, r);
@@ -206,6 +211,7 @@ export function MoonPhaseDisplay({ phaseAngle, phasePct, phaseHe, moonSignHe, as
           style={{
             position: 'absolute', top: 0, left: 0,
             width: '100%', height: '100%', objectFit: 'cover',
+            zIndex: 1,
           }}
         />
         <canvas
@@ -213,6 +219,7 @@ export function MoonPhaseDisplay({ phaseAngle, phasePct, phaseHe, moonSignHe, as
           style={{
             position: 'absolute', top: 0, left: 0,
             width: '100%', height: '100%',
+            zIndex: 2,
           }}
         />
       </div>
