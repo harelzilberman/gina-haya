@@ -219,6 +219,7 @@ export function MoonPhaseDisplay({ phaseAngle, phasePct, phaseHe, moonSignHe, as
             zIndex: 1,
           }}
         />
+        {/* DEBUG: canvas hidden to test img rendering
         <canvas
           ref={canvasRef}
           style={{
@@ -227,6 +228,7 @@ export function MoonPhaseDisplay({ phaseAngle, phasePct, phaseHe, moonSignHe, as
             zIndex: 2,
           }}
         />
+        */}
       </div>
 
       <div style={{ fontFamily: FRANK, fontSize: '18px', fontWeight: 700, color: GOLD }}>
