@@ -176,14 +176,7 @@ export default function App() {
               </ProtectedRoute>
             }
           />
-          <Route
-            path="/guides"
-            element={
-              <ProtectedRoute>
-                <GuidesPage />
-              </ProtectedRoute>
-            }
-          />
+          <Route path="/guides" element={<GuidesPage />} />
           <Route
             path="/tasks"
             element={
@@ -192,22 +185,8 @@ export default function App() {
               </ProtectedRoute>
             }
           />
-          <Route
-            path="/articles"
-            element={
-              <ProtectedRoute>
-                <ArticlesPage />
-              </ProtectedRoute>
-            }
-          />
-          <Route
-            path="/articles/:slug"
-            element={
-              <ProtectedRoute>
-                <ArticlePage />
-              </ProtectedRoute>
-            }
-          />
+          <Route path="/articles" element={<ArticlesPage />} />
+          <Route path="/articles/:slug" element={<ArticlePage />} />
 
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>

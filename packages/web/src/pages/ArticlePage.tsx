@@ -388,8 +388,16 @@ export function ArticlePage() {
     }
   }, []);
 
-  const scrollRef = useRef<HTMLDivElement>(null);
-  const entry     = ARTICLES.find(a => a.id === slug);
+  useEffect(() => {
+    return () => {
+      document.title = 'גינה חיה';
+      iframeRef.current?.contentWindow?.removeEventListener('scroll', handleIframeScroll);
+    };
+  }, [handleIframeScroll]);
+
+  const scrollRef  = useRef<HTMLDivElement>(null);
+  const iframeRef  = useRef<HTMLIFrameElement>(null);
+  const entry      = ARTICLES.find(a => a.id === slug);
   const heroSrc   = entry?.images?.hero ?? null;
   const imageMap  = entry?.images
     ? (Object.fromEntries(
@@ -400,14 +408,21 @@ export function ArticlePage() {
   useEffect(() => {
     if (!slug) { setError(true); setLoading(false); return; }
 
+    if (scrollRef.current) scrollRef.current.scrollTop = 0;
+    window.scrollTo(0, 0);
+
     setLoading(true); setError(false); setHeroError(false); setProgress(0);
     setContent(''); setTitle(''); setDescription(''); setHtmlContent(null);
+
+    const suffix = lang === 'he' ? 'גינה חיה' : 'Gina Haya';
 
     import('../data/articlesContent').then(({ getArticleContent }) => {
       const html = getArticleContent(slug);
       if (html) {
         setHtmlContent(html);
         setLoading(false);
+        const t = lang === 'he' ? entry?.titleHe : entry?.titleEn;
+        if (t) document.title = `${t} | ${suffix}`;
         return;
       }
 
@@ -419,13 +434,15 @@ export function ArticlePage() {
         .then(r => { if (!r.ok) throw new Error(); return r.text(); })
         .then(raw => {
           const p = parseMarkdown(raw, lang);
-          setTitle(p.title || (lang === 'he' ? entry?.titleHe : entry?.titleEn) || slug!);
+          const t = p.title || (lang === 'he' ? entry?.titleHe : entry?.titleEn) || slug!;
+          setTitle(t);
           setDescription(
             p.description ||
             (lang === 'he' ? entry?.metaDescriptionHe : entry?.metaDescriptionEn) ||
             ''
           );
           setContent(p.content);
+          document.title = `${t} | ${suffix}`;
         })
         .catch(() => setError(true))
         .finally(() => setLoading(false));
@@ -436,6 +453,13 @@ export function ArticlePage() {
     const el = scrollRef.current;
     if (!el) return;
     setProgress(Math.min(100, Math.max(0, el.scrollTop / (el.scrollHeight - el.clientHeight) * 100)));
+  }, []);
+
+  const handleIframeScroll = useCallback(() => {
+    const win = iframeRef.current?.contentWindow;
+    if (!win) return;
+    const total = win.document.body.scrollHeight - win.innerHeight;
+    setProgress(total > 0 ? Math.min(100, (win.scrollY / total) * 100) : 0);
   }, []);
 
   const categoryLabel = entry ? (lang === 'he' ? entry.categoryHe : entry.categoryEn) : null;
@@ -526,12 +550,15 @@ export function ArticlePage() {
       {/* ── Article ───────────────────────────────────────────────────────── */}
       {!loading && !error && htmlContent && (
         <iframe
+          ref={iframeRef}
           srcDoc={htmlContent}
           style={{ width: '100%', border: 'none', minHeight: '100vh' }}
           onLoad={(e) => {
             const iframe = e.target as HTMLIFrameElement;
             if (iframe.contentWindow) {
               iframe.style.height = iframe.contentWindow.document.body.scrollHeight + 'px';
+              iframe.contentWindow.scrollTo(0, 0);
+              iframe.contentWindow.addEventListener('scroll', handleIframeScroll);
             }
           }}
           title={entry?.titleHe ?? ''}
