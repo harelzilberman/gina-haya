@@ -70,11 +70,10 @@ export function drawMoon(canvas: HTMLCanvasElement, phasePct: number, phaseAngle
   const ctx = canvas.getContext('2d');
   if (!ctx) return;
   const size = canvas.width / (window.devicePixelRatio || 1);
-  const cx = size / 2, cy = size / 2, r = size / 2 + 1;
+  const cx = size / 2, cy = size / 2, r = size / 2;
 
   const render = () => {
     ctx.save();
-    ctx.clearRect(0, 0, size, size);
 
     ctx.translate(cx, cy);
     ctx.rotate(tiltDeg * Math.PI / 180);
@@ -85,8 +84,9 @@ export function drawMoon(canvas: HTMLCanvasElement, phasePct: number, phaseAngle
     ctx.arc(cx, cy, r, 0, Math.PI * 2);
     ctx.clip();
 
+    // Fill disc via path (guaranteed full coverage — fillRect in rotated coords can miss edge slivers)
     ctx.fillStyle = '#060a08';
-    ctx.fillRect(0, 0, size, size);
+    ctx.fill();
 
     if (phasePct < 2) { ctx.restore(); return; }
 
@@ -235,19 +235,23 @@ export function MoonPhaseDisplay({ phaseAngle, phasePct, phaseHe, moonSignHe, as
       display: 'flex', flexDirection: 'column', alignItems: 'center',
       gap: '10px', padding: '20px 0 12px',
     }}>
-      <canvas
-        ref={canvasRef}
-        width={165}
-        height={165}
-        style={{
-          borderRadius: '50%',
-          border: '2px solid rgba(245,200,64,0.40)',
-          boxShadow: isFullMoon
-            ? '0 0 32px rgba(245,200,64,0.35)'
-            : '0 0 16px rgba(245,200,64,0.18)',
-          display: 'block',
-        }}
-      />
+      <div style={{
+        borderRadius: '50%',
+        overflow: 'hidden',
+        width: '165px',
+        height: '165px',
+        flexShrink: 0,
+        boxShadow: isFullMoon
+          ? '0 0 0 2px rgba(245,200,64,0.40), 0 0 32px rgba(245,200,64,0.35)'
+          : '0 0 0 2px rgba(245,200,64,0.40), 0 0 16px rgba(245,200,64,0.18)',
+      }}>
+        <canvas
+          ref={canvasRef}
+          width={165}
+          height={165}
+          style={{ display: 'block', width: '165px', height: '165px' }}
+        />
+      </div>
 
       <div style={{ fontFamily: FRANK, fontSize: '18px', fontWeight: 700, color: GOLD }}>
         {phaseNameLabel}
