@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { useDirection } from '../../hooks/useDirection';
 import { useAuthStore } from '../../stores/authStore';
+import { mapAuthError } from '../../utils/authErrors';
 
 const EARTH  = '#142B16';
 const GOLD   = '#F5C840';
@@ -21,7 +22,8 @@ const FORM_CSS = `
 `;
 
 export function SignupForm() {
-  const { t } = useTranslation('auth');
+  const { t, i18n } = useTranslation('auth');
+  const lang: 'he' | 'en' = i18n.language === 'en' ? 'en' : 'he';
   const { dir } = useDirection();
   const { signUp, signInWithGoogle, isLoading, error, clearError } = useAuthStore();
 
@@ -73,7 +75,7 @@ export function SignupForm() {
             fontSize:        '13px',
             color:           '#E07070',
           }}>
-            {error}
+            {mapAuthError(error, lang)}
           </div>
         )}
 

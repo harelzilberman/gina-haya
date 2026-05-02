@@ -1,4 +1,5 @@
 import { create } from 'zustand';
+import { persist } from 'zustand/middleware';
 import type { SoilType } from '@gina-haya/shared';
 
 type Step = 0 | 1 | 2 | 3;
@@ -20,24 +21,29 @@ interface OnboardingState {
   complete: () => void;
 }
 
-export const useOnboardingStore = create<OnboardingState>((set) => ({
-  step: 0,
-  gardenData: {
-    name: 'הגינה שלי',
-    locationRegion: '',
-    soilType: null,
-    plantIds: [],
-  },
-  isComplete: false,
+export const useOnboardingStore = create<OnboardingState>()(
+  persist(
+    (set) => ({
+      step: 0,
+      gardenData: {
+        name: 'הגינה שלי',
+        locationRegion: '',
+        soilType: null,
+        plantIds: [],
+      },
+      isComplete: false,
 
-  nextStep: () =>
-    set((s) => ({ step: (Math.min(s.step + 1, 3) as Step) })),
+      nextStep: () =>
+        set((s) => ({ step: (Math.min(s.step + 1, 3) as Step) })),
 
-  prevStep: () =>
-    set((s) => ({ step: (Math.max(s.step - 1, 0) as Step) })),
+      prevStep: () =>
+        set((s) => ({ step: (Math.max(s.step - 1, 0) as Step) })),
 
-  updateGardenData: (data) =>
-    set((s) => ({ gardenData: { ...s.gardenData, ...data } })),
+      updateGardenData: (data) =>
+        set((s) => ({ gardenData: { ...s.gardenData, ...data } })),
 
-  complete: () => set({ isComplete: true }),
-}));
+      complete: () => set({ isComplete: true }),
+    }),
+    { name: 'gina-haya-onboarding' }
+  )
+);

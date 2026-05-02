@@ -1,6 +1,13 @@
 import { create } from 'zustand';
 import { supabase } from '../lib/supabase';
 import type { User, Session } from '@supabase/supabase-js';
+import { useOnboardingStore } from './onboardingStore';
+
+function syncOnboardingComplete(profile: { onboarding_complete: boolean } | null) {
+  if (profile?.onboarding_complete) {
+    useOnboardingStore.setState({ isComplete: true });
+  }
+}
 
 interface UserProfile {
   id: string;
@@ -110,6 +117,7 @@ export const useAuthStore = create<AuthState>((set, get) => ({
     if (!user || !session?.access_token) return;
     const profile = await loadOrCreateProfile(user, session.access_token);
     set({ profile });
+    syncOnboardingComplete(profile);
   },
 
   signIn: async (email, password) => {
@@ -121,6 +129,7 @@ export const useAuthStore = create<AuthState>((set, get) => ({
       if (data.session?.access_token) {
         const profile = await loadOrCreateProfile(data.user, data.session.access_token);
         set({ profile });
+        syncOnboardingComplete(profile);
       }
     } catch (err: any) {
       set({ error: err.message || 'Sign in failed' });
@@ -144,6 +153,7 @@ export const useAuthStore = create<AuthState>((set, get) => ({
       if (data.user && data.session?.access_token) {
         const profile = await loadOrCreateProfile(data.user, data.session.access_token);
         set({ profile });
+        syncOnboardingComplete(profile);
       }
     } catch (err: any) {
       set({ error: err.message || 'Sign up failed' });
@@ -196,6 +206,7 @@ supabase.auth.onAuthStateChange(async (event, session) => {
   if (session?.user && session.access_token) {
     const profile = await loadOrCreateProfile(session.user, session.access_token);
     useAuthStore.setState({ profile });
+    syncOnboardingComplete(profile);
   } else {
     useAuthStore.setState({ profile: null });
   }
@@ -211,5 +222,6 @@ supabase.auth.getSession().then(async ({ data: { session } }) => {
   if (session?.user && session.access_token) {
     const profile = await loadOrCreateProfile(session.user, session.access_token);
     useAuthStore.setState({ profile });
+    syncOnboardingComplete(profile);
   }
 });

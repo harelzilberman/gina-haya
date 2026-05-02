@@ -3,9 +3,11 @@ import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { useDirection } from '../../hooks/useDirection';
 import { useAuthStore } from '../../stores/authStore';
+import { mapAuthError } from '../../utils/authErrors';
 
 export function PasswordResetForm() {
-  const { t } = useTranslation('auth');
+  const { t, i18n } = useTranslation('auth');
+  const lang: 'he' | 'en' = i18n.language === 'en' ? 'en' : 'he';
   const { dir } = useDirection();
   const { resetPassword, isLoading, error, clearError } = useAuthStore();
 
@@ -35,7 +37,7 @@ export function PasswordResetForm() {
     <div dir={dir} className="w-full">
       {error && (
         <div className="mb-4 rounded-lg bg-red-50 border border-red-200 px-4 py-3 text-sm text-red-700">
-          {error}
+          {mapAuthError(error, lang)}
         </div>
       )}
 

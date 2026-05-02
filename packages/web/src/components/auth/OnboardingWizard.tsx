@@ -323,11 +323,16 @@ export function OnboardingWizard() {
   const { session, markOnboardingComplete } = useAuthStore();
   const { step, gardenData, nextStep, updateGardenData, complete } = useOnboardingStore();
   const [isSaving, setIsSaving] = useState(false);
+  const [gardenError, setGardenError] = useState<string | null>(null);
+  const [retryCount, setRetryCount] = useState(0);
+  const lastSkipPlantsRef = useRef(false);
 
   const token = session?.access_token;
 
   const handleFinish = async (skipPlants = false) => {
+    lastSkipPlantsRef.current = skipPlants;
     setIsSaving(true);
+    setGardenError(null);
     try {
       const plantIds = skipPlants ? [] : gardenData.plantIds;
       await api.post(
@@ -345,9 +350,8 @@ export function OnboardingWizard() {
       complete();
     } catch (err) {
       console.error('[onboarding/finish]', err);
-      // Still dismiss so user isn't stuck
-      markOnboardingComplete();
-      complete();
+      setRetryCount((c) => c + 1);
+      setGardenError('לא הצלחנו ליצור את הגינה שלך. נסה שוב.');
     } finally {
       setIsSaving(false);
     }
@@ -394,6 +398,40 @@ export function OnboardingWizard() {
             onSkip={() => handleFinish(true)}
             isSaving={isSaving}
           />
+        )}
+
+        {step === 3 && gardenError && (
+          <div style={{
+            marginTop: '12px',
+            borderRadius: '8px',
+            padding: '12px 14px',
+            backgroundColor: 'rgba(192,57,43,0.08)',
+            border: '1px solid rgba(192,57,43,0.25)',
+            fontSize: '13px',
+            color: '#C0392B',
+            textAlign: 'center',
+          }}>
+            <p style={{ margin: '0 0 8px' }}>{gardenError}</p>
+            {retryCount >= 3 ? (
+              <p style={{ margin: 0, fontSize: '12px' }}>
+                אם הבעיה נמשכת,{' '}
+                <a href="mailto:support@ginahaya.com" style={{ color: '#C0392B' }}>
+                  צור קשר עם התמיכה
+                </a>
+              </p>
+            ) : (
+              <button
+                onClick={() => handleFinish(lastSkipPlantsRef.current)}
+                style={{
+                  background: 'none', border: '1px solid rgba(192,57,43,0.4)',
+                  borderRadius: '6px', padding: '5px 16px', fontSize: '13px',
+                  color: '#C0392B', cursor: 'pointer',
+                }}
+              >
+                נסה שוב
+              </button>
+            )}
+          </div>
         )}
       </div>
     </div>

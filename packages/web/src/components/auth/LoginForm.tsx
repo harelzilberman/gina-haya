@@ -1,6 +1,8 @@
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { useAuthStore } from '../../stores/authStore';
+import { mapAuthError } from '../../utils/authErrors';
 
 const EARTH  = '#142B16';
 const GOLD   = '#F5C840';
@@ -19,6 +21,8 @@ const FORM_CSS = `
 `;
 
 export function LoginForm() {
+  const { i18n } = useTranslation();
+  const lang: 'he' | 'en' = i18n.language === 'en' ? 'en' : 'he';
   const { signIn, signInWithGoogle, isLoading, error, clearError } = useAuthStore();
   const [email,    setEmail]    = useState('');
   const [password, setPassword] = useState('');
@@ -57,7 +61,7 @@ export function LoginForm() {
           fontSize:        '13px',
           color:           '#E07070',
         }}>
-          {error}
+          {mapAuthError(error, lang)}
         </div>
       )}
 
