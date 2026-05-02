@@ -388,13 +388,6 @@ export function ArticlePage() {
     }
   }, []);
 
-  useEffect(() => {
-    return () => {
-      document.title = 'גינה חיה';
-      iframeRef.current?.contentWindow?.removeEventListener('scroll', handleIframeScroll);
-    };
-  }, [handleIframeScroll]);
-
   const scrollRef  = useRef<HTMLDivElement>(null);
   const iframeRef  = useRef<HTMLIFrameElement>(null);
   const entry      = ARTICLES.find(a => a.id === slug);
@@ -461,6 +454,14 @@ export function ArticlePage() {
     const total = win.document.body.scrollHeight - win.innerHeight;
     setProgress(total > 0 ? Math.min(100, (win.scrollY / total) * 100) : 0);
   }, []);
+
+  // Cleanup on unmount — declared here so handleIframeScroll is in scope
+  useEffect(() => {
+    return () => {
+      document.title = 'גינה חיה';
+      iframeRef.current?.contentWindow?.removeEventListener('scroll', handleIframeScroll);
+    };
+  }, [handleIframeScroll]);
 
   const categoryLabel = entry ? (lang === 'he' ? entry.categoryHe : entry.categoryEn) : null;
   const backLabel     = lang === 'he' ? '← חזור למאמרים' : '← Back to Articles';

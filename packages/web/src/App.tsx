@@ -78,8 +78,12 @@ export default function App() {
     profile.onboarding_complete === false &&
     !isComplete;
 
-  // Loading state while auth initialises
-  if (!isAuthReady) {
+  // Loading state while auth initialises — skip gate for public content paths
+  const isPublicContentPath =
+    location.pathname === '/guides' ||
+    location.pathname === '/articles' ||
+    location.pathname.startsWith('/articles/');
+  if (!isAuthReady && !isPublicContentPath) {
     return (
       <div className="min-h-screen flex items-center justify-center"
         style={{ backgroundColor: '#FDF6EC' }}>
