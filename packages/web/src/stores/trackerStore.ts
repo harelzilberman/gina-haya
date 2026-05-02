@@ -186,6 +186,14 @@ export const useTrackerStore = create<TrackerState>((set, get) => ({
         body: JSON.stringify({ imageBase64, mimeType, notes }),
       });
 
+      if (res.status === 403) {
+        const data = await res.json().catch(() => ({}));
+        const err: any = new Error(data.error || 'forbidden');
+        err.errorCode = data.error;
+        err.limitData = { limit: data.limit, current: data.current, resetsAt: data.resets_at };
+        throw err;
+      }
+
       if (res.status === 429) {
         const data = await res.json();
         const err = new Error('limit_exceeded') as any;

@@ -10,6 +10,10 @@ export const trackersRouter: IRouter = Router();
 
 trackersRouter.use(verifyToken);
 
+// Hard safety caps — apply to ALL tiers
+const MAX_TRACKERS_PER_USER  = 30;
+const MAX_ANALYSES_PER_MONTH = 30;
+
 // Tier limits
 const TIER_LIMITS: Record<string, {
   maxTrackers: number | null;
@@ -76,6 +80,22 @@ trackersRouter.post('/', async (req: any, res) => {
     }
     if (!locationType) {
       return res.status(400).json({ error: 'locationType is required' });
+    }
+
+    // Hard cap: max 30 trackers per user across all tiers
+    const { count: totalTrackers } = await db
+      .from('plant_trackers')
+      .select('*', { count: 'exact', head: true })
+      .eq('user_id', userId);
+
+    if ((totalTrackers ?? 0) >= MAX_TRACKERS_PER_USER) {
+      console.log(`[limit] user ${userId} hit tracker_limit limit`);
+      return res.status(403).json({
+        error: 'tracker_limit_reached',
+        message: 'הגעת למגבלת 30 מעקבי גידול. מחק מעקבים ישנים כדי להוסיף חדשים.',
+        limit: MAX_TRACKERS_PER_USER,
+        current: totalTrackers,
+      });
     }
 
     // Check tier tracker limit
@@ -198,6 +218,28 @@ trackersRouter.post('/:id/checkin', async (req: any, res) => {
 
     if (trackerError || !tracker) {
       return res.status(404).json({ error: 'Tracker not found' });
+    }
+
+    // Hard cap: max 30 AI analyses per user per calendar month
+    const startOfMonth = new Date();
+    startOfMonth.setDate(1);
+    startOfMonth.setHours(0, 0, 0, 0);
+
+    const { count: monthlyCount } = await db
+      .from('plant_tracker_checkins')
+      .select('*', { count: 'exact', head: true })
+      .eq('user_id', userId)
+      .gte('created_at', startOfMonth.toISOString());
+
+    if ((monthlyCount ?? 0) >= MAX_ANALYSES_PER_MONTH) {
+      console.log(`[limit] user ${userId} hit analysis_limit limit`);
+      return res.status(403).json({
+        error: 'analysis_limit_reached',
+        message: 'הגעת למגבלת 30 ניתוחי AI לחודש זה. המגבלה מתאפסת בתחילת החודש הבא.',
+        limit: MAX_ANALYSES_PER_MONTH,
+        current: monthlyCount,
+        resets_at: new Date(startOfMonth.getFullYear(), startOfMonth.getMonth() + 1, 1).toISOString(),
+      });
     }
 
     // Check tier limits

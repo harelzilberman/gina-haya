@@ -1,4 +1,5 @@
 import { useState, useRef } from 'react';
+import { Link } from 'react-router-dom';
 import { useTrackerStore, type CheckinResult } from '../../stores/trackerStore';
 import { MAX_PHOTO_SIZE_BYTES, MAX_PHOTO_SIZE_LABEL } from '@gina-haya/shared';
 
@@ -35,6 +36,7 @@ export function PhotoUpload({ trackerId, plantNameHe, onClose, onComplete }: Pro
   const [notes, setNotes] = useState('');
   const [error, setError] = useState('');
   const [dragOver, setDragOver] = useState(false);
+  const [analysisLimitError, setAnalysisLimitError] = useState<{ resetDate: string } | null>(null);
 
   function processFile(file: File) {
     setError('');
@@ -80,7 +82,13 @@ export function PhotoUpload({ trackerId, plantNameHe, onClose, onComplete }: Pro
       const result = await addCheckin(trackerId, imageBase64, mimeType, notes || undefined);
       onComplete(result);
     } catch (err: any) {
-      if (err.message === 'limit_exceeded') {
+      if (err.errorCode === 'analysis_limit_reached') {
+        const resetsAt = err.limitData?.resetsAt;
+        const resetDate = resetsAt
+          ? new Date(resetsAt).toLocaleDateString('he-IL', { day: 'numeric', month: 'long' })
+          : 'תחילת החודש הבא';
+        setAnalysisLimitError({ resetDate });
+      } else if (err.message === 'limit_exceeded') {
         const { tier, limit, limitType } = err.limitData ?? {};
         if (limitType === 'checkins' || limitType === 'checkins_monthly') {
           setError(`הגעת למגבלת הבדיקות בתכנית ${tier}. שדרג לקבלת עוד ניתוחים.`);
@@ -150,7 +158,37 @@ export function PhotoUpload({ trackerId, plantNameHe, onClose, onComplete }: Pro
           </div>
 
           {/* Analyzing state */}
-          {isAnalyzing ? (
+          {analysisLimitError ? (
+            <div style={{
+              textAlign: 'center', padding: '24px 8px',
+              display: 'flex', flexDirection: 'column', gap: '12px', alignItems: 'center',
+            }}>
+              <div style={{ fontSize: '48px' }}>🔬</div>
+              <p style={{ fontFamily: FRANK, fontSize: '18px', color: GOLD, margin: 0 }}>
+                הגעת למגבלת 30 ניתוחי AI לחודש זה
+              </p>
+              <p style={{ fontFamily: ASST, fontSize: '14px', color: `${PARCH}80`, margin: 0, lineHeight: 1.6 }}>
+                המגבלה מתאפסת ב-{analysisLimitError.resetDate}.
+                <br />
+                רוצה ניתוחים נוספים? רכוש חבילה בחנות.
+              </p>
+              <Link
+                to="/shop"
+                onClick={onClose}
+                style={{
+                  fontFamily: FRANK, fontSize: '15px', fontWeight: 700,
+                  color: '#142B16', background: GOLD,
+                  borderRadius: '8px', padding: '11px 28px',
+                  textDecoration: 'none', marginTop: '4px',
+                  display: 'inline-block', transition: 'filter 0.2s',
+                }}
+                onMouseEnter={e => { (e.currentTarget as HTMLElement).style.filter = 'brightness(1.1)'; }}
+                onMouseLeave={e => { (e.currentTarget as HTMLElement).style.filter = 'none'; }}
+              >
+                לחנות →
+              </Link>
+            </div>
+          ) : isAnalyzing ? (
             <div style={{ textAlign: 'center', padding: '32px 0' }}>
               <div className="mon-pulse" style={{ fontSize: '64px', marginBottom: '20px' }}>🌕</div>
               <p style={{ fontFamily: FRANK, fontSize: '20px', color: GOLD, marginBottom: '8px' }}>

@@ -37,6 +37,7 @@ export function NewTrackerModal({ onClose, onCreated }: Props) {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [error, setError] = useState('');
+  const [trackerLimitReached, setTrackerLimitReached] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const gardenPlants = activeGarden?.garden_plants ?? [];
@@ -116,7 +117,9 @@ export function NewTrackerModal({ onClose, onCreated }: Props) {
 
       onCreated(result);
     } catch (err: any) {
-      if (err.message === 'limit_exceeded') {
+      if (err.errorCode === 'tracker_limit_reached') {
+        setTrackerLimitReached(true);
+      } else if (err.message === 'limit_exceeded') {
         setError('הגעת למגבלת המעקבים בתכנית שלך. שדרג לגישה לעוד מעקבים.');
       } else {
         setError(err.message || 'משהו השתבש, נסה שוב');
@@ -208,7 +211,37 @@ export function NewTrackerModal({ onClose, onCreated }: Props) {
           </div>
         )}
 
-        {!isAnalyzing && (
+        {trackerLimitReached && (
+          <div style={{
+            textAlign: 'center',
+            padding: '24px 8px',
+            display: 'flex', flexDirection: 'column', gap: '12px', alignItems: 'center',
+          }}>
+            <div style={{ fontSize: '48px' }}>🌱</div>
+            <p style={{ fontFamily: FRANK, fontSize: '18px', color: GOLD, margin: 0 }}>
+              הגעת למגבלת 30 מעקבי גידול
+            </p>
+            <p style={{ fontFamily: ASST, fontSize: '14px', color: `${PARCH}80`, margin: 0, lineHeight: 1.6 }}>
+              מחק מעקבים ישנים כדי להוסיף חדשים.
+            </p>
+            <button
+              onClick={onClose}
+              style={{
+                fontFamily: FRANK, fontSize: '15px', fontWeight: 700,
+                color: '#142B16', background: GOLD,
+                border: 'none', borderRadius: '8px',
+                padding: '11px 28px', cursor: 'pointer',
+                marginTop: '4px', transition: 'filter 0.2s',
+              }}
+              onMouseEnter={e => { (e.currentTarget as HTMLElement).style.filter = 'brightness(1.1)'; }}
+              onMouseLeave={e => { (e.currentTarget as HTMLElement).style.filter = 'none'; }}
+            >
+              לניהול מעקבים
+            </button>
+          </div>
+        )}
+
+        {!isAnalyzing && !trackerLimitReached && (
           <form onSubmit={handleSubmit}>
             {/* Plant selector */}
             {gardenPlants.length > 0 && (

@@ -17,7 +17,10 @@ async function request<T>(
 
   if (!res.ok) {
     const error = await res.json().catch(() => ({ message: 'Unknown error' }));
-    throw new Error(error.message || `HTTP ${res.status}`);
+    const err: any = new Error(error.message || `HTTP ${res.status}`);
+    err.errorCode = error.error;
+    err.errorData = error;
+    throw err;
   }
   return res.json();
 }
