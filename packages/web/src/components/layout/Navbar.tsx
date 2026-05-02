@@ -189,6 +189,8 @@ export function Navbar() {
               { label: t('nav.tracker'), to: '/tracker' },
               { label: t('nav.tasks'),   to: '/tasks'   },
               { label: t('nav.plants'), to: '/plants' },
+              { label: isHebrew ? 'תמחור' : 'Pricing', to: '/pricing' },
+              { label: isHebrew ? 'חנות' : 'Shop',     to: '/shop'    },
             ].map(item => (
               <Link
                 key={item.to}
@@ -303,6 +305,30 @@ export function Navbar() {
           {!user ? (
             <>
               <Link
+                to="/pricing"
+                style={{
+                  fontFamily: ASSISTANT, fontSize: '13px', fontWeight: 400,
+                  color: PARCHMENT, textDecoration: 'none',
+                  padding: '5px 8px', transition: 'color 0.2s',
+                }}
+                onMouseEnter={e => { (e.currentTarget as HTMLElement).style.color = GOLD; }}
+                onMouseLeave={e => { (e.currentTarget as HTMLElement).style.color = PARCHMENT; }}
+              >
+                {isHebrew ? 'תמחור' : 'Pricing'}
+              </Link>
+              <Link
+                to="/shop"
+                style={{
+                  fontFamily: ASSISTANT, fontSize: '13px', fontWeight: 400,
+                  color: PARCHMENT, textDecoration: 'none',
+                  padding: '5px 8px', transition: 'color 0.2s',
+                }}
+                onMouseEnter={e => { (e.currentTarget as HTMLElement).style.color = GOLD; }}
+                onMouseLeave={e => { (e.currentTarget as HTMLElement).style.color = PARCHMENT; }}
+              >
+                {isHebrew ? 'חנות' : 'Shop'}
+              </Link>
+              <Link
                 to="/login"
                 style={{
                   fontFamily: ASSISTANT,
@@ -412,6 +438,30 @@ export function Navbar() {
                     </Link>
                   ))}
                   <div style={{ height: '1px', backgroundColor: 'rgba(245,200,64,0.1)', margin: '4px 0' }} />
+                  {[
+                    { label: isHebrew ? '💰 תמחור' : '💰 Pricing', to: '/pricing' },
+                    { label: isHebrew ? '🛒 חנות' : '🛒 Shop', to: '/shop' },
+                  ].map(item => (
+                    <Link
+                      key={item.to}
+                      to={item.to}
+                      className="gina-dropdown-item"
+                      onClick={() => setDropdownOpen(false)}
+                      style={{
+                        display: 'block',
+                        padding: '9px 16px',
+                        fontFamily: ASSISTANT,
+                        fontSize: '14px',
+                        fontWeight: 400,
+                        color: PARCHMENT,
+                        textDecoration: 'none',
+                        transition: 'background-color 0.15s, color 0.15s',
+                      }}
+                    >
+                      {item.label}
+                    </Link>
+                  ))}
+                  <div style={{ height: '1px', backgroundColor: 'rgba(245,200,64,0.1)', margin: '4px 0' }} />
                   <button
                     onClick={handleSignOut}
                     style={{
@@ -495,6 +545,8 @@ export function Navbar() {
                 { label: isHebrew ? '📖 מאמרים' : '📖 Articles', to: '/articles' },
                 { label: t('nav.chupchu'),    to: '/chupchu' },
                 { label: t('nav.settings'), to: '/settings' },
+                { label: isHebrew ? '💰 תמחור' : '💰 Pricing', to: '/pricing' },
+                { label: isHebrew ? '🛒 חנות' : '🛒 Shop', to: '/shop' },
               ].map(item => (
                 <Link
                   key={item.to}
@@ -516,8 +568,10 @@ export function Navbar() {
           )}
           {!user && (
             <>
-              <Link to="/login" onClick={() => setMobileOpen(false)} style={{ fontFamily: ASSISTANT, fontSize: '16px', color: PARCHMENT, textDecoration: 'none', padding: '10px 0' }}>{t('nav.login')}</Link>
-              <Link to="/signup" onClick={() => setMobileOpen(false)} style={{ fontFamily: FRANK, fontSize: '16px', fontWeight: 700, color: GOLD, textDecoration: 'none', padding: '10px 0' }}>{t('nav.signup')}</Link>
+              <Link to="/login"   onClick={() => setMobileOpen(false)} style={{ fontFamily: ASSISTANT, fontSize: '16px', color: PARCHMENT, textDecoration: 'none', padding: '10px 0' }}>{t('nav.login')}</Link>
+              <Link to="/signup"  onClick={() => setMobileOpen(false)} style={{ fontFamily: FRANK, fontSize: '16px', fontWeight: 700, color: GOLD, textDecoration: 'none', padding: '10px 0' }}>{t('nav.signup')}</Link>
+              <Link to="/pricing" onClick={() => setMobileOpen(false)} style={{ fontFamily: ASSISTANT, fontSize: '16px', color: PARCHMENT, textDecoration: 'none', padding: '10px 0' }}>{isHebrew ? '💰 תמחור' : '💰 Pricing'}</Link>
+              <Link to="/shop"    onClick={() => setMobileOpen(false)} style={{ fontFamily: ASSISTANT, fontSize: '16px', color: PARCHMENT, textDecoration: 'none', padding: '10px 0' }}>{isHebrew ? '🛒 חנות' : '🛒 Shop'}</Link>
             </>
           )}
           <div style={{ paddingTop: '10px' }}>{langToggle}</div>

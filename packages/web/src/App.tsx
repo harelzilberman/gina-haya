@@ -20,6 +20,8 @@ import { ArticlePage } from './pages/ArticlePage';
 import { TaskCalendarPage } from './pages/TaskCalendarPage';
 import { DashboardPage } from './pages/DashboardPage';
 import { PrivacyPolicyPage } from './pages/PrivacyPolicyPage';
+import { PricingPage } from './pages/PricingPage';
+import { ShopPage } from './pages/ShopPage';
 import { ProtectedRoute } from './components/auth/ProtectedRoute';
 import { OnboardingWizard } from './components/auth/OnboardingWizard';
 import { WelcomeScreen } from './components/auth/WelcomeScreen';
@@ -105,7 +107,9 @@ export default function App() {
   const isPublicContentPath =
     location.pathname === '/guides' ||
     location.pathname === '/articles' ||
-    location.pathname.startsWith('/articles/');
+    location.pathname.startsWith('/articles/') ||
+    location.pathname === '/pricing' ||
+    location.pathname === '/shop';
   if (!isAuthReady && !isPublicContentPath) {
     return (
       <div className="min-h-screen flex items-center justify-center"
@@ -137,6 +141,8 @@ export default function App() {
           {/* Public pages */}
           <Route path="/plants" element={<PlantsPage />} />
           <Route path="/privacy" element={<PrivacyPolicyPage />} />
+          <Route path="/pricing" element={<PricingPage />} />
+          <Route path="/shop" element={<ShopPage />} />
 
           {/* Protected pages */}
           <Route
