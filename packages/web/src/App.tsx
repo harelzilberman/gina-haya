@@ -1,4 +1,4 @@
-import { useEffect } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { Routes, Route, Navigate, useLocation } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { LoginPage } from './pages/LoginPage';
@@ -70,6 +70,28 @@ export default function App() {
   useEffect(() => {
     if (isChupChuPanelOpen && user) loadHistory();
   }, [isChupChuPanelOpen, user]);
+
+  const [showChupChuTooltip, setShowChupChuTooltip] = useState(false);
+  const [chupChuIntroduced, setChupChuIntroduced] = useState(
+    () => localStorage.getItem('chupchu-introduced') === 'true'
+  );
+  const prevWelcomeRef = useRef(false);
+
+  useEffect(() => {
+    if (prevWelcomeRef.current && !showWelcomeScreen && !chupChuIntroduced) {
+      const timer = setTimeout(() => setShowChupChuTooltip(true), 5000);
+      prevWelcomeRef.current = showWelcomeScreen;
+      return () => clearTimeout(timer);
+    }
+    prevWelcomeRef.current = showWelcomeScreen;
+  }, [showWelcomeScreen]);
+
+  useEffect(() => {
+    if (showChupChuTooltip) {
+      const timer = setTimeout(() => setShowChupChuTooltip(false), 4000);
+      return () => clearTimeout(timer);
+    }
+  }, [showChupChuTooltip]);
 
   // Show onboarding wizard if profile loaded and not complete
   const showOnboarding =
@@ -228,34 +250,75 @@ export default function App() {
               />
             </div>
           )}
-          <button
-            onClick={() => isChupChuPanelOpen ? closeChupChuPanel() : openChupChuPanel()}
-            aria-label="שיחה עם צ'ופצ'ו"
-            style={{
-              position:        'fixed',
-              bottom:          '24px',
-              left:            '20px',
-              width:           '52px',
-              height:          '52px',
-              borderRadius:    '50%',
-              backgroundColor: '#F5C840',
-              border:          'none',
-              cursor:          'pointer',
-              fontSize:        isChupChuPanelOpen ? '20px' : '26px',
-              fontWeight:      700,
-              color:           '#142B16',
-              display:         'flex',
-              alignItems:      'center',
-              justifyContent:  'center',
-              zIndex:          9999,
-              boxShadow:       '0 4px 20px rgba(245,200,64,0.45)',
-              transition:      'filter 0.2s, transform 0.2s',
-            }}
-            onMouseEnter={e => { (e.currentTarget as HTMLElement).style.filter = 'brightness(1.1)'; }}
-            onMouseLeave={e => { (e.currentTarget as HTMLElement).style.filter = 'none'; }}
-          >
-            {isChupChuPanelOpen ? '✕' : '🌕'}
-          </button>
+          <div style={{ position: 'fixed', bottom: '24px', left: '20px', zIndex: 9999 }}>
+            {showChupChuTooltip && !chupChuIntroduced && (
+              <div style={{
+                position: 'absolute', bottom: '60px', left: 0,
+                width: '220px', padding: '12px 14px',
+                background: 'rgba(10,26,12,0.96)',
+                border: '1px solid rgba(245,200,64,0.25)',
+                borderRadius: '12px',
+                boxShadow: '0 8px 24px rgba(0,0,0,0.4)',
+                fontSize: '13px', fontFamily: '"Assistant","Heebo",sans-serif',
+                color: 'rgba(237,224,196,0.85)', lineHeight: 1.5,
+                direction: 'rtl', pointerEvents: 'none',
+              }}>
+                זה צ'ופצ'ו — הגנן הביודינמי שלך! 🌿
+                <br />
+                לחץ כדי לשוחח איתו על הגינה שלך.
+              </div>
+            )}
+            <div style={{ position: 'relative', width: '52px', height: '52px' }}>
+              {!chupChuIntroduced && !isChupChuPanelOpen && (
+                <div
+                  onClick={e => { e.stopPropagation(); setShowChupChuTooltip(v => !v); }}
+                  style={{
+                    position: 'absolute', top: -4, right: -4,
+                    width: 18, height: 18, borderRadius: '50%',
+                    background: '#F5C840', color: '#142B16',
+                    fontSize: '11px', fontWeight: 700,
+                    display: 'flex', alignItems: 'center', justifyContent: 'center',
+                    cursor: 'pointer', zIndex: 1,
+                  }}
+                >?</div>
+              )}
+              <button
+                onClick={() => {
+                  if (isChupChuPanelOpen) {
+                    closeChupChuPanel();
+                  } else {
+                    openChupChuPanel();
+                    if (!chupChuIntroduced) {
+                      localStorage.setItem('chupchu-introduced', 'true');
+                      setChupChuIntroduced(true);
+                      setShowChupChuTooltip(false);
+                    }
+                  }
+                }}
+                aria-label="שיחה עם צ'ופצ'ו"
+                style={{
+                  width:           '52px',
+                  height:          '52px',
+                  borderRadius:    '50%',
+                  backgroundColor: '#F5C840',
+                  border:          'none',
+                  cursor:          'pointer',
+                  fontSize:        isChupChuPanelOpen ? '20px' : '26px',
+                  fontWeight:      700,
+                  color:           '#142B16',
+                  display:         'flex',
+                  alignItems:      'center',
+                  justifyContent:  'center',
+                  boxShadow:       '0 4px 20px rgba(245,200,64,0.45)',
+                  transition:      'filter 0.2s, transform 0.2s',
+                }}
+                onMouseEnter={e => { (e.currentTarget as HTMLElement).style.filter = 'brightness(1.1)'; }}
+                onMouseLeave={e => { (e.currentTarget as HTMLElement).style.filter = 'none'; }}
+              >
+                {isChupChuPanelOpen ? '✕' : '🌕'}
+              </button>
+            </div>
+          </div>
         </>
       )}
     </div>

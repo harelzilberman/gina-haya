@@ -21,6 +21,17 @@ const FORM_CSS = `
   outline: none;
   box-shadow: 0 0 0 3px rgba(245,200,64,0.06);
 }
+@keyframes authSpin { to { transform: rotate(360deg) } }
+.auth-spinner {
+  width: 14px; height: 14px;
+  border: 2px solid rgba(255,255,255,0.3);
+  border-top-color: white;
+  border-radius: 50%;
+  animation: authSpin 0.7s linear infinite;
+  display: inline-block;
+  margin-inline-end: 8px;
+  vertical-align: middle;
+}
 `;
 
 export function SignupForm() {
@@ -32,6 +43,7 @@ export function SignupForm() {
   const [displayName,       setDisplayName]       = useState('');
   const [email,             setEmail]             = useState('');
   const [password,          setPassword]          = useState('');
+  const [agreedToTerms,     setAgreedToTerms]     = useState(false);
   const [showVerification,  setShowVerification]  = useState(false);
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -138,9 +150,28 @@ export function SignupForm() {
             />
           </div>
 
+          <label style={{
+            display: 'flex', gap: '8px', fontSize: '13px',
+            alignItems: 'flex-start', cursor: 'pointer',
+            color: `${PARCH}90`, fontFamily: ASSIST,
+          }}>
+            <input
+              type="checkbox"
+              checked={agreedToTerms}
+              onChange={e => setAgreedToTerms(e.target.checked)}
+              style={{ marginTop: '2px', flexShrink: 0 }}
+            />
+            <span>
+              {t('agreeToTerms')}{' '}
+              <a href="/privacy" target="_blank" rel="noopener noreferrer" style={{ color: SAGE }}>{t('privacyPolicy')}</a>
+              {' '}{t('and')}{' '}
+              <a href="/terms" target="_blank" rel="noopener noreferrer" style={{ color: SAGE }}>{t('termsOfService')}</a>
+            </span>
+          </label>
+
           <button
             type="submit"
-            disabled={isLoading}
+            disabled={isLoading || !agreedToTerms}
             style={{
               width:           '100%',
               padding:         '13px',
@@ -151,15 +182,15 @@ export function SignupForm() {
               fontWeight:      600,
               fontSize:        '15px',
               color:           EARTH,
-              cursor:          isLoading ? 'default' : 'pointer',
-              opacity:         isLoading ? 0.7 : 1,
+              cursor:          isLoading || !agreedToTerms ? 'default' : 'pointer',
+              opacity:         isLoading || !agreedToTerms ? 0.7 : 1,
               transition:      'filter 0.2s',
               marginTop:       '4px',
             }}
-            onMouseEnter={e => { if (!isLoading) (e.currentTarget as HTMLElement).style.filter = 'brightness(1.1)'; }}
+            onMouseEnter={e => { if (!isLoading && agreedToTerms) (e.currentTarget as HTMLElement).style.filter = 'brightness(1.1)'; }}
             onMouseLeave={e => { (e.currentTarget as HTMLElement).style.filter = 'none'; }}
           >
-            {isLoading ? '...' : t('signup.submitButton')}
+            {isLoading ? (<><span className="auth-spinner" />{t('loading')}</>) : t('signup.submitButton')}
           </button>
         </form>
 
@@ -198,10 +229,6 @@ export function SignupForm() {
           <GoogleIcon />
           {t('signup.googleButton')}
         </button>
-
-        <p style={{ marginTop: '14px', textAlign: 'center', fontFamily: ASSIST, fontSize: '11px', color: `${PARCH}35` }}>
-          {t('signup.terms')}
-        </p>
 
         <p style={{ marginTop: '12px', textAlign: 'center', fontFamily: ASSIST, fontSize: '13px', color: `${PARCH}55` }}>
           {t('signup.hasAccount')}{' '}

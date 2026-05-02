@@ -63,21 +63,7 @@ function ChupChuAvatar() {
 function Step0({ onAgree }: { onAgree: () => void }) {
   const { t } = useTranslation('auth');
   const { dir } = useDirection();
-  const [scrolled, setScrolled] = useState(false);
-  const scrollRef = useRef<HTMLDivElement>(null);
-
-  const handleScroll = () => {
-    const el = scrollRef.current;
-    if (!el) return;
-    const atBottom = el.scrollHeight - el.scrollTop <= el.clientHeight + 8;
-    if (atBottom) setScrolled(true);
-  };
-
-  // Allow agreement if content is short enough to not need scrolling
-  useEffect(() => {
-    const el = scrollRef.current;
-    if (el && el.scrollHeight <= el.clientHeight + 8) setScrolled(true);
-  }, []);
+  const [agreed, setAgreed] = useState(false);
 
   return (
     <div dir={dir} className="text-center">
@@ -86,31 +72,41 @@ function Step0({ onAgree }: { onAgree: () => void }) {
       <p className="text-gray-500 text-sm mb-5">{t('onboarding.opening')}</p>
 
       <div className="text-start mb-4">
-        <p className="text-xs font-semibold text-navy mb-2 uppercase tracking-wide">
+        <p className="text-xs font-semibold text-navy mb-3 uppercase tracking-wide">
           {t('onboarding.privacyTitle')}
         </p>
-        <div
-          ref={scrollRef}
-          onScroll={handleScroll}
-          className="overflow-y-auto rounded-xl bg-gray-50 border border-gray-100 p-4 text-sm text-gray-600 leading-relaxed whitespace-pre-line"
-          style={{ maxHeight: 200 }}
+        <ul style={{ listStyle: 'none', padding: 0, margin: '0 0 12px', display: 'flex', flexDirection: 'column', gap: '8px' }}>
+          {(t('onboarding.privacyBullets', { returnObjects: true }) as string[]).map((b, i) => (
+            <li key={i} className="text-sm text-gray-600">{b}</li>
+          ))}
+        </ul>
+        <a
+          href="/privacy"
+          target="_blank"
+          rel="noopener noreferrer"
+          className="text-xs underline"
+          style={{ color: '#4A7C59', display: 'block', marginBottom: '16px' }}
         >
-          {t('onboarding.privacyBody')}
-        </div>
-        {!scrolled && (
-          <p className="text-xs text-gray-400 text-center mt-1">
-            {t('onboarding.scrollHint')}
-          </p>
-        )}
+          {t('onboarding.readFullPolicy')}
+        </a>
+        <label style={{ display: 'flex', gap: '8px', alignItems: 'flex-start', cursor: 'pointer' }}>
+          <input
+            type="checkbox"
+            checked={agreed}
+            onChange={e => setAgreed(e.target.checked)}
+            style={{ marginTop: '2px', flexShrink: 0 }}
+          />
+          <span className="text-sm text-gray-600">{t('onboarding.privacyCheckbox')}</span>
+        </label>
       </div>
 
       <button
         onClick={onAgree}
-        disabled={!scrolled}
+        disabled={!agreed}
         className="w-full rounded-lg py-3 text-sm font-medium text-white transition"
         style={{
-          backgroundColor: scrolled ? '#4A7C59' : '#9CA3AF',
-          cursor: scrolled ? 'pointer' : 'not-allowed',
+          backgroundColor: agreed ? '#4A7C59' : '#9CA3AF',
+          cursor: agreed ? 'pointer' : 'not-allowed',
         }}
       >
         {t('onboarding.agreeButton')}

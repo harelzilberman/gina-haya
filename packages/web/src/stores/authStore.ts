@@ -92,6 +92,18 @@ async function loadOrCreateProfile(user: User, accessToken: string): Promise<Use
   if (!profile) {
     profile = await createProfile(user, accessToken);
   }
+
+  const displayName = profile?.display_name;
+  const metaName = user.user_metadata?.full_name || user.user_metadata?.name;
+  if (!displayName && metaName) {
+    await supabase
+      .from('users')
+      .update({ display_name: metaName })
+      .eq('id', user.id);
+    console.log('[auth] Synced displayName from metadata:', metaName);
+    if (profile) profile = { ...profile, display_name: metaName };
+  }
+
   return profile;
 }
 

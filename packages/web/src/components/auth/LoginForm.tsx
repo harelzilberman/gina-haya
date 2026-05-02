@@ -20,6 +20,17 @@ const FORM_CSS = `
   outline: none;
   box-shadow: 0 0 0 3px rgba(245,200,64,0.06);
 }
+@keyframes authSpin { to { transform: rotate(360deg) } }
+.auth-spinner {
+  width: 14px; height: 14px;
+  border: 2px solid rgba(255,255,255,0.3);
+  border-top-color: white;
+  border-radius: 50%;
+  animation: authSpin 0.7s linear infinite;
+  display: inline-block;
+  margin-inline-end: 8px;
+  vertical-align: middle;
+}
 `;
 
 export function LoginForm() {
@@ -149,7 +160,7 @@ export function LoginForm() {
           onMouseEnter={e => { if (!isLoading) (e.currentTarget as HTMLElement).style.filter = 'brightness(1.1)'; }}
           onMouseLeave={e => { (e.currentTarget as HTMLElement).style.filter = 'none'; }}
         >
-          {isLoading ? '...' : t('login.submitButton')}
+          {isLoading ? (<><span className="auth-spinner" />{t('loading')}</>) : t('login.submitButton')}
         </button>
       </form>
 
