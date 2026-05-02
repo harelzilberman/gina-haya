@@ -1,6 +1,7 @@
 import { useState, useRef } from 'react';
 import { useTrackerStore, type CheckinResult } from '../../stores/trackerStore';
 import { useAuthStore } from '../../stores/authStore';
+import { useToastStore } from '../../stores/toastStore';
 import { MAX_PHOTO_SIZE_BYTES, MAX_PHOTO_SIZE_LABEL } from '@gina-haya/shared';
 import { UpgradeModal } from '../upgrade/UpgradeModal';
 
@@ -30,6 +31,7 @@ interface Props {
 export function PhotoUpload({ trackerId, plantNameHe, onClose, onComplete }: Props) {
   const { addCheckin, isAnalyzing } = useTrackerStore();
   const { profile } = useAuthStore();
+  const { show: showToast } = useToastStore();
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const [preview, setPreview] = useState<string | null>(null);
@@ -83,6 +85,9 @@ export function PhotoUpload({ trackerId, plantNameHe, onClose, onComplete }: Pro
     setError('');
     try {
       const result = await addCheckin(trackerId, imageBase64, mimeType, notes || undefined);
+      if (result.used_credit) {
+        showToast('השתמשת במגבלה החודשית — משתמש בקרדיט שרכשת 🔬', 'info');
+      }
       onComplete(result);
     } catch (err: any) {
       if (err.errorCode === 'analysis_limit_reached') {

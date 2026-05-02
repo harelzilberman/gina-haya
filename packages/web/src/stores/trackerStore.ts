@@ -84,6 +84,7 @@ export interface CheckinResult {
   analysis: PlantAnalysis;
   growingPlan: GrowingPlan;
   suggested_tasks?: TrackerTask[];
+  used_credit?: boolean;
 }
 
 export interface LimitError {

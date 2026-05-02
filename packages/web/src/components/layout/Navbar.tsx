@@ -4,6 +4,7 @@ import { useTranslation } from 'react-i18next';
 import { useAuthStore } from '../../stores/authStore';
 import { useDirection } from '../../hooks/useDirection';
 import { usePlanLimit, TIER_DISPLAY } from '../../hooks/usePlanLimit';
+import { useCredits } from '../../hooks/useCredits';
 
 // ── Design tokens ──────────────────────────────────────────────────────────
 const GOLD       = '#F5C840';
@@ -83,6 +84,7 @@ export function Navbar() {
 
   const { tier } = usePlanLimit();
   const tierDisplay = TIER_DISPLAY[tier] ?? TIER_DISPLAY.free;
+  const { credits } = useCredits();
 
   const initials = (() => {
     const name = profile?.display_name || user?.email || '';
@@ -369,7 +371,41 @@ export function Navbar() {
               </Link>
             </>
           ) : (
-            <div style={{ position: 'relative' }} ref={dropdownRef}>
+            <>
+              {/* Credit pills */}
+              {credits.analysis.available > 0 && (
+                <button
+                  title="קרדיטים זמינים — לחץ לחנות"
+                  onClick={() => navigate('/shop')}
+                  style={{
+                    fontFamily: ASSISTANT, fontSize: '11px', fontWeight: 700,
+                    padding: '3px 9px', borderRadius: '12px',
+                    backgroundColor: 'rgba(245,200,64,0.12)',
+                    border: '1px solid rgba(245,200,64,0.35)',
+                    color: GOLD, cursor: 'pointer',
+                    display: 'flex', alignItems: 'center', gap: '3px',
+                  }}
+                >
+                  🔬 {credits.analysis.available}
+                </button>
+              )}
+              {credits.tracker.available > 0 && (
+                <button
+                  title="קרדיטים זמינים — לחץ לחנות"
+                  onClick={() => navigate('/shop')}
+                  style={{
+                    fontFamily: ASSISTANT, fontSize: '11px', fontWeight: 700,
+                    padding: '3px 9px', borderRadius: '12px',
+                    backgroundColor: 'rgba(245,200,64,0.12)',
+                    border: '1px solid rgba(245,200,64,0.35)',
+                    color: GOLD, cursor: 'pointer',
+                    display: 'flex', alignItems: 'center', gap: '3px',
+                  }}
+                >
+                  🌱 {credits.tracker.available}
+                </button>
+              )}
+              <div style={{ position: 'relative' }} ref={dropdownRef}>
               <button
                 onClick={() => setDropdownOpen(v => !v)}
                 style={{
@@ -517,6 +553,7 @@ export function Navbar() {
                 </div>
               )}
             </div>
+            </>
           )}
         </div>
 

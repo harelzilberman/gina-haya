@@ -7,6 +7,7 @@ import { useToastStore } from '../stores/toastStore';
 import { supabase } from '../lib/supabase';
 import { usePushNotifications } from '../hooks/usePushNotifications';
 import { usePlanLimit, TIER_DISPLAY } from '../hooks/usePlanLimit';
+import { useCredits } from '../hooks/useCredits';
 
 const EARTH  = '#142B16';
 const GOLD   = '#F5C840';
@@ -67,6 +68,7 @@ export function SettingsPage() {
   const { show: showToast }  = useToastStore();
   const { isSubscribed, permission, subscribe, unsubscribe, isLoading: pushLoading } = usePushNotifications();
   const { tier, display: tierDisplay } = usePlanLimit();
+  const { credits } = useCredits();
 
   const [dailyTipEmail, setDailyTipEmail] = useState<boolean>(
     profile?.daily_tip_email ?? true
@@ -319,6 +321,36 @@ export function SettingsPage() {
                     <UsageBar used={row.used} limit={row.limit} />
                   </div>
                 ))}
+              </div>
+            )}
+
+            {/* Purchased credits */}
+            {(credits.analysis.available > 0 || credits.tracker.available > 0 || credits.garden.available > 0) && (
+              <div style={{
+                backgroundColor: 'rgba(245,200,64,0.06)',
+                border: '1px solid rgba(245,200,64,0.2)',
+                borderRadius: '8px',
+                padding: '12px 14px',
+                marginBottom: '16px',
+              }}>
+                <p style={{ fontFamily: ASSIST, fontSize: '12px', color: `${PARCH}70`, margin: '0 0 8px' }}>
+                  {isHe ? 'קרדיטים שרכשת:' : 'Purchased credits:'}
+                </p>
+                {credits.analysis.available > 0 && (
+                  <div style={{ fontFamily: FRANK, fontSize: '14px', color: GOLD, margin: '0 0 4px' }}>
+                    🔬 {isHe ? 'ניתוחים' : 'Analyses'}: {credits.analysis.available} {isHe ? 'זמינים' : 'available'}
+                  </div>
+                )}
+                {credits.tracker.available > 0 && (
+                  <div style={{ fontFamily: FRANK, fontSize: '14px', color: GOLD, margin: '0 0 4px' }}>
+                    🌱 {isHe ? 'מעקבים' : 'Trackers'}: {credits.tracker.available} {isHe ? 'זמינים' : 'available'}
+                  </div>
+                )}
+                {credits.garden.available > 0 && (
+                  <div style={{ fontFamily: FRANK, fontSize: '14px', color: GOLD }}>
+                    🏡 {isHe ? 'גינות' : 'Gardens'}: {credits.garden.available} {isHe ? 'זמינות' : 'available'}
+                  </div>
+                )}
               </div>
             )}
 

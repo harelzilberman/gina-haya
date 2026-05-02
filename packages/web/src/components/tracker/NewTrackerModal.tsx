@@ -2,6 +2,7 @@ import { useState, useRef } from 'react';
 import { useTrackerStore, type CheckinResult } from '../../stores/trackerStore';
 import { useGardenStore } from '../../stores/gardenStore';
 import { useAuthStore } from '../../stores/authStore';
+import { useToastStore } from '../../stores/toastStore';
 import { MAX_PHOTO_SIZE_BYTES, MAX_PHOTO_SIZE_LABEL } from '@gina-haya/shared';
 import { UpgradeModal } from '../upgrade/UpgradeModal';
 
@@ -28,6 +29,7 @@ export function NewTrackerModal({ onClose, onCreated }: Props) {
   const { createTracker, addCheckin } = useTrackerStore();
   const { activeGarden } = useGardenStore();
   const { profile } = useAuthStore();
+  const { show: showToast } = useToastStore();
 
   const [plantNameHe, setPlantNameHe] = useState('');
   const [plantNameEn, setPlantNameEn] = useState('');
@@ -117,7 +119,9 @@ export function NewTrackerModal({ onClose, onCreated }: Props) {
       const base64 = imagePreview!.split(',')[1];
       const mimeType = imageFile.type;
       const result = await addCheckin(tracker.id, base64, mimeType, notes.trim() || undefined);
-
+      if (result.used_credit) {
+        showToast('השתמשת במגבלה החודשית — משתמש בקרדיט שרכשת 🔬', 'info');
+      }
       onCreated(result);
     } catch (err: any) {
       if (err.errorCode === 'tracker_limit_reached' || err.message === 'limit_exceeded') {

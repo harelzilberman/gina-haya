@@ -68,7 +68,7 @@ trackersRouter.post('/', async (req: any, res) => {
       return res.status(400).json({ error: 'locationType is required' });
     }
 
-    // Enforce per-tier tracker limit
+    // Enforce per-tier tracker limit (with credit fallback)
     const maxTrackers = req.limits?.maxTrackers ?? null;
     if (maxTrackers !== null) {
       const { count } = await db
@@ -77,14 +77,34 @@ trackersRouter.post('/', async (req: any, res) => {
         .eq('user_id', userId);
 
       if ((count ?? 0) >= maxTrackers) {
-        console.log(`[limit] user ${userId} hit tracker_limit (tier=${req.tier}, max=${maxTrackers})`);
-        return res.status(403).json({
-          error: 'tracker_limit_reached',
-          message: 'הגעת למגבלת מעקבי הגידול בתכנית שלך.',
-          tier: req.tier,
-          limit: maxTrackers,
-          current: count,
-        });
+        // Check purchased tracker credits before blocking
+        const { data: creditRow } = await db
+          .from('user_credits')
+          .select('id, total, used')
+          .eq('user_id', userId)
+          .eq('credit_type', 'tracker')
+          .single();
+
+        const available = Math.max(0, (creditRow?.total ?? 0) - (creditRow?.used ?? 0));
+
+        if (available <= 0) {
+          console.log(`[limit] user ${userId} hit tracker_limit (tier=${req.tier}, max=${maxTrackers})`);
+          return res.status(403).json({
+            error: 'tracker_limit_reached',
+            message: 'הגעת למגבלת מעקבי הגידול בתכנית שלך.',
+            tier: req.tier,
+            limit: maxTrackers,
+            current: count,
+          });
+        }
+
+        // Consume one tracker credit
+        await db
+          .from('user_credits')
+          .update({ used: (creditRow!.used ?? 0) + 1, updated_at: new Date().toISOString() })
+          .eq('id', creditRow!.id);
+
+        console.log(`[credits] user ${userId} used tracker credit (${available - 1} remaining)`);
       }
     }
 
@@ -185,6 +205,29 @@ trackersRouter.post('/:id/checkin', async (req: any, res) => {
 
     const limits = req.limits;
     const tier   = req.tier ?? 'free';
+    let usedAnalysisCredit = false;
+
+    // Helper: consume analysis credit if available, else block
+    async function checkAnalysisCredit(errPayload: object): Promise<boolean> {
+      const { data: creditRow } = await db
+        .from('user_credits')
+        .select('id, total, used')
+        .eq('user_id', userId)
+        .eq('credit_type', 'analysis')
+        .single();
+
+      const available = Math.max(0, (creditRow?.total ?? 0) - (creditRow?.used ?? 0));
+      if (available <= 0) return false; // no credits — block
+
+      await db
+        .from('user_credits')
+        .update({ used: (creditRow!.used ?? 0) + 1, updated_at: new Date().toISOString() })
+        .eq('id', creditRow!.id);
+
+      console.log(`[credits] user ${userId} used analysis credit (${available - 1} remaining)`);
+      usedAnalysisCredit = true;
+      return true;
+    }
 
     // Free tier: hard cap on total checkins ever
     if (limits?.maxTotalCheckinsEver !== null && limits?.maxTotalCheckinsEver !== undefined) {
@@ -194,14 +237,12 @@ trackersRouter.post('/:id/checkin', async (req: any, res) => {
         .eq('user_id', userId);
 
       if ((count ?? 0) >= limits.maxTotalCheckinsEver) {
-        console.log(`[limit] user ${userId} hit maxTotalCheckinsEver (tier=${tier})`);
-        return res.status(429).json({
-          error: 'limit_exceeded',
-          message: 'limit_exceeded',
-          tier,
-          limit: limits.maxTotalCheckinsEver,
-          type: 'checkins',
-        });
+        const errPayload = { error: 'limit_exceeded', message: 'limit_exceeded', tier, limit: limits.maxTotalCheckinsEver, type: 'checkins' };
+        const credited = await checkAnalysisCredit(errPayload);
+        if (!credited) {
+          console.log(`[limit] user ${userId} hit maxTotalCheckinsEver (tier=${tier})`);
+          return res.status(429).json(errPayload);
+        }
       }
     } else if (limits?.maxCheckinsPerTrackerPerMonth !== null && limits?.maxCheckinsPerTrackerPerMonth !== undefined) {
       // Paid tiers: per tracker per month
@@ -217,15 +258,12 @@ trackersRouter.post('/:id/checkin', async (req: any, res) => {
 
       if ((count ?? 0) >= limits.maxCheckinsPerTrackerPerMonth) {
         const resetsAt = new Date(startOfMonth.getFullYear(), startOfMonth.getMonth() + 1, 1).toISOString();
-        console.log(`[limit] user ${userId} hit maxCheckinsPerTrackerPerMonth (tier=${tier})`);
-        return res.status(403).json({
-          error: 'analysis_limit_reached',
-          message: 'הגעת למגבלת הניתוחים החודשית עבור מעקב זה.',
-          tier,
-          limit: limits.maxCheckinsPerTrackerPerMonth,
-          current: count,
-          resets_at: resetsAt,
-        });
+        const errPayload = { error: 'analysis_limit_reached', message: 'הגעת למגבלת הניתוחים החודשית עבור מעקב זה.', tier, limit: limits.maxCheckinsPerTrackerPerMonth, current: count, resets_at: resetsAt };
+        const credited = await checkAnalysisCredit(errPayload);
+        if (!credited) {
+          console.log(`[limit] user ${userId} hit maxCheckinsPerTrackerPerMonth (tier=${tier})`);
+          return res.status(403).json(errPayload);
+        }
       }
     }
 
@@ -336,7 +374,7 @@ trackersRouter.post('/:id/checkin', async (req: any, res) => {
 
     if (checkinError) throw checkinError;
 
-    res.status(201).json({ checkin, analysis, growingPlan, suggested_tasks: tasks });
+    res.status(201).json({ checkin, analysis, growingPlan, suggested_tasks: tasks, used_credit: usedAnalysisCredit });
   } catch (err: any) {
     console.error('[POST /api/trackers/:id/checkin]', err.message);
     res.status(500).json({ error: err.message, error_code: 'unknown' });
