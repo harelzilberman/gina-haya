@@ -126,7 +126,7 @@ function VideoCard({ video, onClick }: { video: Video; onClick: () => void }) {
 
   const thumbnailUrl = video.youtubeId
     ? `https://img.youtube.com/vi/${video.youtubeId}/mqdefault.jpg`
-    : `https://placehold.co/320x180/142B16/F5C840?text=${encodeURIComponent(video.titleHe)}`;
+    : '/images/coming-soon-video.svg';
 
   return (
     <div
@@ -416,7 +416,7 @@ function SubjectModal({
   const category   = CATEGORIES.find(c => c.id === video.category);
   const thumbUrl   = video.youtubeId
     ? `https://img.youtube.com/vi/${video.youtubeId}/mqdefault.jpg`
-    : `https://placehold.co/500x280/142B16/F5C840?text=${encodeURIComponent(video.titleHe)}`;
+    : '/images/coming-soon-video.svg';
 
   const rowBase: React.CSSProperties = {
     display: 'flex', alignItems: 'center', gap: '14px',

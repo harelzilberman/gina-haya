@@ -333,6 +333,8 @@ function parseMarkdown(raw: string, lang: 'he' | 'en') {
     /^##\s+פרומפטים ל-ComfyUI/m,
     /^##\s+SUGGESTED VISUAL ASSETS/im,
     /^##\s+הצעות לנכסים חזותיים/m,
+    /^##\s+\d+\.\s+מדריך חזותי/m,
+    /^##\s+\d+\.\s+Visual Guide/im,
   ];
   let stripped = raw;
   for (const p of internalHeadings) {
