@@ -4,6 +4,8 @@ import { useTranslation } from 'react-i18next';
 import { useDirection } from '../../hooks/useDirection';
 import { useAuthStore } from '../../stores/authStore';
 import { mapAuthError, MIN_PASSWORD_LENGTH } from '../../utils/authErrors';
+import { supabase } from '../../lib/supabase';
+import { EmailVerificationScreen } from './EmailVerificationScreen';
 
 const EARTH  = '#142B16';
 const GOLD   = '#F5C840';
@@ -27,14 +29,19 @@ export function SignupForm() {
   const { dir } = useDirection();
   const { signUp, signInWithGoogle, isLoading, error, clearError } = useAuthStore();
 
-  const [displayName, setDisplayName] = useState('');
-  const [email,       setEmail]       = useState('');
-  const [password,    setPassword]    = useState('');
+  const [displayName,       setDisplayName]       = useState('');
+  const [email,             setEmail]             = useState('');
+  const [password,          setPassword]          = useState('');
+  const [showVerification,  setShowVerification]  = useState(false);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     clearError();
     await signUp(email, password, displayName);
+    const { error: storeError, session, user } = useAuthStore.getState();
+    if (!storeError && user && !session) {
+      setShowVerification(true);
+    }
   };
 
   const inputStyle: React.CSSProperties = {
@@ -58,6 +65,15 @@ export function SignupForm() {
     color:        `${PARCH}70`,
     marginBottom: '6px',
   };
+
+  if (showVerification) {
+    return (
+      <EmailVerificationScreen
+        email={email}
+        onResend={async () => { await supabase.auth.resend({ type: 'signup', email }); }}
+      />
+    );
+  }
 
   return (
     <>

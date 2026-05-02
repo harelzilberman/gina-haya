@@ -321,7 +321,7 @@ function NavButtons({ onContinue, onSkip }: { onContinue: () => void; onSkip: ()
 
 export function OnboardingWizard() {
   const { session, markOnboardingComplete } = useAuthStore();
-  const { step, gardenData, nextStep, updateGardenData, complete } = useOnboardingStore();
+  const { step, gardenData, nextStep, updateGardenData, complete, setShowWelcomeScreen } = useOnboardingStore();
   const [isSaving, setIsSaving] = useState(false);
   const [gardenError, setGardenError] = useState<string | null>(null);
   const [retryCount, setRetryCount] = useState(0);
@@ -348,6 +348,9 @@ export function OnboardingWizard() {
       await api.patch('/api/auth/profile', { onboardingComplete: true }, token);
       markOnboardingComplete();
       complete();
+      if (!localStorage.getItem('chupchu-welcomed')) {
+        setShowWelcomeScreen(true);
+      }
     } catch (err) {
       console.error('[onboarding/finish]', err);
       setRetryCount((c) => c + 1);

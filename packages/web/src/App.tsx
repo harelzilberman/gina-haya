@@ -22,6 +22,7 @@ import { DashboardPage } from './pages/DashboardPage';
 import { PrivacyPolicyPage } from './pages/PrivacyPolicyPage';
 import { ProtectedRoute } from './components/auth/ProtectedRoute';
 import { OnboardingWizard } from './components/auth/OnboardingWizard';
+import { WelcomeScreen } from './components/auth/WelcomeScreen';
 import { Navbar } from './components/layout/Navbar';
 import { Footer } from './components/layout/Footer';
 import { ToastContainer } from './components/ui/Toast';
@@ -40,7 +41,7 @@ export default function App() {
   const isMapPage   = location.pathname === '/map';
   const isChupChuPage = location.pathname === '/chupchu';
   const { user, profile, isAuthReady, loadProfile, markOnboardingComplete } = useAuthStore();
-  const { isComplete } = useOnboardingStore();
+  const { isComplete, showWelcomeScreen } = useOnboardingStore();
   const { isOpen: isUpgradeOpen } = useUpgradeModalStore();
   const {
     isOpen:             isChupChuPanelOpen,
@@ -199,6 +200,7 @@ export default function App() {
       {!isMapPage && <Footer />}
 
       {showOnboarding && <OnboardingWizard />}
+      {showWelcomeScreen && <WelcomeScreen />}
       {isUpgradeOpen && <UpgradeModal />}
       <ToastContainer />
 

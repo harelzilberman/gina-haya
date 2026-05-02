@@ -15,10 +15,12 @@ interface OnboardingState {
   step: Step;
   gardenData: OnboardingGardenData;
   isComplete: boolean;
+  showWelcomeScreen: boolean;
   nextStep: () => void;
   prevStep: () => void;
   updateGardenData: (data: Partial<OnboardingGardenData>) => void;
   complete: () => void;
+  setShowWelcomeScreen: (v: boolean) => void;
 }
 
 export const useOnboardingStore = create<OnboardingState>()(
@@ -32,6 +34,7 @@ export const useOnboardingStore = create<OnboardingState>()(
         plantIds: [],
       },
       isComplete: false,
+      showWelcomeScreen: false,
 
       nextStep: () =>
         set((s) => ({ step: (Math.min(s.step + 1, 3) as Step) })),
@@ -43,7 +46,16 @@ export const useOnboardingStore = create<OnboardingState>()(
         set((s) => ({ gardenData: { ...s.gardenData, ...data } })),
 
       complete: () => set({ isComplete: true }),
+
+      setShowWelcomeScreen: (v) => set({ showWelcomeScreen: v }),
     }),
-    { name: 'gina-haya-onboarding' }
+    {
+      name: 'gina-haya-onboarding',
+      partialize: (state) => ({
+        step: state.step,
+        gardenData: state.gardenData,
+        isComplete: state.isComplete,
+      }),
+    }
   )
 );

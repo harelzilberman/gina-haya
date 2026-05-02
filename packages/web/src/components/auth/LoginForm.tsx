@@ -3,6 +3,8 @@ import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { useAuthStore } from '../../stores/authStore';
 import { mapAuthError, MIN_PASSWORD_LENGTH } from '../../utils/authErrors';
+import { supabase } from '../../lib/supabase';
+import { EmailVerificationScreen } from './EmailVerificationScreen';
 
 const EARTH  = '#142B16';
 const GOLD   = '#F5C840';
@@ -24,13 +26,18 @@ export function LoginForm() {
   const { t, i18n } = useTranslation('auth');
   const lang: 'he' | 'en' = i18n.language === 'en' ? 'en' : 'he';
   const { signIn, signInWithGoogle, isLoading, error, clearError } = useAuthStore();
-  const [email,    setEmail]    = useState('');
-  const [password, setPassword] = useState('');
+  const [email,            setEmail]           = useState('');
+  const [password,         setPassword]        = useState('');
+  const [showVerification, setShowVerification] = useState(false);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     clearError();
     await signIn(email, password);
+    const { error: storeError } = useAuthStore.getState();
+    if (storeError?.includes('Email not confirmed')) {
+      setShowVerification(true);
+    }
   };
 
   const inputStyle: React.CSSProperties = {
@@ -45,6 +52,15 @@ export function LoginForm() {
     color:           PARCH,
     transition:      'border-color 0.2s, box-shadow 0.2s',
   };
+
+  if (showVerification) {
+    return (
+      <EmailVerificationScreen
+        email={email}
+        onResend={async () => { await supabase.auth.resend({ type: 'signup', email }); }}
+      />
+    );
+  }
 
   return (
     <>

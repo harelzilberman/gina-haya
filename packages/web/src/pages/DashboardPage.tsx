@@ -1,11 +1,84 @@
 import { useEffect, useRef, useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { useToday } from '../hooks/useCalendar';
 import { useTasks } from '../hooks/useTasks';
 import { useAuthStore } from '../stores/authStore';
 import { useChupChuPanelStore } from '../stores/chupChuPanelStore';
 import { drawMoon, getMoonTilt } from '../components/calendar/TodayCardV2';
+
+// ── Welcome checklist ──────────────────────────────────────────────────────
+const CHECKLIST_KEY = 'gina-haya-welcome-checklist';
+
+function loadChecklist(): Record<string, boolean> {
+  try { return JSON.parse(localStorage.getItem(CHECKLIST_KEY) || '{}'); }
+  catch { return {}; }
+}
+
+function WelcomeChecklist({ onOpenChupchu }: { onOpenChupchu: () => void }) {
+  const navigate = useNavigate();
+  const [done, setDone] = useState(loadChecklist);
+
+  const mark = (key: string) => {
+    const next = { ...done, [key]: true };
+    setDone(next);
+    localStorage.setItem(CHECKLIST_KEY, JSON.stringify(next));
+  };
+
+  if (done.addedPlant && done.openedTracker && done.talkedToChupchu) return null;
+
+  const items = [
+    { key: null,             label: 'צור חשבון',        done: true,                  action: null },
+    { key: 'addedPlant',     label: 'הוסף צמח לגינה',   done: !!done.addedPlant,     action: () => { mark('addedPlant');    navigate('/map');     } },
+    { key: 'openedTracker',  label: 'פתח מעקב גידול',   done: !!done.openedTracker,  action: () => { mark('openedTracker'); navigate('/tracker'); } },
+    { key: 'talkedToChupchu', label: "דבר עם צ'ופצ'ו",  done: !!done.talkedToChupchu, action: () => { mark('talkedToChupchu'); onOpenChupchu(); } },
+  ] as const;
+
+  return (
+    <div style={{
+      background: 'linear-gradient(135deg, rgba(30,62,32,0.9) 0%, rgba(20,43,22,0.95) 100%)',
+      border: '1px solid rgba(245,200,64,0.22)',
+      borderRadius: '14px', padding: '18px 20px',
+      marginBottom: '20px', direction: 'rtl',
+    }}>
+      <h3 style={{
+        fontFamily: FRANK, fontSize: '16px', color: GOLD,
+        margin: '0 0 14px', fontWeight: 700,
+      }}>
+        ✨ התחל כאן
+      </h3>
+      {items.map((item, i) => (
+        <div
+          key={i}
+          onClick={item.action ?? undefined}
+          style={{
+            display: 'flex', alignItems: 'center', gap: '12px',
+            padding: '9px 0',
+            borderBottom: i < items.length - 1 ? '1px solid rgba(255,255,255,0.05)' : 'none',
+            cursor: item.action ? 'pointer' : 'default',
+            opacity: item.done ? 0.6 : 1,
+            transition: 'opacity 0.2s',
+          }}
+        >
+          <span style={{ fontSize: '18px', flexShrink: 0 }}>
+            {item.done ? '✅' : '⬜'}
+          </span>
+          <span style={{
+            fontFamily: ASST, fontSize: '14px',
+            color: item.done ? `${PARCH}60` : PARCH,
+            textDecoration: item.done ? 'line-through' : 'none',
+            flex: 1,
+          }}>
+            {item.label}
+          </span>
+          {!item.done && item.action && (
+            <span style={{ color: `${GOLD}80`, fontSize: '14px' }}>›</span>
+          )}
+        </div>
+      ))}
+    </div>
+  );
+}
 
 // ── Design tokens ──────────────────────────────────────────────────────────
 const EARTH = '#142B16';
@@ -141,6 +214,9 @@ export function DashboardPage() {
   const today      = todayISO();
   const todayTasks = tasks.filter(t => t.date === today);
   const firstName  = profile?.display_name?.split(' ')[0] ?? '';
+  const isNewUser  = user
+    ? Date.now() - new Date(user.created_at).getTime() < 24 * 60 * 60 * 1000
+    : false;
   const dayType    = day ? DAY_TYPE_MAP[day.dayType] ?? null : null;
   const scoreColor = day ? (SCORE_COLOR[day.scoreColour] ?? GOLD) : GOLD;
 
@@ -236,6 +312,9 @@ export function DashboardPage() {
         overflowX: 'hidden',
         boxSizing: 'border-box',
       }}>
+
+        {/* Welcome checklist — new users only */}
+        {isNewUser && <WelcomeChecklist onOpenChupchu={openChupChu} />}
 
         {/* Section 1: Chupchu greeting */}
         {ChupChuCard}
@@ -384,6 +463,12 @@ export function DashboardPage() {
       fontFamily: ASST,
       boxSizing: 'border-box',
     }}>
+      {isNewUser && (
+        <div style={{ maxWidth: '1400px', margin: '0 auto 0', padding: '0 0 4px' }}>
+          <WelcomeChecklist onOpenChupchu={openChupChu} />
+        </div>
+      )}
+
       <div style={{
         maxWidth: '1400px', margin: '0 auto',
         display: 'grid',
