@@ -2,6 +2,7 @@ import 'dotenv/config';
 import { Router, type IRouter } from 'express';
 import { db } from '../db/client';
 import { verifyToken } from '../middleware/auth';
+import { attachTier } from '../middleware/tierMiddleware';
 import { analyzePlantImage, compressImageForClaude } from '../services/plantVision';
 import { fetchWeatherForRegion } from '../services/weather';
 import { todayInIsrael } from '@gina-haya/shared';
@@ -9,22 +10,7 @@ import { todayInIsrael } from '@gina-haya/shared';
 export const trackersRouter: IRouter = Router();
 
 trackersRouter.use(verifyToken);
-
-// Hard safety caps — apply to ALL tiers
-const MAX_TRACKERS_PER_USER  = 30;
-const MAX_ANALYSES_PER_MONTH = 30;
-
-// Tier limits
-const TIER_LIMITS: Record<string, {
-  maxTrackers: number | null;
-  maxCheckinsPerTrackerPerMonth: number | null;
-  maxTotalCheckinsEver: number | null;
-}> = {
-  free:         { maxTrackers: 1,    maxCheckinsPerTrackerPerMonth: null, maxTotalCheckinsEver: 1 },
-  grower:       { maxTrackers: 3,    maxCheckinsPerTrackerPerMonth: 3,    maxTotalCheckinsEver: null },
-  gardener_pro: { maxTrackers: 10,   maxCheckinsPerTrackerPerMonth: 10,   maxTotalCheckinsEver: null },
-  professional: { maxTrackers: null, maxCheckinsPerTrackerPerMonth: null, maxTotalCheckinsEver: null },
-};
+trackersRouter.use(attachTier);
 
 // ── GET /api/trackers ──────────────────────────────────────────────────────
 trackersRouter.get('/', async (req: any, res) => {
@@ -82,45 +68,22 @@ trackersRouter.post('/', async (req: any, res) => {
       return res.status(400).json({ error: 'locationType is required' });
     }
 
-    // Hard cap: max 30 trackers per user across all tiers
-    const { count: totalTrackers } = await db
-      .from('plant_trackers')
-      .select('*', { count: 'exact', head: true })
-      .eq('user_id', userId);
-
-    if ((totalTrackers ?? 0) >= MAX_TRACKERS_PER_USER) {
-      console.log(`[limit] user ${userId} hit tracker_limit limit`);
-      return res.status(403).json({
-        error: 'tracker_limit_reached',
-        message: 'הגעת למגבלת 30 מעקבי גידול. מחק מעקבים ישנים כדי להוסיף חדשים.',
-        limit: MAX_TRACKERS_PER_USER,
-        current: totalTrackers,
-      });
-    }
-
-    // Check tier tracker limit
-    const { data: userProfile } = await db
-      .from('users')
-      .select('subscription_tier')
-      .eq('id', userId)
-      .single();
-
-    const tier = userProfile?.subscription_tier ?? 'free';
-    const limits = TIER_LIMITS[tier] ?? TIER_LIMITS.free;
-
-    if (limits.maxTrackers !== null) {
+    // Enforce per-tier tracker limit
+    const maxTrackers = req.limits?.maxTrackers ?? null;
+    if (maxTrackers !== null) {
       const { count } = await db
         .from('plant_trackers')
         .select('id', { count: 'exact', head: true })
         .eq('user_id', userId);
 
-      if ((count ?? 0) >= limits.maxTrackers) {
-        return res.status(429).json({
-          error: 'limit_exceeded',
-          message: 'limit_exceeded',
-          tier,
-          limit: limits.maxTrackers,
-          type: 'trackers',
+      if ((count ?? 0) >= maxTrackers) {
+        console.log(`[limit] user ${userId} hit tracker_limit (tier=${req.tier}, max=${maxTrackers})`);
+        return res.status(403).json({
+          error: 'tracker_limit_reached',
+          message: 'הגעת למגבלת מעקבי הגידול בתכנית שלך.',
+          tier: req.tier,
+          limit: maxTrackers,
+          current: count,
         });
       }
     }
@@ -220,46 +183,18 @@ trackersRouter.post('/:id/checkin', async (req: any, res) => {
       return res.status(404).json({ error: 'Tracker not found' });
     }
 
-    // Hard cap: max 30 AI analyses per user per calendar month
-    const startOfMonth = new Date();
-    startOfMonth.setDate(1);
-    startOfMonth.setHours(0, 0, 0, 0);
+    const limits = req.limits;
+    const tier   = req.tier ?? 'free';
 
-    const { count: monthlyCount } = await db
-      .from('plant_tracker_checkins')
-      .select('*', { count: 'exact', head: true })
-      .eq('user_id', userId)
-      .gte('created_at', startOfMonth.toISOString());
-
-    if ((monthlyCount ?? 0) >= MAX_ANALYSES_PER_MONTH) {
-      console.log(`[limit] user ${userId} hit analysis_limit limit`);
-      return res.status(403).json({
-        error: 'analysis_limit_reached',
-        message: 'הגעת למגבלת 30 ניתוחי AI לחודש זה. המגבלה מתאפסת בתחילת החודש הבא.',
-        limit: MAX_ANALYSES_PER_MONTH,
-        current: monthlyCount,
-        resets_at: new Date(startOfMonth.getFullYear(), startOfMonth.getMonth() + 1, 1).toISOString(),
-      });
-    }
-
-    // Check tier limits
-    const { data: userProfile } = await db
-      .from('users')
-      .select('subscription_tier')
-      .eq('id', userId)
-      .single();
-
-    const tier = userProfile?.subscription_tier ?? 'free';
-    const limits = TIER_LIMITS[tier] ?? TIER_LIMITS.free;
-
-    if (limits.maxTotalCheckinsEver !== null) {
-      // Free tier: check total checkins ever for this user
+    // Free tier: hard cap on total checkins ever
+    if (limits?.maxTotalCheckinsEver !== null && limits?.maxTotalCheckinsEver !== undefined) {
       const { count } = await db
         .from('plant_tracker_checkins')
         .select('id', { count: 'exact', head: true })
         .eq('user_id', userId);
 
       if ((count ?? 0) >= limits.maxTotalCheckinsEver) {
+        console.log(`[limit] user ${userId} hit maxTotalCheckinsEver (tier=${tier})`);
         return res.status(429).json({
           error: 'limit_exceeded',
           message: 'limit_exceeded',
@@ -268,8 +203,8 @@ trackersRouter.post('/:id/checkin', async (req: any, res) => {
           type: 'checkins',
         });
       }
-    } else if (limits.maxCheckinsPerTrackerPerMonth !== null) {
-      // Grower / Gardener Pro: per tracker per month
+    } else if (limits?.maxCheckinsPerTrackerPerMonth !== null && limits?.maxCheckinsPerTrackerPerMonth !== undefined) {
+      // Paid tiers: per tracker per month
       const startOfMonth = new Date();
       startOfMonth.setDate(1);
       startOfMonth.setHours(0, 0, 0, 0);
@@ -281,12 +216,15 @@ trackersRouter.post('/:id/checkin', async (req: any, res) => {
         .gte('created_at', startOfMonth.toISOString());
 
       if ((count ?? 0) >= limits.maxCheckinsPerTrackerPerMonth) {
-        return res.status(429).json({
-          error: 'limit_exceeded',
-          message: 'limit_exceeded',
+        const resetsAt = new Date(startOfMonth.getFullYear(), startOfMonth.getMonth() + 1, 1).toISOString();
+        console.log(`[limit] user ${userId} hit maxCheckinsPerTrackerPerMonth (tier=${tier})`);
+        return res.status(403).json({
+          error: 'analysis_limit_reached',
+          message: 'הגעת למגבלת הניתוחים החודשית עבור מעקב זה.',
           tier,
           limit: limits.maxCheckinsPerTrackerPerMonth,
-          type: 'checkins_monthly',
+          current: count,
+          resets_at: resetsAt,
         });
       }
     }

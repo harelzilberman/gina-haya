@@ -74,6 +74,8 @@ interface Props {
   previewPlants?: PlantPreview[];
   onConfirmPreview?: () => void;
   onCancelPreview?: () => void;
+  plantsAtLimit?: boolean;
+  onPlantsAtLimitClick?: () => void;
 }
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
@@ -789,6 +791,7 @@ export function GardenCanvas({
   onAddObject, onUpdateObject, onDeleteObject, onAddPlant, onRemovePlant, onUpdatePlant,
   onSelectObject, onSetNorthAngle, onToggleLock,
   previewPlants = [], onConfirmPreview, onCancelPreview,
+  plantsAtLimit = false, onPlantsAtLimitClick,
 }: Props) {
   const { i18n } = useTranslation();
   const isHe = i18n.language === 'he';
@@ -961,6 +964,7 @@ export function GardenCanvas({
     }
 
     if (selectedTool === 'plant' && activePlant) {
+      if (plantsAtLimit) { onPlantsAtLimitClick?.(); return; }
       onAddPlant({ plantNameHe: activePlant.nameHe, plantNameEn: activePlant.nameEn,
                    emoji: activePlant.emoji, spacing: activePlant.spacing, x: mx, y: my });
       return;
@@ -1225,7 +1229,8 @@ export function GardenCanvas({
           onSelectObject(hit ? hit.id : null);
         }
       } else if (selectedTool === 'plant' && activePlant) {
-        onAddPlant({
+        if (plantsAtLimit) { onPlantsAtLimitClick?.(); }
+        else onAddPlant({
           plantNameHe: activePlant.nameHe, plantNameEn: activePlant.nameEn,
           emoji: activePlant.emoji, spacing: activePlant.spacing, x: mx, y: my,
         });

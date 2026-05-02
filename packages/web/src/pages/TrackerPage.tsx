@@ -1,13 +1,15 @@
 import { useEffect, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { useTrackerStore, type CheckinResult, type TrackerTask } from '../stores/trackerStore';
-import { useAuthStore } from '../stores/authStore';
 import { useGardenStore } from '../stores/gardenStore';
 import { TrackerCard } from '../components/tracker/TrackerCard';
 import { NewTrackerModal } from '../components/tracker/NewTrackerModal';
 import { PhotoUpload } from '../components/tracker/PhotoUpload';
 import { AnalysisResult } from '../components/tracker/AnalysisResult';
 import { TaskApprovalModal } from '../components/tracker/TaskApprovalModal';
+import { UpgradeBanner } from '../components/upgrade/UpgradeBanner';
+import { usePlanLimit } from '../hooks/usePlanLimit';
 
 const EARTH = '#142B16';
 const GOLD  = '#F5C840';
@@ -15,27 +17,20 @@ const PARCH = '#EDE0C4';
 const FRANK = '"Frank Ruhl Libre", Georgia, serif';
 const ASST  = '"Assistant", "Heebo", sans-serif';
 
-const TIER_TRACKER_LIMITS: Record<string, number | null> = {
-  free:         1,
-  grower:       3,
-  gardener_pro: 10,
-  professional: null,
-};
-
 export function TrackerPage() {
   const { t, i18n } = useTranslation('tracker');
   const isHe = i18n.language === 'he';
+  const navigate = useNavigate();
   const { trackers, isLoading, loadTrackers } = useTrackerStore();
-  const { profile } = useAuthStore();
   const { activeGarden, loadGardens } = useGardenStore();
+  const { tier, limits } = usePlanLimit();
 
   const [showNewTracker, setShowNewTracker] = useState(false);
   const [photoUploadTrackerId, setPhotoUploadTrackerId] = useState<string | null>(null);
   const [analysisResult, setAnalysisResult] = useState<CheckinResult | null>(null);
   const [pendingApproval, setPendingApproval] = useState<{ trackerId: string; tasks: TrackerTask[] } | null>(null);
 
-  const tier = profile?.subscription_tier ?? 'free';
-  const maxTrackers = TIER_TRACKER_LIMITS[tier] ?? null;
+  const maxTrackers = limits.maxTrackers;
   const trackerCount = trackers.length;
   const atLimit = maxTrackers !== null && trackerCount >= maxTrackers;
 
@@ -95,31 +90,50 @@ export function TrackerPage() {
               {trackerCountLabel}
             </p>
 
-            {/* Add tracker button */}
-            <button
-              onClick={() => setShowNewTracker(true)}
-              disabled={atLimit}
-              style={{
-                fontFamily: FRANK,
-                fontSize: '15px',
-                fontWeight: 700,
-                color: atLimit ? 'rgba(237,224,196,0.4)' : EARTH,
-                backgroundColor: atLimit ? 'rgba(245,200,64,0.2)' : GOLD,
-                border: atLimit ? `1px solid rgba(245,200,64,0.3)` : 'none',
-                borderRadius: '8px',
-                padding: '10px 20px',
-                cursor: atLimit ? 'not-allowed' : 'pointer',
-                transition: 'filter 0.2s',
-                whiteSpace: 'nowrap',
-              }}
-              onMouseEnter={e => { if (!atLimit) (e.currentTarget as HTMLElement).style.filter = 'brightness(1.1)'; }}
-              onMouseLeave={e => { (e.currentTarget as HTMLElement).style.filter = 'none'; }}
-              title={atLimit ? t('limitTooltip') : ''}
-            >
-              {t('addButton')}
-            </button>
+            {/* Add tracker button or upgrade CTA */}
+            {atLimit ? (
+              <button
+                onClick={() => navigate('/pricing')}
+                style={{
+                  fontFamily: FRANK, fontSize: '15px', fontWeight: 700,
+                  color: EARTH, backgroundColor: GOLD,
+                  border: 'none', borderRadius: '8px',
+                  padding: '10px 20px', cursor: 'pointer',
+                  transition: 'filter 0.2s', whiteSpace: 'nowrap',
+                }}
+                onMouseEnter={e => { (e.currentTarget as HTMLElement).style.filter = 'brightness(1.1)'; }}
+                onMouseLeave={e => { (e.currentTarget as HTMLElement).style.filter = 'none'; }}
+              >
+                {isHe ? 'שדרג למעקבים נוספים 🌿' : 'Upgrade for more trackers 🌿'}
+              </button>
+            ) : (
+              <button
+                onClick={() => setShowNewTracker(true)}
+                style={{
+                  fontFamily: FRANK, fontSize: '15px', fontWeight: 700,
+                  color: EARTH, backgroundColor: GOLD,
+                  border: 'none', borderRadius: '8px',
+                  padding: '10px 20px', cursor: 'pointer',
+                  transition: 'filter 0.2s', whiteSpace: 'nowrap',
+                }}
+                onMouseEnter={e => { (e.currentTarget as HTMLElement).style.filter = 'brightness(1.1)'; }}
+                onMouseLeave={e => { (e.currentTarget as HTMLElement).style.filter = 'none'; }}
+              >
+                {t('addButton')}
+              </button>
+            )}
           </div>
         </div>
+
+        {/* Usage banner */}
+        {maxTrackers !== null && (
+          <UpgradeBanner
+            type="trackers"
+            current={trackerCount}
+            limit={maxTrackers}
+            tier={tier}
+          />
+        )}
 
         {/* Content */}
         {isLoading ? (
@@ -161,21 +175,70 @@ export function TrackerPage() {
             </button>
           </div>
         ) : (
-          /* Tracker grid */
-          <div style={{
-            display: 'grid',
-            gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))',
-            gap: '16px',
-          }}>
-            {trackers.map(tracker => (
-              <TrackerCard
-                key={tracker.id}
-                tracker={tracker}
-                onAddCheckin={(id) => setPhotoUploadTrackerId(id)}
-                onDeleted={() => {/* optimistic update already done in store */}}
-              />
-            ))}
-          </div>
+          <>
+            {/* Tracker grid */}
+            <div style={{
+              display: 'grid',
+              gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))',
+              gap: '16px',
+              marginBottom: atLimit ? '24px' : 0,
+            }}>
+              {trackers.map(tracker => (
+                <TrackerCard
+                  key={tracker.id}
+                  tracker={tracker}
+                  onAddCheckin={(id) => setPhotoUploadTrackerId(id)}
+                  onDeleted={() => {/* optimistic update already done in store */}}
+                />
+              ))}
+            </div>
+
+            {/* Upsell card when at tracker limit */}
+            {atLimit && (
+              <div style={{
+                textAlign: 'center', padding: '32px 24px',
+                border: '1px dashed rgba(245,200,64,0.25)',
+                borderRadius: '16px',
+                backgroundColor: 'rgba(28,58,30,0.3)',
+              }}>
+                <img
+                  src="/chupchu_thinking.png"
+                  alt=""
+                  width={80}
+                  style={{ marginBottom: '16px', opacity: 0.9 }}
+                  onError={e => { (e.currentTarget as HTMLImageElement).style.display = 'none'; }}
+                />
+                <h3 style={{ fontFamily: FRANK, fontSize: '18px', color: GOLD, margin: '0 0 10px' }}>
+                  {isHe ? 'רוצה לעקוב אחר עוד צמחים?' : 'Want to track more plants?'}
+                </h3>
+                <p style={{ fontFamily: ASST, fontSize: '14px', color: `${PARCH}99`, margin: '0 0 20px', lineHeight: 1.6 }}>
+                  {isHe
+                    ? 'שדרג לגנן ב-₪18 לחודש למעקבים ללא הגבלה'
+                    : 'Upgrade to Grower for ₪18/mo and track unlimited plants'}
+                </p>
+                <button
+                  onClick={() => navigate('/pricing')}
+                  style={{
+                    fontFamily: FRANK, fontSize: '15px', fontWeight: 700,
+                    color: EARTH, backgroundColor: GOLD,
+                    border: 'none', borderRadius: '8px',
+                    padding: '11px 28px', cursor: 'pointer',
+                    transition: 'filter 0.2s', marginBottom: '12px',
+                    display: 'block', margin: '0 auto 12px',
+                  }}
+                  onMouseEnter={e => { (e.currentTarget as HTMLElement).style.filter = 'brightness(1.1)'; }}
+                  onMouseLeave={e => { (e.currentTarget as HTMLElement).style.filter = 'none'; }}
+                >
+                  {isHe ? 'שדרג עכשיו 🌿' : 'Upgrade now 🌿'}
+                </button>
+                <p style={{ fontFamily: ASST, fontSize: '12px', color: `${PARCH}60`, margin: 0 }}>
+                  {isHe
+                    ? (<>או <a href="/shop" style={{ color: GOLD }}>רכוש מעקב בודד ב-₪3.6</a></>)
+                    : (<>or <a href="/shop" style={{ color: GOLD }}>buy a single tracker for ₪3.6</a></>)}
+                </p>
+              </div>
+            )}
+          </>
         )}
       </div>
 

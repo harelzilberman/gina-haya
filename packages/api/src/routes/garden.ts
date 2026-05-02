@@ -1,11 +1,13 @@
 import { Router, type IRouter } from 'express';
 import { db } from '../db/client';
 import { verifyToken } from '../middleware/auth';
+import { attachTier } from '../middleware/tierMiddleware';
 
 export const gardenRouter: IRouter = Router();
 
-// All garden routes require authentication
+// All garden routes require authentication + tier attachment
 gardenRouter.use(verifyToken);
+gardenRouter.use(attachTier);
 
 // GET /api/garden — get all gardens for current user
 gardenRouter.get('/', async (req: any, res) => {
@@ -28,6 +30,25 @@ gardenRouter.get('/', async (req: any, res) => {
 gardenRouter.post('/', async (req: any, res) => {
   try {
     const { name, locationRegion, soilType, plantIds = [] } = req.body;
+
+    // Enforce per-tier garden limit
+    const maxGardens = req.limits?.maxGardens ?? null;
+    if (maxGardens !== null) {
+      const { count } = await db
+        .from('gardens')
+        .select('id', { count: 'exact', head: true })
+        .eq('user_id', req.user.id);
+
+      if ((count ?? 0) >= maxGardens) {
+        return res.status(403).json({
+          error: 'garden_limit_reached',
+          message: 'הגעת למגבלת הגינות בתכנית שלך.',
+          tier: req.tier,
+          limit: maxGardens,
+          current: count,
+        });
+      }
+    }
 
     // Create the garden
     const { data: garden, error: gardenError } = await db
@@ -102,6 +123,25 @@ gardenRouter.patch('/:id', async (req: any, res) => {
 gardenRouter.post('/:id/plants', async (req: any, res) => {
   try {
     const { plantId, commonNameHe, commonNameEn, notes } = req.body;
+
+    // Enforce per-tier plant-per-garden limit
+    const maxPlants = req.limits?.maxPlantsPerGarden ?? null;
+    if (maxPlants !== null) {
+      const { count } = await db
+        .from('garden_plants')
+        .select('id', { count: 'exact', head: true })
+        .eq('garden_id', req.params.id);
+
+      if ((count ?? 0) >= maxPlants) {
+        return res.status(403).json({
+          error: 'plant_limit_reached',
+          message: 'הגעת למגבלת הצמחים לגינה זו בתכנית שלך.',
+          tier: req.tier,
+          limit: maxPlants,
+          current: count,
+        });
+      }
+    }
 
     const { data, error } = await db
       .from('garden_plants')

@@ -3,6 +3,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { useAuthStore } from '../../stores/authStore';
 import { useDirection } from '../../hooks/useDirection';
+import { usePlanLimit, TIER_DISPLAY } from '../../hooks/usePlanLimit';
 
 // ── Design tokens ──────────────────────────────────────────────────────────
 const GOLD       = '#F5C840';
@@ -79,6 +80,9 @@ export function Navbar() {
     document.addEventListener('mousedown', handleClick);
     return () => document.removeEventListener('mousedown', handleClick);
   }, []);
+
+  const { tier } = usePlanLimit();
+  const tierDisplay = TIER_DISPLAY[tier] ?? TIER_DISPLAY.free;
 
   const initials = (() => {
     const name = profile?.display_name || user?.email || '';
@@ -405,6 +409,33 @@ export function Navbar() {
                     zIndex: 101,
                   }}
                 >
+                  {/* Tier badge */}
+                  <div style={{ padding: '8px 16px 6px', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                    <span style={{
+                      fontFamily: ASSISTANT,
+                      fontSize: '11px',
+                      fontWeight: 700,
+                      padding: '2px 8px',
+                      borderRadius: '10px',
+                      backgroundColor: `${tierDisplay.color}22`,
+                      color: tierDisplay.color,
+                      border: `1px solid ${tierDisplay.color}44`,
+                      letterSpacing: '0.04em',
+                      textTransform: 'uppercase',
+                    }}>
+                      {isHebrew ? tierDisplay.he : tierDisplay.en}
+                    </span>
+                    {tier === 'free' && (
+                      <Link
+                        to="/pricing"
+                        onClick={() => setDropdownOpen(false)}
+                        style={{ fontFamily: ASSISTANT, fontSize: '11px', color: GOLD, textDecoration: 'none' }}
+                      >
+                        {isHebrew ? 'שדרג ↗' : 'Upgrade ↗'}
+                      </Link>
+                    )}
+                  </div>
+                  <div style={{ height: '1px', backgroundColor: 'rgba(245,200,64,0.1)', marginBottom: '4px' }} />
                   {[
                     { label: isHebrew ? 'בית' : 'Home', to: '/' },
                     { label: t('nav.garden'),    to: '/garden' },

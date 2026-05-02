@@ -7,19 +7,12 @@ import { fetchWeatherForRegion } from '../services/weather';
 import type { ChupChuMessage, ChupChuContext } from '@gina-haya/shared';
 import { todayInIsrael } from '@gina-haya/shared';
 import { getRecentCompletedTasks } from '../db/queries/tasks';
+import { getLimits } from '../config/tiers';
 
 export const chupChuRouter: IRouter = Router();
 
 // All chupchu routes require auth
 chupChuRouter.use(verifyToken);
-
-// Monthly limits per tier
-const MONTHLY_LIMITS: Record<string, number | null> = {
-  free:           20,
-  grower:         50,
-  gardener_pro:   null, // unlimited
-  professional:   null, // unlimited
-};
 
 // In-memory lock: one in-flight request per user at a time
 const inFlight = new Set<string>();
@@ -90,7 +83,7 @@ chupChuRouter.post('/chat', async (req: any, res) => {
     const lang = userProfile?.language_preference || 'he';
 
     // ── 2. Check monthly message limit ────────────────────────────────────
-    const monthlyLimit = MONTHLY_LIMITS[tier];
+    const monthlyLimit = getLimits(tier).maxChupChuPerMonth;
 
     if (monthlyLimit !== null) {
       // Count messages sent this month

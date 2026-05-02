@@ -1,7 +1,9 @@
 import { useState, useRef } from 'react';
 import { useTrackerStore, type CheckinResult } from '../../stores/trackerStore';
 import { useGardenStore } from '../../stores/gardenStore';
+import { useAuthStore } from '../../stores/authStore';
 import { MAX_PHOTO_SIZE_BYTES, MAX_PHOTO_SIZE_LABEL } from '@gina-haya/shared';
+import { UpgradeModal } from '../upgrade/UpgradeModal';
 
 const EARTH  = '#142B16';
 const GOLD   = '#F5C840';
@@ -25,6 +27,7 @@ interface Props {
 export function NewTrackerModal({ onClose, onCreated }: Props) {
   const { createTracker, addCheckin } = useTrackerStore();
   const { activeGarden } = useGardenStore();
+  const { profile } = useAuthStore();
 
   const [plantNameHe, setPlantNameHe] = useState('');
   const [plantNameEn, setPlantNameEn] = useState('');
@@ -37,7 +40,7 @@ export function NewTrackerModal({ onClose, onCreated }: Props) {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [error, setError] = useState('');
-  const [trackerLimitReached, setTrackerLimitReached] = useState(false);
+  const [upgradeOpen, setUpgradeOpen] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const gardenPlants = activeGarden?.garden_plants ?? [];
@@ -117,10 +120,8 @@ export function NewTrackerModal({ onClose, onCreated }: Props) {
 
       onCreated(result);
     } catch (err: any) {
-      if (err.errorCode === 'tracker_limit_reached') {
-        setTrackerLimitReached(true);
-      } else if (err.message === 'limit_exceeded') {
-        setError('הגעת למגבלת המעקבים בתכנית שלך. שדרג לגישה לעוד מעקבים.');
+      if (err.errorCode === 'tracker_limit_reached' || err.message === 'limit_exceeded') {
+        setUpgradeOpen(true);
       } else {
         setError(err.message || 'משהו השתבש, נסה שוב');
       }
@@ -211,37 +212,15 @@ export function NewTrackerModal({ onClose, onCreated }: Props) {
           </div>
         )}
 
-        {trackerLimitReached && (
-          <div style={{
-            textAlign: 'center',
-            padding: '24px 8px',
-            display: 'flex', flexDirection: 'column', gap: '12px', alignItems: 'center',
-          }}>
-            <div style={{ fontSize: '48px' }}>🌱</div>
-            <p style={{ fontFamily: FRANK, fontSize: '18px', color: GOLD, margin: 0 }}>
-              הגעת למגבלת 30 מעקבי גידול
-            </p>
-            <p style={{ fontFamily: ASST, fontSize: '14px', color: `${PARCH}80`, margin: 0, lineHeight: 1.6 }}>
-              מחק מעקבים ישנים כדי להוסיף חדשים.
-            </p>
-            <button
-              onClick={onClose}
-              style={{
-                fontFamily: FRANK, fontSize: '15px', fontWeight: 700,
-                color: '#142B16', background: GOLD,
-                border: 'none', borderRadius: '8px',
-                padding: '11px 28px', cursor: 'pointer',
-                marginTop: '4px', transition: 'filter 0.2s',
-              }}
-              onMouseEnter={e => { (e.currentTarget as HTMLElement).style.filter = 'brightness(1.1)'; }}
-              onMouseLeave={e => { (e.currentTarget as HTMLElement).style.filter = 'none'; }}
-            >
-              לניהול מעקבים
-            </button>
-          </div>
-        )}
+        {/* UpgradeModal rendered on top when limit hit */}
+        <UpgradeModal
+          isOpen={upgradeOpen}
+          onClose={() => { setUpgradeOpen(false); onClose(); }}
+          limitType="trackers"
+          currentTier={profile?.subscription_tier ?? 'free'}
+        />
 
-        {!isAnalyzing && !trackerLimitReached && (
+        {!isAnalyzing && !upgradeOpen && (
           <form onSubmit={handleSubmit}>
             {/* Plant selector */}
             {gardenPlants.length > 0 && (

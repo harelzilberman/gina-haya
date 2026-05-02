@@ -1,10 +1,12 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { api } from '../api/client';
 import { useAuthStore } from '../stores/authStore';
 import { useToastStore } from '../stores/toastStore';
 import { supabase } from '../lib/supabase';
 import { usePushNotifications } from '../hooks/usePushNotifications';
+import { usePlanLimit, TIER_DISPLAY } from '../hooks/usePlanLimit';
 
 const EARTH  = '#142B16';
 const GOLD   = '#F5C840';
@@ -14,12 +16,57 @@ const ASSIST = '"Assistant", "Heebo", sans-serif';
 
 const NOISE_BG = `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='250' height='250'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.75' numOctaves='4' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='250' height='250' filter='url(%23n)' opacity='0.55'/%3E%3C/svg%3E")`;
 
+interface UsageData {
+  tier: string;
+  analyses: { used: number; limit: number | null; resetsAt: string };
+  trackers: { active: number; limit: number | null };
+  plants: { count: number; limit: number | null };
+  chupchu: { used: number; limit: number | null; resetsAt: string };
+  gardens: { count: number; limit: number | null };
+}
+
+function UsageBar({ used, limit }: { used: number; limit: number | null }) {
+  const GOLD = '#F5C840';
+  const pct = limit !== null ? Math.min(100, Math.round((used / limit) * 100)) : 0;
+  const isNearLimit = limit !== null && pct >= 80;
+  return (
+    <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+      <div style={{
+        flex: 1, height: '6px', borderRadius: '3px',
+        backgroundColor: 'rgba(255,255,255,0.08)',
+        overflow: 'hidden',
+      }}>
+        {limit !== null && (
+          <div style={{
+            height: '100%', width: `${pct}%`,
+            backgroundColor: isNearLimit ? '#E87040' : GOLD,
+            borderRadius: '3px',
+            transition: 'width 0.4s ease',
+          }} />
+        )}
+      </div>
+      <span style={{
+        fontFamily: '"Assistant","Heebo",sans-serif',
+        fontSize: '12px',
+        color: limit !== null ? (isNearLimit ? '#E87040' : 'rgba(237,224,196,0.6)') : 'rgba(237,224,196,0.4)',
+        whiteSpace: 'nowrap',
+        minWidth: '48px',
+        textAlign: 'start',
+      }}>
+        {limit !== null ? `${used}/${limit}` : `${used} / ∞`}
+      </span>
+    </div>
+  );
+}
+
 export function SettingsPage() {
   const { t, i18n } = useTranslation('settings');
   const isHe = i18n.language === 'he';
+  const navigate = useNavigate();
   const { profile, session } = useAuthStore();
   const { show: showToast }  = useToastStore();
   const { isSubscribed, permission, subscribe, unsubscribe, isLoading: pushLoading } = usePushNotifications();
+  const { tier, display: tierDisplay } = usePlanLimit();
 
   const [dailyTipEmail, setDailyTipEmail] = useState<boolean>(
     profile?.daily_tip_email ?? true
@@ -28,6 +75,14 @@ export function SettingsPage() {
     profile?.language_preference ?? 'he'
   );
   const [isSaving, setIsSaving] = useState(false);
+  const [usage, setUsage] = useState<UsageData | null>(null);
+
+  useEffect(() => {
+    if (!session?.access_token) return;
+    api.get<UsageData>('/api/users/usage', session.access_token)
+      .then(data => setUsage(data))
+      .catch(() => {/* silently fail */});
+  }, [session?.access_token]);
 
   async function handleSave() {
     if (!session?.access_token) return;
@@ -223,6 +278,82 @@ export function SettingsPage() {
               {isSaving ? t('savingButton') : t('saveButton')}
             </button>
 
+          </div>
+
+          {/* My Plan section */}
+          <div style={{
+            background: 'rgba(28,58,30,0.5)',
+            border: '1px solid rgba(245,200,64,0.15)',
+            borderRadius: '12px', padding: '20px', marginTop: '16px',
+          }}>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '16px' }}>
+              <h3 style={{ fontFamily: FRANK, fontSize: '16px', color: GOLD, margin: 0 }}>
+                {isHe ? 'התכנית שלי' : 'My Plan'}
+              </h3>
+              <span style={{
+                fontFamily: ASSIST, fontSize: '11px', fontWeight: 700,
+                padding: '3px 10px', borderRadius: '12px',
+                backgroundColor: `${tierDisplay.color}22`,
+                color: tierDisplay.color,
+                border: `1px solid ${tierDisplay.color}44`,
+                letterSpacing: '0.05em', textTransform: 'uppercase',
+              }}>
+                {isHe ? tierDisplay.he : tierDisplay.en}
+              </span>
+            </div>
+
+            {usage && (
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '12px', marginBottom: '16px' }}>
+                {[
+                  { label: isHe ? 'ניתוחי AI החודש' : 'AI analyses this month', used: usage.analyses.used, limit: usage.analyses.limit },
+                  { label: isHe ? 'מעקבי גידול' : 'Growth trackers', used: usage.trackers.active, limit: usage.trackers.limit },
+                  { label: isHe ? 'גינות' : 'Gardens', used: usage.gardens.count, limit: usage.gardens.limit },
+                  { label: isHe ? 'שיחות צ\'ופצ\'ו' : 'Chupchu messages', used: usage.chupchu.used, limit: usage.chupchu.limit },
+                ].map(row => (
+                  <div key={row.label} style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                      <span style={{ fontFamily: ASSIST, fontSize: '13px', color: `${PARCH}BB` }}>
+                        {row.label}
+                      </span>
+                    </div>
+                    <UsageBar used={row.used} limit={row.limit} />
+                  </div>
+                ))}
+              </div>
+            )}
+
+            <div style={{ display: 'flex', gap: '8px' }}>
+              {tier !== 'professional' && (
+                <button
+                  onClick={() => navigate('/pricing')}
+                  style={{
+                    flex: 1, padding: '10px',
+                    backgroundColor: GOLD, color: EARTH,
+                    border: 'none', borderRadius: '8px',
+                    fontFamily: FRANK, fontSize: '14px', fontWeight: 700,
+                    cursor: 'pointer', transition: 'filter 0.2s',
+                  }}
+                  onMouseEnter={e => { (e.currentTarget as HTMLElement).style.filter = 'brightness(1.1)'; }}
+                  onMouseLeave={e => { (e.currentTarget as HTMLElement).style.filter = 'none'; }}
+                >
+                  {isHe ? 'שדרג תכנית' : 'Upgrade plan'}
+                </button>
+              )}
+              <button
+                onClick={() => navigate('/shop')}
+                style={{
+                  flex: 1, padding: '10px',
+                  backgroundColor: 'transparent',
+                  color: GOLD, border: `1px solid rgba(245,200,64,0.35)`,
+                  borderRadius: '8px', fontFamily: FRANK, fontSize: '14px', fontWeight: 600,
+                  cursor: 'pointer', transition: 'border-color 0.2s',
+                }}
+                onMouseEnter={e => { (e.currentTarget as HTMLElement).style.borderColor = GOLD; }}
+                onMouseLeave={e => { (e.currentTarget as HTMLElement).style.borderColor = 'rgba(245,200,64,0.35)'; }}
+              >
+                {isHe ? 'לחנות' : 'Shop'}
+              </button>
+            </div>
           </div>
 
           {/* Notifications section */}

@@ -1,6 +1,9 @@
 import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
+import { useNavigate } from 'react-router-dom';
 import { useMapStore } from '../stores/mapStore';
+import { usePlanLimit } from '../hooks/usePlanLimit';
+import { UpgradeModal } from '../components/upgrade/UpgradeModal';
 
 const SPIN_CSS = `@keyframes mapSpin { to { transform: rotate(360deg); } }`;
 
@@ -76,9 +79,15 @@ export function MapPage() {
   const store = useMapStore();
   const { i18n } = useTranslation();
   const isHe = i18n.language === 'he';
+  const navigate = useNavigate();
+  const { tier, limits } = usePlanLimit();
   const [showTour, setShowTour]     = useState(false);
   const [showWizard, setShowWizard] = useState(false);
   const [toast, setToast] = useState<string | null>(null);
+  const [plantLimitModalOpen, setPlantLimitModalOpen] = useState(false);
+
+  const plantCount = store.mapData.plants.length;
+  const plantsAtLimit = limits.maxPlantsPerGarden !== null && plantCount >= limits.maxPlantsPerGarden;
 
   const handleConfirmPreview = () => {
     store.mapData.objects.forEach(o => {
@@ -150,6 +159,8 @@ export function MapPage() {
             onUpdateObject={store.updateObject}
             onDeleteObject={store.deleteObject}
             onAddPlant={store.addPlant}
+            plantsAtLimit={plantsAtLimit}
+            onPlantsAtLimitClick={() => setPlantLimitModalOpen(true)}
             onUpdatePlant={store.updatePlant}
             onRemovePlant={store.removePlant}
             onSelectObject={store.selectObject}
@@ -183,6 +194,13 @@ export function MapPage() {
           northAngle={store.northAngle}
         />
       )}
+
+      <UpgradeModal
+        isOpen={plantLimitModalOpen}
+        onClose={() => setPlantLimitModalOpen(false)}
+        limitType="plants"
+        currentTier={tier}
+      />
 
       {/* Success toast */}
       {toast && (

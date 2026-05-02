@@ -2,6 +2,7 @@ import { Router, type IRouter } from 'express';
 import { z } from 'zod';
 import { db } from '../db/client';
 import { verifyToken } from '../middleware/auth';
+import { getLimits } from '../config/tiers';
 
 export const usersRouter: IRouter = Router();
 
@@ -36,4 +37,92 @@ usersRouter.post('/push-token', async (req, res) => {
   }
 
   return res.json({ ok: true });
+});
+
+// ── GET /api/users/usage ────────────────────────────────────────────────────
+usersRouter.get('/usage', async (req: any, res) => {
+  try {
+    const userId = req.user.id;
+
+    const { data: userRow } = await db
+      .from('users')
+      .select('subscription_tier')
+      .eq('id', userId)
+      .single();
+
+    const tier = userRow?.subscription_tier ?? 'free';
+    const limits = getLimits(tier);
+
+    const startOfMonth = new Date();
+    startOfMonth.setDate(1);
+    startOfMonth.setHours(0, 0, 0, 0);
+    const resetsAt = new Date(startOfMonth.getFullYear(), startOfMonth.getMonth() + 1, 1).toISOString();
+
+    // Count analyses this month
+    const { count: analysesUsed } = await db
+      .from('plant_tracker_checkins')
+      .select('id', { count: 'exact', head: true })
+      .eq('user_id', userId)
+      .gte('created_at', startOfMonth.toISOString());
+
+    // Count active trackers
+    const { count: trackersActive } = await db
+      .from('plant_trackers')
+      .select('id', { count: 'exact', head: true })
+      .eq('user_id', userId);
+
+    // Count plants across all gardens
+    const { count: plantsCount } = await db
+      .from('garden_plants')
+      .select('id', { count: 'exact', head: true })
+      .eq('user_id', userId);
+
+    // Count gardens
+    const { count: gardensCount } = await db
+      .from('gardens')
+      .select('id', { count: 'exact', head: true })
+      .eq('user_id', userId);
+
+    // Count chupchu messages this month
+    const { data: convData } = await db
+      .from('chupchu_conversations')
+      .select('messages')
+      .eq('user_id', userId)
+      .gte('updated_at', startOfMonth.toISOString())
+      .limit(1)
+      .single();
+
+    const chupChuUsed = (convData?.messages ?? []).filter(
+      (m: any) => m.role === 'user' && new Date(m.timestamp) >= startOfMonth
+    ).length;
+
+    res.json({
+      tier,
+      analyses: {
+        used:     analysesUsed ?? 0,
+        limit:    limits.maxCheckinsPerTrackerPerMonth ?? limits.maxTotalCheckinsEver ?? null,
+        resetsAt,
+      },
+      trackers: {
+        active: trackersActive ?? 0,
+        limit:  limits.maxTrackers,
+      },
+      plants: {
+        count: plantsCount ?? 0,
+        limit: limits.maxPlantsPerGarden,
+      },
+      chupchu: {
+        used:     chupChuUsed,
+        limit:    limits.maxChupChuPerMonth,
+        resetsAt,
+      },
+      gardens: {
+        count: gardensCount ?? 0,
+        limit: limits.maxGardens,
+      },
+    });
+  } catch (err: any) {
+    console.error('[GET /api/users/usage]', err.message);
+    res.status(500).json({ error: err.message });
+  }
 });
