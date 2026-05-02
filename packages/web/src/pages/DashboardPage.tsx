@@ -208,7 +208,7 @@ export function DashboardPage() {
   const isMobile = useIsMobile();
   const { day, isLoading: calLoading } = useToday();
   const { tasks, updateStatus } = useTasks();
-  const { profile } = useAuthStore();
+  const { user, profile } = useAuthStore();
   const { open: openChupChu } = useChupChuPanelStore();
 
   const today      = todayISO();
