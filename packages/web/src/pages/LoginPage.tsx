@@ -1,5 +1,5 @@
 import { useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { LoginForm } from '../components/auth/LoginForm';
 import { useAuthStore } from '../stores/authStore';
@@ -25,10 +25,16 @@ export function LoginPage() {
   const { t } = useTranslation('auth');
   const { user } = useAuthStore();
   const navigate = useNavigate();
+  const location = useLocation();
 
   useEffect(() => {
-    if (user) navigate('/', { replace: true });
-  }, [user, navigate]);
+    if (user) {
+      const params = new URLSearchParams(location.search);
+      const next = params.get('next');
+      const destination = next && next.startsWith('/') ? next : '/';
+      navigate(destination, { replace: true });
+    }
+  }, [user, navigate, location.search]);
 
   return (
     <>

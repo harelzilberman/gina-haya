@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { useDirection } from '../../hooks/useDirection';
 import { useAuthStore } from '../../stores/authStore';
-import { mapAuthError } from '../../utils/authErrors';
+import { mapAuthError, MIN_PASSWORD_LENGTH } from '../../utils/authErrors';
 
 const EARTH  = '#142B16';
 const GOLD   = '#F5C840';
@@ -99,6 +99,7 @@ export function SignupForm() {
               className="auth-signup-input"
               type="email"
               autoComplete="email"
+              inputMode="email"
               required
               value={email}
               onChange={e => setEmail(e.target.value)}
@@ -114,7 +115,7 @@ export function SignupForm() {
               type="password"
               autoComplete="new-password"
               required
-              minLength={8}
+              minLength={MIN_PASSWORD_LENGTH}
               value={password}
               onChange={e => setPassword(e.target.value)}
               style={inputStyle}

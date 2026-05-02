@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { useAuthStore } from '../../stores/authStore';
-import { mapAuthError } from '../../utils/authErrors';
+import { mapAuthError, MIN_PASSWORD_LENGTH } from '../../utils/authErrors';
 
 const EARTH  = '#142B16';
 const GOLD   = '#F5C840';
@@ -21,7 +21,7 @@ const FORM_CSS = `
 `;
 
 export function LoginForm() {
-  const { i18n } = useTranslation();
+  const { t, i18n } = useTranslation('auth');
   const lang: 'he' | 'en' = i18n.language === 'en' ? 'en' : 'he';
   const { signIn, signInWithGoogle, isLoading, error, clearError } = useAuthStore();
   const [email,    setEmail]    = useState('');
@@ -75,12 +75,14 @@ export function LoginForm() {
             color:        `${PARCH}70`,
             marginBottom: '6px',
           }}>
-            אימייל
+            {t('login.emailLabel')}
           </label>
           <input
             className="auth-input"
             type="email"
             required
+            autoComplete="email"
+            inputMode="email"
             value={email}
             onChange={e => setEmail(e.target.value)}
             placeholder="your@email.com"
@@ -97,13 +99,14 @@ export function LoginForm() {
             color:        `${PARCH}70`,
             marginBottom: '6px',
           }}>
-            סיסמה
+            {t('login.passwordLabel')}
           </label>
           <input
             className="auth-input"
             type="password"
             required
-            minLength={6}
+            autoComplete="current-password"
+            minLength={MIN_PASSWORD_LENGTH}
             value={password}
             onChange={e => setPassword(e.target.value)}
             style={inputStyle}
@@ -130,7 +133,7 @@ export function LoginForm() {
           onMouseEnter={e => { if (!isLoading) (e.currentTarget as HTMLElement).style.filter = 'brightness(1.1)'; }}
           onMouseLeave={e => { (e.currentTarget as HTMLElement).style.filter = 'none'; }}
         >
-          {isLoading ? '...' : 'כניסה'}
+          {isLoading ? '...' : t('login.submitButton')}
         </button>
       </form>
 
@@ -172,16 +175,16 @@ export function LoginForm() {
           <path d="M3.964 10.71A5.41 5.41 0 0 1 3.682 9c0-.593.102-1.17.282-1.71V4.958H.957A8.996 8.996 0 0 0 0 9c0 1.452.348 2.827.957 4.042l3.007-2.332Z" fill="#FBBC05"/>
           <path d="M9 3.58c1.321 0 2.508.454 3.44 1.345l2.582-2.58C13.463.891 11.426 0 9 0A8.997 8.997 0 0 0 .957 4.958L3.964 7.29C4.672 5.163 6.656 3.58 9 3.58Z" fill="#EA4335"/>
         </svg>
-        כניסה עם Google
+        {t('login.googleButton')}
       </button>
 
       <p style={{ marginTop: '18px', textAlign: 'center', fontFamily: ASSIST, fontSize: '13px', color: `${PARCH}55` }}>
-        אין לך חשבון?{' '}
+        {t('login.noAccount')}{' '}
         <Link to="/signup" style={{ color: SAGE, fontWeight: 500, textDecoration: 'none' }}
           onMouseEnter={e => { (e.currentTarget as HTMLElement).style.color = GOLD; }}
           onMouseLeave={e => { (e.currentTarget as HTMLElement).style.color = SAGE; }}
         >
-          הרשמה
+          {t('login.signupLink')}
         </Link>
       </p>
 
@@ -190,7 +193,7 @@ export function LoginForm() {
           onMouseEnter={e => { (e.currentTarget as HTMLElement).style.color = SAGE; }}
           onMouseLeave={e => { (e.currentTarget as HTMLElement).style.color = `${PARCH}40`; }}
         >
-          שכחתי סיסמה
+          {t('login.forgotPassword')}
         </Link>
       </p>
     </>

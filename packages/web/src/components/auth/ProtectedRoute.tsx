@@ -1,4 +1,4 @@
-import { Navigate } from 'react-router-dom';
+import { Navigate, useLocation } from 'react-router-dom';
 import { useAuthStore } from '../../stores/authStore';
 
 interface Props {
@@ -7,6 +7,7 @@ interface Props {
 
 export function ProtectedRoute({ children }: Props) {
   const { user, isLoading } = useAuthStore();
+  const location = useLocation();
 
   if (isLoading) {
     return (
@@ -17,7 +18,8 @@ export function ProtectedRoute({ children }: Props) {
   }
 
   if (!user) {
-    return <Navigate to="/login" replace />;
+    const next = encodeURIComponent(location.pathname + location.search);
+    return <Navigate to={`/login?next=${next}`} replace />;
   }
 
   return <>{children}</>;

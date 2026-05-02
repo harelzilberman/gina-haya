@@ -1,3 +1,5 @@
+export const MIN_PASSWORD_LENGTH = 8;
+
 const AUTH_ERROR_MAP: Record<string, { he: string; en: string }> = {
   'Invalid login credentials': {
     he: 'כתובת המייל או הסיסמה שגויים',
