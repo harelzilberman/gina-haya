@@ -53,6 +53,7 @@ export function ArticlesPage() {
   const isRTL = lang === 'he';
 
   const [activeFilter, setActiveFilter] = useState<string>('all');
+  const [searchQuery,  setSearchQuery]  = useState('');
   const [extraArticles, setExtraArticles] = useState<ArticleEntry[]>([]);
 
   useEffect(() => {
@@ -80,15 +81,26 @@ export function ArticlesPage() {
   }, []);
 
   const allArticles = [...ARTICLES, ...extraArticles];
+  const searched = searchQuery
+    ? allArticles.filter(a => {
+        const q = searchQuery.toLowerCase();
+        const title = (lang === 'he' ? a.titleHe : a.titleEn).toLowerCase();
+        const desc  = (lang === 'he' ? a.metaDescriptionHe : a.metaDescriptionEn)?.toLowerCase() ?? '';
+        const cat   = (lang === 'he' ? a.categoryHe : a.categoryEn).toLowerCase();
+        return title.includes(q) || desc.includes(q) || cat.includes(q);
+      })
+    : allArticles;
   const filtered = activeFilter === 'all'
-    ? allArticles
-    : allArticles.filter(a => a.categoryEn === activeFilter);
+    ? searched
+    : searched.filter(a => a.categoryEn === activeFilter);
 
   const heading    = lang === 'he' ? '📖 מאמרים' : '📖 Articles';
   const subheading = lang === 'he'
     ? "מדריכים מעמיקים לגינון ביודינמי — נכתבים על ידי צ'ופצ'ו"
     : 'In-depth guides to biodynamic gardening — written by Chupchu';
-  const emptyMsg  = lang === 'he' ? 'מאמרים בדרך...' : 'Articles coming soon...';
+  const emptyMsg  = searchQuery
+    ? (lang === 'he' ? `לא נמצאו מאמרים עבור "${searchQuery}"` : `No articles found for "${searchQuery}"`)
+    : (lang === 'he' ? 'מאמרים בדרך...' : 'Articles coming soon...');
 
   return (
     <div
@@ -113,6 +125,24 @@ export function ArticlesPage() {
       {/* Cross-nav to videos */}
       <div style={{ marginBottom: '28px' }}>
         <CrossNavLink to="/guides" label="🎬 לסרטונים ←" />
+      </div>
+
+      {/* Search */}
+      <div style={{ marginBottom: '16px' }}>
+        <input
+          type="search"
+          placeholder={lang === 'he' ? 'חפש מאמרים...' : 'Search articles...'}
+          value={searchQuery}
+          onChange={e => setSearchQuery(e.target.value)}
+          style={{
+            width: '100%', boxSizing: 'border-box',
+            padding: '10px 16px', borderRadius: '24px',
+            border: '1px solid rgba(180,150,60,0.25)',
+            background: 'rgba(10,24,10,0.75)',
+            color: PARCH, fontSize: '14px', fontFamily: ASSIST,
+            outline: 'none', direction: isRTL ? 'rtl' : 'ltr',
+          }}
+        />
       </div>
 
       {/* Category filter */}
@@ -142,13 +172,26 @@ export function ArticlesPage() {
       {/* Grid */}
       {filtered.length === 0 ? (
         <div style={{ textAlign: 'center', padding: '60px 0' }}>
-          <div style={{ fontSize: '48px', marginBottom: '12px' }}>🌱</div>
+          <div style={{ fontSize: '48px', marginBottom: '12px' }}>{searchQuery ? '🔍' : '🌱'}</div>
           <p style={{ fontFamily: FRANK, fontSize: '18px', color: GOLD, margin: '0 0 8px' }}>
             {emptyMsg}
           </p>
-          <p style={{ fontFamily: ASSIST, fontSize: '13px', color: `${PARCH}50`, margin: 0 }}>
-            {lang === 'he' ? "צ'ופצ'ו עובד על התוכן 🌿" : 'Chupchu is working on it 🌿'}
-          </p>
+          {searchQuery ? (
+            <button
+              onClick={() => setSearchQuery('')}
+              style={{
+                fontFamily: ASSIST, fontSize: '13px', color: '#142B16',
+                background: GOLD, border: 'none', borderRadius: '99px',
+                padding: '8px 20px', cursor: 'pointer', marginTop: '8px',
+              }}
+            >
+              {lang === 'he' ? 'נקה חיפוש' : 'Clear search'}
+            </button>
+          ) : (
+            <p style={{ fontFamily: ASSIST, fontSize: '13px', color: `${PARCH}50`, margin: 0 }}>
+              {lang === 'he' ? "צ'ופצ'ו עובד על התוכן 🌿" : 'Chupchu is working on it 🌿'}
+            </p>
+          )}
         </div>
       ) : (
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: '20px' }}>

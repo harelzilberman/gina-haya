@@ -64,6 +64,10 @@ const VIDEOS: Video[] = [
   { id: 't3', titleHe: 'השקיה בטפטוף — התקנה', descHe: 'כיצד להתקין מערכת טפטוף חסכונית', category: 'technique', format: 'yt', duration: '10:00', comingSoon: true },
   { id: 't4', titleHe: 'ריבוי מחוטרים', descHe: 'הכנת שתלים מחוטרים מהורים קיימים', category: 'technique', format: 'reel', duration: '1:00', comingSoon: true },
   { id: 't5', titleHe: 'מולצ׳ינג — כיסוי קרקע', descHe: 'שיטות כיסוי קרקע לשמירת לחות ועצירת עשבים', category: 'technique', format: 'reel', duration: '0:45', comingSoon: true },
+  { id: 't6', titleHe: 'השקיית עציצים — המדריך המקצועי', descHe: 'למדו את הדרך המקצועית להשקות עציצים — עמוק, לעיתים רחוקות, ובמועד הנכון.', category: 'technique', format: 'reel', duration: '2:00', comingSoon: true },
+  { id: 't7', titleHe: 'חיפוי קרקע — חיסכון במים ועשבייה', descHe: 'שיטה טבעית לחסוך במים, להפחית עשבייה ולשמור על לחות הקרקע בגישה ביודינמית', category: 'technique', format: 'reel', duration: '1:30', comingSoon: true },
+  // Pest (plant stress identification)
+  { id: 'p5', titleHe: 'סימני סטרס בצמחים', descHe: 'כיצד לזהות צהבה, כמישה, כתמים ועוד — ומה הם אומרים על מצב הגינה שלכם', category: 'pest', format: 'reel', duration: '2:30', comingSoon: true },
 ];
 
 // ── Content catalog ────────────────────────────────────────────────────────
@@ -103,6 +107,10 @@ const GUIDE_CONTENT: Record<string, GuideContent> = {
   t3:  { comingSoon: ['סרטון', 'מאמר'] },
   t4:  { comingSoon: ['סרטון', 'מאמר'] },
   t5:  { comingSoon: ['סרטון', 'מאמר'] },
+  t6:  { article: { slug: 'watering-pots', ready: true }, comingSoon: ['סרטון'] },
+  t7:  { article: { slug: 'ground-mulching', ready: true }, comingSoon: ['סרטון'] },
+  // Pest (stress identification)
+  p5:  { article: { slug: 'plant-stress-signs', ready: true }, comingSoon: ['סרטון'] },
 };
 
 const SUBJECT_MODAL_CSS = `
@@ -462,14 +470,14 @@ function SubjectModal({
             <button
               onClick={onClose}
               style={{
-                position: 'absolute', top: '12px', left: '12px',
+                position: 'absolute', top: '12px', insetInlineEnd: '12px',
                 background: 'rgba(0,0,0,0.5)', border: 'none', borderRadius: '50%',
                 width: '32px', height: '32px', color: PARCH, cursor: 'pointer',
                 fontSize: '16px', display: 'flex', alignItems: 'center', justifyContent: 'center',
               }}
             >×</button>
             {/* Title overlay */}
-            <div style={{ position: 'absolute', bottom: '16px', right: '18px', left: '18px' }}>
+            <div style={{ position: 'absolute', bottom: '16px', insetInlineStart: '18px', insetInlineEnd: '18px' }}>
               <h2 style={{ fontFamily: FRANK, fontSize: '20px', color: GOLD, margin: '0 0 6px', lineHeight: 1.2 }}>
                 {video.titleHe}
               </h2>
@@ -648,10 +656,17 @@ export function GuidesPage() {
   const [subjectVideo, setSubjectVideo] = useState<Video | null>(null);  // subject popup
   const [playVideo,    setPlayVideo]    = useState<Video | null>(null);  // YouTube embed
   const [activeFilter, setActiveFilter] = useState<string>('all');
+  const [searchQuery,  setSearchQuery]  = useState('');
 
-  const filteredCategories = activeFilter === 'all'
-    ? CATEGORIES
-    : CATEGORIES.filter(c => c.id === activeFilter);
+  const searchedVideos = searchQuery
+    ? VIDEOS.filter(v =>
+        v.titleHe.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        v.descHe.toLowerCase().includes(searchQuery.toLowerCase())
+      )
+    : VIDEOS;
+
+  const filteredCategories = (activeFilter === 'all' ? CATEGORIES : CATEGORIES.filter(c => c.id === activeFilter))
+    .filter(c => searchedVideos.some(v => v.category === c.id));
 
   const allCategories = [{ id: 'all' }, ...CATEGORIES];
 
@@ -680,6 +695,24 @@ export function GuidesPage() {
         <CrossNavLink to="/articles" label={t('toArticles')} />
       </div>
 
+      {/* Search */}
+      <div style={{ marginBottom: '16px', position: 'relative' }}>
+        <input
+          type="search"
+          placeholder={isHe ? 'חפש מדריכים...' : 'Search guides...'}
+          value={searchQuery}
+          onChange={e => setSearchQuery(e.target.value)}
+          style={{
+            width: '100%', boxSizing: 'border-box',
+            padding: '10px 16px', borderRadius: '24px',
+            border: '1px solid rgba(245,200,64,0.25)',
+            background: 'rgba(20,43,22,0.7)',
+            color: PARCH, fontSize: '14px', fontFamily: ASSIST,
+            outline: 'none', direction: isHe ? 'rtl' : 'ltr',
+          }}
+        />
+      </div>
+
       {/* Category filter pills */}
       <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap', marginBottom: '36px' }}>
         {allCategories.map(cat => (
@@ -701,18 +734,37 @@ export function GuidesPage() {
       </div>
 
       {/* Netflix rows */}
-      {filteredCategories.map(cat => {
-        const videos = VIDEOS.filter(v => v.category === cat.id);
-        if (videos.length === 0) return null;
-        return (
-          <VideoRow
-            key={cat.id}
-            category={cat}
-            videos={videos}
-            onSelect={setSubjectVideo}
-          />
-        );
-      })}
+      {filteredCategories.length === 0 && searchQuery ? (
+        <div style={{ textAlign: 'center', padding: '60px 0' }}>
+          <div style={{ fontSize: '48px', marginBottom: '12px' }}>🔍</div>
+          <p style={{ fontFamily: FRANK, fontSize: '18px', color: GOLD, margin: '0 0 12px' }}>
+            {isHe ? `לא נמצאו מדריכים עבור "${searchQuery}"` : `No guides found for "${searchQuery}"`}
+          </p>
+          <button
+            onClick={() => setSearchQuery('')}
+            style={{
+              fontFamily: ASSIST, fontSize: '13px', color: FOREST,
+              background: GOLD, border: 'none', borderRadius: '99px',
+              padding: '8px 20px', cursor: 'pointer',
+            }}
+          >
+            {isHe ? 'נקה חיפוש' : 'Clear search'}
+          </button>
+        </div>
+      ) : (
+        filteredCategories.map(cat => {
+          const videos = searchedVideos.filter(v => v.category === cat.id);
+          if (videos.length === 0) return null;
+          return (
+            <VideoRow
+              key={cat.id}
+              category={cat}
+              videos={videos}
+              onSelect={setSubjectVideo}
+            />
+          );
+        })
+      )}
 
       {/* Subject popup */}
       {subjectVideo && (
