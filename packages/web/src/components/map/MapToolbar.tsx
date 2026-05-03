@@ -220,21 +220,23 @@ export function MapToolbar({
     : (isHe ? "🌕 מצ'ופצ'ו" : '🌕 Chupchu');
 
   return (
-    <div dir={isHe ? 'rtl' : 'ltr'} style={{
+    <div className="gina-toolbar-scroll" dir={isHe ? 'rtl' : 'ltr'} style={{
       position: 'absolute',
       top: '12px',
       insetInlineStart: '12px',
       zIndex: 200,
       display: 'flex',
       alignItems: 'center',
-      flexWrap: 'wrap',
+      flexWrap: 'nowrap',
+      overflowX: 'auto',
+      scrollbarWidth: 'none' as any,
       padding: '4px 8px',
       gap: '6px',
       background: 'rgba(20,43,22,0.94)',
       border: '1px solid rgba(245,200,64,0.2)',
       borderRadius: '10px',
       boxShadow: '0 4px 16px rgba(0,0,0,0.5)',
-      maxWidth: isMobile ? '240px' : 'none',
+      maxWidth: isMobile ? '240px' : 'calc(100vw - 280px)',
     }}>
 
       {/* Category dropdowns */}

@@ -6,7 +6,10 @@ import { useGardenSwitcherStore } from '../stores/gardenSwitcherStore';
 import { usePlanLimit } from '../hooks/usePlanLimit';
 import { UpgradeModal } from '../components/upgrade/UpgradeModal';
 
-const SPIN_CSS = `@keyframes mapSpin { to { transform: rotate(360deg); } }`;
+const SPIN_CSS = `
+@keyframes mapSpin { to { transform: rotate(360deg); } }
+.gina-toolbar-scroll::-webkit-scrollbar { display: none; }
+`;
 
 function SaveIndicator({ isSaving, lastSaved, saveError, onRetry }: {
   isSaving: boolean;
@@ -128,7 +131,7 @@ export function MapPage() {
   return (
     <div dir={isHe ? 'rtl' : 'ltr'} style={{ background: '#142B16' }}>
       {/* Canvas area — fills viewport between navbar and bottom nav */}
-      <div style={{ position: 'fixed', top: 'var(--navbar-height)', left: 0, right: 0, height: 'calc(100dvh - var(--navbar-height) - var(--bottomnav-height))', display: 'flex', overflow: 'hidden' }}>
+      <div style={{ position: 'fixed', top: 'var(--navbar-height)', left: 0, width: '100vw', height: 'calc(100dvh - var(--navbar-height) - var(--bottomnav-height))', display: 'flex', flexDirection: 'row', overflow: 'hidden', direction: 'ltr' }}>
         <MapToolbar
           selectedTool={store.selectedTool}
           onToolChange={store.setTool}
