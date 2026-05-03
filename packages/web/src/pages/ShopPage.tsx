@@ -63,8 +63,8 @@ interface ProductDef {
 
 const ANALYSIS_PRODUCTS: ProductDef[] = [
   { id: 'analysis_single',  label: 'בודד',     name: 'ניתוח צמח בודד',    price: 3.6,  priceStr: '₪3.6', note: 'ניתוח אחד מלא' },
-  { id: 'analysis_pack_5',  label: 'חבילת 5',  name: 'חבילת 5 ניתוחים',   price: 12,   priceStr: '₪12',  note: '₪2.4 לניתוח — חסכון 33%', badge: 'הכי משתלם' },
-  { id: 'analysis_pack_10', label: 'חבילת 10', name: 'חבילת 10 ניתוחים',  price: 27,   priceStr: '₪27',  note: '₪2.7 לניתוח — חסכון 25%' },
+  { id: 'analysis_pack_5',  label: 'חבילת 5',  name: 'חבילת 5 ניתוחים',   price: 12,   priceStr: '₪12',  note: '₪2.4 לניתוח — חסכון 33%' },
+  { id: 'analysis_pack_10', label: 'חבילת 10', name: 'חבילת 10 ניתוחים',  price: 21,   priceStr: '₪21',  note: '₪2.1 לניתוח — חסכון 42%', badge: 'הכי משתלם' },
 ];
 
 const TRACKER_PRODUCTS: ProductDef[] = [
