@@ -9,7 +9,7 @@ export type ProductId =
   | 'analysis_pack_5'
   | 'analysis_pack_10'
   | 'tracker_single'
-  | 'tracker_pack_3'
+  | 'tracker_pack_5'
   | 'tracker_pack_10'
   | 'garden_pack';
 
@@ -69,8 +69,8 @@ const ANALYSIS_PRODUCTS: ProductDef[] = [
 
 const TRACKER_PRODUCTS: ProductDef[] = [
   { id: 'tracker_single',  label: 'בודד',     name: 'מעקב גידול בודד',   price: 3.6,  priceStr: '₪3.6', note: 'מעקב אחד' },
-  { id: 'tracker_pack_3',  label: 'חבילת 3',  name: 'חבילת 3 מעקבים',    price: 12,   priceStr: '₪12',  note: '₪4 למעקב' },
-  { id: 'tracker_pack_10', label: 'חבילת 10', name: 'חבילת 10 מעקבים',   price: 27,   priceStr: '₪27',  note: '₪2.7 למעקב — חסכון 25%', badge: 'הכי משתלם' },
+  { id: 'tracker_pack_5',  label: 'חבילת 5',  name: 'חבילת 5 מעקבים',    price: 12,   priceStr: '₪12',  note: '₪2.4 למעקב — חסכון 33%' },
+  { id: 'tracker_pack_10', label: 'חבילת 10', name: 'חבילת 10 מעקבים',   price: 21,   priceStr: '₪21',  note: '₪2.1 למעקב — חסכון 42%', badge: 'הכי משתלם' },
 ];
 
 const COMING_SOON = [
