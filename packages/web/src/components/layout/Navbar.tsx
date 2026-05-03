@@ -158,6 +158,8 @@ export function Navbar() {
           background: 'linear-gradient(to bottom, rgba(20,43,22,0.97), rgba(20,43,22,0.85))',
           backdropFilter: 'blur(10px)',
           WebkitBackdropFilter: 'blur(10px)',
+          overflow: 'hidden',
+          maxWidth: '100vw',
           borderBottom: '1px solid rgba(245,200,64,0.1)',
         }}
       >
@@ -198,7 +200,7 @@ export function Navbar() {
         {user && (
           <div
             className="gina-desktop-nav"
-            style={{ flex: '1 1 auto', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '28px' }}
+            style={{ flex: '1 1 auto', minWidth: 0, overflow: 'hidden', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '28px' }}
           >
             {[
               { label: isHebrew ? 'בית' : 'Home',  to: '/'         },

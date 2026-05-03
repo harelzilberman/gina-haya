@@ -141,7 +141,7 @@ export function MapPage() {
           wizardStatus={store.wizardStatus}
           hasSavedMap={true}
         />
-        <div style={{ flex: 1, position: 'relative', overflow: 'hidden' }}>
+        <div style={{ flex: 1, minWidth: 0, position: 'relative', overflow: 'hidden' }}>
           <SaveIndicator
             isSaving={store.isSaving}
             lastSaved={store.lastSaved}
