@@ -15,14 +15,18 @@ interface Props {
 
 export function GardenSwitcher({ onCreateGarden }: Props) {
   const navigate = useNavigate();
-  const { gardens, activeGardenId, switchGarden } = useGardenSwitcherStore();
+  const { gardens, activeGardenId, switchGarden, isSwitching } = useGardenSwitcherStore();
   const { limits } = usePlanLimit();
   const [open, setOpen] = useState(false);
-  const [switchingId, setSwitchingId] = useState<string | null>(null);
   const ref = useRef<HTMLDivElement>(null);
 
   const activeGarden = gardens.find(g => g.id === activeGardenId) ?? gardens[0];
   const atLimit = limits.maxGardens !== null && gardens.length >= limits.maxGardens;
+
+  // Close dropdown once the switch completes
+  useEffect(() => {
+    if (!isSwitching) setOpen(false);
+  }, [isSwitching]);
 
   useEffect(() => {
     function handleClick(e: MouseEvent) {
@@ -91,25 +95,19 @@ export function GardenSwitcher({ onCreateGarden }: Props) {
             return (
               <button
                 key={garden.id}
-                disabled={switchingId !== null}
-                onClick={async () => {
-                  if (switchingId !== null || isActive) return;
-                  setSwitchingId(garden.id);
-                  try {
-                    await switchGarden(garden.id);
-                  } finally {
-                    setSwitchingId(null);
-                    setOpen(false);
-                  }
+                disabled={isSwitching}
+                onClick={() => {
+                  if (isSwitching || isActive) return;
+                  switchGarden(garden.id);
                 }}
                 style={{
                   display: 'flex', alignItems: 'center', gap: '10px',
                   width: '100%', padding: '9px 14px',
                   background: isActive ? 'rgba(245,200,64,0.08)' : 'transparent',
-                  border: 'none', cursor: switchingId !== null ? 'wait' : isActive ? 'default' : 'pointer',
+                  border: 'none', cursor: isSwitching ? 'wait' : isActive ? 'default' : 'pointer',
                   borderInlineStart: isActive ? `2px solid ${GOLD}` : '2px solid transparent',
                   transition: 'background 0.15s',
-                  opacity: switchingId !== null && switchingId !== garden.id ? 0.5 : 1,
+                  opacity: isSwitching && !isActive ? 0.5 : 1,
                 }}
                 onMouseEnter={e => {
                   if (!isActive) (e.currentTarget as HTMLElement).style.background = 'rgba(245,200,64,0.05)';
@@ -121,7 +119,7 @@ export function GardenSwitcher({ onCreateGarden }: Props) {
                 <span style={{ fontSize: '16px', flexShrink: 0 }}>🏡</span>
                 <div style={{ flex: 1, textAlign: 'start', overflow: 'hidden' }}>
                   <div style={{ fontFamily: ASST, fontSize: '13px', fontWeight: 600, color: isActive ? GOLD : PARCH, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-                    {switchingId === garden.id ? 'טוען...' : garden.name}
+                    {isSwitching && isActive ? 'טוען...' : garden.name}
                     {garden.is_default && <span style={{ fontFamily: ASST, fontSize: '10px', color: `${PARCH}50`, marginRight: '6px' }}> ★</span>}
                   </div>
                   {garden.location && (

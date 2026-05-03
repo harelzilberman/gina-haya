@@ -24,22 +24,66 @@ const WIZARD_MONTHLY_LIMITS: Record<string, number | null> = {
 mapRouter.get('/', async (req: any, res) => {
   try {
     const { gardenId } = req.query as { gardenId?: string };
+    const userId = req.user.id;
+    const COLS = 'id, map_data, north_angle, garden_id, created_at, updated_at';
 
-    let query = db
+    if (!gardenId) {
+      // No garden scoping — return most-recently-updated map (legacy / no-garden path)
+      const { data, error } = await db
+        .from('garden_maps')
+        .select(COLS)
+        .eq('user_id', userId)
+        .order('updated_at', { ascending: false })
+        .limit(1)
+        .single();
+
+      if (error && error.code !== 'PGRST116') throw error;
+      if (!data) return res.json({ exists: false });
+      return res.json({ exists: true, ...data });
+    }
+
+    // Step 1 — look for a map already scoped to this garden
+    const { data: map, error: mapErr } = await db
       .from('garden_maps')
-      .select('id, map_data, north_angle, garden_id, created_at, updated_at')
-      .eq('user_id', req.user.id)
-      .order('updated_at', { ascending: false })
-      .limit(1);
+      .select(COLS)
+      .eq('user_id', userId)
+      .eq('garden_id', gardenId)
+      .single();
 
-    if (gardenId) query = (query as any).eq('garden_id', gardenId);
+    if (mapErr && mapErr.code !== 'PGRST116') throw mapErr;
+    if (map) return res.json({ exists: true, ...map });
 
-    const { data, error } = await (query as any).single();
+    // Step 2 — not found; if this is the default garden, try the legacy NULL map
+    const { data: garden } = await db
+      .from('gardens')
+      .select('is_default')
+      .eq('id', gardenId)
+      .eq('user_id', userId)
+      .single();
 
-    if (error && error.code !== 'PGRST116') throw error;
-    if (!data) return res.json({ exists: false });
+    if (garden?.is_default) {
+      const { data: nullMap, error: nullErr } = await db
+        .from('garden_maps')
+        .select(COLS)
+        .eq('user_id', userId)
+        .is('garden_id', null)
+        .single();
 
-    res.json({ exists: true, ...data });
+      if (nullErr && nullErr.code !== 'PGRST116') throw nullErr;
+
+      if (nullMap) {
+        // Auto-migrate: stamp this map with the garden_id so future loads are direct
+        await db
+          .from('garden_maps')
+          .update({ garden_id: gardenId })
+          .eq('id', nullMap.id);
+
+        console.log(`[map] migrated NULL map ${nullMap.id} → garden ${gardenId}`);
+        return res.json({ exists: true, ...nullMap, garden_id: gardenId });
+      }
+    }
+
+    return res.json({ exists: false });
   } catch (err: any) {
     console.error('[GET /api/map]', err.message);
     res.status(500).json({ error: err.message });

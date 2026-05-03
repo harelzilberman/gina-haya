@@ -133,6 +133,8 @@ function scheduleSave() {
   _saveTimer = setTimeout(() => useMapStore.getState().saveMap(), 800);
 }
 
+let _loadRequestId = 0;
+
 function getToken() {
   return useAuthStore.getState().session?.access_token;
 }
@@ -163,18 +165,18 @@ export const useMapStore = create<MapState>((set, get) => ({
   async loadMap(gardenId?: string) {
     const token = getToken();
     if (!token) return;
+    const requestId = ++_loadRequestId;
     set({ isLoading: true, error: null });
     try {
       const url = gardenId ? `/api/map?gardenId=${gardenId}` : '/api/map';
       const data = await api.get<any>(url, token);
+      // Discard if a newer load was started while this one was in-flight
+      if (requestId !== _loadRequestId) return;
       if (!data.exists) {
         set({ isLoading: false, mapId: null, mapData: EMPTY_MAP, northAngle: 0, isDirty: false, history: [] });
         return;
       }
       const md = data.map_data ?? EMPTY_MAP;
-      console.log('[mapStore] raw map_data from API — objects:', md.objects?.length ?? 0, ', plants:', md.plants?.length ?? 0);
-      console.log('[mapStore] plant coords:', md.plants?.map((p: any) => ({ id: p.id?.slice(0,6), x: p.x, y: p.y })));
-      console.log('RAW MAP_DATA ELEMENTS:', JSON.stringify((md.plants ?? []).slice(0, 3), null, 2));
       set({
         mapId: data.id,
         mapData: md,
@@ -183,6 +185,7 @@ export const useMapStore = create<MapState>((set, get) => ({
         isDirty: false,
       });
     } catch (err: any) {
+      if (requestId !== _loadRequestId) return;
       set({ isLoading: false, error: err.message });
     }
   },
