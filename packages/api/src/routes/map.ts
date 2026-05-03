@@ -45,54 +45,23 @@ mapRouter.get('/', async (req: any, res) => {
       return res.json({ exists: true, ...data });
     }
 
-    // Step 1 — look for a map already scoped to this garden
+    // Look for a map scoped to this garden and user
     const { data: map, error: mapErr } = await db
       .from('garden_maps')
       .select(COLS)
-      .eq('user_id', userId)
       .eq('garden_id', gardenId)
+      .eq('user_id', userId)
       .single();
 
     if (mapErr && mapErr.code !== 'PGRST116') throw mapErr;
-    console.log('[API] map found by garden_id:', !!map);
+
     if (map) {
       res.set('Cache-Control', 'no-store, no-cache, must-revalidate');
       res.set('Pragma', 'no-cache');
       return res.json({ exists: true, ...map });
     }
 
-    // Step 2 — not found; if this is the default garden, try the legacy NULL map
-    const { data: garden } = await db
-      .from('gardens')
-      .select('is_default')
-      .eq('id', gardenId)
-      .eq('user_id', userId)
-      .single();
-
-    if (garden?.is_default) {
-      const { data: nullMap, error: nullErr } = await db
-        .from('garden_maps')
-        .select(COLS)
-        .eq('user_id', userId)
-        .is('garden_id', null)
-        .single();
-
-      if (nullErr && nullErr.code !== 'PGRST116') throw nullErr;
-
-      if (nullMap) {
-        // Auto-migrate: stamp this map with the garden_id so future loads are direct
-        await db
-          .from('garden_maps')
-          .update({ garden_id: gardenId })
-          .eq('id', nullMap.id);
-
-        console.log(`[map] migrated NULL map ${nullMap.id} → garden ${gardenId}`);
-        res.set('Cache-Control', 'no-store, no-cache, must-revalidate');
-        res.set('Pragma', 'no-cache');
-        return res.json({ exists: true, ...nullMap, garden_id: gardenId });
-      }
-    }
-
+    // No map for this garden — caller will create a fresh one
     return res.json({ exists: false });
   } catch (err: any) {
     console.error('[GET /api/map]', err.message);
