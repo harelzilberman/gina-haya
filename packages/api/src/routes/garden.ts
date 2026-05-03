@@ -20,9 +20,31 @@ gardenRouter.get('/', async (req: any, res) => {
       .order('created_at', { ascending: true });
 
     if (error) throw error;
+    res.set('Cache-Control', 'no-store, no-cache, must-revalidate');
+    res.set('Pragma', 'no-cache');
     res.json(data || []);
   } catch (err: any) {
     console.error('[GET /api/garden]', err);
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// GET /api/garden/:id — get a single garden
+gardenRouter.get('/:id', async (req: any, res) => {
+  try {
+    const { data, error } = await db
+      .from('gardens')
+      .select('*, garden_plants(*)')
+      .eq('id', req.params.id)
+      .eq('user_id', req.user.id)
+      .single();
+
+    if (error || !data) return res.status(404).json({ error: 'garden_not_found' });
+    res.set('Cache-Control', 'no-store, no-cache, must-revalidate');
+    res.set('Pragma', 'no-cache');
+    res.json(data);
+  } catch (err: any) {
+    console.error('[GET /api/garden/:id]', err);
     res.status(500).json({ error: err.message });
   }
 });

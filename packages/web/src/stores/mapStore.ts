@@ -166,12 +166,17 @@ export const useMapStore = create<MapState>((set, get) => ({
     const token = getToken();
     if (!token) return;
     const requestId = ++_loadRequestId;
+    console.log('[map] loadMap called with gardenId:', gardenId, '(requestId:', requestId, ')');
     set({ isLoading: true, error: null });
     try {
-      const url = gardenId ? `/api/map?gardenId=${gardenId}` : '/api/map';
+      const url = gardenId ? `/api/map?gardenId=${gardenId}&t=${Date.now()}` : `/api/map?t=${Date.now()}`;
       const data = await api.get<any>(url, token);
+      console.log('[map] API response:', { exists: data.exists, id: data.id, garden_id: data.garden_id, requestId, currentId: _loadRequestId });
       // Discard if a newer load was started while this one was in-flight
-      if (requestId !== _loadRequestId) return;
+      if (requestId !== _loadRequestId) {
+        console.log('[map] discarding stale response for requestId:', requestId);
+        return;
+      }
       if (!data.exists) {
         set({ isLoading: false, mapId: null, mapData: EMPTY_MAP, northAngle: 0, isDirty: false, history: [] });
         return;

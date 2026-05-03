@@ -26,6 +26,7 @@ mapRouter.get('/', async (req: any, res) => {
     const { gardenId } = req.query as { gardenId?: string };
     const userId = req.user.id;
     const COLS = 'id, map_data, north_angle, garden_id, created_at, updated_at';
+    console.log('[API] GET /map called with gardenId:', gardenId, 'userId:', userId);
 
     if (!gardenId) {
       // No garden scoping — return most-recently-updated map (legacy / no-garden path)
@@ -39,6 +40,8 @@ mapRouter.get('/', async (req: any, res) => {
 
       if (error && error.code !== 'PGRST116') throw error;
       if (!data) return res.json({ exists: false });
+      res.set('Cache-Control', 'no-store, no-cache, must-revalidate');
+      res.set('Pragma', 'no-cache');
       return res.json({ exists: true, ...data });
     }
 
@@ -51,7 +54,12 @@ mapRouter.get('/', async (req: any, res) => {
       .single();
 
     if (mapErr && mapErr.code !== 'PGRST116') throw mapErr;
-    if (map) return res.json({ exists: true, ...map });
+    console.log('[API] map found by garden_id:', !!map);
+    if (map) {
+      res.set('Cache-Control', 'no-store, no-cache, must-revalidate');
+      res.set('Pragma', 'no-cache');
+      return res.json({ exists: true, ...map });
+    }
 
     // Step 2 — not found; if this is the default garden, try the legacy NULL map
     const { data: garden } = await db
@@ -79,6 +87,8 @@ mapRouter.get('/', async (req: any, res) => {
           .eq('id', nullMap.id);
 
         console.log(`[map] migrated NULL map ${nullMap.id} → garden ${gardenId}`);
+        res.set('Cache-Control', 'no-store, no-cache, must-revalidate');
+        res.set('Pragma', 'no-cache');
         return res.json({ exists: true, ...nullMap, garden_id: gardenId });
       }
     }

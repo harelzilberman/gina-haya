@@ -17,7 +17,6 @@ interface GardenSwitcherState {
   gardens: Garden[];
   activeGardenId: string | null;
   isLoading: boolean;
-  isSwitching: boolean;
 
   loadGardens: () => Promise<void>;
   switchGarden: (gardenId: string) => Promise<void>;
@@ -31,18 +30,29 @@ function getToken() {
   return useAuthStore.getState().session?.access_token;
 }
 
+async function resetAndReloadStores(gardenId: string) {
+  console.log('[switch] 3. calling mapStore.reset()');
+  useMapStore.getState().reset();
+  useTrackerStore.getState().reset();
+  console.log('[switch] 4. calling mapStore.loadMap with:', gardenId);
+  await Promise.all([
+    useMapStore.getState().loadMap(gardenId),
+    useTrackerStore.getState().loadTrackers(gardenId),
+    useGardenStore.getState().loadGardens(),
+  ]);
+}
+
 export const useGardenSwitcherStore = create<GardenSwitcherState>((set, get) => ({
   gardens: [],
   activeGardenId: null,
   isLoading: false,
-  isSwitching: false,
 
   loadGardens: async () => {
     const token = getToken();
     if (!token) return;
     set({ isLoading: true });
     try {
-      const data = await api.get<Garden[]>('/api/garden', token);
+      const data = await api.get<Garden[]>(`/api/garden?t=${Date.now()}`, token);
       const { activeGardenId } = get();
 
       // Determine active garden: current selection → localStorage → is_default → first
@@ -67,35 +77,24 @@ export const useGardenSwitcherStore = create<GardenSwitcherState>((set, get) => 
   },
 
   switchGarden: async (gardenId: string) => {
-    if (get().isSwitching) return;
-    console.log('[garden] switching to:', gardenId);
-    set({ isSwitching: true, activeGardenId: gardenId });
+    console.log('[switch] 1. starting switch to:', gardenId);
+    const token = getToken();
+    set({ activeGardenId: gardenId });
+    console.log('[switch] 2. activeGardenId set to:', gardenId);
     localStorage.setItem(LS_KEY, gardenId);
 
-    // Sync gardenStore active garden immediately from cached list
+    // Sync gardenStore active garden immediately
     const { gardens } = get();
     const activeGarden = gardens.find(g => g.id === gardenId) ?? null;
     if (activeGarden) useGardenStore.setState({ activeGarden });
 
-    // Persist to server — non-blocking, best-effort
-    const token = getToken();
+    // Persist to server (best-effort, non-blocking)
     if (token) {
       api.patch('/api/users/profile', { activeGardenId: gardenId }, token).catch(() => {});
     }
 
-    try {
-      // Reset all stores first so no stale data is visible during load
-      useMapStore.getState().reset();
-      useTrackerStore.getState().reset();
-
-      // Load map first (critical path — user sees this immediately)
-      await useMapStore.getState().loadMap(gardenId);
-
-      // Trackers fire-and-forget after map is ready
-      useTrackerStore.getState().loadTrackers(gardenId);
-    } finally {
-      set({ isSwitching: false });
-    }
+    // Reset stale data then reload — awaited so callers know when it's done
+    await resetAndReloadStores(gardenId);
   },
 
   createGarden: async (data: CreateGardenData) => {
@@ -121,10 +120,7 @@ export const useGardenSwitcherStore = create<GardenSwitcherState>((set, get) => 
     const { activeGardenId } = get();
     if (activeGardenId) {
       localStorage.setItem(LS_KEY, activeGardenId);
-      useMapStore.getState().reset();
-      useTrackerStore.getState().reset();
-      await useMapStore.getState().loadMap(activeGardenId);
-      useTrackerStore.getState().loadTrackers(activeGardenId);
+      await resetAndReloadStores(activeGardenId);
     }
   },
 
