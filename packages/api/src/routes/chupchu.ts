@@ -75,7 +75,7 @@ chupChuRouter.post('/chat', async (req: any, res) => {
     // ── 1. Load user profile ──────────────────────────────────────────────
     const { data: userProfile } = await db
       .from('users')
-      .select('subscription_tier, language_preference')
+      .select('subscription_tier, language_preference, active_garden_id')
       .eq('id', userId)
       .single();
 
@@ -123,21 +123,24 @@ chupChuRouter.post('/chat', async (req: any, res) => {
       .eq('date', today)
       .single();
 
-    // ── 4. Fetch user's garden ────────────────────────────────────────────
+    // ── 4. Fetch user's garden (active garden takes priority) ─────────────
     let garden: any = null;
-    if (gardenId) {
+    const resolvedGardenId = gardenId || userProfile?.active_garden_id || null;
+    if (resolvedGardenId) {
       const { data } = await db
         .from('gardens')
         .select('*, garden_plants(*)')
-        .eq('id', gardenId)
+        .eq('id', resolvedGardenId)
         .eq('user_id', userId)
         .single();
       garden = data;
-    } else {
+    }
+    if (!garden) {
       const { data } = await db
         .from('gardens')
         .select('*, garden_plants(*)')
         .eq('user_id', userId)
+        .order('is_default', { ascending: false })
         .limit(1)
         .single();
       garden = data;

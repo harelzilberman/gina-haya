@@ -16,7 +16,8 @@ gardenRouter.get('/', async (req: any, res) => {
       .from('gardens')
       .select('*, garden_plants(*)')
       .eq('user_id', req.user.id)
-      .order('created_at', { ascending: false });
+      .order('is_default', { ascending: false })
+      .order('created_at', { ascending: true });
 
     if (error) throw error;
     res.json(data || []);
@@ -29,7 +30,7 @@ gardenRouter.get('/', async (req: any, res) => {
 // POST /api/garden — create a new garden
 gardenRouter.post('/', async (req: any, res) => {
   try {
-    const { name, locationRegion, soilType, plantIds = [] } = req.body;
+    const { name, locationRegion, soilType, location, description, plantIds = [] } = req.body;
 
     // Enforce per-tier garden limit
     const maxGardens = req.limits?.maxGardens ?? null;
@@ -50,6 +51,14 @@ gardenRouter.post('/', async (req: any, res) => {
       }
     }
 
+    // If this is the first garden, mark it as default
+    const { count: existingCount } = await db
+      .from('gardens')
+      .select('id', { count: 'exact', head: true })
+      .eq('user_id', req.user.id);
+
+    const isFirst = (existingCount ?? 0) === 0;
+
     // Create the garden
     const { data: garden, error: gardenError } = await db
       .from('gardens')
@@ -57,8 +66,11 @@ gardenRouter.post('/', async (req: any, res) => {
         user_id: req.user.id,
         name: name || 'הגינה שלי',
         location_region: locationRegion || null,
+        location: location || null,
+        description: description || null,
         soil_type: soilType || null,
         notes: '',
+        is_default: isFirst,
       })
       .select()
       .single();
@@ -95,13 +107,15 @@ gardenRouter.post('/', async (req: any, res) => {
 // PATCH /api/garden/:id — update a garden
 gardenRouter.patch('/:id', async (req: any, res) => {
   try {
-    const { name, locationRegion, soilType, notes } = req.body;
+    const { name, locationRegion, soilType, notes, location, description } = req.body;
 
     const { data, error } = await db
       .from('gardens')
       .update({
-        ...(name && { name }),
+        ...(name !== undefined && { name }),
         ...(locationRegion !== undefined && { location_region: locationRegion }),
+        ...(location !== undefined && { location }),
+        ...(description !== undefined && { description }),
         ...(soilType !== undefined && { soil_type: soilType }),
         ...(notes !== undefined && { notes }),
         updated_at: new Date().toISOString(),
@@ -115,6 +129,58 @@ gardenRouter.patch('/:id', async (req: any, res) => {
     res.json(data);
   } catch (err: any) {
     console.error('[PATCH /api/garden/:id]', err);
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// PATCH /api/garden/:id/set-default — make a garden the default
+gardenRouter.patch('/:id/set-default', async (req: any, res) => {
+  try {
+    const userId = req.user.id;
+    const { id } = req.params;
+
+    // Unset current default, then set new one
+    await db.from('gardens').update({ is_default: false }).eq('user_id', userId).eq('is_default', true);
+    const { data, error } = await db
+      .from('gardens')
+      .update({ is_default: true, updated_at: new Date().toISOString() })
+      .eq('id', id)
+      .eq('user_id', userId)
+      .select()
+      .single();
+
+    if (error) throw error;
+    res.json(data);
+  } catch (err: any) {
+    console.error('[PATCH /api/garden/:id/set-default]', err);
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// DELETE /api/garden/:id — delete a garden (not the default)
+gardenRouter.delete('/:id', async (req: any, res) => {
+  try {
+    const userId = req.user.id;
+    const { id } = req.params;
+
+    // Verify ownership + check not default
+    const { data: garden, error: findError } = await db
+      .from('gardens')
+      .select('id, is_default')
+      .eq('id', id)
+      .eq('user_id', userId)
+      .single();
+
+    if (findError || !garden) return res.status(404).json({ error: 'garden_not_found' });
+    if (garden.is_default) {
+      return res.status(403).json({ error: 'cannot_delete_default', message: 'לא ניתן למחוק את הגינה הראשית.' });
+    }
+
+    const { error } = await db.from('gardens').delete().eq('id', id).eq('user_id', userId);
+    if (error) throw error;
+    res.json({ success: true });
+  } catch (err: any) {
+    console.error('[DELETE /api/garden/:id]', err);
     res.status(500).json({ error: err.message });
   }
 });

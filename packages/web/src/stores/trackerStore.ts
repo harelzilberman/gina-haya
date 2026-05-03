@@ -99,7 +99,7 @@ interface TrackerState {
   activeTrackerId: string | null;
   isLoading: boolean;
   isAnalyzing: boolean;
-  loadTrackers: () => Promise<void>;
+  loadTrackers: (gardenId?: string) => Promise<void>;
   createTracker: (data: {
     plantNameHe: string;
     plantNameEn: string;
@@ -137,12 +137,13 @@ export const useTrackerStore = create<TrackerState>((set, get) => ({
 
   setActiveTrackerId: (id) => set({ activeTrackerId: id }),
 
-  loadTrackers: async () => {
+  loadTrackers: async (gardenId?: string) => {
     const token = getToken();
     if (!token) return;
     set({ isLoading: true });
     try {
-      const data = await api.get<{ trackers: Tracker[] }>('/api/trackers', token);
+      const url = gardenId ? `/api/trackers?gardenId=${gardenId}` : '/api/trackers';
+      const data = await api.get<{ trackers: Tracker[] }>(url, token);
       set({ trackers: data.trackers });
     } catch (err: any) {
       console.error('loadTrackers', err.message);

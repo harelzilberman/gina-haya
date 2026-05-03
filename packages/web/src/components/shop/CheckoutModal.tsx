@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { api } from '../../api/client';
 import { useAuthStore } from '../../stores/authStore';
 import type { Credits } from '../../hooks/useCredits';
-import type { ProductId } from './ShopPage';
+import type { ProductId } from '../../pages/ShopPage';
 
 const EARTH = '#142B16';
 const GOLD  = '#F5C840';

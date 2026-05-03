@@ -22,6 +22,7 @@ import { DashboardPage } from './pages/DashboardPage';
 import { PrivacyPolicyPage } from './pages/PrivacyPolicyPage';
 import { PricingPage } from './pages/PricingPage';
 import { ShopPage } from './pages/ShopPage';
+import { GardensPage } from './pages/GardensPage';
 import { ProtectedRoute } from './components/auth/ProtectedRoute';
 import { OnboardingWizard } from './components/auth/OnboardingWizard';
 import { WelcomeScreen } from './components/auth/WelcomeScreen';
@@ -32,6 +33,7 @@ import { UpgradeModal } from './components/ui/UpgradeModal';
 import { ChupChuChat } from './components/chupchu/ChupChuChat';
 import { useUpgradeModalStore } from './stores/upgradeModalStore';
 import { useAuthStore } from './stores/authStore';
+import { useGardenSwitcherStore } from './stores/gardenSwitcherStore';
 import { useOnboardingStore } from './stores/onboardingStore';
 import { useChupChuPanelStore } from './stores/chupChuPanelStore';
 import { useChupChu } from './hooks/useChupChu';
@@ -43,6 +45,7 @@ export default function App() {
   const isMapPage   = location.pathname === '/map';
   const isChupChuPage = location.pathname === '/chupchu';
   const { user, profile, isAuthReady, loadProfile, markOnboardingComplete } = useAuthStore();
+  const { initFromAuth } = useGardenSwitcherStore();
   const { isComplete, showWelcomeScreen } = useOnboardingStore();
   const { isOpen: isUpgradeOpen } = useUpgradeModalStore();
   const {
@@ -67,6 +70,11 @@ export default function App() {
       loadProfile();
     }
   }, [user, profile, loadProfile]);
+
+  // Initialize garden switcher when user logs in
+  useEffect(() => {
+    if (user) initFromAuth();
+  }, [user]);
 
   // Load Chupchu history when the floating panel first opens
   useEffect(() => {
@@ -206,6 +214,14 @@ export default function App() {
             element={
               <ProtectedRoute>
                 <MapPage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/gardens"
+            element={
+              <ProtectedRoute>
+                <GardensPage />
               </ProtectedRoute>
             }
           />

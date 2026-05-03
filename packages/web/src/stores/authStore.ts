@@ -18,6 +18,7 @@ interface UserProfile {
   onboarding_complete: boolean;
   daily_tip_email: boolean;
   latitude?: number;
+  active_garden_id?: string | null;
 }
 
 interface AuthState {

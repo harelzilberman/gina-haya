@@ -5,6 +5,9 @@ import { useAuthStore } from '../../stores/authStore';
 import { useDirection } from '../../hooks/useDirection';
 import { usePlanLimit, TIER_DISPLAY } from '../../hooks/usePlanLimit';
 import { useCredits } from '../../hooks/useCredits';
+import { useGardenSwitcherStore } from '../../stores/gardenSwitcherStore';
+import { GardenSwitcher } from '../garden/GardenSwitcher';
+import { CreateGardenModal } from '../garden/CreateGardenModal';
 
 // ── Design tokens ──────────────────────────────────────────────────────────
 const GOLD       = '#F5C840';
@@ -85,6 +88,9 @@ export function Navbar() {
   const { tier } = usePlanLimit();
   const tierDisplay = TIER_DISPLAY[tier] ?? TIER_DISPLAY.free;
   const { credits } = useCredits();
+  const { gardens } = useGardenSwitcherStore();
+  const [createGardenOpen, setCreateGardenOpen] = useState(false);
+  const isProUser = tier === 'gardener_pro' || tier === 'professional';
 
   const initials = (() => {
     const name = profile?.display_name || user?.email || '';
@@ -180,6 +186,13 @@ export function Navbar() {
             Gina Haya
           </div>
         </Link>
+
+        {/* Garden switcher — Pro users with multiple gardens */}
+        {user && isProUser && gardens.length > 0 && (
+          <div className="gina-desktop-nav" style={{ marginInlineStart: '12px', marginInlineEnd: '4px' }}>
+            <GardenSwitcher onCreateGarden={() => setCreateGardenOpen(true)} />
+          </div>
+        )}
 
         {/* Center nav links — desktop, logged-in only */}
         {user && (
@@ -475,6 +488,7 @@ export function Navbar() {
                   {[
                     { label: isHebrew ? 'בית' : 'Home', to: '/' },
                     { label: t('nav.garden'),    to: '/garden' },
+                    ...(isProUser ? [{ label: isHebrew ? '🏡 הגינות שלי' : '🏡 My Gardens', to: '/gardens' }] : []),
                     { label: t('nav.calendar'), to: '/calendar' },
                     { label: t('nav.plan'),     to: '/plan'     },
                     { label: t('nav.map'),      to: '/map'      },
@@ -607,6 +621,7 @@ export function Navbar() {
                 { label: t('nav.map'),      to: '/map'      },
                 { label: t('nav.plants'),   to: '/plants' },
                 { label: t('nav.garden'),   to: '/garden' },
+                ...(isProUser ? [{ label: isHebrew ? '🏡 הגינות שלי' : '🏡 My Gardens', to: '/gardens' }] : []),
                 { label: t('nav.tracker'),  to: '/tracker' },
                 { label: t('nav.tasks'),    to: '/tasks'   },
                 { label: isHebrew ? '🎬 סרטונים' : '🎬 Videos',  to: '/guides'   },
@@ -645,6 +660,11 @@ export function Navbar() {
           <div style={{ paddingTop: '10px' }}>{langToggle}</div>
         </div>
       )}
+
+      <CreateGardenModal
+        isOpen={createGardenOpen}
+        onClose={() => setCreateGardenOpen(false)}
+      />
     </>
   );
 }

@@ -97,7 +97,7 @@ interface MapState {
   error: string | null;
   previewPlants: PlantPreview[];
 
-  loadMap: () => Promise<void>;
+  loadMap: (gardenId?: string) => Promise<void>;
   saveMap: () => Promise<void>;
   createMap: (gardenId?: string) => Promise<void>;
 
@@ -159,12 +159,13 @@ export const useMapStore = create<MapState>((set, get) => ({
   error: null,
   previewPlants: [],
 
-  async loadMap() {
+  async loadMap(gardenId?: string) {
     const token = getToken();
     if (!token) return;
     set({ isLoading: true, error: null });
     try {
-      const data = await api.get<any>('/api/map', token);
+      const url = gardenId ? `/api/map?gardenId=${gardenId}` : '/api/map';
+      const data = await api.get<any>(url, token);
       if (!data.exists) { set({ isLoading: false }); return; }
       const md = data.map_data ?? EMPTY_MAP;
       console.log('[mapStore] raw map_data from API — objects:', md.objects?.length ?? 0, ', plants:', md.plants?.length ?? 0);

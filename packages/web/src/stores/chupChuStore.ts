@@ -3,6 +3,10 @@ import type { ChupChuMessage } from '@gina-haya/shared';
 import { useAuthStore } from './authStore';
 import { api } from '../api/client';
 
+function getActiveGardenId(): string | null {
+  return localStorage.getItem('active_garden_id');
+}
+
 const API_BASE = import.meta.env.VITE_API_URL || 'https://powerful-embrace-production-95ea.up.railway.app';
 
 function getToken(): string | null {
@@ -59,6 +63,8 @@ export const useChupChuStore = create<ChupChuState>((set, get) => ({
     const token = getToken();
     if (!token || !text.trim()) return;
 
+    const resolvedGardenId = gardenId ?? getActiveGardenId();
+
     const userMsg: ChupChuMessage = {
       role:      'user',
       content:   text.trim(),
@@ -74,7 +80,7 @@ export const useChupChuStore = create<ChupChuState>((set, get) => ({
           'Content-Type':  'application/json',
           'Authorization': `Bearer ${token}`,
         },
-        body: JSON.stringify({ message: text.trim(), gardenId }),
+        body: JSON.stringify({ message: text.trim(), gardenId: resolvedGardenId }),
       });
 
       if (res.status === 429) {

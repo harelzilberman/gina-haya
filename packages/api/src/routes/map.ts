@@ -23,13 +23,18 @@ const WIZARD_MONTHLY_LIMITS: Record<string, number | null> = {
 // ── GET /api/map ──────────────────────────────────────────────────────────────
 mapRouter.get('/', async (req: any, res) => {
   try {
-    const { data, error } = await db
+    const { gardenId } = req.query as { gardenId?: string };
+
+    let query = db
       .from('garden_maps')
       .select('id, map_data, north_angle, garden_id, created_at, updated_at')
       .eq('user_id', req.user.id)
       .order('updated_at', { ascending: false })
-      .limit(1)
-      .single();
+      .limit(1);
+
+    if (gardenId) query = (query as any).eq('garden_id', gardenId);
+
+    const { data, error } = await (query as any).single();
 
     if (error && error.code !== 'PGRST116') throw error;
     if (!data) return res.json({ exists: false });

@@ -18,6 +18,24 @@ const pushTokenSchema = z.object({
   pushToken: z.string().min(1).max(200),
 });
 
+// ── PATCH /api/users/profile ────────────────────────────────────────────────
+usersRouter.patch('/profile', async (req, res) => {
+  const { id } = req.user!;
+  const { activeGardenId } = req.body;
+
+  const updates: Record<string, any> = {};
+  if (activeGardenId !== undefined) updates.active_garden_id = activeGardenId;
+
+  if (Object.keys(updates).length === 0) return res.json({ ok: true });
+
+  const { error } = await db.from('users').update(updates).eq('id', id);
+  if (error) {
+    console.error('[users/profile PATCH]', error);
+    return res.status(500).json({ error: 'Failed to update profile' });
+  }
+  return res.json({ ok: true });
+});
+
 usersRouter.post('/push-token', async (req, res) => {
   const parsed = pushTokenSchema.safeParse(req.body);
   if (!parsed.success) {

@@ -16,12 +16,17 @@ trackersRouter.use(attachTier);
 trackersRouter.get('/', async (req: any, res) => {
   try {
     const userId = req.user.id;
+    const { gardenId } = req.query as { gardenId?: string };
 
-    const { data: trackers, error } = await db
+    let query = db
       .from('plant_trackers')
       .select('*')
       .eq('user_id', userId)
       .order('created_at', { ascending: false });
+
+    if (gardenId) query = (query as any).eq('garden_id', gardenId);
+
+    const { data: trackers, error } = await (query as any);
 
     if (error) throw error;
     if (!trackers || trackers.length === 0) {
