@@ -138,7 +138,7 @@ export function MapPage() {
   return (
     <div dir={isHe ? 'rtl' : 'ltr'} style={{ background: '#142B16' }}>
       {/* Canvas area — fills viewport between navbar and bottom nav */}
-      <div style={{ position: 'fixed', top: 'var(--navbar-height)', left: 0, width: '100vw', height: 'calc(100dvh - var(--navbar-height) - var(--bottomnav-height))', display: 'flex', flexDirection: 'row', overflow: 'hidden', direction: 'ltr' }}>
+      <div style={{ position: 'fixed', top: 'var(--navbar-height)', left: 0, width: '100vw', height: 'calc(100dvh - var(--navbar-height) - var(--bottomnav-height))', display: 'flex', flexDirection: isHe ? 'row-reverse' : 'row', overflow: 'hidden' }}>
         <MapToolbar
           selectedTool={store.selectedTool}
           onToolChange={store.setTool}
