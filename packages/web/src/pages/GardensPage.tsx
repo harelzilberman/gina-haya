@@ -62,10 +62,7 @@ export function GardensPage() {
       const result: GardenStats = {};
       await Promise.all(gardens.map(async g => {
         try {
-          const [plantsData, trackersData] = await Promise.all([
-            api.get<{ plants: any[] }>(`/api/garden/${g.id}`, token).catch(() => ({ plants: g.garden_plants })),
-            api.get<{ trackers: any[] }>(`/api/trackers?gardenId=${g.id}`, token).catch(() => ({ trackers: [] })),
-          ]);
+          const trackersData = await api.get<{ trackers: any[] }>(`/api/trackers?gardenId=${g.id}`, token).catch(() => ({ trackers: [] }));
           result[g.id] = {
             plants: g.garden_plants?.length ?? 0,
             trackers: (trackersData as any).trackers?.length ?? 0,
