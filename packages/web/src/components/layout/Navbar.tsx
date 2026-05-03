@@ -157,8 +157,6 @@ export function Navbar() {
           background: 'linear-gradient(to bottom, rgba(20,43,22,0.97), rgba(20,43,22,0.85))',
           backdropFilter: 'blur(10px)',
           WebkitBackdropFilter: 'blur(10px)',
-          overflow: 'hidden',
-          maxWidth: '100vw',
           borderBottom: '1px solid rgba(245,200,64,0.1)',
         }}
       >
@@ -196,10 +194,10 @@ export function Navbar() {
           >
             {/* Primary links */}
             {[
-              { label: isHebrew ? 'בית' : 'Home', to: '/' },
-              { label: t('nav.map'),      to: '/map'     },
-              { label: t('nav.tracker'), to: '/tracker' },
-              { label: t('nav.tasks'),   to: '/tasks'   },
+              { label: isHebrew ? 'בית' : 'Home', to: '/'         },
+              { label: t('nav.map'),      to: '/map'      },
+              { label: t('nav.calendar'), to: '/calendar' },
+              { label: t('nav.tasks'),    to: '/tasks'    },
             ].map(item => (
               <Link
                 key={item.to}
@@ -249,16 +247,17 @@ export function Navbar() {
                   borderRadius: '6px',
                   boxShadow: '0 12px 48px rgba(0,0,0,0.5)',
                   padding: '6px 0',
-                  zIndex: 101,
+                  zIndex: 200,
                 }}>
                   {[
-                    { label: t('nav.calendar'), to: '/calendar' },
+                    { label: t('nav.tracker'),  to: '/tracker'  },
                     { label: t('nav.plan'),     to: '/plan'     },
                     { label: t('nav.plants'),   to: '/plants'   },
                     { label: isHebrew ? '🎬 סרטונים' : '🎬 Videos',   to: '/guides'   },
                     { label: isHebrew ? '📖 מאמרים' : '📖 Articles',  to: '/articles' },
                     { label: isHebrew ? '🛒 חנות' : '🛒 Shop',         to: '/shop'     },
                     { label: isHebrew ? '💰 תמחור' : '💰 Pricing',     to: '/pricing'  },
+                    ...(isProUser ? [{ label: isHebrew ? '🏡 גינות' : '🏡 Gardens', to: '/gardens' }] : []),
                   ].map(item => (
                     <Link
                       key={item.to}
