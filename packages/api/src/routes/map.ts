@@ -129,6 +129,21 @@ mapRouter.patch('/:id', async (req: any, res) => {
   try {
     const { id } = req.params;
     const { mapData, northAngle } = req.body;
+    const { gardenId } = req.query as { gardenId?: string };
+
+    // Safety: verify map belongs to the expected garden before writing
+    if (gardenId) {
+      const { data: existing } = await db
+        .from('garden_maps')
+        .select('garden_id')
+        .eq('id', id)
+        .eq('user_id', req.user.id)
+        .single();
+      if (existing && existing.garden_id && existing.garden_id !== gardenId) {
+        console.error(`[PATCH /api/map] cross-garden write blocked: map ${id} belongs to ${existing.garden_id}, request said ${gardenId}`);
+        return res.status(403).json({ error: 'map_garden_mismatch' });
+      }
+    }
 
     const updates: Record<string, any> = { updated_at: new Date().toISOString() };
     if (mapData    !== undefined) updates.map_data    = mapData;

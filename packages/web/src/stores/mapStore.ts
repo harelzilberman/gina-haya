@@ -199,14 +199,15 @@ export const useMapStore = create<MapState>((set, get) => ({
     const token = getToken();
     if (!token) return;
     const { mapId, mapData, northAngle } = get();
-    console.log('[mapStore] saveMap — plants being saved:', mapData.plants.map(p => ({ x: p.x, y: p.y, name: p.plantNameHe })));
+    const activeGardenId = localStorage.getItem('active_garden_id');
     set({ isSaving: true });
     try {
       let saved: any;
       if (mapId) {
-        saved = await api.patch<any>(`/api/map/${mapId}`, { mapData, northAngle }, token);
+        const gardenParam = activeGardenId ? `?gardenId=${activeGardenId}` : '';
+        saved = await api.patch<any>(`/api/map/${mapId}${gardenParam}`, { mapData, northAngle }, token);
       } else {
-        saved = await api.post<any>('/api/map', { mapData, northAngle }, token);
+        saved = await api.post<any>('/api/map', { gardenId: activeGardenId, mapData, northAngle }, token);
         set({ mapId: saved.id });
       }
       set({ isSaving: false, isDirty: false, lastSaved: new Date(), saveError: null });

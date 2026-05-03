@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
 import { useMapStore } from '../stores/mapStore';
+import { useGardenSwitcherStore } from '../stores/gardenSwitcherStore';
 import { usePlanLimit } from '../hooks/usePlanLimit';
 import { UpgradeModal } from '../components/upgrade/UpgradeModal';
 
@@ -77,6 +78,7 @@ import { WizardModal } from '../components/map/WizardModal';
 
 export function MapPage() {
   const store = useMapStore();
+  const { activeGardenId } = useGardenSwitcherStore();
   const { i18n } = useTranslation();
   const isHe = i18n.language === 'he';
   const navigate = useNavigate();
@@ -100,15 +102,16 @@ export function MapPage() {
   };
 
   useEffect(() => {
+    if (!activeGardenId) return;
     const init = async () => {
-      await store.loadMap();
+      await store.loadMap(activeGardenId);
       if (!useMapStore.getState().mapId) {
-        await store.createMap();
+        await store.createMap(activeGardenId);
       }
       store.loadWizardStatus();
     };
     init();
-  }, []);
+  }, [activeGardenId]);
 
   useEffect(() => {
     if (!store.isLoading && shouldShowTour()) setShowTour(true);
