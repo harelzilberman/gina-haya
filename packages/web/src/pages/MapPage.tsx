@@ -90,6 +90,13 @@ export function MapPage() {
   const [showWizard, setShowWizard] = useState(false);
   const [toast, setToast] = useState<string | null>(null);
   const [plantLimitModalOpen, setPlantLimitModalOpen] = useState(false);
+  const [panelCollapsed, setPanelCollapsed] = useState(
+    () => window.innerWidth < 1100 || localStorage.getItem('map-panel-collapsed') === 'true'
+  );
+
+  useEffect(() => {
+    localStorage.setItem('map-panel-collapsed', panelCollapsed ? 'true' : 'false');
+  }, [panelCollapsed]);
 
   const plantCount = store.mapData.plants.length;
   const plantsAtLimit = limits.maxPlantsPerGarden !== null && plantCount >= limits.maxPlantsPerGarden;
@@ -178,12 +185,38 @@ export function MapPage() {
           />
         </div>
 
-        {/* Plant picker panel — shown in Part 2 */}
+        {/* Plant picker panel — collapsible */}
         {store.selectedTool === 'plant' && (
-          <PlantPicker
-            activePlant={store.activePlant}
-            onSetActivePlant={store.setActivePlant}
-          />
+          <div style={{
+            width: panelCollapsed ? '32px' : '260px',
+            transition: 'width 0.2s ease',
+            flexShrink: 0,
+            height: '100%',
+            overflow: 'hidden',
+            background: 'rgba(20,43,22,0.97)',
+            borderInlineStart: panelCollapsed ? '1px solid rgba(245,200,64,0.15)' : 'none',
+            display: 'flex',
+            flexDirection: 'column',
+          }}>
+            <button
+              onClick={() => setPanelCollapsed(v => !v)}
+              style={{
+                width: '100%', padding: '8px 0', flexShrink: 0,
+                background: 'none', border: 'none', borderBottom: '1px solid rgba(245,200,64,0.08)',
+                cursor: 'pointer', fontSize: '12px', color: 'rgba(237,224,196,0.55)',
+                display: 'flex', alignItems: 'center', justifyContent: 'center',
+              }}
+              title={panelCollapsed ? 'הרחב פאנל' : 'כווץ פאנל'}
+            >
+              {panelCollapsed ? '◀' : '▶'}
+            </button>
+            {!panelCollapsed && (
+              <PlantPicker
+                activePlant={store.activePlant}
+                onSetActivePlant={store.setActivePlant}
+              />
+            )}
+          </div>
         )}
       </div>
 
