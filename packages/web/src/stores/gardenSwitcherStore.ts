@@ -77,6 +77,7 @@ export const useGardenSwitcherStore = create<GardenSwitcherState>((set, get) => 
   },
 
   switchGarden: async (gardenId: string) => {
+    console.log('[garden] switching to:', gardenId);
     const token = getToken();
     set({ activeGardenId: gardenId });
     localStorage.setItem(LS_KEY, gardenId);
