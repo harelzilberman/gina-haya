@@ -30,10 +30,16 @@ function getToken() {
   return useAuthStore.getState().session?.access_token;
 }
 
-function reloadDependentStores(gardenId: string) {
-  useGardenStore.getState().loadGardens();
-  useMapStore.getState().loadMap(gardenId);
-  useTrackerStore.getState().loadTrackers(gardenId);
+async function resetAndReloadStores(gardenId: string) {
+  // Reset immediately so stale data never shows
+  useMapStore.getState().reset();
+  useTrackerStore.getState().reset();
+  // Reload in parallel
+  await Promise.all([
+    useMapStore.getState().loadMap(gardenId),
+    useTrackerStore.getState().loadTrackers(gardenId),
+    useGardenStore.getState().loadGardens(),
+  ]);
 }
 
 export const useGardenSwitcherStore = create<GardenSwitcherState>((set, get) => ({
@@ -75,18 +81,18 @@ export const useGardenSwitcherStore = create<GardenSwitcherState>((set, get) => 
     set({ activeGardenId: gardenId });
     localStorage.setItem(LS_KEY, gardenId);
 
-    // Sync gardenStore
+    // Sync gardenStore active garden immediately
     const { gardens } = get();
     const activeGarden = gardens.find(g => g.id === gardenId) ?? null;
     if (activeGarden) useGardenStore.setState({ activeGarden });
 
-    // Persist to server (best-effort)
+    // Persist to server (best-effort, non-blocking)
     if (token) {
       api.patch('/api/users/profile', { activeGardenId: gardenId }, token).catch(() => {});
     }
 
-    // Reload dependent stores
-    reloadDependentStores(gardenId);
+    // Reset stale data then reload — awaited so callers know when it's done
+    await resetAndReloadStores(gardenId);
   },
 
   createGarden: async (data: CreateGardenData) => {
@@ -112,7 +118,7 @@ export const useGardenSwitcherStore = create<GardenSwitcherState>((set, get) => 
     const { activeGardenId } = get();
     if (activeGardenId) {
       localStorage.setItem(LS_KEY, activeGardenId);
-      reloadDependentStores(activeGardenId);
+      await resetAndReloadStores(activeGardenId);
     }
   },
 

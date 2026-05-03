@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { useGardenSwitcherStore } from '../../stores/gardenSwitcherStore';
 import { useToastStore } from '../../stores/toastStore';
 
@@ -15,6 +16,7 @@ interface Props {
 }
 
 export function CreateGardenModal({ isOpen, onClose, onCreated }: Props) {
+  const navigate = useNavigate();
   const { createGarden, switchGarden } = useGardenSwitcherStore();
   const { show: showToast } = useToastStore();
 
@@ -37,11 +39,13 @@ export function CreateGardenModal({ isOpen, onClose, onCreated }: Props) {
         location: location.trim() || undefined,
         description: description.trim() || undefined,
       });
+      // Await full switch (resets + reloads map/trackers) before closing
       await switchGarden(garden.id);
       showToast(`הגינה '${garden.name}' נוצרה בהצלחה! 🏡`, 'success');
       setName(''); setLocation(''); setDescription('');
       onCreated?.(garden.id);
       onClose();
+      navigate('/map');
     } catch (err: any) {
       setError(err.message || 'לא ניתן ליצור גינה. נסה שוב.');
     } finally {

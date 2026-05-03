@@ -100,6 +100,7 @@ interface MapState {
   loadMap: (gardenId?: string) => Promise<void>;
   saveMap: () => Promise<void>;
   createMap: (gardenId?: string) => Promise<void>;
+  reset: () => void;
 
   setTool: (tool: MapTool) => void;
   setActivePlant: (plant: ActivePlant | null) => void;
@@ -166,7 +167,10 @@ export const useMapStore = create<MapState>((set, get) => ({
     try {
       const url = gardenId ? `/api/map?gardenId=${gardenId}` : '/api/map';
       const data = await api.get<any>(url, token);
-      if (!data.exists) { set({ isLoading: false }); return; }
+      if (!data.exists) {
+        set({ isLoading: false, mapId: null, mapData: EMPTY_MAP, northAngle: 0, isDirty: false, history: [] });
+        return;
+      }
       const md = data.map_data ?? EMPTY_MAP;
       console.log('[mapStore] raw map_data from API — objects:', md.objects?.length ?? 0, ', plants:', md.plants?.length ?? 0);
       console.log('[mapStore] plant coords:', md.plants?.map((p: any) => ({ id: p.id?.slice(0,6), x: p.x, y: p.y })));
@@ -292,6 +296,22 @@ export const useMapStore = create<MapState>((set, get) => ({
     const [prev, ...rest] = history;
     set({ mapData: prev, history: rest, isDirty: true });
     scheduleSave();
+  },
+
+  reset() {
+    set({
+      mapId: null,
+      mapData: EMPTY_MAP,
+      northAngle: 0,
+      isDirty: false,
+      isSaving: false,
+      lastSaved: null,
+      saveError: null,
+      error: null,
+      history: [],
+      previewPlants: [],
+      selectedObjectId: null,
+    });
   },
 
   async loadWizardStatus() {

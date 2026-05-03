@@ -120,6 +120,7 @@ interface TrackerState {
     tasks: TrackerTask[]
   ) => Promise<{ tasks_added: number; tasks_error: string | null }>;
   setActiveTrackerId: (id: string | null) => void;
+  reset: () => void;
 }
 
 function getToken() {
@@ -136,6 +137,7 @@ export const useTrackerStore = create<TrackerState>((set, get) => ({
   isAnalyzing: false,
 
   setActiveTrackerId: (id) => set({ activeTrackerId: id }),
+  reset: () => set({ trackers: [], activeTrackerId: null }),
 
   loadTrackers: async (gardenId?: string) => {
     const token = getToken();
