@@ -154,7 +154,7 @@ export function MapPage() {
           wizardStatus={store.wizardStatus}
           hasSavedMap={true}
         />
-        <div style={{ flex: 1, minWidth: 0, position: 'relative', overflow: 'hidden' }}>
+        <div style={{ flex: 1, minWidth: 0, position: 'relative', overflow: 'hidden', paddingInlineEnd: store.selectedTool === 'plant' ? (panelCollapsed ? '32px' : '260px') : '0px', transition: 'padding 0.2s ease' }}>
           <SaveIndicator
             isSaving={store.isSaving}
             lastSaved={store.lastSaved}
@@ -185,16 +185,19 @@ export function MapPage() {
           />
         </div>
 
-        {/* Plant picker panel — collapsible */}
+        {/* Plant picker panel — fixed to viewport inline-end edge */}
         {store.selectedTool === 'plant' && (
           <div style={{
+            position: 'fixed',
+            top: 'var(--navbar-height)',
+            insetInlineEnd: 0,
             width: panelCollapsed ? '32px' : '260px',
+            height: 'calc(100dvh - var(--navbar-height) - var(--bottomnav-height))',
             transition: 'width 0.2s ease',
-            flexShrink: 0,
-            height: '100%',
             overflow: 'hidden',
             background: 'rgba(20,43,22,0.97)',
-            borderInlineStart: panelCollapsed ? '1px solid rgba(245,200,64,0.15)' : 'none',
+            borderInlineStart: '1px solid rgba(245,200,64,0.15)',
+            zIndex: 10,
             display: 'flex',
             flexDirection: 'column',
           }}>
