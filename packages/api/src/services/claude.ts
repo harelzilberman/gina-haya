@@ -1,3 +1,5 @@
+import fs from 'fs';
+import path from 'path';
 import Anthropic from '@anthropic-ai/sdk';
 import type { ChupChuContext, ChupChuMessage } from '@gina-haya/shared';
 
@@ -36,6 +38,67 @@ const BD_PREP_KNOWLEDGE: Record<string, string> = {
   green_manure: `זבל ירוק: כל 3-7 שנים. חורף: תלתן, באקיה, אפונה, אספסת, חילבה, תורמוס, חומוס, עדשים, פול. קיץ: שעועית לבנה/ירוקה/תאילנדית, לוביה. 3 חודשים גידול עד לפני שיא הפריחה → פליחה → פרפרט 500 → 4-5 שבועות המתנה.`,
 };
 
+const ARTICLE_INDEX = `
+# מאמרים זמינים — השתמש בכלי get_article לקבלת תוכן מלא
+
+## עברית (language: "he")
+- compost-tea → תה קומפוסט — המדריך המלא לאדמה חיה
+- seaweed-spray → ריסוס אצות ים לצמחים — כוח הים בגינה
+- green-manure → דשן ירוק — להאכיל את הקרקע לפני הצמח
+- neem-oil → שמן נים — נשק סודי נגד מזיקים
+- watering-pots → השקיית עציצים — המדריך המקצועי
+- plant-stress-signs → סימני סטרס בצמחים — מה הגינה מנסה לספר לך
+- ground-mulching → חיפוי קרקע — חיסכון במים והפחתת עשביה
+
+## English (language: "en")
+- compost-tea → Compost Tea — The Complete Guide to Living Soil
+- seaweed-spray → Seaweed Spray — Ocean Power in Your Garden
+- green-manure → Green Manure — Feed the Soil Before the Plants
+- neem-oil → Neem Oil — Secret Weapon Against Pests
+- watering-pots → Watering Potted Plants — The Professional Guide
+- mulching → Mulching — Save Water and Reduce Weeds
+- plant-stress-signs → Plant Stress Signs — What Your Garden Is Trying to Tell You
+`;
+
+// Hardcoded slug → filename map (covers Hebrew filenames that can't be auto-derived)
+const SLUG_TO_FILE: Record<string, Record<string, string>> = {
+  he: {
+    'compost-tea':        '01_תה_קומפוסט.md',
+    'seaweed-spray':      '02_ריסוס_אצות_ים.md',
+    'green-manure':       '03_דשן_ירוק.md',
+    'neem-oil':           '04_שמן_נים.md',
+    'watering-pots':      '21_השקיה_עציצים.md',
+    'plant-stress-signs': '23_סימני_סטרס_בצמחים.md',
+    'ground-mulching':    'חיפוי_קרקע.md',
+  },
+  en: {
+    'compost-tea':        '01_compost_tea.md',
+    'seaweed-spray':      '02_seaweed_spray.md',
+    'green-manure':       '03_green_manure.md',
+    'neem-oil':           '04_neem_oil.md',
+    'watering-pots':      '21_watering_pots.md',
+    'mulching':           '22_mulching.md',
+    'plant-stress-signs': '23_plant_stress_signs.md',
+  },
+};
+
+function buildSlugMap(language: 'he' | 'en'): Record<string, string> {
+  const articlesDir = path.join(__dirname, '../../../web/public/articles', language);
+  if (!fs.existsSync(articlesDir)) return {};
+  const map: Record<string, string> = {};
+  fs.readdirSync(articlesDir)
+    .filter(f => f.endsWith('.md') && f !== 'README.md')
+    .forEach(filename => {
+      const slug = filename
+        .replace(/^\d+_/, '')
+        .replace(/\.md$/, '')
+        .replace(/_/g, '-')
+        .toLowerCase();
+      map[slug] = filename;
+    });
+  return map;
+}
+
 // ── System prompts ─────────────────────────────────────────────────────────
 
 const MOOSH_SYSTEM_PROMPT_HE = `\
@@ -64,6 +127,9 @@ const MOOSH_SYSTEM_PROMPT_HE = `\
 
 ## שימון בכלים
 כשאתה זקוק למידע ספציפי — נתוני לוח היום, פרטי הגינה, מזג אוויר, מידע על צמח, הוראות פרפרט, או קציר אחרון — השתמש בכלים המתאימים לפני שאתה עונה.
+לפני מענה על שאלות גינון מפורטות — בדוק אם יש מאמר רלוונטי ב-ARTICLE_INDEX וקרא אותו עם get_article.
+
+${ARTICLE_INDEX}
 `;
 
 const MOOSH_SYSTEM_PROMPT_EN = `\
@@ -92,6 +158,9 @@ Draw on this knowledge naturally as part of your lived experience — not as a t
 
 ## Tool use
 When you need specific information — today's calendar, the user's garden, weather, plant details, prep instructions, or recent harvests — call the appropriate tool before answering.
+Before answering detailed gardening questions, check whether a relevant article exists in the ARTICLE_INDEX below and read it with get_article.
+
+${ARTICLE_INDEX}
 `;
 
 // ── Tool definitions ───────────────────────────────────────────────────────
@@ -142,6 +211,25 @@ const MOOSH_TOOLS: Anthropic.Messages.Tool[] = [
     name: 'get_recent_harvests',
     description: "Returns the user's recent harvest records: plant name, harvest date, day type, and planting score.",
     input_schema: { type: 'object', properties: {}, required: [] },
+  },
+  {
+    name: 'get_article',
+    description: 'קרא מאמר מלא על נושא גינון. השתמש בכלי זה כשיש שאלה מפורטת על נושא שיש עליו מאמר.',
+    input_schema: {
+      type: 'object',
+      properties: {
+        slug: {
+          type: 'string',
+          description: 'מזהה המאמר — ראה את הרשימה ב-ARTICLE_INDEX. לדוגמה: compost-tea, neem-oil',
+        },
+        language: {
+          type: 'string',
+          enum: ['he', 'en'],
+          description: 'שפת המאמר — he לעברית, en לאנגלית',
+        },
+      },
+      required: ['slug'],
+    },
   },
 ];
 
@@ -242,6 +330,34 @@ function handleToolCall(
         return `${h.plantNameHe} — ${dateFormatted} (${h.dayType}, ציון ${h.plantingScore})`;
       });
       return lines.join('\n');
+    }
+
+    case 'get_article': {
+      const slug = String(input.slug ?? '').trim();
+      const language = (input.language === 'en' ? 'en' : 'he') as 'he' | 'en';
+      if (!slug) return 'לא סופק slug למאמר.';
+
+      const hardcoded = SLUG_TO_FILE[language] ?? {};
+      const dynamic   = buildSlugMap(language);
+      const filename  = hardcoded[slug] ?? dynamic[slug];
+
+      if (!filename) {
+        const available = Object.keys(hardcoded).join(', ');
+        return `לא נמצא מאמר עם slug "${slug}" בשפה "${language}". האפשרויות: ${available}`;
+      }
+
+      const articlePath = path.join(__dirname, '../../../web/public/articles', language, filename);
+      if (!fs.existsSync(articlePath)) return `קובץ המאמר לא נמצא: ${filename}`;
+
+      const raw = fs.readFileSync(articlePath, 'utf-8');
+      const cleaned = raw
+        .replace(/<!--[\s\S]*?-->/g, '')
+        .replace(/^##\s+\d+\.\s+מדריך חזותי[\s\S]*?(?=^##|\s*$)/gm, '')
+        .replace(/^##\s+\d+\.\s+Visual Guide[\s\S]*?(?=^##|\s*$)/gm, '')
+        .trim();
+      return cleaned.length > 4000
+        ? cleaned.substring(0, 4000) + '\n\n[המאמר קוצר לשמירת מקום]'
+        : cleaned;
     }
 
     default:
