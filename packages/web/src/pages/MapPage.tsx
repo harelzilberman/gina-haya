@@ -154,7 +154,27 @@ export function MapPage() {
           wizardStatus={store.wizardStatus}
           hasSavedMap={true}
         />
-        <div style={{ flex: 1, minWidth: 0, position: 'relative', overflow: 'hidden', paddingInlineEnd: store.selectedTool === 'plant' ? (panelCollapsed ? '32px' : '260px') : '0px', transition: 'padding 0.2s ease' }}>
+        <div style={{ flex: 1, minWidth: 0, position: 'relative', overflow: 'hidden', paddingInlineEnd: store.selectedTool === 'plant' && !panelCollapsed ? '260px' : '0px', transition: 'padding 0.2s ease' }}>
+          {store.selectedTool === 'plant' && (
+            <button
+              onClick={() => setPanelCollapsed(v => !v)}
+              style={{
+                position: 'absolute',
+                top: '8px',
+                insetInlineEnd: '8px',
+                zIndex: 20,
+                background: 'rgba(20,43,22,0.9)',
+                border: '1px solid rgba(245,200,64,0.3)',
+                borderRadius: '6px',
+                color: 'rgba(237,224,196,0.8)',
+                padding: '4px 8px',
+                cursor: 'pointer',
+                fontSize: '12px',
+              }}
+            >
+              {panelCollapsed ? '🌿 צמחים' : '✕'}
+            </button>
+          )}
           <SaveIndicator
             isSaving={store.isSaving}
             lastSaved={store.lastSaved}
@@ -191,9 +211,11 @@ export function MapPage() {
             position: 'fixed',
             top: 'var(--navbar-height)',
             insetInlineEnd: 0,
-            width: panelCollapsed ? '32px' : '260px',
+            width: panelCollapsed ? '0px' : '260px',
+            opacity: panelCollapsed ? 0 : 1,
+            pointerEvents: panelCollapsed ? 'none' : 'auto',
             height: 'calc(100dvh - var(--navbar-height) - var(--bottomnav-height))',
-            transition: 'width 0.2s ease',
+            transition: 'width 0.2s ease, opacity 0.2s ease',
             overflow: 'hidden',
             background: 'rgba(20,43,22,0.97)',
             borderInlineStart: '1px solid rgba(245,200,64,0.15)',
@@ -201,24 +223,10 @@ export function MapPage() {
             display: 'flex',
             flexDirection: 'column',
           }}>
-            <button
-              onClick={() => setPanelCollapsed(v => !v)}
-              style={{
-                width: '100%', padding: '8px 0', flexShrink: 0,
-                background: 'none', border: 'none', borderBottom: '1px solid rgba(245,200,64,0.08)',
-                cursor: 'pointer', fontSize: '12px', color: 'rgba(237,224,196,0.55)',
-                display: 'flex', alignItems: 'center', justifyContent: 'center',
-              }}
-              title={panelCollapsed ? 'הרחב פאנל' : 'כווץ פאנל'}
-            >
-              {panelCollapsed ? '◀' : '▶'}
-            </button>
-            {!panelCollapsed && (
-              <PlantPicker
-                activePlant={store.activePlant}
-                onSetActivePlant={store.setActivePlant}
-              />
-            )}
+            <PlantPicker
+              activePlant={store.activePlant}
+              onSetActivePlant={store.setActivePlant}
+            />
           </div>
         )}
       </div>
