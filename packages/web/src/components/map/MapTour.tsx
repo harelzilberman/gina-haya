@@ -16,33 +16,15 @@ interface TourStep {
 
 const STEPS: TourStep[] = [
   {
-    target: '[data-tour="toolbar"]',
-    title: 'לוח הכלים שלך 🛠️',
-    body: 'כאן תמצא את כל הכלים ליצירת הגינה שלך.',
-    chupchu: 'thinking',
-  },
-  {
-    target: '[data-tour="select-btn"]',
-    title: 'כלי הבחירה 👆',
-    body: 'בחר אלמנטים על המפה כדי להזיז, לערוך או למחוק אותם.',
-    chupchu: 'thinking',
-  },
-  {
     target: '[data-tour="buildings-btn"]',
     title: 'מבנים ואלמנטים 🏡',
-    body: 'הוסף בית, גדר, שביל, פרגולה, עציץ ועוד. גרור למיקום הנכון.',
+    body: 'הוסף לגינה: בית, גדר, שביל, פרגולה, עציץ ועוד. גרור למיקום הנכון.',
     chupchu: 'thinking',
   },
   {
     target: '[data-tour="plants-btn"]',
     title: 'הוספת צמחים 🌱',
-    body: 'בחר צמח מהרשימה ולחץ על המפה למקם אותו.',
-    chupchu: 'thinking',
-  },
-  {
-    target: '[data-tour="pots-btn"]',
-    title: 'עציצים 🪴',
-    body: 'הוסף עציצים וצמחי בית לגינה שלך.',
+    body: 'בחר צמח מהרשימה ולחץ על המפה כדי למקם אותו בגינה.',
     chupchu: 'thinking',
   },
   {
@@ -52,16 +34,45 @@ const STEPS: TourStep[] = [
     chupchu: 'thinking',
   },
   {
-    target: '[data-tour="canvas"]',
-    title: 'המפה שלך 🗺️',
-    body: 'לחץ על המפה כדי למקם אלמנטים. גרור להזזה. צבוט להתקרבות.',
+    target: '[data-tour="growth-btn"]',
+    title: 'מעקב גידול 📸',
+    body: 'עקוב אחר הצמחים שלך לאורך זמן עם תמונות וניתוח AI.',
+    chupchu: 'thinking',
+  },
+  {
+    target: '[data-tour="pots-btn"]',
+    title: 'עציצים 🪴',
+    body: 'הוסף עציצים וצמחי בית לגינה שלך.',
+    chupchu: 'thinking',
+  },
+  {
+    target: '[data-tour="select-btn"]',
+    title: 'כלי הבחירה 👆',
+    body: 'בחר אלמנטים על המפה כדי להזיז, לערוך או למחוק אותם. לחץ וגרור.',
+    chupchu: 'thinking',
+  },
+  {
+    target: '[data-tour="undo-btn"]',
+    title: 'ביטול פעולה ↩️',
+    body: 'ביצעת טעות? לחץ על ביטול כדי לחזור לפעולה הקודמת.',
+    chupchu: 'thinking',
+  },
+  {
+    target: '[data-tour="sun-btn"]',
+    title: 'כיוון השמש ☀️',
+    body: 'סובב את המפה כדי להתאים לכיוון השמש בגינה שלך.',
     chupchu: 'wise',
-    showAnimation: true,
+  },
+  {
+    target: '[data-tour="save-btn"]',
+    title: 'שמירה אוטומטית 💾',
+    body: 'הגינה שלך נשמרת אוטומטית. תוכל לראות את סטטוס השמירה כאן.',
+    chupchu: 'wise',
   },
   {
     target: '[data-tour="chupchu-bubble"]',
     title: "צ'ופצ'ו תמיד כאן! 🌿",
-    body: "שאל את צ'ופצ'ו כל שאלה על הגינה — מתי לשתול, מה מתאים לצמח, ועוד.",
+    body: "שאל את צ'ופצ'ו כל שאלה על הגינה שלך — מתי לשתול, מה מתאים לצמח, ועוד.",
     chupchu: 'happy',
   },
 ];
@@ -245,7 +256,8 @@ export function MapTour({ isOpen, onComplete, onSkip }: Props) {
         dir="rtl"
         style={{
           position: 'fixed',
-          bottom: '100px',
+          top: '50%',
+          transform: 'translateY(-50%)',
           insetInlineStart: '16px',
           width: '300px',
           maxWidth: 'calc(100vw - 32px)',

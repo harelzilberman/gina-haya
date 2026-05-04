@@ -255,7 +255,8 @@ export function MapToolbar({
             cat.id === 'buildings' ? 'buildings-btn' :
             cat.id === 'plants'    ? 'plants-btn'    :
             cat.id === 'pots'      ? 'pots-btn'      :
-            cat.id === 'trees'     ? 'trees-btn'     : undefined
+            cat.id === 'trees'     ? 'trees-btn'     :
+            cat.id === 'growing'   ? 'growth-btn'    : undefined
           }
         />
       ))}
@@ -282,7 +283,7 @@ export function MapToolbar({
         </button>
 
         {/* Undo */}
-        <button onClick={onUndo} title="Ctrl+Z" style={ghostBtn}>↩️</button>
+        <button data-tour="undo-btn" onClick={onUndo} title="Ctrl+Z" style={ghostBtn}>↩️</button>
 
         {!isMobile && (
           <>
@@ -290,6 +291,7 @@ export function MapToolbar({
 
             {/* Sun zones */}
             <button
+              data-tour="sun-btn"
               onClick={onToggleSunZones}
               title={isHe ? 'אזורי שמש' : 'Sun zones'}
               style={{
@@ -327,19 +329,21 @@ export function MapToolbar({
             <div style={{ width: '1px', height: '28px', background: 'rgba(245,200,64,0.15)' }} />
 
             {/* Save status */}
-            {isSaving ? (
-              <span style={{ fontFamily: ASSIST, fontSize: '12px', color: `${PARCH}55` }}>
-                {isHe ? 'שומר...' : 'Saving...'}
-              </span>
-            ) : isDirty ? (
-              <button onClick={onSave} style={{ ...ghostBtn, color: GOLD, border: `1px solid ${GOLD}55`, padding: '5px 14px' }}>
-                💾 {isHe ? 'שמור' : 'Save'}
-              </button>
-            ) : (
-              <span style={{ fontFamily: ASSIST, fontSize: '12px', color: `${PARCH}44` }}>
-                {isHe ? 'נשמר ✓' : 'Saved ✓'}
-              </span>
-            )}
+            <span data-tour="save-btn" style={{ display: 'flex', alignItems: 'center' }}>
+              {isSaving ? (
+                <span style={{ fontFamily: ASSIST, fontSize: '12px', color: `${PARCH}55` }}>
+                  {isHe ? 'שומר...' : 'Saving...'}
+                </span>
+              ) : isDirty ? (
+                <button onClick={onSave} style={{ ...ghostBtn, color: GOLD, border: `1px solid ${GOLD}55`, padding: '5px 14px' }}>
+                  💾 {isHe ? 'שמור' : 'Save'}
+                </button>
+              ) : (
+                <span style={{ fontFamily: ASSIST, fontSize: '12px', color: `${PARCH}44` }}>
+                  {isHe ? 'נשמר ✓' : 'Saved ✓'}
+                </span>
+              )}
+            </span>
           </>
         )}
 
