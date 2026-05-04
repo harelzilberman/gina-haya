@@ -76,9 +76,7 @@ function CategoryDropdown({
   category, selectedTool, onSelect, isHe, isMobile,
 }: { category: Category; selectedTool: MapTool; onSelect: (t: MapTool) => void; isHe: boolean; isMobile: boolean }) {
   const [open, setOpen] = useState(false);
-  const [dropPos, setDropPos] = useState({ top: 0, left: 0 });
   const ref = useRef<HTMLDivElement>(null);
-  const btnRef = useRef<HTMLButtonElement>(null);
   const isActive = category.items.some(i => i.tool === selectedTool);
   const activeItem = category.items.find(i => i.tool === selectedTool);
 
@@ -92,10 +90,6 @@ function CategoryDropdown({
   }, [open]);
 
   function handleToggle() {
-    if (btnRef.current) {
-      const r = btnRef.current.getBoundingClientRect();
-      setDropPos({ top: r.bottom + 4, left: r.left });
-    }
     setOpen(o => !o);
   }
 
@@ -107,7 +101,6 @@ function CategoryDropdown({
   return (
     <div ref={ref} style={{ position: 'relative', flexShrink: 0 }}>
       <button
-        ref={btnRef}
         onClick={handleToggle}
         style={{
           fontFamily: ASSIST,
@@ -139,14 +132,17 @@ function CategoryDropdown({
       {open && (
         <div
           style={{
-            position: 'fixed',
-            top: dropPos.top,
-            left: dropPos.left,
+            position: 'absolute',
+            top: 'calc(100% + 4px)',
+            insetInlineEnd: 0,
+            insetInlineStart: 'auto',
             backgroundColor: 'rgba(10,24,11,0.99)',
             border: '1px solid rgba(245,200,64,0.3)',
             borderRadius: '10px',
             padding: '6px',
             minWidth: '180px',
+            maxHeight: '60vh',
+            overflowY: 'auto',
             zIndex: 9999,
             display: 'flex',
             flexDirection: 'column',
