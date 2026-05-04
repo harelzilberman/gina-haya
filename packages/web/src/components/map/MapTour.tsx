@@ -21,15 +21,15 @@ const STEPS: TourStep[] = [
     chupchu: 'thinking',
   },
   {
-    target: '[data-tour="plants-btn"]',
-    title: 'הוספת צמחים 🌱',
-    body: "לחץ על 'צמחים' כדי לפתוח את רשימת הצמחים. בחר צמח ולחץ על המפה כדי למקם אותו.",
-    chupchu: 'thinking',
-  },
-  {
     target: '[data-tour="buildings-btn"]',
     title: 'מבנים ואלמנטים 🏡',
     body: 'הוסף לגינה: בית, גדר, שביל, עציץ, פרגולה ועוד. גרור אותם למיקום הנכון.',
+    chupchu: 'thinking',
+  },
+  {
+    target: '[data-tour="plants-btn"]',
+    title: 'הוספת צמחים 🌱',
+    body: "לחץ על 'צמחים' כדי לפתוח את רשימת הצמחים. בחר צמח ולחץ על המפה כדי למקם אותו.",
     chupchu: 'thinking',
   },
   {
@@ -65,6 +65,7 @@ export function MapTour({ isOpen, onComplete, onSkip }: Props) {
 
   useEffect(() => {
     if (isOpen) setStep(0);
+    return () => setStep(0); // cleanup on unmount
   }, [isOpen]);
 
   useEffect(() => {
@@ -83,10 +84,19 @@ export function MapTour({ isOpen, onComplete, onSkip }: Props) {
     }
 
     measure();
-    const t = setTimeout(measure, 150);
+
+    // Auto-skip step if target element is not in the DOM after 300ms
+    const skipTimer = setTimeout(() => {
+      if (!document.querySelector(selector)) {
+        console.warn('[tour] target not found, skipping:', selector);
+        if (step < STEPS.length - 1) setStep(s => s + 1);
+        else onComplete();
+      }
+    }, 300);
+
     window.addEventListener('resize', measure);
     return () => {
-      clearTimeout(t);
+      clearTimeout(skipTimer);
       window.removeEventListener('resize', measure);
     };
   }, [step, isOpen]);
@@ -106,20 +116,23 @@ export function MapTour({ isOpen, onComplete, onSkip }: Props) {
   let cardLeft = Math.max(MARGIN, (window.innerWidth  - CARD_W) / 2);
 
   if (rect) {
-    cardTop  = rect.top + rect.height + PAD + 12;
-    cardLeft = (rect.left + rect.width) - CARD_W; // right-align with spotlight right edge
+    cardTop = rect.top + rect.height + PAD + 12;
 
     if (cardTop + 400 > window.innerHeight) {
       cardTop = rect.top - PAD - 12 - 400;
     }
 
-    cardLeft = Math.max(MARGIN, Math.min(cardLeft, window.innerWidth - CARD_W - MARGIN));
+    // Align with spotlight left edge, clamped to always stay within viewport
+    cardLeft = Math.max(
+      MARGIN,
+      Math.min(rect.left, window.innerWidth - CARD_W - MARGIN),
+    );
   }
 
   return (
     <>
-      {/* Click-blocker — captures clicks behind the card */}
-      <div style={{ position: 'fixed', inset: 0, zIndex: 9998 }} />
+      {/* Dark overlay — visual only, never blocks clicks */}
+      <div style={{ position: 'fixed', inset: 0, zIndex: 9998, pointerEvents: 'none' }} />
 
       {/* Spotlight — box-shadow creates the dark overlay */}
       {rect ? (
@@ -150,7 +163,10 @@ export function MapTour({ isOpen, onComplete, onSkip }: Props) {
           top:  cardTop,
           left: cardLeft,
           width: CARD_W,
+          maxWidth: 'calc(100vw - 32px)',
+          overflow: 'hidden',
           zIndex: 10000,
+          pointerEvents: 'auto',
           background: 'rgba(20,43,22,0.97)',
           border: '1px solid rgba(245,200,64,0.3)',
           borderRadius: '16px',
