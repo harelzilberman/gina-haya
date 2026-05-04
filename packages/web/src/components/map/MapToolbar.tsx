@@ -251,7 +251,12 @@ export function MapToolbar({
           onSelect={onToolChange}
           isHe={isHe}
           isMobile={isMobile}
-          tourId={cat.id === 'buildings' ? 'buildings-btn' : cat.id === 'plants' ? 'plants-btn' : undefined}
+          tourId={
+            cat.id === 'buildings' ? 'buildings-btn' :
+            cat.id === 'plants'    ? 'plants-btn'    :
+            cat.id === 'pots'      ? 'pots-btn'      :
+            cat.id === 'trees'     ? 'trees-btn'     : undefined
+          }
         />
       ))}
 
@@ -262,6 +267,7 @@ export function MapToolbar({
 
         {/* Select */}
         <button
+          data-tour="select-btn"
           onClick={() => onToolChange('select')}
           style={{
             ...ghostBtn,
