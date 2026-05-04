@@ -90,13 +90,9 @@ export function MapPage() {
   const [showWizard, setShowWizard] = useState(false);
   const [toast, setToast] = useState<string | null>(null);
   const [plantLimitModalOpen, setPlantLimitModalOpen] = useState(false);
-  const [panelCollapsed, setPanelCollapsed] = useState(
-    () => window.innerWidth < 1100 || localStorage.getItem('map-panel-collapsed') === 'true'
-  );
 
-  useEffect(() => {
-    localStorage.setItem('map-panel-collapsed', panelCollapsed ? 'true' : 'false');
-  }, [panelCollapsed]);
+  // clear any stale collapse state from previous version
+  localStorage.removeItem('map-panel-collapsed');
 
   const plantCount = store.mapData.plants.length;
   const plantsAtLimit = limits.maxPlantsPerGarden !== null && plantCount >= limits.maxPlantsPerGarden;
@@ -154,27 +150,7 @@ export function MapPage() {
           wizardStatus={store.wizardStatus}
           hasSavedMap={true}
         />
-        <div style={{ flex: 1, minWidth: 0, position: 'relative', overflow: 'hidden', paddingInlineEnd: store.selectedTool === 'plant' && !panelCollapsed ? '260px' : '0px', transition: 'padding 0.2s ease' }}>
-          {store.selectedTool === 'plant' && (
-            <button
-              onClick={() => setPanelCollapsed(v => !v)}
-              style={{
-                position: 'absolute',
-                top: '8px',
-                insetInlineEnd: '8px',
-                zIndex: 20,
-                background: 'rgba(20,43,22,0.9)',
-                border: '1px solid rgba(245,200,64,0.3)',
-                borderRadius: '6px',
-                color: 'rgba(237,224,196,0.8)',
-                padding: '4px 8px',
-                cursor: 'pointer',
-                fontSize: '12px',
-              }}
-            >
-              {panelCollapsed ? '🌿 צמחים' : '✕'}
-            </button>
-          )}
+        <div style={{ flex: 1, minWidth: 0, position: 'relative', overflow: 'hidden', paddingInlineEnd: store.selectedTool === 'plant' ? '260px' : '0px' }}>
           <SaveIndicator
             isSaving={store.isSaving}
             lastSaved={store.lastSaved}
@@ -205,17 +181,14 @@ export function MapPage() {
           />
         </div>
 
-        {/* Plant picker panel — fixed to viewport inline-end edge */}
+        {/* Plant picker panel */}
         {store.selectedTool === 'plant' && (
           <div style={{
-            position: 'fixed',
-            top: 'var(--navbar-height)',
+            position: 'absolute',
+            top: '56px',
             insetInlineEnd: 0,
-            width: panelCollapsed ? '0px' : '260px',
-            opacity: panelCollapsed ? 0 : 1,
-            pointerEvents: panelCollapsed ? 'none' : 'auto',
-            height: 'calc(100dvh - var(--navbar-height) - var(--bottomnav-height))',
-            transition: 'width 0.2s ease, opacity 0.2s ease',
+            width: '260px',
+            height: 'calc(100% - 56px)',
             overflow: 'hidden',
             background: 'rgba(20,43,22,0.97)',
             borderInlineStart: '1px solid rgba(245,200,64,0.15)',
