@@ -46,17 +46,6 @@ const STEPS: TourStep[] = [
   },
 ];
 
-const CHUPCHU_EMOJI: Record<string, string> = {
-  thinking: '🌕',
-  wise:     '🌕',
-  happy:    '🌕',
-};
-
-const CHUPCHU_BG: Record<string, string> = {
-  thinking: 'rgba(245,200,64,0.08)',
-  wise:     'rgba(125,192,132,0.12)',
-  happy:    'rgba(245,200,64,0.18)',
-};
 
 interface SpotRect { top: number; left: number; width: number; height: number }
 
@@ -66,10 +55,9 @@ export interface Props {
   onSkip: () => void;
 }
 
-const CARD_W = 320;
-const CARD_H = 300;
-const MARGIN = 12;
-const PAD    = 8;
+const CARD_W  = 320;
+const MARGIN  = 16;
+const PAD     = 8;
 
 export function MapTour({ isOpen, onComplete, onSkip }: Props) {
   const [step, setStep] = useState(0);
@@ -113,24 +101,19 @@ export function MapTour({ isOpen, onComplete, onSkip }: Props) {
     else onComplete();
   };
 
-  // Card position: prefer below spotlight, fall back to above, then center
-  let cardTop  = Math.max(MARGIN, (window.innerHeight - CARD_H) / 2);
+  // Card position: prefer below spotlight, fall back to above, clamp horizontally
+  let cardTop  = Math.max(MARGIN, (window.innerHeight - 400) / 2);
   let cardLeft = Math.max(MARGIN, (window.innerWidth  - CARD_W) / 2);
 
   if (rect) {
-    const belowY = rect.top + rect.height + PAD + 12;
-    const aboveY = rect.top - PAD - 12 - CARD_H;
+    cardTop  = rect.top + rect.height + PAD + 12;
+    cardLeft = (rect.left + rect.width) - CARD_W; // right-align with spotlight right edge
 
-    if (belowY + CARD_H + MARGIN <= window.innerHeight) {
-      cardTop = belowY;
-    } else if (aboveY >= MARGIN) {
-      cardTop = aboveY;
-    } else {
-      cardTop = Math.max(MARGIN, (window.innerHeight - CARD_H) / 2);
+    if (cardTop + 400 > window.innerHeight) {
+      cardTop = rect.top - PAD - 12 - 400;
     }
 
-    const centerX = rect.left + rect.width / 2;
-    cardLeft = Math.max(MARGIN, Math.min(centerX - CARD_W / 2, window.innerWidth - CARD_W - MARGIN));
+    cardLeft = Math.max(MARGIN, Math.min(cardLeft, window.innerWidth - CARD_W - MARGIN));
   }
 
   return (
@@ -178,15 +161,11 @@ export function MapTour({ isOpen, onComplete, onSkip }: Props) {
       >
         {/* Chupchu avatar + step counter */}
         <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '14px' }}>
-          <div style={{
-            width: '52px', height: '52px', borderRadius: '50%', flexShrink: 0,
-            background: CHUPCHU_BG[cur.chupchu],
-            border: `1px solid ${cur.chupchu === 'happy' ? 'rgba(245,200,64,0.4)' : 'rgba(245,200,64,0.15)'}`,
-            display: 'flex', alignItems: 'center', justifyContent: 'center',
-            fontSize: '28px',
-          }}>
-            {CHUPCHU_EMOJI[cur.chupchu]}
-          </div>
+          <img
+            src="/chupchu_final.png"
+            alt="צ'ופצ'ו"
+            style={{ width: '52px', height: '52px', borderRadius: '50%', flexShrink: 0, objectFit: 'cover' }}
+          />
           <span style={{ fontFamily: ASSIST, fontSize: '11px', color: `${PARCH}55` }}>
             שלב {step + 1} מתוך {STEPS.length}
           </span>
@@ -221,35 +200,35 @@ export function MapTour({ isOpen, onComplete, onSkip }: Props) {
           ))}
         </div>
 
-        {/* Button row */}
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '8px' }}>
-          {!isLast ? (
-            <button
-              onClick={onSkip}
-              style={{
-                fontFamily: ASSIST, fontSize: '12px',
-                color: `${PARCH}55`, background: 'none',
-                border: '1px solid rgba(245,200,64,0.12)',
-                borderRadius: '6px', padding: '7px 14px', cursor: 'pointer',
-              }}
-            >
-              דלג
-            </button>
-          ) : <div />}
+        {/* Next button */}
+        <button
+          onClick={advance}
+          style={{
+            width: '100%', fontFamily: FRANK, fontSize: '14px', fontWeight: 700,
+            padding: '10px 20px', borderRadius: '8px',
+            border: 'none', backgroundColor: GOLD, color: '#142B16',
+            cursor: 'pointer', transition: 'filter 0.15s',
+          }}
+          onMouseEnter={e => { (e.currentTarget as HTMLElement).style.filter = 'brightness(1.08)'; }}
+          onMouseLeave={e => { (e.currentTarget as HTMLElement).style.filter = 'none'; }}
+        >
+          {isLast ? 'בואו נתחיל! 🌱' : 'הבא ←'}
+        </button>
+
+        {/* Skip button */}
+        {!isLast && (
           <button
-            onClick={advance}
+            onClick={onSkip}
             style={{
-              fontFamily: FRANK, fontSize: '14px', fontWeight: 700,
-              padding: '9px 20px', borderRadius: '8px',
-              border: 'none', backgroundColor: GOLD, color: '#142B16',
-              cursor: 'pointer', transition: 'filter 0.15s',
+              width: '100%', marginTop: '8px', padding: '8px',
+              background: 'none', border: 'none',
+              color: `${PARCH}40`, fontFamily: ASSIST, fontSize: '12px',
+              cursor: 'pointer',
             }}
-            onMouseEnter={e => { (e.currentTarget as HTMLElement).style.filter = 'brightness(1.08)'; }}
-            onMouseLeave={e => { (e.currentTarget as HTMLElement).style.filter = 'none'; }}
           >
-            {isLast ? 'בואו נתחיל! 🌱' : 'הבא ←'}
+            דלג על הסיור
           </button>
-        </div>
+        )}
       </div>
     </>
   );
