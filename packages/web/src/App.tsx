@@ -305,6 +305,7 @@ export default function App() {
                 >?</div>
               )}
               <button
+                data-tour="chupchu-bubble"
                 onClick={() => {
                   if (isChupChuPanelOpen) {
                     closeChupChuPanel();

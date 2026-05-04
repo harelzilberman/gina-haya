@@ -23,6 +23,7 @@ interface Props {
   onWizard: () => void;
   wizardStatus: WizardStatus | null;
   hasSavedMap: boolean;
+  onTour?: () => void;
 }
 
 interface DropItem { tool: MapTool; emoji: string; labelHe: string; labelEn: string }
@@ -73,8 +74,8 @@ const CATEGORIES: Category[] = [
 ];
 
 function CategoryDropdown({
-  category, selectedTool, onSelect, isHe, isMobile,
-}: { category: Category; selectedTool: MapTool; onSelect: (t: MapTool) => void; isHe: boolean; isMobile: boolean }) {
+  category, selectedTool, onSelect, isHe, isMobile, tourId,
+}: { category: Category; selectedTool: MapTool; onSelect: (t: MapTool) => void; isHe: boolean; isMobile: boolean; tourId?: string }) {
   const [open, setOpen] = useState(false);
   const [dropPos, setDropPos] = useState({ top: 0, left: 0 });
   const ref = useRef<HTMLDivElement>(null);
@@ -107,7 +108,7 @@ function CategoryDropdown({
     : (activeItem?.labelEn ?? category.labelEn);
 
   return (
-    <div ref={ref} style={{ position: 'relative', flexShrink: 0 }}>
+    <div ref={ref} data-tour={tourId} style={{ position: 'relative', flexShrink: 0 }}>
       <button
         ref={btnRef}
         onClick={handleToggle}
@@ -201,7 +202,7 @@ function CategoryDropdown({
 export function MapToolbar({
   selectedTool, onToolChange, showSunZones, onToggleSunZones,
   northAngle, onNorthAngleChange, isSaving, isDirty, onSave, onUndo,
-  onWizard, wizardStatus, hasSavedMap,
+  onWizard, wizardStatus, hasSavedMap, onTour,
 }: Props) {
   const { i18n } = useTranslation();
   const isHe = i18n.language === 'he';
@@ -222,7 +223,7 @@ export function MapToolbar({
     : (isHe ? "🌕 מצ'ופצ'ו" : '🌕 Chupchu');
 
   return (
-    <div className="gina-toolbar-scroll" dir={isHe ? 'rtl' : 'ltr'} style={{
+    <div data-tour="toolbar" className="gina-toolbar-scroll" dir={isHe ? 'rtl' : 'ltr'} style={{
       position: 'absolute',
       top: '12px',
       insetInlineStart: '12px',
@@ -250,6 +251,7 @@ export function MapToolbar({
           onSelect={onToolChange}
           isHe={isHe}
           isMobile={isMobile}
+          tourId={cat.id === 'buildings' ? 'buildings-btn' : cat.id === 'plants' ? 'plants-btn' : undefined}
         />
       ))}
 
@@ -361,6 +363,17 @@ export function MapToolbar({
         >
           {isMobile ? '🌕' : wizardLabel}
         </button>
+
+        {/* Tour help button */}
+        {onTour && (
+          <button
+            onClick={onTour}
+            title={isHe ? 'הצג סיור מחדש' : 'Replay tour'}
+            style={{ ...ghostBtn, fontSize: '15px', padding: '0 8px' }}
+          >
+            ?
+          </button>
+        )}
 
       </div>
     </div>

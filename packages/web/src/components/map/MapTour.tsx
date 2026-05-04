@@ -4,109 +4,254 @@ const GOLD   = '#F5C840';
 const PARCH  = '#EDE0C4';
 const FRANK  = '"Frank Ruhl Libre", Georgia, serif';
 const ASSIST = '"Assistant", "Heebo", sans-serif';
-const LS_KEY = 'map-tour-seen';
+const LS_KEY = 'has-seen-map-tour';
 
-const STEPS = [
+interface TourStep {
+  target: string;
+  title: string;
+  body: string;
+  chupchu: 'thinking' | 'wise' | 'happy';
+}
+
+const STEPS: TourStep[] = [
   {
-    title: 'שלום! אני צ\'ופצ\'ו 🌕',
-    body: 'בוא נצייר את הגינה שלך — שרטוט הנכס שלך יעזור לי לתכנן תכנית שתילה מושלמת.',
-    btn: 'בוא נתחיל!',
+    target: '[data-tour="toolbar"]',
+    title: 'לוח הכלים שלך 🛠️',
+    body: 'כאן תמצא את כל הכלים ליצירת הגינה. בחר כלי כדי להתחיל.',
+    chupchu: 'thinking',
   },
   {
-    title: 'כלי ציור',
-    body: 'בחר כלי ציור מהסרגל — מצולע לצורות חופשיות, מלבן לצורות פשוטות, עיגול לעצים ועציצים.',
-    btn: 'הבנתי',
+    target: '[data-tour="plants-btn"]',
+    title: 'הוספת צמחים 🌱',
+    body: "לחץ על 'צמחים' כדי לפתוח את רשימת הצמחים. בחר צמח ולחץ על המפה כדי למקם אותו.",
+    chupchu: 'thinking',
   },
   {
-    title: 'סוגי אובייקטים',
-    body: 'אחרי ציור תגיד לי מה זה — ערוגה, גדר, קיר, עץ, שביל... כל אובייקט יקבל עיצוב מתאים.',
-    btn: 'ממשיך',
+    target: '[data-tour="buildings-btn"]',
+    title: 'מבנים ואלמנטים 🏡',
+    body: 'הוסף לגינה: בית, גדר, שביל, עציץ, פרגולה ועוד. גרור אותם למיקום הנכון.',
+    chupchu: 'thinking',
   },
   {
-    title: 'חץ הצפון 🧭',
-    body: 'גרור את חץ הצפון (פינה עליונה ימנית) לכיוון צפון. זה יאפשר לי לחשב אזורי שמש ולהמליץ על מיקום מיטבי לצמחים.',
-    btn: 'ממשיך',
+    target: '[data-tour="canvas"]',
+    title: 'המפה שלך 🗺️',
+    body: 'לחץ בכל מקום על המפה כדי למקם צמחים ומבנים. גרור אלמנטים כדי לסדר אותם. צבוט כדי להתקרב.',
+    chupchu: 'wise',
   },
   {
-    title: 'אשף התכנון 🌕',
-    body: 'כשתסיים לשרטט, לחץ על "בקש מצ\'ופצ\'ו לתכנן" — אבנה לך תכנית שתילה ביודינמית מושלמת בהתאם לגינה שלך.',
-    btn: 'הבנתי, בואו נתחיל!',
+    target: '[data-tour="chupchu-bubble"]',
+    title: "צ'ופצ'ו תמיד כאן! 🌿",
+    body: "שאל את צ'ופצ'ו כל שאלה על הגינה שלך — מתי לשתול, מה מתאים לצמח שלך, ועוד.",
+    chupchu: 'happy',
   },
 ];
 
-interface Props {
-  onDone: () => void;
+const CHUPCHU_EMOJI: Record<string, string> = {
+  thinking: '🌕',
+  wise:     '🌕',
+  happy:    '🌕',
+};
+
+const CHUPCHU_BG: Record<string, string> = {
+  thinking: 'rgba(245,200,64,0.08)',
+  wise:     'rgba(125,192,132,0.12)',
+  happy:    'rgba(245,200,64,0.18)',
+};
+
+interface SpotRect { top: number; left: number; width: number; height: number }
+
+export interface Props {
+  isOpen: boolean;
+  onComplete: () => void;
+  onSkip: () => void;
 }
 
-export function MapTour({ onDone }: Props) {
+const CARD_W = 320;
+const CARD_H = 300;
+const MARGIN = 12;
+const PAD    = 8;
+
+export function MapTour({ isOpen, onComplete, onSkip }: Props) {
   const [step, setStep] = useState(0);
+  const [rect, setRect] = useState<SpotRect | null>(null);
+
+  useEffect(() => {
+    if (isOpen) setStep(0);
+  }, [isOpen]);
+
+  useEffect(() => {
+    if (!isOpen) return;
+    const selector = STEPS[step]?.target;
+    if (!selector) return;
+
+    function measure() {
+      const el = document.querySelector(selector);
+      if (el) {
+        const r = el.getBoundingClientRect();
+        setRect({ top: r.top, left: r.left, width: r.width, height: r.height });
+      } else {
+        setRect(null);
+      }
+    }
+
+    measure();
+    const t = setTimeout(measure, 150);
+    window.addEventListener('resize', measure);
+    return () => {
+      clearTimeout(t);
+      window.removeEventListener('resize', measure);
+    };
+  }, [step, isOpen]);
+
+  if (!isOpen) return null;
+
+  const cur    = STEPS[step];
+  const isLast = step === STEPS.length - 1;
 
   const advance = () => {
-    if (step < STEPS.length - 1) {
-      setStep(s => s + 1);
-    } else {
-      localStorage.setItem(LS_KEY, '1');
-      onDone();
-    }
+    if (!isLast) setStep(s => s + 1);
+    else onComplete();
   };
 
-  const cur = STEPS[step];
+  // Card position: prefer below spotlight, fall back to above, then center
+  let cardTop  = Math.max(MARGIN, (window.innerHeight - CARD_H) / 2);
+  let cardLeft = Math.max(MARGIN, (window.innerWidth  - CARD_W) / 2);
+
+  if (rect) {
+    const belowY = rect.top + rect.height + PAD + 12;
+    const aboveY = rect.top - PAD - 12 - CARD_H;
+
+    if (belowY + CARD_H + MARGIN <= window.innerHeight) {
+      cardTop = belowY;
+    } else if (aboveY >= MARGIN) {
+      cardTop = aboveY;
+    } else {
+      cardTop = Math.max(MARGIN, (window.innerHeight - CARD_H) / 2);
+    }
+
+    const centerX = rect.left + rect.width / 2;
+    cardLeft = Math.max(MARGIN, Math.min(centerX - CARD_W / 2, window.innerWidth - CARD_W - MARGIN));
+  }
 
   return (
-    <div style={{
-      position: 'fixed', inset: 0, zIndex: 200,
-      display: 'flex', alignItems: 'center', justifyContent: 'center',
-      background: 'rgba(10,24,12,0.75)', backdropFilter: 'blur(3px)',
-    }}>
-      <div style={{
-        background: 'linear-gradient(160deg,rgba(28,60,30,0.99),rgba(20,43,22,0.99))',
-        border: '1px solid rgba(245,200,64,0.2)',
-        borderRadius: '16px', padding: '32px 28px',
-        maxWidth: '380px', width: '90%', textAlign: 'center',
-        boxShadow: '0 20px 80px rgba(0,0,0,0.6)',
-      }}>
-        {/* Step dots */}
-        <div style={{ display: 'flex', justifyContent: 'center', gap: '6px', marginBottom: '20px' }}>
+    <>
+      {/* Click-blocker — captures clicks behind the card */}
+      <div style={{ position: 'fixed', inset: 0, zIndex: 9998 }} />
+
+      {/* Spotlight — box-shadow creates the dark overlay */}
+      {rect ? (
+        <div style={{
+          position: 'fixed',
+          top:    rect.top  - PAD,
+          left:   rect.left - PAD,
+          width:  rect.width  + PAD * 2,
+          height: rect.height + PAD * 2,
+          borderRadius: '12px',
+          boxShadow: '0 0 0 9999px rgba(0,0,0,0.78)',
+          zIndex: 9999,
+          pointerEvents: 'none',
+          transition: 'top 0.35s ease, left 0.35s ease, width 0.35s ease, height 0.35s ease',
+        }} />
+      ) : (
+        <div style={{
+          position: 'fixed', inset: 0, zIndex: 9999,
+          background: 'rgba(0,0,0,0.78)', pointerEvents: 'none',
+        }} />
+      )}
+
+      {/* Instruction card */}
+      <div
+        dir="rtl"
+        style={{
+          position: 'fixed',
+          top:  cardTop,
+          left: cardLeft,
+          width: CARD_W,
+          zIndex: 10000,
+          background: 'rgba(20,43,22,0.97)',
+          border: '1px solid rgba(245,200,64,0.3)',
+          borderRadius: '16px',
+          padding: '20px',
+          boxShadow: '0 8px 32px rgba(0,0,0,0.5)',
+          fontFamily: ASSIST,
+        }}
+      >
+        {/* Chupchu avatar + step counter */}
+        <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '14px' }}>
+          <div style={{
+            width: '52px', height: '52px', borderRadius: '50%', flexShrink: 0,
+            background: CHUPCHU_BG[cur.chupchu],
+            border: `1px solid ${cur.chupchu === 'happy' ? 'rgba(245,200,64,0.4)' : 'rgba(245,200,64,0.15)'}`,
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+            fontSize: '28px',
+          }}>
+            {CHUPCHU_EMOJI[cur.chupchu]}
+          </div>
+          <span style={{ fontFamily: ASSIST, fontSize: '11px', color: `${PARCH}55` }}>
+            שלב {step + 1} מתוך {STEPS.length}
+          </span>
+        </div>
+
+        {/* Title */}
+        <h3 style={{
+          fontFamily: FRANK, fontSize: '16px', fontWeight: 700,
+          color: GOLD, margin: '0 0 8px',
+        }}>
+          {cur.title}
+        </h3>
+
+        {/* Body */}
+        <p style={{
+          fontFamily: ASSIST, fontSize: '14px', color: `${PARCH}CC`,
+          lineHeight: 1.6, margin: '0 0 16px',
+        }}>
+          {cur.body}
+        </p>
+
+        {/* Progress dots */}
+        <div style={{ display: 'flex', gap: '5px', marginBottom: '16px' }}>
           {STEPS.map((_, i) => (
             <div key={i} style={{
-              width: i === step ? '20px' : '7px', height: '7px', borderRadius: '50px',
+              width: i === step ? '18px' : '6px',
+              height: '6px',
+              borderRadius: '50px',
               background: i === step ? GOLD : 'rgba(245,200,64,0.2)',
               transition: 'all 0.25s',
             }} />
           ))}
         </div>
 
-        <h2 style={{ fontFamily: FRANK, fontSize: '20px', color: GOLD, margin: '0 0 12px' }}>
-          {cur.title}
-        </h2>
-        <p style={{ fontFamily: ASSIST, fontSize: '14px', color: `${PARCH}CC`, lineHeight: 1.6, margin: '0 0 24px' }}>
-          {cur.body}
-        </p>
-
-        <button
-          onClick={advance}
-          style={{
-            fontFamily: FRANK, fontSize: '15px', fontWeight: 700,
-            padding: '11px 32px', borderRadius: '8px',
-            border: 'none', backgroundColor: GOLD, color: '#142B16', cursor: 'pointer',
-            width: '100%', transition: 'filter 0.15s',
-          }}
-          onMouseEnter={e => (e.currentTarget.style.filter = 'brightness(1.08)')}
-          onMouseLeave={e => (e.currentTarget.style.filter = 'none')}
-        >
-          {cur.btn}
-        </button>
-
-        {step < STEPS.length - 1 && (
+        {/* Button row */}
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '8px' }}>
+          {!isLast ? (
+            <button
+              onClick={onSkip}
+              style={{
+                fontFamily: ASSIST, fontSize: '12px',
+                color: `${PARCH}55`, background: 'none',
+                border: '1px solid rgba(245,200,64,0.12)',
+                borderRadius: '6px', padding: '7px 14px', cursor: 'pointer',
+              }}
+            >
+              דלג
+            </button>
+          ) : <div />}
           <button
-            onClick={() => { localStorage.setItem(LS_KEY, '1'); onDone(); }}
-            style={{ fontFamily: ASSIST, fontSize: '11px', color: `${PARCH}33`, background: 'none', border: 'none', cursor: 'pointer', marginTop: '12px' }}
+            onClick={advance}
+            style={{
+              fontFamily: FRANK, fontSize: '14px', fontWeight: 700,
+              padding: '9px 20px', borderRadius: '8px',
+              border: 'none', backgroundColor: GOLD, color: '#142B16',
+              cursor: 'pointer', transition: 'filter 0.15s',
+            }}
+            onMouseEnter={e => { (e.currentTarget as HTMLElement).style.filter = 'brightness(1.08)'; }}
+            onMouseLeave={e => { (e.currentTarget as HTMLElement).style.filter = 'none'; }}
           >
-            דלג על המדריך
+            {isLast ? 'בואו נתחיל! 🌱' : 'הבא ←'}
           </button>
-        )}
+        </div>
       </div>
-    </div>
+    </>
   );
 }
 

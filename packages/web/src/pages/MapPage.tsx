@@ -149,8 +149,9 @@ export function MapPage() {
           onWizard={() => setShowWizard(true)}
           wizardStatus={store.wizardStatus}
           hasSavedMap={true}
+          onTour={() => { localStorage.removeItem('has-seen-map-tour'); setShowTour(true); }}
         />
-        <div style={{ flex: 1, minWidth: 0, position: 'relative', overflow: 'hidden', paddingInlineEnd: store.selectedTool === 'plant' ? '260px' : '0px' }}>
+        <div data-tour="canvas" style={{ flex: 1, minWidth: 0, position: 'relative', overflow: 'hidden', paddingInlineEnd: store.selectedTool === 'plant' ? '260px' : '0px' }}>
           <SaveIndicator
             isSaving={store.isSaving}
             lastSaved={store.lastSaved}
@@ -204,7 +205,11 @@ export function MapPage() {
         )}
       </div>
 
-      {showTour && <MapTour onDone={() => setShowTour(false)} />}
+      <MapTour
+        isOpen={showTour}
+        onComplete={() => { localStorage.setItem('has-seen-map-tour', 'true'); setShowTour(false); }}
+        onSkip={() => { localStorage.setItem('has-seen-map-tour', 'true'); setShowTour(false); }}
+      />
 
       {showWizard && store.mapId && (
         <WizardModal
