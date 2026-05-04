@@ -94,7 +94,9 @@ function CategoryDropdown({
   function handleToggle() {
     if (btnRef.current) {
       const r = btnRef.current.getBoundingClientRect();
-      setDropPos({ top: r.bottom + 4, left: r.left });
+      const isRTL = document.documentElement.dir === 'rtl';
+      const left = isRTL ? r.right - 180 : r.left;
+      setDropPos({ top: r.bottom + 4, left: Math.max(8, Math.min(left, window.innerWidth - 188)) });
     }
     setOpen(o => !o);
   }
