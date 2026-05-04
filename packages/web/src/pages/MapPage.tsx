@@ -91,6 +91,8 @@ export function MapPage() {
   const [toast, setToast] = useState<string | null>(null);
   const [plantLimitModalOpen, setPlantLimitModalOpen] = useState(false);
 
+  const handleReopenTour = () => { localStorage.removeItem('has-seen-map-tour'); setShowTour(true); };
+
   // clear any stale collapse state from previous version
   localStorage.removeItem('map-panel-collapsed');
 
@@ -149,7 +151,7 @@ export function MapPage() {
           onWizard={() => setShowWizard(true)}
           wizardStatus={store.wizardStatus}
           hasSavedMap={true}
-          onTour={() => { localStorage.removeItem('has-seen-map-tour'); setShowTour(true); }}
+          onTour={handleReopenTour}
         />
         <div data-tour="canvas" style={{ flex: 1, minWidth: 0, position: 'relative', overflow: 'hidden', paddingInlineEnd: store.selectedTool === 'plant' ? '260px' : '0px' }}>
           <SaveIndicator

@@ -92,9 +92,7 @@ export interface Props {
   onSkip: () => void;
 }
 
-const CARD_W = 320;
-const MARGIN = 16;
-const PAD    = 8;
+const PAD = 8;
 
 // ── Canvas interaction animation ──────────────────────────────────────────────
 
@@ -213,18 +211,6 @@ export function MapTour({ isOpen, onComplete, onSkip }: Props) {
     else onComplete();
   };
 
-  // Card position: prefer below spotlight, fall back to above, clamp horizontally
-  let cardTop  = Math.max(MARGIN, (window.innerHeight - 400) / 2);
-  let cardLeft = Math.max(MARGIN, (window.innerWidth  - CARD_W) / 2);
-
-  if (rect) {
-    cardTop = rect.top + rect.height + PAD + 12;
-    if (cardTop + 400 > window.innerHeight) {
-      cardTop = rect.top - PAD - 12 - 400;
-    }
-    cardLeft = Math.max(MARGIN, Math.min(rect.left, window.innerWidth - CARD_W - MARGIN));
-  }
-
   return (
     <>
       {/* Dark overlay — visual only, never blocks clicks */}
@@ -259,9 +245,9 @@ export function MapTour({ isOpen, onComplete, onSkip }: Props) {
         dir="rtl"
         style={{
           position: 'fixed',
-          top:  cardTop,
-          left: cardLeft,
-          width: CARD_W,
+          bottom: '100px',
+          insetInlineStart: '16px',
+          width: '300px',
           maxWidth: 'calc(100vw - 32px)',
           overflow: 'hidden',
           zIndex: 10000,
