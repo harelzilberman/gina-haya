@@ -12,11 +12,7 @@
     "db:seed": "tsx scripts/seed-calendar.ts",
     "db:migrate": "pnpm --filter @gina-haya/api db:migrate"
   },
-  "packageManager": "pnpm@9.15.0",
-  "engines": {
-    "node": ">=20.0.0",
-    "pnpm": ">=8.15.1"
-  },
+  "packageManager": "pnpm@8.15.9",
   "devDependencies": {
     "@supabase/supabase-js": "^2.39.0",
     "@typescript-eslint/eslint-plugin": "^7.3.0",
