@@ -2,29 +2,29 @@ FROM node:22-alpine
 
 WORKDIR /app
 
-# Copy ALL workspace package.json files first
-COPY package.json pnpm-lock.yaml ./
-COPY packages/api/package.json ./packages/api/
-COPY packages/shared/package.json ./packages/shared/
-
-# Copy i18n fully (workspace dependency, not just package.json)
-COPY packages/i18n ./packages/i18n/
-
-# Install pnpm
+# Install pnpm globally first
 RUN npm install -g pnpm@9.15.0
 
-# Install ALL dependencies including devDependencies (tsc needs to be available)
+# Copy workspace config — pnpm needs this to resolve workspace packages
+COPY package.json pnpm-lock.yaml pnpm-workspace.yaml ./
+
+# Copy all package.json files for workspace resolution
+COPY packages/shared/package.json ./packages/shared/package.json
+COPY packages/api/package.json ./packages/api/package.json
+COPY packages/i18n/package.json ./packages/i18n/package.json
+
+# Install all dependencies including devDependencies
 RUN pnpm install --no-frozen-lockfile
 
-# Copy source AFTER install so node_modules are populated first
+# Copy all source code
 COPY packages/shared ./packages/shared
 COPY packages/api ./packages/api
+COPY packages/i18n ./packages/i18n
 
-# Build in dependency order
-RUN pnpm --filter @gina-haya/shared build
+# Build shared with npx tsc directly, then api via pnpm filter
+RUN cd packages/shared && npx tsc
 RUN pnpm --filter @gina-haya/i18n build
 RUN pnpm --filter @gina-haya/api build
 
 EXPOSE 3000
-
 CMD ["node", "packages/api/dist/index.js"]
