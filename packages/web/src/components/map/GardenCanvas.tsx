@@ -105,8 +105,8 @@ function getResizeCursor(
   rotationDeg: number
 ): string {
   const BASE_ANGLES: Record<string, number> = {
-    'e': 0, 'se': 45, 's': 90, 'sw': 135,
-    'w': 180, 'nw': 225, 'n': 270, 'ne': 315,
+    's': 0, 'se': 45, 'e': 90, 'ne': 135,
+    'n': 180, 'nw': 225, 'w': 270, 'sw': 315,
   };
   const angle = ((BASE_ANGLES[handlePosition] + rotationDeg) % 360 + 360) % 360;
   if (angle < 22.5 || angle >= 337.5) return 'ew-resize';
