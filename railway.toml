@@ -1,5 +1,8 @@
 [build]
-watchPatterns = ["packages/api/**", "packages/shared/**", "Dockerfile"]
+builder = "DOCKERFILE"
+dockerfilePath = "packages/api/Dockerfile"
+watchPatterns = ["packages/api/**", "packages/shared/**", "packages/i18n/**", "packages/api/Dockerfile"]
 
 [deploy]
-watchPatterns = ["packages/api/**", "packages/shared/**", "Dockerfile"]
+startCommand = "node packages/api/dist/index.js"
+watchPatterns = ["packages/api/**", "packages/shared/**", "packages/i18n/**", "packages/api/Dockerfile"]
