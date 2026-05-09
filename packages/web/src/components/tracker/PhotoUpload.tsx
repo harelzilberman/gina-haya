@@ -109,12 +109,16 @@ export function PhotoUpload({ trackerId, plantNameHe, onClose, onComplete }: Pro
           setError('לא ניתן להתחבר לשרת. בדוק את החיבור לאינטרנט ונסה שוב.');
         } else {
           const ERROR_MESSAGES: Record<string, string> = {
-            api_unavailable: 'השירות אינו זמין כרגע. נסה שוב מאוחר יותר.',
-            image_too_large: 'התמונה גדולה מדי לניתוח.',
-            analysis_failed: 'לא הצלחנו לנתח את התמונה. נסה תמונה אחרת.',
-            unknown:         'אירעה שגיאה. נסה שוב.',
+            api_unavailable:        'השירות אינו זמין כרגע. נסה שוב מאוחר יותר.',
+            image_too_large:        'התמונה גדולה מדי לניתוח.',
+            analysis_failed:        'לא הצלחנו לנתח את התמונה. נסה תמונה אחרת.',
+            storage_error:          'שגיאה בשמירת התמונה.',
+            tracker_limit_reached:  'הגעת למגבלת המעקבים.',
+            analysis_limit_reached: 'הגעת למגבלת הניתוחים החודשיים.',
+            unknown:                'אירעה שגיאה. נסה שוב.',
           };
-          setError(ERROR_MESSAGES[err.errorCode] ?? err.message ?? ERROR_MESSAGES.unknown);
+          const mapped = err.errorCode !== 'unknown' ? ERROR_MESSAGES[err.errorCode] : undefined;
+          setError(mapped ?? err.message ?? ERROR_MESSAGES.unknown);
         }
       }
     }

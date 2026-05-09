@@ -55,7 +55,7 @@ trackersRouter.get('/', async (req: any, res) => {
 
     res.json({ trackers: result });
   } catch (err: any) {
-    console.error('[GET /api/trackers]', err.message);
+    console.error('[GET /api/trackers]', err.message, err.stack);
     res.status(500).json({ error: err.message });
   }
 });
@@ -130,7 +130,7 @@ trackersRouter.post('/', async (req: any, res) => {
     if (error) throw error;
     res.status(201).json(data);
   } catch (err: any) {
-    console.error('[POST /api/trackers]', err.message);
+    console.error('[POST /api/trackers]', err.message, err.stack);
     res.status(500).json({ error: err.message });
   }
 });
@@ -160,7 +160,7 @@ trackersRouter.get('/:id', async (req: any, res) => {
 
     res.json({ ...tracker, checkins: checkins ?? [] });
   } catch (err: any) {
-    console.error('[GET /api/trackers/:id]', err.message);
+    console.error('[GET /api/trackers/:id]', err.message, err.stack);
     res.status(500).json({ error: err.message });
   }
 });
@@ -180,7 +180,7 @@ trackersRouter.delete('/:id', async (req: any, res) => {
     if (error) throw error;
     res.json({ success: true });
   } catch (err: any) {
-    console.error('[DELETE /api/trackers/:id]', err.message);
+    console.error('[DELETE /api/trackers/:id]', err.message, err.stack);
     res.status(500).json({ error: err.message });
   }
 });
@@ -327,12 +327,12 @@ trackersRouter.post('/:id/checkin', async (req: any, res) => {
         .from('tracker-photos')
         .upload(storagePath, compressed.buffer, { contentType: 'image/jpeg', upsert: false });
       if (uploadError) {
-        console.error('[checkin] Photo upload failed:', uploadError.message);
+        console.error('[checkin] Photo upload failed:', uploadError.message, uploadError);
       } else {
         photoPath = storagePath;
       }
     } catch (uploadErr: any) {
-      console.error('[checkin] Photo upload failed:', uploadErr.message);
+      console.error('[checkin] Photo upload exception:', uploadErr.message, uploadErr.stack);
     }
 
     // Call Claude vision with pre-compressed data (avoids double compression)
@@ -381,8 +381,8 @@ trackersRouter.post('/:id/checkin', async (req: any, res) => {
 
     res.status(201).json({ checkin, analysis, growingPlan, suggested_tasks: tasks, used_credit: usedAnalysisCredit });
   } catch (err: any) {
-    console.error('[POST /api/trackers/:id/checkin]', err.message);
-    res.status(500).json({ error: err.message, error_code: 'unknown' });
+    console.error('[POST /api/trackers/:id/checkin]', err.message, err.stack);
+    res.status(500).json({ error: err.message, message: err.message, error_code: 'unknown' });
   }
 });
 
@@ -441,7 +441,7 @@ trackersRouter.post('/:id/approve-tasks', async (req: any, res) => {
 
     res.json({ tasks_added: inserted?.length ?? 0, tasks_error: null });
   } catch (err: any) {
-    console.error('[POST /api/trackers/:id/approve-tasks]', err.message);
+    console.error('[POST /api/trackers/:id/approve-tasks]', err.message, err.stack);
     res.status(500).json({ error: err.message });
   }
 });
@@ -482,7 +482,7 @@ trackersRouter.get('/:id/plan', async (req: any, res) => {
       growthStage:  checkin.growth_stage,
     });
   } catch (err: any) {
-    console.error('[GET /api/trackers/:id/plan]', err.message);
+    console.error('[GET /api/trackers/:id/plan]', err.message, err.stack);
     res.status(500).json({ error: err.message });
   }
 });
