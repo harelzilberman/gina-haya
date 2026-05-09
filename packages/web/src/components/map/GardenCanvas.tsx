@@ -100,6 +100,25 @@ function polyArea(pts: [number, number][]): number {
 function deg(rad: number) { return rad * 180 / Math.PI; }
 function rad(d: number) { return d * Math.PI / 180; }
 
+function getResizeCursor(
+  handlePosition: 'n' | 's' | 'e' | 'w' | 'ne' | 'nw' | 'se' | 'sw',
+  rotationDeg: number
+): string {
+  const BASE_ANGLES: Record<string, number> = {
+    'e': 0, 'se': 45, 's': 90, 'sw': 135,
+    'w': 180, 'nw': 225, 'n': 270, 'ne': 315,
+  };
+  const angle = ((BASE_ANGLES[handlePosition] + rotationDeg) % 360 + 360) % 360;
+  if (angle < 22.5 || angle >= 337.5) return 'ew-resize';
+  if (angle < 67.5)  return 'nwse-resize';
+  if (angle < 112.5) return 'ns-resize';
+  if (angle < 157.5) return 'nesw-resize';
+  if (angle < 202.5) return 'ew-resize';
+  if (angle < 247.5) return 'nwse-resize';
+  if (angle < 292.5) return 'ns-resize';
+  return 'nesw-resize';
+}
+
 // Build rect data from two screen points for fence/wall (fixed-width line) or free rect
 function makeRectFromDrag(
   start: [number, number], end: [number, number], fixedW?: number
@@ -308,14 +327,14 @@ function SelectionOverlay({
     const rot = obj.rotation ?? 0;
     const H = 5;
     const handles: [string, number, number, string][] = [
-      ['nw', rx,      ry,      'nw-resize'],
-      ['n',  cx,      ry,      'n-resize'],
-      ['ne', rx+rw,   ry,      'ne-resize'],
-      ['e',  rx+rw,   cy,      'e-resize'],
-      ['se', rx+rw,   ry+rh,   'se-resize'],
-      ['s',  cx,      ry+rh,   's-resize'],
-      ['sw', rx,      ry+rh,   'sw-resize'],
-      ['w',  rx,      cy,      'w-resize'],
+      ['nw', rx,      ry,      getResizeCursor('nw', rot)],
+      ['n',  cx,      ry,      getResizeCursor('n',  rot)],
+      ['ne', rx+rw,   ry,      getResizeCursor('ne', rot)],
+      ['e',  rx+rw,   cy,      getResizeCursor('e',  rot)],
+      ['se', rx+rw,   ry+rh,   getResizeCursor('se', rot)],
+      ['s',  cx,      ry+rh,   getResizeCursor('s',  rot)],
+      ['sw', rx,      ry+rh,   getResizeCursor('sw', rot)],
+      ['w',  rx,      cy,      getResizeCursor('w',  rot)],
     ];
     return (
       <g transform={`rotate(${rot},${cx},${cy})`}>
@@ -1092,10 +1111,14 @@ export function GardenCanvas({
       if (o.shapeKind === 'rect') {
         let { x, y, width, height } = { x: o.x!, y: o.y!, width: o.width!, height: o.height! };
         const h = resDrag.handle;
-        if (h.includes('e')) { width  = Math.max(0.2, width  + dx); }
-        if (h.includes('s')) { height = Math.max(0.2, height + dy); }
-        if (h.includes('w')) { x = o.x! + dx; width  = Math.max(0.2, o.width! - dx); }
-        if (h.includes('n')) { y = o.y! + dy; height = Math.max(0.2, o.height! - dy); }
+        // Rotate screen-space delta into object-local space before applying to axes
+        const rotRad = -(o.rotation ?? 0) * Math.PI / 180;
+        const localDx = dx * Math.cos(rotRad) - dy * Math.sin(rotRad);
+        const localDy = dx * Math.sin(rotRad) + dy * Math.cos(rotRad);
+        if (h.includes('e')) { width  = Math.max(0.2, width  + localDx); }
+        if (h.includes('s')) { height = Math.max(0.2, height + localDy); }
+        if (h.includes('w')) { x = o.x! + localDx; width  = Math.max(0.2, o.width! - localDx); }
+        if (h.includes('n')) { y = o.y! + localDy; height = Math.max(0.2, o.height! - localDy); }
         // Enforce fixed width if applicable
         const fixedW = SHAPE_CONFIGS[o.type]?.fixedWidth;
         if (fixedW != null) {
