@@ -88,7 +88,11 @@ export function drawMoon(canvas: HTMLCanvasElement, phasePct: number, phaseAngle
     ctx.arc(cx, cy, r, 0, Math.PI * 2);
     ctx.clip();
 
-    ctx.fillStyle = '#060a08';
+    // Draw full moon texture first so ~18% shows through the dark side (earthshine / ashen light)
+    drawMoonSurface(ctx, size);
+    ctx.fillStyle = 'rgba(0, 0, 0, 0.82)';
+    ctx.beginPath();
+    ctx.arc(cx, cy, r, 0, Math.PI * 2);
     ctx.fill();
 
     if (phasePct < 2) { ctx.restore(); return; }
@@ -109,14 +113,13 @@ export function drawMoon(canvas: HTMLCanvasElement, phasePct: number, phaseAngle
       ctx.restore();
 
       if (f < 0.5) {
-        // Waxing crescent: shadow eats into right side.
-        // Darken the right half of the terminator ellipse, leaving only a thin right sliver.
+        // Waxing crescent: shadow eats into right side — earthshine overlay
         ctx.save();
         ctx.beginPath();
         ctx.ellipse(cx, cy, tRx, r, 0, -Math.PI / 2, Math.PI / 2);
         ctx.lineTo(cx, cy - r);
         ctx.closePath();
-        ctx.fillStyle = 'rgba(4, 8, 20, 0.95)';
+        ctx.fillStyle = 'rgba(0, 0, 0, 0.82)';
         ctx.fill();
         ctx.restore();
       } else if (tRx > 1) {
@@ -139,14 +142,13 @@ export function drawMoon(canvas: HTMLCanvasElement, phasePct: number, phaseAngle
       ctx.restore();
 
       if (f < 0.5) {
-        // Waning crescent: shadow eats into left side.
-        // Darken the left half of the terminator ellipse, leaving only a thin left sliver.
+        // Waning crescent: shadow eats into left side — earthshine overlay
         ctx.save();
         ctx.beginPath();
         ctx.ellipse(cx, cy, tRx, r, 0, Math.PI / 2, 3 * Math.PI / 2);
         ctx.lineTo(cx, cy - r);
         ctx.closePath();
-        ctx.fillStyle = 'rgba(4, 8, 20, 0.95)';
+        ctx.fillStyle = 'rgba(0, 0, 0, 0.82)';
         ctx.fill();
         ctx.restore();
       } else if (tRx > 1) {
@@ -162,11 +164,36 @@ export function drawMoon(canvas: HTMLCanvasElement, phasePct: number, phaseAngle
       }
     }
 
-    // Spherical shading overlay
+    // Warm glow on lit side
+    const glowGrad = ctx.createRadialGradient(cx, cy, 0, cx, cy, r);
+    glowGrad.addColorStop(0,   'rgba(255, 245, 200, 0.15)');
+    glowGrad.addColorStop(0.7, 'rgba(255, 240, 180, 0.05)');
+    glowGrad.addColorStop(1,   'rgba(0, 0, 0, 0)');
+    ctx.fillStyle = glowGrad;
+    ctx.beginPath();
+    ctx.arc(cx, cy, r, 0, Math.PI * 2);
+    ctx.fill();
+
+    // Soft terminator line (skip near new/full moon)
+    if (phasePct >= 2 && phasePct < 98 && tRx > 4) {
+      const tX = isWaning ? cx + tRx : cx - tRx;
+      const terminatorGrad = ctx.createLinearGradient(tX - 8, cy, tX + 8, cy);
+      terminatorGrad.addColorStop(0,   'rgba(0,0,0,0)');
+      terminatorGrad.addColorStop(0.5, 'rgba(0,0,0,0.4)');
+      terminatorGrad.addColorStop(1,   'rgba(0,0,0,0)');
+      ctx.save();
+      ctx.beginPath();
+      ctx.ellipse(tX, cy, 8, r, 0, 0, Math.PI * 2);
+      ctx.fillStyle = terminatorGrad;
+      ctx.fill();
+      ctx.restore();
+    }
+
+    // Spherical shading overlay — stronger edge darkening for 3D depth
     const grad = ctx.createRadialGradient(cx * 0.65, cy * 0.65, 0, cx, cy, r);
-    grad.addColorStop(0,   'rgba(255,245,200,0.08)');
+    grad.addColorStop(0,   'rgba(255,245,200,0.12)');
     grad.addColorStop(0.5, 'rgba(0,0,0,0)');
-    grad.addColorStop(1,   'rgba(0,0,0,0.5)');
+    grad.addColorStop(1,   'rgba(0,0,0,0.65)');
     ctx.beginPath();
     ctx.arc(cx, cy, r, 0, Math.PI * 2);
     ctx.fillStyle = grad;
