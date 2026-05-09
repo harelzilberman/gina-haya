@@ -169,6 +169,28 @@ export function PricingPage() {
 
       <div dir="rtl" style={{ minHeight: '100vh', background: EARTH, fontFamily: ASST }}>
 
+        {/* ── Launch free mode banner ── */}
+        <div style={{
+          maxWidth: '1100px', margin: '0 auto',
+          padding: '24px 20px 0',
+          animation: 'pricingFadeIn 0.5s ease both',
+        }}>
+          <div style={{
+            background: 'rgba(99,153,34,0.15)',
+            border: '1px solid rgba(99,153,34,0.3)',
+            borderRadius: '12px',
+            padding: '16px',
+            textAlign: 'center',
+            marginBottom: '24px',
+            fontSize: '15px',
+            color: '#639922',
+            fontWeight: 600,
+          }}>
+            🌿 גינה חיה בחינם לחלוטין בתקופת ההשקה!
+            כל התכונות פתוחות לכולם עד להודעה חדשה.
+          </div>
+        </div>
+
         {/* ── Header ── */}
         <div style={{
           background: `linear-gradient(180deg, ${HEADER} 0%, ${EARTH} 100%)`,

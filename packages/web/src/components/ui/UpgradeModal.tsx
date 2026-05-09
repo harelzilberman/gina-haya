@@ -76,6 +76,10 @@ const TIER_FEATURES_LIST: Record<TierKey, string[]> = {
 const TIERS_ORDER: TierKey[] = ['free', 'grower', 'gardener_pro', 'professional'];
 
 export function UpgradeModal() {
+  if (import.meta.env.PROD && import.meta.env.VITE_LAUNCH_FREE_MODE === 'true') {
+    return null;
+  }
+
   const { close }           = useUpgradeModalStore();
   const { session }         = useAuthStore();
   const { tier: currentTier } = useTier();

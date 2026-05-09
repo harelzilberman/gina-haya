@@ -22,7 +22,12 @@ export async function attachTier(req: Request, res: Response, next: NextFunction
       .eq('id', userId)
       .single();
 
-    const tier = data?.subscription_tier ?? 'free';
+    // LAUNCH MODE — everyone gets Pro access
+    // Remove this when payments are ready
+    const LAUNCH_FREE_MODE = process.env.LAUNCH_FREE_MODE === 'true';
+    const tier = LAUNCH_FREE_MODE
+      ? 'pro'
+      : (data?.subscription_tier ?? 'free');
     req.tier = tier;
     req.limits = getLimits(tier);
   } catch {

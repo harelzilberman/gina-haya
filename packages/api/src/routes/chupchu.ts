@@ -83,9 +83,11 @@ chupChuRouter.post('/chat', async (req: any, res) => {
     const lang = userProfile?.language_preference || 'he';
 
     // ── 2. Check monthly message limit ────────────────────────────────────
-    const monthlyLimit = getLimits(tier).maxChupChuPerMonth;
+    const LAUNCH_FREE_MODE = process.env.LAUNCH_FREE_MODE === 'true';
+    const effectiveTier = LAUNCH_FREE_MODE ? 'pro' : tier;
+    const monthlyLimit = getLimits(effectiveTier).maxChupChuPerMonth;
 
-    if (monthlyLimit !== null) {
+    if (!LAUNCH_FREE_MODE && monthlyLimit !== null) {
       // Count messages sent this month
       const startOfMonth = new Date();
       startOfMonth.setDate(1);

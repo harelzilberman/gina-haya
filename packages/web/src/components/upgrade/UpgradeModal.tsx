@@ -1,4 +1,4 @@
-import { useNavigate } from 'react-router-dom';
+﻿import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 
 const EARTH = '#142B16';
@@ -37,86 +37,90 @@ function getContent(
 ): Content {
   const resetLabel = resetsAt
     ? new Date(resetsAt).toLocaleDateString('he-IL', { day: 'numeric', month: 'long' })
-    : 'תחילת החודש הבא';
+    : '×ª×—×™×œ×ª ×”×—×•×“×© ×”×‘×';
 
   switch (limitType) {
     case 'plants':
       return {
-        title:  'הגינה שלך גדלה! 🌱',
-        body:   'הוספת 10 צמחים — המקסימום בחשבון חינמי.\nשדרג לגנן כדי להוסיף צמחים ללא הגבלה.',
+        title:  '×”×’×™× ×” ×©×œ×š ×’×“×œ×”! ðŸŒ±',
+        body:   '×”×•×¡×¤×ª 10 ×¦×ž×—×™× â€” ×”×ž×§×¡×™×ž×•× ×‘×—×©×‘×•×Ÿ ×—×™× ×ž×™.\n×©×“×¨×’ ×œ×’× ×Ÿ ×›×“×™ ×œ×”×•×¡×™×£ ×¦×ž×—×™× ×œ×œ× ×”×’×‘×œ×”.',
         image:  '/chupchu_happy.png',
-        primaryLabel:   'שדרג עכשיו',
+        primaryLabel:   '×©×“×¨×’ ×¢×›×©×™×•',
         primaryTo:      '/pricing',
       };
 
     case 'trackers':
       return {
-        title: 'מעקב הגידול שלך ממתין! 🌿',
-        body:  'בחשבון חינמי ניתן לנהל מעקב גידול אחד.\nשדרג לגנן למעקבים ללא הגבלה — ₪18 בלבד לחודש.',
+        title: '×ž×¢×§×‘ ×”×’×™×“×•×œ ×©×œ×š ×ž×ž×ª×™×Ÿ! ðŸŒ¿',
+        body:  '×‘×—×©×‘×•×Ÿ ×—×™× ×ž×™ × ×™×ª×Ÿ ×œ× ×”×œ ×ž×¢×§×‘ ×’×™×“×•×œ ××—×“.\n×©×“×¨×’ ×œ×’× ×Ÿ ×œ×ž×¢×§×‘×™× ×œ×œ× ×”×’×‘×œ×” â€” â‚ª18 ×‘×œ×‘×“ ×œ×—×•×“×©.',
         image: '/chupchu_thinking.png',
-        primaryLabel:  'שדרג עכשיו',
+        primaryLabel:  '×©×“×¨×’ ×¢×›×©×™×•',
         primaryTo:     '/pricing',
       };
 
     case 'analysis':
       if (currentTier === 'grower') {
         return {
-          title: '30 ניתוחים בחודש — כל הכבוד! 🔬',
-          body:  `הגעת למגבלה החודשית.\nהמגבלה מתאפסת ב-${resetLabel}.\nצריך עוד? רכוש חבילת ניתוחים בחנות.`,
+          title: '30 × ×™×ª×•×—×™× ×‘×—×•×“×© â€” ×›×œ ×”×›×‘×•×“! ðŸ”¬',
+          body:  `×”×’×¢×ª ×œ×ž×’×‘×œ×” ×”×—×•×“×©×™×ª.\n×”×ž×’×‘×œ×” ×ž×ª××¤×¡×ª ×‘-${resetLabel}.\n×¦×¨×™×š ×¢×•×“? ×¨×›×•×© ×—×‘×™×œ×ª × ×™×ª×•×—×™× ×‘×—× ×•×ª.`,
           image: '/chupchu_wise.png',
-          primaryLabel:  'לחנות',
+          primaryLabel:  '×œ×—× ×•×ª',
           primaryTo:     '/shop',
         };
       }
       return {
-        title: 'ניצלת את הניתוח החינמי שלך! 🔬',
-        body:  'קיבלת טעימה של הניתוח. רוצה עוד?\nשדרג לגנן לניתוחים ללא הגבלה, או רכוש חבילה בחנות.',
+        title: '× ×™×¦×œ×ª ××ª ×”× ×™×ª×•×— ×”×—×™× ×ž×™ ×©×œ×š! ðŸ”¬',
+        body:  '×§×™×‘×œ×ª ×˜×¢×™×ž×” ×©×œ ×”× ×™×ª×•×—. ×¨×•×¦×” ×¢×•×“?\n×©×“×¨×’ ×œ×’× ×Ÿ ×œ× ×™×ª×•×—×™× ×œ×œ× ×”×’×‘×œ×”, ××• ×¨×›×•×© ×—×‘×™×œ×” ×‘×—× ×•×ª.',
         image: '/chupchu_surprised.png',
-        primaryLabel:   'שדרג לגנן',
+        primaryLabel:   '×©×“×¨×’ ×œ×’× ×Ÿ',
         primaryTo:      '/pricing',
-        secondaryLabel: 'רכוש חבילה',
+        secondaryLabel: '×¨×›×•×© ×—×‘×™×œ×”',
         secondaryTo:    '/shop',
       };
 
     case 'chupchu':
       if (currentTier === 'grower') {
         return {
-          title: '50 שיחות עם צ\'ופצ\'ו! 🌙',
-          body:  'הגעת למגבלה החודשית.\nשדרג למקצועי לשיחות ללא הגבלה עם צ\'ופצ\'ו.',
+          title: '50 ×©×™×—×•×ª ×¢× ×¦\'×•×¤×¦\'×•! ðŸŒ™',
+          body:  '×”×’×¢×ª ×œ×ž×’×‘×œ×” ×”×—×•×“×©×™×ª.\n×©×“×¨×’ ×œ×ž×§×¦×•×¢×™ ×œ×©×™×—×•×ª ×œ×œ× ×”×’×‘×œ×” ×¢× ×¦\'×•×¤×¦\'×•.',
           image: '/chupchu_thinking.png',
-          primaryLabel:  'שדרג עכשיו',
+          primaryLabel:  '×©×“×¨×’ ×¢×›×©×™×•',
           primaryTo:     '/pricing',
         };
       }
       return {
-        title: 'צ\'ופצ\'ו עייף קצת... 🌙',
-        body:  'השתמשת ב-20 השיחות החינמיות החודשיות.\nשדרג לגנן כדי לקבל 50 שיחות לחודש — ₪18 בלבד.',
+        title: '×¦\'×•×¤×¦\'×• ×¢×™×™×£ ×§×¦×ª... ðŸŒ™',
+        body:  '×”×©×ª×ž×©×ª ×‘-20 ×”×©×™×—×•×ª ×”×—×™× ×ž×™×•×ª ×”×—×•×“×©×™×•×ª.\n×©×“×¨×’ ×œ×’× ×Ÿ ×›×“×™ ×œ×§×‘×œ 50 ×©×™×—×•×ª ×œ×—×•×“×© â€” â‚ª18 ×‘×œ×‘×“.',
         image: '/chupchu_thinking.png',
-        primaryLabel:  'שדרג עכשיו',
+        primaryLabel:  '×©×“×¨×’ ×¢×›×©×™×•',
         primaryTo:     '/pricing',
       };
 
     case 'gardens':
       return {
-        title: 'גינות מרובות — תכונת מקצוענים! 🏡',
-        body:  'ניהול מספר גינות זמין בתכנית המקצועית.\nשדרג ל-₪54 לחודש וקבל 13 גינות + אפשרות לחבילות נוספות.',
+        title: '×’×™× ×•×ª ×ž×¨×•×‘×•×ª â€” ×ª×›×•× ×ª ×ž×§×¦×•×¢× ×™×! ðŸ¡',
+        body:  '× ×™×”×•×œ ×ž×¡×¤×¨ ×’×™× ×•×ª ×–×ž×™×Ÿ ×‘×ª×›× ×™×ª ×”×ž×§×¦×•×¢×™×ª.\n×©×“×¨×’ ×œ-â‚ª54 ×œ×—×•×“×© ×•×§×‘×œ 13 ×’×™× ×•×ª + ××¤×©×¨×•×ª ×œ×—×‘×™×œ×•×ª × ×•×¡×¤×•×ª.',
         image: '/chupchu_wise.png',
-        primaryLabel:  'שדרג עכשיו',
+        primaryLabel:  '×©×“×¨×’ ×¢×›×©×™×•',
         primaryTo:     '/pricing',
       };
 
     case 'encyclopedia':
       return {
-        title: 'האנציקלופדיה הביודינמית 📖',
-        body:  'הגישה המלאה לאנציקלופדיה זמינה בתכניות גנן ומקצועי.\nשדרג לגנן ב-₪18 לחודש וגלה את מלוא הידע.',
+        title: '×”×× ×¦×™×§×œ×•×¤×“×™×” ×”×‘×™×•×“×™× ×ž×™×ª ðŸ“–',
+        body:  '×”×’×™×©×” ×”×ž×œ××” ×œ×× ×¦×™×§×œ×•×¤×“×™×” ×–×ž×™× ×” ×‘×ª×›× ×™×•×ª ×’× ×Ÿ ×•×ž×§×¦×•×¢×™.\n×©×“×¨×’ ×œ×’× ×Ÿ ×‘-â‚ª18 ×œ×—×•×“×© ×•×’×œ×” ××ª ×ž×œ×•× ×”×™×“×¢.',
         image: '/chupchu_wise.png',
-        primaryLabel:  'שדרג לגנן',
+        primaryLabel:  '×©×“×¨×’ ×œ×’× ×Ÿ',
         primaryTo:     '/pricing',
       };
   }
 }
 
 export function UpgradeModal({ isOpen, onClose, limitType, currentTier = 'free', resetsAt }: Props) {
+  if (import.meta.env.PROD && import.meta.env.VITE_LAUNCH_FREE_MODE === 'true') {
+    return null;
+  }
+
   const navigate = useNavigate();
   const { i18n } = useTranslation();
   const isHe = i18n.language === 'he';
@@ -170,7 +174,7 @@ export function UpgradeModal({ isOpen, onClose, limitType, currentTier = 'free',
             display: 'flex', alignItems: 'center', justifyContent: 'center',
             overflow: 'hidden', position: 'relative',
           }}>
-            <span style={{ position: 'absolute', fontSize: '28px' }}>🌕</span>
+            <span style={{ position: 'absolute', fontSize: '28px' }}>ðŸŒ•</span>
             <img
               src={c.image}
               alt=""
@@ -185,7 +189,7 @@ export function UpgradeModal({ isOpen, onClose, limitType, currentTier = 'free',
             onClick={onClose}
             style={{ background: 'none', border: 'none', color: 'rgba(237,224,196,0.4)', cursor: 'pointer', fontSize: '18px', padding: '4px', flexShrink: 0 }}
           >
-            ✕
+            âœ•
           </button>
         </div>
 
@@ -253,7 +257,7 @@ export function UpgradeModal({ isOpen, onClose, limitType, currentTier = 'free',
                 cursor: 'pointer',
               }}
             >
-              סגור
+              ×¡×’×•×¨
             </button>
           </div>
         </div>
