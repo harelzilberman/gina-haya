@@ -23,6 +23,7 @@ import { PrivacyPolicyPage } from './pages/PrivacyPolicyPage';
 import { PricingPage } from './pages/PricingPage';
 import { ShopPage } from './pages/ShopPage';
 import { GardensPage } from './pages/GardensPage';
+import { HelpPage } from './pages/HelpPage';
 import { ProtectedRoute } from './components/auth/ProtectedRoute';
 import { OnboardingWizard } from './components/auth/OnboardingWizard';
 import { WelcomeScreen } from './components/auth/WelcomeScreen';
@@ -117,7 +118,8 @@ export default function App() {
     location.pathname === '/articles' ||
     location.pathname.startsWith('/articles/') ||
     location.pathname === '/pricing' ||
-    location.pathname === '/shop';
+    location.pathname === '/shop' ||
+    location.pathname === '/help';
   if (!isAuthReady && !isPublicContentPath) {
     return (
       <div className="min-h-screen flex items-center justify-center"
@@ -151,6 +153,7 @@ export default function App() {
           <Route path="/privacy" element={<PrivacyPolicyPage />} />
           <Route path="/pricing" element={<PricingPage />} />
           <Route path="/shop" element={<ShopPage />} />
+          <Route path="/help" element={<HelpPage />} />
 
           {/* Protected pages */}
           <Route

@@ -115,6 +115,7 @@ export function Footer() {
           <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
             {[
               { label: isHebrew ? 'מדיניות פרטיות' : 'Privacy Policy', to: '/privacy' },
+              { label: isHebrew ? '❓ עזרה' : '❓ Help', to: '/help' },
               { label: isHebrew ? 'צור קשר' : 'Contact', href: 'mailto:gina.haya.contact@gmail.com' },
             ].map(item => (
               item.to ? (

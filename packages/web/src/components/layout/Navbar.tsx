@@ -257,6 +257,7 @@ export function Navbar() {
                     { label: isHebrew ? '📖 מאמרים' : '📖 Articles',  to: '/articles' },
                     { label: isHebrew ? '🛒 חנות' : '🛒 Shop',         to: '/shop'     },
                     { label: isHebrew ? '💰 תמחור' : '💰 Pricing',     to: '/pricing'  },
+                    { label: isHebrew ? '❓ עזרה'  : '❓ Help',         to: '/help'     },
                     ...(isProUser ? [{ label: isHebrew ? '🏡 גינות' : '🏡 Gardens', to: '/gardens' }] : []),
                   ].map(item => (
                     <Link
@@ -613,6 +614,7 @@ export function Navbar() {
                 { label: t('nav.settings'), to: '/settings' },
                 { label: isHebrew ? '💰 תמחור' : '💰 Pricing', to: '/pricing' },
                 { label: isHebrew ? '🛒 חנות' : '🛒 Shop', to: '/shop' },
+                { label: isHebrew ? '❓ עזרה' : '❓ Help', to: '/help' },
               ].map(item => (
                 <Link
                   key={item.to}
@@ -638,6 +640,7 @@ export function Navbar() {
               <Link to="/signup"  onClick={() => setMobileOpen(false)} style={{ fontFamily: FRANK, fontSize: '16px', fontWeight: 700, color: GOLD, textDecoration: 'none', padding: '10px 0' }}>{t('nav.signup')}</Link>
               <Link to="/pricing" onClick={() => setMobileOpen(false)} style={{ fontFamily: ASSISTANT, fontSize: '16px', color: PARCHMENT, textDecoration: 'none', padding: '10px 0' }}>{isHebrew ? '💰 תמחור' : '💰 Pricing'}</Link>
               <Link to="/shop"    onClick={() => setMobileOpen(false)} style={{ fontFamily: ASSISTANT, fontSize: '16px', color: PARCHMENT, textDecoration: 'none', padding: '10px 0' }}>{isHebrew ? '🛒 חנות' : '🛒 Shop'}</Link>
+              <Link to="/help"    onClick={() => setMobileOpen(false)} style={{ fontFamily: ASSISTANT, fontSize: '16px', color: PARCHMENT, textDecoration: 'none', padding: '10px 0' }}>{isHebrew ? '❓ עזרה' : '❓ Help'}</Link>
             </>
           )}
           <div style={{ paddingTop: '10px' }}>{langToggle}</div>
