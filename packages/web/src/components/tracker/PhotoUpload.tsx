@@ -13,7 +13,7 @@ const ASST  = '"Assistant", "Heebo", sans-serif';
 
 const ACCEPTED_TYPES = ['image/jpeg', 'image/png', 'image/webp'];
 
-const MOOSH_PULSE_CSS = `
+const CHUPCHU_PULSE_CSS = `
 @keyframes monPulse {
   0%, 100% { transform: scale(1); opacity: 1; }
   50%       { transform: scale(1.12); opacity: 0.8; }
@@ -126,7 +126,7 @@ export function PhotoUpload({ trackerId, plantNameHe, onClose, onComplete }: Pro
 
   return (
     <>
-      <style>{MOOSH_PULSE_CSS}</style>
+      <style>{CHUPCHU_PULSE_CSS}</style>
       <div
         role="dialog"
         aria-modal="true"

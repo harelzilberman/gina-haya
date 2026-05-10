@@ -83,14 +83,14 @@ const TIPS_EN: Record<string, string[]> = {
   ],
 };
 
-const MOOSH_DEFAULTS_HE: Record<string, string> = {
+const CHUPCHU_DEFAULTS_HE: Record<string, string> = {
   fruit:  'יום פרי מבורך! זרעו, שתלו וקצרו ירקות פרי להנאתכם.',
   root:   'יום שורש חזק — הקרקע מוכנה לקבל שורשים חדשים.',
   flower: 'יום פרח נפלא — הטבע פורח סביבכם.',
   leaf:   'יום עלה — הירוק בשיאו, גזמו וקצרו.',
 };
 
-const MOOSH_DEFAULTS_EN: Record<string, string> = {
+const CHUPCHU_DEFAULTS_EN: Record<string, string> = {
   fruit:  'Blessed Fruit day! Sow, plant and harvest your fruiting vegetables.',
   root:   'Strong Root day — the soil is ready for new roots.',
   flower: 'Wonderful Flower day — nature blooms around you.',
@@ -145,8 +145,8 @@ export function DayDetailModal({ day, onClose }: Props) {
       : 'The earth breathes inward — best time for planting and watering');
 
   const monSummary = isHe
-    ? (day.monDailySummary || MOOSH_DEFAULTS_HE[day.dayType] || '')
-    : (MOOSH_DEFAULTS_EN[day.dayType] || '');
+    ? (day.monDailySummary || CHUPCHU_DEFAULTS_HE[day.dayType] || '')
+    : (CHUPCHU_DEFAULTS_EN[day.dayType] || '');
 
   return (
     <>
@@ -375,7 +375,7 @@ export function DayDetailModal({ day, onClose }: Props) {
             </div>
           )}
 
-          {/* MOOSH TIP */}
+          {/* CHUPCHU TIP */}
           <div style={{
             display:           'flex',
             gap:               '12px',

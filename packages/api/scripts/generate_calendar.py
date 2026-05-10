@@ -342,14 +342,14 @@ def apply_prep_cooldowns(raw_500, raw_501, raw_cpp, current_date,
     return prep500, prep501, cpp
 
 # ═══════════════════════════════════════════════════════
-# MOOSH DAILY SUMMARIES — Hebrew, wise, warm
+# CHUPCHU DAILY SUMMARIES — Hebrew, wise, warm
 # ═══════════════════════════════════════════════════════
 
 def get_mon_summary(day_type, ascending, is_node, is_full_moon,
                       is_new_moon, is_pre_full_moon, moon_opposite_saturn,
                       is_perigee, is_apogee, prep500, prep501):
     if is_node:
-        return 'יום צומת — מון ממליץ לנוח מעבודת הגינה היום ולתת לאדמה לנשום'
+        return "יום צומת — צ'ופצ'ו ממליץ לנוח מעבודת הגינה היום ולתת לאדמה לנשום"
 
     parts = []
 

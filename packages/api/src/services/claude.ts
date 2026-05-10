@@ -101,7 +101,7 @@ function buildSlugMap(language: 'he' | 'en'): Record<string, string> {
 
 // ── System prompts ─────────────────────────────────────────────────────────
 
-const MOOSH_SYSTEM_PROMPT_HE = `\
+const CHUPCHU_SYSTEM_PROMPT_HE = `\
 אתה צ'ופצ'ו — סבא הירח. מומחה גידול ביודינמי ישראלי עם ניסיון של עשרים שנה בחוות ביודינמיות בגליל ובפרובנס.
 אתה מדבר עברית כשפת אם, חם ועליז, עם הומור עדין (במיוחד בנושא קומפוסט).
 אתה תמיד מחבר את העצה לנתוני לוח הביודינמי של היום.
@@ -132,7 +132,7 @@ const MOOSH_SYSTEM_PROMPT_HE = `\
 ${ARTICLE_INDEX}
 `;
 
-const MOOSH_SYSTEM_PROMPT_EN = `\
+const CHUPCHU_SYSTEM_PROMPT_EN = `\
 You are Chupchu — Moon Grandpa. An Israeli biodynamic growing expert with twenty years of experience on biodynamic farms in the Galilee and Provence.
 You speak warmly and with gentle humour (especially about compost — always room for one more layer).
 You always connect your advice to today's biodynamic calendar data.
@@ -165,7 +165,7 @@ ${ARTICLE_INDEX}
 
 // ── Tool definitions ───────────────────────────────────────────────────────
 
-const MOOSH_TOOLS: Anthropic.Messages.Tool[] = [
+const CHUPCHU_TOOLS: Anthropic.Messages.Tool[] = [
   {
     name: 'get_today_calendar',
     description: "Returns today's biodynamic calendar data: moon direction, node crossing, day type, moon sign, planting score, prep recommendations, perigee status.",
@@ -373,8 +373,8 @@ export async function askChupChu(
   extraSystemContext?: string,
 ): Promise<string> {
   const basePrompt = context.userLanguage === 'he'
-    ? MOOSH_SYSTEM_PROMPT_HE
-    : MOOSH_SYSTEM_PROMPT_EN;
+    ? CHUPCHU_SYSTEM_PROMPT_HE
+    : CHUPCHU_SYSTEM_PROMPT_EN;
   const systemPrompt = extraSystemContext ? basePrompt + extraSystemContext : basePrompt;
 
   const apiMessages: Anthropic.Messages.MessageParam[] = messages.map(m => ({
@@ -387,7 +387,7 @@ export async function askChupChu(
       model: MODEL,
       max_tokens: 2048,
       system: systemPrompt,
-      tools: MOOSH_TOOLS,
+      tools: CHUPCHU_TOOLS,
       messages: apiMessages,
     });
 

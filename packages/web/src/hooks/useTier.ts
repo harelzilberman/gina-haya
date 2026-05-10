@@ -19,7 +19,7 @@ const TIER_PRICES: Record<string, number | null> = {
 
 const TIER_ORDER: SubscriptionTier[] = ['free', 'grower', 'gardener_pro', 'professional'];
 
-const MOOSH_MONTHLY_LIMITS: Record<SubscriptionTier, number | null> = {
+const CHUPCHU_MONTHLY_LIMITS: Record<SubscriptionTier, number | null> = {
   free:           20,
   grower:         50,
   gardener_pro:   null,
@@ -45,7 +45,7 @@ export function useTier() {
     isAdFree:        features.adFree,
     canUseDiagnosis: features.diagnosesPerMonth > 0,
     diagnosesLeft,
-    monthlyLimit:    MOOSH_MONTHLY_LIMITS[tier],
+    monthlyLimit:    CHUPCHU_MONTHLY_LIMITS[tier],
     canUpgradeTo,
     monthlyPrice:    TIER_PRICES[tier],
   };

@@ -720,7 +720,7 @@ export function LandingPage() {
         </div>
       </section>
 
-      {/* ══ MOOSH INTRODUCTION ════════════════════════════════════════════ */}
+      {/* ══ CHUPCHU INTRODUCTION ══════════════════════════════════════════ */}
       <section style={{ backgroundColor: FOREST, padding: '80px 0' }}>
         <div style={{ maxWidth: '960px', margin: '0 auto', padding: '0 28px' }}>
           <div style={{

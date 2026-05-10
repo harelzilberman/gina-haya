@@ -79,7 +79,7 @@ function formatTime(totalMinutes: number): string {
 }
 
 // Short ChupChu summaries by day type
-const MOOSH_SUMMARIES: Record<string, string> = {
+const CHUPCHU_SUMMARIES: Record<string, string> = {
   fruit:  'יום פרי — הזמן האידיאלי לשתילת עגבניות, מלפפונים ופלפלים',
   root:   'יום שורש — שתול גזר, סלק ובצל היום',
   flower: 'יום פרח — מצוין לשתילת פרחים ועשבי תיבול',
@@ -183,8 +183,8 @@ async function seed() {
 
     // ChupChu daily summary
     const chupChuDailySummary = nodeActive
-      ? MOOSH_SUMMARIES.node
-      : (MOOSH_SUMMARIES[zodiac.dayType] ?? MOOSH_SUMMARIES.fruit);
+      ? CHUPCHU_SUMMARIES.node
+      : (CHUPCHU_SUMMARIES[zodiac.dayType] ?? CHUPCHU_SUMMARIES.fruit);
 
 
     rows.push({

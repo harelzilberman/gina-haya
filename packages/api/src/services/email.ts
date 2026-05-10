@@ -31,8 +31,8 @@ function loadTemplates() {
     }
   } catch (err) {
     console.error('Failed to load email templates:', err);
-    heTemplate = '<p>{{DATE}} - {{MOOSH_SUMMARY}}</p>';
-    enTemplate = '<p>{{DATE}} - {{MOOSH_SUMMARY}}</p>';
+    heTemplate = '<p>{{DATE}} - {{CHUPCHU_SUMMARY}}</p>';
+    enTemplate = '<p>{{DATE}} - {{CHUPCHU_SUMMARY}}</p>';
   }
 }
 
@@ -117,7 +117,7 @@ export async function sendDailyTip(user: EmailUser, day: BiodynamicDay): Promise
     .replace(/\{\{DAY_TYPE_EMOJI\}\}/g, emoji)
     .replace(/\{\{MOON_DIRECTION_HE\}\}/g, day.ascendingDescendingHe)
     .replace(/\{\{MOON_DIRECTION_EN\}\}/g, day.ascendingDescending)
-    .replace(/\{\{MOOSH_SUMMARY\}\}/g, day.chupChuDailySummary || '')
+    .replace(/\{\{CHUPCHU_SUMMARY\}\}/g, day.chupChuDailySummary || '')
     .replace(/\{\{PREP_500_ROW\}\}/g, prep500Row)
     .replace(/\{\{PREP_501_ROW\}\}/g, prep501Row)
     .replace(/\{\{APP_URL\}\}/g, APP_URL)
@@ -148,7 +148,7 @@ export async function sendWelcome(user: EmailUser): Promise<void> {
     <div dir="rtl" style="font-family:Arial;max-width:600px;margin:0 auto;padding:32px;">
       <h2 style="color:#1B2A4A;">שלום ${name}! 🌱</h2>
       <p style="color:#444;">ברוכים הבאים לגינה חיה!</p>
-      <p style="color:#444;">מון לבנה כאן — סבא הירח שלך שישמור על הגינה.</p>
+      <p style="color:#444;">צ'ופצ'ו כאן — המומחה הביודינמי שלך שישמור על הגינה.</p>
       <p style="color:#444;">כל בוקר תקבל טיפ יומי ביודינמי עם ציון הזריעה של היום ועצות מותאמות אישית לגינה שלך.</p>
       <p style="color:#B7924A;font-style:italic;">"הגינה מחכה לך. היא תמיד שם."</p>
       <a href="${APP_URL}" style="display:inline-block;background:#4A7C59;color:white;padding:14px 28px;border-radius:8px;text-decoration:none;margin-top:16px;">פתח את הגינה שלי</a>
