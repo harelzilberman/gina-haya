@@ -344,6 +344,29 @@ export default function App() {
           </div>
         </>
       )}
+
+      <div
+        style={{
+          background: '#0F1F11',
+          borderTop: '0.5px solid rgba(201,168,76,0.15)',
+          padding: '16px 24px',
+          display: 'flex',
+          justifyContent: 'space-between',
+          alignItems: 'center',
+          fontSize: '12px',
+          color: 'rgba(237,224,196,0.4)',
+          direction: 'rtl',
+          flexShrink: 0,
+        }}
+      >
+        <span>© 2026 גינה חיה</span>
+        <a
+          href="mailto:gina.haya.contact@gmail.com"
+          style={{ color: 'rgba(237,224,196,0.5)', textDecoration: 'none' }}
+        >
+          📧 צור קשר
+        </a>
+      </div>
     </div>
   );
 }
