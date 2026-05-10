@@ -8,7 +8,7 @@ export const pushRouter: IRouter = Router();
 // Configure VAPID — keys read from env
 if (process.env.VAPID_PUBLIC_KEY && process.env.VAPID_PRIVATE_KEY) {
   webpush.setVapidDetails(
-    'mailto:hello@gina-haya.com',
+    'mailto:gina.haya.contact@gmail.com',
     process.env.VAPID_PUBLIC_KEY,
     process.env.VAPID_PRIVATE_KEY
   );
