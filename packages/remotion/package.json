@@ -1,0 +1,23 @@
+{
+  "name": "@gina-haya/remotion",
+  "version": "0.0.1",
+  "description": "Remotion video suite for Gina Haya",
+  "scripts": {
+    "dev": "remotion studio",
+    "build": "remotion bundle",
+    "render:intro-en": "remotion render ChupchuIntro-EN out/chupchu_intro_en.mp4 --props='{\"language\":\"en\"}'",
+    "render:intro-he": "remotion render ChupchuIntro-HE out/chupchu_intro_he.mp4 --props='{\"language\":\"he\"}'",
+    "render:all": "pnpm render:intro-en && pnpm render:intro-he"
+  },
+  "dependencies": {
+    "@remotion/cli": "^4.0.0",
+    "@remotion/media-utils": "^4.0.0",
+    "remotion": "^4.0.0"
+  },
+  "devDependencies": {
+    "typescript": "^5.0.0",
+    "@types/react": "^18.0.0",
+    "react": "^18.0.0",
+    "react-dom": "^18.0.0"
+  }
+}

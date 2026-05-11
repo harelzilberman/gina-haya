@@ -39,6 +39,7 @@ import { useOnboardingStore } from './stores/onboardingStore';
 import { useChupChuPanelStore } from './stores/chupChuPanelStore';
 import { useChupChu } from './hooks/useChupChu';
 import { supabase } from './lib/supabase';
+import { Analytics } from '@vercel/analytics/react';
 
 export default function App() {
   const { i18n } = useTranslation();
@@ -370,6 +371,7 @@ export default function App() {
           📧 צור קשר
         </a>
       </div>
+      <Analytics />
     </div>
   );
 }
