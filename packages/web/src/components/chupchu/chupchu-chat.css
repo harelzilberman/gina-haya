@@ -17,6 +17,27 @@
 .chupchu-scroll::-webkit-scrollbar-track { background: transparent; }
 .chupchu-scroll::-webkit-scrollbar-thumb { background: rgba(125,192,132,0.2); border-radius: 2px; }
 
+/* Mobile: solid backgrounds so the chat is readable over any page background */
+@media (max-width: 768px) {
+  .chupchu-container {
+    background-color: rgba(10, 20, 15, 0.97) !important;
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
+  }
+  .chupchu-bubble-user {
+    background-color: rgba(60, 110, 65, 0.85) !important;
+    border-color: rgba(125, 192, 132, 0.4) !important;
+  }
+  .chupchu-bubble-chupchu {
+    background-color: rgba(18, 42, 20, 0.95) !important;
+    border-color: rgba(245, 200, 64, 0.25) !important;
+  }
+  .chupchu-input-wrapper {
+    background-color: rgba(18, 42, 20, 0.95) !important;
+    border-color: rgba(125, 192, 132, 0.35) !important;
+  }
+}
+
 /* Markdown inside assistant bubbles */
 .chupchu-md p            { margin: 0 0 8px; }
 .chupchu-md p:last-child { margin-bottom: 0; }

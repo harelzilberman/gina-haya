@@ -141,7 +141,10 @@ function MessageBubble({ message, isRTL }: { message: ChupChuMessage; isRTL: boo
 
         {/* Bubble */}
         <div
-          className={!isUser ? 'chupchu-md' : undefined}
+          className={[
+            !isUser ? 'chupchu-md' : undefined,
+            isUser ? 'chupchu-bubble-user' : 'chupchu-bubble-chupchu',
+          ].filter(Boolean).join(' ')}
           style={{
             borderRadius: '16px',
             padding:      '10px 14px',
@@ -249,7 +252,7 @@ export function ChupChuChat({ compact, initialMessage, onInitialMessageConsumed 
   const canSend = input.trim().length > 0 && !isLoading && !rateLimited;
 
   return (
-    <div dir={dir} style={{
+    <div dir={dir} className="chupchu-container" style={{
       display:         'flex',
       flexDirection:   'column',
       backgroundColor: 'rgba(28,58,30,0.5)',
@@ -361,7 +364,7 @@ export function ChupChuChat({ compact, initialMessage, onInitialMessageConsumed 
         backgroundColor: 'rgba(20,43,22,0.9)',
         borderTop:       '1px solid rgba(125,192,132,0.1)',
       }}>
-        <div style={{
+        <div className="chupchu-input-wrapper" style={{
           display:         'flex',
           alignItems:      'flex-end',
           gap:             '10px',
