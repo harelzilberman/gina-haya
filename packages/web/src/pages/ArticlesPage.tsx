@@ -124,7 +124,7 @@ export function ArticlesPage() {
 
       {/* Cross-nav to videos */}
       <div style={{ marginBottom: '28px' }}>
-        <CrossNavLink to="/guides" label="🎬 לסרטונים ←" />
+        <CrossNavLink to="/guides" label={lang === 'he' ? '🎬 לסרטונים ←' : '🎬 Videos →'} />
       </div>
 
       {/* Search */}

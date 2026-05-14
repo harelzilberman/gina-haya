@@ -17,6 +17,7 @@ export interface ArticleEntry {
   publishedAt: string;
   images: ArticleImages | null;
   htmlContent?: string;
+  htmlContentEn?: string;
 }
 
 export const ARTICLES: ArticleEntry[] = [

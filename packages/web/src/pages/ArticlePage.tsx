@@ -412,7 +412,7 @@ export function ArticlePage() {
     const suffix = lang === 'he' ? 'גינה חיה' : 'Gina Haya';
 
     import('../data/articlesContent').then(({ getArticleContent }) => {
-      const html = getArticleContent(slug);
+      const html = getArticleContent(slug, lang);
       if (html) {
         setHtmlContent(html);
         setLoading(false);
