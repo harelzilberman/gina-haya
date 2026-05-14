@@ -145,7 +145,7 @@ export function DayDetailModal({ day, onClose }: Props) {
       : 'The earth breathes inward — best time for planting and watering');
 
   const monSummary = isHe
-    ? (day.monDailySummary || CHUPCHU_DEFAULTS_HE[day.dayType] || '')
+    ? (day.chupChuDailySummary || CHUPCHU_DEFAULTS_HE[day.dayType] || '')
     : (CHUPCHU_DEFAULTS_EN[day.dayType] || '');
 
   return (

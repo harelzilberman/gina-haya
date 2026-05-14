@@ -71,7 +71,7 @@ function WelcomeChecklist({ onOpenChupchu }: { onOpenChupchu: () => void }) {
           }}>
             {item.label}
           </span>
-          {!item.done && item.action && (
+          {!item.done && item.action != null && (
             <span style={{ color: `${GOLD}80`, fontSize: '14px' }}>›</span>
           )}
         </div>

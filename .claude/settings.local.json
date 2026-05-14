@@ -80,7 +80,8 @@
       "Bash(python3.11 -c \"from PIL import Image; img = Image.open\\(r'D:\\\\\\\\harel\\\\\\\\claude\\\\\\\\gina-haya-main\\\\\\\\gina-haya-project\\\\\\\\gina-haya\\\\\\\\gina-haya\\\\\\\\packages\\\\\\\\web\\\\\\\\public\\\\\\\\moon.jpg'\\); print\\('Size:', img.size\\)\")",
       "Bash(grep -A8 \"^  {$\" ./packages/web/src/data/articles.ts)",
       "Bash(pnpm --filter @gina-haya/api build)",
-      "Bash(pnpm dev *)"
+      "Bash(pnpm dev *)",
+      "Bash(pnpm --filter @gina-haya/web type-check)"
     ]
   }
 }
