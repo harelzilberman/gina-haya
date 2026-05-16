@@ -31,6 +31,7 @@ import { Navbar } from './components/layout/Navbar';
 import { Footer } from './components/layout/Footer';
 import { ToastContainer } from './components/ui/Toast';
 import { UpgradeModal } from './components/ui/UpgradeModal';
+import { LaunchBadge } from './components/ui/LaunchBadge';
 import { ChupChuChat } from './components/chupchu/ChupChuChat';
 import { useUpgradeModalStore } from './stores/upgradeModalStore';
 import { useAuthStore } from './stores/authStore';
@@ -251,6 +252,7 @@ export default function App() {
       {showWelcomeScreen && <WelcomeScreen />}
       {isUpgradeOpen && <UpgradeModal />}
       <ToastContainer />
+      <LaunchBadge />
 
       {/* Floating ChupChu bubble — hidden on /chupchu page itself */}
       {user && !isChupChuPage && (
