@@ -24,6 +24,7 @@ import { PricingPage } from './pages/PricingPage';
 import { ShopPage } from './pages/ShopPage';
 import { GardensPage } from './pages/GardensPage';
 import { HelpPage } from './pages/HelpPage';
+import { AboutPage } from './pages/AboutPage';
 import { ProtectedRoute } from './components/auth/ProtectedRoute';
 import { OnboardingWizard } from './components/auth/OnboardingWizard';
 import { WelcomeScreen } from './components/auth/WelcomeScreen';
@@ -156,6 +157,7 @@ export default function App() {
           <Route path="/pricing" element={<PricingPage />} />
           <Route path="/shop" element={<ShopPage />} />
           <Route path="/help" element={<HelpPage />} />
+          <Route path="/about" element={<AboutPage />} />
 
           {/* Protected pages */}
           <Route
