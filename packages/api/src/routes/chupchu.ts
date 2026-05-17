@@ -3,7 +3,7 @@ import { Router, type IRouter } from 'express';
 import { db } from '../db/client';
 import { verifyToken } from '../middleware/auth';
 import { askChupChu } from '../services/claude';
-import { fetchWeatherForRegion } from '../services/weather';
+import { fetchWeatherForRegion, getCachedWeatherForCoords } from '../services/weather';
 import type { ChupChuMessage, ChupChuContext } from '@gina-haya/shared';
 import { todayInIsrael } from '@gina-haya/shared';
 import { getRecentCompletedTasks } from '../db/queries/tasks';
@@ -57,7 +57,7 @@ chupChuRouter.delete('/history', async (req: any, res) => {
 // ── POST /api/chupchu/chat ──────────────────────────────────────────────────
 chupChuRouter.post('/chat', async (req: any, res) => {
   try {
-    const { message, gardenId } = req.body;
+    const { message, gardenId, location } = req.body;
 
     if (!message || !message.trim()) {
       return res.status(400).json({ error: 'Message is required' });
@@ -239,17 +239,33 @@ chupChuRouter.post('/chat', async (req: any, res) => {
       ? `\n\nפעולות שהמשתמש ביצע לאחרונה בגינה:\n${completedTasks.map(t => `- ${t.title} (${t.date})`).join('\n')}`
       : '';
 
-    // ── 8. Call Claude API ────────────────────────────────────────────────
+    // ── 8. Fetch IP-based weather forecast (non-blocking) ────────────────
+    let weatherSection = '';
+    if (location?.lat && location?.lon) {
+      try {
+        weatherSection = await getCachedWeatherForCoords(
+          Number(location.lat),
+          Number(location.lon),
+          String(location.city || 'Unknown'),
+          lang as 'he' | 'en',
+        );
+      } catch (err: any) {
+        console.error('[Chupchu] Weather fetch failed:', err.message);
+      }
+    }
+
+    // ── 9. Call Claude API ────────────────────────────────────────────────
     const newUserMessage: ChupChuMessage = {
       role: 'user',
       content: message.trim(),
       timestamp: new Date().toISOString(),
     };
 
+    const extraContext = [weatherSection, taskContext].filter(Boolean).join('\n\n');
     const chupChuResponse = await askChupChu(
       [...last20Messages, newUserMessage],
       context,
-      taskContext || undefined
+      extraContext || undefined
     );
 
     const chupChuMessage: ChupChuMessage = {
@@ -258,7 +274,7 @@ chupChuRouter.post('/chat', async (req: any, res) => {
       timestamp: new Date().toISOString(),
     };
 
-    // ── 9. Save to DB ─────────────────────────────────────────────────────
+    // ── 10. Save to DB ────────────────────────────────────────────────────
     const updatedMessages = [...existingMessages, newUserMessage, chupChuMessage];
 
     if (convRecord?.id) {
@@ -279,7 +295,7 @@ chupChuRouter.post('/chat', async (req: any, res) => {
         });
     }
 
-    // ── 10. Count usage ───────────────────────────────────────────────────
+    // ── 11. Count usage ───────────────────────────────────────────────────
     const startOfMonth = new Date();
     startOfMonth.setDate(1);
     startOfMonth.setHours(0, 0, 0, 0);

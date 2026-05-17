@@ -7,6 +7,35 @@ function getActiveGardenId(): string | null {
   return localStorage.getItem('active_garden_id');
 }
 
+interface UserLocation {
+  city: string;
+  country: string;
+  lat: number;
+  lon: number;
+}
+
+async function getLocationFromIP(): Promise<UserLocation | null> {
+  try {
+    const cached = sessionStorage.getItem('chupchu_location');
+    if (cached) return JSON.parse(cached) as UserLocation;
+
+    const res = await fetch('https://ipapi.co/json/');
+    if (!res.ok) return null;
+    const data = await res.json();
+    const location: UserLocation = {
+      city:    data.city    ?? 'Unknown',
+      country: data.country_name ?? 'Unknown',
+      lat:     data.latitude,
+      lon:     data.longitude,
+    };
+    if (!location.lat || !location.lon) return null;
+    sessionStorage.setItem('chupchu_location', JSON.stringify(location));
+    return location;
+  } catch {
+    return null;
+  }
+}
+
 const API_BASE = import.meta.env.VITE_API_URL || 'https://powerful-embrace-production-95ea.up.railway.app';
 
 function getToken(): string | null {
@@ -74,13 +103,15 @@ export const useChupChuStore = create<ChupChuState>((set, get) => ({
     set({ pendingMessage: userMsg, isLoading: true, error: null, expression: 'thinking' });
 
     try {
+      const location = await getLocationFromIP();
+
       const res = await fetch(`${API_BASE}/api/chupchu/chat`, {
         method: 'POST',
         headers: {
           'Content-Type':  'application/json',
           'Authorization': `Bearer ${token}`,
         },
-        body: JSON.stringify({ message: text.trim(), gardenId: resolvedGardenId }),
+        body: JSON.stringify({ message: text.trim(), gardenId: resolvedGardenId, location }),
       });
 
       if (res.status === 429) {

@@ -57,11 +57,69 @@ export interface WeatherData {
 const cache = new Map<string, { data: WeatherData; fetchedAt: number }>();
 const CACHE_TTL_MS = 60 * 60 * 1000; // 1 hour
 
+// Separate cache for forecast strings (30 min TTL)
+const forecastCache = new Map<string, { data: string; fetchedAt: number }>();
+const FORECAST_TTL_MS = 30 * 60 * 1000;
+
 function extractTime(isoOrTime: string | null | undefined): string {
   if (!isoOrTime) return '';
   // Handles both "2024-06-01T05:43" and "05:43"
   const match = isoOrTime.match(/T(\d{2}:\d{2})/);
   return match ? match[1] : isoOrTime.slice(0, 5);
+}
+
+function wmoToCondition(code: number, lang: 'he' | 'en'): string {
+  if (lang === 'he') return WEATHER_CODE_HE[code] ?? 'מזג אוויר משתנה';
+  return WEATHER_CODE_EN[code] ?? 'Variable weather';
+}
+
+async function fetchWeatherForCoords(lat: number, lon: number, city: string, lang: 'he' | 'en'): Promise<string> {
+  const url = new URL('https://api.open-meteo.com/v1/forecast');
+  url.searchParams.set('latitude',  String(lat));
+  url.searchParams.set('longitude', String(lon));
+  url.searchParams.set('current',   'temperature_2m,apparent_temperature,relative_humidity_2m,wind_speed_10m,weather_code');
+  url.searchParams.set('daily',     'weather_code,temperature_2m_max,temperature_2m_min,precipitation_sum,precipitation_probability_max');
+  url.searchParams.set('timezone',  'auto');
+  url.searchParams.set('forecast_days', '7');
+
+  const res = await fetch(url.toString());
+  if (!res.ok) throw new Error(`Open-Meteo error: ${res.status}`);
+  const json = await res.json() as any;
+
+  const cur   = json.current;
+  const daily = json.daily;
+
+  const days = (daily.time as string[]).map((date, i) => {
+    const d = new Date(date);
+    const dayName = d.toLocaleDateString(lang === 'he' ? 'he-IL' : 'en-US', { weekday: 'long', month: 'short', day: 'numeric' });
+    const cond    = wmoToCondition(daily.weather_code[i], lang);
+    const precip  = daily.precipitation_sum[i] ?? 0;
+    const chance  = daily.precipitation_probability_max[i] ?? 0;
+    if (lang === 'he') {
+      return `  ${dayName}: ${daily.temperature_2m_min[i]}°–${daily.temperature_2m_max[i]}°C, ${cond}, גשם ${precip}מ"מ (${chance}% סיכוי)`;
+    }
+    return `  ${dayName}: ${daily.temperature_2m_min[i]}°–${daily.temperature_2m_max[i]}°C, ${cond}, rain ${precip}mm (${chance}% chance)`;
+  }).join('\n');
+
+  if (lang === 'he') {
+    return `## מזג אוויר — ${city}
+מצב עכשווי: ${cur.temperature_2m}°C (מורגש ${cur.apparent_temperature}°C), ${wmoToCondition(cur.weather_code, 'he')}, לחות ${cur.relative_humidity_2m}%, רוח ${cur.wind_speed_10m} קמ"ש
+תחזית 7 ימים:
+${days}`;
+  }
+  return `## Weather — ${city}
+Current: ${cur.temperature_2m}°C (feels like ${cur.apparent_temperature}°C), ${wmoToCondition(cur.weather_code, 'en')}, humidity ${cur.relative_humidity_2m}%, wind ${cur.wind_speed_10m} km/h
+7-day forecast:
+${days}`;
+}
+
+export async function getCachedWeatherForCoords(lat: number, lon: number, city: string, lang: 'he' | 'en'): Promise<string> {
+  const key = `${lat.toFixed(2)},${lon.toFixed(2)},${lang}`;
+  const cached = forecastCache.get(key);
+  if (cached && Date.now() - cached.fetchedAt < FORECAST_TTL_MS) return cached.data;
+  const data = await fetchWeatherForCoords(lat, lon, city, lang);
+  forecastCache.set(key, { data, fetchedAt: Date.now() });
+  return data;
 }
 
 export async function fetchWeatherForRegion(
