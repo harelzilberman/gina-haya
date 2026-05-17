@@ -26,11 +26,14 @@ export function useChupChu() {
     monthlyLimit:       store.monthlyLimit,
     expression:         store.expression,
     proposedTasks:      store.proposedTasks,
+    memory:             store.memory,
     sendMessage,
     loadHistory:        store.loadHistory,
     clearHistory:       store.clearHistory,
     clearError:         store.clearError,
     setExpression:      store.setExpression,
     clearProposedTasks: store.clearProposedTasks,
+    loadMemory:         store.loadMemory,
+    triggerSummarize:   store.triggerSummarize,
   };
 }

@@ -1,5 +1,6 @@
 import 'dotenv/config';
 import { Router, type IRouter } from 'express';
+import Anthropic from '@anthropic-ai/sdk';
 import { db } from '../db/client';
 import { verifyToken } from '../middleware/auth';
 import { askChupChu, type ProposedTask } from '../services/claude';
@@ -8,6 +9,8 @@ import type { ChupChuMessage, ChupChuContext } from '@gina-haya/shared';
 import { todayInIsrael } from '@gina-haya/shared';
 import { getRecentCompletedTasks } from '../db/queries/tasks';
 import { getLimits } from '../config/tiers';
+
+const anthropicClient = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY! });
 
 export const chupChuRouter: IRouter = Router();
 
@@ -51,6 +54,119 @@ chupChuRouter.delete('/history', async (req: any, res) => {
   } catch (err: any) {
     console.error('[Chupchu] Error:', err.message);
     res.status(500).json({ error: 'אירעה שגיאה. נסה שוב מאוחר יותר.' });
+  }
+});
+
+// ── GET /api/chupchu/memory ─────────────────────────────────────────────────
+chupChuRouter.get('/memory', async (req: any, res) => {
+  try {
+    const { data, error } = await db
+      .from('chupchu_memory')
+      .select('*')
+      .eq('user_id', req.user.id)
+      .single();
+    if (error && error.code !== 'PGRST116') throw error;
+    res.json({ memory: data ?? null });
+  } catch (err: any) {
+    console.error('[GET /api/chupchu/memory]', err.message);
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// ── POST /api/chupchu/memory/summarize ─────────────────────────────────────
+chupChuRouter.post('/memory/summarize', async (req: any, res) => {
+  try {
+    const { conversationHistory, lang, existingMemory } = req.body;
+    const userId = req.user.id;
+
+    if (!Array.isArray(conversationHistory) || conversationHistory.length < 6) {
+      return res.json({ ok: true, skipped: true });
+    }
+
+    const existingSummaryHe = existingMemory?.summary_he ?? 'אין זיכרון קודם';
+    const existingSummaryEn = existingMemory?.summary_en ?? 'No previous memory';
+    const existingFacts     = existingMemory?.garden_facts ?? {};
+
+    const convText = conversationHistory
+      .filter((m: any) => typeof m.content === 'string')
+      .map((m: any) => `${m.role === 'user' ? (lang === 'he' ? 'משתמש' : 'User') : (lang === 'he' ? "צ'ופצ'ו" : 'Chupchu')}: ${m.content}`)
+      .join('\n');
+
+    const summaryPrompt = lang === 'he' ? `
+אתה עוזר שמסכם שיחות עם גנן.
+הזיכרון הקיים:
+${existingSummaryHe}
+
+עובדות ידועות:
+${JSON.stringify(existingFacts, null, 2)}
+
+השיחה החדשה:
+${convText}
+
+צור סיכום מעודכן ועובדות מובנות. החזר JSON בלבד:
+{
+  "summary_he": "סיכום בעברית 3-5 משפטים על המשתמש, גינתו, אתגרים, העדפות",
+  "summary_en": "3-5 sentence English summary about the user, their garden, challenges, preferences",
+  "garden_facts": {
+    "gardenType": "...",
+    "location": "...",
+    "plants": [],
+    "experience": "beginner|intermediate|advanced",
+    "preferredTopics": [],
+    "gardenSize": "...",
+    "challenges": []
+  }
+}` : `
+You are an assistant that summarizes conversations with a gardener.
+Existing memory:
+${existingSummaryEn}
+
+Known facts:
+${JSON.stringify(existingFacts, null, 2)}
+
+New conversation:
+${convText}
+
+Create an updated summary and structured facts. Return JSON only:
+{
+  "summary_he": "3-5 sentence Hebrew summary about the user, their garden, challenges, preferences",
+  "summary_en": "3-5 sentence English summary about the user, their garden, challenges, preferences",
+  "garden_facts": {
+    "gardenType": "...",
+    "location": "...",
+    "plants": [],
+    "experience": "beginner|intermediate|advanced",
+    "preferredTopics": [],
+    "gardenSize": "...",
+    "challenges": []
+  }
+}`;
+
+    const aiRes = await anthropicClient.messages.create({
+      model: 'claude-haiku-4-5-20251001',
+      max_tokens: 1000,
+      messages: [{ role: 'user', content: summaryPrompt }],
+    });
+
+    const text = aiRes.content[0].type === 'text' ? aiRes.content[0].text : '';
+    const cleaned = text.replace(/```json|```/g, '').trim();
+    const parsed = JSON.parse(cleaned);
+
+    const { error } = await db
+      .from('chupchu_memory')
+      .upsert({
+        user_id:      userId,
+        summary_he:   parsed.summary_he,
+        summary_en:   parsed.summary_en,
+        garden_facts: parsed.garden_facts,
+        last_updated: new Date().toISOString(),
+      }, { onConflict: 'user_id' });
+
+    if (error) throw error;
+    res.json({ ok: true, summary: parsed });
+  } catch (err: any) {
+    console.error('[POST /api/chupchu/memory/summarize]', err.message);
+    res.status(500).json({ error: err.message });
   }
 });
 
@@ -233,7 +349,31 @@ chupChuRouter.post('/chat', async (req: any, res) => {
     // Must match frontend display limit in chupChuStore history endpoint
     const last20Messages = existingMessages.slice(-20);
 
-    // ── 7b. Fetch recent completed tasks ─────────────────────────────────
+    // ── 7b. Load user memory ─────────────────────────────────────────────
+    let memorySection = '';
+    try {
+      const { data: memory } = await db
+        .from('chupchu_memory')
+        .select('summary_he, summary_en, garden_facts')
+        .eq('user_id', userId)
+        .single();
+      if (memory) {
+        const summary = lang === 'he' ? memory.summary_he : memory.summary_en;
+        const facts   = (memory.garden_facts as Record<string, any>) ?? {};
+        if (summary) {
+          const lines = [summary];
+          if (facts.plants?.length)     lines.push(lang === 'he' ? `צמחים: ${facts.plants.join(', ')}` : `Plants: ${facts.plants.join(', ')}`);
+          if (facts.gardenType)         lines.push(lang === 'he' ? `סוג גינה: ${facts.gardenType}` : `Garden type: ${facts.gardenType}`);
+          if (facts.experience)         lines.push(lang === 'he' ? `ניסיון: ${facts.experience}` : `Experience: ${facts.experience}`);
+          if (facts.challenges?.length) lines.push(lang === 'he' ? `אתגרים: ${facts.challenges.join(', ')}` : `Challenges: ${facts.challenges.join(', ')}`);
+          memorySection = (lang === 'he' ? '## מה שאני זוכר עליך\n' : '## What I Remember About You\n') + lines.join('\n');
+        }
+      }
+    } catch {
+      // no memory yet — fine
+    }
+
+    // ── 7c. Fetch recent completed tasks ─────────────────────────────────
     const completedTasks = await getRecentCompletedTasks(userId, 7);
     const taskContext = completedTasks.length > 0
       ? `\n\nפעולות שהמשתמש ביצע לאחרונה בגינה:\n${completedTasks.map(t => `- ${t.title} (${t.date})`).join('\n')}`
@@ -269,7 +409,7 @@ chupChuRouter.post('/chat', async (req: any, res) => {
       ? `## תאריך היום\nהיום הוא ${todayFormatted}. השתמש בתאריך זה לחישוב "מחר", "השבוע" וכו'.`
       : `## Today's Date\nToday is ${todayFormatted}. Use this to calculate "tomorrow", "this week" etc.`;
 
-    const extraContext = [dateSection, weatherSection, taskContext].filter(Boolean).join('\n\n');
+    const extraContext = [memorySection, dateSection, weatherSection, taskContext].filter(Boolean).join('\n\n');
     const { response: chupChuText, proposedTasks } = await askChupChu(
       [...last20Messages, newUserMessage],
       context,

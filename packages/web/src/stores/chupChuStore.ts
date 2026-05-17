@@ -11,6 +11,13 @@ export interface ProposedTask {
   priority: string;
 }
 
+export interface ChupChuMemory {
+  summary_he: string | null;
+  summary_en: string | null;
+  garden_facts: Record<string, any> | null;
+  last_updated: string | null;
+}
+
 function getActiveGardenId(): string | null {
   return localStorage.getItem('active_garden_id');
 }
@@ -75,6 +82,7 @@ interface ChupChuState {
   monthlyLimit: number | null;
   expression: ChupChuExpression;
   proposedTasks: ProposedTask[] | null;
+  memory: ChupChuMemory | null;
 
   sendMessage: (text: string, gardenId?: string) => Promise<void>;
   loadHistory: () => Promise<void>;
@@ -82,6 +90,8 @@ interface ChupChuState {
   clearError: () => void;
   setExpression: (e: ChupChuExpression) => void;
   clearProposedTasks: () => void;
+  loadMemory: () => Promise<void>;
+  triggerSummarize: (lang: string) => Promise<void>;
 }
 
 export const useChupChuStore = create<ChupChuState>((set, get) => ({
@@ -95,10 +105,42 @@ export const useChupChuStore = create<ChupChuState>((set, get) => ({
   monthlyLimit:   20,
   expression:     'default',
   proposedTasks:  null,
+  memory:         null,
 
   clearError:          () => set({ error: null }),
   setExpression:       (e) => set({ expression: e }),
   clearProposedTasks:  () => set({ proposedTasks: null }),
+
+  loadMemory: async () => {
+    const token = getToken();
+    if (!token) return;
+    try {
+      const res = await fetch(`${API_BASE}/api/chupchu/memory`, {
+        headers: { 'Authorization': `Bearer ${token}` },
+      });
+      if (!res.ok) return;
+      const { memory } = await res.json();
+      if (memory) set({ memory });
+    } catch {
+      // no memory yet — fine
+    }
+  },
+
+  triggerSummarize: async (lang) => {
+    const token = getToken();
+    if (!token) return;
+    const { messages, memory } = get();
+    if (messages.length < 6) return;
+    try {
+      await fetch(`${API_BASE}/api/chupchu/memory/summarize`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+        body: JSON.stringify({ conversationHistory: messages, lang, existingMemory: memory }),
+      });
+    } catch {
+      // fire-and-forget — ignore failures
+    }
+  },
 
   sendMessage: async (text, gardenId) => {
     const token = getToken();
