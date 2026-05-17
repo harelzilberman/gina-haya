@@ -5,6 +5,7 @@ import { useDirection } from '../../hooks/useDirection';
 import type { ChupChuMessage } from '@gina-haya/shared';
 import type { ChupChuExpression } from '../../stores/chupChuStore';
 import { useChupChu } from '../../hooks/useChupChu';
+import { useAuthStore } from '../../stores/authStore';
 import { ChupChuGreeting } from './ChupChuGreeting';
 import { RateLimitBanner } from './RateLimitBanner';
 import './chupchu-chat.css';
@@ -387,10 +388,15 @@ export function ChupChuChat({ compact, initialMessage, onInitialMessageConsumed 
     rateLimitTier,
     expression,
     proposedTasks,
+    memory,
     sendMessage,
     clearError,
     clearProposedTasks,
+    loadMemory,
+    triggerSummarize,
   } = useChupChu();
+
+  const lang = i18n.language;
 
   const [input, setInput] = useState('');
   const messagesEndRef    = useRef<HTMLDivElement>(null);
@@ -408,6 +414,27 @@ export function ChupChuChat({ compact, initialMessage, onInitialMessageConsumed 
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [messages, isLoading]);
+
+  useEffect(() => {
+    loadMemory();
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  useEffect(() => {
+    const API_BASE = import.meta.env.VITE_API_URL || 'https://powerful-embrace-production-95ea.up.railway.app';
+    const handleUnload = () => {
+      if (messages.length < 6) return;
+      const token = useAuthStore.getState().session?.access_token;
+      if (!token) return;
+      const payload = JSON.stringify({ conversationHistory: messages, lang, existingMemory: memory });
+      navigator.sendBeacon(
+        `${API_BASE}/api/chupchu/memory/summarize`,
+        new Blob([payload], { type: 'application/json' }),
+      );
+    };
+    window.addEventListener('beforeunload', handleUnload);
+    return () => window.removeEventListener('beforeunload', handleUnload);
+  }, [messages, lang, memory]);
 
   const handleSend = () => {
     const text = input.trim();
