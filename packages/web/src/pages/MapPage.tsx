@@ -1,10 +1,13 @@
 import { useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { useMapStore } from '../stores/mapStore';
 import { useGardenSwitcherStore } from '../stores/gardenSwitcherStore';
+import { useAuthStore } from '../stores/authStore';
 import { usePlanLimit } from '../hooks/usePlanLimit';
 import { UpgradeModal } from '../components/upgrade/UpgradeModal';
+import { api } from '../api/client';
+import { mergeWithOverrides, type TemplateOverride } from '../data/gardenTemplates';
 
 const SPIN_CSS = `
 @keyframes mapSpin { to { transform: rotate(360deg); } }
@@ -79,26 +82,45 @@ import { PlantPicker } from '../components/map/PlantPicker';
 import { MapTour, shouldShowTour } from '../components/map/MapTour';
 import { WizardModal } from '../components/map/WizardModal';
 import { GardenTemplatesModal } from '../components/map/GardenTemplatesModal';
+import { SaveAsTemplateModal } from '../components/map/SaveAsTemplateModal';
 import type { GardenTemplate } from '../data/gardenTemplates';
+
+const ADMIN_EMAIL = 'harelzilberman@gmail.com';
 
 export function MapPage() {
   const store = useMapStore();
   const { activeGardenId } = useGardenSwitcherStore();
+  const { user, session } = useAuthStore();
   const { i18n } = useTranslation();
   const isHe = i18n.language === 'he';
   const navigate = useNavigate();
+  const { state: navState } = useLocation();
   const { tier, limits } = usePlanLimit();
   const [showTour, setShowTour]         = useState(false);
   const [showWizard, setShowWizard]     = useState(false);
   const [showTemplates, setShowTemplates] = useState(false);
+  const [showSaveAsTemplate, setShowSaveAsTemplate] = useState(false);
   const [toast, setToast] = useState<string | null>(null);
   const [plantLimitModalOpen, setPlantLimitModalOpen] = useState(false);
   const hasCheckedTemplates = useRef(false);
+  const appliedNavTemplate = useRef(false);
+
+  const isAdmin = user?.email === ADMIN_EMAIL;
 
   const handleReopenTour = () => { localStorage.removeItem('has-seen-map-tour'); setShowTour(true); };
 
   function handleApplyTemplate(template: GardenTemplate) {
     store.applyTemplate(template.elements);
+    store.setActiveTemplate({
+      id: template.id,
+      titleHe: template.title.he,
+      titleEn: template.title.en,
+      descHe: template.description.he,
+      descEn: template.description.en,
+      icon: template.icon,
+      categoryHe: template.category.he,
+      categoryEn: template.category.en,
+    });
     setShowTemplates(false);
     setToast(isHe ? `תבנית "${template.title.he}" הוחלה! 🗺️` : `Template "${template.title.en}" applied! 🗺️`);
     setTimeout(() => setToast(null), 3000);
@@ -135,6 +157,20 @@ export function MapPage() {
   useEffect(() => {
     if (!store.isLoading && shouldShowTour()) setShowTour(true);
   }, [store.isLoading]);
+
+  // Apply template from admin "Open in Map" navigation
+  useEffect(() => {
+    const templateId = (navState as any)?.applyTemplateId;
+    if (!templateId || store.isLoading || appliedNavTemplate.current) return;
+    appliedNavTemplate.current = true;
+    api.get<TemplateOverride[]>('/api/templates').then(overrides => {
+      const merged = mergeWithOverrides(overrides);
+      const tpl = merged.find(t => t.id === templateId);
+      if (tpl) handleApplyTemplate(tpl);
+    }).catch(() => {});
+    // Clear nav state so it doesn't re-apply on re-render
+    window.history.replaceState({}, document.title);
+  }, [store.isLoading, navState]);
 
   // Auto-open templates gallery when map loads empty (first time or still no elements)
   useEffect(() => {
@@ -174,6 +210,9 @@ export function MapPage() {
           hasSavedMap={true}
           onTour={handleReopenTour}
           onTemplates={() => setShowTemplates(true)}
+          isAdmin={isAdmin}
+          onSaveAsTemplate={isAdmin ? () => setShowSaveAsTemplate(true) : undefined}
+          saveAsTemplateDisabled={store.mapData.objects.length === 0}
         />
         <div data-tour="canvas" style={{ flex: 1, minWidth: 0, position: 'relative', overflow: 'hidden', paddingInlineEnd: store.selectedTool === 'plant' ? '260px' : '0px' }}>
           <SaveIndicator
@@ -240,6 +279,15 @@ export function MapPage() {
         hasExistingElements={store.mapData.objects.length > 0 || store.mapData.plants.length > 0}
         onApply={handleApplyTemplate}
         onClose={() => setShowTemplates(false)}
+      />
+
+      <SaveAsTemplateModal
+        isOpen={showSaveAsTemplate}
+        onClose={() => setShowSaveAsTemplate(false)}
+        onSuccess={msg => { setToast(msg); setTimeout(() => setToast(null), 3000); }}
+        mapObjects={store.mapData.objects}
+        activeTemplate={store.activeTemplate}
+        token={session?.access_token}
       />
 
       {showWizard && store.mapId && (

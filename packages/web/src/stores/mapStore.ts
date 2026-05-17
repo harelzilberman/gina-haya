@@ -72,6 +72,17 @@ export interface WizardStatus {
   canRun: boolean;
 }
 
+export interface TemplateMeta {
+  id: string;
+  titleHe: string;
+  titleEn: string;
+  descHe: string;
+  descEn: string;
+  icon: string;
+  categoryHe: string;
+  categoryEn: string;
+}
+
 interface ActivePlant {
   nameHe: string;
   nameEn: string;
@@ -96,6 +107,7 @@ interface MapState {
   history: MapData[];
   error: string | null;
   previewPlants: PlantPreview[];
+  activeTemplate: TemplateMeta | null;
 
   loadMap: (gardenId?: string) => Promise<void>;
   saveMap: () => Promise<void>;
@@ -124,6 +136,7 @@ interface MapState {
   confirmPlantPreview: () => void;
   cancelPlantPreview: () => void;
   applyTemplate: (elements: Omit<MapObject, 'id'>[]) => void;
+  setActiveTemplate: (meta: TemplateMeta | null) => void;
 }
 
 // ── Helpers ──────────────────────────────────────────────────────────────────
@@ -162,6 +175,7 @@ export const useMapStore = create<MapState>((set, get) => ({
   history: [],
   error: null,
   previewPlants: [],
+  activeTemplate: null,
 
   async loadMap(gardenId?: string) {
     const token = getToken();
@@ -179,7 +193,7 @@ export const useMapStore = create<MapState>((set, get) => ({
         return;
       }
       if (!data.exists) {
-        set({ isLoading: false, mapId: null, mapData: EMPTY_MAP, northAngle: 0, isDirty: false, history: [] });
+        set({ isLoading: false, mapId: null, mapData: EMPTY_MAP, northAngle: 0, isDirty: false, history: [], activeTemplate: null });
         return;
       }
       const md = data.map_data ?? EMPTY_MAP;
@@ -321,6 +335,7 @@ export const useMapStore = create<MapState>((set, get) => ({
       history: [],
       previewPlants: [],
       selectedObjectId: null,
+      activeTemplate: null,
     });
   },
 
@@ -360,6 +375,8 @@ export const useMapStore = create<MapState>((set, get) => ({
   },
 
   cancelPlantPreview() { set({ previewPlants: [] }); },
+
+  setActiveTemplate(meta) { set({ activeTemplate: meta }); },
 
   applyTemplate(elements) {
     const objects: MapObject[] = elements.map(el => ({ ...el, id: crypto.randomUUID() }));

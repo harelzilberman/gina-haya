@@ -44,6 +44,7 @@ templatesRouter.put('/', verifyToken, async (req: any, res) => {
       category_he: o.category_he ?? null,
       category_en: o.category_en ?? null,
       is_custom: Boolean(o.is_custom),
+      elements: o.elements ?? null,
       updated_at: new Date().toISOString(),
     }));
     const { error } = await db

@@ -25,6 +25,9 @@ interface Props {
   hasSavedMap: boolean;
   onTour?: () => void;
   onTemplates?: () => void;
+  onSaveAsTemplate?: () => void;
+  saveAsTemplateDisabled?: boolean;
+  isAdmin?: boolean;
 }
 
 interface DropItem { tool: MapTool; emoji: string; labelHe: string; labelEn: string }
@@ -204,6 +207,7 @@ export function MapToolbar({
   selectedTool, onToolChange, showSunZones, onToggleSunZones,
   northAngle, onNorthAngleChange, isSaving, isDirty, onSave, onUndo,
   onWizard, wizardStatus, hasSavedMap, onTour, onTemplates,
+  onSaveAsTemplate, saveAsTemplateDisabled, isAdmin,
 }: Props) {
   const { i18n } = useTranslation();
   const isHe = i18n.language === 'he';
@@ -356,6 +360,29 @@ export function MapToolbar({
             style={{ ...ghostBtn }}
           >
             {isMobile ? '🗺️' : (isHe ? '🗺️ תבניות' : '🗺️ Templates')}
+          </button>
+        )}
+
+        {/* Save as Template — admin only */}
+        {isAdmin && onSaveAsTemplate && (
+          <button
+            onClick={saveAsTemplateDisabled ? undefined : onSaveAsTemplate}
+            disabled={saveAsTemplateDisabled}
+            title={saveAsTemplateDisabled
+              ? (isHe ? 'אין אלמנטים במפה' : 'Map is empty')
+              : (isHe ? 'שמור כתבנית' : 'Save as Template')}
+            style={{
+              ...ghostBtn,
+              color: saveAsTemplateDisabled ? `${PARCH}33` : `${PARCH}99`,
+              border: `1px solid ${saveAsTemplateDisabled ? 'rgba(245,200,64,0.08)' : 'rgba(245,200,64,0.2)'}`,
+              cursor: saveAsTemplateDisabled ? 'not-allowed' : 'pointer',
+              opacity: saveAsTemplateDisabled ? 0.4 : 1,
+            }}
+          >
+            {isMobile
+              ? <svg width={15} height={15} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2.2} strokeLinecap="round" strokeLinejoin="round"><path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"/></svg>
+              : <>{isHe ? '🔖 שמור תבנית' : '🔖 Save Template'}</>
+            }
           </button>
         )}
 

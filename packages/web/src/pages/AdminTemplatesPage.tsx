@@ -534,6 +534,19 @@ export function AdminTemplatesPage() {
                           </div>
                         </div>
 
+                        {/* Open in Map */}
+                        <button
+                          onClick={() => navigate('/map', { state: { applyTemplateId: row.id } })}
+                          title="Open in Map"
+                          style={{
+                            background: '#EBF8F3', border: `1px solid ${GREEN}33`,
+                            borderRadius: 5, padding: '3px 8px',
+                            fontSize: 11, color: GREEN, cursor: 'pointer', fontWeight: 600,
+                          }}
+                        >
+                          🗺️
+                        </button>
+
                         {/* Reset + Delete */}
                         <div style={{ display: 'flex', gap: 4, marginTop: 2 }}>
                           {row.hasOverride && (

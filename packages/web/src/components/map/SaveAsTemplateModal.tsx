@@ -1,0 +1,339 @@
+import { useState, useEffect } from 'react';
+import { useTranslation } from 'react-i18next';
+import { TEMPLATE_CATEGORIES } from '../../data/gardenTemplates';
+import type { TemplateMeta } from '../../stores/mapStore';
+import type { MapObject } from '../../stores/mapStore';
+import { api } from '../../api/client';
+
+const GOLD   = '#F5C840';
+const FOREST = '#142B16';
+const PARCH  = '#EDE0C4';
+const ASSIST = '"Assistant", "Heebo", sans-serif';
+const FRANK  = '"Frank Ruhl Libre", Georgia, serif';
+
+interface Props {
+  isOpen: boolean;
+  onClose: () => void;
+  onSuccess: (msg: string) => void;
+  mapObjects: MapObject[];
+  activeTemplate: TemplateMeta | null;
+  token: string | undefined;
+}
+
+function BookmarkIcon() {
+  return (
+    <svg width={14} height={14} viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      strokeWidth={2.2} strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0 }}>
+      <path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z" />
+    </svg>
+  );
+}
+
+export function SaveAsTemplateModal({ isOpen, onClose, onSuccess, mapObjects, activeTemplate, token }: Props) {
+  const { i18n } = useTranslation();
+  const isHe = i18n.language === 'he';
+
+  const [saveMode, setSaveMode] = useState<'update' | 'new'>('update');
+  const [icon, setIcon]         = useState('🌿');
+  const [titleHe, setTitleHe]   = useState('');
+  const [titleEn, setTitleEn]   = useState('');
+  const [descHe, setDescHe]     = useState('');
+  const [descEn, setDescEn]     = useState('');
+  const [categoryHe, setCategoryHe] = useState(TEMPLATE_CATEGORIES[0]?.he ?? '');
+  const [categoryEn, setCategoryEn] = useState(TEMPLATE_CATEGORIES[0]?.en ?? '');
+  const [isSaving, setIsSaving] = useState(false);
+
+  // Pre-fill from active template when modal opens
+  useEffect(() => {
+    if (!isOpen) return;
+    if (activeTemplate) {
+      setSaveMode('update');
+      setTitleHe(activeTemplate.titleHe);
+      setTitleEn(activeTemplate.titleEn);
+      setDescHe(activeTemplate.descHe);
+      setDescEn(activeTemplate.descEn);
+      setIcon(activeTemplate.icon);
+      setCategoryHe(activeTemplate.categoryHe);
+      setCategoryEn(activeTemplate.categoryEn);
+    } else {
+      setSaveMode('new');
+      setTitleHe(''); setTitleEn(''); setDescHe(''); setDescEn('');
+      setIcon('🌿');
+      setCategoryHe(TEMPLATE_CATEGORIES[0]?.he ?? '');
+      setCategoryEn(TEMPLATE_CATEGORIES[0]?.en ?? '');
+    }
+  }, [isOpen, activeTemplate]);
+
+  function handleCategoryChange(he: string) {
+    setCategoryHe(he);
+    const cat = TEMPLATE_CATEGORIES.find(c => c.he === he);
+    if (cat) setCategoryEn(cat.en);
+  }
+
+  async function handleSave() {
+    if (!titleHe.trim() || !titleEn.trim() || !token) return;
+    setIsSaving(true);
+    try {
+      // Strip IDs from elements before storing
+      const elements = mapObjects.map(({ id: _id, ...rest }) => rest);
+
+      const id = saveMode === 'update' && activeTemplate ? activeTemplate.id : crypto.randomUUID();
+      await api.put('/api/templates', {
+        overrides: [{
+          id,
+          title_he: titleHe,
+          title_en: titleEn,
+          description_he: descHe || null,
+          description_en: descEn || null,
+          is_hidden: false,
+          sort_order: 0,
+          icon,
+          category_he: categoryHe,
+          category_en: categoryEn,
+          is_custom: saveMode === 'new' ? true : (activeTemplate?.id === id ? false : true),
+          elements,
+        }],
+      }, token);
+
+      onSuccess(isHe ? 'התבנית נשמרה בהצלחה ✓' : 'Template saved successfully ✓');
+      onClose();
+    } catch (err: any) {
+      alert(isHe ? `שגיאה: ${err.message}` : `Error: ${err.message}`);
+    } finally {
+      setIsSaving(false);
+    }
+  }
+
+  if (!isOpen) return null;
+
+  const canSave = titleHe.trim().length > 0 && titleEn.trim().length > 0;
+
+  return (
+    <>
+      <style>{`
+        .satm-input { background: rgba(255,255,255,0.07); border: 1px solid rgba(245,200,64,0.2); border-radius: 7px; padding: 8px 11px; font-size: 13px; font-family: ${ASSIST}; color: ${PARCH}; outline: none; width: 100%; box-sizing: border-box; transition: border-color 0.15s; }
+        .satm-input:focus { border-color: rgba(245,200,64,0.5); }
+        .satm-input::placeholder { color: rgba(237,224,196,0.3); }
+        .satm-textarea { background: rgba(255,255,255,0.07); border: 1px solid rgba(245,200,64,0.2); border-radius: 7px; padding: 8px 11px; font-size: 13px; font-family: ${ASSIST}; color: ${PARCH}; outline: none; width: 100%; box-sizing: border-box; resize: vertical; min-height: 60px; transition: border-color 0.15s; }
+        .satm-textarea:focus { border-color: rgba(245,200,64,0.5); }
+        .satm-textarea::placeholder { color: rgba(237,224,196,0.3); }
+        .satm-select { background: rgba(20,43,22,0.99); border: 1px solid rgba(245,200,64,0.2); border-radius: 7px; padding: 8px 11px; font-size: 13px; font-family: ${ASSIST}; color: ${PARCH}; outline: none; width: 100%; box-sizing: border-box; cursor: pointer; }
+        .satm-select:focus { border-color: rgba(245,200,64,0.5); }
+        .satm-radio { display: flex; align-items: flex-start; gap: 10px; padding: 10px 12px; border-radius: 8px; cursor: pointer; border: 1px solid rgba(245,200,64,0.12); transition: background 0.12s, border-color 0.12s; }
+        .satm-radio:hover { background: rgba(245,200,64,0.04); border-color: rgba(245,200,64,0.22); }
+        .satm-radio.active { background: rgba(245,200,64,0.08); border-color: rgba(245,200,64,0.35); }
+      `}</style>
+
+      {/* Backdrop */}
+      <div
+        onClick={onClose}
+        style={{
+          position: 'fixed', inset: 0,
+          background: 'rgba(0,0,0,0.72)',
+          zIndex: 1100,
+          display: 'flex', alignItems: 'center', justifyContent: 'center',
+          padding: 16,
+        }}
+      >
+        <div
+          dir={isHe ? 'rtl' : 'ltr'}
+          onClick={e => e.stopPropagation()}
+          style={{
+            width: '100%', maxWidth: 520,
+            maxHeight: '90dvh',
+            background: `linear-gradient(180deg, #1a3a1c 0%, ${FOREST} 100%)`,
+            border: '1px solid rgba(245,200,64,0.22)',
+            borderRadius: 14,
+            boxShadow: '0 24px 80px rgba(0,0,0,0.7)',
+            display: 'flex', flexDirection: 'column',
+            overflow: 'hidden',
+          }}
+        >
+          {/* Header */}
+          <div style={{
+            display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+            padding: '18px 22px 14px',
+            borderBottom: '1px solid rgba(245,200,64,0.1)',
+            flexShrink: 0,
+          }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 9 }}>
+              <BookmarkIcon />
+              <h2 style={{ fontFamily: FRANK, fontSize: 18, fontWeight: 700, color: GOLD, margin: 0 }}>
+                {isHe ? 'שמור כתבנית' : 'Save as Template'}
+              </h2>
+            </div>
+            <button
+              onClick={onClose}
+              style={{
+                width: 30, height: 30, borderRadius: '50%',
+                border: '1px solid rgba(245,200,64,0.2)',
+                background: 'transparent', color: 'rgba(237,224,196,0.5)',
+                cursor: 'pointer', fontSize: 15, display: 'flex',
+                alignItems: 'center', justifyContent: 'center',
+              }}
+            >✕</button>
+          </div>
+
+          {/* Body */}
+          <div style={{ flex: 1, overflowY: 'auto', padding: '18px 22px', display: 'flex', flexDirection: 'column', gap: 14 }}>
+
+            {/* Save mode — only when there's an active template */}
+            {activeTemplate && (
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+                <label style={{ fontFamily: ASSIST, fontSize: 12, fontWeight: 600, color: 'rgba(237,224,196,0.55)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+                  {isHe ? 'אפשרות שמירה' : 'Save option'}
+                </label>
+                <div
+                  className={`satm-radio${saveMode === 'update' ? ' active' : ''}`}
+                  onClick={() => setSaveMode('update')}
+                >
+                  <div style={{
+                    width: 16, height: 16, borderRadius: '50%', marginTop: 1, flexShrink: 0,
+                    border: `2px solid ${saveMode === 'update' ? GOLD : 'rgba(245,200,64,0.3)'}`,
+                    background: saveMode === 'update' ? GOLD : 'transparent',
+                    display: 'flex', alignItems: 'center', justifyContent: 'center',
+                  }}>
+                    {saveMode === 'update' && <div style={{ width: 6, height: 6, borderRadius: '50%', background: FOREST }} />}
+                  </div>
+                  <div>
+                    <div style={{ fontFamily: FRANK, fontSize: 13, fontWeight: 700, color: PARCH }}>
+                      {isHe ? 'עדכן תבנית קיימת' : 'Update existing template'}
+                    </div>
+                    <div style={{ fontFamily: ASSIST, fontSize: 12, color: 'rgba(237,224,196,0.5)', marginTop: 2 }}>
+                      {isHe ? `עדכן את "${activeTemplate.titleHe}"` : `Update "${activeTemplate.titleEn}"`}
+                    </div>
+                  </div>
+                </div>
+
+                <div
+                  className={`satm-radio${saveMode === 'new' ? ' active' : ''}`}
+                  onClick={() => setSaveMode('new')}
+                >
+                  <div style={{
+                    width: 16, height: 16, borderRadius: '50%', marginTop: 1, flexShrink: 0,
+                    border: `2px solid ${saveMode === 'new' ? GOLD : 'rgba(245,200,64,0.3)'}`,
+                    background: saveMode === 'new' ? GOLD : 'transparent',
+                    display: 'flex', alignItems: 'center', justifyContent: 'center',
+                  }}>
+                    {saveMode === 'new' && <div style={{ width: 6, height: 6, borderRadius: '50%', background: FOREST }} />}
+                  </div>
+                  <div style={{ fontFamily: FRANK, fontSize: 13, fontWeight: 700, color: PARCH }}>
+                    {isHe ? 'שמור כתבנית חדשה' : 'Save as new template'}
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* Icon + Category row */}
+            <div style={{ display: 'flex', gap: 12 }}>
+              <div style={{ flex: '0 0 72px' }}>
+                <label style={{ fontFamily: ASSIST, fontSize: 12, fontWeight: 600, color: 'rgba(237,224,196,0.55)', display: 'block', marginBottom: 5 }}>
+                  {isHe ? 'אייקון' : 'Icon'}
+                </label>
+                <input className="satm-input" value={icon} onChange={e => setIcon(e.target.value)}
+                  maxLength={4} style={{ fontSize: 22, textAlign: 'center', padding: '6px 4px' }} />
+              </div>
+              <div style={{ flex: 1 }}>
+                <label style={{ fontFamily: ASSIST, fontSize: 12, fontWeight: 600, color: 'rgba(237,224,196,0.55)', display: 'block', marginBottom: 5 }}>
+                  {isHe ? 'קטגוריה' : 'Category'}
+                </label>
+                <select
+                  className="satm-select"
+                  value={categoryHe}
+                  onChange={e => handleCategoryChange(e.target.value)}
+                >
+                  {TEMPLATE_CATEGORIES.map(cat => (
+                    <option key={cat.he} value={cat.he}>
+                      {isHe ? cat.he : cat.en}
+                    </option>
+                  ))}
+                </select>
+              </div>
+            </div>
+
+            {/* Title He */}
+            <div>
+              <label style={{ fontFamily: ASSIST, fontSize: 12, fontWeight: 600, color: 'rgba(237,224,196,0.55)', display: 'block', marginBottom: 5 }}>
+                {isHe ? 'שם התבנית (עברית)' : 'Template name (Hebrew)'}
+              </label>
+              <input className="satm-input" placeholder="שם בעברית" value={titleHe}
+                onChange={e => setTitleHe(e.target.value)} dir="rtl" />
+            </div>
+
+            {/* Title En */}
+            <div>
+              <label style={{ fontFamily: ASSIST, fontSize: 12, fontWeight: 600, color: 'rgba(237,224,196,0.55)', display: 'block', marginBottom: 5 }}>
+                {isHe ? 'שם התבנית (אנגלית)' : 'Template name (English)'}
+              </label>
+              <input className="satm-input" placeholder="Template name" value={titleEn}
+                onChange={e => setTitleEn(e.target.value)} dir="ltr" />
+            </div>
+
+            {/* Desc He */}
+            <div>
+              <label style={{ fontFamily: ASSIST, fontSize: 12, fontWeight: 600, color: 'rgba(237,224,196,0.55)', display: 'block', marginBottom: 5 }}>
+                {isHe ? 'תיאור (עברית)' : 'Description (Hebrew)'}
+              </label>
+              <textarea className="satm-textarea" placeholder="תיאור קצר..." value={descHe}
+                onChange={e => setDescHe(e.target.value)} dir="rtl" rows={2} />
+            </div>
+
+            {/* Desc En */}
+            <div>
+              <label style={{ fontFamily: ASSIST, fontSize: 12, fontWeight: 600, color: 'rgba(237,224,196,0.55)', display: 'block', marginBottom: 5 }}>
+                {isHe ? 'תיאור (אנגלית)' : 'Description (English)'}
+              </label>
+              <textarea className="satm-textarea" placeholder="Short description..." value={descEn}
+                onChange={e => setDescEn(e.target.value)} dir="ltr" rows={2} />
+            </div>
+
+            {/* Element count info */}
+            <div style={{ fontFamily: ASSIST, fontSize: 12, color: 'rgba(237,224,196,0.4)', textAlign: isHe ? 'right' : 'left' }}>
+              {isHe
+                ? `${mapObjects.length} אלמנטים יישמרו בתבנית`
+                : `${mapObjects.length} elements will be saved in this template`}
+            </div>
+          </div>
+
+          {/* Footer */}
+          <div style={{
+            display: 'flex', gap: 10, justifyContent: 'flex-end',
+            padding: '14px 22px',
+            borderTop: '1px solid rgba(245,200,64,0.1)',
+            flexShrink: 0,
+          }}>
+            <button
+              onClick={onClose}
+              style={{
+                fontFamily: ASSIST, fontSize: 14, fontWeight: 500,
+                padding: '9px 22px', borderRadius: 7, cursor: 'pointer',
+                background: 'transparent',
+                border: '1px solid rgba(245,200,64,0.25)',
+                color: 'rgba(237,224,196,0.6)',
+              }}
+            >
+              {isHe ? 'ביטול' : 'Cancel'}
+            </button>
+            <button
+              onClick={handleSave}
+              disabled={!canSave || isSaving}
+              style={{
+                fontFamily: FRANK, fontSize: 14, fontWeight: 700,
+                padding: '9px 24px', borderRadius: 7,
+                cursor: canSave && !isSaving ? 'pointer' : 'not-allowed',
+                background: canSave ? GOLD : 'rgba(245,200,64,0.2)',
+                border: 'none',
+                color: canSave ? FOREST : 'rgba(237,224,196,0.3)',
+                opacity: canSave && !isSaving ? 1 : 0.6,
+                display: 'flex', alignItems: 'center', gap: 7,
+              }}
+            >
+              <BookmarkIcon />
+              {isSaving ? (isHe ? 'שומר...' : 'Saving...') : (isHe ? 'שמור' : 'Save')}
+            </button>
+          </div>
+        </div>
+      </div>
+    </>
+  );
+}

@@ -703,3 +703,64 @@ export const TEMPLATE_CATEGORIES = Array.from(
 export function getTemplatesByCategory(categoryHe: string): GardenTemplate[] {
   return GARDEN_TEMPLATES.filter(t => t.category.he === categoryHe);
 }
+
+// ── Override type (mirrors the garden_template_overrides DB table) ─────────────
+
+export interface TemplateOverride {
+  id: string;
+  title_he: string | null;
+  title_en: string | null;
+  description_he: string | null;
+  description_en: string | null;
+  is_hidden: boolean;
+  sort_order: number;
+  icon: string | null;
+  category_he: string | null;
+  category_en: string | null;
+  is_custom: boolean;
+  elements: Omit<MapObject, 'id'>[] | null;
+}
+
+/** Merge DB overrides onto the static template list.
+ *  - Hidden templates are excluded.
+ *  - DB elements take precedence over static ones when present.
+ *  - Custom DB-only templates are appended.
+ *  - Result is sorted by sort_order within each category.
+ */
+export function mergeWithOverrides(overrides: TemplateOverride[]): GardenTemplate[] {
+  const ovMap = new Map(overrides.map(o => [o.id, o]));
+  const baseIds = new Set(GARDEN_TEMPLATES.map(t => t.id));
+
+  type Sortable = GardenTemplate & { _order: number };
+  const merged: Sortable[] = [];
+
+  GARDEN_TEMPLATES.forEach((tpl, idx) => {
+    const ov = ovMap.get(tpl.id);
+    if (ov?.is_hidden) return;
+    merged.push({
+      ...tpl,
+      icon: ov?.icon ?? tpl.icon,
+      title: { he: ov?.title_he ?? tpl.title.he, en: ov?.title_en ?? tpl.title.en },
+      description: { he: ov?.description_he ?? tpl.description.he, en: ov?.description_en ?? tpl.description.en },
+      elements: (ov?.elements as Omit<MapObject, 'id'>[] | null | undefined) ?? tpl.elements,
+      _order: ov?.sort_order ?? idx,
+    });
+  });
+
+  // Custom DB-only templates
+  overrides.forEach(ov => {
+    if (!ov.is_custom || baseIds.has(ov.id) || ov.is_hidden) return;
+    merged.push({
+      id: ov.id,
+      category: { he: ov.category_he ?? 'מותאם אישית', en: ov.category_en ?? 'Custom' },
+      icon: ov.icon ?? '🌿',
+      title: { he: ov.title_he ?? '', en: ov.title_en ?? '' },
+      description: { he: ov.description_he ?? '', en: ov.description_en ?? '' },
+      elements: (ov.elements as Omit<MapObject, 'id'>[] | null | undefined) ?? [],
+      _order: ov.sort_order,
+    });
+  });
+
+  merged.sort((a, b) => a._order - b._order);
+  return merged.map(({ _order: _o, ...t }) => t as GardenTemplate);
+}
