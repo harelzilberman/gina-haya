@@ -83,7 +83,7 @@ export function MoonHoverSign({ illumination }: MoonHoverSignProps) {
   const [opacity, setOpacity] = useState(0);
 
   useEffect(() => {
-    if (illumination < 0.03) {
+    if (illumination < 0.5) {
       setFadeOut(false);
       setVisible(true);
     } else if (visible) {
@@ -106,18 +106,17 @@ export function MoonHoverSign({ illumination }: MoonHoverSignProps) {
   if (!visible) return null;
 
   return (
-    <>
-      <style>{CSS}</style>
-      <div style={{
-        opacity,
-        transition: fadeOut ? 'opacity 1s ease' : 'opacity 1.5s ease',
-        display: 'flex',
+    <div style={{
+      opacity,
+      transition: fadeOut ? 'opacity 1s ease' : 'opacity 1.5s ease',
+      display: 'flex',
         justifyContent: 'center',
         alignItems: 'center',
         width: '100%',
         height: '100%',
         pointerEvents: 'none',
       }}>
+        <style>{CSS}</style>
         <svg
           width="165"
           height="165"
@@ -213,6 +212,5 @@ export function MoonHoverSign({ illumination }: MoonHoverSignProps) {
           </g>
         </svg>
       </div>
-    </>
   );
 }
