@@ -290,12 +290,13 @@ export function MoonPhaseDisplay({ phaseAngle, phasePct, phaseHe, moonSignHe, as
             style={{ display: 'block', width: '165px', height: '165px' }}
           />
         </div>
+        {/* TEMP: always show to confirm rendering — restore condition after visual check */}
         <div style={{
           position: 'absolute', inset: 0,
           display: 'flex', alignItems: 'center', justifyContent: 'center',
           pointerEvents: 'none',
         }}>
-          <MoonHoverSign illumination={phasePct / 100} />
+          <MoonHoverSign illumination={0} />
         </div>
       </div>
 
