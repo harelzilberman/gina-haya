@@ -17,7 +17,12 @@ templatesRouter.get('/', async (_req, res) => {
     if (error) throw error;
     res.json(data ?? []);
   } catch (err: any) {
-    console.error('[GET /api/templates]', err.message);
+    console.error('[GET /api/templates]', {
+      message: err.message,
+      code: (err as any).code,
+      details: (err as any).details,
+      hint: (err as any).hint,
+    });
     res.status(500).json({ error: err.message });
   }
 });
@@ -47,14 +52,27 @@ templatesRouter.put('/', verifyToken, async (req: any, res) => {
       elements: o.elements ?? null,
       updated_at: new Date().toISOString(),
     }));
+
+    console.log('[PUT /api/templates] upserting', rows.length, 'rows, ids:', rows.map(r => r.id));
+
     const { error } = await db
       .from('garden_template_overrides')
       .upsert(rows, { onConflict: 'id' });
-    if (error) throw error;
+
+    if (error) {
+      console.error('[PUT /api/templates] Supabase error:', {
+        message: error.message,
+        code: (error as any).code,
+        details: (error as any).details,
+        hint: (error as any).hint,
+      });
+      throw error;
+    }
+
     res.json({ ok: true, count: rows.length });
   } catch (err: any) {
-    console.error('[PUT /api/templates]', err.message);
-    res.status(500).json({ error: err.message });
+    console.error('[PUT /api/templates] caught:', err.message ?? err);
+    res.status(500).json({ error: err.message ?? 'Unknown error' });
   }
 });
 
