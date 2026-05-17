@@ -214,51 +214,158 @@ export function MoonSignSVG() {
   const { i18n } = useTranslation('calendar');
   const isHe = i18n.language === 'he';
 
-  // viewBox 170×90 — 160px wide board (5px margin each side), 74px tall
-  // inner board: x=8 y=11 w=154 h=68  → center x=85, y=45
+  // viewBox 170×90 — sign outer frame x=5..165, y=8..82, center (85,45)
+  // thrusters sit flush against each edge, flames extend via overflow:visible
   return (
     <svg
       width="160" height="90"
       viewBox="0 0 170 90"
+      className="moonSign-wrap"
       style={{ overflow: 'visible', filter: 'drop-shadow(0px 2px 10px rgba(0,0,0,0.85))' }}
     >
       <style>{`
-        @keyframes moon-sign-drift {
-          0%,100% { transform: translate(0px,0px)  rotate(-1deg); }
-          25%      { transform: translate(8px,-6px)  rotate(1deg); }
-          50%      { transform: translate(-6px,5px)  rotate(-0.5deg); }
-          75%      { transform: translate(5px,8px)   rotate(0.8deg); }
+        @keyframes moonSignFadeIn {
+          from { opacity: 0; transform: scale(0.85); }
+          to   { opacity: 1; transform: scale(1); }
         }
-        .moon-sign-g {
-          animation: moon-sign-drift 8s ease-in-out infinite;
-          transform-origin: 85px 45px;
+        @keyframes moonSignDrift {
+          0%   { transform: translate(0px,0px)    rotate(-1deg); }
+          12%  { transform: translate(12px,-7px)  rotate(1.2deg); }
+          24%  { transform: translate(8px,10px)   rotate(0.3deg); }
+          37%  { transform: translate(-10px,8px)  rotate(-0.8deg); }
+          50%  { transform: translate(-14px,-5px) rotate(-1.5deg); }
+          62%  { transform: translate(-5px,-12px) rotate(-0.2deg); }
+          75%  { transform: translate(7px,-8px)   rotate(0.9deg); }
+          87%  { transform: translate(6px,4px)    rotate(0.5deg); }
+          100% { transform: translate(0px,0px)    rotate(-1deg); }
+        }
+        @keyframes moonSignThrustLeft {
+          0%   { transform: scaleX(1.2); opacity: 0.95; }
+          40%  { transform: scaleX(0.2); opacity: 0.2; }
+          70%  { transform: scaleX(0.2); opacity: 0.2; }
+          85%  { transform: scaleX(1.2); opacity: 0.95; }
+          100% { transform: scaleX(1.2); opacity: 0.95; }
+        }
+        @keyframes moonSignThrustRight {
+          0%   { transform: scaleX(0.2); opacity: 0.2; }
+          40%  { transform: scaleX(1.2); opacity: 0.95; }
+          70%  { transform: scaleX(1.2); opacity: 0.95; }
+          85%  { transform: scaleX(0.2); opacity: 0.2; }
+          100% { transform: scaleX(0.2); opacity: 0.2; }
+        }
+        @keyframes moonSignThrustTop {
+          0%   { transform: scaleY(0.7); opacity: 0.5; }
+          25%  { transform: scaleY(1.2); opacity: 0.95; }
+          45%  { transform: scaleY(1.2); opacity: 0.95; }
+          65%  { transform: scaleY(0.2); opacity: 0.2; }
+          85%  { transform: scaleY(0.2); opacity: 0.2; }
+          100% { transform: scaleY(0.7); opacity: 0.5; }
+        }
+        @keyframes moonSignThrustBottom {
+          0%   { transform: scaleY(0.7); opacity: 0.5; }
+          25%  { transform: scaleY(0.2); opacity: 0.2; }
+          45%  { transform: scaleY(0.2); opacity: 0.2; }
+          65%  { transform: scaleY(1.2); opacity: 0.95; }
+          85%  { transform: scaleY(1.2); opacity: 0.95; }
+          100% { transform: scaleY(0.7); opacity: 0.5; }
+        }
+        .moonSign-wrap {
+          animation: moonSignFadeIn 2s ease forwards;
+        }
+        .moonSign-drift {
+          animation: moonSignDrift 12s ease-in-out infinite;
+          transform-box: fill-box;
+          transform-origin: center center;
+        }
+        .moonSign-flame-left {
+          animation: moonSignThrustLeft 12s ease-in-out infinite;
+          transform-box: fill-box;
+          transform-origin: right center;
+        }
+        .moonSign-flame-right {
+          animation: moonSignThrustRight 12s ease-in-out infinite;
+          transform-box: fill-box;
+          transform-origin: left center;
+        }
+        .moonSign-flame-top {
+          animation: moonSignThrustTop 12s ease-in-out infinite;
+          transform-box: fill-box;
+          transform-origin: center bottom;
+        }
+        .moonSign-flame-bottom {
+          animation: moonSignThrustBottom 12s ease-in-out infinite;
+          transform-box: fill-box;
+          transform-origin: center top;
         }
       `}</style>
       <defs>
-        {/* clips text to the inner board so nothing can overflow */}
         <clipPath id="moon-sign-clip">
           <rect x="8" y="11" width="154" height="68" rx="4"/>
         </clipPath>
       </defs>
-      <g className="moon-sign-g">
-        {/* Outer frame */}
+      <g className="moonSign-drift">
+
+        {/* TOP THRUSTER — box sits above sign (flush at y=8), nozzle faces up */}
+        <g transform="translate(85,8)">
+          <rect x="-16" y="-13" width="32" height="12" rx="3" fill="#2e2e48" stroke="#4a4a70" strokeWidth="0.8"/>
+          <rect x="-12" y="-11" width="7"  height="7"  rx="1" fill="#3a3a58"/>
+          <rect x="-3"  y="-11" width="7"  height="7"  rx="1" fill="#3a3a58"/>
+          <rect x="6"   y="-11" width="5"  height="7"  rx="1" fill="#44445e"/>
+          <g className="moonSign-flame-top">
+            <polygon points="-12,-13 12,-13 8,-30 -8,-30"   fill="#AA5500" opacity="0.9"/>
+            <polygon points="-8,-13 8,-13 5.5,-25 -5.5,-25" fill="#FF7700" opacity="0.65"/>
+            <polygon points="-4,-13 4,-13 3,-20 -3,-20"     fill="#FFBB33" opacity="0.4"/>
+          </g>
+        </g>
+
+        {/* BOTTOM THRUSTER — box sits below sign (flush at y=82), nozzle faces down */}
+        <g transform="translate(85,82)">
+          <rect x="-16" y="1"  width="32" height="12" rx="3" fill="#2e2e48" stroke="#4a4a70" strokeWidth="0.8"/>
+          <rect x="-12" y="3.5" width="7" height="7"  rx="1" fill="#3a3a58"/>
+          <rect x="-3"  y="3.5" width="7" height="7"  rx="1" fill="#3a3a58"/>
+          <rect x="6"   y="3.5" width="5" height="7"  rx="1" fill="#44445e"/>
+          <g className="moonSign-flame-bottom">
+            <polygon points="-12,13 12,13 8,30 -8,30"       fill="#AA5500" opacity="0.9"/>
+            <polygon points="-8,13 8,13 5.5,25 -5.5,25"     fill="#FF7700" opacity="0.65"/>
+            <polygon points="-4,13 4,13 3,20 -3,20"         fill="#FFBB33" opacity="0.4"/>
+          </g>
+        </g>
+
+        {/* LEFT THRUSTER — box sits left of sign (flush at x=5), nozzle faces left */}
+        <g transform="translate(5,45)">
+          <rect x="-14" y="-8" width="12" height="16" rx="3" fill="#2e2e48" stroke="#4a4a70" strokeWidth="0.8"/>
+          <rect x="-12" y="-5.5" width="7" height="5" rx="1" fill="#3a3a58"/>
+          <rect x="-12" y="0.5"  width="7" height="5" rx="1" fill="#3a3a58"/>
+          <g className="moonSign-flame-left">
+            <polygon points="-14,-7 -14,7 -30,5 -30,-5"     fill="#AA5500" opacity="0.9"/>
+            <polygon points="-14,-5 -14,5 -26,3.5 -26,-3.5" fill="#FF7700" opacity="0.65"/>
+            <polygon points="-14,-3 -14,3 -22,2 -22,-2"     fill="#FFBB33" opacity="0.4"/>
+          </g>
+        </g>
+
+        {/* RIGHT THRUSTER — box sits right of sign (flush at x=165), nozzle faces right */}
+        <g transform="translate(165,45)">
+          <rect x="2"  y="-8" width="12" height="16" rx="3" fill="#2e2e48" stroke="#4a4a70" strokeWidth="0.8"/>
+          <rect x="5"  y="-5.5" width="7" height="5" rx="1" fill="#3a3a58"/>
+          <rect x="5"  y="0.5"  width="7" height="5" rx="1" fill="#3a3a58"/>
+          <g className="moonSign-flame-right">
+            <polygon points="14,-7 14,7 30,5 30,-5"          fill="#AA5500" opacity="0.9"/>
+            <polygon points="14,-5 14,5 26,3.5 26,-3.5"      fill="#FF7700" opacity="0.65"/>
+            <polygon points="14,-3 14,3 22,2 22,-2"          fill="#FFBB33" opacity="0.4"/>
+          </g>
+        </g>
+
+        {/* SIGN BOARD — same as before, on top of thrusters */}
         <rect x="5"  y="8"  width="160" height="74" rx="5" fill="#8B5E1A"/>
-        {/* Inner board */}
         <rect x="8"  y="11" width="154" height="68" rx="4" fill="#C4862A"/>
-        {/* Left plank */}
         <rect x="5"  y="8"  width="14"  height="74" rx="3" fill="#8B5E1A"/>
-        {/* Right plank */}
         <rect x="151" y="8" width="14"  height="74" rx="3" fill="#8B5E1A"/>
-        {/* Nails */}
         <circle cx="14"  cy="17" r="3.5" fill="#4A2800"/>
         <circle cx="156" cy="17" r="3.5" fill="#4A2800"/>
         <circle cx="14"  cy="73" r="3.5" fill="#4A2800"/>
         <circle cx="156" cy="73" r="3.5" fill="#4A2800"/>
-        {/* Text clipped to inner board */}
         <g clipPath="url(#moon-sign-clip)">
           {isHe ? (
-            // Hebrew: 2 lines, vertically centered in 68px board (y=11..79)
-            // line 1 baseline ≈ 44, line 2 ≈ 60
             <>
               <text x="85" y="44" textAnchor="middle" fontFamily="Georgia,serif"
                 fontSize="13" fontWeight="700" fill="#1A0E02" letterSpacing="2">
@@ -270,8 +377,6 @@ export function MoonSignSVG() {
               </text>
             </>
           ) : (
-            // English: 3 lines, vertically centered in 68px board
-            // spacing 14px: baselines at 37, 51, 65
             <>
               <text x="85" y="37" textAnchor="middle" fontFamily="Georgia,serif"
                 fontSize="10" fontWeight="700" fill="#1A0E02" letterSpacing="1">
