@@ -5,7 +5,7 @@ import { useToday } from '../hooks/useCalendar';
 import { useTasks } from '../hooks/useTasks';
 import { useAuthStore } from '../stores/authStore';
 import { useChupChuPanelStore } from '../stores/chupChuPanelStore';
-import { drawMoon, getMoonTilt } from '../components/calendar/TodayCardV2';
+import { drawMoon, getMoonTilt, MoonSignSVG } from '../components/calendar/TodayCardV2';
 
 // ── Welcome checklist ──────────────────────────────────────────────────────
 const CHECKLIST_KEY = 'gina-haya-welcome-checklist';
@@ -614,10 +614,21 @@ export function DashboardPage() {
 
                 {/* Moon canvas — RTL end (left side visually) */}
                 <div style={{ flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                  <MoonCanvas
-                    phasePct={day.moonPhasePct ?? 0}
-                    phaseAngle={day.moonPhaseAngle ?? (day.moonPhasePct ?? 0) / 100 * 360}
-                  />
+                  <div style={{ position: 'relative', width: '165px', height: '165px' }}>
+                    <MoonCanvas
+                      phasePct={day.moonPhasePct ?? 0}
+                      phaseAngle={day.moonPhaseAngle ?? (day.moonPhasePct ?? 0) / 100 * 360}
+                    />
+                    {(day.moonPhasePct ?? 0) < 3 && (
+                      <div style={{
+                        position: 'absolute', inset: 0,
+                        display: 'flex', alignItems: 'center', justifyContent: 'center',
+                        pointerEvents: 'none', zIndex: 10,
+                      }}>
+                        <MoonSignSVG />
+                      </div>
+                    )}
+                  </div>
                 </div>
               </div>
 
