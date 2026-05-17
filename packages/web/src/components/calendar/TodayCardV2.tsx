@@ -214,62 +214,80 @@ export function MoonSignSVG() {
   const { i18n } = useTranslation('calendar');
   const isHe = i18n.language === 'he';
 
+  // viewBox 170×90 — 160px wide board (5px margin each side), 74px tall
+  // inner board: x=8 y=11 w=154 h=68  → center x=85, y=45
   return (
     <svg
-      width="150" height="90"
-      viewBox="0 0 150 90"
+      width="160" height="90"
+      viewBox="0 0 170 90"
       style={{ overflow: 'visible', filter: 'drop-shadow(0px 2px 10px rgba(0,0,0,0.85))' }}
     >
       <style>{`
         @keyframes moon-sign-drift {
-          0%,100% { transform: translate(0px,0px)   rotate(-1deg); }
-          25%      { transform: translate(8px,-6px)   rotate(1deg); }
-          50%      { transform: translate(-6px,5px)   rotate(-0.5deg); }
-          75%      { transform: translate(5px,8px)    rotate(0.8deg); }
+          0%,100% { transform: translate(0px,0px)  rotate(-1deg); }
+          25%      { transform: translate(8px,-6px)  rotate(1deg); }
+          50%      { transform: translate(-6px,5px)  rotate(-0.5deg); }
+          75%      { transform: translate(5px,8px)   rotate(0.8deg); }
         }
         .moon-sign-g {
           animation: moon-sign-drift 8s ease-in-out infinite;
-          transform-origin: 75px 45px;
+          transform-origin: 85px 45px;
         }
       `}</style>
+      <defs>
+        {/* clips text to the inner board so nothing can overflow */}
+        <clipPath id="moon-sign-clip">
+          <rect x="8" y="11" width="154" height="68" rx="4"/>
+        </clipPath>
+      </defs>
       <g className="moon-sign-g">
         {/* Outer frame */}
-        <rect x="5"  y="8"  width="140" height="74" rx="5" fill="#8B5E1A"/>
+        <rect x="5"  y="8"  width="160" height="74" rx="5" fill="#8B5E1A"/>
         {/* Inner board */}
-        <rect x="8"  y="11" width="134" height="68" rx="4" fill="#C4862A"/>
+        <rect x="8"  y="11" width="154" height="68" rx="4" fill="#C4862A"/>
         {/* Left plank */}
         <rect x="5"  y="8"  width="14"  height="74" rx="3" fill="#8B5E1A"/>
         {/* Right plank */}
-        <rect x="131" y="8" width="14"  height="74" rx="3" fill="#8B5E1A"/>
+        <rect x="151" y="8" width="14"  height="74" rx="3" fill="#8B5E1A"/>
         {/* Nails */}
         <circle cx="14"  cy="17" r="3.5" fill="#4A2800"/>
-        <circle cx="136" cy="17" r="3.5" fill="#4A2800"/>
+        <circle cx="156" cy="17" r="3.5" fill="#4A2800"/>
         <circle cx="14"  cy="73" r="3.5" fill="#4A2800"/>
-        <circle cx="136" cy="73" r="3.5" fill="#4A2800"/>
-        {/* Text — single language */}
-        {isHe ? (
-          <>
-            <text x="75" y="44" textAnchor="middle" fontFamily="Georgia,serif"
-              fontSize="13" fontWeight="700" fill="#1A0E02" letterSpacing="2">
-              האור חוזר בקרוב
-            </text>
-            <text x="75" y="63" textAnchor="middle" fontFamily="Georgia,serif"
-              fontSize="11" fill="#1A0E02" letterSpacing="1.5">
-              נתראה! 🌙
-            </text>
-          </>
-        ) : (
-          <>
-            <text x="75" y="43" textAnchor="middle" fontFamily="Georgia,serif"
-              fontSize="11" fontWeight="700" fill="#1A0E02" letterSpacing="1.5">
-              LIGHT COMES BACK SOON
-            </text>
-            <text x="75" y="62" textAnchor="middle" fontFamily="Georgia,serif"
-              fontSize="11" fill="#1A0E02" letterSpacing="1">
-              SEE YA! 🌙
-            </text>
-          </>
-        )}
+        <circle cx="156" cy="73" r="3.5" fill="#4A2800"/>
+        {/* Text clipped to inner board */}
+        <g clipPath="url(#moon-sign-clip)">
+          {isHe ? (
+            // Hebrew: 2 lines, vertically centered in 68px board (y=11..79)
+            // line 1 baseline ≈ 44, line 2 ≈ 60
+            <>
+              <text x="85" y="44" textAnchor="middle" fontFamily="Georgia,serif"
+                fontSize="13" fontWeight="700" fill="#1A0E02" letterSpacing="2">
+                האור חוזר בקרוב
+              </text>
+              <text x="85" y="62" textAnchor="middle" fontFamily="Georgia,serif"
+                fontSize="11" fill="#1A0E02" letterSpacing="1.5">
+                נתראה! 🌙
+              </text>
+            </>
+          ) : (
+            // English: 3 lines, vertically centered in 68px board
+            // spacing 14px: baselines at 37, 51, 65
+            <>
+              <text x="85" y="37" textAnchor="middle" fontFamily="Georgia,serif"
+                fontSize="10" fontWeight="700" fill="#1A0E02" letterSpacing="1">
+                LIGHT COMES
+              </text>
+              <text x="85" y="51" textAnchor="middle" fontFamily="Georgia,serif"
+                fontSize="10" fontWeight="700" fill="#1A0E02" letterSpacing="1">
+                BACK SOON
+              </text>
+              <text x="85" y="65" textAnchor="middle" fontFamily="Georgia,serif"
+                fontSize="10" fill="#1A0E02" letterSpacing="1">
+                SEE YA! 🌙
+              </text>
+            </>
+          )}
+        </g>
       </g>
     </svg>
   );
