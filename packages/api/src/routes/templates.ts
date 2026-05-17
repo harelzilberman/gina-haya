@@ -33,10 +33,24 @@ templatesRouter.put('/', verifyToken, async (req: any, res) => {
     return res.status(403).json({ error: 'Forbidden' });
   }
   try {
-    const { overrides } = req.body as { overrides: any[] };
+    // ── 1. Log raw body ───────────────────────────────────────────────────────
+    const rawBody = req.body;
+    console.log('[PUT /api/templates] raw body keys:', Object.keys(rawBody ?? {}));
+    console.log('[PUT /api/templates] overrides count:', Array.isArray(rawBody?.overrides) ? rawBody.overrides.length : 'NOT AN ARRAY');
+
+    const { overrides } = rawBody as { overrides: any[] };
     if (!Array.isArray(overrides) || overrides.length === 0) {
       return res.json({ ok: true, count: 0 });
     }
+
+    // ── 2. Log first row for shape inspection (omit full elements payload) ────
+    const firstRaw = overrides[0];
+    console.log('[PUT /api/templates] first override shape:', {
+      id: firstRaw?.id,
+      keys: Object.keys(firstRaw ?? {}),
+      elementsLength: Array.isArray(firstRaw?.elements) ? firstRaw.elements.length : typeof firstRaw?.elements,
+    });
+
     const rows = overrides.map(o => ({
       id: o.id,
       title_he: o.title_he ?? null,
@@ -53,14 +67,25 @@ templatesRouter.put('/', verifyToken, async (req: any, res) => {
       updated_at: new Date().toISOString(),
     }));
 
-    console.log('[PUT /api/templates] upserting', rows.length, 'rows, ids:', rows.map(r => r.id));
+    // ── 3. Probe table existence before upsert ────────────────────────────────
+    const { error: probeError } = await db
+      .from('garden_template_overrides')
+      .select('id')
+      .limit(1);
+    if (probeError) {
+      console.error('[PUT /api/templates] TABLE PROBE FAILED — table may not exist:', JSON.stringify(probeError));
+      return res.status(500).json({ error: `Table probe failed: ${probeError.message}` });
+    }
+    console.log('[PUT /api/templates] table probe OK, proceeding with upsert of', rows.length, 'rows');
 
+    // ── 4. Upsert ─────────────────────────────────────────────────────────────
     const { error } = await db
       .from('garden_template_overrides')
       .upsert(rows, { onConflict: 'id' });
 
     if (error) {
-      console.error('[PUT /api/templates] Supabase error:', {
+      console.error('[PUT /api/templates] UPSERT FAILED:', JSON.stringify(error));
+      console.error('[PUT /api/templates] upsert error detail:', {
         message: error.message,
         code: (error as any).code,
         details: (error as any).details,
@@ -69,10 +94,12 @@ templatesRouter.put('/', verifyToken, async (req: any, res) => {
       throw error;
     }
 
+    console.log('[PUT /api/templates] upsert OK, count:', rows.length);
     res.json({ ok: true, count: rows.length });
   } catch (err: any) {
-    console.error('[PUT /api/templates] caught:', err.message ?? err);
-    res.status(500).json({ error: err.message ?? 'Unknown error' });
+    console.error('[PUT /api/templates] CAUGHT EXCEPTION:', err?.message ?? String(err));
+    console.error('[PUT /api/templates] full exception:', JSON.stringify(err, Object.getOwnPropertyNames(err)));
+    res.status(500).json({ error: err?.message ?? 'Unknown error' });
   }
 });
 
