@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
 import { useMapStore } from '../stores/mapStore';
@@ -78,6 +78,8 @@ import { GardenCanvas } from '../components/map/GardenCanvas';
 import { PlantPicker } from '../components/map/PlantPicker';
 import { MapTour, shouldShowTour } from '../components/map/MapTour';
 import { WizardModal } from '../components/map/WizardModal';
+import { GardenTemplatesModal } from '../components/map/GardenTemplatesModal';
+import type { GardenTemplate } from '../data/gardenTemplates';
 
 export function MapPage() {
   const store = useMapStore();
@@ -86,12 +88,21 @@ export function MapPage() {
   const isHe = i18n.language === 'he';
   const navigate = useNavigate();
   const { tier, limits } = usePlanLimit();
-  const [showTour, setShowTour]     = useState(false);
-  const [showWizard, setShowWizard] = useState(false);
+  const [showTour, setShowTour]         = useState(false);
+  const [showWizard, setShowWizard]     = useState(false);
+  const [showTemplates, setShowTemplates] = useState(false);
   const [toast, setToast] = useState<string | null>(null);
   const [plantLimitModalOpen, setPlantLimitModalOpen] = useState(false);
+  const hasCheckedTemplates = useRef(false);
 
   const handleReopenTour = () => { localStorage.removeItem('has-seen-map-tour'); setShowTour(true); };
+
+  function handleApplyTemplate(template: GardenTemplate) {
+    store.applyTemplate(template.elements);
+    setShowTemplates(false);
+    setToast(isHe ? `תבנית "${template.title.he}" הוחלה! 🗺️` : `Template "${template.title.en}" applied! 🗺️`);
+    setTimeout(() => setToast(null), 3000);
+  }
 
   // clear any stale collapse state from previous version
   localStorage.removeItem('map-panel-collapsed');
@@ -125,6 +136,16 @@ export function MapPage() {
     if (!store.isLoading && shouldShowTour()) setShowTour(true);
   }, [store.isLoading]);
 
+  // Auto-open templates gallery when map loads empty (first time or still no elements)
+  useEffect(() => {
+    if (store.isLoading) { hasCheckedTemplates.current = false; return; }
+    if (!hasCheckedTemplates.current) {
+      hasCheckedTemplates.current = true;
+      const isEmpty = store.mapData.objects.length === 0 && store.mapData.plants.length === 0;
+      if (isEmpty && !shouldShowTour()) setShowTemplates(true);
+    }
+  }, [store.isLoading]);
+
   if (store.isLoading) {
     return (
       <div style={{ background: '#142B16', minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
@@ -152,6 +173,7 @@ export function MapPage() {
           wizardStatus={store.wizardStatus}
           hasSavedMap={true}
           onTour={handleReopenTour}
+          onTemplates={() => setShowTemplates(true)}
         />
         <div data-tour="canvas" style={{ flex: 1, minWidth: 0, position: 'relative', overflow: 'hidden', paddingInlineEnd: store.selectedTool === 'plant' ? '260px' : '0px' }}>
           <SaveIndicator
@@ -211,6 +233,13 @@ export function MapPage() {
         isOpen={showTour}
         onComplete={() => { localStorage.setItem('has-seen-map-tour', 'true'); setShowTour(false); }}
         onSkip={() => { localStorage.setItem('has-seen-map-tour', 'true'); setShowTour(false); }}
+      />
+
+      <GardenTemplatesModal
+        isOpen={showTemplates}
+        hasExistingElements={store.mapData.objects.length > 0 || store.mapData.plants.length > 0}
+        onApply={handleApplyTemplate}
+        onClose={() => setShowTemplates(false)}
       />
 
       {showWizard && store.mapId && (

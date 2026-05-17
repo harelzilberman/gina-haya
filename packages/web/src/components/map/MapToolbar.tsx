@@ -24,6 +24,7 @@ interface Props {
   wizardStatus: WizardStatus | null;
   hasSavedMap: boolean;
   onTour?: () => void;
+  onTemplates?: () => void;
 }
 
 interface DropItem { tool: MapTool; emoji: string; labelHe: string; labelEn: string }
@@ -202,7 +203,7 @@ function CategoryDropdown({
 export function MapToolbar({
   selectedTool, onToolChange, showSunZones, onToggleSunZones,
   northAngle, onNorthAngleChange, isSaving, isDirty, onSave, onUndo,
-  onWizard, wizardStatus, hasSavedMap, onTour,
+  onWizard, wizardStatus, hasSavedMap, onTour, onTemplates,
 }: Props) {
   const { i18n } = useTranslation();
   const isHe = i18n.language === 'he';
@@ -345,6 +346,17 @@ export function MapToolbar({
               )}
             </span>
           </>
+        )}
+
+        {/* Templates */}
+        {onTemplates && (
+          <button
+            onClick={onTemplates}
+            title={isHe ? 'תבניות גינה' : 'Garden templates'}
+            style={{ ...ghostBtn }}
+          >
+            {isMobile ? '🗺️' : (isHe ? '🗺️ תבניות' : '🗺️ Templates')}
+          </button>
         )}
 
         {/* Wizard */}

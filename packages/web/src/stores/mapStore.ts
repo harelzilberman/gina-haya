@@ -123,6 +123,7 @@ interface MapState {
   setPreviewPlants: (plants: PlantPreview[]) => void;
   confirmPlantPreview: () => void;
   cancelPlantPreview: () => void;
+  applyTemplate: (elements: Omit<MapObject, 'id'>[]) => void;
 }
 
 // ── Helpers ──────────────────────────────────────────────────────────────────
@@ -359,4 +360,13 @@ export const useMapStore = create<MapState>((set, get) => ({
   },
 
   cancelPlantPreview() { set({ previewPlants: [] }); },
+
+  applyTemplate(elements) {
+    const objects: MapObject[] = elements.map(el => ({ ...el, id: crypto.randomUUID() }));
+    set(s => {
+      const history = [s.mapData, ...s.history].slice(0, MAX_HISTORY);
+      return { mapData: { objects, plants: [] }, history, isDirty: true, selectedObjectId: null };
+    });
+    scheduleSave();
+  },
 }));
