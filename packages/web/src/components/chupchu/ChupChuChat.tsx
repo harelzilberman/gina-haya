@@ -244,8 +244,6 @@ function TaskProposalCard({ tasks, isRTL, isHe, onDismiss }: TaskProposalCardPro
 
     setSaving(true);
     try {
-      // Get token from auth store
-      const { useAuthStore } = await import('../../stores/authStore');
       const authToken = useAuthStore.getState().session?.access_token;
       if (!authToken) throw new Error('Not authenticated');
 
@@ -416,21 +414,27 @@ export function ChupChuChat({ compact, initialMessage, onInitialMessageConsumed 
   }, [messages, isLoading]);
 
   useEffect(() => {
-    loadMemory();
+    loadMemory().catch(() => {/* fail silently — chat works without memory */});
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   useEffect(() => {
     const API_BASE = import.meta.env.VITE_API_URL || 'https://powerful-embrace-production-95ea.up.railway.app';
     const handleUnload = () => {
-      if (messages.length < 6) return;
-      const token = useAuthStore.getState().session?.access_token;
-      if (!token) return;
-      const payload = JSON.stringify({ conversationHistory: messages, lang, existingMemory: memory });
-      navigator.sendBeacon(
-        `${API_BASE}/api/chupchu/memory/summarize`,
-        new Blob([payload], { type: 'application/json' }),
-      );
+      try {
+        if (messages.length < 6) return;
+        const token = useAuthStore.getState().session?.access_token;
+        if (!token) return;
+        const payload = JSON.stringify({ conversationHistory: messages, lang, existingMemory: memory });
+        if (typeof navigator.sendBeacon === 'function') {
+          navigator.sendBeacon(
+            `${API_BASE}/api/chupchu/memory/summarize`,
+            new Blob([payload], { type: 'application/json' }),
+          );
+        }
+      } catch {
+        // fire-and-forget — ignore failures
+      }
     };
     window.addEventListener('beforeunload', handleUnload);
     return () => window.removeEventListener('beforeunload', handleUnload);
