@@ -1,6 +1,59 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
-import { GARDEN_TEMPLATES, TEMPLATE_CATEGORIES, getTemplatesByCategory, type GardenTemplate } from '../../data/gardenTemplates';
+import { GARDEN_TEMPLATES, type GardenTemplate } from '../../data/gardenTemplates';
+import { api } from '../../api/client';
+
+interface TemplateOverride {
+  id: string;
+  title_he: string | null;
+  title_en: string | null;
+  description_he: string | null;
+  description_en: string | null;
+  is_hidden: boolean;
+  sort_order: number;
+  icon: string | null;
+  category_he: string | null;
+  category_en: string | null;
+  is_custom: boolean;
+}
+
+function mergeTemplates(overrides: TemplateOverride[]): GardenTemplate[] {
+  const ovMap = new Map(overrides.map(o => [o.id, o]));
+  const baseIds = new Set(GARDEN_TEMPLATES.map(t => t.id));
+
+  type Sortable = GardenTemplate & { _order: number };
+
+  const merged: Sortable[] = [];
+
+  GARDEN_TEMPLATES.forEach((tpl, idx) => {
+    const ov = ovMap.get(tpl.id);
+    if (ov?.is_hidden) return;
+    merged.push({
+      ...tpl,
+      icon: ov?.icon ?? tpl.icon,
+      title: { he: ov?.title_he ?? tpl.title.he, en: ov?.title_en ?? tpl.title.en },
+      description: { he: ov?.description_he ?? tpl.description.he, en: ov?.description_en ?? tpl.description.en },
+      _order: ov?.sort_order ?? idx,
+    });
+  });
+
+  // Custom templates from DB
+  overrides.forEach(ov => {
+    if (!ov.is_custom || baseIds.has(ov.id) || ov.is_hidden) return;
+    merged.push({
+      id: ov.id,
+      category: { he: ov.category_he ?? 'מותאם אישית', en: ov.category_en ?? 'Custom' },
+      icon: ov.icon ?? '🌿',
+      title: { he: ov.title_he ?? '', en: ov.title_en ?? '' },
+      description: { he: ov.description_he ?? '', en: ov.description_en ?? '' },
+      elements: [],
+      _order: ov.sort_order,
+    });
+  });
+
+  merged.sort((a, b) => a._order - b._order);
+  return merged.map(({ _order: _o, ...t }) => t as GardenTemplate);
+}
 
 const GOLD    = '#F5C840';
 const FOREST  = '#142B16';
@@ -28,13 +81,35 @@ export function GardenTemplatesModal({ isOpen, hasExistingElements, onApply, onC
   const { i18n } = useTranslation();
   const isHe = i18n.language === 'he';
 
-  const [selectedCategory, setSelectedCategory] = useState(TEMPLATE_CATEGORIES[0].he);
+  const [templates, setTemplates] = useState<GardenTemplate[]>(GARDEN_TEMPLATES);
+  const [selectedCategory, setSelectedCategory] = useState(GARDEN_TEMPLATES[0]?.category.he ?? '');
   const [selectedTemplate, setSelectedTemplate] = useState<GardenTemplate | null>(null);
   const [showConfirm, setShowConfirm] = useState(false);
 
+  // Fetch overrides once when modal opens
+  useEffect(() => {
+    if (!isOpen) return;
+    api.get<TemplateOverride[]>('/api/templates')
+      .then(overrides => {
+        const merged = mergeTemplates(overrides);
+        setTemplates(merged);
+        if (merged.length > 0 && !merged.find(t => t.category.he === selectedCategory)) {
+          setSelectedCategory(merged[0].category.he);
+        }
+      })
+      .catch(() => { /* keep static data on error */ });
+  }, [isOpen]);
+
   if (!isOpen) return null;
 
-  const visibleTemplates = getTemplatesByCategory(selectedCategory);
+  // Derive categories from merged list
+  const categories = Array.from(
+    new Map(templates.map(t => [t.category.he, t.category])).values()
+  );
+  if (!categories.find(c => c.he === selectedCategory) && categories.length > 0) {
+    // reset to first if current category disappeared
+  }
+  const visibleTemplates = templates.filter(t => t.category.he === selectedCategory);
 
   function handleApplyClick() {
     if (!selectedTemplate) return;
@@ -159,8 +234,8 @@ export function GardenTemplatesModal({ isOpen, hasExistingElements, onApply, onC
                 margin: '4px 0 0',
               }}>
                 {isHe
-                  ? `${GARDEN_TEMPLATES.length} תבניות מוכנות`
-                  : `${GARDEN_TEMPLATES.length} ready-made templates`}
+                  ? `${templates.length} תבניות מוכנות`
+                  : `${templates.length} ready-made templates`}
               </p>
             </div>
             <button
@@ -183,7 +258,7 @@ export function GardenTemplatesModal({ isOpen, hasExistingElements, onApply, onC
             display: 'flex', gap: '4px', padding: '12px 24px 0',
             overflowX: 'auto', flexShrink: 0, scrollbarWidth: 'none' as any,
           }}>
-            {TEMPLATE_CATEGORIES.map(cat => {
+            {categories.map(cat => {
               const active = selectedCategory === cat.he;
               return (
                 <button
