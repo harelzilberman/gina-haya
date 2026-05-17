@@ -229,73 +229,96 @@ export function MoonSignSVG() {
           to   { opacity: 1; transform: scale(1); }
         }
         @keyframes moonSignDrift {
-          0%   { transform: translate(0px,0px)    rotate(-1deg); }
-          12%  { transform: translate(12px,-7px)  rotate(1.2deg); }
-          24%  { transform: translate(8px,10px)   rotate(0.3deg); }
-          37%  { transform: translate(-10px,8px)  rotate(-0.8deg); }
-          50%  { transform: translate(-14px,-5px) rotate(-1.5deg); }
-          62%  { transform: translate(-5px,-12px) rotate(-0.2deg); }
-          75%  { transform: translate(7px,-8px)   rotate(0.9deg); }
-          87%  { transform: translate(6px,4px)    rotate(0.5deg); }
-          100% { transform: translate(0px,0px)    rotate(-1deg); }
+          0%   { transform: translate(0px,   0px)   rotate(-0.5deg); }
+          8%   { transform: translate(3px,  -2px)   rotate(-0.3deg); }
+          18%  { transform: translate(10px, -6px)   rotate(0.4deg);  }
+          28%  { transform: translate(13px,  2px)   rotate(0.9deg);  }
+          38%  { transform: translate(9px,   10px)  rotate(0.6deg);  }
+          48%  { transform: translate(0px,   12px)  rotate(0deg);    }
+          55%  { transform: translate(-8px,  8px)   rotate(-0.5deg); }
+          63%  { transform: translate(-13px, 1px)   rotate(-1deg);   }
+          70%  { transform: translate(-11px, -7px)  rotate(-0.8deg); }
+          80%  { transform: translate(-4px,  -11px) rotate(-0.3deg); }
+          90%  { transform: translate(3px,   -7px)  rotate(0.2deg);  }
+          100% { transform: translate(0px,   0px)   rotate(-0.5deg); }
         }
         @keyframes moonSignThrustLeft {
-          0%   { transform: scaleX(1.2); opacity: 0.95; }
-          40%  { transform: scaleX(0.2); opacity: 0.2; }
-          70%  { transform: scaleX(0.2); opacity: 0.2; }
-          85%  { transform: scaleX(1.2); opacity: 0.95; }
-          100% { transform: scaleX(1.2); opacity: 0.95; }
+          0%   { transform: scaleX(0.4);  opacity: 0.3;  }
+          8%   { transform: scaleX(0.8);  opacity: 0.6;  }
+          18%  { transform: scaleX(1.4);  opacity: 1;    }
+          28%  { transform: scaleX(1.2);  opacity: 0.9;  }
+          38%  { transform: scaleX(0.5);  opacity: 0.35; }
+          55%  { transform: scaleX(0.15); opacity: 0.1;  }
+          70%  { transform: scaleX(0.1);  opacity: 0.08; }
+          88%  { transform: scaleX(0.3);  opacity: 0.2;  }
+          100% { transform: scaleX(0.4);  opacity: 0.3;  }
         }
         @keyframes moonSignThrustRight {
-          0%   { transform: scaleX(0.2); opacity: 0.2; }
-          40%  { transform: scaleX(1.2); opacity: 0.95; }
-          70%  { transform: scaleX(1.2); opacity: 0.95; }
-          85%  { transform: scaleX(0.2); opacity: 0.2; }
-          100% { transform: scaleX(0.2); opacity: 0.2; }
+          0%   { transform: scaleX(0.15); opacity: 0.1;  }
+          18%  { transform: scaleX(0.1);  opacity: 0.08; }
+          38%  { transform: scaleX(0.3);  opacity: 0.2;  }
+          55%  { transform: scaleX(1.1);  opacity: 0.85; }
+          63%  { transform: scaleX(1.4);  opacity: 1;    }
+          70%  { transform: scaleX(1.2);  opacity: 0.9;  }
+          88%  { transform: scaleX(0.4);  opacity: 0.3;  }
+          100% { transform: scaleX(0.15); opacity: 0.1;  }
         }
         @keyframes moonSignThrustTop {
-          0%   { transform: scaleY(0.7); opacity: 0.5; }
-          25%  { transform: scaleY(1.2); opacity: 0.95; }
-          45%  { transform: scaleY(1.2); opacity: 0.95; }
-          65%  { transform: scaleY(0.2); opacity: 0.2; }
-          85%  { transform: scaleY(0.2); opacity: 0.2; }
-          100% { transform: scaleY(0.7); opacity: 0.5; }
+          0%   { transform: scaleY(0.2);  opacity: 0.15; }
+          18%  { transform: scaleY(0.8);  opacity: 0.6;  }
+          28%  { transform: scaleY(1.4);  opacity: 1;    }
+          38%  { transform: scaleY(1.2);  opacity: 0.9;  }
+          48%  { transform: scaleY(0.5);  opacity: 0.35; }
+          63%  { transform: scaleY(0.15); opacity: 0.1;  }
+          83%  { transform: scaleY(0.1);  opacity: 0.08; }
+          100% { transform: scaleY(0.2);  opacity: 0.15; }
         }
         @keyframes moonSignThrustBottom {
-          0%   { transform: scaleY(0.7); opacity: 0.5; }
-          25%  { transform: scaleY(0.2); opacity: 0.2; }
-          45%  { transform: scaleY(0.2); opacity: 0.2; }
-          65%  { transform: scaleY(1.2); opacity: 0.95; }
-          85%  { transform: scaleY(1.2); opacity: 0.95; }
-          100% { transform: scaleY(0.7); opacity: 0.5; }
+          0%   { transform: scaleY(0.3);  opacity: 0.2;  }
+          28%  { transform: scaleY(0.15); opacity: 0.1;  }
+          48%  { transform: scaleY(0.2);  opacity: 0.15; }
+          63%  { transform: scaleY(0.4);  opacity: 0.3;  }
+          75%  { transform: scaleY(1.3);  opacity: 0.95; }
+          83%  { transform: scaleY(1.5);  opacity: 1;    }
+          92%  { transform: scaleY(1.1);  opacity: 0.8;  }
+          100% { transform: scaleY(0.3);  opacity: 0.2;  }
+        }
+        @keyframes moonSignFlicker {
+          0%,100% { opacity: 1;    }
+          25%     { opacity: 0.85; }
+          50%     { opacity: 0.95; }
+          75%     { opacity: 0.8;  }
         }
         .moonSign-wrap {
           animation: moonSignFadeIn 2s ease forwards;
         }
         .moonSign-drift {
-          animation: moonSignDrift 12s ease-in-out infinite;
+          animation: moonSignDrift 12s cubic-bezier(0.45, 0.05, 0.55, 0.95) infinite;
           transform-box: fill-box;
           transform-origin: center center;
         }
         .moonSign-flame-left {
-          animation: moonSignThrustLeft 12s ease-in-out infinite;
+          animation: moonSignThrustLeft 12s cubic-bezier(0.45, 0.05, 0.55, 0.95) infinite;
           transform-box: fill-box;
           transform-origin: right center;
         }
         .moonSign-flame-right {
-          animation: moonSignThrustRight 12s ease-in-out infinite;
+          animation: moonSignThrustRight 12s cubic-bezier(0.45, 0.05, 0.55, 0.95) infinite;
           transform-box: fill-box;
           transform-origin: left center;
         }
         .moonSign-flame-top {
-          animation: moonSignThrustTop 12s ease-in-out infinite;
+          animation: moonSignThrustTop 12s cubic-bezier(0.45, 0.05, 0.55, 0.95) infinite;
           transform-box: fill-box;
           transform-origin: center bottom;
         }
         .moonSign-flame-bottom {
-          animation: moonSignThrustBottom 12s ease-in-out infinite;
+          animation: moonSignThrustBottom 12s cubic-bezier(0.45, 0.05, 0.55, 0.95) infinite;
           transform-box: fill-box;
           transform-origin: center top;
+        }
+        .moonSign-flicker {
+          animation: moonSignFlicker 0.3s ease-in-out infinite;
         }
       `}</style>
       <defs>
@@ -314,7 +337,7 @@ export function MoonSignSVG() {
           <g className="moonSign-flame-top">
             <polygon points="-12,-13 12,-13 8,-30 -8,-30"   fill="#AA5500" opacity="0.9"/>
             <polygon points="-8,-13 8,-13 5.5,-25 -5.5,-25" fill="#FF7700" opacity="0.65"/>
-            <polygon points="-4,-13 4,-13 3,-20 -3,-20"     fill="#FFBB33" opacity="0.4"/>
+            <polygon className="moonSign-flicker" points="-4,-13 4,-13 3,-20 -3,-20" fill="#FFBB33" opacity="0.4"/>
           </g>
         </g>
 
@@ -327,7 +350,7 @@ export function MoonSignSVG() {
           <g className="moonSign-flame-bottom">
             <polygon points="-12,13 12,13 8,30 -8,30"       fill="#AA5500" opacity="0.9"/>
             <polygon points="-8,13 8,13 5.5,25 -5.5,25"     fill="#FF7700" opacity="0.65"/>
-            <polygon points="-4,13 4,13 3,20 -3,20"         fill="#FFBB33" opacity="0.4"/>
+            <polygon className="moonSign-flicker" points="-4,13 4,13 3,20 -3,20" fill="#FFBB33" opacity="0.4"/>
           </g>
         </g>
 
@@ -339,7 +362,7 @@ export function MoonSignSVG() {
           <g className="moonSign-flame-left">
             <polygon points="-14,-7 -14,7 -30,5 -30,-5"     fill="#AA5500" opacity="0.9"/>
             <polygon points="-14,-5 -14,5 -26,3.5 -26,-3.5" fill="#FF7700" opacity="0.65"/>
-            <polygon points="-14,-3 -14,3 -22,2 -22,-2"     fill="#FFBB33" opacity="0.4"/>
+            <polygon className="moonSign-flicker" points="-14,-3 -14,3 -22,2 -22,-2" fill="#FFBB33" opacity="0.4"/>
           </g>
         </g>
 
@@ -351,7 +374,7 @@ export function MoonSignSVG() {
           <g className="moonSign-flame-right">
             <polygon points="14,-7 14,7 30,5 30,-5"          fill="#AA5500" opacity="0.9"/>
             <polygon points="14,-5 14,5 26,3.5 26,-3.5"      fill="#FF7700" opacity="0.65"/>
-            <polygon points="14,-3 14,3 22,2 22,-2"          fill="#FFBB33" opacity="0.4"/>
+            <polygon className="moonSign-flicker" points="14,-3 14,3 22,2 22,-2" fill="#FFBB33" opacity="0.4"/>
           </g>
         </g>
 
