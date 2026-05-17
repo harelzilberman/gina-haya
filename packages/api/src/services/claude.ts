@@ -134,6 +134,17 @@ const CHUPCHU_SYSTEM_PROMPT_HE = `\
 - קור (מתחת ל-10°C) — אזהר מנטיעת צמחים רגישים לקור
 דבר על מזג האוויר בטון טבעי, כאילו אתה יושב בגינה ומרגיש אותו. אל תפתח כל תשובה עם מזג אוויר — רק כשזה רלוונטי.
 
+## יצירת משימות
+כאשר אתה ממליץ על פעולות גינון ספציפיות, הצע להוסיף אותן כמשימות ליומן המשתמש.
+כללים:
+- כשאתה מציע משימות, סיים עם: "רוצה שאוסיף את המשימות האלה ליומן שלך?"
+- רק לאחר שהמשתמש מאשר ("כן", "בטח", "הוסף") — קרא לכלי create_tasks
+- תמיד כלול תאריך מדויק (YYYY-MM-DD) מבוסס על היום הנוכחי
+- בחר קטגוריה: watering, fertilizing, pruning, planting, harvesting, pest_control, composting, general
+- בחר עדיפות: low (אין דחיפות), medium (השבוע), high (היום או מחר)
+- לאחר שהכלי רץ, אשר כמה משימות הוצעו
+- אל תיצור משימות ללא אישור מפורש
+
 ## שימון בכלים
 כשאתה זקוק למידע ספציפי — נתוני לוח היום, פרטי הגינה, מזג אוויר, מידע על צמח, הוראות פרפרט, או קציר אחרון — השתמש בכלים המתאימים לפני שאתה עונה.
 לפני מענה על שאלות גינון מפורטות — בדוק אם יש מאמר רלוונטי ב-ARTICLE_INDEX וקרא אותו עם get_article.
@@ -174,12 +185,33 @@ If a ## Weather section appears at the top of this prompt, use it naturally:
 - Cold (below 10°C) — warn against planting cold-sensitive crops
 Speak about weather naturally, as if you're sitting in the garden feeling it yourself. Don't open every answer with weather — only when relevant.
 
+## Task Creation
+When recommending specific garden actions, offer to add them as tasks to the user's task manager.
+Rules:
+- When suggesting tasks, end with: "Want me to add these tasks to your task manager?"
+- Only after explicit user confirmation ("yes", "sure", "add them") — call the create_tasks tool
+- Always include an exact date (YYYY-MM-DD) based on today's date
+- Choose category: watering, fertilizing, pruning, planting, harvesting, pest_control, composting, general
+- Choose priority: low (no urgency), medium (this week), high (today or tomorrow)
+- After the tool runs, confirm how many tasks were proposed
+- Never create tasks without explicit confirmation
+
 ## Tool use
 When you need specific information — today's calendar, the user's garden, weather, plant details, prep instructions, or recent harvests — call the appropriate tool before answering.
 Before answering detailed gardening questions, check whether a relevant article exists in the ARTICLE_INDEX below and read it with get_article.
 
 ${ARTICLE_INDEX}
 `;
+
+// ── Task proposal type ─────────────────────────────────────────────────────
+
+export interface ProposedTask {
+  title: { he: string; en: string };
+  description: { he: string; en: string };
+  date: string;
+  category: 'watering' | 'fertilizing' | 'pruning' | 'planting' | 'harvesting' | 'pest_control' | 'composting' | 'general';
+  priority: 'low' | 'medium' | 'high';
+}
 
 // ── Tool definitions ───────────────────────────────────────────────────────
 
@@ -247,6 +279,47 @@ const CHUPCHU_TOOLS: Anthropic.Messages.Tool[] = [
         },
       },
       required: ['slug'],
+    },
+  },
+  {
+    name: 'create_tasks',
+    description: 'Propose a list of garden tasks for the user to add to their task manager. Call this ONLY after the user explicitly confirms they want to add tasks. Returns proposed tasks to the frontend for user selection.',
+    input_schema: {
+      type: 'object' as const,
+      properties: {
+        tasks: {
+          type: 'array',
+          items: {
+            type: 'object',
+            properties: {
+              title: {
+                type: 'object',
+                properties: {
+                  he: { type: 'string', description: 'Task title in Hebrew' },
+                  en: { type: 'string', description: 'Task title in English' },
+                },
+                required: ['he', 'en'],
+              },
+              description: {
+                type: 'object',
+                properties: {
+                  he: { type: 'string', description: 'Task description in Hebrew' },
+                  en: { type: 'string', description: 'Task description in English' },
+                },
+                required: ['he', 'en'],
+              },
+              date: { type: 'string', description: 'ISO date YYYY-MM-DD' },
+              category: {
+                type: 'string',
+                enum: ['watering', 'fertilizing', 'pruning', 'planting', 'harvesting', 'pest_control', 'composting', 'general'],
+              },
+              priority: { type: 'string', enum: ['low', 'medium', 'high'] },
+            },
+            required: ['title', 'description', 'date', 'category', 'priority'],
+          },
+        },
+      },
+      required: ['tasks'],
     },
   },
 ];
@@ -389,11 +462,13 @@ export async function askChupChu(
   messages: ChupChuMessage[],
   context: ChupChuContext,
   extraSystemContext?: string,
-): Promise<string> {
+): Promise<{ response: string; proposedTasks?: ProposedTask[] }> {
   const basePrompt = context.userLanguage === 'he'
     ? CHUPCHU_SYSTEM_PROMPT_HE
     : CHUPCHU_SYSTEM_PROMPT_EN;
   const systemPrompt = extraSystemContext ? basePrompt + extraSystemContext : basePrompt;
+
+  let capturedTasks: ProposedTask[] | undefined;
 
   const apiMessages: Anthropic.Messages.MessageParam[] = messages.map(m => ({
     role: m.role,
@@ -412,7 +487,7 @@ export async function askChupChu(
     if (response.stop_reason === 'end_turn') {
       const textBlock = response.content.find(b => b.type === 'text');
       if (!textBlock || textBlock.type !== 'text') throw new Error('No text response from Claude');
-      return textBlock.text;
+      return { response: textBlock.text, proposedTasks: capturedTasks };
     }
 
     if (response.stop_reason === 'tool_use') {
@@ -420,11 +495,22 @@ export async function askChupChu(
 
       const toolResults: Anthropic.Messages.ToolResultBlockParam[] = response.content
         .filter((b): b is Anthropic.Messages.ToolUseBlock => b.type === 'tool_use')
-        .map(b => ({
-          type: 'tool_result',
-          tool_use_id: b.id,
-          content: handleToolCall(b.name, b.input as Record<string, unknown>, context),
-        }));
+        .map(b => {
+          if (b.name === 'create_tasks') {
+            const input = b.input as { tasks: ProposedTask[] };
+            capturedTasks = input.tasks ?? [];
+            return {
+              type: 'tool_result' as const,
+              tool_use_id: b.id,
+              content: JSON.stringify({ success: true, count: capturedTasks.length }),
+            };
+          }
+          return {
+            type: 'tool_result' as const,
+            tool_use_id: b.id,
+            content: handleToolCall(b.name, b.input as Record<string, unknown>, context),
+          };
+        });
 
       apiMessages.push({ role: 'user', content: toolResults });
       continue;
@@ -435,7 +521,7 @@ export async function askChupChu(
         .filter((b): b is Anthropic.Messages.TextBlock => b.type === 'text')
         .map(b => b.text)
         .join('');
-      return (partial || '') + '\n\n_(התגובה קוצרה — שאל אותי שוב לפרטים נוספים)_';
+      return { response: (partial || '') + '\n\n_(התגובה קוצרה — שאל אותי שוב לפרטים נוספים)_' };
     }
 
     // Unknown stop reason — exit loop and throw below

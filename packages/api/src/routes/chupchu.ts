@@ -2,7 +2,7 @@ import 'dotenv/config';
 import { Router, type IRouter } from 'express';
 import { db } from '../db/client';
 import { verifyToken } from '../middleware/auth';
-import { askChupChu } from '../services/claude';
+import { askChupChu, type ProposedTask } from '../services/claude';
 import { fetchWeatherForRegion, getCachedWeatherForCoords } from '../services/weather';
 import type { ChupChuMessage, ChupChuContext } from '@gina-haya/shared';
 import { todayInIsrael } from '@gina-haya/shared';
@@ -261,8 +261,16 @@ chupChuRouter.post('/chat', async (req: any, res) => {
       timestamp: new Date().toISOString(),
     };
 
-    const extraContext = [weatherSection, taskContext].filter(Boolean).join('\n\n');
-    const chupChuResponse = await askChupChu(
+    const todayFormatted = new Date().toLocaleDateString(
+      lang === 'he' ? 'he-IL' : 'en-US',
+      { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric', timeZone: 'Asia/Jerusalem' }
+    );
+    const dateSection = lang === 'he'
+      ? `## תאריך היום\nהיום הוא ${todayFormatted}. השתמש בתאריך זה לחישוב "מחר", "השבוע" וכו'.`
+      : `## Today's Date\nToday is ${todayFormatted}. Use this to calculate "tomorrow", "this week" etc.`;
+
+    const extraContext = [dateSection, weatherSection, taskContext].filter(Boolean).join('\n\n');
+    const { response: chupChuText, proposedTasks } = await askChupChu(
       [...last20Messages, newUserMessage],
       context,
       extraContext || undefined
@@ -270,7 +278,7 @@ chupChuRouter.post('/chat', async (req: any, res) => {
 
     const chupChuMessage: ChupChuMessage = {
       role: 'assistant',
-      content: chupChuResponse,
+      content: chupChuText,
       timestamp: new Date().toISOString(),
     };
 
@@ -306,9 +314,10 @@ chupChuRouter.post('/chat', async (req: any, res) => {
     ).length;
 
     res.json({
-      response: chupChuResponse,
+      response: chupChuText,
       messagesUsedThisMonth,
       monthlyLimit,
+      ...(proposedTasks && proposedTasks.length > 0 ? { proposedTasks } : {}),
     });
 
     } finally {

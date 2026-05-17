@@ -186,6 +186,186 @@ function MessageBubble({ message, isRTL }: { message: ChupChuMessage; isRTL: boo
   );
 }
 
+// ── Task proposal card ────────────────────────────────────────────────────────
+const CATEGORY_ICON: Record<string, string> = {
+  watering:     '💧',
+  fertilizing:  '🌱',
+  pruning:      '✂️',
+  planting:     '🌿',
+  harvesting:   '🌾',
+  pest_control: '🪲',
+  composting:   '♻️',
+  general:      '📋',
+};
+
+const PRIORITY_COLOR: Record<string, string> = {
+  high:   '#E05555',
+  medium: '#C8A040',
+  low:    '#7DC084',
+};
+
+interface TaskProposalCardProps {
+  tasks: import('../../stores/chupChuStore').ProposedTask[];
+  isRTL: boolean;
+  isHe: boolean;
+  onDismiss: () => void;
+}
+
+function TaskProposalCard({ tasks, isRTL, isHe, onDismiss }: TaskProposalCardProps) {
+  const [checked, setChecked] = useState<Set<number>>(() => new Set(tasks.map((_, i) => i)));
+  const [saving, setSaving]   = useState(false);
+  const [saved, setSaved]     = useState(false);
+
+  const API_BASE = import.meta.env.VITE_API_URL || 'https://powerful-embrace-production-95ea.up.railway.app';
+
+  const toggle = (i: number) =>
+    setChecked(prev => {
+      const next = new Set(prev);
+      next.has(i) ? next.delete(i) : next.add(i);
+      return next;
+    });
+
+  const formatDate = (iso: string) => {
+    const d = new Date(iso + 'T12:00:00');
+    return d.toLocaleDateString(isHe ? 'he-IL' : 'en-US', { weekday: 'short', day: 'numeric', month: 'numeric' });
+  };
+
+  const handleAdd = async () => {
+    const selected = tasks
+      .filter((_, i) => checked.has(i))
+      .map(t => ({
+        title: isHe ? t.title.he : t.title.en,
+        notes: isHe ? t.description.he : t.description.en,
+        date:  t.date,
+        category: t.category,
+      }));
+    if (selected.length === 0) return;
+
+    setSaving(true);
+    try {
+      // Get token from auth store
+      const { useAuthStore } = await import('../../stores/authStore');
+      const authToken = useAuthStore.getState().session?.access_token;
+      if (!authToken) throw new Error('Not authenticated');
+
+      const res = await fetch(`${API_BASE}/api/tasks/bulk`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${authToken}` },
+        body: JSON.stringify({ tasks: selected }),
+      });
+      if (!res.ok) throw new Error('Failed to create tasks');
+      setSaved(true);
+      setTimeout(onDismiss, 2000);
+    } catch {
+      setSaving(false);
+    }
+  };
+
+  if (saved) {
+    return (
+      <div style={{
+        backgroundColor: 'rgba(28,58,30,0.9)',
+        border: `1px solid ${SAGE}`,
+        borderRadius: '12px',
+        padding: '14px 16px',
+        textAlign: 'center',
+        fontFamily: ASSIST,
+        fontSize: '14px',
+        color: SAGE,
+      }}>
+        {isHe
+          ? `✓ נוספו ${checked.size} משימות ליומן שלך`
+          : `✓ Added ${checked.size} tasks to your task manager`}
+      </div>
+    );
+  }
+
+  return (
+    <div style={{
+      backgroundColor: 'rgba(20,43,22,0.95)',
+      border: `1px solid rgba(245,200,64,0.25)`,
+      borderRadius: '12px',
+      overflow: 'hidden',
+      direction: isRTL ? 'rtl' : 'ltr',
+    }}>
+      {/* Header */}
+      <div style={{
+        display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+        padding: '10px 14px',
+        borderBottom: '1px solid rgba(245,200,64,0.12)',
+        backgroundColor: 'rgba(245,200,64,0.06)',
+      }}>
+        <span style={{ fontFamily: FRANK, fontSize: '13px', fontWeight: 700, color: GOLD }}>
+          {isHe ? '📋 משימות מוצעות' : '📋 Suggested Tasks'}
+        </span>
+        <button onClick={onDismiss} style={{
+          background: 'none', border: 'none', cursor: 'pointer',
+          color: `${PARCH}55`, fontSize: '14px', padding: '0 2px',
+        }}>✕</button>
+      </div>
+
+      {/* Task list */}
+      <div style={{ padding: '8px 0' }}>
+        {tasks.map((task, i) => (
+          <label key={i} style={{
+            display: 'flex', alignItems: 'flex-start', gap: '10px',
+            padding: '8px 14px', cursor: 'pointer',
+            borderBottom: i < tasks.length - 1 ? '1px solid rgba(255,255,255,0.05)' : 'none',
+          }}>
+            <input
+              type="checkbox"
+              checked={checked.has(i)}
+              onChange={() => toggle(i)}
+              style={{ marginTop: '3px', flexShrink: 0, accentColor: GOLD }}
+            />
+            <div style={{ flex: 1, minWidth: 0 }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '6px', flexWrap: 'wrap' }}>
+                <span style={{ fontSize: '13px' }}>{CATEGORY_ICON[task.category] ?? '📋'}</span>
+                <span style={{ fontFamily: ASSIST, fontSize: '13px', color: PARCH, fontWeight: 500 }}>
+                  {isHe ? task.title.he : task.title.en}
+                </span>
+                <span style={{
+                  fontSize: '10px', fontFamily: ASSIST, fontWeight: 600,
+                  color: PRIORITY_COLOR[task.priority] ?? PARCH,
+                  background: `${PRIORITY_COLOR[task.priority] ?? '#888'}22`,
+                  borderRadius: '4px', padding: '1px 5px',
+                }}>
+                  {task.priority}
+                </span>
+              </div>
+              <div style={{ fontFamily: ASSIST, fontSize: '11px', color: `${PARCH}66`, marginTop: '2px' }}>
+                {formatDate(task.date)}
+              </div>
+            </div>
+          </label>
+        ))}
+      </div>
+
+      {/* Footer button */}
+      <div style={{ padding: '10px 14px', borderTop: '1px solid rgba(245,200,64,0.12)' }}>
+        <button
+          onClick={handleAdd}
+          disabled={saving || checked.size === 0}
+          style={{
+            width: '100%', padding: '9px', borderRadius: '8px', border: 'none',
+            backgroundColor: checked.size > 0 ? GOLD : 'rgba(245,200,64,0.2)',
+            color: checked.size > 0 ? '#142B16' : `${PARCH}44`,
+            fontFamily: FRANK, fontSize: '13px', fontWeight: 700,
+            cursor: saving || checked.size === 0 ? 'default' : 'pointer',
+            opacity: saving ? 0.7 : 1,
+          }}
+        >
+          {saving
+            ? (isHe ? 'מוסיף...' : 'Adding...')
+            : (isHe
+                ? `הוסף ${checked.size} משימות נבחרות ✓`
+                : `Add ${checked.size} Selected Tasks ✓`)}
+        </button>
+      </div>
+    </div>
+  );
+}
+
 // ── Main chat ─────────────────────────────────────────────────────────────────
 interface ChupChuChatProps {
   compact?: boolean;
@@ -194,7 +374,8 @@ interface ChupChuChatProps {
 }
 
 export function ChupChuChat({ compact, initialMessage, onInitialMessageConsumed }: ChupChuChatProps = {}) {
-  const { t } = useTranslation('chupchu');
+  const { t, i18n } = useTranslation('chupchu');
+  const isHe = i18n.language === 'he';
   const { dir, isRTL } = useDirection();
 
   const {
@@ -205,8 +386,10 @@ export function ChupChuChat({ compact, initialMessage, onInitialMessageConsumed 
     rateLimited,
     rateLimitTier,
     expression,
+    proposedTasks,
     sendMessage,
     clearError,
+    clearProposedTasks,
   } = useChupChu();
 
   const [input, setInput] = useState('');
@@ -324,6 +507,18 @@ export function ChupChuChat({ compact, initialMessage, onInitialMessageConsumed 
 
         <div ref={messagesEndRef} />
       </div>
+
+      {/* Task proposal card */}
+      {proposedTasks && proposedTasks.length > 0 && (
+        <div style={{ padding: '0 16px 8px' }}>
+          <TaskProposalCard
+            tasks={proposedTasks}
+            isRTL={isRTL}
+            isHe={isHe}
+            onDismiss={clearProposedTasks}
+          />
+        </div>
+      )}
 
       {/* Rate limit banner */}
       {rateLimited && <RateLimitBanner tier={rateLimitTier} />}

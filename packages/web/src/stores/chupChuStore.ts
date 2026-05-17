@@ -3,6 +3,14 @@ import type { ChupChuMessage } from '@gina-haya/shared';
 import { useAuthStore } from './authStore';
 import { api } from '../api/client';
 
+export interface ProposedTask {
+  title: { he: string; en: string };
+  description: { he: string; en: string };
+  date: string;
+  category: string;
+  priority: string;
+}
+
 function getActiveGardenId(): string | null {
   return localStorage.getItem('active_garden_id');
 }
@@ -66,12 +74,14 @@ interface ChupChuState {
   usageThisMonth: number;
   monthlyLimit: number | null;
   expression: ChupChuExpression;
+  proposedTasks: ProposedTask[] | null;
 
   sendMessage: (text: string, gardenId?: string) => Promise<void>;
   loadHistory: () => Promise<void>;
   clearHistory: () => Promise<void>;
   clearError: () => void;
   setExpression: (e: ChupChuExpression) => void;
+  clearProposedTasks: () => void;
 }
 
 export const useChupChuStore = create<ChupChuState>((set, get) => ({
@@ -84,9 +94,11 @@ export const useChupChuStore = create<ChupChuState>((set, get) => ({
   usageThisMonth: 0,
   monthlyLimit:   20,
   expression:     'default',
+  proposedTasks:  null,
 
-  clearError:     () => set({ error: null }),
-  setExpression:  (e) => set({ expression: e }),
+  clearError:          () => set({ error: null }),
+  setExpression:       (e) => set({ expression: e }),
+  clearProposedTasks:  () => set({ proposedTasks: null }),
 
   sendMessage: async (text, gardenId) => {
     const token = getToken();
@@ -100,7 +112,7 @@ export const useChupChuStore = create<ChupChuState>((set, get) => ({
       timestamp: new Date().toISOString(),
     };
     // Track as pending — not yet confirmed by server
-    set({ pendingMessage: userMsg, isLoading: true, error: null, expression: 'thinking' });
+    set({ pendingMessage: userMsg, isLoading: true, error: null, expression: 'thinking', proposedTasks: null });
 
     try {
       const location = await getLocationFromIP();
@@ -153,6 +165,7 @@ export const useChupChuStore = create<ChupChuState>((set, get) => ({
         usageThisMonth: data.messagesUsedThisMonth ?? s.usageThisMonth,
         monthlyLimit:   data.monthlyLimit           ?? s.monthlyLimit,
         expression:     isWise ? 'wise' : 'happy',
+        proposedTasks:  data.proposedTasks && data.proposedTasks.length > 0 ? data.proposedTasks : null,
       }));
       scheduleExpressionReset(set);
     } catch (err: any) {

@@ -165,3 +165,44 @@ tasksRouter.delete('/:id', async (req, res) => {
     res.status(500).json({ error: err.message });
   }
 });
+
+// POST /api/tasks/bulk — create multiple tasks (from Chupchu proposals)
+tasksRouter.post('/bulk', async (req, res) => {
+  try {
+    const { tasks } = req.body as {
+      tasks: Array<{
+        title: string;
+        notes: string;
+        date: string;
+        category: string;
+      }>;
+    };
+
+    if (!Array.isArray(tasks) || tasks.length === 0) {
+      return res.status(400).json({ error: 'tasks array required' });
+    }
+
+    const userId = req.user!.id;
+    const rows = tasks.map(t => ({
+      user_id:       userId,
+      plan_id:       null,
+      date:          t.date,
+      title:         t.title,
+      type:          'custom' as const,
+      status:        'pending' as const,
+      notes:         t.notes || null,
+      source_action: t.category || null,
+    }));
+
+    const { data, error } = await db
+      .from('garden_tasks')
+      .insert(rows)
+      .select();
+
+    if (error) throw error;
+    res.json({ ok: true, count: data?.length ?? 0, tasks: data });
+  } catch (err: any) {
+    console.error('[POST /api/tasks/bulk]', err.message);
+    res.status(500).json({ error: err.message });
+  }
+});
