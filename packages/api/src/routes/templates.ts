@@ -67,16 +67,24 @@ templatesRouter.put('/', verifyToken, async (req: any, res) => {
       updated_at: new Date().toISOString(),
     }));
 
-    // ── 3. Probe table existence before upsert ────────────────────────────────
+    // ── 3. Probe all required columns — catches "column does not exist" early ──
+    // Selects every column the upsert will write; if any is missing we get a
+    // specific "column X does not exist" (Postgres code 42703) before touching data.
     const { error: probeError } = await db
       .from('garden_template_overrides')
-      .select('id')
+      .select('id, title_he, title_en, description_he, description_en, is_hidden, sort_order, icon, category_he, category_en, is_custom, elements, updated_at')
       .limit(1);
     if (probeError) {
-      console.error('[PUT /api/templates] TABLE PROBE FAILED — table may not exist:', JSON.stringify(probeError));
-      return res.status(500).json({ error: `Table probe failed: ${probeError.message}` });
+      console.error('[PUT /api/templates] COLUMN PROBE FAILED — missing column or table:', {
+        message: probeError.message,
+        code: (probeError as any).code,
+        details: (probeError as any).details,
+        hint: (probeError as any).hint,
+        full: JSON.stringify(probeError),
+      });
+      return res.status(500).json({ error: `Schema probe failed: ${probeError.message}` });
     }
-    console.log('[PUT /api/templates] table probe OK, proceeding with upsert of', rows.length, 'rows');
+    console.log('[PUT /api/templates] schema probe OK — all columns present, upserting', rows.length, 'rows');
 
     // ── 4. Upsert ─────────────────────────────────────────────────────────────
     const { error } = await db

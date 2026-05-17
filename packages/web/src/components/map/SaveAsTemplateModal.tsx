@@ -20,15 +20,6 @@ interface Props {
   token: string | undefined;
 }
 
-function BookmarkIcon() {
-  return (
-    <svg width={14} height={14} viewBox="0 0 24 24" fill="none" stroke="currentColor"
-      strokeWidth={2.2} strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0 }}>
-      <path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z" />
-    </svg>
-  );
-}
-
 export function SaveAsTemplateModal({ isOpen, onClose, onSuccess, mapObjects, activeTemplate, token }: Props) {
   const { i18n } = useTranslation();
   const isHe = i18n.language === 'he';
@@ -108,16 +99,24 @@ export function SaveAsTemplateModal({ isOpen, onClose, onSuccess, mapObjects, ac
 
   const canSave = titleHe.trim().length > 0 && titleEn.trim().length > 0;
 
+  const lbl: React.CSSProperties = {
+    fontFamily: ASSIST, fontSize: 12, fontWeight: 600,
+    color: 'rgba(237,224,196,0.55)', display: 'block',
+    marginBottom: 5, textAlign: 'right',
+  };
+
   return (
     <>
       <style>{`
-        .satm-input { background: rgba(255,255,255,0.07); border: 1px solid rgba(245,200,64,0.2); border-radius: 7px; padding: 8px 11px; font-size: 13px; font-family: ${ASSIST}; color: ${PARCH}; outline: none; width: 100%; box-sizing: border-box; transition: border-color 0.15s; }
+        .satm-input { background: rgba(255,255,255,0.07); border: 1px solid rgba(245,200,64,0.2); border-radius: 7px; padding: 8px 11px; font-size: 13px; font-family: ${ASSIST}; color: ${PARCH}; outline: none; width: 100%; box-sizing: border-box; transition: border-color 0.15s; direction: rtl; }
         .satm-input:focus { border-color: rgba(245,200,64,0.5); }
         .satm-input::placeholder { color: rgba(237,224,196,0.3); }
-        .satm-textarea { background: rgba(255,255,255,0.07); border: 1px solid rgba(245,200,64,0.2); border-radius: 7px; padding: 8px 11px; font-size: 13px; font-family: ${ASSIST}; color: ${PARCH}; outline: none; width: 100%; box-sizing: border-box; resize: vertical; min-height: 60px; transition: border-color 0.15s; }
+        .satm-input-ltr { direction: ltr; text-align: left; }
+        .satm-textarea { background: rgba(255,255,255,0.07); border: 1px solid rgba(245,200,64,0.2); border-radius: 7px; padding: 8px 11px; font-size: 13px; font-family: ${ASSIST}; color: ${PARCH}; outline: none; width: 100%; box-sizing: border-box; resize: vertical; min-height: 58px; transition: border-color 0.15s; direction: rtl; }
         .satm-textarea:focus { border-color: rgba(245,200,64,0.5); }
         .satm-textarea::placeholder { color: rgba(237,224,196,0.3); }
-        .satm-select { background: rgba(20,43,22,0.99); border: 1px solid rgba(245,200,64,0.2); border-radius: 7px; padding: 8px 11px; font-size: 13px; font-family: ${ASSIST}; color: ${PARCH}; outline: none; width: 100%; box-sizing: border-box; cursor: pointer; }
+        .satm-textarea-ltr { direction: ltr; text-align: left; }
+        .satm-select { background: rgba(10,28,12,0.98); border: 1px solid rgba(245,200,64,0.2); border-radius: 7px; padding: 8px 11px; font-size: 13px; font-family: ${ASSIST}; color: ${PARCH}; outline: none; width: 100%; box-sizing: border-box; cursor: pointer; direction: rtl; }
         .satm-select:focus { border-color: rgba(245,200,64,0.5); }
         .satm-radio { display: flex; align-items: flex-start; gap: 10px; padding: 10px 12px; border-radius: 8px; cursor: pointer; border: 1px solid rgba(245,200,64,0.12); transition: background 0.12s, border-color 0.12s; }
         .satm-radio:hover { background: rgba(245,200,64,0.04); border-color: rgba(245,200,64,0.22); }
@@ -135,11 +134,12 @@ export function SaveAsTemplateModal({ isOpen, onClose, onSuccess, mapObjects, ac
           padding: 16,
         }}
       >
+        {/* Modal — always RTL per spec */}
         <div
-          dir={isHe ? 'rtl' : 'ltr'}
+          dir="rtl"
           onClick={e => e.stopPropagation()}
           style={{
-            width: '100%', maxWidth: 520,
+            width: '100%', maxWidth: 500,
             maxHeight: '90dvh',
             background: `linear-gradient(180deg, #1a3a1c 0%, ${FOREST} 100%)`,
             border: '1px solid rgba(245,200,64,0.22)',
@@ -149,19 +149,18 @@ export function SaveAsTemplateModal({ isOpen, onClose, onSuccess, mapObjects, ac
             overflow: 'hidden',
           }}
         >
-          {/* Header */}
+          {/* Header — X on left (start in RTL = right, so X is flex-end = left) */}
           <div style={{
             display: 'flex', alignItems: 'center', justifyContent: 'space-between',
             padding: '18px 22px 14px',
             borderBottom: '1px solid rgba(245,200,64,0.1)',
             flexShrink: 0,
           }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 9 }}>
-              <BookmarkIcon />
-              <h2 style={{ fontFamily: FRANK, fontSize: 18, fontWeight: 700, color: GOLD, margin: 0 }}>
-                {isHe ? 'שמור כתבנית' : 'Save as Template'}
-              </h2>
-            </div>
+            {/* Title on right (flex-start in RTL) */}
+            <h2 style={{ fontFamily: FRANK, fontSize: 18, fontWeight: 700, color: GOLD, margin: 0 }}>
+              🔖 {isHe ? 'שמור כתבנית' : 'Save as Template'}
+            </h2>
+            {/* X on left (flex-end in RTL) */}
             <button
               onClick={onClose}
               style={{
@@ -169,20 +168,19 @@ export function SaveAsTemplateModal({ isOpen, onClose, onSuccess, mapObjects, ac
                 border: '1px solid rgba(245,200,64,0.2)',
                 background: 'transparent', color: 'rgba(237,224,196,0.5)',
                 cursor: 'pointer', fontSize: 15, display: 'flex',
-                alignItems: 'center', justifyContent: 'center',
+                alignItems: 'center', justifyContent: 'center', flexShrink: 0,
               }}
             >✕</button>
           </div>
 
           {/* Body */}
-          <div style={{ flex: 1, overflowY: 'auto', padding: '18px 22px', display: 'flex', flexDirection: 'column', gap: 14 }}>
+          <div style={{ flex: 1, overflowY: 'auto', padding: '16px 22px', display: 'flex', flexDirection: 'column', gap: 13 }}>
 
-            {/* Save mode — only when there's an active template */}
+            {/* 1. אפשרות שמירה — only when a template is loaded */}
             {activeTemplate && (
-              <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-                <label style={{ fontFamily: ASSIST, fontSize: 12, fontWeight: 600, color: 'rgba(237,224,196,0.55)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
-                  {isHe ? 'אפשרות שמירה' : 'Save option'}
-                </label>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 7 }}>
+                <label style={lbl}>אפשרות שמירה</label>
+
                 <div
                   className={`satm-radio${saveMode === 'update' ? ' active' : ''}`}
                   onClick={() => setSaveMode('update')}
@@ -197,10 +195,10 @@ export function SaveAsTemplateModal({ isOpen, onClose, onSuccess, mapObjects, ac
                   </div>
                   <div>
                     <div style={{ fontFamily: FRANK, fontSize: 13, fontWeight: 700, color: PARCH }}>
-                      {isHe ? 'עדכן תבנית קיימת' : 'Update existing template'}
+                      עדכן תבנית קיימת
                     </div>
                     <div style={{ fontFamily: ASSIST, fontSize: 12, color: 'rgba(237,224,196,0.5)', marginTop: 2 }}>
-                      {isHe ? `עדכן את "${activeTemplate.titleHe}"` : `Update "${activeTemplate.titleEn}"`}
+                      {`עדכן את "${activeTemplate.titleHe}"`}
                     </div>
                   </div>
                 </div>
@@ -218,90 +216,86 @@ export function SaveAsTemplateModal({ isOpen, onClose, onSuccess, mapObjects, ac
                     {saveMode === 'new' && <div style={{ width: 6, height: 6, borderRadius: '50%', background: FOREST }} />}
                   </div>
                   <div style={{ fontFamily: FRANK, fontSize: 13, fontWeight: 700, color: PARCH }}>
-                    {isHe ? 'שמור כתבנית חדשה' : 'Save as new template'}
+                    שמור כתבנית חדשה
                   </div>
                 </div>
               </div>
             )}
 
-            {/* Icon + Category row */}
+            {/* 2. אייקון + קטגוריה */}
             <div style={{ display: 'flex', gap: 12 }}>
               <div style={{ flex: '0 0 72px' }}>
-                <label style={{ fontFamily: ASSIST, fontSize: 12, fontWeight: 600, color: 'rgba(237,224,196,0.55)', display: 'block', marginBottom: 5 }}>
-                  {isHe ? 'אייקון' : 'Icon'}
-                </label>
+                <label style={lbl}>אייקון</label>
                 <input className="satm-input" value={icon} onChange={e => setIcon(e.target.value)}
-                  maxLength={4} style={{ fontSize: 22, textAlign: 'center', padding: '6px 4px' }} />
+                  maxLength={4} style={{ fontSize: 22, textAlign: 'center', padding: '5px 4px', direction: 'ltr' }} />
               </div>
               <div style={{ flex: 1 }}>
-                <label style={{ fontFamily: ASSIST, fontSize: 12, fontWeight: 600, color: 'rgba(237,224,196,0.55)', display: 'block', marginBottom: 5 }}>
-                  {isHe ? 'קטגוריה' : 'Category'}
-                </label>
-                <select
-                  className="satm-select"
-                  value={categoryHe}
-                  onChange={e => handleCategoryChange(e.target.value)}
-                >
+                <label style={lbl}>קטגוריה</label>
+                <select className="satm-select" value={categoryHe} onChange={e => handleCategoryChange(e.target.value)}>
                   {TEMPLATE_CATEGORIES.map(cat => (
-                    <option key={cat.he} value={cat.he}>
-                      {isHe ? cat.he : cat.en}
-                    </option>
+                    <option key={cat.he} value={cat.he}>{isHe ? cat.he : cat.en}</option>
                   ))}
                 </select>
               </div>
             </div>
 
-            {/* Title He */}
+            {/* 3. שם התבנית (עברית) */}
             <div>
-              <label style={{ fontFamily: ASSIST, fontSize: 12, fontWeight: 600, color: 'rgba(237,224,196,0.55)', display: 'block', marginBottom: 5 }}>
-                {isHe ? 'שם התבנית (עברית)' : 'Template name (Hebrew)'}
-              </label>
+              <label style={lbl}>שם התבנית (עברית)</label>
               <input className="satm-input" placeholder="שם בעברית" value={titleHe}
-                onChange={e => setTitleHe(e.target.value)} dir="rtl" />
+                onChange={e => setTitleHe(e.target.value)} />
             </div>
 
-            {/* Title En */}
+            {/* 4. שם התבנית (אנגלית) */}
             <div>
-              <label style={{ fontFamily: ASSIST, fontSize: 12, fontWeight: 600, color: 'rgba(237,224,196,0.55)', display: 'block', marginBottom: 5 }}>
-                {isHe ? 'שם התבנית (אנגלית)' : 'Template name (English)'}
-              </label>
-              <input className="satm-input" placeholder="Template name" value={titleEn}
-                onChange={e => setTitleEn(e.target.value)} dir="ltr" />
+              <label style={lbl}>שם התבנית (אנגלית)</label>
+              <input className="satm-input satm-input-ltr" placeholder="Template name" value={titleEn}
+                onChange={e => setTitleEn(e.target.value)} />
             </div>
 
-            {/* Desc He */}
+            {/* 5. תיאור (עברית) */}
             <div>
-              <label style={{ fontFamily: ASSIST, fontSize: 12, fontWeight: 600, color: 'rgba(237,224,196,0.55)', display: 'block', marginBottom: 5 }}>
-                {isHe ? 'תיאור (עברית)' : 'Description (Hebrew)'}
-              </label>
+              <label style={lbl}>תיאור (עברית)</label>
               <textarea className="satm-textarea" placeholder="תיאור קצר..." value={descHe}
-                onChange={e => setDescHe(e.target.value)} dir="rtl" rows={2} />
+                onChange={e => setDescHe(e.target.value)} rows={2} />
             </div>
 
-            {/* Desc En */}
+            {/* 6. תיאור (אנגלית) */}
             <div>
-              <label style={{ fontFamily: ASSIST, fontSize: 12, fontWeight: 600, color: 'rgba(237,224,196,0.55)', display: 'block', marginBottom: 5 }}>
-                {isHe ? 'תיאור (אנגלית)' : 'Description (English)'}
-              </label>
-              <textarea className="satm-textarea" placeholder="Short description..." value={descEn}
-                onChange={e => setDescEn(e.target.value)} dir="ltr" rows={2} />
+              <label style={lbl}>תיאור (אנגלית)</label>
+              <textarea className="satm-textarea satm-textarea-ltr" placeholder="Short description..." value={descEn}
+                onChange={e => setDescEn(e.target.value)} rows={2} />
             </div>
 
-            {/* Element count info */}
-            <div style={{ fontFamily: ASSIST, fontSize: 12, color: 'rgba(237,224,196,0.4)', textAlign: isHe ? 'right' : 'left' }}>
-              {isHe
-                ? `${mapObjects.length} אלמנטים יישמרו בתבנית`
-                : `${mapObjects.length} elements will be saved in this template`}
+            {/* 7. מספר אלמנטים */}
+            <div style={{ fontFamily: ASSIST, fontSize: 12, color: 'rgba(237,224,196,0.4)', textAlign: 'right' }}>
+              {mapObjects.length} אלמנטים יישמרו בתבנית
             </div>
           </div>
 
-          {/* Footer */}
+          {/* Footer — ביטול right, שמור left (RTL) */}
           <div style={{
-            display: 'flex', gap: 10, justifyContent: 'flex-end',
+            display: 'flex', gap: 10, justifyContent: 'flex-start',
             padding: '14px 22px',
             borderTop: '1px solid rgba(245,200,64,0.1)',
             flexShrink: 0,
           }}>
+            {/* שמור is flex-start = right in RTL visually, but we want it prominent */}
+            <button
+              onClick={handleSave}
+              disabled={!canSave || isSaving}
+              style={{
+                fontFamily: FRANK, fontSize: 14, fontWeight: 700,
+                padding: '9px 26px', borderRadius: 7,
+                cursor: canSave && !isSaving ? 'pointer' : 'not-allowed',
+                background: canSave ? GOLD : 'rgba(245,200,64,0.2)',
+                border: 'none',
+                color: canSave ? FOREST : 'rgba(237,224,196,0.3)',
+                opacity: canSave && !isSaving ? 1 : 0.6,
+              }}
+            >
+              {isSaving ? 'שומר...' : 'שמור 💾'}
+            </button>
             <button
               onClick={onClose}
               style={{
@@ -312,24 +306,7 @@ export function SaveAsTemplateModal({ isOpen, onClose, onSuccess, mapObjects, ac
                 color: 'rgba(237,224,196,0.6)',
               }}
             >
-              {isHe ? 'ביטול' : 'Cancel'}
-            </button>
-            <button
-              onClick={handleSave}
-              disabled={!canSave || isSaving}
-              style={{
-                fontFamily: FRANK, fontSize: 14, fontWeight: 700,
-                padding: '9px 24px', borderRadius: 7,
-                cursor: canSave && !isSaving ? 'pointer' : 'not-allowed',
-                background: canSave ? GOLD : 'rgba(245,200,64,0.2)',
-                border: 'none',
-                color: canSave ? FOREST : 'rgba(237,224,196,0.3)',
-                opacity: canSave && !isSaving ? 1 : 0.6,
-                display: 'flex', alignItems: 'center', gap: 7,
-              }}
-            >
-              <BookmarkIcon />
-              {isSaving ? (isHe ? 'שומר...' : 'Saving...') : (isHe ? 'שמור' : 'Save')}
+              ביטול
             </button>
           </div>
         </div>
