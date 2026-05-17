@@ -422,7 +422,7 @@ function DrawPreview({ drawing, cursor }: { drawing: DrawState; cursor: [number,
   }
 
   if (drawing.kind === 'rect') {
-    const fixedW = FIXED_WIDTH[drawing.tool];
+    const fixedW = FIXED_WIDTH[drawing.tool as keyof typeof FIXED_WIDTH];
     const d = makeRectFromDrag(drawing.start, drawing.end, fixedW);
     if (!d.width || !d.height) return null;
     const rx = d.x! * PX, ry = d.y! * PX;
@@ -899,7 +899,7 @@ export function GardenCanvas({
         wallHeightM: cfg.defaultWallHeightM,
       };
     } else if (ds.kind === 'rect') {
-      const fixedW = FIXED_WIDTH[ds.tool];
+      const fixedW = FIXED_WIDTH[ds.tool as keyof typeof FIXED_WIDTH];
       const d = makeRectFromDrag(ds.start, ds.end, fixedW);
       obj = {
         type: cfg.type, shapeKind: 'rect',

@@ -2,7 +2,9 @@ export type ShapeType =
   | 'house' | 'fence' | 'wall' | 'pergola' | 'deadzone' | 'walkway'
   | 'fruit-tree' | 'tree'
   | 'pot-rect' | 'pot-round'
-  | 'bed' | 'hydroponics' | 'aquaponics' | 'raised-bed' | 'vertical';
+  | 'bed' | 'hydroponics' | 'aquaponics' | 'raised-bed' | 'vertical'
+  // Contextual / template elements
+  | 'lawn' | 'water-source' | 'compost' | 'tool-shed' | 'gate' | 'sun-indicator';
 
 export type ShapeKind = 'polygon' | 'rect' | 'circle';
 export type PatternType = 'net' | 'gravel' | 'concrete' | 'hydro' | 'aqua' | 'wood' | 'trellis';
@@ -134,6 +136,47 @@ export const SHAPE_CONFIGS: Record<ShapeType, ShapeConfig> = {
     strokeDash: [3, 3],
     defaultWidth: 0.3, defaultHeight: 2,
     pattern: 'trellis',
+  },
+
+  // ── Contextual / template elements ──────────────────────────────────────────
+  'lawn': {
+    type: 'lawn', shapeKind: 'rect',
+    labelHe: 'דשא', labelEn: 'Lawn', emoji: '🌿',
+    fill: 'rgba(134,196,88,0.25)', stroke: '#88C456', strokeWidth: 1,
+    strokeDash: [6, 5],
+    defaultWidth: 5, defaultHeight: 5,
+  },
+  'water-source': {
+    type: 'water-source', shapeKind: 'circle',
+    labelHe: 'ברז מים', labelEn: 'Water tap', emoji: '🚿',
+    fill: 'rgba(30,110,210,0.55)', stroke: '#2A7EC8', strokeWidth: 2,
+    defaultRadius: 0.4,
+  },
+  'compost': {
+    type: 'compost', shapeKind: 'rect',
+    labelHe: 'קומפוסט', labelEn: 'Compost', emoji: '♻️',
+    fill: 'rgba(101,67,33,0.55)', stroke: '#6B4226', strokeWidth: 2,
+    defaultWidth: 1.8, defaultHeight: 1.8,
+  },
+  'tool-shed': {
+    type: 'tool-shed', shapeKind: 'rect',
+    labelHe: 'מחסן', labelEn: 'Tool shed', emoji: '🏚',
+    fill: 'rgba(105,78,50,0.5)', stroke: '#7A5A3A', strokeWidth: 2,
+    defaultWidth: 2.5, defaultHeight: 2,
+  },
+  'gate': {
+    type: 'gate', shapeKind: 'rect',
+    labelHe: 'שער', labelEn: 'Gate', emoji: '🚪',
+    fill: 'rgba(180,140,60,0.35)', stroke: '#C49A2A', strokeWidth: 2,
+    strokeDash: [3, 3],
+    defaultWidth: 2, defaultHeight: 0.2,
+  },
+  'sun-indicator': {
+    type: 'sun-indicator', shapeKind: 'circle',
+    labelHe: '☀️ דרום', labelEn: '☀️ South', emoji: '☀️',
+    fill: 'rgba(255,215,0,0.13)', stroke: '#F5C840', strokeWidth: 1.5,
+    strokeDash: [4, 3],
+    defaultRadius: 1.2,
   },
 };
 
