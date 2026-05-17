@@ -3,7 +3,6 @@ import { useTranslation } from 'react-i18next';
 import { useDirection } from '../../hooks/useDirection';
 import { useAuthStore } from '../../stores/authStore';
 import type { BiodynamicDay } from '@gina-haya/shared';
-import { MoonHoverSign } from '../MoonHoverSign';
 import './today-card.css';
 
 const SCORE_COLOURS: Record<string, string> = {
@@ -290,13 +289,40 @@ export function MoonPhaseDisplay({ phaseAngle, phasePct, phaseHe, moonSignHe, as
             style={{ display: 'block', width: '165px', height: '165px' }}
           />
         </div>
-        {/* TEMP: always show to confirm rendering — restore condition after visual check */}
+        {/* Moon hover sign — always shown for now, add phasePct < 3 condition once confirmed */}
         <div style={{
           position: 'absolute', inset: 0,
           display: 'flex', alignItems: 'center', justifyContent: 'center',
           pointerEvents: 'none',
+          zIndex: 10,
         }}>
-          <MoonHoverSign illumination={0} />
+          <svg width="160" height="80" viewBox="0 0 200 80" style={{ overflow: 'visible' }}>
+            <style>{`
+              @keyframes moon-sign-drift {
+                0%,100% { transform: translate(0px,0px) rotate(-1deg); }
+                25%      { transform: translate(10px,-8px) rotate(1deg); }
+                50%      { transform: translate(-8px,6px) rotate(-0.5deg); }
+                75%      { transform: translate(6px,10px) rotate(0.8deg); }
+              }
+              .moon-sign-g {
+                animation: moon-sign-drift 8s ease-in-out infinite;
+                transform-origin: 100px 40px;
+              }
+            `}</style>
+            <g className="moon-sign-g">
+              <rect x="5"   y="10" width="190" height="60" rx="5" fill="#4A3008"/>
+              <rect x="7"   y="12" width="186" height="56" rx="4" fill="#7A5520"/>
+              <rect x="5"   y="10" width="12"  height="60" rx="3" fill="#4A3008"/>
+              <rect x="183" y="10" width="12"  height="60" rx="3" fill="#4A3008"/>
+              <circle cx="15"  cy="18" r="3" fill="#2A1A04"/>
+              <circle cx="185" cy="18" r="3" fill="#2A1A04"/>
+              <circle cx="15"  cy="62" r="3" fill="#2A1A04"/>
+              <circle cx="185" cy="62" r="3" fill="#2A1A04"/>
+              <text x="100" y="30" textAnchor="middle" fontFamily="Georgia,serif" fontSize="11" fontWeight="700" fill="#1A0E02" letterSpacing="1.5">האור חוזר בקרוב</text>
+              <text x="100" y="44" textAnchor="middle" fontFamily="Georgia,serif" fontSize="9"  fill="#1A0E02" letterSpacing="1">LIGHT COMES BACK SOON</text>
+              <text x="100" y="57" textAnchor="middle" fontFamily="Georgia,serif" fontSize="8"  fill="#3A2408" letterSpacing="1">נתראה! · SEE YA!</text>
+            </g>
+          </svg>
         </div>
       </div>
 
