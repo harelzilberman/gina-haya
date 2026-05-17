@@ -3,6 +3,7 @@ import { useTranslation } from 'react-i18next';
 import { useDirection } from '../../hooks/useDirection';
 import { useAuthStore } from '../../stores/authStore';
 import type { BiodynamicDay } from '@gina-haya/shared';
+import { MoonHoverSign } from '../MoonHoverSign';
 import './today-card.css';
 
 const SCORE_COLOURS: Record<string, string> = {
@@ -268,21 +269,34 @@ export function MoonPhaseDisplay({ phaseAngle, phasePct, phaseHe, moonSignHe, as
       gap: '10px', padding: '20px 0 12px',
     }}>
       <div style={{
+        position: 'relative',
         width: '165px',
         height: '165px',
-        borderRadius: '50%',
-        overflow: 'hidden',
         flexShrink: 0,
-        boxShadow: isFullMoon
-          ? '0 0 0 2px rgba(245,200,64,0.40), 0 0 32px rgba(245,200,64,0.35)'
-          : '0 0 0 2px rgba(245,200,64,0.40), 0 0 16px rgba(245,200,64,0.18)',
       }}>
-        <canvas
-          ref={canvasRef}
-          width={165}
-          height={165}
-          style={{ display: 'block', width: '165px', height: '165px' }}
-        />
+        <div style={{
+          width: '165px',
+          height: '165px',
+          borderRadius: '50%',
+          overflow: 'hidden',
+          boxShadow: isFullMoon
+            ? '0 0 0 2px rgba(245,200,64,0.40), 0 0 32px rgba(245,200,64,0.35)'
+            : '0 0 0 2px rgba(245,200,64,0.40), 0 0 16px rgba(245,200,64,0.18)',
+        }}>
+          <canvas
+            ref={canvasRef}
+            width={165}
+            height={165}
+            style={{ display: 'block', width: '165px', height: '165px' }}
+          />
+        </div>
+        <div style={{
+          position: 'absolute', inset: 0,
+          display: 'flex', alignItems: 'center', justifyContent: 'center',
+          pointerEvents: 'none',
+        }}>
+          <MoonHoverSign illumination={phasePct / 100} />
+        </div>
       </div>
 
       <div style={{ fontFamily: FRANK, fontSize: '18px', fontWeight: 700, color: GOLD }}>
