@@ -208,40 +208,68 @@ export function drawMoon(canvas: HTMLCanvasElement, phasePct: number, phaseAngle
 
 // ─────────────────────────────────────────────
 // MOON HOVER SIGN — shown on new moon (phasePct < 3)
+// viewBox 150×90, rendered at 150×90 inside the 165px moon circle
 // ─────────────────────────────────────────────
 export function MoonSignSVG() {
+  const { i18n } = useTranslation('calendar');
+  const isHe = i18n.language === 'he';
+
   return (
-    <svg width="160" height="80" viewBox="0 0 200 80" style={{ overflow: 'visible', filter: 'drop-shadow(0px 2px 8px rgba(0,0,0,0.8))' }}>
+    <svg
+      width="150" height="90"
+      viewBox="0 0 150 90"
+      style={{ overflow: 'visible', filter: 'drop-shadow(0px 2px 10px rgba(0,0,0,0.85))' }}
+    >
       <style>{`
         @keyframes moon-sign-drift {
           0%,100% { transform: translate(0px,0px)   rotate(-1deg); }
-          25%      { transform: translate(10px,-8px)  rotate(1deg); }
-          50%      { transform: translate(-8px,6px)   rotate(-0.5deg); }
-          75%      { transform: translate(6px,10px)   rotate(0.8deg); }
+          25%      { transform: translate(8px,-6px)   rotate(1deg); }
+          50%      { transform: translate(-6px,5px)   rotate(-0.5deg); }
+          75%      { transform: translate(5px,8px)    rotate(0.8deg); }
         }
         .moon-sign-g {
           animation: moon-sign-drift 8s ease-in-out infinite;
-          transform-origin: 100px 40px;
+          transform-origin: 75px 45px;
         }
       `}</style>
       <g className="moon-sign-g">
         {/* Outer frame */}
-        <rect x="5"   y="10" width="190" height="60" rx="5" fill="#8B5E1A"/>
-        {/* Inner board — bright warm wood */}
-        <rect x="7"   y="12" width="186" height="56" rx="4" fill="#C4862A"/>
+        <rect x="5"  y="8"  width="140" height="74" rx="5" fill="#8B5E1A"/>
+        {/* Inner board */}
+        <rect x="8"  y="11" width="134" height="68" rx="4" fill="#C4862A"/>
         {/* Left plank */}
-        <rect x="5"   y="10" width="12"  height="60" rx="3" fill="#8B5E1A"/>
+        <rect x="5"  y="8"  width="14"  height="74" rx="3" fill="#8B5E1A"/>
         {/* Right plank */}
-        <rect x="183" y="10" width="12"  height="60" rx="3" fill="#8B5E1A"/>
+        <rect x="131" y="8" width="14"  height="74" rx="3" fill="#8B5E1A"/>
         {/* Nails */}
-        <circle cx="15"  cy="18" r="3" fill="#4A2800"/>
-        <circle cx="185" cy="18" r="3" fill="#4A2800"/>
-        <circle cx="15"  cy="62" r="3" fill="#4A2800"/>
-        <circle cx="185" cy="62" r="3" fill="#4A2800"/>
-        {/* Carved text */}
-        <text x="100" y="30" textAnchor="middle" fontFamily="Georgia,serif" fontSize="11" fontWeight="700" fill="#2A1200" letterSpacing="1.5">האור חוזר בקרוב</text>
-        <text x="100" y="44" textAnchor="middle" fontFamily="Georgia,serif" fontSize="9"  fill="#2A1200" letterSpacing="1">LIGHT COMES BACK SOON</text>
-        <text x="100" y="57" textAnchor="middle" fontFamily="Georgia,serif" fontSize="8"  fill="#3A1A00" letterSpacing="1">נתראה! · SEE YA! 🌙</text>
+        <circle cx="14"  cy="17" r="3.5" fill="#4A2800"/>
+        <circle cx="136" cy="17" r="3.5" fill="#4A2800"/>
+        <circle cx="14"  cy="73" r="3.5" fill="#4A2800"/>
+        <circle cx="136" cy="73" r="3.5" fill="#4A2800"/>
+        {/* Text — single language */}
+        {isHe ? (
+          <>
+            <text x="75" y="44" textAnchor="middle" fontFamily="Georgia,serif"
+              fontSize="13" fontWeight="700" fill="#1A0E02" letterSpacing="2">
+              האור חוזר בקרוב
+            </text>
+            <text x="75" y="63" textAnchor="middle" fontFamily="Georgia,serif"
+              fontSize="11" fill="#1A0E02" letterSpacing="1.5">
+              נתראה! 🌙
+            </text>
+          </>
+        ) : (
+          <>
+            <text x="75" y="43" textAnchor="middle" fontFamily="Georgia,serif"
+              fontSize="11" fontWeight="700" fill="#1A0E02" letterSpacing="1.5">
+              LIGHT COMES BACK SOON
+            </text>
+            <text x="75" y="62" textAnchor="middle" fontFamily="Georgia,serif"
+              fontSize="11" fill="#1A0E02" letterSpacing="1">
+              SEE YA! 🌙
+            </text>
+          </>
+        )}
       </g>
     </svg>
   );
