@@ -39,8 +39,13 @@ const LP_CSS = `
 @keyframes fadeIn  { from { opacity:0; } to { opacity:1; } }
 @keyframes scaleIn { from { opacity:0; transform:scale(0.95); } to { opacity:1; transform:scale(1); } }
 @keyframes chupchu-float {
-  0%, 100% { transform: translateY(0px); }
-  50%       { transform: translateY(-8px); }
+  0%   { transform: translateY(0px) rotate(-1deg); }
+  50%  { transform: translateY(-10px) rotate(1deg); }
+  100% { transform: translateY(0px) rotate(-1deg); }
+}
+@keyframes chupchu-pulse {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(196,134,42,0.4); }
+  50%       { box-shadow: 0 0 0 8px rgba(196,134,42,0); }
 }
 @keyframes bubble-fadein {
   from { opacity: 0; transform: translateY(-6px); }
@@ -101,9 +106,26 @@ const LP_CSS = `
 @media (max-width: 768px) {
   .lp-hero-chupchu { display: none !important; }
 }
+.lp-chupchu-glow {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.lp-chupchu-glow::before {
+  content: '';
+  position: absolute;
+  width: 160px;
+  height: 160px;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(196,134,42,0.25) 0%, rgba(196,134,42,0.08) 50%, transparent 70%);
+  z-index: 0;
+}
 .lp-chupchu-img {
-  animation: chupchu-float 3s ease-in-out infinite;
-  filter: drop-shadow(0 6px 20px rgba(0,0,0,0.55)) drop-shadow(0 0 12px rgba(196,134,42,0.3));
+  position: relative;
+  z-index: 1;
+  animation: chupchu-float 3.5s ease-in-out infinite;
+  filter: brightness(1.3) contrast(1.1) drop-shadow(0px 4px 20px rgba(196,134,42,0.5));
 }
 .lp-bubble {
   position: relative;
@@ -138,9 +160,10 @@ const LP_CSS = `
 }
 .lp-chat-btn {
   transition: background-color 0.2s, border-color 0.2s;
+  animation: chupchu-pulse 2.5s ease-in-out infinite;
 }
 .lp-chat-btn:hover {
-  background-color: rgba(196,134,42,0.3) !important;
+  background-color: rgba(196,134,42,0.4) !important;
   border-color: #E8A030 !important;
 }
 ::-webkit-scrollbar       { width: 6px; }
@@ -690,17 +713,18 @@ export function LandingPage() {
             <div
               className="lp-bubble"
               style={{
-                backgroundColor: '#FDF3E0',
-                border: '1px solid #C4862A',
+                backgroundColor: 'rgba(253,243,224,0.95)',
+                border: '1.5px solid #C4862A',
                 borderRadius: '12px',
                 padding: '10px 16px',
                 textAlign: 'center',
                 maxWidth: '190px',
+                boxShadow: '0px 4px 16px rgba(0,0,0,0.3)',
               }}
             >
               <p style={{
                 fontFamily: "'Caveat', cursive",
-                fontSize: '16px',
+                fontSize: '17px',
                 lineHeight: 1.4,
                 color: '#2A1A04',
                 margin: 0,
@@ -712,15 +736,17 @@ export function LandingPage() {
               </p>
             </div>
 
-            {/* Chupchu image */}
-            <img
-              className="lp-chupchu-img"
-              src="https://gina-haya.vercel.app/chupchu_final.png"
-              alt={isHe ? "צ'ופצ'ו" : 'Chupchu'}
-              width={120}
-              height={120}
-              style={{ objectFit: 'contain' }}
-            />
+            {/* Chupchu image with warm glow */}
+            <div className="lp-chupchu-glow">
+              <img
+                className="lp-chupchu-img"
+                src="https://gina-haya.vercel.app/chupchu_final.png"
+                alt={isHe ? "צ'ופצ'ו" : 'Chupchu'}
+                width={120}
+                height={120}
+                style={{ objectFit: 'contain' }}
+              />
+            </div>
 
             {/* Chat button */}
             <Link
