@@ -21,13 +21,14 @@ export function TrackerPage() {
   const { t, i18n } = useTranslation('tracker');
   const isHe = i18n.language === 'he';
   const navigate = useNavigate();
-  const { trackers, isLoading, loadTrackers } = useTrackerStore();
+  const { trackers, isLoading, loadTrackers, updateTrackerName } = useTrackerStore();
   const { activeGarden, loadGardens } = useGardenStore();
   const { tier, limits } = usePlanLimit();
 
   const [showNewTracker, setShowNewTracker] = useState(false);
   const [photoUploadTrackerId, setPhotoUploadTrackerId] = useState<string | null>(null);
   const [analysisResult, setAnalysisResult] = useState<CheckinResult | null>(null);
+  const [analysisAutoIdentified, setAnalysisAutoIdentified] = useState(false);
   const [pendingApproval, setPendingApproval] = useState<{ trackerId: string; tasks: TrackerTask[] } | null>(null);
 
   const maxTrackers = limits.maxTrackers;
@@ -41,6 +42,7 @@ export function TrackerPage() {
 
   function handleAnalysisComplete(result: CheckinResult) {
     setPhotoUploadTrackerId(null);
+    setAnalysisAutoIdentified(false);
     setAnalysisResult(result);
   }
 
@@ -246,7 +248,11 @@ export function TrackerPage() {
       {showNewTracker && (
         <NewTrackerModal
           onClose={() => setShowNewTracker(false)}
-          onCreated={(result) => { setShowNewTracker(false); setAnalysisResult(result); }}
+          onCreated={(result, wasAutoIdentified) => {
+          setShowNewTracker(false);
+          setAnalysisAutoIdentified(wasAutoIdentified);
+          setAnalysisResult(result);
+        }}
         />
       )}
 
@@ -265,14 +271,23 @@ export function TrackerPage() {
           growingPlan={analysisResult.growingPlan}
           checkinDate={analysisResult.checkin.checkin_date}
           suggestedTasksCount={analysisResult.suggested_tasks?.length ?? 0}
+          wasAutoIdentified={analysisAutoIdentified}
+          onConfirmIdentification={async (nameHe, nameEn) => {
+            try {
+              await updateTrackerName(analysisResult.checkin.tracker_id, nameHe, nameEn);
+            } catch {
+              // silently ignore — user can rename later
+            }
+          }}
           onReviewTasks={() => {
             const tasks = analysisResult.suggested_tasks;
             const trackerId = analysisResult.checkin.tracker_id;
             setAnalysisResult(null);
+            setAnalysisAutoIdentified(false);
             if (tasks && tasks.length > 0) setPendingApproval({ trackerId, tasks });
             else loadTrackers();
           }}
-          onClose={() => { setAnalysisResult(null); loadTrackers(); }}
+          onClose={() => { setAnalysisResult(null); setAnalysisAutoIdentified(false); loadTrackers(); }}
         />
       )}
 

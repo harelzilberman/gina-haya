@@ -1,6 +1,6 @@
 import Anthropic from '@anthropic-ai/sdk';
 import sharp from 'sharp';
-import { extractJson } from './jsonUtils';
+import { extractAndParseJson } from './jsonUtils';
 
 const anthropic = new Anthropic({
   apiKey: process.env.ANTHROPIC_API_KEY!,
@@ -198,11 +198,16 @@ export async function analyzePlantImage(
   const { data: compressedImage, mimeType: compressedMimeType } = preCompressed
     ?? await compressImageForClaude(imageBase64);
 
-  const hint = context.plantNameHint
-    ? ` (רמז: ייתכן שזה ${context.plantNameHint})`
+  const UNKNOWN_HINTS = /^\s*(don'?t know|לא יודע|unknown|לא ידוע|אין מושג|לא זוהה|)\s*$/i;
+  const isUnknownHint = !context.plantNameHint || UNKNOWN_HINTS.test(context.plantNameHint);
+  const hint = isUnknownHint
+    ? ''
+    : ` (רמז: ייתכן שזה ${context.plantNameHint})`;
+  const identifyInstruction = isUnknownHint
+    ? '\nשם הצמח אינו ידוע — זהה את הצמח בעצמך לפי התמונה בלבד.'
     : '';
 
-  const userMessage = `נתח את הצמח בתמונה${hint}.
+  const userMessage = `נתח את הצמח בתמונה${hint}.${identifyInstruction}
 
 החזר JSON תקין בלבד בפורמט הבא, ללא שום טקסט נוסף.
 // Single source of truth for all enum constraints:
@@ -298,13 +303,7 @@ due_in_days: מתי לבצע את המשימה (1-14 ימים). priority: high=�
     throw new Error('No text response from Claude');
   }
 
-  const jsonStr = extractJson(textBlock.text);
-  let parsed: any;
-  try {
-    parsed = JSON.parse(jsonStr);
-  } catch {
-    throw new Error(`Failed to parse Claude response as JSON: ${textBlock.text.slice(0, 200)}`);
-  }
+  const parsed = extractAndParseJson(textBlock.text);
 
   if (!parsed.analysis || !parsed.growingPlan) {
     throw new Error('Invalid response structure: missing analysis or growingPlan');

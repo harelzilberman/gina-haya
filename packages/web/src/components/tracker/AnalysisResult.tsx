@@ -35,13 +35,20 @@ interface Props {
   growingPlan: GrowingPlan;
   checkinDate?: string;
   suggestedTasksCount?: number;
+  wasAutoIdentified?: boolean;
+  onConfirmIdentification?: (nameHe: string, nameEn: string) => void;
   onReviewTasks?: () => void;
   onRetry?: () => void;
   onClose: () => void;
 }
 
-export function AnalysisResult({ analysis, growingPlan, checkinDate, suggestedTasksCount, onReviewTasks, onRetry, onClose }: Props) {
+export function AnalysisResult({ analysis, growingPlan, checkinDate, suggestedTasksCount, wasAutoIdentified, onConfirmIdentification, onReviewTasks, onRetry, onClose }: Props) {
   const [expandedWeeks, setExpandedWeeks] = useState<Set<number>>(new Set([1]));
+  const [identBannerState, setIdentBannerState] = useState<'pending' | 'editing' | 'confirmed'>(
+    wasAutoIdentified ? 'pending' : 'confirmed'
+  );
+  const [editNameHe, setEditNameHe] = useState(analysis?.plantIdentified ?? '');
+  const [editNameEn, setEditNameEn] = useState(analysis?.plantIdentifiedEn ?? '');
 
   if (!analysis || !growingPlan) {
     return (
@@ -255,6 +262,103 @@ ${(growingPlan.naturalFertilizers ?? []).length > 0 ? `
           margin: '16px auto',
         }}
       >
+        {/* Auto-identification banner */}
+        {wasAutoIdentified && identBannerState !== 'confirmed' && (
+          <div style={{
+            backgroundColor: 'rgba(245,200,64,0.10)',
+            border: '1px solid rgba(245,200,64,0.4)',
+            borderRadius: '10px',
+            padding: '14px 16px',
+            marginBottom: '20px',
+          }}>
+            <p style={{ fontFamily: FRANK, fontSize: '14px', color: GOLD, margin: '0 0 6px', textAlign: 'right' }}>
+              🔍 זיהינו את הצמח אוטומטית
+            </p>
+            {identBannerState === 'pending' ? (
+              <>
+                <p style={{ fontFamily: ASST, fontSize: '16px', color: PARCH, margin: '0 0 12px', textAlign: 'right', fontWeight: 600 }}>
+                  {analysis.plantIdentifiedEn} ({analysis.plantIdentified})
+                </p>
+                <div style={{ display: 'flex', gap: '8px', justifyContent: 'flex-end' }}>
+                  <button
+                    onClick={() => setIdentBannerState('editing')}
+                    style={{
+                      padding: '7px 14px', borderRadius: '6px', fontFamily: ASST, fontSize: '13px',
+                      backgroundColor: 'transparent', border: '1px solid rgba(245,200,64,0.4)',
+                      color: GOLD, cursor: 'pointer',
+                    }}
+                  >
+                    תיקון שם
+                  </button>
+                  <button
+                    onClick={() => {
+                      setIdentBannerState('confirmed');
+                      onConfirmIdentification?.(analysis.plantIdentified, analysis.plantIdentifiedEn);
+                    }}
+                    style={{
+                      padding: '7px 14px', borderRadius: '6px', fontFamily: FRANK, fontSize: '14px', fontWeight: 700,
+                      backgroundColor: GOLD, border: 'none', color: '#142B16', cursor: 'pointer',
+                    }}
+                  >
+                    אישור
+                  </button>
+                </div>
+              </>
+            ) : (
+              <>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', marginBottom: '10px' }}>
+                  <input
+                    value={editNameHe}
+                    onChange={e => setEditNameHe(e.target.value)}
+                    placeholder="שם בעברית"
+                    dir="rtl"
+                    style={{
+                      backgroundColor: 'rgba(255,255,255,0.07)', border: '1px solid rgba(245,200,64,0.3)',
+                      borderRadius: '6px', padding: '8px 10px', fontFamily: ASST, fontSize: '14px',
+                      color: PARCH, outline: 'none',
+                    }}
+                  />
+                  <input
+                    value={editNameEn}
+                    onChange={e => setEditNameEn(e.target.value)}
+                    placeholder="English name"
+                    dir="ltr"
+                    style={{
+                      backgroundColor: 'rgba(255,255,255,0.07)', border: '1px solid rgba(245,200,64,0.3)',
+                      borderRadius: '6px', padding: '8px 10px', fontFamily: ASST, fontSize: '14px',
+                      color: PARCH, outline: 'none',
+                    }}
+                  />
+                </div>
+                <div style={{ display: 'flex', gap: '8px', justifyContent: 'flex-end' }}>
+                  <button
+                    onClick={() => setIdentBannerState('pending')}
+                    style={{
+                      padding: '7px 14px', borderRadius: '6px', fontFamily: ASST, fontSize: '13px',
+                      backgroundColor: 'transparent', border: '1px solid rgba(245,200,64,0.3)',
+                      color: 'rgba(237,224,196,0.6)', cursor: 'pointer',
+                    }}
+                  >
+                    ביטול
+                  </button>
+                  <button
+                    onClick={() => {
+                      setIdentBannerState('confirmed');
+                      onConfirmIdentification?.(editNameHe.trim() || analysis.plantIdentified, editNameEn.trim() || analysis.plantIdentifiedEn);
+                    }}
+                    style={{
+                      padding: '7px 14px', borderRadius: '6px', fontFamily: FRANK, fontSize: '14px', fontWeight: 700,
+                      backgroundColor: GOLD, border: 'none', color: '#142B16', cursor: 'pointer',
+                    }}
+                  >
+                    שמור שם
+                  </button>
+                </div>
+              </>
+            )}
+          </div>
+        )}
+
         {/* Header */}
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '20px' }}>
           <div>

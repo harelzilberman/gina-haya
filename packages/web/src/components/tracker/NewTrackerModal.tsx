@@ -20,9 +20,11 @@ const LOCATION_TYPES = [
   { value: 'other',      labelHe: 'אחר',    icon: '📍' },
 ];
 
+const UNKNOWN_PLANT_RE = /^\s*(don'?t know|לא יודע|unknown|לא ידוע|אין מושג|לא זוהה|)\s*$/i;
+
 interface Props {
   onClose: () => void;
-  onCreated: (result: CheckinResult) => void;
+  onCreated: (result: CheckinResult, wasAutoIdentified: boolean) => void;
 }
 
 export function NewTrackerModal({ onClose, onCreated }: Props) {
@@ -91,14 +93,23 @@ export function NewTrackerModal({ onClose, onCreated }: Props) {
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
-    if (!plantNameHe.trim() || !plantNameEn.trim()) {
-      setError('יש להזין שם צמח בעברית ובאנגלית');
-      return;
-    }
     if (!imageFile) {
       setError('יש להעלות תמונה של הצמח');
       return;
     }
+
+    const isUnknownHe = UNKNOWN_PLANT_RE.test(plantNameHe);
+    const isUnknownEn = UNKNOWN_PLANT_RE.test(plantNameEn);
+    const wasAutoIdentified = isUnknownHe || isUnknownEn;
+
+    // Require at least one name unless both are "unknown"
+    if (!wasAutoIdentified && (!plantNameHe.trim() || !plantNameEn.trim())) {
+      setError('יש להזין שם צמח בעברית ובאנגלית, או להשאיר ריק לזיהוי אוטומטי');
+      return;
+    }
+
+    const resolvedNameHe = wasAutoIdentified ? 'לא ידוע' : plantNameHe.trim();
+    const resolvedNameEn = wasAutoIdentified ? 'Unknown' : plantNameEn.trim();
 
     setIsSubmitting(true);
     setError('');
@@ -106,8 +117,8 @@ export function NewTrackerModal({ onClose, onCreated }: Props) {
     try {
       // Step 1: Create tracker
       const tracker = await createTracker({
-        plantNameHe: plantNameHe.trim(),
-        plantNameEn: plantNameEn.trim(),
+        plantNameHe: resolvedNameHe,
+        plantNameEn: resolvedNameEn,
         plantId: selectedPlantId && selectedPlantId !== '__custom__' ? selectedPlantId : undefined,
         gardenId: activeGarden?.id,
         locationType,
@@ -122,7 +133,7 @@ export function NewTrackerModal({ onClose, onCreated }: Props) {
       if (result.used_credit) {
         showToast('השתמשת במגבלה החודשית — משתמש בקרדיט שרכשת 🔬', 'info');
       }
-      onCreated(result);
+      onCreated(result, wasAutoIdentified);
     } catch (err: any) {
       if (err.errorCode === 'tracker_limit_reached' || err.message === 'limit_exceeded') {
         setUpgradeOpen(true);
@@ -248,27 +259,25 @@ export function NewTrackerModal({ onClose, onCreated }: Props) {
 
             {/* Hebrew name */}
             <div style={{ marginBottom: '12px' }}>
-              <label style={labelStyle}>שם הצמח בעברית *</label>
+              <label style={labelStyle}>שם הצמח בעברית (השאר ריק לזיהוי אוטומטי)</label>
               <input
                 type="text"
                 value={plantNameHe}
                 onChange={e => setPlantNameHe(e.target.value)}
-                placeholder="למשל: עגבנייה, בזיליקום, לימון..."
+                placeholder="למשל: עגבנייה, בזיליקום — או השאר ריק"
                 style={inputStyle}
-                required
               />
             </div>
 
             {/* English name */}
             <div style={{ marginBottom: '16px' }}>
-              <label style={labelStyle}>Plant name in English *</label>
+              <label style={labelStyle}>Plant name in English (leave blank to auto-identify)</label>
               <input
                 type="text"
                 value={plantNameEn}
                 onChange={e => setPlantNameEn(e.target.value)}
-                placeholder="e.g. Tomato, Basil, Lemon..."
+                placeholder="e.g. Tomato, Basil — or leave blank"
                 style={{ ...inputStyle, direction: 'ltr', textAlign: 'left' }}
-                required
               />
             </div>
 

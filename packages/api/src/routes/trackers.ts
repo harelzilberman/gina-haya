@@ -135,6 +135,31 @@ trackersRouter.post('/', async (req: any, res) => {
   }
 });
 
+// ── PATCH /api/trackers/:id ───────────────────────────────────────────────
+trackersRouter.patch('/:id', async (req: any, res) => {
+  try {
+    const userId = req.user.id;
+    const { id } = req.params;
+    const { plantNameHe, plantNameEn } = req.body;
+
+    if (!plantNameHe || !plantNameEn) {
+      return res.status(400).json({ error: 'plantNameHe and plantNameEn are required' });
+    }
+
+    const { error } = await db
+      .from('plant_trackers')
+      .update({ plant_name_he: plantNameHe, plant_name_en: plantNameEn, updated_at: new Date().toISOString() })
+      .eq('id', id)
+      .eq('user_id', userId);
+
+    if (error) throw error;
+    res.json({ ok: true });
+  } catch (err: any) {
+    console.error('[PATCH /api/trackers/:id]', err.message);
+    res.status(500).json({ error: err.message });
+  }
+});
+
 // ── GET /api/trackers/:id ─────────────────────────────────────────────────
 trackersRouter.get('/:id', async (req: any, res) => {
   try {

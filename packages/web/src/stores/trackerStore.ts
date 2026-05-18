@@ -115,6 +115,11 @@ interface TrackerState {
     mimeType: string,
     notes?: string
   ) => Promise<CheckinResult>;
+  updateTrackerName: (
+    trackerId: string,
+    plantNameHe: string,
+    plantNameEn: string
+  ) => Promise<void>;
   approveTasks: (
     trackerId: string,
     tasks: TrackerTask[]
@@ -234,6 +239,17 @@ export const useTrackerStore = create<TrackerState>((set, get) => ({
     } finally {
       set({ isAnalyzing: false });
     }
+  },
+
+  updateTrackerName: async (trackerId, plantNameHe, plantNameEn) => {
+    const token = getToken();
+    if (!token) throw new Error('Not authenticated');
+    await api.patch(`/api/trackers/${trackerId}`, { plantNameHe, plantNameEn }, token);
+    set(state => ({
+      trackers: state.trackers.map(t =>
+        t.id === trackerId ? { ...t, plant_name_he: plantNameHe, plant_name_en: plantNameEn } : t
+      ),
+    }));
   },
 
   approveTasks: async (trackerId, tasks) => {

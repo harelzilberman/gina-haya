@@ -1,5 +1,5 @@
 /**
- * Robustly extracts a JSON object from a Claude API response.
+ * Robustly extracts a JSON string from a Claude API response.
  *
  * Claude sometimes wraps its response in markdown code fences even when
  * instructed not to. This function handles all known variants:
@@ -16,7 +16,6 @@ export function extractJson(text: string): string {
   if (m) return m[1].trim();
 
   // Pass 2: a fence block exists somewhere inside the response
-  // ([\s\S]*?) is non-greedy so it stops at the FIRST closing fence
   m = s.match(/```(?:json)?\s*\r?\n([\s\S]*?)\r?\n?```/);
   if (m) return m[1].trim();
 
@@ -26,4 +25,41 @@ export function extractJson(text: string): string {
   if (first !== -1 && last > first) return s.slice(first, last + 1);
 
   return s;
+}
+
+/**
+ * Robustly extracts and parses JSON from a Claude API response.
+ * Handles markdown fences, leading/trailing prose, and partial wrapping.
+ */
+export function extractAndParseJson(text: string): any {
+  // Strip markdown code fences
+  const cleaned = text
+    .replace(/```json\s*/gi, '')
+    .replace(/```\s*/g, '')
+    .trim();
+
+  // Try direct parse first
+  try {
+    return JSON.parse(cleaned);
+  } catch {}
+
+  // Find JSON object between first { and last }
+  const objStart = cleaned.indexOf('{');
+  const objEnd = cleaned.lastIndexOf('}');
+  if (objStart !== -1 && objEnd > objStart) {
+    try {
+      return JSON.parse(cleaned.substring(objStart, objEnd + 1));
+    } catch {}
+  }
+
+  // Find JSON array between first [ and last ]
+  const arrStart = cleaned.indexOf('[');
+  const arrEnd = cleaned.lastIndexOf(']');
+  if (arrStart !== -1 && arrEnd > arrStart) {
+    try {
+      return JSON.parse(cleaned.substring(arrStart, arrEnd + 1));
+    } catch {}
+  }
+
+  throw new Error(`Failed to parse Claude response as JSON: ${text.substring(0, 200)}`);
 }
