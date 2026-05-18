@@ -38,6 +38,14 @@ const LP_CSS = `
 @keyframes fadeUp  { from { opacity:0; transform:translateY(24px); } to { opacity:1; transform:translateY(0); } }
 @keyframes fadeIn  { from { opacity:0; } to { opacity:1; } }
 @keyframes scaleIn { from { opacity:0; transform:scale(0.95); } to { opacity:1; transform:scale(1); } }
+@keyframes chupchu-float {
+  0%, 100% { transform: translateY(0px); }
+  50%       { transform: translateY(-8px); }
+}
+@keyframes bubble-fadein {
+  from { opacity: 0; transform: translateY(-6px); }
+  to   { opacity: 1; transform: translateY(0px); }
+}
 .animate-ready { opacity: 0; transform: translateY(32px); transition: opacity 0.7s ease, transform 0.7s ease; }
 .animate-done  { opacity: 1 !important; transform: translateY(0) !important; }
 .lp-eyebrow    { opacity: 0; animation: fadeIn  0.6s ease 0.1s forwards; }
@@ -81,6 +89,59 @@ const LP_CSS = `
 .lp-cta-outline:hover {
   border-color: ${GOLD} !important;
   color: ${GOLD} !important;
+}
+.lp-hero-chupchu {
+  flex: 0 0 auto;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 14px;
+  z-index: 2;
+}
+@media (max-width: 768px) {
+  .lp-hero-chupchu { display: none !important; }
+}
+.lp-chupchu-img {
+  animation: chupchu-float 3s ease-in-out infinite;
+  filter: drop-shadow(0 6px 20px rgba(0,0,0,0.55)) drop-shadow(0 0 12px rgba(196,134,42,0.3));
+}
+.lp-bubble {
+  position: relative;
+  animation: bubble-fadein 0.8s ease forwards;
+  animation-delay: 0.6s;
+  opacity: 0;
+}
+.lp-bubble::after {
+  content: '';
+  position: absolute;
+  bottom: -8px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 0;
+  height: 0;
+  border-left: 8px solid transparent;
+  border-right: 8px solid transparent;
+  border-top: 8px solid #C4862A;
+}
+.lp-bubble::before {
+  content: '';
+  position: absolute;
+  bottom: -6px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 0;
+  height: 0;
+  border-left: 7px solid transparent;
+  border-right: 7px solid transparent;
+  border-top: 7px solid #FDF3E0;
+  z-index: 1;
+}
+.lp-chat-btn {
+  transition: background-color 0.2s, border-color 0.2s;
+}
+.lp-chat-btn:hover {
+  background-color: rgba(196,134,42,0.3) !important;
+  border-color: #E8A030 !important;
 }
 ::-webkit-scrollbar       { width: 6px; }
 ::-webkit-scrollbar-track { background: ${FOREST}; }
@@ -621,6 +682,64 @@ export function LandingPage() {
                 {isHe ? 'ראה איך זה עובד' : 'See How It Works'}
               </a>
             </div>
+          </div>
+
+          {/* Chupchu hero element — hidden on mobile */}
+          <div className="lp-hero-chupchu">
+            {/* Speech bubble */}
+            <div
+              className="lp-bubble"
+              style={{
+                backgroundColor: '#FDF3E0',
+                border: '1px solid #C4862A',
+                borderRadius: '12px',
+                padding: '10px 16px',
+                textAlign: 'center',
+                maxWidth: '190px',
+              }}
+            >
+              <p style={{
+                fontFamily: "'Caveat', cursive",
+                fontSize: '16px',
+                lineHeight: 1.4,
+                color: '#2A1A04',
+                margin: 0,
+                whiteSpace: 'pre-line',
+              }}>
+                {isHe
+                  ? "שלום! אני צ'ופצ'ו 🌙\nשאל אותי על הגינה שלך"
+                  : "Hi! I'm Chupchu 🌙\nAsk me about your garden"}
+              </p>
+            </div>
+
+            {/* Chupchu image */}
+            <img
+              className="lp-chupchu-img"
+              src="https://gina-haya.vercel.app/chupchu_final.png"
+              alt={isHe ? "צ'ופצ'ו" : 'Chupchu'}
+              width={120}
+              height={120}
+              style={{ objectFit: 'contain' }}
+            />
+
+            {/* Chat button */}
+            <Link
+              to="/chat"
+              className="lp-chat-btn"
+              style={{
+                fontFamily: ASSISTANT,
+                fontSize: '13px',
+                color: '#FDF3E0',
+                backgroundColor: 'rgba(196,134,42,0.15)',
+                border: '1px solid #C4862A',
+                borderRadius: '999px',
+                padding: '6px 16px',
+                textDecoration: 'none',
+                whiteSpace: 'nowrap',
+              }}
+            >
+              {isHe ? "דבר עם צ'ופצ'ו" : 'Chat with Chupchu'}
+            </Link>
           </div>
 
           {/* Live card */}
