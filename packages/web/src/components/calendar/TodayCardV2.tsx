@@ -90,7 +90,7 @@ export function drawMoon(canvas: HTMLCanvasElement, phasePct: number, phaseAngle
 
     // Draw full moon texture first so ~28% shows through the dark side (earthshine / ashen light)
     drawMoonSurface(ctx, size);
-    ctx.fillStyle = 'rgba(4, 8, 20, 0.92)';
+    ctx.fillStyle = 'rgba(4, 8, 20, 0.96)';
     ctx.beginPath();
     ctx.arc(cx, cy, r, 0, Math.PI * 2);
     ctx.fill();
@@ -119,7 +119,7 @@ export function drawMoon(canvas: HTMLCanvasElement, phasePct: number, phaseAngle
         ctx.ellipse(cx, cy, tRx, r, 0, -Math.PI / 2, Math.PI / 2);
         ctx.lineTo(cx, cy - r);
         ctx.closePath();
-        ctx.fillStyle = 'rgba(4, 8, 20, 0.92)';
+        ctx.fillStyle = 'rgba(4, 8, 20, 0.96)';
         ctx.fill();
         ctx.restore();
       } else if (tRx > 1) {
@@ -148,7 +148,7 @@ export function drawMoon(canvas: HTMLCanvasElement, phasePct: number, phaseAngle
         ctx.ellipse(cx, cy, tRx, r, 0, Math.PI / 2, 3 * Math.PI / 2);
         ctx.lineTo(cx, cy - r);
         ctx.closePath();
-        ctx.fillStyle = 'rgba(4, 8, 20, 0.92)';
+        ctx.fillStyle = 'rgba(4, 8, 20, 0.96)';
         ctx.fill();
         ctx.restore();
       } else if (tRx > 1) {
@@ -175,7 +175,7 @@ export function drawMoon(canvas: HTMLCanvasElement, phasePct: number, phaseAngle
         !isWaning ? cx + r * 0.3 : cx - r * 0.3, cy, 0,
         cx, cy, r
       );
-      litGrad.addColorStop(0,    'rgba(255, 252, 230, 0.72)');
+      litGrad.addColorStop(0,    'rgba(255, 252, 230, 0.45)');
       litGrad.addColorStop(0.35, 'rgba(255, 248, 210, 0.50)');
       litGrad.addColorStop(0.65, 'rgba(255, 244, 190, 0.22)');
       litGrad.addColorStop(1,    'rgba(0, 0, 0, 0)');
