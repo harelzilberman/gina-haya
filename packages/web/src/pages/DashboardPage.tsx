@@ -6,6 +6,7 @@ import { useTasks } from '../hooks/useTasks';
 import { useAuthStore } from '../stores/authStore';
 import { useChupChuPanelStore } from '../stores/chupChuPanelStore';
 import { drawMoon, getMoonTilt, MoonSignSVG } from '../components/calendar/TodayCardV2';
+import { getBDPlainSummary, type BDPlainSummary, type DayType } from '../utils/bdPlainLanguage';
 
 // ── Welcome checklist ──────────────────────────────────────────────────────
 const CHECKLIST_KEY = 'gina-haya-welcome-checklist';
@@ -201,6 +202,97 @@ function MoonCanvas({ phasePct, phaseAngle }: { phasePct: number; phaseAngle: nu
   );
 }
 
+// ── Day Action Card ──────────────────────────────────────────────────────────
+function DayActionCard({
+  bdSummary,
+  isHe,
+  score,
+  isNode,
+}: {
+  bdSummary: BDPlainSummary;
+  isHe: boolean;
+  score: number;
+  isNode: boolean;
+}) {
+  const [bdOpen, setBdOpen] = useState(false);
+  const goodFor = isHe ? bdSummary.goodFor.he : bdSummary.goodFor.en;
+  const avoidToday = isHe ? bdSummary.avoidToday.he : bdSummary.avoidToday.en;
+  const showAvoid = isNode || score < 4;
+
+  return (
+    <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+      <div style={{
+        background: 'rgba(245,200,64,0.05)', border: '1px solid rgba(245,200,64,0.15)',
+        borderRadius: '12px', padding: '18px',
+      }}>
+        <h3 style={{ fontFamily: FRANK, fontSize: '14px', color: GOLD, margin: '0 0 10px', fontWeight: 700 }}>
+          ✅ {isHe ? 'מה כדאי לעשות היום:' : 'What to do today:'}
+        </h3>
+        {goodFor.map((item, i) => (
+          <div key={i} style={{
+            display: 'flex', gap: '8px', alignItems: 'flex-start',
+            fontFamily: ASST, fontSize: '13px', color: `${PARCH}CC`,
+            padding: '4px 0',
+          }}>
+            <span style={{ color: GOLD, flexShrink: 0 }}>•</span>
+            <span>{item}</span>
+          </div>
+        ))}
+      </div>
+
+      {showAvoid && avoidToday.length > 0 && (
+        <div style={{
+          background: 'rgba(192,98,42,0.08)', border: '1px solid rgba(192,98,42,0.25)',
+          borderRadius: '12px', padding: '14px 18px',
+        }}>
+          <h3 style={{ fontFamily: FRANK, fontSize: '13px', color: '#E8956A', margin: '0 0 8px', fontWeight: 700 }}>
+            ⚠️ {isHe ? 'עדיף להמנע היום:' : 'Best to avoid today:'}
+          </h3>
+          {avoidToday.map((item, i) => (
+            <div key={i} style={{
+              display: 'flex', gap: '8px', fontFamily: ASST, fontSize: '13px', color: '#E8956A', padding: '3px 0',
+            }}>
+              <span style={{ flexShrink: 0 }}>•</span>
+              <span>{item}</span>
+            </div>
+          ))}
+        </div>
+      )}
+
+      <button
+        onClick={() => setBdOpen(o => !o)}
+        style={{
+          background: 'none', border: 'none', cursor: 'pointer',
+          fontFamily: ASST, fontSize: '12px', color: `${PARCH}45`,
+          textAlign: 'start' as const, padding: '2px 0',
+          display: 'flex', alignItems: 'center', gap: '5px',
+          transition: 'color 0.15s',
+        }}
+        onMouseEnter={e => { (e.currentTarget as HTMLElement).style.color = `${PARCH}80`; }}
+        onMouseLeave={e => { (e.currentTarget as HTMLElement).style.color = `${PARCH}45`; }}
+      >
+        <span>{bdOpen ? '▾' : '›'}</span>
+        <span>{isHe ? 'מה זה אומר?' : 'What does this mean?'}</span>
+        <span style={{ color: `${PARCH}25` }}> — </span>
+        <span style={{ color: `${PARCH}35` }}>{isHe ? bdSummary.bdDetail.he : bdSummary.bdDetail.en}</span>
+      </button>
+
+      {bdOpen && (
+        <div style={{
+          background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.06)',
+          borderRadius: '10px', padding: '14px 16px',
+          fontFamily: ASST, fontSize: '13px', color: `${PARCH}75`, lineHeight: 1.7,
+        }}>
+          <div style={{ marginBottom: '6px' }}>{isHe ? bdSummary.bdDetail.he : bdSummary.bdDetail.en}</div>
+          <div style={{ color: `${PARCH}50`, fontSize: '12px' }}>
+            {isHe ? `ציון ביודינמי: ${score}/10` : `Biodynamic score: ${score}/10`}
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
 // ── Dashboard ──────────────────────────────────────────────────────────────
 export function DashboardPage() {
   const { t, i18n } = useTranslation('dashboard');
@@ -219,6 +311,15 @@ export function DashboardPage() {
     : false;
   const dayType    = day ? DAY_TYPE_MAP[day.dayType] ?? null : null;
   const scoreColor = day ? (SCORE_COLOR[day.scoreColour] ?? GOLD) : GOLD;
+
+  const bdSummary = day ? getBDPlainSummary(
+    day.dayType as DayType,
+    day.plantingScore,
+    day.ascendingDescending === 'ascending',
+    !!day.nodeActive,
+    !!day.prep500Recommended,
+    !!day.prep501Recommended,
+  ) : null;
 
   const todayDateStr = new Date().toLocaleDateString(isHe ? 'he-IL' : 'en-US', {
     weekday: 'long', day: 'numeric', month: 'long', year: 'numeric',
@@ -336,7 +437,9 @@ export function DashboardPage() {
               }}>
                 <span style={{ fontSize: '15px' }}>{dayType.emoji}</span>
                 <span style={{ fontFamily: ASST, fontSize: '12px', fontWeight: 600, color: dayType.color }}>
-                  {t('dayTypePrefix')} {t('dayTypes.' + day!.dayType)}
+                  {bdSummary
+                    ? (isHe ? bdSummary.headline.he : bdSummary.headline.en).split('—')[0].trim()
+                    : `${t('dayTypePrefix')} ${t('dayTypes.' + day!.dayType)}`}
                 </span>
               </div>
             )}
@@ -363,7 +466,19 @@ export function DashboardPage() {
           </div>
         )}
 
-        {/* Section 3: Today's tasks preview */}
+        {/* Section 3: Plain-language action card */}
+        {day && !calLoading && bdSummary && (
+          <div style={{ marginBottom: '12px' }}>
+            <DayActionCard
+              bdSummary={bdSummary}
+              isHe={isHe}
+              score={day.plantingScore}
+              isNode={!!day.nodeActive}
+            />
+          </div>
+        )}
+
+        {/* Section 4: Today's tasks preview */}
         <div style={{
           background: 'rgba(20,50,22,0.6)', border: '1px solid rgba(245,200,64,0.12)',
           borderRadius: '14px', padding: '16px', marginBottom: '12px',
@@ -417,7 +532,7 @@ export function DashboardPage() {
           )}
         </div>
 
-        {/* Section 4: Navigation grid */}
+        {/* Section 5: Navigation grid */}
         <div style={{
           display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px',
         }}>
@@ -551,6 +666,11 @@ export function DashboardPage() {
                       {day.plantingScore}
                       <span style={{ fontFamily: ASST, fontSize: '11px', color: `${PARCH}40`, fontWeight: 400 }}> /10</span>
                     </div>
+                    {bdSummary && (
+                      <div style={{ fontFamily: ASST, fontSize: '11px', color: `${scoreColor}CC`, marginTop: '5px', lineHeight: 1.3 }}>
+                        {isHe ? bdSummary.scoreLabel.he : bdSummary.scoreLabel.en}
+                      </div>
+                    )}
                   </div>
 
                   {/* Row 1 — moon phase % */}
@@ -561,12 +681,16 @@ export function DashboardPage() {
                     </div>
                   </div>
 
-                  {/* Row 1 — day type */}
+                  {/* Row 1 — day type / plain headline */}
                   {dayType ? (
                     <div style={{ background: dayType.bg, border: `1px solid ${dayType.color}55`, borderRadius: '12px', padding: '14px 16px' }}>
-                      <div style={{ fontFamily: ASST, fontSize: '11px', color: `${PARCH}60`, marginBottom: '4px' }}>{t('biodynamic.dayType')}</div>
-                      <div style={{ fontFamily: FRANK, fontSize: '18px', color: dayType.color, fontWeight: 700 }}>
-                        {dayType.emoji} {t('dayTypePrefix')} {t('dayTypes.' + day!.dayType)}
+                      <div style={{ fontFamily: ASST, fontSize: '11px', color: `${PARCH}60`, marginBottom: '4px' }}>
+                        {isHe ? 'היום בגינה' : 'Today in the garden'}
+                      </div>
+                      <div style={{ fontFamily: FRANK, fontSize: '13px', color: dayType.color, fontWeight: 700, lineHeight: 1.4 }}>
+                        {bdSummary
+                          ? (isHe ? bdSummary.headline.he : bdSummary.headline.en)
+                          : `${dayType.emoji} ${t('dayTypePrefix')} ${t('dayTypes.' + day!.dayType)}`}
                       </div>
                     </div>
                   ) : <div />}
@@ -597,10 +721,14 @@ export function DashboardPage() {
                     background: 'rgba(255,255,255,0.04)', borderRadius: '10px', padding: '14px 16px',
                     display: 'flex', justifyContent: 'space-between', alignItems: 'center',
                   }}>
-                    <div>
-                      <div style={{ fontFamily: ASST, fontSize: '11px', color: `${PARCH}50`, marginBottom: '5px' }}>{isHe ? 'כיוון הירח' : 'Moon direction'}</div>
-                      <div style={{ fontFamily: FRANK, fontSize: '16px', color: PARCH }}>
-                        {day.ascendingDescending === 'ascending' ? (isHe ? '↑ עולה' : '↑ Ascending') : (isHe ? '↓ יורד' : '↓ Descending')}
+                    <div style={{ flex: 1 }}>
+                      <div style={{ fontFamily: ASST, fontSize: '11px', color: `${PARCH}50`, marginBottom: '5px' }}>
+                        🌙 {isHe ? 'הירח היום' : 'Moon today'}
+                      </div>
+                      <div style={{ fontFamily: FRANK, fontSize: '14px', color: PARCH, lineHeight: 1.4 }}>
+                        {bdSummary
+                          ? (isHe ? bdSummary.moonMessage.he : bdSummary.moonMessage.en)
+                          : (day.ascendingDescending === 'ascending' ? (isHe ? '↑ עולה' : '↑ Ascending') : (isHe ? '↓ יורד' : '↓ Descending'))}
                       </div>
                     </div>
                     <div style={{ textAlign: 'right' }}>
@@ -632,40 +760,26 @@ export function DashboardPage() {
                 </div>
               </div>
 
-              {/* BD prep recommendations */}
-              {prepItems.length > 0 && (
-                <div style={{
-                  background: 'rgba(245,200,64,0.05)', border: '1px solid rgba(245,200,64,0.15)',
-                  borderRadius: '12px', padding: '18px',
-                }}>
-                  <h3 style={{ fontFamily: FRANK, fontSize: '15px', color: GOLD, margin: '0 0 12px' }}>
-                    {isHe ? 'המלצות ביודינמיות להיום' : "Today's biodynamic recommendations"}
-                  </h3>
-                  {prepItems.map((item, i) => (
-                    <div key={i} style={{
-                      display: 'flex', gap: '8px', alignItems: 'flex-start',
-                      fontFamily: ASST, fontSize: '13px', color: `${PARCH}CC`,
-                      padding: '5px 0',
-                    }}>
-                      <span style={{ color: GOLD, flexShrink: 0 }}>•</span>
-                      <span>{item}</span>
-                    </div>
-                  ))}
-                </div>
+              {/* Plain-language action card */}
+              {bdSummary && (
+                <DayActionCard
+                  bdSummary={bdSummary}
+                  isHe={isHe}
+                  score={day.plantingScore}
+                  isNode={!!day.nodeActive}
+                />
               )}
 
-              {/* Node / perigee warning */}
-              {(day.nodeActive || day.perigeeActive) && (
+              {/* Perigee notice */}
+              {day.perigeeActive && !day.nodeActive && (
                 <div style={{
-                  background: 'rgba(192,98,42,0.12)', border: '1px solid rgba(192,98,42,0.3)',
-                  borderRadius: '12px', padding: '14px 18px',
+                  background: 'rgba(192,98,42,0.08)', border: '1px solid rgba(192,98,42,0.22)',
+                  borderRadius: '12px', padding: '12px 18px',
                   display: 'flex', gap: '10px', alignItems: 'center',
                 }}>
-                  <span style={{ fontSize: '22px' }}>⚠️</span>
+                  <span style={{ fontSize: '18px' }}>🌕</span>
                   <div style={{ fontFamily: ASST, fontSize: '13px', color: '#E8956A' }}>
-                    {day.nodeActive
-                      ? (isHe ? 'יום צומת — הימנע משתילה' : 'Node day — avoid planting')
-                      : (isHe ? 'ירח בפריגיאה — הכוחות חלשים' : 'Moon at perigee — forces are weak')}
+                    {isHe ? 'הירח קרוב לכדור הארץ היום — כוחות הגאות חזקים יותר מהרגיל' : 'Moon close to Earth today — tidal forces are stronger than usual'}
                   </div>
                 </div>
               )}
