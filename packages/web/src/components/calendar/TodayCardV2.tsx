@@ -90,7 +90,7 @@ export function drawMoon(canvas: HTMLCanvasElement, phasePct: number, phaseAngle
 
     // Draw full moon texture first so ~28% shows through the dark side (earthshine / ashen light)
     drawMoonSurface(ctx, size);
-    ctx.fillStyle = 'rgba(4, 8, 20, 0.72)';
+    ctx.fillStyle = 'rgba(4, 8, 20, 0.85)';
     ctx.beginPath();
     ctx.arc(cx, cy, r, 0, Math.PI * 2);
     ctx.fill();
@@ -119,7 +119,7 @@ export function drawMoon(canvas: HTMLCanvasElement, phasePct: number, phaseAngle
         ctx.ellipse(cx, cy, tRx, r, 0, -Math.PI / 2, Math.PI / 2);
         ctx.lineTo(cx, cy - r);
         ctx.closePath();
-        ctx.fillStyle = 'rgba(4, 8, 20, 0.62)';
+        ctx.fillStyle = 'rgba(4, 8, 20, 0.85)';
         ctx.fill();
         ctx.restore();
       } else if (tRx > 1) {
@@ -148,7 +148,7 @@ export function drawMoon(canvas: HTMLCanvasElement, phasePct: number, phaseAngle
         ctx.ellipse(cx, cy, tRx, r, 0, Math.PI / 2, 3 * Math.PI / 2);
         ctx.lineTo(cx, cy - r);
         ctx.closePath();
-        ctx.fillStyle = 'rgba(4, 8, 20, 0.62)';
+        ctx.fillStyle = 'rgba(4, 8, 20, 0.85)';
         ctx.fill();
         ctx.restore();
       } else if (tRx > 1) {
@@ -175,26 +175,15 @@ export function drawMoon(canvas: HTMLCanvasElement, phasePct: number, phaseAngle
         !isWaning ? cx + r * 0.3 : cx - r * 0.3, cy, 0,
         cx, cy, r
       );
-      litGrad.addColorStop(0,    'rgba(255, 250, 220, 0.55)');
-      litGrad.addColorStop(0.4,  'rgba(255, 245, 200, 0.35)');
-      litGrad.addColorStop(0.75, 'rgba(255, 240, 180, 0.12)');
+      litGrad.addColorStop(0,    'rgba(255, 252, 230, 0.72)');
+      litGrad.addColorStop(0.35, 'rgba(255, 248, 210, 0.50)');
+      litGrad.addColorStop(0.65, 'rgba(255, 244, 190, 0.22)');
       litGrad.addColorStop(1,    'rgba(0, 0, 0, 0)');
 
       ctx.fillStyle = litGrad;
       ctx.fillRect(0, 0, size, size);
       ctx.restore();
     }
-
-    // Warm glow on lit side
-    const glowGrad = ctx.createRadialGradient(cx, cy, 0, cx, cy, r);
-    glowGrad.addColorStop(0,   'rgba(255, 245, 200, 0.35)');
-    glowGrad.addColorStop(0.5, 'rgba(255, 240, 180, 0.18)');
-    glowGrad.addColorStop(0.7, 'rgba(255, 240, 180, 0.08)');
-    glowGrad.addColorStop(1,   'rgba(0, 0, 0, 0)');
-    ctx.fillStyle = glowGrad;
-    ctx.beginPath();
-    ctx.arc(cx, cy, r, 0, Math.PI * 2);
-    ctx.fill();
 
     // Soft terminator line (skip near new/full moon)
     if (phasePct >= 2 && phasePct < 98 && tRx > 4) {
