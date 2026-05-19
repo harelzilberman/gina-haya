@@ -196,6 +196,7 @@ export function Navbar() {
             {[
               { label: isHebrew ? 'בית' : 'Home', to: '/'         },
               { label: t('nav.map'),      to: '/map'      },
+              { label: t('nav.tracker'),  to: '/tracker'  },
               { label: t('nav.calendar'), to: '/calendar' },
               { label: t('nav.tasks'),    to: '/tasks'    },
             ].map(item => (
@@ -250,7 +251,6 @@ export function Navbar() {
                   zIndex: 200,
                 }}>
                   {[
-                    { label: t('nav.tracker'),  to: '/tracker'  },
                     { label: t('nav.plan'),     to: '/plan'     },
                     { label: t('nav.plants'),   to: '/plants'   },
                     { label: isHebrew ? '🎬 סרטונים' : '🎬 Videos',   to: '/guides'   },
