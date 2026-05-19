@@ -7,6 +7,7 @@ import { useAuthStore } from '../stores/authStore';
 import { useChupChuPanelStore } from '../stores/chupChuPanelStore';
 import { drawMoon, getMoonTilt, MoonSignSVG } from '../components/calendar/TodayCardV2';
 import { getBDPlainSummary, type BDPlainSummary, type DayType } from '../utils/bdPlainLanguage';
+import { useTodayActions, type TodayActionsData } from '../hooks/useTodayActions';
 
 // ── Welcome checklist ──────────────────────────────────────────────────────
 const CHECKLIST_KEY = 'gina-haya-welcome-checklist';
@@ -208,33 +209,182 @@ function DayActionCard({
   isHe,
   score,
   isNode,
+  todayActions,
+  actionsLoading,
 }: {
   bdSummary: BDPlainSummary;
   isHe: boolean;
   score: number;
   isNode: boolean;
+  todayActions?: TodayActionsData | null;
+  actionsLoading?: boolean;
 }) {
   const [bdOpen, setBdOpen] = useState(false);
   const goodFor = isHe ? bdSummary.goodFor.he : bdSummary.goodFor.en;
   const avoidToday = isHe ? bdSummary.avoidToday.he : bdSummary.avoidToday.en;
   const showAvoid = isNode || score < 4;
 
+  const ACTION_LABEL_HE: Record<string, string> = { harvest: 'קטיף', plant: 'שתילה' };
+  const ACTION_LABEL_EN: Record<string, string> = { harvest: 'Harvest', plant: 'Plant' };
+
+  const hasPersonal = todayActions && todayActions.hasGardenData;
+  const matching = todayActions?.matchingPlants ?? [];
+  const nonMatching = todayActions?.nonMatchingPlants ?? [];
+  const alerts = (todayActions?.trackerAlerts ?? []).filter(a =>
+    a.lastAnalysisDaysAgo === null || a.lastAnalysisDaysAgo > 7
+  );
+
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+
+      {/* Personalized plant section */}
+      {actionsLoading && (
+        <div style={{
+          background: 'rgba(245,200,64,0.04)', border: '1px solid rgba(245,200,64,0.1)',
+          borderRadius: '12px', padding: '16px 18px',
+          display: 'flex', flexDirection: 'column', gap: '8px',
+        }}>
+          {[100, 70, 85].map((w, i) => (
+            <div key={i} style={{
+              height: '14px', borderRadius: '6px',
+              background: `rgba(245,200,64,0.07)`,
+              width: `${w}%`,
+            }} />
+          ))}
+        </div>
+      )}
+
+      {!actionsLoading && hasPersonal && !isNode && (
+        <div style={{
+          background: 'rgba(245,200,64,0.06)', border: '1px solid rgba(245,200,64,0.18)',
+          borderRadius: '12px', padding: '16px 18px',
+        }}>
+          <h3 style={{ fontFamily: FRANK, fontSize: '14px', color: GOLD, margin: '0 0 10px', fontWeight: 700 }}>
+            🌿 {isHe ? 'הגינה שלך היום:' : 'Your garden today:'}
+          </h3>
+
+          {matching.length > 0 ? (
+            matching.map((p, i) => (
+              <div key={i} style={{
+                display: 'flex', gap: '10px', alignItems: 'center',
+                padding: '6px 0',
+                borderBottom: i < matching.length - 1 ? '1px solid rgba(255,255,255,0.05)' : 'none',
+              }}>
+                <span style={{ fontSize: '18px', flexShrink: 0 }}>{p.emoji}</span>
+                <div style={{ flex: 1 }}>
+                  <span style={{ fontFamily: ASST, fontSize: '13px', color: PARCH }}>
+                    {isHe ? p.plantNameHe : (p.plantNameEn || p.plantNameHe)}
+                  </span>
+                  {p.gardenName && (
+                    <span style={{ fontFamily: ASST, fontSize: '11px', color: `${PARCH}55`, marginRight: '6px', marginLeft: '6px' }}>
+                      — {p.gardenName}
+                    </span>
+                  )}
+                </div>
+                <span style={{
+                  fontFamily: ASST, fontSize: '11px', fontWeight: 700,
+                  background: p.action === 'harvest' ? 'rgba(74,124,89,0.25)' : 'rgba(181,136,99,0.25)',
+                  color: p.action === 'harvest' ? '#7DC084' : '#C8A070',
+                  borderRadius: '99px', padding: '2px 10px', flexShrink: 0,
+                }}>
+                  {isHe ? ACTION_LABEL_HE[p.action] : ACTION_LABEL_EN[p.action]}
+                </span>
+              </div>
+            ))
+          ) : (
+            <p style={{ fontFamily: ASST, fontSize: '13px', color: `${PARCH}70`, margin: 0 }}>
+              {isHe
+                ? 'הצמחים בגינה שלך לא מתאימים במיוחד להיום — אבל תמיד אפשר להשקות ולבדוק.'
+                : "Your plants aren't a strong match for today — but watering and checking is always fine."}
+            </p>
+          )}
+
+          {nonMatching.length > 0 && matching.length > 0 && (
+            <div style={{ marginTop: '10px', paddingTop: '8px', borderTop: '1px solid rgba(255,255,255,0.06)' }}>
+              <div style={{ fontFamily: ASST, fontSize: '11px', color: `${PARCH}45`, marginBottom: '6px' }}>
+                {isHe ? 'שאר הגינה — פחות מתאים להיום:' : "Rest of garden — less ideal today:"}
+              </div>
+              <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px' }}>
+                {nonMatching.map((p, i) => (
+                  <span key={i} style={{
+                    fontFamily: ASST, fontSize: '12px', color: `${PARCH}55`,
+                    background: 'rgba(255,255,255,0.04)', borderRadius: '99px',
+                    padding: '3px 10px', border: '1px solid rgba(255,255,255,0.06)',
+                  }}>
+                    {p.emoji} {isHe ? p.plantNameHe : (p.plantNameEn || p.plantNameHe)}
+                  </span>
+                ))}
+              </div>
+            </div>
+          )}
+        </div>
+      )}
+
+      {!actionsLoading && !hasPersonal && !isNode && (
+        <div style={{
+          background: 'rgba(245,200,64,0.04)', border: '1px dashed rgba(245,200,64,0.2)',
+          borderRadius: '12px', padding: '14px 18px',
+          display: 'flex', gap: '12px', alignItems: 'center',
+        }}>
+          <span style={{ fontSize: '20px' }}>🗺️</span>
+          <div style={{ fontFamily: ASST, fontSize: '13px', color: `${PARCH}70`, flex: 1 }}>
+            {isHe
+              ? 'הוסף צמחים למפת הגינה שלך כדי לקבל המלצות מותאמות אישית להיום.'
+              : 'Add plants to your garden map to get personalized recommendations for today.'}
+          </div>
+          <a href="/map" style={{
+            fontFamily: FRANK, fontSize: '12px', fontWeight: 700,
+            color: GOLD, textDecoration: 'none', flexShrink: 0,
+          }}>
+            {isHe ? 'למפה ›' : 'Map ›'}
+          </a>
+        </div>
+      )}
+
+      {/* Tracker alerts */}
+      {!actionsLoading && alerts.length > 0 && (
+        <div style={{
+          background: 'rgba(196,132,200,0.08)', border: '1px solid rgba(196,132,200,0.2)',
+          borderRadius: '12px', padding: '12px 18px',
+        }}>
+          <h3 style={{ fontFamily: FRANK, fontSize: '13px', color: '#C884C8', margin: '0 0 8px', fontWeight: 700 }}>
+            📸 {isHe ? 'כדאי לבדוק:' : 'Worth checking:'}
+          </h3>
+          {alerts.slice(0, 3).map((a, i) => (
+            <div key={i} style={{
+              display: 'flex', gap: '8px', alignItems: 'center',
+              fontFamily: ASST, fontSize: '13px', color: `${PARCH}90`, padding: '3px 0',
+            }}>
+              <span style={{ color: '#C884C8', flexShrink: 0 }}>•</span>
+              <span>{isHe ? a.plantNameHe : (a.plantNameEn || a.plantNameHe)}</span>
+              <span style={{ color: `${PARCH}45`, fontSize: '11px', marginRight: 'auto', marginLeft: 'auto' }}>
+                {a.lastAnalysisDaysAgo === null
+                  ? (isHe ? '(לא נבדק)' : '(never checked)')
+                  : (isHe ? `(לפני ${a.lastAnalysisDaysAgo} ימים)` : `(${a.lastAnalysisDaysAgo}d ago)`)}
+              </span>
+              <a href="/tracker" style={{ fontFamily: ASST, fontSize: '11px', color: '#C884C8', textDecoration: 'none' }}>
+                {isHe ? 'לבדיקה ›' : 'Check ›'}
+              </a>
+            </div>
+          ))}
+        </div>
+      )}
+
+      {/* Generic BD advice */}
       <div style={{
-        background: 'rgba(245,200,64,0.05)', border: '1px solid rgba(245,200,64,0.15)',
-        borderRadius: '12px', padding: '18px',
+        background: 'rgba(245,200,64,0.05)', border: '1px solid rgba(245,200,64,0.12)',
+        borderRadius: '12px', padding: '16px 18px',
       }}>
-        <h3 style={{ fontFamily: FRANK, fontSize: '14px', color: GOLD, margin: '0 0 10px', fontWeight: 700 }}>
-          ✅ {isHe ? 'מה כדאי לעשות היום:' : 'What to do today:'}
+        <h3 style={{ fontFamily: FRANK, fontSize: '13px', color: `${GOLD}BB`, margin: '0 0 8px', fontWeight: 700 }}>
+          ✅ {isHe ? 'פעולות מומלצות כלליות:' : 'General recommended actions:'}
         </h3>
         {goodFor.map((item, i) => (
           <div key={i} style={{
             display: 'flex', gap: '8px', alignItems: 'flex-start',
-            fontFamily: ASST, fontSize: '13px', color: `${PARCH}CC`,
-            padding: '4px 0',
+            fontFamily: ASST, fontSize: '13px', color: `${PARCH}99`,
+            padding: '3px 0',
           }}>
-            <span style={{ color: GOLD, flexShrink: 0 }}>•</span>
+            <span style={{ color: `${GOLD}80`, flexShrink: 0 }}>•</span>
             <span>{item}</span>
           </div>
         ))}
@@ -302,6 +452,7 @@ export function DashboardPage() {
   const { tasks, updateStatus } = useTasks();
   const { user, profile } = useAuthStore();
   const { open: openChupChu } = useChupChuPanelStore();
+  const { data: todayActions, loading: actionsLoading } = useTodayActions();
 
   const today      = todayISO();
   const todayTasks = tasks.filter(t => t.date === today);
@@ -474,6 +625,8 @@ export function DashboardPage() {
               isHe={isHe}
               score={day.plantingScore}
               isNode={!!day.nodeActive}
+              todayActions={todayActions}
+              actionsLoading={actionsLoading}
             />
           </div>
         )}
@@ -767,6 +920,8 @@ export function DashboardPage() {
                   isHe={isHe}
                   score={day.plantingScore}
                   isNode={!!day.nodeActive}
+                  todayActions={todayActions}
+                  actionsLoading={actionsLoading}
                 />
               )}
 
