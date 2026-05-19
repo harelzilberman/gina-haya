@@ -119,7 +119,7 @@ export function drawMoon(canvas: HTMLCanvasElement, phasePct: number, phaseAngle
         ctx.ellipse(cx, cy, tRx, r, 0, -Math.PI / 2, Math.PI / 2);
         ctx.lineTo(cx, cy - r);
         ctx.closePath();
-        ctx.fillStyle = 'rgba(4, 8, 20, 0.72)';
+        ctx.fillStyle = 'rgba(4, 8, 20, 0.62)';
         ctx.fill();
         ctx.restore();
       } else if (tRx > 1) {
@@ -148,7 +148,7 @@ export function drawMoon(canvas: HTMLCanvasElement, phasePct: number, phaseAngle
         ctx.ellipse(cx, cy, tRx, r, 0, Math.PI / 2, 3 * Math.PI / 2);
         ctx.lineTo(cx, cy - r);
         ctx.closePath();
-        ctx.fillStyle = 'rgba(4, 8, 20, 0.72)';
+        ctx.fillStyle = 'rgba(4, 8, 20, 0.62)';
         ctx.fill();
         ctx.restore();
       } else if (tRx > 1) {
@@ -162,6 +162,27 @@ export function drawMoon(canvas: HTMLCanvasElement, phasePct: number, phaseAngle
         drawMoonSurface(ctx, size);
         ctx.restore();
       }
+    }
+
+    // Brighten the lit side
+    if (phasePct < 98) {
+      ctx.save();
+      ctx.beginPath();
+      ctx.arc(cx, cy, r, 0, Math.PI * 2);
+      ctx.clip();
+
+      const litGrad = ctx.createRadialGradient(
+        !isWaning ? cx + r * 0.3 : cx - r * 0.3, cy, 0,
+        cx, cy, r
+      );
+      litGrad.addColorStop(0,    'rgba(255, 250, 220, 0.55)');
+      litGrad.addColorStop(0.4,  'rgba(255, 245, 200, 0.35)');
+      litGrad.addColorStop(0.75, 'rgba(255, 240, 180, 0.12)');
+      litGrad.addColorStop(1,    'rgba(0, 0, 0, 0)');
+
+      ctx.fillStyle = litGrad;
+      ctx.fillRect(0, 0, size, size);
+      ctx.restore();
     }
 
     // Warm glow on lit side
