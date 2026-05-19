@@ -747,12 +747,12 @@ export function ShopPage() {
               </span>
               <span style={{
                 fontFamily: ASST, fontSize: '11px', fontWeight: 700,
-                color: '#8B6914',
-                background: 'rgba(245,200,64,0.15)',
-                border: '1px solid rgba(245,200,64,0.25)',
+                color: `${PARCH}60`,
+                background: 'rgba(255,255,255,0.06)',
+                border: '1px solid rgba(255,255,255,0.12)',
                 padding: '3px 10px', borderRadius: '99px',
               }}>
-                מוצרים פיזיים — משלוח/איסוף עצמי
+                🪵 בקרוב — בעבודה
               </span>
             </div>
 
@@ -776,12 +776,15 @@ export function ShopPage() {
           </div>
 
           {/* Products grid */}
-          <div style={{
-            display: 'grid',
-            gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))',
-            gap: '16px',
-            marginBottom: '48px',
-          }}>
+          <div style={{ position: 'relative', marginBottom: '48px' }}>
+            <div style={{
+              display: 'grid',
+              gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))',
+              gap: '16px',
+              opacity: 0.35,
+              pointerEvents: 'none',
+              userSelect: 'none',
+            }}>
             {WOOD_PRODUCTS.map(product => (
               <div
                 key={product.id}
@@ -842,12 +845,32 @@ export function ShopPage() {
 
                 {/* Footer button */}
                 <div style={{ padding: '0 20px 20px' }}>
-                  <button className="shop-wood-btn" onClick={() => handleWoodOrder(product)}>
+                  <button className="shop-wood-btn" onClick={() => {}}>
                     לפרטים / הזמנה
                   </button>
                 </div>
               </div>
             ))}
+            </div>
+
+            {/* Coming soon overlay */}
+            <div style={{
+              position: 'absolute', inset: 0,
+              display: 'flex', flexDirection: 'column',
+              alignItems: 'center', justifyContent: 'center', gap: '10px',
+              background: 'rgba(20,43,22,0.55)',
+              backdropFilter: 'blur(3px)',
+              borderRadius: '14px',
+              pointerEvents: 'none',
+            }}>
+              <span style={{ fontSize: '36px' }}>🪵</span>
+              <div style={{ fontFamily: FRANK, fontSize: '20px', color: GOLD, fontWeight: 700 }}>
+                בקרוב
+              </div>
+              <div style={{ fontFamily: ASST, fontSize: '13px', color: `${PARCH}80`, textAlign: 'center', maxWidth: '260px', lineHeight: 1.6 }}>
+                מוצרי עץ בעבודת יד מעץ ממוחזר.<br />בהכנה — בקרוב בחנות.
+              </div>
+            </div>
           </div>
         </div>
 
