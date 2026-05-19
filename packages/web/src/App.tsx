@@ -260,7 +260,7 @@ export default function App() {
       <LaunchBadge />
 
       {/* Floating ChupChu bubble — hidden on /chupchu page itself */}
-      {user && !isChupChuPage && (
+      {!isChupChuPage && (
         <>
           {isChupChuPanelOpen && (
             <>

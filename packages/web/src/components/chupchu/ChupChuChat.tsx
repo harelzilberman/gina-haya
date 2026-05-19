@@ -1,4 +1,5 @@
 import { useState, useRef, useEffect, KeyboardEvent } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import ReactMarkdown from 'react-markdown';
 import { useDirection } from '../../hooks/useDirection';
@@ -26,6 +27,94 @@ const EXPRESSION_IMAGES: Record<ChupChuExpression, string> = {
   thinking:  '/chupchu_thinking.png',
   wise:      '/chupchu_wise.png',
 };
+
+// ── Guest chat (unauthenticated) ──────────────────────────────────────────────
+const GUEST_LIMIT = 3;
+const GUEST_KEY   = 'chupchu_guest_count';
+
+function getGuestCount(): number {
+  return parseInt(localStorage.getItem(GUEST_KEY) || '0', 10);
+}
+function incrementGuestCount(): number {
+  const next = getGuestCount() + 1;
+  localStorage.setItem(GUEST_KEY, String(next));
+  return next;
+}
+
+const GUEST_TIPS: string[] = [
+  'שלום! 🌙 שמחתי שפנית אליי. כדי לקבל עצות ביודינמיות מותאמות לגינה שלך — הצטרף לגינה חיה בחינם.',
+  'שאלה מעניינת! 🌿 בביודינמיקה, הירח הוא המפתח לתזמון הנכון. הצטרף בחינם לגישה ללוח הביודינמי היומי שלנו ולמאות צמחים.',
+  'הגינה שלך מחכה לי! 🌱 הצטרף לגינה חיה — שם נוכל לדבר בחופשיות על כל מה שהגינה שלך צריכה.',
+];
+
+function GuestSignupWall() {
+  const navigate = useNavigate();
+  return (
+    <div style={{
+      padding:         '22px 18px',
+      backgroundColor: 'rgba(20,43,22,0.95)',
+      borderTop:       '1px solid rgba(245,200,64,0.3)',
+      display:         'flex',
+      flexDirection:   'column',
+      alignItems:      'center',
+      gap:             '14px',
+      textAlign:       'center',
+    }}>
+      <img
+        src="/chupchu_final.png"
+        alt="ChupChu"
+        style={{ width: '60px', height: '60px', objectFit: 'contain', filter: 'drop-shadow(0 0 10px rgba(245,200,64,0.45))' }}
+      />
+      <h3 style={{ fontFamily: "'Caveat', cursive", fontSize: '21px', color: GOLD, margin: 0 }}>
+        רוצה להמשיך לדבר איתי?
+      </h3>
+      <p style={{ fontFamily: ASSIST, fontSize: '13px', color: `${PARCH}CC`, margin: 0, lineHeight: 1.65, maxWidth: '280px' }}>
+        הצטרפו בחינם וקבלו גישה מלאה לצ'ופצ'ו, ללוח הביודינמי ולגינה החיה שלכם
+      </p>
+      <div style={{ display: 'flex', gap: '10px', width: '100%' }}>
+        <button
+          onClick={() => navigate('/signup')}
+          style={{
+            flex: 1, padding: '11px 12px',
+            backgroundColor: GOLD, color: '#142B16',
+            border: 'none', borderRadius: '10px',
+            fontFamily: FRANK, fontSize: '14px', fontWeight: 700,
+            cursor: 'pointer', transition: 'filter 0.15s',
+          }}
+          onMouseEnter={e => { (e.currentTarget as HTMLElement).style.filter = 'brightness(1.1)'; }}
+          onMouseLeave={e => { (e.currentTarget as HTMLElement).style.filter = 'none'; }}
+        >
+          הרשמה חינמית
+        </button>
+        <button
+          onClick={() => navigate('/login')}
+          style={{
+            flex: 1, padding: '11px 12px',
+            backgroundColor: 'transparent', color: GOLD,
+            border: '1px solid rgba(245,200,64,0.5)', borderRadius: '10px',
+            fontFamily: FRANK, fontSize: '14px', fontWeight: 600,
+            cursor: 'pointer', transition: 'border-color 0.15s, color 0.15s',
+          }}
+          onMouseEnter={e => {
+            const el = e.currentTarget as HTMLElement;
+            el.style.borderColor = GOLD;
+            el.style.color = '#F0D840';
+          }}
+          onMouseLeave={e => {
+            const el = e.currentTarget as HTMLElement;
+            el.style.borderColor = 'rgba(245,200,64,0.5)';
+            el.style.color = GOLD;
+          }}
+        >
+          כניסה
+        </button>
+      </div>
+      <p style={{ fontFamily: ASSIST, fontSize: '11px', color: `${PARCH}50`, margin: 0 }}>
+        3 שיחות ניתנו לאורחים — ראיתם רק את ההתחלה 🌱
+      </p>
+    </div>
+  );
+}
 
 // Avatar with emoji fallback when the expression image doesn't exist yet
 function ChupChuAvatar({ expression, size }: { expression: ChupChuExpression; size: number }) {
@@ -394,11 +483,24 @@ export function ChupChuChat({ compact, initialMessage, onInitialMessageConsumed 
     triggerSummarize,
   } = useChupChu();
 
+  const { user } = useAuthStore();
+  const isGuest = !user;
+
   const lang = i18n.language;
 
   const [input, setInput] = useState('');
   const messagesEndRef    = useRef<HTMLDivElement>(null);
   const textareaRef       = useRef<HTMLTextAreaElement>(null);
+
+  // Guest-only state — ignored for authenticated users
+  const [guestMessages,  setGuestMessages]  = useState<ChupChuMessage[]>([]);
+  const [guestLoading,   setGuestLoading]   = useState(false);
+  const [showGuestWall,  setShowGuestWall]  = useState(() => !user && getGuestCount() >= GUEST_LIMIT);
+
+  // Unified display variables — switch between store state (auth) and local state (guest)
+  const displayMessages = user ? messages : guestMessages;
+  const showLoading     = user ? isLoading : guestLoading;
+  const displayPending  = user ? pendingMessage : null;
 
   useEffect(() => {
     if (initialMessage) {
@@ -411,7 +513,7 @@ export function ChupChuChat({ compact, initialMessage, onInitialMessageConsumed 
 
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
-  }, [messages, isLoading]);
+  }, [messages, guestMessages, isLoading, guestLoading]);
 
   useEffect(() => {
     loadMemory().catch(() => {/* fail silently — chat works without memory */});
@@ -442,7 +544,32 @@ export function ChupChuChat({ compact, initialMessage, onInitialMessageConsumed 
 
   const handleSend = () => {
     const text = input.trim();
-    if (!text || isLoading || rateLimited) return;
+    if (!text || showLoading) return;
+
+    if (isGuest) {
+      if (showGuestWall) return;
+      setInput('');
+      if (textareaRef.current) textareaRef.current.style.height = 'auto';
+
+      const newCount = incrementGuestCount();
+      const userMsg: ChupChuMessage = { role: 'user', content: text, timestamp: new Date().toISOString() };
+      setGuestMessages(prev => [...prev, userMsg]);
+      setGuestLoading(true);
+
+      setTimeout(() => {
+        const reply: ChupChuMessage = {
+          role:      'assistant',
+          content:   GUEST_TIPS[(newCount - 1) % GUEST_TIPS.length],
+          timestamp: new Date().toISOString(),
+        };
+        setGuestMessages(prev => [...prev, reply]);
+        setGuestLoading(false);
+        if (newCount >= GUEST_LIMIT) setShowGuestWall(true);
+      }, 900 + Math.random() * 500);
+      return;
+    }
+
+    if (rateLimited) return;
     setInput('');
     if (textareaRef.current) textareaRef.current.style.height = 'auto';
     sendMessage(text);
@@ -463,7 +590,7 @@ export function ChupChuChat({ compact, initialMessage, onInitialMessageConsumed 
     if (error) clearError();
   };
 
-  const canSend = input.trim().length > 0 && !isLoading && !rateLimited;
+  const canSend = input.trim().length > 0 && !showLoading && !(isGuest ? showGuestWall : rateLimited);
 
   return (
     <div dir={dir} className="chupchu-container" style={{
@@ -522,19 +649,19 @@ export function ChupChuChat({ compact, initialMessage, onInitialMessageConsumed 
           gap:           '12px',
         }}
       >
-        {messages.length === 0 && !isLoading && <ChupChuGreeting />}
+        {displayMessages.length === 0 && !showLoading && <ChupChuGreeting />}
 
-        {messages.map((msg, idx) => (
+        {displayMessages.map((msg, idx) => (
           <MessageBubble key={idx} message={msg} isRTL={isRTL} />
         ))}
 
-        {pendingMessage && (
+        {displayPending && (
           <div style={{ opacity: 0.6 }}>
-            <MessageBubble message={pendingMessage} isRTL={isRTL} />
+            <MessageBubble message={displayPending} isRTL={isRTL} />
           </div>
         )}
 
-        {isLoading && <TypingDots isRTL={isRTL} expression={expression} />}
+        {showLoading && <TypingDots isRTL={isRTL} expression={isGuest ? 'default' : expression} />}
 
         <div ref={messagesEndRef} />
       </div>
@@ -581,7 +708,10 @@ export function ChupChuChat({ compact, initialMessage, onInitialMessageConsumed 
         {t('disclaimer')}
       </p>
 
-      {/* Input bar */}
+      {/* Guest signup wall — replaces input bar when limit reached */}
+      {isGuest && showGuestWall ? <GuestSignupWall /> : (
+
+      /* Input bar */
       <div style={{
         flexShrink:      0,
         position:        'sticky',
@@ -606,8 +736,8 @@ export function ChupChuChat({ compact, initialMessage, onInitialMessageConsumed 
             value={input}
             onChange={handleInput}
             onKeyDown={handleKeyDown}
-            placeholder={rateLimited ? '' : t('inputPlaceholder')}
-            disabled={isLoading || rateLimited}
+            placeholder={isGuest ? "שאל את צ'ופצ'ו... (3 הודעות חינם)" : (rateLimited ? '' : t('inputPlaceholder'))}
+            disabled={showLoading || (isGuest ? false : rateLimited)}
             rows={1}
             style={{
               flex:       '1 1 auto',
@@ -620,7 +750,7 @@ export function ChupChuChat({ compact, initialMessage, onInitialMessageConsumed 
               color:      PARCH,
               lineHeight: '1.5',
               maxHeight:  '120px',
-              cursor:     rateLimited ? 'not-allowed' : 'text',
+              cursor:     (!isGuest && rateLimited) ? 'not-allowed' : 'text',
               direction:  isRTL ? 'rtl' : 'ltr',
               textAlign:  isRTL ? 'right' : 'left',
             }}
@@ -654,6 +784,8 @@ export function ChupChuChat({ compact, initialMessage, onInitialMessageConsumed 
           </button>
         </div>
       </div>
+
+      )} {/* end guest wall ternary */}
 
     </div>
   );
