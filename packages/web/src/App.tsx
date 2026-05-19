@@ -169,14 +169,7 @@ export default function App() {
               </ProtectedRoute>
             }
           />
-          <Route
-            path="/chupchu"
-            element={
-              <ProtectedRoute>
-                <ChupChuPage />
-              </ProtectedRoute>
-            }
-          />
+          <Route path="/chupchu" element={<ChupChuPage />} />
           <Route
             path="/garden"
             element={

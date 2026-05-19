@@ -18,11 +18,11 @@ export function ChupChuPage() {
   const { dir } = useDirection();
   const isHe = i18n.language === 'he';
   const { loadHistory, usageThisMonth, monthlyLimit } = useChupChu();
-  const { profile } = useAuthStore();
+  const { user, profile } = useAuthStore();
 
   useEffect(() => {
-    loadHistory();
-  }, [loadHistory]);
+    if (user) loadHistory();
+  }, [loadHistory, user]);
 
   const tier        = profile?.subscription_tier ?? 'free';
   const isUnlimited = tier === 'gardener_pro' || tier === 'professional';
@@ -70,8 +70,8 @@ export function ChupChuPage() {
             </p>
           </div>
 
-          {/* Usage counter */}
-          {!isUnlimited && monthlyLimit !== null && (
+          {/* Usage counter — authenticated users only */}
+          {user && !isUnlimited && monthlyLimit !== null && (
             <div style={{ display: 'flex', justifyContent: 'flex-start', marginBottom: '16px' }}>
               <span style={{
                 fontFamily:      ASSIST,
