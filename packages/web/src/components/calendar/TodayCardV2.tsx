@@ -90,7 +90,7 @@ export function drawMoon(canvas: HTMLCanvasElement, phasePct: number, phaseAngle
 
     // Draw full moon texture first so ~28% shows through the dark side (earthshine / ashen light)
     drawMoonSurface(ctx, size);
-    ctx.fillStyle = 'rgba(4, 8, 20, 0.85)';
+    ctx.fillStyle = 'rgba(4, 8, 20, 0.92)';
     ctx.beginPath();
     ctx.arc(cx, cy, r, 0, Math.PI * 2);
     ctx.fill();
@@ -119,7 +119,7 @@ export function drawMoon(canvas: HTMLCanvasElement, phasePct: number, phaseAngle
         ctx.ellipse(cx, cy, tRx, r, 0, -Math.PI / 2, Math.PI / 2);
         ctx.lineTo(cx, cy - r);
         ctx.closePath();
-        ctx.fillStyle = 'rgba(4, 8, 20, 0.85)';
+        ctx.fillStyle = 'rgba(4, 8, 20, 0.92)';
         ctx.fill();
         ctx.restore();
       } else if (tRx > 1) {
@@ -148,7 +148,7 @@ export function drawMoon(canvas: HTMLCanvasElement, phasePct: number, phaseAngle
         ctx.ellipse(cx, cy, tRx, r, 0, Math.PI / 2, 3 * Math.PI / 2);
         ctx.lineTo(cx, cy - r);
         ctx.closePath();
-        ctx.fillStyle = 'rgba(4, 8, 20, 0.85)';
+        ctx.fillStyle = 'rgba(4, 8, 20, 0.92)';
         ctx.fill();
         ctx.restore();
       } else if (tRx > 1) {
