@@ -263,25 +263,34 @@ export default function App() {
       {user && !isChupChuPage && (
         <>
           {isChupChuPanelOpen && (
-            <div style={{
-              position:        'fixed',
-              bottom:          'calc(92px + env(safe-area-inset-bottom))',
-              insetInlineStart: '12px',
-              width:           'min(400px, calc(100vw - 24px))',
-              maxHeight:       'calc(100dvh - 160px)',
-              zIndex:          9999,
-              borderRadius:    '16px',
-              boxShadow:       '0 16px 60px rgba(0,0,0,0.55)',
-              overflow:        'hidden',
-              display:         'flex',
-              flexDirection:   'column',
-            }}>
-              <ChupChuChat
-                compact
-                initialMessage={chupChuInitial}
-                onInitialMessageConsumed={clearInitialMessage}
+            <>
+              {/* Transparent backdrop — click outside panel to close */}
+              <div
+                onClick={() => closeChupChuPanel()}
+                style={{ position: 'fixed', inset: 0, zIndex: 9998 }}
               />
-            </div>
+              <div
+                onClick={e => e.stopPropagation()}
+                style={{
+                  position:        'fixed',
+                  bottom:          'calc(92px + env(safe-area-inset-bottom))',
+                  insetInlineStart: '12px',
+                  width:           'min(400px, calc(100vw - 24px))',
+                  maxHeight:       'calc(100dvh - 160px)',
+                  zIndex:          9999,
+                  borderRadius:    '16px',
+                  boxShadow:       '0 16px 60px rgba(0,0,0,0.55)',
+                  overflow:        'hidden',
+                  display:         'flex',
+                  flexDirection:   'column',
+                }}>
+                <ChupChuChat
+                  compact
+                  initialMessage={chupChuInitial}
+                  onInitialMessageConsumed={clearInitialMessage}
+                />
+              </div>
+            </>
           )}
           <div style={{ position: 'fixed', bottom: '24px', left: '20px', zIndex: 9999 }}>
             {showChupChuTooltip && !chupChuIntroduced && (
@@ -317,7 +326,8 @@ export default function App() {
               )}
               <button
                 data-tour="chupchu-bubble"
-                onClick={() => {
+                onClick={e => {
+                  e.stopPropagation();
                   if (isChupChuPanelOpen) {
                     closeChupChuPanel();
                   } else {

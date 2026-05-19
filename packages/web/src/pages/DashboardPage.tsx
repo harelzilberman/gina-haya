@@ -50,7 +50,7 @@ function WelcomeChecklist({ onOpenChupchu }: { onOpenChupchu: () => void }) {
       {items.map((item, i) => (
         <div
           key={i}
-          onClick={item.action ?? undefined}
+          onClick={item.action ? e => { e.stopPropagation(); item.action!(); } : undefined}
           style={{
             display: 'flex', alignItems: 'center', gap: '12px',
             padding: '9px 0',
@@ -284,7 +284,7 @@ export function DashboardPage() {
       )}
 
       <button
-        onClick={() => openChupChu()}
+        onClick={e => { e.stopPropagation(); openChupChu(); }}
         style={{
           fontFamily: FRANK, fontSize: '14px', fontWeight: 700,
           color: EARTH, background: GOLD,

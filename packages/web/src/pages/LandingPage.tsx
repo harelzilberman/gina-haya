@@ -750,7 +750,7 @@ export function LandingPage() {
 
             {/* Chat button */}
             <Link
-              to="/chat"
+              to="/chupchu"
               className="lp-chat-btn"
               style={{
                 fontFamily: ASSISTANT,
