@@ -49,6 +49,14 @@ const PAGE_CSS = `
   transition: color 0.2s, border-color 0.2s;
 }
 .shop-remove-btn:hover { color: #E06060; border-color: rgba(224,96,96,0.4); }
+.shop-wood-btn {
+  width: 100%; padding: 11px;
+  font-family: ${FRANK}; font-size: 14px; font-weight: 700;
+  color: ${GOLD}; background: transparent;
+  border: 1.5px solid rgba(245,200,64,0.4); border-radius: 10px; cursor: pointer;
+  transition: background 0.2s, border-color 0.2s;
+}
+.shop-wood-btn:hover { background: rgba(245,200,64,0.08); border-color: ${GOLD}; }
 `;
 
 interface ProductDef {
@@ -78,6 +86,88 @@ const COMING_SOON = [
   { emoji: '📅', title: 'מנוי לוח שנה שנתי',        desc: 'לוח ביודינמי מודפס לשנת 2027' },
   { emoji: '🌿', title: 'ייעוץ גינון אישי',           desc: 'שעת ייעוץ עם גנן ביודינמי מוסמך' },
 ];
+
+const WOOD_PRODUCTS = [
+  {
+    id: 'birdhouse',
+    icon: '🏠',
+    nameHe: 'בית ציפורים',
+    nameEn: 'Birdhouse',
+    descHe: 'ארז טבעי ללא טיפול. קוטר פתח מותאם לציפורים מקומיות — ירגזי, דרור או נחליאלי.',
+    descEn: 'Untreated cedar. Hole diameter matched to local species — chickadee, sparrow, or wren.',
+    price: '₪180',
+    badge: null,
+    articleLink: null,
+  },
+  {
+    id: 'bat-house',
+    icon: '🦇',
+    nameHe: 'בית עטלפים',
+    nameEn: 'Bat House',
+    descHe: 'עיצוב דו-תא. עטלף אחד אוכל עד 3,000 חרקים בלילה. הדברה טבעית אפקטיבית.',
+    descEn: 'Double-chamber. One bat eats up to 3,000 insects per night. Natural pest control.',
+    price: '₪220',
+    badge: 'ממליץ צ\'ופצ\'ו',
+    articleLink: null,
+  },
+  {
+    id: 'insect-hotel',
+    icon: '🐝',
+    nameHe: 'מלון חרקים',
+    nameEn: 'Insect Hotel',
+    descHe: 'קנים, עץ קדוח, אצטרובלים וקליפות. לדבורות בודדות, אריות-נמלים ופרת-משה-רבנו.',
+    descEn: 'Reeds, drilled wood, pine cones, bark. For solitary bees, lacewings, ladybugs.',
+    price: '₪260',
+    badge: null,
+    articleLink: null,
+  },
+  {
+    id: 'raised-bed',
+    icon: '🌱',
+    nameHe: 'ערוגה מוגבהת',
+    nameEn: 'Raised Bed Kit',
+    descHe: 'ארז, פינות דובטייל, ללא ברגים. מידות 60×120 או 80×160 ס"מ. נשלח מפורק.',
+    descEn: 'Cedar, dovetail corners, no screws. Sizes 60×120 or 80×160 cm. Ships flat.',
+    price: '₪380–480',
+    badge: 'פופולרי',
+    articleLink: null,
+  },
+  {
+    id: 'compost-frame',
+    icon: '♻️',
+    nameHe: 'מסגרת קומפוסט',
+    nameEn: 'Compost Bin Frame',
+    descHe: 'מסגרת תלת-קומות עם לוחות קדמיים נשלפים. אורן טבעי. 80×80×90 ס"מ.',
+    descEn: 'Three-section slatted frame with removable front boards. 80×80×90 cm.',
+    price: '₪320',
+    badge: null,
+    articleLink: null,
+  },
+  {
+    id: 'garden-markers',
+    icon: '🏷️',
+    nameHe: 'תוויות גינה',
+    nameEn: 'Garden Markers',
+    descHe: 'סט 10 תוויות אלון. שם הצמח שרוף בעברית ולטינית. עמיד מזג אוויר.',
+    descEn: 'Set of 10 oak markers, pyrographed with Hebrew and Latin names. Weatherproof.',
+    price: '₪120 לסט',
+    badge: 'מתנה מושלמת',
+    articleLink: null,
+  },
+  {
+    id: 'seed-box',
+    icon: '📦',
+    nameHe: 'קופסת זרעים',
+    nameEn: 'Seed Storage Box',
+    descHe: '24 מחיצות מסומנות. מכסה חרוט. אלון או דובדבן. לשמירת זרעים בין עונות.',
+    descEn: '24 labeled dividers. Engraved lid. Oak or cherry. For saving seeds between seasons.',
+    price: '₪195',
+    badge: 'חדש',
+    articleLink: null,
+  },
+] as const;
+
+type WoodProduct = typeof WOOD_PRODUCTS[number];
 
 // ── Cart Drawer ────────────────────────────────────────────────────────────
 
@@ -319,6 +409,29 @@ export function ShopPage() {
 
   const hasAnyCredits = credits.analysis.available > 0 || credits.tracker.available > 0 || credits.garden.available > 0;
 
+  const [woodOrderProduct, setWoodOrderProduct] = useState<WoodProduct | null>(null);
+  const [woodOrderSent, setWoodOrderSent] = useState(false);
+  const [woodForm, setWoodForm] = useState({ name: '', email: '', notes: '' });
+
+  function handleWoodOrder(product: WoodProduct) {
+    setWoodOrderProduct(product);
+    setWoodOrderSent(false);
+    setWoodForm({
+      name: '',
+      email: '',
+      notes: `שלום, אני מעוניין/ת להזמין: ${product.nameHe} (${product.price})\n\n`,
+    });
+  }
+
+  function handleWoodSend() {
+    const subject = encodeURIComponent(`הזמנה מגינה חיה — ${woodOrderProduct?.nameHe}`);
+    const body = encodeURIComponent(
+      `שם: ${woodForm.name}\nאימייל: ${woodForm.email}\n\n${woodForm.notes}`
+    );
+    window.open(`mailto:gina.haya.contact@gmail.com?subject=${subject}&body=${body}`);
+    setWoodOrderSent(true);
+  }
+
   return (
     <>
       <style>{PAGE_CSS}</style>
@@ -338,6 +451,136 @@ export function ShopPage() {
           onClose={() => setCheckoutOpen(false)}
           onSuccess={handleCheckoutSuccess}
         />
+      )}
+
+      {woodOrderProduct && (
+        <>
+          <div
+            onClick={() => setWoodOrderProduct(null)}
+            style={{
+              position: 'fixed', inset: 0, zIndex: 400,
+              backgroundColor: 'rgba(0,0,0,0.6)', backdropFilter: 'blur(3px)',
+            }}
+          />
+          <div
+            dir="rtl"
+            style={{
+              position: 'fixed', top: '50%', left: '50%',
+              transform: 'translate(-50%, -50%)',
+              zIndex: 401,
+              width: 'min(480px, 92vw)',
+              backgroundColor: '#1a3a1c',
+              border: '1px solid rgba(245,200,64,0.2)',
+              borderRadius: '18px',
+              padding: '28px 28px 24px',
+              boxShadow: '0 24px 80px rgba(0,0,0,0.6)',
+              animation: 'shopFadeIn 0.2s ease both',
+            }}
+          >
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '6px' }}>
+              <h2 style={{ fontFamily: FRANK, fontSize: '20px', color: GOLD, fontWeight: 700, margin: 0 }}>
+                {woodOrderProduct.nameHe}
+              </h2>
+              <button
+                onClick={() => setWoodOrderProduct(null)}
+                style={{ background: 'none', border: 'none', color: `${PARCH}50`, cursor: 'pointer', fontSize: '18px', padding: '0 0 0 8px', flexShrink: 0 }}
+              >
+                ✕
+              </button>
+            </div>
+            <p style={{ fontFamily: ASST, fontSize: '13px', color: `${PARCH}60`, margin: '0 0 20px' }}>
+              {woodOrderProduct.price} · זמן ייצור 1–3 שבועות
+            </p>
+
+            {!woodOrderSent ? (
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                <div>
+                  <label style={{ fontFamily: ASST, fontSize: '12px', color: `${PARCH}70`, display: 'block', marginBottom: '5px' }}>שם</label>
+                  <input
+                    type="text"
+                    value={woodForm.name}
+                    onChange={e => setWoodForm(f => ({ ...f, name: e.target.value }))}
+                    style={{
+                      width: '100%', boxSizing: 'border-box',
+                      padding: '10px 12px', borderRadius: '8px',
+                      background: 'rgba(255,255,255,0.06)',
+                      border: '1px solid rgba(245,200,64,0.15)',
+                      color: PARCH, fontFamily: ASST, fontSize: '14px',
+                      outline: 'none',
+                    }}
+                  />
+                </div>
+                <div>
+                  <label style={{ fontFamily: ASST, fontSize: '12px', color: `${PARCH}70`, display: 'block', marginBottom: '5px' }}>אימייל</label>
+                  <input
+                    type="email"
+                    value={woodForm.email}
+                    onChange={e => setWoodForm(f => ({ ...f, email: e.target.value }))}
+                    style={{
+                      width: '100%', boxSizing: 'border-box',
+                      padding: '10px 12px', borderRadius: '8px',
+                      background: 'rgba(255,255,255,0.06)',
+                      border: '1px solid rgba(245,200,64,0.15)',
+                      color: PARCH, fontFamily: ASST, fontSize: '14px',
+                      outline: 'none',
+                    }}
+                  />
+                </div>
+                <div>
+                  <label style={{ fontFamily: ASST, fontSize: '12px', color: `${PARCH}70`, display: 'block', marginBottom: '5px' }}>הערות / גודל / שאלות</label>
+                  <textarea
+                    value={woodForm.notes}
+                    onChange={e => setWoodForm(f => ({ ...f, notes: e.target.value }))}
+                    rows={4}
+                    style={{
+                      width: '100%', boxSizing: 'border-box',
+                      padding: '10px 12px', borderRadius: '8px',
+                      background: 'rgba(255,255,255,0.06)',
+                      border: '1px solid rgba(245,200,64,0.15)',
+                      color: PARCH, fontFamily: ASST, fontSize: '14px',
+                      outline: 'none', resize: 'vertical',
+                    }}
+                  />
+                </div>
+                <button
+                  onClick={handleWoodSend}
+                  style={{
+                    marginTop: '4px',
+                    width: '100%', padding: '13px',
+                    backgroundColor: GOLD, color: EARTH,
+                    border: 'none', borderRadius: '10px',
+                    fontFamily: FRANK, fontSize: '16px', fontWeight: 700,
+                    cursor: 'pointer', transition: 'filter 0.2s',
+                  }}
+                  onMouseEnter={e => { (e.currentTarget as HTMLElement).style.filter = 'brightness(1.1)'; }}
+                  onMouseLeave={e => { (e.currentTarget as HTMLElement).style.filter = 'none'; }}
+                >
+                  שלחו הודעה
+                </button>
+              </div>
+            ) : (
+              <div style={{ textAlign: 'center', padding: '20px 0' }}>
+                <div style={{ fontSize: '40px', marginBottom: '12px' }}>🌿</div>
+                <p style={{ fontFamily: FRANK, fontSize: '18px', color: SAGE, fontWeight: 700, margin: '0 0 20px' }}>
+                  תודה! נחזור אליך בהקדם.
+                </p>
+                <button
+                  onClick={() => setWoodOrderProduct(null)}
+                  style={{
+                    padding: '10px 28px',
+                    background: 'transparent',
+                    border: `1.5px solid rgba(245,200,64,0.4)`,
+                    borderRadius: '10px',
+                    color: GOLD, fontFamily: FRANK, fontSize: '14px', fontWeight: 700,
+                    cursor: 'pointer',
+                  }}
+                >
+                  סגור
+                </button>
+              </div>
+            )}
+          </div>
+        </>
       )}
 
       <div dir="rtl" style={{ minHeight: '100vh', background: EARTH, fontFamily: ASST }}>
@@ -482,6 +725,129 @@ export function ShopPage() {
                 </div>
               ))}
             </div>
+          </div>
+        </div>
+
+        {/* ── Physical products: Wood & Garden ── */}
+        <div style={{
+          maxWidth: '900px', margin: '0 auto',
+          padding: '0 20px',
+          animation: 'shopFadeIn 0.5s ease 0.15s both',
+        }}>
+          <hr style={{ border: 'none', borderTop: '1px solid rgba(245,200,64,0.12)', margin: '0 0 40px' }} />
+
+          {/* Section header */}
+          <div style={{ marginBottom: '24px' }}>
+            <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: '12px', marginBottom: '8px' }}>
+              <h2 style={{ fontFamily: FRANK, fontSize: '22px', color: GOLD, fontWeight: 700, margin: 0 }}>
+                עץ וגינה
+              </h2>
+              <span style={{ fontFamily: ASST, fontSize: '14px', color: `${PARCH}60` }}>
+                מוצרים בעבודת יד
+              </span>
+              <span style={{
+                fontFamily: ASST, fontSize: '11px', fontWeight: 700,
+                color: '#8B6914',
+                background: 'rgba(245,200,64,0.15)',
+                border: '1px solid rgba(245,200,64,0.25)',
+                padding: '3px 10px', borderRadius: '99px',
+              }}>
+                מוצרים פיזיים — משלוח/איסוף עצמי
+              </span>
+            </div>
+
+            {/* Chupchu quote */}
+            <div style={{
+              display: 'flex', alignItems: 'flex-start', gap: '10px',
+              background: 'rgba(125,192,132,0.07)',
+              border: '1px solid rgba(125,192,132,0.15)',
+              borderRadius: '12px', padding: '12px 16px',
+              marginTop: '14px',
+            }}>
+              <img
+                src="https://gina-haya.vercel.app/chupchu_final.png"
+                alt="צ'ופצ'ו"
+                style={{ width: '32px', height: '32px', borderRadius: '50%', flexShrink: 0, objectFit: 'cover' }}
+              />
+              <p style={{ fontFamily: ASST, fontSize: '13px', color: `${PARCH}80`, margin: 0, lineHeight: 1.6 }}>
+                כל פריט נעשה ביד מעץ טבעי. זמן ייצור 1–3 שבועות.
+              </p>
+            </div>
+          </div>
+
+          {/* Products grid */}
+          <div style={{
+            display: 'grid',
+            gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))',
+            gap: '16px',
+            marginBottom: '48px',
+          }}>
+            {WOOD_PRODUCTS.map(product => (
+              <div
+                key={product.id}
+                className="shop-product-card"
+                style={{
+                  position: 'relative',
+                  background: product.badge
+                    ? 'linear-gradient(145deg, rgba(30,62,32,0.95) 0%, rgba(20,43,22,0.98) 100%)'
+                    : 'rgba(20,50,22,0.6)',
+                  border: product.badge
+                    ? '2px solid rgba(245,200,64,0.3)'
+                    : '1px solid rgba(245,200,64,0.15)',
+                  borderRadius: '14px',
+                  overflow: 'hidden',
+                  display: 'flex', flexDirection: 'column',
+                  boxShadow: product.badge ? '0 4px 24px rgba(245,200,64,0.08)' : '0 2px 12px rgba(0,0,0,0.15)',
+                }}
+              >
+                {/* Icon area */}
+                <div style={{
+                  position: 'relative',
+                  background: 'rgba(245,200,64,0.06)',
+                  padding: '24px 20px 18px',
+                  textAlign: 'center',
+                }}>
+                  {product.badge && (
+                    <div style={{
+                      position: 'absolute', top: 10, insetInlineStart: 12,
+                      background: 'rgba(245,200,64,0.18)',
+                      color: '#8B6914',
+                      fontFamily: ASST, fontSize: '10px', fontWeight: 700,
+                      padding: '2px 8px', borderRadius: '99px',
+                    }}>
+                      {product.badge}
+                    </div>
+                  )}
+                  <span style={{ fontSize: '44px', lineHeight: 1 }}>{product.icon}</span>
+                </div>
+
+                {/* Body */}
+                <div style={{ padding: '16px 20px', flex: 1, display: 'flex', flexDirection: 'column', gap: '6px' }}>
+                  <div style={{ fontFamily: FRANK, fontSize: '17px', color: PARCH, fontWeight: 700 }}>
+                    {product.nameHe}
+                  </div>
+                  <div style={{ fontFamily: ASST, fontSize: '12px', color: `${PARCH}50` }}>
+                    {product.nameEn}
+                  </div>
+                  <p style={{
+                    fontFamily: ASST, fontSize: '13px', color: `${PARCH}70`,
+                    margin: '6px 0 8px', lineHeight: 1.6, flex: 1,
+                  }}>
+                    {product.descHe}
+                  </p>
+                  <div style={{ fontFamily: FRANK, fontSize: '20px', color: GOLD, fontWeight: 700 }}>
+                    {product.price}
+                  </div>
+                </div>
+
+                {/* Footer button */}
+                <div style={{ padding: '0 20px 20px' }}>
+                  <button className="shop-wood-btn" onClick={() => handleWoodOrder(product)}>
+                    לפרטים / הזמנה
+                  </button>
+                </div>
+              </div>
+            ))}
           </div>
         </div>
 
