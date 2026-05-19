@@ -90,7 +90,7 @@ export function drawMoon(canvas: HTMLCanvasElement, phasePct: number, phaseAngle
 
     // Draw full moon texture first so ~28% shows through the dark side (earthshine / ashen light)
     drawMoonSurface(ctx, size);
-    ctx.fillStyle = 'rgba(4, 8, 20, 0.96)';
+    ctx.fillStyle = 'rgba(4, 8, 20, 0.93)';
     ctx.beginPath();
     ctx.arc(cx, cy, r, 0, Math.PI * 2);
     ctx.fill();
@@ -119,7 +119,7 @@ export function drawMoon(canvas: HTMLCanvasElement, phasePct: number, phaseAngle
         ctx.ellipse(cx, cy, tRx, r, 0, -Math.PI / 2, Math.PI / 2);
         ctx.lineTo(cx, cy - r);
         ctx.closePath();
-        ctx.fillStyle = 'rgba(4, 8, 20, 0.96)';
+        ctx.fillStyle = 'rgba(4, 8, 20, 0.93)';
         ctx.fill();
         ctx.restore();
       } else if (tRx > 1) {
@@ -148,7 +148,7 @@ export function drawMoon(canvas: HTMLCanvasElement, phasePct: number, phaseAngle
         ctx.ellipse(cx, cy, tRx, r, 0, Math.PI / 2, 3 * Math.PI / 2);
         ctx.lineTo(cx, cy - r);
         ctx.closePath();
-        ctx.fillStyle = 'rgba(4, 8, 20, 0.96)';
+        ctx.fillStyle = 'rgba(4, 8, 20, 0.93)';
         ctx.fill();
         ctx.restore();
       } else if (tRx > 1) {
@@ -164,22 +164,34 @@ export function drawMoon(canvas: HTMLCanvasElement, phasePct: number, phaseAngle
       }
     }
 
-    // Brighten the lit side
+    // Glow on lit side only — clipped to lit half
     if (phasePct < 98) {
+      const isWaxing = !isWaning;
       ctx.save();
       ctx.beginPath();
       ctx.arc(cx, cy, r, 0, Math.PI * 2);
       ctx.clip();
 
-      const litGrad = ctx.createRadialGradient(
-        !isWaning ? cx + r * 0.3 : cx - r * 0.3, cy, 0,
-        cx, cy, r
-      );
-      litGrad.addColorStop(0,    'rgba(255, 252, 230, 0.45)');
-      litGrad.addColorStop(0.35, 'rgba(255, 248, 210, 0.50)');
-      litGrad.addColorStop(0.65, 'rgba(255, 244, 190, 0.22)');
-      litGrad.addColorStop(1,    'rgba(0, 0, 0, 0)');
+      // Clip to lit half only (opposite of shadow side)
+      ctx.beginPath();
+      if (isWaxing) {
+        ctx.arc(cx, cy, r, -Math.PI / 2, Math.PI / 2, false);
+        ctx.ellipse(cx, cy, tRx, r, 0, Math.PI / 2, -Math.PI / 2, true);
+      } else {
+        ctx.arc(cx, cy, r, Math.PI / 2, (3 * Math.PI) / 2, false);
+        ctx.ellipse(cx, cy, tRx, r, 0, -Math.PI / 2, Math.PI / 2, true);
+      }
+      ctx.closePath();
+      ctx.clip();
 
+      // Warm glow gradient centered on lit edge
+      const litGrad = ctx.createRadialGradient(
+        isWaxing ? cx + r * 0.5 : cx - r * 0.5, cy, 0,
+        isWaxing ? cx + r * 0.5 : cx - r * 0.5, cy, r * 0.9
+      );
+      litGrad.addColorStop(0,   'rgba(255, 250, 220, 0.65)');
+      litGrad.addColorStop(0.5, 'rgba(255, 245, 200, 0.30)');
+      litGrad.addColorStop(1,   'rgba(0, 0, 0, 0)');
       ctx.fillStyle = litGrad;
       ctx.fillRect(0, 0, size, size);
       ctx.restore();
