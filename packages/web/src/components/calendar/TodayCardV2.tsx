@@ -88,9 +88,9 @@ export function drawMoon(canvas: HTMLCanvasElement, phasePct: number, phaseAngle
     ctx.arc(cx, cy, r, 0, Math.PI * 2);
     ctx.clip();
 
-    // Draw full moon texture first so ~18% shows through the dark side (earthshine / ashen light)
+    // Draw full moon texture first so ~28% shows through the dark side (earthshine / ashen light)
     drawMoonSurface(ctx, size);
-    ctx.fillStyle = 'rgba(0, 0, 0, 0.82)';
+    ctx.fillStyle = 'rgba(4, 8, 20, 0.72)';
     ctx.beginPath();
     ctx.arc(cx, cy, r, 0, Math.PI * 2);
     ctx.fill();
@@ -119,7 +119,7 @@ export function drawMoon(canvas: HTMLCanvasElement, phasePct: number, phaseAngle
         ctx.ellipse(cx, cy, tRx, r, 0, -Math.PI / 2, Math.PI / 2);
         ctx.lineTo(cx, cy - r);
         ctx.closePath();
-        ctx.fillStyle = 'rgba(0, 0, 0, 0.82)';
+        ctx.fillStyle = 'rgba(4, 8, 20, 0.72)';
         ctx.fill();
         ctx.restore();
       } else if (tRx > 1) {
@@ -148,7 +148,7 @@ export function drawMoon(canvas: HTMLCanvasElement, phasePct: number, phaseAngle
         ctx.ellipse(cx, cy, tRx, r, 0, Math.PI / 2, 3 * Math.PI / 2);
         ctx.lineTo(cx, cy - r);
         ctx.closePath();
-        ctx.fillStyle = 'rgba(0, 0, 0, 0.82)';
+        ctx.fillStyle = 'rgba(4, 8, 20, 0.72)';
         ctx.fill();
         ctx.restore();
       } else if (tRx > 1) {
@@ -166,8 +166,9 @@ export function drawMoon(canvas: HTMLCanvasElement, phasePct: number, phaseAngle
 
     // Warm glow on lit side
     const glowGrad = ctx.createRadialGradient(cx, cy, 0, cx, cy, r);
-    glowGrad.addColorStop(0,   'rgba(255, 245, 200, 0.15)');
-    glowGrad.addColorStop(0.7, 'rgba(255, 240, 180, 0.05)');
+    glowGrad.addColorStop(0,   'rgba(255, 245, 200, 0.35)');
+    glowGrad.addColorStop(0.5, 'rgba(255, 240, 180, 0.18)');
+    glowGrad.addColorStop(0.7, 'rgba(255, 240, 180, 0.08)');
     glowGrad.addColorStop(1,   'rgba(0, 0, 0, 0)');
     ctx.fillStyle = glowGrad;
     ctx.beginPath();
@@ -494,8 +495,8 @@ export function MoonPhaseDisplay({ phaseAngle, phasePct, phaseHe, moonSignHe, as
           borderRadius: '50%',
           overflow: 'hidden',
           boxShadow: isFullMoon
-            ? '0 0 0 2px rgba(245,200,64,0.40), 0 0 32px rgba(245,200,64,0.35)'
-            : '0 0 0 2px rgba(245,200,64,0.40), 0 0 16px rgba(245,200,64,0.18)',
+            ? '0 0 0 2px rgba(245,200,64,0.40), 0 0 40px rgba(245,200,64,0.55), 0 0 12px rgba(245,200,64,0.3)'
+            : '0 0 0 2px rgba(245,200,64,0.40), 0 0 22px rgba(245,200,64,0.32), 0 0 6px rgba(245,200,64,0.15)',
         }}>
           <canvas
             ref={canvasRef}
