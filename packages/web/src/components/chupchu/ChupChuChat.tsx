@@ -459,9 +459,11 @@ interface ChupChuChatProps {
   compact?: boolean;
   initialMessage?: string;
   onInitialMessageConsumed?: () => void;
+  quickSend?: string;
+  onQuickSendConsumed?: () => void;
 }
 
-export function ChupChuChat({ compact, initialMessage, onInitialMessageConsumed }: ChupChuChatProps = {}) {
+export function ChupChuChat({ compact, initialMessage, onInitialMessageConsumed, quickSend, onQuickSendConsumed }: ChupChuChatProps = {}) {
   const { t, i18n } = useTranslation('chupchu');
   const isHe = i18n.language === 'he';
   const { dir, isRTL } = useDirection();
@@ -542,14 +544,13 @@ export function ChupChuChat({ compact, initialMessage, onInitialMessageConsumed 
     return () => window.removeEventListener('beforeunload', handleUnload);
   }, [messages, lang, memory]);
 
-  const handleSend = () => {
-    const text = input.trim();
+  const handleSend = (forceText?: string) => {
+    const text = (forceText ?? input).trim();
     if (!text || showLoading) return;
 
     if (isGuest) {
       if (showGuestWall) return;
-      setInput('');
-      if (textareaRef.current) textareaRef.current.style.height = 'auto';
+      if (!forceText) { setInput(''); if (textareaRef.current) textareaRef.current.style.height = 'auto'; }
 
       const newCount = incrementGuestCount();
       const userMsg: ChupChuMessage = { role: 'user', content: text, timestamp: new Date().toISOString() };
@@ -570,10 +571,19 @@ export function ChupChuChat({ compact, initialMessage, onInitialMessageConsumed 
     }
 
     if (rateLimited) return;
-    setInput('');
-    if (textareaRef.current) textareaRef.current.style.height = 'auto';
+    if (!forceText) { setInput(''); if (textareaRef.current) textareaRef.current.style.height = 'auto'; }
     sendMessage(text);
   };
+
+  // Auto-send quickSend messages (from suggested question chips)
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  useEffect(() => {
+    if (quickSend) {
+      handleSend(quickSend);
+      onQuickSendConsumed?.();
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [quickSend]);
 
   const handleKeyDown = (e: KeyboardEvent<HTMLTextAreaElement>) => {
     if (e.key === 'Enter' && !e.shiftKey) {
@@ -649,7 +659,22 @@ export function ChupChuChat({ compact, initialMessage, onInitialMessageConsumed 
           gap:           '12px',
         }}
       >
-        {displayMessages.length === 0 && !showLoading && <ChupChuGreeting />}
+        {displayMessages.length === 0 && !showLoading && (
+          <>
+            <ChupChuGreeting />
+            <p style={{
+              fontFamily: "'Caveat', cursive",
+              fontSize:   '16px',
+              color:      'rgba(245,200,64,0.38)',
+              textAlign:  'center',
+              margin:     '6px 0 0',
+              direction:  'rtl',
+              userSelect: 'none',
+            }}>
+              ...שאל אותי כל דבר על הגינה שלך
+            </p>
+          </>
+        )}
 
         {displayMessages.map((msg, idx) => (
           <MessageBubble key={idx} message={msg} isRTL={isRTL} />
@@ -756,7 +781,7 @@ export function ChupChuChat({ compact, initialMessage, onInitialMessageConsumed 
             }}
           />
           <button
-            onClick={handleSend}
+            onClick={() => handleSend()}
             disabled={!canSend}
             aria-label={t('sendButton')}
             style={{

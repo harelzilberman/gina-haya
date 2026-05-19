@@ -81,7 +81,8 @@
       "Bash(grep -A8 \"^  {$\" ./packages/web/src/data/articles.ts)",
       "Bash(pnpm --filter @gina-haya/api build)",
       "Bash(pnpm dev *)",
-      "Bash(pnpm --filter @gina-haya/web type-check)"
+      "Bash(pnpm --filter @gina-haya/web type-check)",
+      "Bash(pnpm build *)"
     ]
   }
 }
