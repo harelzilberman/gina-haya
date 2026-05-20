@@ -253,9 +253,9 @@ function ParticleCanvas() {
       style={{
         position: 'fixed',
         inset: 0,
-        zIndex: 0,
+        zIndex: 10,
         pointerEvents: 'none',
-        opacity: 0.65,
+        opacity: 0.7,
       }}
     />
   );
@@ -264,7 +264,7 @@ function ParticleCanvas() {
 // ── Aurora bands ───────────────────────────────────────────────────────────
 function AuroraBands() {
   return (
-    <div aria-hidden="true" style={{ position: 'fixed', inset: 0, zIndex: 0, pointerEvents: 'none', overflow: 'hidden' }}>
+    <div aria-hidden="true" style={{ position: 'fixed', inset: 0, zIndex: 5, pointerEvents: 'none', overflow: 'hidden' }}>
       <div style={{
         position: 'absolute', top: '-10%', left: '-20%', width: '80%', height: '45%',
         background: `radial-gradient(ellipse, rgba(0,229,195,0.07) 0%, transparent 70%)`,
@@ -572,8 +572,13 @@ export function LandingPage() {
           textAlign: 'center',
           padding: '120px 28px 80px',
           backgroundColor: NIGHT,
-          backgroundImage: LEAF_VEIN_BG,
-          backgroundRepeat: 'repeat',
+          backgroundImage: [
+            'linear-gradient(to bottom, rgba(5,13,10,0.72) 0%, rgba(5,13,10,0.55) 50%, rgba(5,13,10,0.82) 100%)',
+            'url("https://images.unsplash.com/photo-1416879595882-3373a0480b5b?auto=format&fit=crop&w=1920&q=80")',
+          ].join(', '),
+          backgroundSize: 'auto, cover',
+          backgroundPosition: 'center, center',
+          backgroundRepeat: 'no-repeat, no-repeat',
         }}
       >
         {/* Eyebrow pill */}
