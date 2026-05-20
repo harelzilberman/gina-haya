@@ -38,13 +38,13 @@ function WelcomeChecklist({ onOpenChupchu }: { onOpenChupchu: () => void }) {
 
   return (
     <div style={{
-      background: 'linear-gradient(135deg, rgba(30,62,32,0.9) 0%, rgba(20,43,22,0.95) 100%)',
-      border: '1px solid rgba(245,200,64,0.22)',
+      background: 'linear-gradient(135deg, rgba(14,30,23,0.9) 0%, rgba(9,20,16,0.95) 100%)',
+      border: '1px solid rgba(0,229,195,0.22)',
       borderRadius: '14px', padding: '18px 20px',
       marginBottom: '20px', direction: 'rtl',
     }}>
       <h3 style={{
-        fontFamily: FRANK, fontSize: '16px', color: GOLD,
+        fontFamily: FRANK, fontSize: '16px', color: BIO_CYAN,
         margin: '0 0 14px', fontWeight: 700,
       }}>
         ✨ התחל כאן
@@ -67,14 +67,14 @@ function WelcomeChecklist({ onOpenChupchu }: { onOpenChupchu: () => void }) {
           </span>
           <span style={{
             fontFamily: ASST, fontSize: '14px',
-            color: item.done ? `${PARCH}60` : PARCH,
+            color: item.done ? `${TEXT_MID}60` : TEXT_MID,
             textDecoration: item.done ? 'line-through' : 'none',
             flex: 1,
           }}>
             {item.label}
           </span>
           {!item.done && item.action != null && (
-            <span style={{ color: `${GOLD}80`, fontSize: '14px' }}>›</span>
+            <span style={{ color: `${BIO_CYAN}80`, fontSize: '14px' }}>›</span>
           )}
         </div>
       ))}
@@ -83,11 +83,16 @@ function WelcomeChecklist({ onOpenChupchu }: { onOpenChupchu: () => void }) {
 }
 
 // ── Design tokens ──────────────────────────────────────────────────────────
-const EARTH = '#142B16';
-const GOLD  = '#F5C840';
-const PARCH = '#EDE0C4';
-const FRANK = '"Frank Ruhl Libre", Georgia, serif';
-const ASST  = '"Assistant", "Heebo", sans-serif';
+const NIGHT      = '#050d0a';
+const NIGHT_MID  = '#091410';
+const NIGHT_CARD = '#111f18';
+const NIGHT_LIFT = '#0e1e17';
+const BIO_CYAN   = '#00e5c3';
+const TEXT       = '#e8f5ee';
+const TEXT_MID   = '#b0cfbf';
+const MUTED      = '#6b9080';
+const FRANK      = '"Frank Ruhl Libre", Georgia, serif';
+const ASST       = "'DM Sans', 'Assistant', 'Heebo', sans-serif";
 
 const DAY_TYPE_MAP: Record<string, { emoji: string; label: string; color: string; bg: string }> = {
   fruit:  { emoji: '🍎', label: 'פרי',   color: '#EF745A', bg: 'rgba(239,116,90,0.18)' },
@@ -193,10 +198,10 @@ function MoonCanvas({ phasePct, phaseAngle }: { phasePct: number; phaseAngle: nu
       height={165}
       style={{
         borderRadius: '50%',
-        border: '2px solid rgba(245,200,64,0.40)',
+        border: '2px solid rgba(0,229,195,0.35)',
         boxShadow: phasePct > 95
-          ? '0 0 32px rgba(245,200,64,0.35)'
-          : '0 0 16px rgba(245,200,64,0.18)',
+          ? '0 0 32px rgba(0,229,195,0.28)'
+          : '0 0 16px rgba(0,229,195,0.14)',
         display: 'block',
       }}
     />
@@ -240,14 +245,14 @@ function DayActionCard({
       {/* Personalized plant section */}
       {actionsLoading && (
         <div style={{
-          background: 'rgba(245,200,64,0.04)', border: '1px solid rgba(245,200,64,0.1)',
+          background: 'rgba(0,229,195,0.04)', border: '1px solid rgba(0,229,195,0.1)',
           borderRadius: '12px', padding: '16px 18px',
           display: 'flex', flexDirection: 'column', gap: '8px',
         }}>
           {[100, 70, 85].map((w, i) => (
             <div key={i} style={{
               height: '14px', borderRadius: '6px',
-              background: `rgba(245,200,64,0.07)`,
+              background: `rgba(0,229,195,0.07)`,
               width: `${w}%`,
             }} />
           ))}
@@ -256,10 +261,10 @@ function DayActionCard({
 
       {!actionsLoading && hasPersonal && !isNode && (
         <div style={{
-          background: 'rgba(245,200,64,0.06)', border: '1px solid rgba(245,200,64,0.18)',
+          background: 'rgba(0,229,195,0.05)', border: '1px solid rgba(0,229,195,0.18)',
           borderRadius: '12px', padding: '16px 18px',
         }}>
-          <h3 style={{ fontFamily: FRANK, fontSize: '14px', color: GOLD, margin: '0 0 10px', fontWeight: 700 }}>
+          <h3 style={{ fontFamily: FRANK, fontSize: '14px', color: BIO_CYAN, margin: '0 0 10px', fontWeight: 700 }}>
             🌿 {isHe ? 'הגינה שלך היום:' : 'Your garden today:'}
           </h3>
 
@@ -272,11 +277,11 @@ function DayActionCard({
               }}>
                 <span style={{ fontSize: '18px', flexShrink: 0 }}>{p.emoji}</span>
                 <div style={{ flex: 1 }}>
-                  <span style={{ fontFamily: ASST, fontSize: '13px', color: PARCH }}>
+                  <span style={{ fontFamily: ASST, fontSize: '13px', color: TEXT_MID }}>
                     {isHe ? p.plantNameHe : (p.plantNameEn || p.plantNameHe)}
                   </span>
                   {p.gardenName && (
-                    <span style={{ fontFamily: ASST, fontSize: '11px', color: `${PARCH}55`, marginRight: '6px', marginLeft: '6px' }}>
+                    <span style={{ fontFamily: ASST, fontSize: '11px', color: `${TEXT_MID}55`, marginRight: '6px', marginLeft: '6px' }}>
                       — {p.gardenName}
                     </span>
                   )}
@@ -292,7 +297,7 @@ function DayActionCard({
               </div>
             ))
           ) : (
-            <p style={{ fontFamily: ASST, fontSize: '13px', color: `${PARCH}70`, margin: 0 }}>
+            <p style={{ fontFamily: ASST, fontSize: '13px', color: `${TEXT_MID}70`, margin: 0 }}>
               {isHe
                 ? 'הצמחים בגינה שלך לא מתאימים במיוחד להיום — אבל תמיד אפשר להשקות ולבדוק.'
                 : "Your plants aren't a strong match for today — but watering and checking is always fine."}
@@ -301,13 +306,13 @@ function DayActionCard({
 
           {nonMatching.length > 0 && matching.length > 0 && (
             <div style={{ marginTop: '10px', paddingTop: '8px', borderTop: '1px solid rgba(255,255,255,0.06)' }}>
-              <div style={{ fontFamily: ASST, fontSize: '11px', color: `${PARCH}45`, marginBottom: '6px' }}>
+              <div style={{ fontFamily: ASST, fontSize: '11px', color: `${TEXT_MID}45`, marginBottom: '6px' }}>
                 {isHe ? 'שאר הגינה — פחות מתאים להיום:' : "Rest of garden — less ideal today:"}
               </div>
               <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px' }}>
                 {nonMatching.map((p, i) => (
                   <span key={i} style={{
-                    fontFamily: ASST, fontSize: '12px', color: `${PARCH}55`,
+                    fontFamily: ASST, fontSize: '12px', color: `${TEXT_MID}55`,
                     background: 'rgba(255,255,255,0.04)', borderRadius: '99px',
                     padding: '3px 10px', border: '1px solid rgba(255,255,255,0.06)',
                   }}>
@@ -322,19 +327,19 @@ function DayActionCard({
 
       {!actionsLoading && !hasPersonal && !isNode && (
         <div style={{
-          background: 'rgba(245,200,64,0.04)', border: '1px dashed rgba(245,200,64,0.2)',
+          background: 'rgba(0,229,195,0.04)', border: '1px dashed rgba(0,229,195,0.2)',
           borderRadius: '12px', padding: '14px 18px',
           display: 'flex', gap: '12px', alignItems: 'center',
         }}>
           <span style={{ fontSize: '20px' }}>🗺️</span>
-          <div style={{ fontFamily: ASST, fontSize: '13px', color: `${PARCH}70`, flex: 1 }}>
+          <div style={{ fontFamily: ASST, fontSize: '13px', color: `${TEXT_MID}70`, flex: 1 }}>
             {isHe
               ? 'הוסף צמחים למפת הגינה שלך כדי לקבל המלצות מותאמות אישית להיום.'
               : 'Add plants to your garden map to get personalized recommendations for today.'}
           </div>
           <a href="/map" style={{
             fontFamily: FRANK, fontSize: '12px', fontWeight: 700,
-            color: GOLD, textDecoration: 'none', flexShrink: 0,
+            color: BIO_CYAN, textDecoration: 'none', flexShrink: 0,
           }}>
             {isHe ? 'למפה ›' : 'Map ›'}
           </a>
@@ -353,11 +358,11 @@ function DayActionCard({
           {alerts.slice(0, 3).map((a, i) => (
             <div key={i} style={{
               display: 'flex', gap: '8px', alignItems: 'center',
-              fontFamily: ASST, fontSize: '13px', color: `${PARCH}90`, padding: '3px 0',
+              fontFamily: ASST, fontSize: '13px', color: `${TEXT_MID}90`, padding: '3px 0',
             }}>
               <span style={{ color: '#C884C8', flexShrink: 0 }}>•</span>
               <span>{isHe ? a.plantNameHe : (a.plantNameEn || a.plantNameHe)}</span>
-              <span style={{ color: `${PARCH}45`, fontSize: '11px', marginRight: 'auto', marginLeft: 'auto' }}>
+              <span style={{ color: `${TEXT_MID}45`, fontSize: '11px', marginRight: 'auto', marginLeft: 'auto' }}>
                 {a.lastAnalysisDaysAgo === null
                   ? (isHe ? '(לא נבדק)' : '(never checked)')
                   : (isHe ? `(לפני ${a.lastAnalysisDaysAgo} ימים)` : `(${a.lastAnalysisDaysAgo}d ago)`)}
@@ -372,19 +377,19 @@ function DayActionCard({
 
       {/* Generic BD advice */}
       <div style={{
-        background: 'rgba(245,200,64,0.05)', border: '1px solid rgba(245,200,64,0.12)',
+        background: 'rgba(0,229,195,0.04)', border: '1px solid rgba(0,229,195,0.12)',
         borderRadius: '12px', padding: '16px 18px',
       }}>
-        <h3 style={{ fontFamily: FRANK, fontSize: '13px', color: `${GOLD}BB`, margin: '0 0 8px', fontWeight: 700 }}>
+        <h3 style={{ fontFamily: FRANK, fontSize: '13px', color: `${BIO_CYAN}BB`, margin: '0 0 8px', fontWeight: 700 }}>
           ✅ {isHe ? 'פעולות מומלצות כלליות:' : 'General recommended actions:'}
         </h3>
         {goodFor.map((item, i) => (
           <div key={i} style={{
             display: 'flex', gap: '8px', alignItems: 'flex-start',
-            fontFamily: ASST, fontSize: '13px', color: `${PARCH}99`,
+            fontFamily: ASST, fontSize: '13px', color: `${TEXT_MID}99`,
             padding: '3px 0',
           }}>
-            <span style={{ color: `${GOLD}80`, flexShrink: 0 }}>•</span>
+            <span style={{ color: `${BIO_CYAN}80`, flexShrink: 0 }}>•</span>
             <span>{item}</span>
           </div>
         ))}
@@ -413,28 +418,28 @@ function DayActionCard({
         onClick={() => setBdOpen(o => !o)}
         style={{
           background: 'none', border: 'none', cursor: 'pointer',
-          fontFamily: ASST, fontSize: '12px', color: `${PARCH}45`,
+          fontFamily: ASST, fontSize: '12px', color: `${TEXT_MID}45`,
           textAlign: 'start' as const, padding: '2px 0',
           display: 'flex', alignItems: 'center', gap: '5px',
           transition: 'color 0.15s',
         }}
-        onMouseEnter={e => { (e.currentTarget as HTMLElement).style.color = `${PARCH}80`; }}
-        onMouseLeave={e => { (e.currentTarget as HTMLElement).style.color = `${PARCH}45`; }}
+        onMouseEnter={e => { (e.currentTarget as HTMLElement).style.color = `${TEXT_MID}80`; }}
+        onMouseLeave={e => { (e.currentTarget as HTMLElement).style.color = `${TEXT_MID}45`; }}
       >
         <span>{bdOpen ? '▾' : '›'}</span>
         <span>{isHe ? 'מה זה אומר?' : 'What does this mean?'}</span>
-        <span style={{ color: `${PARCH}25` }}> — </span>
-        <span style={{ color: `${PARCH}35` }}>{isHe ? bdSummary.bdDetail.he : bdSummary.bdDetail.en}</span>
+        <span style={{ color: `${TEXT_MID}25` }}> — </span>
+        <span style={{ color: `${TEXT_MID}35` }}>{isHe ? bdSummary.bdDetail.he : bdSummary.bdDetail.en}</span>
       </button>
 
       {bdOpen && (
         <div style={{
           background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.06)',
           borderRadius: '10px', padding: '14px 16px',
-          fontFamily: ASST, fontSize: '13px', color: `${PARCH}75`, lineHeight: 1.7,
+          fontFamily: ASST, fontSize: '13px', color: `${TEXT_MID}75`, lineHeight: 1.7,
         }}>
           <div style={{ marginBottom: '6px' }}>{isHe ? bdSummary.bdDetail.he : bdSummary.bdDetail.en}</div>
-          <div style={{ color: `${PARCH}50`, fontSize: '12px' }}>
+          <div style={{ color: `${TEXT_MID}50`, fontSize: '12px' }}>
             {isHe ? `ציון ביודינמי: ${score}/10` : `Biodynamic score: ${score}/10`}
           </div>
         </div>
@@ -461,7 +466,7 @@ export function DashboardPage() {
     ? Date.now() - new Date(user.created_at).getTime() < 24 * 60 * 60 * 1000
     : false;
   const dayType    = day ? DAY_TYPE_MAP[day.dayType] ?? null : null;
-  const scoreColor = day ? (SCORE_COLOR[day.scoreColour] ?? GOLD) : GOLD;
+  const scoreColor = day ? (SCORE_COLOR[day.scoreColour] ?? BIO_CYAN) : BIO_CYAN;
 
   const bdSummary = day ? getBDPlainSummary(
     day.dayType as DayType,
@@ -493,8 +498,8 @@ export function DashboardPage() {
   // ── Shared: Chupchu greeting card ─────────────────────────────────────
   const ChupChuCard = (
     <div style={{
-      background: 'linear-gradient(135deg, rgba(30,62,32,0.95) 0%, rgba(20,43,22,0.98) 100%)',
-      border: '1px solid rgba(245,200,64,0.18)',
+      background: 'linear-gradient(135deg, rgba(14,30,23,0.95) 0%, rgba(9,20,16,0.98) 100%)',
+      border: '1px solid rgba(0,229,195,0.18)',
       borderRadius: '16px',
       padding: '20px',
       display: 'flex',
@@ -505,18 +510,18 @@ export function DashboardPage() {
         {/* Chupchu avatar — glowing moon orb */}
         <div style={{
           width: '64px', height: '64px', borderRadius: '50%', flexShrink: 0,
-          background: 'radial-gradient(circle at 35% 35%, #F5E080, #C89010)',
+          background: 'radial-gradient(circle at 35% 35%, rgba(0,229,195,0.4), rgba(0,180,150,0.2))',
           display: 'flex', alignItems: 'center', justifyContent: 'center',
           fontSize: '34px',
-          boxShadow: '0 0 24px rgba(245,200,64,0.35), 0 0 8px rgba(245,200,64,0.2)',
+          boxShadow: '0 0 24px rgba(0,229,195,0.25), 0 0 8px rgba(0,229,195,0.15)',
         }}>
           🌕
         </div>
         <div>
-          <div style={{ fontFamily: FRANK, fontSize: '20px', color: GOLD, fontWeight: 700, lineHeight: 1.2 }}>
+          <div style={{ fontFamily: FRANK, fontSize: '20px', color: BIO_CYAN, fontWeight: 700, lineHeight: 1.2 }}>
             {firstName ? t('greeting.hello', { name: firstName }) : t('greeting.helloGuest')} {t(getGreetingKey())}
           </div>
-          <div style={{ fontFamily: ASST, fontSize: '12px', color: `${PARCH}70`, marginTop: '3px' }}>
+          <div style={{ fontFamily: ASST, fontSize: '12px', color: `${TEXT_MID}70`, marginTop: '3px' }}>
             {t('chupchu.subtitle')}
           </div>
         </div>
@@ -524,9 +529,9 @@ export function DashboardPage() {
 
       {(day?.chupChuDailySummary || day?.dayType) && (
         <p style={{
-          fontFamily: ASST, fontSize: '13px', color: `${PARCH}CC`,
+          fontFamily: ASST, fontSize: '13px', color: `${TEXT_MID}CC`,
           margin: 0, lineHeight: 1.6,
-          borderRight: `3px solid ${GOLD}55`,
+          borderRight: `3px solid ${BIO_CYAN}55`,
           paddingRight: '12px',
         }}>
           {isHe
@@ -539,7 +544,7 @@ export function DashboardPage() {
         onClick={e => { e.stopPropagation(); openChupChu(); }}
         style={{
           fontFamily: FRANK, fontSize: '14px', fontWeight: 700,
-          color: EARTH, background: GOLD,
+          color: NIGHT, background: BIO_CYAN,
           border: 'none', borderRadius: '10px',
           padding: '11px 20px', cursor: 'pointer',
           display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '7px',
@@ -558,7 +563,7 @@ export function DashboardPage() {
   if (isMobile) {
     return (
       <div dir={isHe ? 'rtl' : 'ltr'} style={{
-        minHeight: '100vh', backgroundColor: EARTH,
+        minHeight: '100vh', backgroundColor: NIGHT,
         padding: '16px 12px 100px',
         fontFamily: ASST,
         overflowX: 'hidden',
@@ -596,11 +601,11 @@ export function DashboardPage() {
             )}
             <div style={{
               display: 'flex', alignItems: 'center', gap: '5px', flexShrink: 0,
-              background: 'rgba(245,200,64,0.1)', border: '1px solid rgba(245,200,64,0.25)',
+              background: 'rgba(0,229,195,0.1)', border: '1px solid rgba(0,229,195,0.25)',
               borderRadius: '99px', padding: '7px 14px',
             }}>
               <span style={{ fontSize: '16px' }}>{moonEmoji(day.moonPhasePct)}</span>
-              <span style={{ fontFamily: ASST, fontSize: '12px', color: GOLD, fontWeight: 600 }}>
+              <span style={{ fontFamily: ASST, fontSize: '12px', color: BIO_CYAN, fontWeight: 600 }}>
                 {day.moonPhasePct}%
               </span>
             </div>
@@ -633,23 +638,23 @@ export function DashboardPage() {
 
         {/* Section 4: Today's tasks preview */}
         <div style={{
-          background: 'rgba(20,50,22,0.6)', border: '1px solid rgba(245,200,64,0.12)',
+          background: NIGHT_CARD, border: '1px solid rgba(0,229,195,0.12)',
           borderRadius: '14px', padding: '16px', marginBottom: '12px',
         }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px' }}>
-            <h2 style={{ fontFamily: FRANK, fontSize: '16px', color: GOLD, margin: 0 }}>
+            <h2 style={{ fontFamily: FRANK, fontSize: '16px', color: BIO_CYAN, margin: 0 }}>
               {t('todayTasks.title')}
             </h2>
             <Link
               to="/tasks"
-              style={{ fontFamily: ASST, fontSize: '12px', color: `${PARCH}65`, textDecoration: 'none' }}
+              style={{ fontFamily: ASST, fontSize: '12px', color: `${TEXT_MID}65`, textDecoration: 'none' }}
             >
               {t('todayTasks.seeAll')}
             </Link>
           </div>
 
           {todayTasks.length === 0 ? (
-            <p style={{ fontFamily: ASST, fontSize: '13px', color: `${PARCH}50`, margin: 0 }}>
+            <p style={{ fontFamily: ASST, fontSize: '13px', color: `${TEXT_MID}50`, margin: 0 }}>
               {t('todayTasks.none')}
             </p>
           ) : (
@@ -664,17 +669,17 @@ export function DashboardPage() {
                   style={{
                     flexShrink: 0,
                     width: '22px', height: '22px', borderRadius: '6px',
-                    border: `2px solid ${task.status === 'done' ? '#4A7C59' : 'rgba(255,255,255,0.25)'}`,
-                    background: task.status === 'done' ? '#4A7C59' : 'transparent',
+                    border: `2px solid ${task.status === 'done' ? BIO_CYAN : 'rgba(255,255,255,0.25)'}`,
+                    background: task.status === 'done' ? BIO_CYAN : 'transparent',
                     cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center',
-                    color: 'white', fontSize: '12px', padding: 0,
+                    color: NIGHT, fontSize: '12px', padding: 0,
                   }}
                 >
                   {task.status === 'done' ? '✓' : ''}
                 </button>
                 <span style={{
                   fontFamily: ASST, fontSize: '13px',
-                  color: task.status === 'done' ? `${PARCH}45` : PARCH,
+                  color: task.status === 'done' ? `${TEXT_MID}45` : TEXT_MID,
                   textDecoration: task.status === 'done' ? 'line-through' : 'none',
                   flex: 1, overflow: 'hidden', whiteSpace: 'nowrap', textOverflow: 'ellipsis',
                 }}>
@@ -694,7 +699,7 @@ export function DashboardPage() {
               <div style={{
                 height: '100px', borderRadius: '16px',
                 background: 'rgba(255,255,255,0.05)',
-                border: '1px solid rgba(245,200,64,0.18)',
+                border: '1px solid rgba(0,229,195,0.18)',
                 display: 'flex', flexDirection: 'column',
                 alignItems: 'center', justifyContent: 'center', gap: '8px',
                 cursor: 'pointer', transition: 'background 0.15s, border-color 0.15s',
@@ -702,17 +707,17 @@ export function DashboardPage() {
               }}
               onMouseEnter={e => {
                 const el = e.currentTarget as HTMLDivElement;
-                el.style.background = 'rgba(245,200,64,0.1)';
-                el.style.borderColor = 'rgba(245,200,64,0.45)';
+                el.style.background = 'rgba(0,229,195,0.1)';
+                el.style.borderColor = 'rgba(0,229,195,0.45)';
               }}
               onMouseLeave={e => {
                 const el = e.currentTarget as HTMLDivElement;
                 el.style.background = 'rgba(255,255,255,0.05)';
-                el.style.borderColor = 'rgba(245,200,64,0.18)';
+                el.style.borderColor = 'rgba(0,229,195,0.18)';
               }}
               >
                 <span style={{ fontSize: '32px', lineHeight: 1 }}>{btn.emoji}</span>
-                <span style={{ fontFamily: ASST, fontSize: '13px', color: GOLD, fontWeight: 600 }}>
+                <span style={{ fontFamily: ASST, fontSize: '13px', color: BIO_CYAN, fontWeight: 600 }}>
                   {t(btn.tKey)}
                 </span>
               </div>
@@ -726,7 +731,7 @@ export function DashboardPage() {
   // ── DESKTOP LAYOUT ─────────────────────────────────────────────────────
   return (
     <div dir={isHe ? 'rtl' : 'ltr'} style={{
-      minHeight: '100vh', backgroundColor: EARTH,
+      minHeight: '100vh', backgroundColor: NIGHT,
       padding: '28px 28px 60px',
       fontFamily: ASST,
       boxSizing: 'border-box',
@@ -751,12 +756,12 @@ export function DashboardPage() {
 
           {/* Navigation links */}
           <div style={{
-            background: 'rgba(20,50,22,0.55)', border: '1px solid rgba(245,200,64,0.1)',
+            background: NIGHT_CARD, border: '1px solid rgba(0,229,195,0.1)',
             borderRadius: '14px', padding: '16px',
           }}>
             <h3 style={{
               fontFamily: ASST, fontSize: '11px', fontWeight: 700,
-              color: `${PARCH}50`, margin: '0 0 10px',
+              color: `${TEXT_MID}50`, margin: '0 0 10px',
               textTransform: 'uppercase', letterSpacing: '0.1em',
             }}>
               {t('quickNav')}
@@ -769,16 +774,16 @@ export function DashboardPage() {
                   display: 'flex', alignItems: 'center', gap: '10px',
                   padding: '10px 8px', textDecoration: 'none',
                   borderRadius: '8px', transition: 'background 0.15s',
-                  color: PARCH,
+                  color: TEXT_MID,
                 }}
-                onMouseEnter={e => { (e.currentTarget as HTMLElement).style.background = 'rgba(245,200,64,0.08)'; }}
+                onMouseEnter={e => { (e.currentTarget as HTMLElement).style.background = 'rgba(0,229,195,0.08)'; }}
                 onMouseLeave={e => { (e.currentTarget as HTMLElement).style.background = 'transparent'; }}
               >
                 <span style={{ fontSize: '18px', width: '26px', textAlign: 'center', lineHeight: 1 }}>
                   {btn.emoji}
                 </span>
                 <span style={{ fontFamily: ASST, fontSize: '14px', flex: 1 }}>{t(btn.tKey)}</span>
-                <span style={{ color: `${PARCH}35`, fontSize: '14px' }}>‹</span>
+                <span style={{ color: `${TEXT_MID}35`, fontSize: '14px' }}>‹</span>
               </Link>
             ))}
           </div>
@@ -786,16 +791,16 @@ export function DashboardPage() {
 
         {/* ── Column 2: Today's full briefing ── */}
         <div style={{
-          background: 'rgba(20,50,22,0.5)', border: '1px solid rgba(245,200,64,0.12)',
+          background: NIGHT_CARD, border: '1px solid rgba(0,229,195,0.12)',
           borderRadius: '16px', padding: '28px',
           display: 'flex', flexDirection: 'column', gap: '22px',
         }}>
           {/* Date header */}
           <div>
-            <h1 style={{ fontFamily: FRANK, fontSize: '28px', color: GOLD, margin: '0 0 4px', lineHeight: 1.2 }}>
+            <h1 style={{ fontFamily: FRANK, fontSize: '28px', color: BIO_CYAN, margin: '0 0 4px', lineHeight: 1.2 }}>
               {todayDateStr}
             </h1>
-            <p style={{ fontFamily: ASST, fontSize: '13px', color: `${PARCH}55`, margin: 0 }}>
+            <p style={{ fontFamily: ASST, fontSize: '13px', color: `${TEXT_MID}55`, margin: 0 }}>
               {t('biodynamic.subtitle')}
             </p>
           </div>
@@ -814,10 +819,10 @@ export function DashboardPage() {
                 }}>
                   {/* Row 1 — planting score */}
                   <div style={{ background: `${scoreColor}14`, border: `1px solid ${scoreColor}44`, borderRadius: '12px', padding: '14px 16px' }}>
-                    <div style={{ fontFamily: ASST, fontSize: '11px', color: `${PARCH}60`, marginBottom: '4px' }}>{t('biodynamic.plantingScore')}</div>
+                    <div style={{ fontFamily: ASST, fontSize: '11px', color: `${TEXT_MID}60`, marginBottom: '4px' }}>{t('biodynamic.plantingScore')}</div>
                     <div style={{ fontFamily: FRANK, fontSize: '28px', color: scoreColor, fontWeight: 700, lineHeight: 1 }}>
                       {day.plantingScore}
-                      <span style={{ fontFamily: ASST, fontSize: '11px', color: `${PARCH}40`, fontWeight: 400 }}> /10</span>
+                      <span style={{ fontFamily: ASST, fontSize: '11px', color: `${TEXT_MID}40`, fontWeight: 400 }}> /10</span>
                     </div>
                     {bdSummary && (
                       <div style={{ fontFamily: ASST, fontSize: '11px', color: `${scoreColor}CC`, marginTop: '5px', lineHeight: 1.3 }}>
@@ -827,9 +832,9 @@ export function DashboardPage() {
                   </div>
 
                   {/* Row 1 — moon phase % */}
-                  <div style={{ background: 'rgba(245,200,64,0.08)', border: '1px solid rgba(245,200,64,0.2)', borderRadius: '12px', padding: '14px 16px' }}>
-                    <div style={{ fontFamily: ASST, fontSize: '11px', color: `${PARCH}60`, marginBottom: '4px' }}>{t('biodynamic.moonPhase')}</div>
-                    <div style={{ fontFamily: FRANK, fontSize: '22px', color: GOLD }}>
+                  <div style={{ background: 'rgba(0,229,195,0.07)', border: '1px solid rgba(0,229,195,0.2)', borderRadius: '12px', padding: '14px 16px' }}>
+                    <div style={{ fontFamily: ASST, fontSize: '11px', color: `${TEXT_MID}60`, marginBottom: '4px' }}>{t('biodynamic.moonPhase')}</div>
+                    <div style={{ fontFamily: FRANK, fontSize: '22px', color: BIO_CYAN }}>
                       {moonEmoji(day.moonPhasePct)} {day.moonPhasePct}%
                     </div>
                   </div>
@@ -837,7 +842,7 @@ export function DashboardPage() {
                   {/* Row 1 — day type / plain headline */}
                   {dayType ? (
                     <div style={{ background: dayType.bg, border: `1px solid ${dayType.color}55`, borderRadius: '12px', padding: '14px 16px' }}>
-                      <div style={{ fontFamily: ASST, fontSize: '11px', color: `${PARCH}60`, marginBottom: '4px' }}>
+                      <div style={{ fontFamily: ASST, fontSize: '11px', color: `${TEXT_MID}60`, marginBottom: '4px' }}>
                         {isHe ? 'היום בגינה' : 'Today in the garden'}
                       </div>
                       <div style={{ fontFamily: FRANK, fontSize: '13px', color: dayType.color, fontWeight: 700, lineHeight: 1.4 }}>
@@ -850,22 +855,22 @@ export function DashboardPage() {
 
                   {/* Row 2 — moon sign */}
                   <div style={{ background: 'rgba(255,255,255,0.04)', borderRadius: '10px', padding: '14px 16px' }}>
-                    <div style={{ fontFamily: ASST, fontSize: '11px', color: `${PARCH}50`, marginBottom: '5px' }}>{t('biodynamic.moonSign')}</div>
-                    <div style={{ fontFamily: FRANK, fontSize: '16px', color: PARCH }}>
+                    <div style={{ fontFamily: ASST, fontSize: '11px', color: `${TEXT_MID}50`, marginBottom: '5px' }}>{t('biodynamic.moonSign')}</div>
+                    <div style={{ fontFamily: FRANK, fontSize: '16px', color: TEXT_MID }}>
                       {isHe ? day.moonSignHe : (MOON_SIGN_EN[day.moonSignHe] ?? day.moonSignHe)}
                     </div>
                   </div>
 
                   {/* Row 2 — rise time */}
                   <div style={{ background: 'rgba(255,255,255,0.04)', borderRadius: '10px', padding: '14px 16px' }}>
-                    <div style={{ fontFamily: ASST, fontSize: '11px', color: `${PARCH}50`, marginBottom: '5px' }}>{t('biodynamic.moonrise')}</div>
-                    <div style={{ fontFamily: FRANK, fontSize: '16px', color: PARCH }}>{day.moonriseTime ?? '—'}</div>
+                    <div style={{ fontFamily: ASST, fontSize: '11px', color: `${TEXT_MID}50`, marginBottom: '5px' }}>{t('biodynamic.moonrise')}</div>
+                    <div style={{ fontFamily: FRANK, fontSize: '16px', color: TEXT_MID }}>{day.moonriseTime ?? '—'}</div>
                   </div>
 
                   {/* Row 2 — set time */}
                   <div style={{ background: 'rgba(255,255,255,0.04)', borderRadius: '10px', padding: '14px 16px' }}>
-                    <div style={{ fontFamily: ASST, fontSize: '11px', color: `${PARCH}50`, marginBottom: '5px' }}>{isHe ? 'שקיעת ירח' : 'Moonset'}</div>
-                    <div style={{ fontFamily: FRANK, fontSize: '16px', color: PARCH }}>{day.moonsetTime ?? '—'}</div>
+                    <div style={{ fontFamily: ASST, fontSize: '11px', color: `${TEXT_MID}50`, marginBottom: '5px' }}>{isHe ? 'שקיעת ירח' : 'Moonset'}</div>
+                    <div style={{ fontFamily: FRANK, fontSize: '16px', color: TEXT_MID }}>{day.moonsetTime ?? '—'}</div>
                   </div>
 
                   {/* Row 3 — ascending/descending + phase name, full width */}
@@ -875,18 +880,18 @@ export function DashboardPage() {
                     display: 'flex', justifyContent: 'space-between', alignItems: 'center',
                   }}>
                     <div style={{ flex: 1 }}>
-                      <div style={{ fontFamily: ASST, fontSize: '11px', color: `${PARCH}50`, marginBottom: '5px' }}>
+                      <div style={{ fontFamily: ASST, fontSize: '11px', color: `${TEXT_MID}50`, marginBottom: '5px' }}>
                         🌙 {isHe ? 'הירח היום' : 'Moon today'}
                       </div>
-                      <div style={{ fontFamily: FRANK, fontSize: '14px', color: PARCH, lineHeight: 1.4 }}>
+                      <div style={{ fontFamily: FRANK, fontSize: '14px', color: TEXT_MID, lineHeight: 1.4 }}>
                         {bdSummary
                           ? (isHe ? bdSummary.moonMessage.he : bdSummary.moonMessage.en)
                           : (day.ascendingDescending === 'ascending' ? (isHe ? '↑ עולה' : '↑ Ascending') : (isHe ? '↓ יורד' : '↓ Descending'))}
                       </div>
                     </div>
                     <div style={{ textAlign: 'right' }}>
-                      <div style={{ fontFamily: ASST, fontSize: '11px', color: `${PARCH}50`, marginBottom: '5px' }}>{isHe ? 'שם הפאזה' : 'Phase name'}</div>
-                      <div style={{ fontFamily: FRANK, fontSize: '16px', color: PARCH }}>
+                      <div style={{ fontFamily: ASST, fontSize: '11px', color: `${TEXT_MID}50`, marginBottom: '5px' }}>{isHe ? 'שם הפאזה' : 'Phase name'}</div>
+                      <div style={{ fontFamily: FRANK, fontSize: '16px', color: TEXT_MID }}>
                         {isHe ? day.moonPhaseNameHe : (PHASE_NAME_EN[day.moonPhaseNameHe] ?? day.moonPhaseNameHe)}
                       </div>
                     </div>
@@ -940,7 +945,7 @@ export function DashboardPage() {
               )}
             </>
           ) : (
-            <p style={{ fontFamily: ASST, fontSize: '14px', color: `${PARCH}50` }}>
+            <p style={{ fontFamily: ASST, fontSize: '14px', color: `${TEXT_MID}50` }}>
               {isHe ? 'לא נמצאו נתוני לוח להיום' : 'No calendar data found for today'}
             </p>
           )}
@@ -948,19 +953,19 @@ export function DashboardPage() {
 
         {/* ── Column 3: Weekly tasks ── */}
         <div style={{
-          background: 'rgba(20,50,22,0.5)', border: '1px solid rgba(245,200,64,0.12)',
+          background: NIGHT_CARD, border: '1px solid rgba(0,229,195,0.12)',
           borderRadius: '16px', padding: '20px',
           display: 'flex', flexDirection: 'column', gap: '14px',
           position: 'sticky', top: '88px',
           maxHeight: 'calc(100vh - 130px)', overflowY: 'auto',
         }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-            <h2 style={{ fontFamily: FRANK, fontSize: '18px', color: GOLD, margin: 0 }}>
+            <h2 style={{ fontFamily: FRANK, fontSize: '18px', color: BIO_CYAN, margin: 0 }}>
               {isHe ? 'משימות השבוע' : "This Week's Tasks"}
             </h2>
             <Link
               to="/tasks"
-              style={{ fontFamily: ASST, fontSize: '12px', color: `${PARCH}60`, textDecoration: 'none' }}
+              style={{ fontFamily: ASST, fontSize: '12px', color: `${TEXT_MID}60`, textDecoration: 'none' }}
             >
               {isHe ? 'הכל ›' : 'All ›'}
             </Link>
@@ -968,12 +973,12 @@ export function DashboardPage() {
 
           {tasks.length === 0 ? (
             <div style={{ textAlign: 'center', padding: '24px 0' }}>
-              <p style={{ fontFamily: ASST, fontSize: '13px', color: `${PARCH}50`, marginBottom: '12px' }}>
+              <p style={{ fontFamily: ASST, fontSize: '13px', color: `${TEXT_MID}50`, marginBottom: '12px' }}>
                 {isHe ? 'אין משימות לשבוע זה' : 'No tasks this week'}
               </p>
               <Link
                 to="/plan"
-                style={{ fontFamily: FRANK, fontSize: '13px', color: GOLD, textDecoration: 'none' }}
+                style={{ fontFamily: FRANK, fontSize: '13px', color: BIO_CYAN, textDecoration: 'none' }}
               >
                 {isHe ? 'צור תכנית שבועית →' : 'Create weekly plan →'}
               </Link>
@@ -990,10 +995,10 @@ export function DashboardPage() {
                 <div key={date}>
                   <div style={{
                     fontFamily: FRANK, fontSize: '12px',
-                    color: isToday ? GOLD : `${PARCH}60`,
+                    color: isToday ? BIO_CYAN : `${TEXT_MID}60`,
                     marginBottom: '6px', fontWeight: isToday ? 700 : 400,
                     paddingBottom: '4px',
-                    borderBottom: `1px solid ${isToday ? 'rgba(245,200,64,0.2)' : 'rgba(255,255,255,0.06)'}`,
+                    borderBottom: `1px solid ${isToday ? 'rgba(0,229,195,0.2)' : 'rgba(255,255,255,0.06)'}`,
                   }}>
                     {isToday ? (isHe ? '⬤ היום — ' : '⬤ Today — ') : ''}{dateLabel}
                   </div>
@@ -1007,17 +1012,17 @@ export function DashboardPage() {
                         onClick={() => updateStatus(task.id, task.status === 'done' ? 'pending' : 'done')}
                         style={{
                           flexShrink: 0, width: '16px', height: '16px', borderRadius: '4px',
-                          border: `1.5px solid ${task.status === 'done' ? '#4A7C59' : 'rgba(255,255,255,0.2)'}`,
-                          background: task.status === 'done' ? '#4A7C59' : 'transparent',
+                          border: `1.5px solid ${task.status === 'done' ? BIO_CYAN : 'rgba(255,255,255,0.2)'}`,
+                          background: task.status === 'done' ? BIO_CYAN : 'transparent',
                           cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center',
-                          fontSize: '10px', color: 'white', padding: 0,
+                          fontSize: '10px', color: NIGHT, padding: 0,
                         }}
                       >
                         {task.status === 'done' ? '✓' : ''}
                       </button>
                       <span style={{
                         fontFamily: ASST, fontSize: '13px',
-                        color: task.status === 'done' ? `${PARCH}40` : `${PARCH}DD`,
+                        color: task.status === 'done' ? `${TEXT_MID}40` : `${TEXT_MID}DD`,
                         textDecoration: task.status === 'done' ? 'line-through' : 'none',
                         flex: 1, overflow: 'hidden', whiteSpace: 'nowrap', textOverflow: 'ellipsis',
                       }}>
@@ -1036,7 +1041,7 @@ export function DashboardPage() {
             style={{
               display: 'block', textAlign: 'center', marginTop: 'auto',
               fontFamily: FRANK, fontSize: '14px', fontWeight: 700,
-              color: EARTH, background: GOLD,
+              color: NIGHT, background: BIO_CYAN,
               padding: '11px', borderRadius: '10px',
               textDecoration: 'none', transition: 'filter 0.15s',
             }}
