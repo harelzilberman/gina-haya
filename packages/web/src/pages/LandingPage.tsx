@@ -3,183 +3,299 @@ import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 
 // ── Design tokens ──────────────────────────────────────────────────────────
-const GOLD        = '#F5C840';
-const SAGE_GRN    = '#7DC084';
-const PARCHMENT   = '#EDE0C4';
-const FOREST      = '#142B16';
-const FOREST_DARK = '#0A160A';
-const FOREST_MID  = '#1C3A1E';
-const LEAF_GREEN  = '#B0D8A8';
-const FRANK       = '"Frank Ruhl Libre", Georgia, serif';
-const PLAYFAIR    = '"Playfair Display", Georgia, serif';
-const ASSISTANT   = '"Assistant", "Heebo", sans-serif';
+const NIGHT      = '#050d0a';
+const NIGHT_MID  = '#091410';
+const NIGHT_LIFT = '#0e1e17';
+const NIGHT_CARD = '#111f18';
+const BIO_CYAN   = '#00e5c3';
+const BIO_LIME   = '#aaff00';
+const BIO_AMBER  = '#ffb830';
+const BIO_ROSE   = '#ff5c8a';
+const BIO_VIOLET = '#a78bfa';
+const TEXT       = '#e8f5ee';
+const TEXT_MID   = '#b0cfbf';
+const MUTED      = '#6b9080';
+const SYNE       = "'Syne', sans-serif";
+const DM_SANS    = "'DM Sans', 'Assistant', 'Heebo', sans-serif";
+const FRANK      = '"Frank Ruhl Libre", Georgia, serif';
 
-// Grain noise texture data URI
-const NOISE_BG = `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='250' height='250'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.75' numOctaves='4' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='250' height='250' filter='url(%23n)' opacity='0.55'/%3E%3C/svg%3E")`;
+// Leaf-vein SVG tile background (data URL)
+const LEAF_VEIN_BG = `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cpath d='M80 0 Q85 40 80 80 Q75 120 80 160 M80 80 Q110 60 140 40 M80 80 Q50 60 20 40 M80 80 Q115 100 130 130 M80 80 Q45 100 30 130' stroke='%2300e5c3' stroke-width='0.5' fill='none' opacity='0.07'/%3E%3C/svg%3E")`;
 
 // ── Global CSS ─────────────────────────────────────────────────────────────
 const LP_CSS = `
-@keyframes lp-float {
-  0%, 100% { transform: translateY(0px) scale(1); }
-  50%       { transform: translateY(-18px) scale(1.015); }
+@keyframes aurora-drift {
+  0%   { transform: translateX(0) scaleY(1); }
+  50%  { transform: translateX(6%) scaleY(1.08); }
+  100% { transform: translateX(0) scaleY(1); }
 }
-@keyframes lp-float-r {
-  0%, 100% { transform: translateY(0px) scale(1); }
-  50%       { transform: translateY(16px) scale(0.985); }
+@keyframes aurora-drift-r {
+  0%   { transform: translateX(0) scaleY(1); }
+  50%  { transform: translateX(-5%) scaleY(0.94); }
+  100% { transform: translateX(0) scaleY(1); }
 }
-@keyframes lp-rotate {
-  from { transform: rotate(0deg); }
-  to   { transform: rotate(360deg); }
-}
-@keyframes lp-pulse-chupchu {
-  0%, 100% { transform: scale(1);     box-shadow: 0 0 40px rgba(245,200,64,0.25); }
-  50%       { transform: scale(1.025); box-shadow: 0 0 64px rgba(245,200,64,0.45); }
-}
-@keyframes fadeUp  { from { opacity:0; transform:translateY(24px); } to { opacity:1; transform:translateY(0); } }
+@keyframes fadeUp  { from { opacity:0; transform:translateY(28px); } to { opacity:1; transform:translateY(0); } }
 @keyframes fadeIn  { from { opacity:0; } to { opacity:1; } }
-@keyframes scaleIn { from { opacity:0; transform:scale(0.95); } to { opacity:1; transform:scale(1); } }
+@keyframes scaleIn { from { opacity:0; transform:scale(0.94); } to { opacity:1; transform:scale(1); } }
+@keyframes lp-float {
+  0%,100% { transform: translateY(0); }
+  50%      { transform: translateY(-14px); }
+}
+@keyframes lp-glow-pulse {
+  0%,100% { box-shadow: 0 0 16px rgba(0,229,195,0.25); }
+  50%      { box-shadow: 0 0 36px rgba(0,229,195,0.55); }
+}
+@keyframes dot-travel {
+  0%   { top: 0; }
+  100% { top: 100%; }
+}
 @keyframes chupchu-float {
-  0%   { transform: translateY(0px) rotate(-1deg); }
-  50%  { transform: translateY(-10px) rotate(1deg); }
-  100% { transform: translateY(0px) rotate(-1deg); }
+  0%,100% { transform: translateY(0) rotate(-1deg); }
+  50%      { transform: translateY(-10px) rotate(1deg); }
 }
-@keyframes chupchu-pulse {
-  0%, 100% { box-shadow: 0 0 0 0 rgba(196,134,42,0.4); }
-  50%       { box-shadow: 0 0 0 8px rgba(196,134,42,0); }
+@keyframes score-ring {
+  from { stroke-dashoffset: 226; }
+  to   { stroke-dashoffset: var(--ring-offset, 60); }
 }
-@keyframes bubble-fadein {
-  from { opacity: 0; transform: translateY(-6px); }
-  to   { opacity: 1; transform: translateY(0px); }
-}
-.animate-ready { opacity: 0; transform: translateY(32px); transition: opacity 0.7s ease, transform 0.7s ease; }
-.animate-done  { opacity: 1 !important; transform: translateY(0) !important; }
-.lp-eyebrow    { opacity: 0; animation: fadeIn  0.6s ease 0.1s forwards; }
-.lp-hero-line1 { opacity: 0; animation: fadeUp  0.8s ease 0.2s forwards; }
-.lp-hero-line2 { opacity: 0; animation: fadeUp  0.8s ease 0.4s forwards; }
-.lp-sub        { opacity: 0; animation: fadeUp  0.6s ease 0.6s forwards; }
-.lp-ctas       { opacity: 0; animation: fadeUp  0.6s ease 0.8s forwards; }
-.lp-card       { opacity: 0; animation: scaleIn 0.8s ease 0.5s forwards; }
-.lp-orb-1      { opacity: 0; animation: fadeIn 2s ease 0.3s forwards, lp-float   8s ease-in-out 0s  infinite; }
-.lp-orb-2      { opacity: 0; animation: fadeIn 2s ease 0.3s forwards, lp-float-r 9s ease-in-out -3s infinite; }
-.lp-orb-3      { opacity: 0; animation: fadeIn 2s ease 0.3s forwards, lp-float  10s ease-in-out -5s infinite; }
-.lp-wheel      { animation: lp-rotate  60s linear infinite; }
-.lp-chupchu  { animation: lp-pulse-chupchu 3s ease-in-out infinite; }
+
+.animate-ready { opacity:0; transform:translateY(28px); transition:opacity 0.7s ease, transform 0.7s ease; }
+.animate-done  { opacity:1 !important; transform:translateY(0) !important; }
+
+.lp-eyebrow    { opacity:0; animation: fadeIn  0.6s ease 0.1s forwards; }
+.lp-hero-line1 { opacity:0; animation: fadeUp  0.8s ease 0.2s forwards; }
+.lp-hero-line2 { opacity:0; animation: fadeUp  0.8s ease 0.4s forwards; }
+.lp-sub        { opacity:0; animation: fadeUp  0.6s ease 0.6s forwards; }
+.lp-ctas       { opacity:0; animation: fadeUp  0.6s ease 0.8s forwards; }
+.lp-trust      { opacity:0; animation: fadeUp  0.5s ease 1.0s forwards; }
+.lp-card       { opacity:0; animation: scaleIn 0.9s ease 0.5s forwards; }
 
 .lp-feat-card {
-  border: 1px solid rgba(125,192,132,0.2);
-  transition: transform 0.3s ease-out, border-color 0.3s ease-out, box-shadow 0.3s ease-out;
+  background: ${NIGHT_CARD};
+  border: 1px solid rgba(0,229,195,0.12);
+  border-radius: 16px;
+  padding: 32px 26px;
+  transition: transform 0.3s ease, border-color 0.3s ease, box-shadow 0.3s ease;
+  cursor: default;
 }
 .lp-feat-card:hover {
-  transform: translateY(-5px);
-  border-color: rgba(245,200,64,0.3);
-  box-shadow: 0 20px 60px rgba(0,0,0,0.35);
+  transform: translateY(-6px);
+  border-color: rgba(0,229,195,0.35);
+  box-shadow: 0 20px 60px rgba(0,229,195,0.08);
 }
 .lp-price-card {
-  transition: transform 0.3s ease-out, box-shadow 0.3s ease-out;
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
 }
 .lp-price-card:hover {
-  transform: translateY(-4px);
-  box-shadow: 0 20px 60px rgba(0,0,0,0.35);
+  transform: translateY(-5px);
+  box-shadow: 0 24px 64px rgba(0,229,195,0.12);
 }
 .lp-cta-primary {
-  transition: filter 0.2s ease-out, box-shadow 0.2s ease-out;
+  transition: filter 0.2s ease, box-shadow 0.2s ease;
 }
 .lp-cta-primary:hover {
-  filter: brightness(1.1);
-  box-shadow: 0 8px 32px rgba(245,200,64,0.4) !important;
+  filter: brightness(1.08);
+  box-shadow: 0 8px 36px rgba(0,229,195,0.45) !important;
 }
 .lp-cta-outline {
-  transition: border-color 0.2s, color 0.2s;
+  transition: border-color 0.2s, color 0.2s, background-color 0.2s;
 }
 .lp-cta-outline:hover {
-  border-color: ${GOLD} !important;
-  color: ${GOLD} !important;
+  border-color: ${BIO_CYAN} !important;
+  color: ${BIO_CYAN} !important;
+  background-color: rgba(0,229,195,0.06) !important;
 }
-.lp-hero-chupchu {
-  flex: 0 0 auto;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 14px;
-  z-index: 2;
+
+.lp-step-dot {
+  width: 48px; height: 48px; border-radius: 50%;
+  border: 2px solid ${BIO_CYAN};
+  background: ${NIGHT_LIFT};
+  display: flex; align-items: center; justify-content: center;
+  font-family: ${SYNE}; font-weight: 700; font-size: 18px; color: ${BIO_CYAN};
+  position: relative; z-index: 2;
+  box-shadow: 0 0 16px rgba(0,229,195,0.2);
+  flex-shrink: 0;
 }
+
+::-webkit-scrollbar       { width: 5px; }
+::-webkit-scrollbar-track { background: ${NIGHT}; }
+::-webkit-scrollbar-thumb { background: rgba(0,229,195,0.25); border-radius: 3px; }
+
 @media (max-width: 768px) {
   .lp-hero-chupchu { display: none !important; }
+  .lp-step-connector { display: none !important; }
 }
-.lp-chupchu-glow {
-  position: relative;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-.lp-chupchu-glow::before {
-  content: '';
-  position: absolute;
-  width: 160px;
-  height: 160px;
-  border-radius: 50%;
-  background: radial-gradient(circle, rgba(196,134,42,0.25) 0%, rgba(196,134,42,0.08) 50%, transparent 70%);
-  z-index: 0;
-}
-.lp-chupchu-img {
-  position: relative;
-  z-index: 1;
-  animation: chupchu-float 3.5s ease-in-out infinite;
-  filter: brightness(1.3) contrast(1.1) drop-shadow(0px 4px 20px rgba(196,134,42,0.5));
-}
-.lp-bubble {
-  position: relative;
-  animation: bubble-fadein 0.8s ease forwards;
-  animation-delay: 0.6s;
-  opacity: 0;
-}
-.lp-bubble::after {
-  content: '';
-  position: absolute;
-  bottom: -8px;
-  left: 50%;
-  transform: translateX(-50%);
-  width: 0;
-  height: 0;
-  border-left: 8px solid transparent;
-  border-right: 8px solid transparent;
-  border-top: 8px solid #C4862A;
-}
-.lp-bubble::before {
-  content: '';
-  position: absolute;
-  bottom: -6px;
-  left: 50%;
-  transform: translateX(-50%);
-  width: 0;
-  height: 0;
-  border-left: 7px solid transparent;
-  border-right: 7px solid transparent;
-  border-top: 7px solid #FDF3E0;
-  z-index: 1;
-}
-.lp-chat-btn {
-  transition: background-color 0.2s, border-color 0.2s;
-  animation: chupchu-pulse 2.5s ease-in-out infinite;
-}
-.lp-chat-btn:hover {
-  background-color: rgba(196,134,42,0.4) !important;
-  border-color: #E8A030 !important;
-}
-::-webkit-scrollbar       { width: 6px; }
-::-webkit-scrollbar-track { background: ${FOREST}; }
-::-webkit-scrollbar-thumb { background: #9B7A48; border-radius: 3px; }
 `;
+
+// ── Particle canvas ────────────────────────────────────────────────────────
+function ParticleCanvas() {
+  const ref = useRef<HTMLCanvasElement>(null);
+  useEffect(() => {
+    const canvas = ref.current;
+    if (!canvas) return;
+    const ctx = canvas.getContext('2d') as CanvasRenderingContext2D;
+    if (!ctx) return;
+
+    let W = window.innerWidth;
+    let H = window.innerHeight;
+    const resize = () => {
+      W = window.innerWidth; H = window.innerHeight;
+      canvas.width = W; canvas.height = H;
+    };
+    resize();
+    window.addEventListener('resize', resize);
+
+    // Fireflies
+    const flies = Array.from({ length: 42 }, () => ({
+      x: Math.random() * W, y: Math.random() * H,
+      vx: (Math.random() - 0.5) * 0.55, vy: (Math.random() - 0.5) * 0.55,
+      r: Math.random() * 1.8 + 0.8,
+      baseA: Math.random() * 0.6 + 0.2,
+      phase: Math.random() * Math.PI * 2,
+      trail: [] as [number, number][],
+    }));
+
+    // Leaf particles
+    const leafColors = [BIO_LIME, BIO_CYAN, '#55ff88'];
+    const leaves = Array.from({ length: 20 }, () => ({
+      x: Math.random() * W, y: H + Math.random() * 200,
+      vx: (Math.random() - 0.5) * 0.7, vy: -(Math.random() * 0.45 + 0.25),
+      angle: Math.random() * Math.PI * 2, av: (Math.random() - 0.5) * 0.018,
+      size: Math.random() * 7 + 5,
+      a: Math.random() * 0.3 + 0.08,
+      color: leafColors[Math.floor(Math.random() * leafColors.length)],
+    }));
+
+    let raf: number;
+    let t = 0;
+
+    function draw() {
+      ctx.clearRect(0, 0, W, H);
+      t++;
+
+      // Fireflies
+      for (const f of flies) {
+        f.trail.push([f.x, f.y]);
+        if (f.trail.length > 14) f.trail.shift();
+
+        f.vx += (Math.random() - 0.5) * 0.04;
+        f.vy += (Math.random() - 0.5) * 0.04;
+        f.vx = Math.max(-0.9, Math.min(0.9, f.vx));
+        f.vy = Math.max(-0.9, Math.min(0.9, f.vy));
+        f.x += f.vx; f.y += f.vy;
+        if (f.x < 0) f.x = W; if (f.x > W) f.x = 0;
+        if (f.y < 0) f.y = H; if (f.y > H) f.y = 0;
+
+        const pulse = 0.45 + 0.55 * Math.sin(t * 0.038 + f.phase);
+        const alpha = f.baseA * pulse;
+
+        // Trail
+        for (let i = 0; i < f.trail.length; i++) {
+          const ta = (i / f.trail.length) * alpha * 0.25;
+          ctx.beginPath();
+          ctx.arc(f.trail[i][0], f.trail[i][1], f.r * 0.5, 0, Math.PI * 2);
+          ctx.fillStyle = `rgba(0,229,195,${ta})`;
+          ctx.fill();
+        }
+
+        // Core glow
+        const grad = ctx.createRadialGradient(f.x, f.y, 0, f.x, f.y, f.r * 4);
+        grad.addColorStop(0, `rgba(0,229,195,${alpha})`);
+        grad.addColorStop(0.4, `rgba(0,229,195,${alpha * 0.4})`);
+        grad.addColorStop(1, `rgba(0,229,195,0)`);
+        ctx.beginPath();
+        ctx.arc(f.x, f.y, f.r * 4, 0, Math.PI * 2);
+        ctx.fillStyle = grad;
+        ctx.fill();
+
+        ctx.beginPath();
+        ctx.arc(f.x, f.y, f.r, 0, Math.PI * 2);
+        ctx.fillStyle = `rgba(200,255,245,${alpha})`;
+        ctx.fill();
+      }
+
+      // Leaves
+      for (const l of leaves) {
+        l.x += l.vx + Math.sin(t * 0.008 + l.angle) * 0.25;
+        l.y += l.vy;
+        l.angle += l.av;
+        if (l.y < -70) { l.x = Math.random() * W; l.y = H + 60; }
+
+        ctx.save();
+        ctx.translate(l.x, l.y);
+        ctx.rotate(l.angle);
+        ctx.beginPath();
+        ctx.ellipse(0, 0, l.size * 0.38, l.size, 0, 0, Math.PI * 2);
+        ctx.fillStyle = `${l.color}22`;
+        ctx.fill();
+        ctx.strokeStyle = `${l.color}${Math.round(l.a * 255).toString(16).padStart(2, '0')}`;
+        ctx.lineWidth = 0.7;
+        ctx.stroke();
+        // vein
+        ctx.beginPath();
+        ctx.moveTo(0, -l.size); ctx.lineTo(0, l.size);
+        ctx.strokeStyle = `${l.color}${Math.round(l.a * 0.6 * 255).toString(16).padStart(2, '0')}`;
+        ctx.lineWidth = 0.4;
+        ctx.stroke();
+        ctx.restore();
+      }
+
+      raf = requestAnimationFrame(draw);
+    }
+
+    raf = requestAnimationFrame(draw);
+    return () => { cancelAnimationFrame(raf); window.removeEventListener('resize', resize); };
+  }, []);
+
+  return (
+    <canvas
+      ref={ref}
+      aria-hidden="true"
+      style={{
+        position: 'fixed',
+        inset: 0,
+        zIndex: 0,
+        pointerEvents: 'none',
+        opacity: 0.65,
+      }}
+    />
+  );
+}
+
+// ── Aurora bands ───────────────────────────────────────────────────────────
+function AuroraBands() {
+  return (
+    <div aria-hidden="true" style={{ position: 'fixed', inset: 0, zIndex: 0, pointerEvents: 'none', overflow: 'hidden' }}>
+      <div style={{
+        position: 'absolute', top: '-10%', left: '-20%', width: '80%', height: '45%',
+        background: `radial-gradient(ellipse, rgba(0,229,195,0.07) 0%, transparent 70%)`,
+        filter: 'blur(60px)',
+        animation: 'aurora-drift 18s ease-in-out infinite',
+      }} />
+      <div style={{
+        position: 'absolute', top: '30%', right: '-15%', width: '60%', height: '40%',
+        background: `radial-gradient(ellipse, rgba(170,255,0,0.04) 0%, transparent 70%)`,
+        filter: 'blur(80px)',
+        animation: 'aurora-drift-r 22s ease-in-out infinite',
+      }} />
+      <div style={{
+        position: 'absolute', bottom: '-5%', left: '10%', width: '70%', height: '35%',
+        background: `radial-gradient(ellipse, rgba(0,229,195,0.05) 0%, transparent 70%)`,
+        filter: 'blur(70px)',
+        animation: 'aurora-drift 26s ease-in-out 4s infinite',
+      }} />
+    </div>
+  );
+}
 
 // ── Helpers ────────────────────────────────────────────────────────────────
 function scoreColor(score: number) {
-  if (score >= 8) return SAGE_GRN;
-  if (score >= 6) return GOLD;
-  if (score >= 4) return '#C4622A';
-  return '#A33030';
+  if (score >= 8) return BIO_CYAN;
+  if (score >= 6) return BIO_LIME;
+  if (score >= 4) return BIO_AMBER;
+  return BIO_ROSE;
 }
 
-function useScrollReveal(threshold = 0.15) {
+function useScrollReveal(threshold = 0.12) {
   const ref = useRef<HTMLDivElement>(null);
   const [visible, setVisible] = useState(false);
   useEffect(() => {
@@ -211,10 +327,7 @@ function Reveal({
     <div
       ref={ref}
       className={`animate-ready${visible ? ' animate-done' : ''}${className ? ` ${className}` : ''}`}
-      style={{
-        transitionDelay: delay ? `${delay}ms` : undefined,
-        ...style,
-      }}
+      style={{ transitionDelay: delay ? `${delay}ms` : undefined, ...style }}
     >
       {children}
     </div>
@@ -222,140 +335,93 @@ function Reveal({
 }
 
 // ── Data ───────────────────────────────────────────────────────────────────
-interface TodayPreview {
-  score: number;
-  dayType: string;
-}
+interface TodayPreview { score: number; dayType: string; }
 
 const DAY_TYPE_LABELS_HE: Record<string, string> = {
-  fruit:  'יום פרי 🍅',
-  flower: 'יום פרח 🌸',
-  root:   'יום שורש 🥕',
-  leaf:   'יום עלה 🥬',
+  fruit: 'יום פרי', flower: 'יום פרח', root: 'יום שורש', leaf: 'יום עלה',
 };
-
 const DAY_TYPE_LABELS_EN: Record<string, string> = {
-  fruit:  'Fruit Day 🍅',
-  flower: 'Flower Day 🌸',
-  root:   'Root Day 🥕',
-  leaf:   'Leaf Day 🥬',
+  fruit: 'Fruit Day', flower: 'Flower Day', root: 'Root Day', leaf: 'Leaf Day',
+};
+const DAY_TYPE_COLORS: Record<string, string> = {
+  fruit: BIO_AMBER, flower: BIO_ROSE, root: '#c8a96e', leaf: BIO_LIME,
 };
 
-interface Feature { icon: string; title: string; body: string; }
+interface Feature { icon: string; title: string; body: string; accent: string; }
 
 const FEATURES_HE: Feature[] = [
-  {
-    icon: '🌕',
-    title: 'לוח ביודינמי יומי',
-    body: 'לוח שנה מדויק המשלב את שיטות פודולינסקי ותון. ציון זריעה יומי, סוג יום, כיוון הירח.',
-  },
-  {
-    icon: '🤖',
-    title: 'צ\'ופצ\'ו — המומחה שלך',
-    body: 'בינה מלאכותית ביודינמית שמכירה את הגינה שלך. שאל, קבל עצה, גדל טוב יותר.',
-  },
-  {
-    icon: '🌿',
-    title: 'אנציקלופדיה של צמחים',
-    body: '100+ צמחים עם עצות ביודינמיות, ימים מומלצים, ולוח זריעה לישראל.',
-  },
+  { icon: '🌕', title: 'לוח ביודינמי יומי', body: 'לוח שנה מדויק המשלב את שיטות פודולינסקי ותון. ציון זריעה יומי, סוג יום, כיוון הירח.', accent: BIO_CYAN },
+  { icon: '🤖', title: "צ'ופצ'ו — המומחה שלך", body: 'בינה מלאכותית ביודינמית שמכירה את הגינה שלך. שאל, קבל עצה, גדל טוב יותר.', accent: BIO_VIOLET },
+  { icon: '🌿', title: 'אנציקלופדיה של צמחים', body: '100+ צמחים עם עצות ביודינמיות, ימים מומלצים, ולוח זריעה לישראל.', accent: BIO_LIME },
 ];
 
 const FEATURES_EN: Feature[] = [
-  {
-    icon: '🌕',
-    title: 'Daily Biodynamic Calendar',
-    body: 'Precise calendar combining Podolinsky and Thun methods. Daily sowing score, day type, moon direction.',
-  },
-  {
-    icon: '🤖',
-    title: 'ChupChu — Your Expert',
-    body: 'Biodynamic AI that knows your garden. Ask, get advice, grow better.',
-  },
-  {
-    icon: '🌿',
-    title: 'Plant Encyclopedia',
-    body: '100+ plants with biodynamic tips, recommended days, and an Israel sowing calendar.',
-  },
+  { icon: '🌕', title: 'Daily Biodynamic Calendar', body: 'Precise calendar combining Podolinsky and Thun methods. Daily sowing score, day type, moon direction.', accent: BIO_CYAN },
+  { icon: '🤖', title: 'ChupChu — Your Expert', body: 'Biodynamic AI that knows your garden. Ask, get advice, grow better.', accent: BIO_VIOLET },
+  { icon: '🌿', title: 'Plant Encyclopedia', body: '100+ plants with biodynamic tips, recommended days, and an Israel sowing calendar.', accent: BIO_LIME },
 ];
 
 interface PricingPlan {
-  name: string;
-  price: string | null;
-  features: string[];
-  cta: string;
-  highlight: boolean;
-  badge: string;
+  name: string; price: string | null; features: string[];
+  cta: string; highlight: boolean; badge: string; accent: string;
 }
 
 const PRICING_HE: PricingPlan[] = [
   {
-    name: 'חינם לתמיד',
-    price: null,
-    features: ['לוח ביודינמי בסיסי', '5 שאלות לצ\'ופצ\'ו בחודש', 'אנציקלופדיה בסיסית'],
-    cta: 'התחל עכשיו',
-    highlight: false,
-    badge: '',
+    name: 'חינם לתמיד', price: null,
+    features: ['לוח ביודינמי בסיסי', "5 שאלות לצ'ופצ'ו בחודש", 'אנציקלופדיה בסיסית'],
+    cta: 'התחל עכשיו', highlight: false, badge: '', accent: MUTED,
   },
   {
-    name: 'Grower',
-    price: '9',
-    features: ['לוח ביודינמי מלא', '30 שאלות לצ\'ופצ\'ו', 'גינה אישית', 'התראות יומיות'],
-    cta: 'בחר תוכנית',
-    highlight: false,
-    badge: '',
+    name: 'Grower', price: '9',
+    features: ['לוח ביודינמי מלא', "30 שאלות לצ'ופצ'ו", 'גינה אישית', 'התראות יומיות'],
+    cta: 'בחר תוכנית', highlight: false, badge: '', accent: BIO_CYAN,
   },
   {
-    name: 'Gardener Pro',
-    price: '14',
+    name: 'Gardener Pro', price: '14',
     features: ['הכל ב-Grower', 'שאלות ללא הגבלה', 'דוחות חודשיים', 'תמיכה מועדפת'],
-    cta: 'בחר תוכנית',
-    highlight: true,
-    badge: 'הכי פופולרי',
+    cta: 'בחר תוכנית', highlight: true, badge: 'הכי פופולרי', accent: BIO_CYAN,
   },
   {
-    name: 'Professional',
-    price: '49',
+    name: 'Professional', price: '49',
     features: ['הכל ב-Pro', 'API גישה', 'לוגו מותאם אישית', 'תמיכה ייעודית'],
-    cta: 'בחר תוכנית',
-    highlight: false,
-    badge: '',
+    cta: 'בחר תוכנית', highlight: false, badge: '', accent: BIO_VIOLET,
   },
 ];
 
 const PRICING_EN: PricingPlan[] = [
   {
-    name: 'Free Forever',
-    price: null,
+    name: 'Free Forever', price: null,
     features: ['Basic biodynamic calendar', '5 ChupChu questions/month', 'Basic encyclopedia'],
-    cta: 'Start Now',
-    highlight: false,
-    badge: '',
+    cta: 'Start Now', highlight: false, badge: '', accent: MUTED,
   },
   {
-    name: 'Grower',
-    price: '9',
+    name: 'Grower', price: '9',
     features: ['Full biodynamic calendar', '30 ChupChu questions', 'Personal garden', 'Daily alerts'],
-    cta: 'Choose Plan',
-    highlight: false,
-    badge: '',
+    cta: 'Choose Plan', highlight: false, badge: '', accent: BIO_CYAN,
   },
   {
-    name: 'Gardener Pro',
-    price: '14',
+    name: 'Gardener Pro', price: '14',
     features: ['Everything in Grower', 'Unlimited questions', 'Monthly reports', 'Priority support'],
-    cta: 'Choose Plan',
-    highlight: true,
-    badge: 'Most Popular',
+    cta: 'Choose Plan', highlight: true, badge: 'Most Popular', accent: BIO_CYAN,
   },
   {
-    name: 'Professional',
-    price: '49',
+    name: 'Professional', price: '49',
     features: ['Everything in Pro', 'API access', 'Custom logo', 'Dedicated support'],
-    cta: 'Choose Plan',
-    highlight: false,
-    badge: '',
+    cta: 'Choose Plan', highlight: false, badge: '', accent: BIO_VIOLET,
   },
+];
+
+const STEPS_HE = [
+  { n: '1', title: 'פתח את הלוח', body: 'ראה את ציון הזריעה של היום, סוג היום הביודינמי, ושלב הירח — הכל במקום אחד.' },
+  { n: '2', title: "שאל את צ'ופצ'ו", body: 'שאל שאלות על הגינה שלך, קבל עצות מותאמות אישית לפי הגינה והעונה.' },
+  { n: '3', title: 'גדל בהרמוניה', body: 'תכנן זריעה, השקיה וטיפול לפי קצבי הטבע. הגינה שלך תפרח.' },
+];
+
+const STEPS_EN = [
+  { n: '1', title: 'Open the Calendar', body: 'See today\'s sowing score, biodynamic day type, and moon phase — all in one place.' },
+  { n: '2', title: 'Ask ChupChu', body: 'Ask questions about your garden, get personalized advice for your space and season.' },
+  { n: '3', title: 'Grow in Harmony', body: 'Plan sowing, watering, and care by nature\'s rhythms. Your garden will flourish.' },
 ];
 
 // ── Live biodynamic card ───────────────────────────────────────────────────
@@ -370,8 +436,9 @@ function TodayPreviewCard({ isHe }: { isHe: boolean }) {
   }, []);
 
   const preview = data ?? { score: 7, dayType: 'fruit' };
-
   const dayLabels = isHe ? DAY_TYPE_LABELS_HE : DAY_TYPE_LABELS_EN;
+  const dayColor  = DAY_TYPE_COLORS[preview.dayType] ?? BIO_AMBER;
+  const sc        = scoreColor(preview.score);
 
   const dateFormatted = new Date().toLocaleDateString(
     isHe ? 'he-IL' : 'en-US',
@@ -382,130 +449,102 @@ function TodayPreviewCard({ isHe }: { isHe: boolean }) {
     <div
       className="lp-card"
       style={{
-        background: 'rgba(20,43,22,0.85)',
-        backdropFilter: 'blur(16px)',
-        WebkitBackdropFilter: 'blur(16px)',
-        border: `1px solid rgba(245,200,64,0.2)`,
-        borderRadius: '12px',
-        padding: '24px 22px',
-        maxWidth: '280px',
+        background: `linear-gradient(135deg, ${NIGHT_CARD} 0%, ${NIGHT_LIFT} 100%)`,
+        backdropFilter: 'blur(20px)',
+        WebkitBackdropFilter: 'blur(20px)',
+        border: `1px solid rgba(0,229,195,0.18)`,
+        borderRadius: '20px',
+        padding: '28px 24px',
+        maxWidth: '290px',
         width: '100%',
         textAlign: 'center',
+        boxShadow: '0 24px 80px rgba(0,0,0,0.5), 0 0 0 1px rgba(0,229,195,0.08)',
+        animation: 'lp-glow-pulse 4s ease-in-out infinite',
       }}
     >
-      {/* Label */}
       <p style={{
-        fontFamily: ASSISTANT,
-        fontSize: '10px',
-        fontWeight: 600,
-        letterSpacing: '0.16em',
-        textTransform: 'uppercase' as const,
-        color: GOLD,
-        marginBottom: '14px',
+        fontFamily: DM_SANS, fontSize: '10px', fontWeight: 700,
+        letterSpacing: '0.2em', textTransform: 'uppercase' as const,
+        color: BIO_CYAN, marginBottom: '16px',
       }}>
         {isHe ? 'היום בגינה שלך' : 'Today in Your Garden'}
       </p>
 
-      {/* Date */}
-      <p style={{
-        fontFamily: FRANK,
-        fontSize: '13px',
-        color: `${PARCHMENT}99`,
-        marginBottom: '16px',
-      }}>
+      <p style={{ fontFamily: FRANK, fontSize: '12px', color: TEXT_MID, marginBottom: '20px', opacity: 0.7 }}>
         {dateFormatted}
       </p>
 
-      {/* Moon phase */}
+      {/* Moon */}
       <div style={{
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'center',
-        gap: '8px',
-        marginBottom: '14px',
+        display: 'flex', alignItems: 'center', justifyContent: 'center',
+        gap: '8px', marginBottom: '16px',
       }}>
-        <span style={{ fontSize: '22px' }}>🌕</span>
-        <span style={{ fontFamily: ASSISTANT, fontSize: '13px', color: LEAF_GREEN }}>
+        <span style={{ fontSize: '20px' }}>🌕</span>
+        <span style={{ fontFamily: DM_SANS, fontSize: '13px', color: TEXT_MID }}>
           {isHe ? 'ירח מלא' : 'Full Moon'}
         </span>
       </div>
 
-      {/* Day type */}
+      {/* Day type chip */}
       <div style={{
-        display: 'inline-flex',
-        alignItems: 'center',
-        backgroundColor: 'rgba(125,192,132,0.12)',
-        border: '1px solid rgba(125,192,132,0.25)',
-        borderRadius: '6px',
-        padding: '6px 14px',
-        marginBottom: '16px',
+        display: 'inline-flex', alignItems: 'center',
+        backgroundColor: `${dayColor}18`,
+        border: `1px solid ${dayColor}44`,
+        borderRadius: '100px', padding: '5px 16px', marginBottom: '18px',
       }}>
-        <span style={{ fontFamily: ASSISTANT, fontSize: '13px', color: SAGE_GRN }}>
+        <span style={{ fontFamily: DM_SANS, fontSize: '13px', fontWeight: 600, color: dayColor }}>
           {dayLabels[preview.dayType] ?? preview.dayType}
         </span>
       </div>
 
-      {/* Score badge */}
-      <div style={{
-        display: 'inline-flex',
-        alignItems: 'center',
-        gap: '6px',
-        backgroundColor: `${scoreColor(preview.score)}22`,
-        border: `1px solid ${scoreColor(preview.score)}55`,
-        borderRadius: '100px',
-        padding: '5px 16px',
-      }}>
-        <span style={{
-          fontFamily: FRANK,
-          fontWeight: 700,
-          fontSize: '20px',
-          color: scoreColor(preview.score),
-        }}>
-          {preview.score}
-        </span>
-        <span style={{ fontFamily: ASSISTANT, fontSize: '12px', color: `${PARCHMENT}77` }}>
-          / 10
-        </span>
+      {/* Score */}
+      <div style={{ position: 'relative', display: 'inline-flex', alignItems: 'center', justifyContent: 'center' }}>
+        <svg width="80" height="80" viewBox="0 0 80 80" style={{ transform: 'rotate(-90deg)' }}>
+          <circle cx="40" cy="40" r="32" fill="none" stroke={`${sc}22`} strokeWidth="6" />
+          <circle
+            cx="40" cy="40" r="32" fill="none" stroke={sc} strokeWidth="6"
+            strokeLinecap="round" strokeDasharray="201"
+            strokeDashoffset={201 - (201 * preview.score / 10)}
+            style={{ transition: 'stroke-dashoffset 1s ease' }}
+          />
+        </svg>
+        <div style={{ position: 'absolute', textAlign: 'center' }}>
+          <span style={{ fontFamily: SYNE, fontWeight: 700, fontSize: '24px', color: sc }}>
+            {preview.score}
+          </span>
+          <span style={{ fontFamily: DM_SANS, fontSize: '11px', color: MUTED, display: 'block' }}>
+            /10
+          </span>
+        </div>
       </div>
     </div>
   );
 }
 
-// ── Lunar wheel SVG decoration ─────────────────────────────────────────────
-function LunarWheel() {
+// ── Section label ──────────────────────────────────────────────────────────
+function SectionLabel({ children }: { children: React.ReactNode }) {
   return (
-    <svg
-      className="lp-wheel"
-      width="500"
-      height="500"
-      viewBox="0 0 500 500"
-      style={{
-        position: 'absolute',
-        top: '-120px',
-        insetInlineEnd: '-120px',
-        opacity: 0.14,
-        pointerEvents: 'none',
-      }}
-    >
-      <circle cx="250" cy="250" r="220" fill="none" stroke={GOLD} strokeWidth="1" strokeDasharray="12 8" />
-      <circle cx="250" cy="250" r="190" fill="none" stroke={GOLD} strokeWidth="0.5" strokeDasharray="4 14" opacity="0.5" />
-      <circle cx="250" cy="250" r="155" fill="none" stroke={GOLD} strokeWidth="0.75" strokeDasharray="2 10" opacity="0.3" />
-      <circle cx="250" cy="250" r="8" fill={GOLD} opacity="0.6" />
-    </svg>
+    <p style={{
+      fontFamily: DM_SANS, fontSize: '10px', fontWeight: 700,
+      letterSpacing: '0.22em', textTransform: 'uppercase' as const,
+      color: BIO_CYAN, marginBottom: '14px',
+    }}>
+      {children}
+    </p>
   );
 }
 
 // ── Main component ─────────────────────────────────────────────────────────
 export function LandingPage() {
   const { i18n } = useTranslation();
-  const isHe = i18n.language === 'he';
+  const isHe  = i18n.language === 'he';
   const features = isHe ? FEATURES_HE : FEATURES_EN;
   const pricing  = isHe ? PRICING_HE  : PRICING_EN;
+  const steps    = isHe ? STEPS_HE    : STEPS_EN;
 
-  // Set body background while on landing page
   useEffect(() => {
     const prev = document.body.style.backgroundColor;
-    document.body.style.backgroundColor = FOREST;
+    document.body.style.backgroundColor = NIGHT;
     return () => { document.body.style.backgroundColor = prev; };
   }, []);
 
@@ -517,344 +556,190 @@ export function LandingPage() {
   return (
     <>
       <style>{LP_CSS}</style>
-
-      {/* Full-screen noise overlay — covers entire page, pointer-events none */}
-      <div
-        aria-hidden="true"
-        style={{
-          position: 'fixed',
-          inset: 0,
-          zIndex: 9999,
-          pointerEvents: 'none',
-          backgroundImage: NOISE_BG,
-          backgroundRepeat: 'repeat',
-          opacity: 0.4,
-        }}
-      />
+      <ParticleCanvas />
+      <AuroraBands />
 
       {/* ══ HERO ══════════════════════════════════════════════════════════ */}
       <section
         style={{
           position: 'relative',
-          overflow: 'hidden',
+          zIndex: 1,
           minHeight: '100vh',
           display: 'flex',
+          flexDirection: 'column',
           alignItems: 'center',
-          backgroundImage: [
-            'radial-gradient(ellipse 60% 80% at 80% 50%, rgba(74,128,80,0.25) 0%, transparent 70%)',
-            'radial-gradient(ellipse 40% 60% at 20% 80%, rgba(155,122,72,0.2) 0%, transparent 60%)',
-            'linear-gradient(160deg, rgba(20,43,22,0.52) 0%, rgba(10,22,10,0.42) 50%, rgba(8,20,10,0.56) 100%)',
-            'url("https://images.unsplash.com/photo-1416879595882-3373a0480b5b?auto=format&fit=crop&w=1920&q=80")',
-          ].join(', '),
-          backgroundSize: 'auto, auto, auto, cover',
-          backgroundPosition: 'center, center, center, center',
+          justifyContent: 'center',
+          textAlign: 'center',
+          padding: '120px 28px 80px',
+          backgroundImage: LEAF_VEIN_BG,
+          backgroundRepeat: 'repeat',
         }}
       >
-        {/* Floating orbs */}
-        <div className="lp-orb-1" style={{
-          position: 'absolute', top: '8%', insetInlineEnd: '5%',
-          width: '400px', height: '400px', borderRadius: '50%',
-          background: 'radial-gradient(circle, rgba(74,128,80,0.18) 0%, transparent 70%)',
-          filter: 'blur(48px)', pointerEvents: 'none',
-        }} />
-        <div className="lp-orb-2" style={{
-          position: 'absolute', bottom: '10%', insetInlineStart: '3%',
-          width: '300px', height: '300px', borderRadius: '50%',
-          background: 'radial-gradient(circle, rgba(245,200,64,0.12) 0%, transparent 70%)',
-          filter: 'blur(40px)', pointerEvents: 'none',
-        }} />
-        <div className="lp-orb-3" style={{
-          position: 'absolute', top: '40%', insetInlineEnd: '20%',
-          width: '200px', height: '200px', borderRadius: '50%',
-          background: 'radial-gradient(circle, rgba(176,216,168,0.1) 0%, transparent 70%)',
-          filter: 'blur(32px)', pointerEvents: 'none',
-        }} />
+        {/* Eyebrow pill */}
+        <div className="lp-eyebrow" style={{ marginBottom: '28px' }}>
+          <span style={{
+            display: 'inline-flex', alignItems: 'center', gap: '8px',
+            background: 'rgba(0,229,195,0.08)',
+            border: '1px solid rgba(0,229,195,0.2)',
+            borderRadius: '100px', padding: '6px 18px',
+            fontFamily: DM_SANS, fontSize: '12px', fontWeight: 600,
+            letterSpacing: '0.12em', color: BIO_CYAN,
+          }}>
+            <span style={{ width: '6px', height: '6px', borderRadius: '50%', background: BIO_CYAN, boxShadow: `0 0 6px ${BIO_CYAN}`, display: 'inline-block' }} />
+            {isHe ? 'לוח ביודינמי · מרץ 2026' : 'Biodynamic Calendar · March 2026'}
+          </span>
+        </div>
 
-        {/* Rotating lunar wheel */}
-        <LunarWheel />
+        {/* Headline */}
+        <h1 style={{ margin: '0 0 24px', lineHeight: 1.12 }}>
+          <span
+            className="lp-hero-line1"
+            style={{
+              display: 'block',
+              fontFamily: FRANK,
+              fontWeight: 700,
+              fontSize: 'clamp(42px, 6.5vw, 96px)',
+              color: TEXT,
+              textShadow: '0 0 60px rgba(0,229,195,0.15)',
+            }}
+          >
+            {isHe ? 'הגינה שלך' : 'Your Garden'}
+          </span>
+          <span
+            className="lp-hero-line2"
+            style={{
+              display: 'block',
+              fontFamily: FRANK,
+              fontWeight: 700,
+              fontSize: 'clamp(44px, 7vw, 100px)',
+              background: `linear-gradient(135deg, ${BIO_CYAN} 0%, ${BIO_LIME} 60%, ${BIO_CYAN} 100%)`,
+              WebkitBackgroundClip: 'text',
+              WebkitTextFillColor: 'transparent',
+              backgroundClip: 'text',
+              filter: 'drop-shadow(0 0 30px rgba(0,229,195,0.3))',
+            }}
+          >
+            {isHe ? 'חיה ונושמת' : 'Alive & Breathing'}
+          </span>
+        </h1>
 
-        {/* Hero content */}
-        <div style={{
-          maxWidth: '1180px',
-          margin: '0 auto',
-          width: '100%',
-          padding: '96px 28px 80px',
-          display: 'flex',
-          flexDirection: 'row',
-          alignItems: 'center',
-          justifyContent: 'space-between',
-          gap: '56px',
-          flexWrap: 'wrap',
-        }}>
-          {/* Text column */}
-          <div style={{ flex: '1 1 340px', maxWidth: '560px' }}>
-            {/* Eyebrow */}
-            <p
-              className="lp-eyebrow"
-              style={{
-                fontFamily: ASSISTANT,
-                fontSize: '12px',
-                fontWeight: 600,
-                letterSpacing: '0.2em',
-                textTransform: 'uppercase' as const,
-                color: GOLD,
-                marginBottom: '20px',
-              }}
-            >
-              {isHe ? 'לוח ביודינמי · מרץ 2026' : 'Biodynamic Calendar · March 2026'}
-            </p>
+        {/* Sub */}
+        <p
+          className="lp-sub"
+          style={{
+            fontFamily: DM_SANS, fontWeight: 300, fontSize: 'clamp(15px, 2vw, 19px)',
+            lineHeight: 1.75, color: TEXT_MID, maxWidth: '540px', marginBottom: '40px',
+          }}
+        >
+          {isHe
+            ? 'הביאו את חוכמת החקלאות הביודינמית לגינה הביתית שלכם. לוחות ירח, תכנון חכם, וניתוח מבוסס בינה מלאכותית — לכל גנן, בכל רמה.'
+            : 'Bring the wisdom of biodynamic agriculture to your home garden. Moon calendars, smart planning, and AI-powered analysis — for every gardener, at every level.'}
+        </p>
 
-            {/* Headline */}
-            <h1 style={{
-              marginBottom: '20px',
-              border: '1px solid rgba(245,200,64,0.4)',
-              borderRadius: '4px',
-              padding: '16px 20px',
-            }}>
-              <span
-                className="lp-hero-line1"
-                style={{
-                  display: 'block',
-                  fontFamily: FRANK,
-                  fontWeight: 700,
-                  fontSize: 'clamp(36px, 5.5vw, 88px)',
-                  lineHeight: 1.15,
-                  color: PARCHMENT,
-                  textShadow: '0 2px 40px rgba(0,0,0,0.5)',
-                }}
-              >
-                {isHe ? 'הגינה שלך' : 'Your Garden'}
-              </span>
-              <em
-                className="lp-hero-line2"
-                style={{
-                  display: 'block',
-                  fontFamily: PLAYFAIR,
-                  fontStyle: 'italic',
-                  fontWeight: 400,
-                  fontSize: 'clamp(38px, 6vw, 96px)',
-                  lineHeight: 1.15,
-                  color: GOLD,
-                  textShadow: '0 2px 40px rgba(0,0,0,0.5)',
-                }}
-              >
-                {isHe ? 'חיה ונושמת' : 'Alive and Breathing'}
-              </em>
-            </h1>
+        {/* CTAs */}
+        <div
+          className="lp-ctas"
+          style={{ display: 'flex', gap: '14px', flexWrap: 'wrap', justifyContent: 'center', marginBottom: '48px' }}
+        >
+          <Link
+            to="/signup"
+            className="lp-cta-primary"
+            style={{
+              display: 'inline-block', fontFamily: SYNE, fontWeight: 700,
+              fontSize: '15px', backgroundColor: BIO_CYAN, color: NIGHT,
+              padding: '13px 36px', borderRadius: '100px', textDecoration: 'none',
+              boxShadow: `0 4px 24px rgba(0,229,195,0.3)`, letterSpacing: '0.02em',
+            }}
+          >
+            {isHe ? 'התחל בחינם' : 'Start for Free'}
+          </Link>
 
-            {/* Sub */}
-            <p
-              className="lp-sub"
-              style={{
-                fontFamily: ASSISTANT,
-                fontWeight: 300,
-                fontSize: '1.1rem',
-                lineHeight: 1.75,
-                color: `${PARCHMENT}B3`,
-                maxWidth: '480px',
-                marginBottom: '36px',
-              }}
-            >
-              {isHe
-                ? 'הביאו את חוכמת החקלאות הביודינמית לגינה הביתית שלכם. לוחות ירח, תכנון חכם, וניתוח מבוסס בינה מלאכותית — לכל גנן, בכל רמה.'
-                : 'Bring the wisdom of biodynamic agriculture to your home garden. Moon calendars, smart planning, and AI-powered analysis — for every gardener, at every level.'}
-            </p>
+          <a
+            href="#features"
+            onClick={scrollToFeatures}
+            className="lp-cta-outline"
+            style={{
+              display: 'inline-block', fontFamily: DM_SANS, fontWeight: 500,
+              fontSize: '15px', color: TEXT_MID, padding: '12px 30px',
+              borderRadius: '100px', border: `1px solid rgba(0,229,195,0.25)`,
+              textDecoration: 'none', backgroundColor: 'transparent',
+            }}
+          >
+            {isHe ? 'ראה איך זה עובד' : 'See How It Works'}
+          </a>
+        </div>
 
-            {/* CTAs */}
-            <div
-              className="lp-ctas"
-              style={{ display: 'flex', gap: '16px', flexWrap: 'wrap' }}
-            >
-              <Link
-                to="/signup"
-                className="lp-cta-primary"
-                style={{
-                  display: 'inline-block',
-                  fontFamily: FRANK,
-                  fontWeight: 600,
-                  fontSize: '15px',
-                  backgroundColor: GOLD,
-                  color: FOREST,
-                  padding: '12px 32px',
-                  borderRadius: '3px',
-                  textDecoration: 'none',
-                  boxShadow: '0 4px 20px rgba(245,200,64,0.25)',
-                  letterSpacing: '0.02em',
-                }}
-              >
-                {isHe ? 'התחל בחינם' : 'Start for Free'}
-              </Link>
-
-              <a
-                href="#features"
-                onClick={scrollToFeatures}
-                className="lp-cta-outline"
-                style={{
-                  display: 'inline-block',
-                  fontFamily: ASSISTANT,
-                  fontWeight: 400,
-                  fontSize: '15px',
-                  backgroundColor: 'transparent',
-                  color: PARCHMENT,
-                  padding: '11px 28px',
-                  borderRadius: '3px',
-                  border: `1px solid rgba(245,200,64,0.4)`,
-                  textDecoration: 'none',
-                }}
-              >
-                {isHe ? 'ראה איך זה עובד' : 'See How It Works'}
-              </a>
-            </div>
+        {/* Trust row */}
+        <div className="lp-trust" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '10px', marginBottom: '64px' }}>
+          <div style={{ display: 'flex' }}>
+            {['#4a7c59', '#7dc084', '#00e5c3'].map((c, i) => (
+              <div key={i} style={{
+                width: '28px', height: '28px', borderRadius: '50%',
+                background: c, border: `2px solid ${NIGHT}`,
+                marginInlineStart: i > 0 ? '-8px' : '0',
+              }} />
+            ))}
           </div>
+          <span style={{ fontFamily: DM_SANS, fontSize: '13px', color: MUTED }}>
+            {isHe ? '+2,000 גינאים כבר גדלים בחוכמה' : '+2,000 gardeners already growing wisely'}
+          </span>
+        </div>
 
-          {/* Chupchu hero element — hidden on mobile */}
-          <div className="lp-hero-chupchu">
-            {/* Speech bubble */}
-            <div
-              className="lp-bubble"
-              style={{
-                backgroundColor: 'rgba(253,243,224,0.95)',
-                border: '1.5px solid #C4862A',
-                borderRadius: '12px',
-                padding: '10px 16px',
-                textAlign: 'center',
-                maxWidth: '190px',
-                boxShadow: '0px 4px 16px rgba(0,0,0,0.3)',
-              }}
-            >
-              <p style={{
-                fontFamily: "'Caveat', cursive",
-                fontSize: '17px',
-                lineHeight: 1.4,
-                color: '#2A1A04',
-                margin: 0,
-                whiteSpace: 'pre-line',
-              }}>
-                {isHe
-                  ? "שלום! אני צ'ופצ'ו 🌙\nשאל אותי על הגינה שלך"
-                  : "Hi! I'm Chupchu 🌙\nAsk me about your garden"}
-              </p>
-            </div>
-
-            {/* Chupchu image with warm glow */}
-            <div className="lp-chupchu-glow">
-              <img
-                className="lp-chupchu-img"
-                src="https://gina-haya.vercel.app/chupchu_final.png"
-                alt={isHe ? "צ'ופצ'ו" : 'Chupchu'}
-                width={120}
-                height={120}
-                style={{ objectFit: 'contain' }}
-              />
-            </div>
-
-            {/* Chat button */}
-            <Link
-              to="/chupchu"
-              className="lp-chat-btn"
-              style={{
-                fontFamily: ASSISTANT,
-                fontSize: '13px',
-                color: '#FDF3E0',
-                backgroundColor: 'rgba(196,134,42,0.15)',
-                border: '1px solid #C4862A',
-                borderRadius: '999px',
-                padding: '6px 16px',
-                textDecoration: 'none',
-                whiteSpace: 'nowrap',
-              }}
-            >
-              {isHe ? "דבר עם צ'ופצ'ו" : 'Chat with Chupchu'}
-            </Link>
-          </div>
-
-          {/* Live card */}
-          <div style={{ flex: '0 0 auto', display: 'flex', justifyContent: 'center' }}>
-            <TodayPreviewCard isHe={isHe} />
-          </div>
+        {/* Dashboard card */}
+        <div style={{ animation: 'lp-float 6s ease-in-out infinite' }}>
+          <TodayPreviewCard isHe={isHe} />
         </div>
       </section>
 
       {/* ══ FEATURES ══════════════════════════════════════════════════════ */}
       <section
         id="features"
-        style={{ backgroundColor: FOREST_MID, padding: '80px 0' }}
+        style={{
+          position: 'relative', zIndex: 1,
+          backgroundColor: NIGHT_MID,
+          borderTop: '1px solid rgba(0,229,195,0.07)',
+          padding: '96px 0',
+        }}
       >
         <div style={{ maxWidth: '1100px', margin: '0 auto', padding: '0 28px' }}>
           <Reveal>
-            <div style={{ textAlign: 'center', marginBottom: '56px' }}>
-              <p style={{
-                fontFamily: ASSISTANT,
-                fontSize: '11px',
-                fontWeight: 600,
-                letterSpacing: '0.18em',
-                textTransform: 'uppercase' as const,
-                color: GOLD,
-                marginBottom: '14px',
-              }}>
-                {isHe ? 'מה מחכה לך' : 'What Awaits You'}
-              </p>
+            <div style={{ textAlign: 'center', marginBottom: '60px' }}>
+              <SectionLabel>{isHe ? 'מה מחכה לך' : 'What Awaits You'}</SectionLabel>
               <h2 style={{
-                fontFamily: FRANK,
-                fontWeight: 700,
-                fontSize: 'clamp(26px, 3.5vw, 40px)',
-                color: PARCHMENT,
-                lineHeight: 1.3,
+                fontFamily: FRANK, fontWeight: 700,
+                fontSize: 'clamp(26px, 3.5vw, 44px)', color: TEXT, lineHeight: 1.25,
               }}>
                 {isHe ? (
-                  <>
-                    כל מה שגינה{' '}
-                    <em style={{ fontStyle: 'normal', color: GOLD }}>ביודינמית</em>{' '}
-                    צריכה
-                  </>
+                  <>כל מה שגינה{' '}<span style={{ color: BIO_CYAN }}>ביודינמית</span>{' '}צריכה</>
                 ) : (
-                  <>
-                    Everything a{' '}
-                    <em style={{ fontStyle: 'normal', color: GOLD }}>Biodynamic</em>{' '}
-                    Garden Needs
-                  </>
+                  <>Everything a{' '}<span style={{ color: BIO_CYAN }}>Biodynamic</span>{' '}Garden Needs</>
                 )}
               </h2>
             </div>
           </Reveal>
 
-          <div style={{ display: 'flex', flexDirection: 'row', gap: '24px', flexWrap: 'wrap' }}>
+          <div style={{ display: 'flex', flexDirection: 'row', gap: '20px', flexWrap: 'wrap' }}>
             {features.map((f, i) => (
-              <Reveal key={f.title} delay={i * 120} style={{ flex: '1 1 260px' }}>
-                <div
-                  className="lp-feat-card"
-                  style={{
-                    background: 'rgba(20,43,22,0.6)',
-                    borderRadius: '10px',
-                    padding: '36px 28px',
-                    height: '100%',
-                    boxSizing: 'border-box',
-                  }}
-                >
+              <Reveal key={f.title} delay={i * 100} style={{ flex: '1 1 260px' }}>
+                <div className="lp-feat-card">
                   <div style={{
-                    width: '52px', height: '52px', borderRadius: '50%',
-                    backgroundColor: 'rgba(125,192,132,0.15)',
-                    border: '1px solid rgba(125,192,132,0.2)',
+                    width: '52px', height: '52px', borderRadius: '14px',
+                    background: `${f.accent}15`,
+                    border: `1px solid ${f.accent}30`,
                     display: 'flex', alignItems: 'center', justifyContent: 'center',
                     fontSize: '24px', marginBottom: '20px',
                   }}>
                     {f.icon}
                   </div>
                   <h3 style={{
-                    fontFamily: FRANK,
-                    fontWeight: 600,
-                    fontSize: '19px',
-                    color: PARCHMENT,
-                    marginBottom: '12px',
+                    fontFamily: SYNE, fontWeight: 700, fontSize: '18px',
+                    color: TEXT, marginBottom: '10px',
                   }}>
                     {f.title}
                   </h3>
                   <p style={{
-                    fontFamily: ASSISTANT,
-                    fontWeight: 300,
-                    fontSize: '15px',
-                    color: SAGE_GRN,
-                    lineHeight: 1.8,
+                    fontFamily: DM_SANS, fontWeight: 300, fontSize: '15px',
+                    color: TEXT_MID, lineHeight: 1.8,
                   }}>
                     {f.body}
                   </p>
@@ -865,123 +750,175 @@ export function LandingPage() {
         </div>
       </section>
 
-      {/* ══ CHUPCHU INTRODUCTION ══════════════════════════════════════════ */}
-      <section style={{ backgroundColor: FOREST, padding: '80px 0' }}>
-        <div style={{ maxWidth: '960px', margin: '0 auto', padding: '0 28px' }}>
+      {/* ══ HOW IT WORKS ══════════════════════════════════════════════════ */}
+      <section
+        style={{
+          position: 'relative', zIndex: 1,
+          backgroundColor: NIGHT,
+          borderTop: '1px solid rgba(0,229,195,0.07)',
+          padding: '96px 0',
+        }}
+      >
+        <div style={{ maxWidth: '860px', margin: '0 auto', padding: '0 28px' }}>
+          <Reveal>
+            <div style={{ textAlign: 'center', marginBottom: '64px' }}>
+              <SectionLabel>{isHe ? 'איך זה עובד' : 'How It Works'}</SectionLabel>
+              <h2 style={{
+                fontFamily: FRANK, fontWeight: 700,
+                fontSize: 'clamp(26px, 3.5vw, 44px)', color: TEXT, lineHeight: 1.25,
+              }}>
+                {isHe ? 'שלושה צעדים לגינה חיה' : 'Three Steps to a Living Garden'}
+              </h2>
+            </div>
+          </Reveal>
+
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '0' }}>
+            {steps.map((s, i) => (
+              <Reveal key={s.n} delay={i * 150}>
+                <div style={{
+                  display: 'flex',
+                  flexDirection: isHe ? 'row-reverse' : 'row',
+                  gap: '28px',
+                  alignItems: 'flex-start',
+                  marginBottom: i < steps.length - 1 ? '0' : '0',
+                }}>
+                  {/* Step dot + connector */}
+                  <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', flexShrink: 0 }}>
+                    <div className="lp-step-dot">{s.n}</div>
+                    {i < steps.length - 1 && (
+                      <div
+                        className="lp-step-connector"
+                        style={{
+                          width: '1px', height: '64px',
+                          background: `linear-gradient(to bottom, ${BIO_CYAN}66, ${BIO_CYAN}11)`,
+                          margin: '4px 0',
+                        }}
+                      />
+                    )}
+                  </div>
+
+                  {/* Content */}
+                  <div style={{ paddingTop: '10px', paddingBottom: i < steps.length - 1 ? '48px' : '0' }}>
+                    <h3 style={{
+                      fontFamily: SYNE, fontWeight: 700, fontSize: '20px',
+                      color: TEXT, marginBottom: '8px',
+                    }}>
+                      {s.title}
+                    </h3>
+                    <p style={{
+                      fontFamily: DM_SANS, fontWeight: 300, fontSize: '16px',
+                      color: TEXT_MID, lineHeight: 1.75, maxWidth: '520px',
+                    }}>
+                      {s.body}
+                    </p>
+                  </div>
+                </div>
+              </Reveal>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* ══ CHUPCHU ═══════════════════════════════════════════════════════ */}
+      <section
+        style={{
+          position: 'relative', zIndex: 1,
+          background: `linear-gradient(135deg, ${NIGHT_MID} 0%, ${NIGHT_LIFT} 50%, ${NIGHT_MID} 100%)`,
+          borderTop: '1px solid rgba(0,229,195,0.07)',
+          padding: '96px 0',
+        }}
+      >
+        <div style={{ maxWidth: '900px', margin: '0 auto', padding: '0 28px' }}>
           <div style={{
             display: 'flex',
-            flexDirection: 'row',
+            flexDirection: isHe ? 'row-reverse' : 'row',
             alignItems: 'center',
             gap: '56px',
             flexWrap: 'wrap',
           }}>
-            {/* Avatar column */}
-            <Reveal style={{
-              flex: '0 0 auto',
-              display: 'flex',
-              flexDirection: 'column',
-              alignItems: 'center',
-              textAlign: 'center',
-            }}>
-                <div
-                  className="lp-chupchu"
-                  style={{
-                    width: '140px', height: '140px', borderRadius: '50%',
-                    background: `radial-gradient(circle at 35% 35%, #F0D060, ${GOLD})`,
-                    display: 'flex', alignItems: 'center', justifyContent: 'center',
-                    fontSize: '64px',
-                    boxShadow: '0 0 40px rgba(245,200,64,0.25)',
-                    marginBottom: '16px',
-                  }}
-                >
+            {/* Avatar */}
+            <Reveal style={{ flex: '0 0 auto', display: 'flex', flexDirection: 'column', alignItems: 'center', textAlign: 'center' }}>
+              <div
+                style={{
+                  width: '140px', height: '140px', borderRadius: '50%',
+                  background: `conic-gradient(from 0deg, ${BIO_CYAN}, ${BIO_LIME}, ${BIO_VIOLET}, ${BIO_CYAN})`,
+                  padding: '3px', marginBottom: '16px',
+                  animation: 'lp-float 4s ease-in-out infinite',
+                  boxShadow: `0 0 40px rgba(0,229,195,0.2)`,
+                }}
+              >
+                <div style={{
+                  width: '100%', height: '100%', borderRadius: '50%',
+                  background: NIGHT_LIFT,
+                  display: 'flex', alignItems: 'center', justifyContent: 'center',
+                  fontSize: '60px',
+                }}>
                   🌕
                 </div>
-                <p style={{
-                  fontFamily: FRANK,
-                  fontStyle: 'italic',
-                  fontSize: '22px',
-                  color: GOLD,
-                  marginBottom: '4px',
-                }}>
-                  {isHe ? "צ'ופצ'ו" : 'ChupChu'}
-                </p>
-                <p style={{ fontFamily: ASSISTANT, fontSize: '13px', color: LEAF_GREEN }}>
-                  {isHe ? 'סבא הירח שלך' : 'Your Moon Elder'}
-                </p>
-              </Reveal>
+              </div>
+              <p style={{ fontFamily: FRANK, fontStyle: 'italic', fontSize: '22px', color: BIO_CYAN, marginBottom: '4px' }}>
+                {isHe ? "צ'ופצ'ו" : 'ChupChu'}
+              </p>
+              <p style={{ fontFamily: DM_SANS, fontSize: '13px', color: MUTED }}>
+                {isHe ? 'סבא הירח שלך' : 'Your Moon Elder'}
+              </p>
+            </Reveal>
 
-              {/* Description */}
-              <Reveal delay={200} style={{ flex: '1 1 300px' }}>
-                <h2 style={{
-                  fontFamily: FRANK,
-                  fontStyle: 'italic',
-                  fontSize: 'clamp(24px, 3vw, 36px)',
-                  color: PARCHMENT,
-                  marginBottom: '18px',
-                  lineHeight: 1.3,
-                  fontWeight: 400,
-                }}>
-                  {isHe ? "שלום! אני צ'ופצ'ו" : 'Hello! I am ChupChu'}
-                </h2>
+            {/* Description */}
+            <Reveal delay={200} style={{ flex: '1 1 300px' }}>
+              <h2 style={{
+                fontFamily: FRANK, fontStyle: 'italic',
+                fontSize: 'clamp(24px, 3vw, 36px)',
+                color: TEXT, marginBottom: '18px', lineHeight: 1.3, fontWeight: 400,
+              }}>
+                {isHe ? "שלום! אני צ'ופצ'ו" : 'Hello! I am ChupChu'}
+              </h2>
+              <p style={{
+                fontFamily: DM_SANS, fontWeight: 300, fontSize: '17px',
+                lineHeight: 1.9, color: TEXT_MID, marginBottom: '28px',
+              }}>
+                {isHe
+                  ? 'גדלתי בגליל וחקרתי חקלאות ביודינמית למעלה מ-20 שנה. עבדתי בחוות ביודינמיות בארץ ובפרובנס, ולמדתי מהאדמה, מהירח, ומהצמחים עצמם. עכשיו אני כאן כדי לעזור לגינה שלך לפרוח.'
+                  : 'I grew up in the Galilee and studied biodynamic farming for over 20 years. I worked on biodynamic farms in Israel and Provence, learning from the soil, the moon, and the plants themselves. Now I\'m here to help your garden flourish.'}
+              </p>
+
+              <div style={{
+                background: `${NIGHT_CARD}`,
+                border: `1px solid rgba(0,229,195,0.12)`,
+                borderInlineStart: `3px solid ${BIO_CYAN}`,
+                borderRadius: '12px',
+                padding: '18px 22px',
+              }}>
                 <p style={{
-                  fontFamily: ASSISTANT,
-                  fontWeight: 300,
-                  fontSize: '17px',
-                  lineHeight: 1.9,
-                  color: `${PARCHMENT}CC`,
-                  marginBottom: '28px',
+                  fontFamily: FRANK, fontStyle: 'italic', fontSize: '15px',
+                  lineHeight: 1.75, color: TEXT_MID,
                 }}>
                   {isHe
-                    ? 'גדלתי בגליל וחקרתי חקלאות ביודינמית למעלה מ-20 שנה. עבדתי בחוות ביודינמיות בארץ ובפרובנס, ולמדתי מהאדמה, מהירח, ומהצמחים עצמם. עכשיו אני כאן כדי לעזור לגינה שלך לפרוח.'
-                    : 'I grew up in the Galilee and studied biodynamic farming for over 20 years. I worked on biodynamic farms in Israel and Provence, learning from the soil, the moon, and the plants themselves. Now I\'m here to help your garden flourish.'}
+                    ? 'היום הוא יום פרי 🍅 — הזמן המושלם לשתול עגבניות ופלפלים. הירח יורד, הארץ נושמת פנימה.'
+                    : 'Today is a Fruit Day 🍅 — the perfect time to plant tomatoes and peppers. The moon is descending, the earth breathes inward.'}
                 </p>
-
-                {/* Chat bubble */}
-                <div style={{
-                  background: 'rgba(28,58,30,0.8)',
-                  border: `1px solid rgba(245,200,64,0.15)`,
-                  borderInlineStart: `3px solid ${GOLD}`,
-                  borderRadius: '8px',
-                  padding: '16px 20px',
-                }}>
-                  <p style={{
-                    fontFamily: PLAYFAIR,
-                    fontStyle: 'italic',
-                    fontSize: '15px',
-                    lineHeight: 1.75,
-                    color: `${PARCHMENT}DD`,
-                  }}>
-                    {isHe
-                      ? 'היום הוא יום פרי 🍅 — הזמן המושלם לשתול עגבניות ופלפלים. הירח יורד, הארץ נושמת פנימה.'
-                      : 'Today is a Fruit Day 🍅 — the perfect time to plant tomatoes and peppers. The moon is descending, the earth breathes inward.'}
-                  </p>
-                </div>
-              </Reveal>
+              </div>
+            </Reveal>
           </div>
         </div>
       </section>
 
       {/* ══ PRICING ═══════════════════════════════════════════════════════ */}
-      <section style={{ backgroundColor: FOREST_MID, padding: '80px 0' }}>
+      <section
+        style={{
+          position: 'relative', zIndex: 1,
+          backgroundColor: NIGHT_MID,
+          borderTop: '1px solid rgba(0,229,195,0.07)',
+          padding: '96px 0',
+        }}
+      >
         <div style={{ maxWidth: '1100px', margin: '0 auto', padding: '0 28px' }}>
           <Reveal>
-            <div style={{ textAlign: 'center', marginBottom: '52px' }}>
-              <p style={{
-                fontFamily: ASSISTANT,
-                fontSize: '11px',
-                fontWeight: 600,
-                letterSpacing: '0.18em',
-                textTransform: 'uppercase' as const,
-                color: GOLD,
-                marginBottom: '14px',
-              }}>
-                {isHe ? 'תמחור' : 'Pricing'}
-              </p>
+            <div style={{ textAlign: 'center', marginBottom: '56px' }}>
+              <SectionLabel>{isHe ? 'תמחור' : 'Pricing'}</SectionLabel>
               <h2 style={{
-                fontFamily: FRANK,
-                fontWeight: 700,
-                fontSize: 'clamp(26px, 3.5vw, 40px)',
-                color: PARCHMENT,
+                fontFamily: FRANK, fontWeight: 700,
+                fontSize: 'clamp(26px, 3.5vw, 44px)', color: TEXT,
               }}>
                 {isHe ? 'בחר את התוכנית שלך' : 'Choose Your Plan'}
               </h2>
@@ -989,69 +926,50 @@ export function LandingPage() {
           </Reveal>
 
           <div style={{
-            display: 'flex',
-            flexDirection: 'row',
-            gap: '20px',
-            overflowX: 'auto',
-            paddingBottom: '8px',
-            alignItems: 'flex-start',
+            display: 'flex', flexDirection: 'row', gap: '20px',
+            overflowX: 'auto', paddingBottom: '8px', alignItems: 'flex-start',
           }}>
             {pricing.map((plan, i) => (
               <Reveal
                 key={plan.name}
                 delay={i * 80}
-                style={{
-                  flex: '1 1 200px',
-                  minWidth: '200px',
-                  transform: plan.highlight ? 'scale(1.02)' : undefined,
-                }}
+                style={{ flex: '1 1 200px', minWidth: '200px' }}
               >
                 <div
                   className="lp-price-card"
                   style={{
                     position: 'relative',
                     background: plan.highlight
-                      ? 'rgba(28,58,30,0.95)'
-                      : 'rgba(20,43,22,0.6)',
-                    borderRadius: '10px',
+                      ? `linear-gradient(135deg, ${NIGHT_LIFT} 0%, ${NIGHT_CARD} 100%)`
+                      : NIGHT_CARD,
+                    borderRadius: '16px',
                     border: plan.highlight
-                      ? `1px solid ${GOLD}`
-                      : '1px solid rgba(125,192,132,0.18)',
+                      ? `1px solid ${BIO_CYAN}`
+                      : '1px solid rgba(0,229,195,0.1)',
                     boxShadow: plan.highlight
-                      ? `0 8px 48px rgba(245,200,64,0.15)`
+                      ? `0 8px 48px rgba(0,229,195,0.12), 0 0 0 1px rgba(0,229,195,0.08)`
                       : 'none',
                     padding: plan.highlight ? '44px 24px 28px' : '32px 24px 28px',
-                    display: 'flex',
-                    flexDirection: 'column',
-                    height: '100%',
-                    boxSizing: 'border-box',
+                    display: 'flex', flexDirection: 'column',
+                    height: '100%', boxSizing: 'border-box' as const,
                   }}
                 >
                   {plan.highlight && plan.badge && (
                     <div style={{
-                      position: 'absolute',
-                      top: '-14px',
-                      left: '50%',
+                      position: 'absolute', top: '-14px', left: '50%',
                       transform: 'translateX(-50%)',
-                      backgroundColor: GOLD,
-                      color: FOREST,
-                      fontFamily: FRANK,
-                      fontWeight: 700,
-                      fontSize: '12px',
-                      padding: '4px 18px',
-                      borderRadius: '100px',
-                      whiteSpace: 'nowrap',
+                      background: `linear-gradient(90deg, ${BIO_CYAN}, ${BIO_LIME})`,
+                      color: NIGHT, fontFamily: SYNE, fontWeight: 700,
+                      fontSize: '11px', padding: '4px 18px',
+                      borderRadius: '100px', whiteSpace: 'nowrap' as const,
                     }}>
                       {plan.badge}
                     </div>
                   )}
 
                   <h3 style={{
-                    fontFamily: FRANK,
-                    fontWeight: 700,
-                    fontSize: '18px',
-                    color: PARCHMENT,
-                    marginBottom: '12px',
+                    fontFamily: SYNE, fontWeight: 700, fontSize: '17px',
+                    color: TEXT, marginBottom: '12px',
                   }}>
                     {plan.name}
                   </h3>
@@ -1059,41 +977,16 @@ export function LandingPage() {
                   <div style={{ marginBottom: '24px' }}>
                     {plan.price ? (
                       <div style={{ display: 'flex', alignItems: 'baseline', gap: '2px' }}>
-                        <span style={{
-                          fontFamily: ASSISTANT,
-                          fontSize: '18px',
-                          fontWeight: 300,
-                          color: GOLD,
-                          opacity: 0.7,
-                          lineHeight: 1,
-                        }}>
-                          ₪
-                        </span>
-                        <span style={{
-                          fontFamily: FRANK,
-                          fontWeight: 700,
-                          fontSize: '48px',
-                          lineHeight: 1,
-                          color: GOLD,
-                        }}>
+                        <span style={{ fontFamily: DM_SANS, fontSize: '18px', fontWeight: 300, color: plan.accent, opacity: 0.7, lineHeight: 1 }}>₪</span>
+                        <span style={{ fontFamily: SYNE, fontWeight: 800, fontSize: '48px', lineHeight: 1, color: plan.accent }}>
                           {plan.price}
                         </span>
-                        <span style={{
-                          fontFamily: ASSISTANT,
-                          fontSize: '13px',
-                          color: `${PARCHMENT}66`,
-                          marginInlineStart: '4px',
-                        }}>
+                        <span style={{ fontFamily: DM_SANS, fontSize: '13px', color: MUTED, marginInlineStart: '4px' }}>
                           {isHe ? '/חודש' : '/mo'}
                         </span>
                       </div>
                     ) : (
-                      <span style={{
-                        fontFamily: FRANK,
-                        fontWeight: 700,
-                        fontSize: '36px',
-                        color: SAGE_GRN,
-                      }}>
+                      <span style={{ fontFamily: SYNE, fontWeight: 800, fontSize: '36px', color: MUTED }}>
                         {isHe ? 'חינם' : 'Free'}
                       </span>
                     )}
@@ -1102,15 +995,10 @@ export function LandingPage() {
                   <ul style={{ flex: 1, marginBottom: '24px', listStyle: 'none', padding: 0 }}>
                     {plan.features.map(f => (
                       <li key={f} style={{
-                        display: 'flex',
-                        alignItems: 'flex-start',
-                        gap: '8px',
-                        fontFamily: ASSISTANT,
-                        fontSize: '14px',
-                        color: SAGE_GRN,
-                        lineHeight: 2,
+                        display: 'flex', alignItems: 'flex-start', gap: '8px',
+                        fontFamily: DM_SANS, fontSize: '14px', color: TEXT_MID, lineHeight: 2,
                       }}>
-                        <span style={{ color: SAGE_GRN, flexShrink: 0, fontWeight: 700 }}>✓</span>
+                        <span style={{ color: BIO_CYAN, flexShrink: 0, fontWeight: 700 }}>✓</span>
                         {f}
                       </li>
                     ))}
@@ -1119,35 +1007,23 @@ export function LandingPage() {
                   <Link
                     to="/signup"
                     style={{
-                      display: 'block',
-                      textAlign: 'center',
-                      fontFamily: FRANK,
-                      fontWeight: 600,
-                      fontSize: '15px',
-                      backgroundColor: plan.highlight ? GOLD : 'transparent',
-                      color: plan.highlight ? FOREST : GOLD,
-                      border: `1px solid ${plan.highlight ? GOLD : 'rgba(245,200,64,0.4)'}`,
-                      padding: '12px',
-                      borderRadius: '3px',
-                      textDecoration: 'none',
-                      transition: 'filter 0.2s, background-color 0.2s',
+                      display: 'block', textAlign: 'center',
+                      fontFamily: SYNE, fontWeight: 700, fontSize: '14px',
+                      backgroundColor: plan.highlight ? BIO_CYAN : 'transparent',
+                      color: plan.highlight ? NIGHT : BIO_CYAN,
+                      border: `1px solid ${plan.highlight ? BIO_CYAN : 'rgba(0,229,195,0.3)'}`,
+                      padding: '12px', borderRadius: '100px', textDecoration: 'none',
+                      transition: 'filter 0.2s, background-color 0.2s, border-color 0.2s',
                     }}
                     onMouseEnter={e => {
                       const el = e.currentTarget as HTMLElement;
-                      if (plan.highlight) {
-                        el.style.filter = 'brightness(1.1)';
-                      } else {
-                        el.style.backgroundColor = 'rgba(245,200,64,0.1)';
-                        el.style.borderColor = GOLD;
-                      }
+                      if (plan.highlight) { el.style.filter = 'brightness(1.1)'; }
+                      else { el.style.backgroundColor = 'rgba(0,229,195,0.08)'; el.style.borderColor = BIO_CYAN; }
                     }}
                     onMouseLeave={e => {
                       const el = e.currentTarget as HTMLElement;
                       el.style.filter = 'none';
-                      if (!plan.highlight) {
-                        el.style.backgroundColor = 'transparent';
-                        el.style.borderColor = 'rgba(245,200,64,0.4)';
-                      }
+                      if (!plan.highlight) { el.style.backgroundColor = 'transparent'; el.style.borderColor = 'rgba(0,229,195,0.3)'; }
                     }}
                   >
                     {plan.cta}
@@ -1162,80 +1038,55 @@ export function LandingPage() {
       {/* ══ FINAL CTA ═════════════════════════════════════════════════════ */}
       <section
         style={{
-          position: 'relative',
+          position: 'relative', zIndex: 1,
           overflow: 'hidden',
-          background: `radial-gradient(ellipse 70% 60% at 50% 50%, ${FOREST_MID} 0%, ${FOREST_DARK} 70%)`,
-          padding: '100px 0',
+          background: `radial-gradient(ellipse 80% 70% at 50% 50%, ${NIGHT_LIFT} 0%, ${NIGHT} 70%)`,
+          borderTop: '1px solid rgba(0,229,195,0.07)',
+          padding: '120px 0',
           textAlign: 'center',
         }}
       >
-        {/* Large moon decoration */}
-        <div style={{
-          position: 'absolute',
-          top: '50%', left: '50%',
+        {/* Decorative cyan circle */}
+        <div aria-hidden="true" style={{
+          position: 'absolute', top: '50%', left: '50%',
           transform: 'translate(-50%, -50%)',
-          width: '500px', height: '500px',
-          borderRadius: '50%',
-          background: 'radial-gradient(circle, rgba(245,200,64,0.04) 0%, transparent 70%)',
+          width: '600px', height: '600px', borderRadius: '50%',
+          border: '1px solid rgba(0,229,195,0.06)',
           pointerEvents: 'none',
         }} />
-        <div style={{
-          position: 'absolute',
-          top: '50%', left: '50%',
+        <div aria-hidden="true" style={{
+          position: 'absolute', top: '50%', left: '50%',
           transform: 'translate(-50%, -50%)',
-          width: '300px', height: '300px',
-          borderRadius: '50%',
-          border: '1px solid rgba(245,200,64,0.08)',
-          pointerEvents: 'none',
+          width: '400px', height: '400px', borderRadius: '50%',
+          background: 'radial-gradient(circle, rgba(0,229,195,0.04) 0%, transparent 70%)',
+          filter: 'blur(30px)', pointerEvents: 'none',
         }} />
 
         <div style={{ position: 'relative', zIndex: 1, padding: '0 28px' }}>
           <Reveal>
             <p style={{
-              fontFamily: PLAYFAIR,
-              fontStyle: 'italic',
-              fontSize: 'clamp(22px, 3.5vw, 40px)',
-              color: GOLD,
-              lineHeight: 1.5,
-              marginBottom: '16px',
+              fontFamily: FRANK, fontStyle: 'italic',
+              fontSize: 'clamp(22px, 3.5vw, 42px)',
+              color: BIO_CYAN, lineHeight: 1.5, marginBottom: '16px',
             }}>
               {isHe ? (
-                <>
-                  "הגינה מחכה לך.
-                  <br />
-                  היא תמיד שם."
-                </>
+                <>"הגינה מחכה לך.<br />היא תמיד שם."</>
               ) : (
-                <>
-                  "The garden is waiting for you.
-                  <br />
-                  It is always there."
-                </>
+                <>"The garden is waiting for you.<br />It is always there."</>
               )}
             </p>
-            <p style={{
-              fontFamily: ASSISTANT,
-              fontWeight: 300,
-              fontSize: '18px',
-              color: `${PARCHMENT}66`,
-              marginBottom: '48px',
-            }}>
+            <p style={{ fontFamily: DM_SANS, fontWeight: 300, fontSize: '18px', color: MUTED, marginBottom: '52px' }}>
               — {isHe ? "צ'ופצ'ו" : 'ChupChu'}
             </p>
             <Link
               to="/signup"
               className="lp-cta-primary"
               style={{
-                display: 'inline-block',
-                fontFamily: FRANK,
-                fontWeight: 700,
-                fontSize: '18px',
-                backgroundColor: GOLD,
-                color: FOREST,
-                padding: '16px 52px',
-                borderRadius: '3px',
+                display: 'inline-block', fontFamily: SYNE, fontWeight: 700, fontSize: '18px',
+                background: `linear-gradient(135deg, ${BIO_CYAN}, ${BIO_LIME})`,
+                color: NIGHT, padding: '18px 60px', borderRadius: '100px',
                 textDecoration: 'none',
-                boxShadow: '0 4px 32px rgba(245,200,64,0.25)',
+                boxShadow: `0 4px 40px rgba(0,229,195,0.3)`,
                 letterSpacing: '0.02em',
               }}
             >

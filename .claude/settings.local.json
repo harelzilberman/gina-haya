@@ -82,7 +82,8 @@
       "Bash(pnpm --filter @gina-haya/api build)",
       "Bash(pnpm dev *)",
       "Bash(pnpm --filter @gina-haya/web type-check)",
-      "Bash(pnpm build *)"
+      "Bash(pnpm build *)",
+      "Bash(py *)"
     ]
   }
 }

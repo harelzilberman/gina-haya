@@ -6,6 +6,8 @@
   :root {
     --navbar-height:     64px;
     --bottomnav-height:  64px;
+
+    /* ── Legacy app tokens (keep for app pages) ── */
     --color-sage:       #4A7C59;
     --color-moon-gold:  #B7924A;
     --color-navy:       #1B2A4A;
@@ -15,6 +17,21 @@
     --color-score-orange: #C0622A;
     --color-score-red:    #A33030;
     --color-score-black:  #333333;
+
+    /* ── v3 Midnight Garden tokens ── */
+    --night:       #050d0a;
+    --night-mid:   #091410;
+    --night-lift:  #0e1e17;
+    --night-card:  #111f18;
+    --bio-cyan:    #00e5c3;
+    --bio-lime:    #aaff00;
+    --bio-amber:   #ffb830;
+    --bio-rose:    #ff5c8a;
+    --bio-violet:  #a78bfa;
+    --v3-text:     #e8f5ee;
+    --v3-text-mid: #b0cfbf;
+    --v3-muted:    #6b9080;
+    --v3-border:   rgba(0,229,195,0.12);
   }
 
   body {

@@ -1,12 +1,12 @@
 import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 
-const GOLD      = '#F5C840';
-const SAGE_GRN  = '#7DC084';
-const PARCHMENT = '#EDE0C4';
-const NEAR_BLACK = '#080E08';
-const FRANK     = '"Frank Ruhl Libre", Georgia, serif';
-const ASSISTANT = '"Assistant", "Heebo", sans-serif';
+const NIGHT    = '#050d0a';
+const BIO_CYAN = '#00e5c3';
+const TEXT_MID = '#b0cfbf';
+const MUTED    = '#6b9080';
+const FRANK    = '"Frank Ruhl Libre", Georgia, serif';
+const DM_SANS  = "'DM Sans', 'Assistant', 'Heebo', sans-serif";
 
 export function Footer() {
   const { i18n } = useTranslation();
@@ -18,196 +18,118 @@ export function Footer() {
     localStorage.setItem('i18nextLng', next);
   }
 
+  const linkStyle: React.CSSProperties = {
+    fontFamily: DM_SANS, fontSize: '14px', color: TEXT_MID,
+    textDecoration: 'none', transition: 'color 0.18s', opacity: 0.8,
+  };
+
+  function hoverIn(e: React.MouseEvent) {
+    const el = e.currentTarget as HTMLElement;
+    el.style.color = BIO_CYAN; el.style.opacity = '1';
+  }
+  function hoverOut(e: React.MouseEvent) {
+    const el = e.currentTarget as HTMLElement;
+    el.style.color = TEXT_MID; el.style.opacity = '0.8';
+  }
+
   return (
-    <footer
-      style={{
-        backgroundColor: NEAR_BLACK,
-        borderTop: '1px solid rgba(139,94,60,0.2)',
-      }}
-    >
-      <div
-        style={{
-          maxWidth: '1100px',
-          margin: '0 auto',
-          padding: '52px 32px 40px',
-          display: 'grid',
-          gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))',
-          gap: '40px',
-        }}
-      >
-        {/* Col 1: Logo + tagline */}
+    <footer style={{ backgroundColor: NIGHT, borderTop: '1px solid rgba(0,229,195,0.1)' }}>
+      <div style={{
+        maxWidth: '1100px', margin: '0 auto', padding: '52px 32px 40px',
+        display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: '40px',
+      }}>
+
+        {/* Brand */}
         <div>
-          <div style={{
-            fontFamily: FRANK,
-            fontWeight: 700,
-            fontSize: '22px',
-            color: GOLD,
-            marginBottom: '8px',
-            lineHeight: 1.2,
-          }}>
+          <div style={{ fontFamily: FRANK, fontWeight: 700, fontSize: '22px', color: BIO_CYAN,
+            marginBottom: '8px', textShadow: '0 0 20px rgba(0,229,195,.28)' }}>
             גינה חיה
           </div>
-          <p style={{
-            fontFamily: ASSISTANT,
-            fontWeight: 300,
-            fontSize: '13px',
-            color: `${PARCHMENT}66`,
-            lineHeight: 1.65,
-            maxWidth: '180px',
-          }}>
-            {isHebrew ? 'גינה חיה ונושמת' : 'Your Garden, Alive and Breathing'}
+          <p style={{ fontFamily: DM_SANS, fontWeight: 300, fontSize: '13px', color: MUTED, lineHeight: 1.65, maxWidth: '180px' }}>
+            {isHebrew ? 'גדל בהרמוניה עם קצבי הטבע' : 'Grow in harmony with nature\'s rhythms'}
           </p>
         </div>
 
-        {/* Col 2: Platform links */}
+        {/* Product */}
         <div>
-          <p style={{
-            fontFamily: ASSISTANT,
-            fontWeight: 600,
-            fontSize: '11px',
-            letterSpacing: '0.1em',
-            textTransform: 'uppercase' as const,
-            color: `${PARCHMENT}44`,
-            marginBottom: '16px',
-          }}>
-            {isHebrew ? 'פלטפורמה' : 'Platform'}
+          <p style={{ fontFamily: DM_SANS, fontWeight: 700, fontSize: '10px', letterSpacing: '0.18em',
+            textTransform: 'uppercase', color: BIO_CYAN, marginBottom: '16px' }}>
+            {isHebrew ? 'מוצר' : 'Product'}
           </p>
           <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
             {[
-              { label: isHebrew ? 'לוח שנה ביודינמי' : 'Calendar', to: '/calendar' },
-              { label: isHebrew ? 'אנציקלופדיה'      : 'Encyclopedia', to: '/plants' },
-              { label: isHebrew ? "צ'ופצ'ו"          : 'ChupChu', to: '/chupchu' },
+              { label: isHebrew ? 'לוח ביודינמי' : 'Calendar',    to: '/calendar' },
+              { label: isHebrew ? 'אנציקלופדיה'  : 'Encyclopedia', to: '/plants'   },
+              { label: isHebrew ? "צ'ופצ'ו"      : 'ChupChu',      to: '/chupchu'  },
+              { label: isHebrew ? 'מפת גינה'     : 'Garden Map',   to: '/map'      },
+              { label: isHebrew ? 'תמחור'        : 'Pricing',      to: '/pricing'  },
             ].map(item => (
-              <Link
-                key={item.to}
-                to={item.to}
-                style={{
-                  fontFamily: ASSISTANT,
-                  fontSize: '14px',
-                  fontWeight: 400,
-                  color: SAGE_GRN,
-                  textDecoration: 'none',
-                  transition: 'color 0.2s, opacity 0.2s',
-                  opacity: 0.85,
-                }}
-                onMouseEnter={e => { (e.currentTarget as HTMLElement).style.opacity = '1'; (e.currentTarget as HTMLElement).style.color = GOLD; }}
-                onMouseLeave={e => { (e.currentTarget as HTMLElement).style.opacity = '0.85'; (e.currentTarget as HTMLElement).style.color = SAGE_GRN; }}
-              >
+              <Link key={item.to} to={item.to} style={linkStyle} onMouseEnter={hoverIn} onMouseLeave={hoverOut}>
                 {item.label}
               </Link>
             ))}
           </div>
         </div>
 
-        {/* Col 3: Company links */}
+        {/* Learn */}
         <div>
-          <p style={{
-            fontFamily: ASSISTANT,
-            fontWeight: 600,
-            fontSize: '11px',
-            letterSpacing: '0.1em',
-            textTransform: 'uppercase' as const,
-            color: `${PARCHMENT}44`,
-            marginBottom: '16px',
-          }}>
-            {isHebrew ? 'חברה' : 'Company'}
+          <p style={{ fontFamily: DM_SANS, fontWeight: 700, fontSize: '10px', letterSpacing: '0.18em',
+            textTransform: 'uppercase', color: BIO_CYAN, marginBottom: '16px' }}>
+            {isHebrew ? 'למד' : 'Learn'}
           </p>
           <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
             {[
-              { label: isHebrew ? 'מדיניות פרטיות' : 'Privacy Policy', to: '/privacy' },
-              { label: isHebrew ? '❓ עזרה' : '❓ Help', to: '/help' },
-              { label: isHebrew ? 'צור קשר' : 'Contact', href: 'mailto:gina.haya.contact@gmail.com' },
+              { label: isHebrew ? 'מאמרים'  : 'Articles', to: '/articles' },
+              { label: isHebrew ? 'מדריכים' : 'Guides',   to: '/guides'   },
+              { label: isHebrew ? 'עזרה'    : 'Help',      to: '/help'     },
+              { label: isHebrew ? 'אודות'   : 'About',     to: '/about'    },
             ].map(item => (
-              item.to ? (
-                <Link
-                  key={item.label}
-                  to={item.to}
-                  style={{
-                    fontFamily: ASSISTANT,
-                    fontSize: '14px',
-                    color: SAGE_GRN,
-                    textDecoration: 'none',
-                    opacity: 0.85,
-                    transition: 'color 0.2s, opacity 0.2s',
-                  }}
-                  onMouseEnter={e => { (e.currentTarget as HTMLElement).style.opacity = '1'; (e.currentTarget as HTMLElement).style.color = GOLD; }}
-                  onMouseLeave={e => { (e.currentTarget as HTMLElement).style.opacity = '0.85'; (e.currentTarget as HTMLElement).style.color = SAGE_GRN; }}
-                >
-                  {item.label}
-                </Link>
-              ) : (
-                <a
-                  key={item.label}
-                  href={item.href}
-                  style={{
-                    fontFamily: ASSISTANT,
-                    fontSize: '14px',
-                    color: SAGE_GRN,
-                    textDecoration: 'none',
-                    opacity: 0.85,
-                    transition: 'color 0.2s, opacity 0.2s',
-                  }}
-                  onMouseEnter={e => { (e.currentTarget as HTMLElement).style.opacity = '1'; (e.currentTarget as HTMLElement).style.color = GOLD; }}
-                  onMouseLeave={e => { (e.currentTarget as HTMLElement).style.opacity = '0.85'; (e.currentTarget as HTMLElement).style.color = SAGE_GRN; }}
-                >
-                  {item.label}
-                </a>
-              )
+              <Link key={item.to} to={item.to} style={linkStyle} onMouseEnter={hoverIn} onMouseLeave={hoverOut}>
+                {item.label}
+              </Link>
             ))}
           </div>
         </div>
 
-        {/* Col 4: Copyright + lang toggle */}
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
-          <p style={{
-            fontFamily: ASSISTANT,
-            fontSize: '13px',
-            color: `${PARCHMENT}55`,
-            lineHeight: 1.6,
-          }}>
-            © 2026 גינה חיה
-            <br />
-            <span style={{ fontSize: '12px' }}>Gina Haya · Made in Israel</span>
+        {/* Legal + lang toggle */}
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+          <p style={{ fontFamily: DM_SANS, fontWeight: 700, fontSize: '10px', letterSpacing: '0.18em',
+            textTransform: 'uppercase', color: BIO_CYAN, marginBottom: '6px' }}>
+            {isHebrew ? 'משפטי' : 'Legal'}
           </p>
-
-          <button
-            onClick={toggleLanguage}
-            style={{
-              alignSelf: 'flex-start',
-              fontFamily: ASSISTANT,
-              fontSize: '12px',
-              fontWeight: 600,
-              padding: '5px 14px',
-              borderRadius: '4px',
-              border: '1px solid rgba(245,200,64,0.25)',
-              color: 'rgba(237,224,196,0.5)',
-              backgroundColor: 'transparent',
-              cursor: 'pointer',
-              letterSpacing: '0.04em',
-              transition: 'border-color 0.2s, color 0.2s',
-            }}
-            onMouseEnter={e => {
-              const el = e.currentTarget;
-              el.style.borderColor = `${GOLD}88`;
-              el.style.color = GOLD;
-            }}
-            onMouseLeave={e => {
-              const el = e.currentTarget;
-              el.style.borderColor = 'rgba(245,200,64,0.25)';
-              el.style.color = 'rgba(237,224,196,0.5)';
-            }}
-          >
-            {isHebrew ? 'EN' : 'עב'}
-          </button>
+          <Link to="/privacy" style={linkStyle} onMouseEnter={hoverIn} onMouseLeave={hoverOut}>
+            {isHebrew ? 'מדיניות פרטיות' : 'Privacy Policy'}
+          </Link>
+          <a href="mailto:gina.haya.contact@gmail.com" style={linkStyle} onMouseEnter={hoverIn} onMouseLeave={hoverOut}>
+            {isHebrew ? 'צור קשר' : 'Contact'}
+          </a>
+          <div style={{ marginTop: '8px' }}>
+            <button
+              onClick={toggleLanguage}
+              style={{ fontFamily: DM_SANS, fontSize: '11px', fontWeight: 600, padding: '5px 14px',
+                borderRadius: '100px', border: '1px solid rgba(0,229,195,0.2)', color: MUTED,
+                backgroundColor: 'transparent', cursor: 'pointer', letterSpacing: '0.04em',
+                transition: 'border-color 0.18s, color 0.18s' }}
+              onMouseEnter={e => { const el = e.currentTarget; el.style.borderColor = BIO_CYAN; el.style.color = BIO_CYAN; }}
+              onMouseLeave={e => { const el = e.currentTarget; el.style.borderColor = 'rgba(0,229,195,0.2)'; el.style.color = MUTED; }}
+            >
+              {isHebrew ? 'EN' : 'עב'}
+            </button>
+          </div>
         </div>
       </div>
 
-      {/* Bottom rule */}
-      <div style={{ height: '1px', backgroundColor: 'rgba(245,200,64,0.06)', margin: '0 32px' }} />
-      <div style={{ padding: '16px 32px', textAlign: 'center' }}>
-        <p style={{ fontFamily: ASSISTANT, fontSize: '11px', color: `${PARCHMENT}25` }}>
-          גידול בהרמוניה עם הטבע · Biodynamic Gardening Platform
+      <div style={{ height: '1px', backgroundColor: 'rgba(0,229,195,0.07)', margin: '0 32px' }} />
+      <div style={{ padding: '16px 32px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '8px' }}>
+        <p style={{ fontFamily: DM_SANS, fontSize: '11px', color: MUTED, opacity: 0.55 }}>
+          © 2026 גינה חיה · Gina Haya · Made in Israel
         </p>
+        <div style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', padding: '4px 12px',
+          borderRadius: '100px', border: '1px solid rgba(0,229,195,0.12)', fontSize: '11px', color: BIO_CYAN, fontFamily: DM_SANS }}>
+          <span style={{ width: '5px', height: '5px', borderRadius: '50%', background: BIO_CYAN,
+            boxShadow: `0 0 5px ${BIO_CYAN}`, display: 'inline-block' }} />
+          {isHebrew ? 'ביודינמי · Biodynamic' : 'Biodynamic · ביודינמי'}
+        </div>
       </div>
     </footer>
   );
