@@ -8,16 +8,18 @@ import { TodayCard }           from '../components/calendar/TodayCardV2';
 import { WeekStrip }           from '../components/calendar/WeekStrip';
 import { useChupChuPanelStore }  from '../stores/chupChuPanelStore';
 
-const EARTH  = '#142B16';
-const GOLD   = '#F5C840';
-const PARCH  = '#EDE0C4';
-const FRANK  = '"Frank Ruhl Libre", Georgia, serif';
-const ASSIST = '"Assistant", "Heebo", sans-serif';
-
-const NOISE_BG = `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='250' height='250'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.75' numOctaves='4' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='250' height='250' filter='url(%23n)' opacity='0.55'/%3E%3C/svg%3E")`;
+const NIGHT   = '#050d0a';
+const NIGHT_MID = '#091410';
+const NIGHT_CARD = '#111f18';
+const BIO_CYAN = '#00e5c3';
+const TEXT    = '#e8f5ee';
+const TEXT_MID = '#b0cfbf';
+const MUTED   = '#6b9080';
+const FRANK   = '"Frank Ruhl Libre", Georgia, serif';
+const DM_SANS = "'DM Sans', 'Assistant', 'Heebo', sans-serif";
 
 const CAL_CSS = `
-.cal-quickask::placeholder { color: rgba(237,224,196,0.3); }
+.cal-quickask::placeholder { color: rgba(176,207,191,0.35); }
 .cal-quickask:focus { outline: none; }
 @keyframes cal-shimmer {
   0%   { background-position: -600px 0; }
@@ -30,9 +32,9 @@ const CAL_CSS = `
 .cal-skeleton {
   background: linear-gradient(
     90deg,
-    rgba(28,58,30,0.5) 25%,
-    rgba(48,90,52,0.6) 50%,
-    rgba(28,58,30,0.5) 75%
+    rgba(9,20,16,0.8) 25%,
+    rgba(17,31,24,0.9) 50%,
+    rgba(9,20,16,0.8) 75%
   );
   background-size: 800px 100%;
   animation: cal-shimmer 1.5s ease-in-out infinite;
@@ -46,7 +48,7 @@ const CAL_CSS = `
 // Loading skeleton
 function CalendarSkeleton() {
   return (
-    <div style={{ backgroundColor: EARTH, backgroundImage: NOISE_BG, minHeight: '100vh', padding: '16px' }}>
+    <div style={{ backgroundColor: NIGHT, minHeight: '100vh', padding: '16px' }}>
       <div style={{ maxWidth: '600px', margin: '0 auto' }}>
         <div className="cal-skeleton" style={{ height: '24px', width: '160px', marginBottom: '24px' }} />
         <div className="cal-skeleton" style={{ height: '260px', marginBottom: '16px' }} />
@@ -87,9 +89,9 @@ export function CalendarPage() {
       <>
         <style>{CAL_CSS}</style>
         <div
-          style={{ backgroundColor: EARTH, minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+          style={{ backgroundColor: NIGHT, minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
         >
-          <p style={{ fontFamily: ASSIST, fontSize: '16px', color: 'rgba(237,224,196,0.7)' }}>
+          <p style={{ fontFamily: DM_SANS, fontSize: '16px', color: TEXT_MID }}>
             {dayError || (isHe ? 'אין נתונים זמינים להיום' : 'No data available for today')}
           </p>
         </div>
@@ -106,20 +108,7 @@ export function CalendarPage() {
     <>
       <style>{CAL_CSS}</style>
 
-      {/* Noise overlay */}
-      <div
-        aria-hidden="true"
-        style={{
-          position: 'fixed', inset: 0, zIndex: 9998,
-          pointerEvents: 'none',
-          backgroundImage: NOISE_BG,
-          backgroundRepeat: 'repeat',
-          opacity: 0.35,
-        }}
-      />
-
-      <div style={{ backgroundColor: EARTH, minHeight: '100vh', position: 'relative', zIndex: 0 }}>
-        {/* Node blackout banner — full width, outside container */}
+      <div style={{ backgroundColor: NIGHT, minHeight: '100vh', position: 'relative', zIndex: 0 }}>
         {day.nodeActive && <NodeBlackoutBanner day={day} />}
 
         <div dir={dir} style={{ maxWidth: '600px', margin: '0 auto', padding: '20px 16px 40px' }}>
@@ -127,15 +116,15 @@ export function CalendarPage() {
           {/* Page header */}
           <div className="cal-card-in" style={{ textAlign: dir === 'rtl' ? 'right' : 'left', marginBottom: '20px' }}>
             <p style={{
-              fontFamily: ASSIST, fontSize: '12px', fontWeight: 600,
-              letterSpacing: '0.14em', textTransform: 'uppercase' as const,
-              color: `${PARCH}66`, marginBottom: '6px',
+              fontFamily: DM_SANS, fontSize: '11px', fontWeight: 700,
+              letterSpacing: '0.18em', textTransform: 'uppercase' as const,
+              color: MUTED, marginBottom: '6px',
             }}>
               {formattedDate}
             </p>
             <h1 style={{
               fontFamily: FRANK, fontWeight: 700, fontSize: '2rem',
-              color: GOLD, margin: 0, lineHeight: 1.1,
+              color: BIO_CYAN, margin: 0, lineHeight: 1.1,
             }}>
               {t('title')}
             </h1>
@@ -164,9 +153,9 @@ export function CalendarPage() {
               display:         'flex',
               alignItems:      'center',
               gap:             '10px',
-              backgroundColor: 'rgba(28,58,30,0.5)',
-              border:          '1px solid rgba(245,200,64,0.15)',
-              borderRadius:    '12px',
+              backgroundColor: NIGHT_CARD,
+              border:          '1px solid rgba(0,229,195,0.15)',
+              borderRadius:    '14px',
               padding:         '10px 14px',
             }}>
               <div style={{
@@ -174,7 +163,7 @@ export function CalendarPage() {
                 width:          '32px',
                 height:         '32px',
                 borderRadius:   '50%',
-                background:     'radial-gradient(circle at 40% 40%, #F5D060, #F5C840, #C8960A)',
+                background:     `radial-gradient(circle at 40% 40%, #00e5c3, #00b89e)`,
                 display:        'flex',
                 alignItems:     'center',
                 justifyContent: 'center',
@@ -192,9 +181,9 @@ export function CalendarPage() {
                   flex:       '1 1 auto',
                   border:     'none',
                   background: 'transparent',
-                  fontFamily: ASSIST,
+                  fontFamily: DM_SANS,
                   fontSize:   '14px',
-                  color:      PARCH,
+                  color:      TEXT,
                   direction:  dir,
                   textAlign:  dir === 'rtl' ? 'right' : 'left',
                 }}
@@ -206,15 +195,15 @@ export function CalendarPage() {
                   flexShrink:      0,
                   width:           '44px',
                   height:          '44px',
-                  borderRadius:    '8px',
+                  borderRadius:    '10px',
                   border:          'none',
-                  backgroundColor: GOLD,
-                  color:           EARTH,
+                  backgroundColor: BIO_CYAN,
+                  color:           NIGHT,
                   fontFamily:      FRANK,
                   fontWeight:      700,
                   fontSize:        '16px',
                   cursor:          quickAsk.trim() ? 'pointer' : 'default',
-                  opacity:         quickAsk.trim() ? 1 : 0.4,
+                  opacity:         quickAsk.trim() ? 1 : 0.35,
                   display:         'flex',
                   alignItems:      'center',
                   justifyContent:  'center',

@@ -2,13 +2,17 @@ import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuthStore } from '../stores/authStore';
 
-const EARTH  = '#142B16';
-const HEADER = '#1B3A1F';
-const GOLD   = '#F5C840';
-const PARCH  = '#EDE0C4';
-const SAGE   = '#7DC084';
-const FRANK  = '"Frank Ruhl Libre", Georgia, serif';
-const ASST   = '"Assistant", "Heebo", sans-serif';
+const NIGHT      = '#050d0a';
+const NIGHT_MID  = '#091410';
+const NIGHT_CARD = '#111f18';
+const NIGHT_LIFT = '#0e1e17';
+const BIO_CYAN   = '#00e5c3';
+const BIO_LIME   = '#aaff00';
+const TEXT       = '#e8f5ee';
+const TEXT_MID   = '#b0cfbf';
+const MUTED      = '#6b9080';
+const FRANK      = '"Frank Ruhl Libre", Georgia, serif';
+const ASST       = "'DM Sans', 'Assistant', 'Heebo', sans-serif";
 
 const PAGE_CSS = `
 @keyframes pricingFadeIn {
@@ -20,11 +24,11 @@ const PAGE_CSS = `
   100% { opacity: 1; transform: translateX(-50%) translateY(0); }
 }
 .pricing-card { transition: transform 0.2s, box-shadow 0.2s; }
-.pricing-card:hover { transform: translateY(-4px); box-shadow: 0 16px 48px rgba(0,0,0,0.35) !important; }
+.pricing-card:hover { transform: translateY(-5px); box-shadow: 0 20px 60px rgba(0,229,195,0.1) !important; }
 .pricing-feature-row { display: flex; align-items: flex-start; gap: 8px; padding: 5px 0; font-family: ${ASST}; font-size: 13px; line-height: 1.45; }
 .pricing-toggle-pill { padding: 7px 20px; border-radius: 99px; border: none; cursor: pointer; font-family: ${ASST}; font-size: 13px; font-weight: 600; transition: background 0.2s, color 0.2s; }
-.faq-item { border-bottom: 1px solid rgba(245,200,64,0.1); }
-.faq-answer { font-family: ${ASST}; font-size: 14px; color: rgba(237,224,196,0.75); line-height: 1.7; padding: 0 0 16px; }
+.faq-item { border-bottom: 1px solid rgba(0,229,195,0.08); }
+.faq-answer { font-family: ${ASST}; font-size: 14px; color: #b0cfbf; line-height: 1.7; padding: 0 0 16px; }
 `;
 
 type Tier = 'free' | 'grower' | 'pro';
@@ -96,14 +100,14 @@ const FAQ_ITEMS = [
 
 function FeatureRow({ icon, text, dim }: Feature) {
   const color =
-    icon === '✓' ? SAGE :
-    icon === '✦' ? GOLD :
-    icon === '➕' ? GOLD :
-    'rgba(237,224,196,0.3)';
+    icon === '✓' ? BIO_CYAN :
+    icon === '✦' ? BIO_LIME :
+    icon === '➕' ? BIO_LIME :
+    'rgba(176,207,191,0.25)';
   return (
     <div className="pricing-feature-row">
       <span style={{ color, flexShrink: 0, fontWeight: 700, fontSize: '14px', lineHeight: '1.3', marginTop: '1px' }}>{icon}</span>
-      <span style={{ color: dim ? 'rgba(237,224,196,0.3)' : `${PARCH}CC` }}>{text}</span>
+      <span style={{ color: dim ? 'rgba(176,207,191,0.3)' : TEXT_MID }}>{text}</span>
     </div>
   );
 }
@@ -115,12 +119,12 @@ function ComingSoonToast({ visible }: { visible: boolean }) {
       position: 'fixed', bottom: '36px', left: '50%',
       transform: 'translateX(-50%)',
       zIndex: 9999,
-      background: EARTH,
-      border: `1px solid ${GOLD}55`,
+      background: NIGHT_LIFT,
+      border: `1px solid rgba(0,229,195,0.3)`,
       borderRadius: '12px',
       padding: '12px 24px',
       fontFamily: ASST, fontSize: '14px', fontWeight: 600,
-      color: GOLD,
+      color: BIO_CYAN,
       boxShadow: '0 8px 32px rgba(0,0,0,0.5)',
       animation: 'toastIn 0.25s ease both',
       whiteSpace: 'nowrap',
@@ -149,7 +153,7 @@ export function PricingPage() {
     return (
       <div style={{
         position: 'absolute', top: -12, left: '50%', transform: 'translateX(-50%)',
-        background: SAGE, color: EARTH,
+        background: BIO_CYAN, color: NIGHT,
         fontFamily: FRANK, fontSize: '11px', fontWeight: 700,
         padding: '3px 12px', borderRadius: '99px',
         whiteSpace: 'nowrap',
@@ -167,7 +171,7 @@ export function PricingPage() {
       <style>{PAGE_CSS}</style>
       <ComingSoonToast visible={toastVisible} />
 
-      <div dir="rtl" style={{ minHeight: '100vh', background: EARTH, fontFamily: ASST }}>
+      <div dir="rtl" style={{ minHeight: '100vh', background: NIGHT, fontFamily: ASST }}>
 
         {/* ── Launch free mode banner ── */}
         <div style={{
@@ -176,14 +180,14 @@ export function PricingPage() {
           animation: 'pricingFadeIn 0.5s ease both',
         }}>
           <div style={{
-            background: 'rgba(99,153,34,0.15)',
-            border: '1px solid rgba(99,153,34,0.3)',
+            background: 'rgba(0,229,195,0.07)',
+            border: '1px solid rgba(0,229,195,0.2)',
             borderRadius: '12px',
             padding: '16px',
             textAlign: 'center',
             marginBottom: '24px',
             fontSize: '15px',
-            color: '#639922',
+            color: BIO_CYAN,
             fontWeight: 600,
           }}>
             🌿 גינה חיה בחינם לחלוטין בתקופת ההשקה!
@@ -193,20 +197,20 @@ export function PricingPage() {
 
         {/* ── Header ── */}
         <div style={{
-          background: `linear-gradient(180deg, ${HEADER} 0%, ${EARTH} 100%)`,
+          background: `linear-gradient(180deg, ${NIGHT_MID} 0%, ${NIGHT} 100%)`,
           padding: '60px 24px 48px',
           textAlign: 'center',
           animation: 'pricingFadeIn 0.5s ease both',
         }}>
           <h1 style={{
             fontFamily: FRANK, fontSize: 'clamp(28px, 5vw, 44px)',
-            color: GOLD, margin: '0 0 12px', fontWeight: 700, lineHeight: 1.2,
+            color: BIO_CYAN, margin: '0 0 12px', fontWeight: 700, lineHeight: 1.2,
           }}>
             בחר את התכנית שלך
           </h1>
           <p style={{
             fontFamily: ASST, fontSize: '16px',
-            color: 'rgba(237,224,196,0.65)', margin: '0 0 28px',
+            color: TEXT_MID, margin: '0 0 28px',
           }}>
             גדל גינה בריאה עם הכלים הנכונים
           </p>
@@ -214,15 +218,16 @@ export function PricingPage() {
           {/* Toggle */}
           <div style={{
             display: 'inline-flex', alignItems: 'center',
-            background: 'rgba(0,0,0,0.25)', borderRadius: '99px',
+            background: NIGHT_CARD, borderRadius: '99px',
             padding: '4px', gap: '2px',
+            border: '1px solid rgba(0,229,195,0.12)',
           }}>
             <button
               className="pricing-toggle-pill"
               onClick={() => setIsAnnual(false)}
               style={{
-                background: !isAnnual ? GOLD : 'transparent',
-                color: !isAnnual ? EARTH : `${PARCH}80`,
+                background: !isAnnual ? BIO_CYAN : 'transparent',
+                color: !isAnnual ? NIGHT : MUTED,
               }}
             >
               חודשי
@@ -231,14 +236,14 @@ export function PricingPage() {
               className="pricing-toggle-pill"
               onClick={() => setIsAnnual(true)}
               style={{
-                background: isAnnual ? GOLD : 'transparent',
-                color: isAnnual ? EARTH : `${PARCH}80`,
+                background: isAnnual ? BIO_CYAN : 'transparent',
+                color: isAnnual ? NIGHT : MUTED,
                 display: 'flex', alignItems: 'center', gap: '6px',
               }}
             >
               שנתי
               <span style={{
-                background: '#4A7C59', color: 'white',
+                background: BIO_LIME, color: NIGHT,
                 fontSize: '10px', fontWeight: 700,
                 padding: '2px 7px', borderRadius: '99px',
               }}>
@@ -263,23 +268,23 @@ export function PricingPage() {
             className="pricing-card"
             style={{
               position: 'relative',
-              background: 'rgba(20,50,22,0.6)',
-              border: currentTier === 'free' && profile ? `2px solid ${SAGE}` : '1px solid rgba(245,200,64,0.15)',
+              background: NIGHT_CARD,
+              border: currentTier === 'free' && profile ? `2px solid ${BIO_CYAN}` : '1px solid rgba(0,229,195,0.1)',
               borderRadius: '16px', padding: '28px 24px',
               display: 'flex', flexDirection: 'column',
-              boxShadow: '0 4px 24px rgba(0,0,0,0.2)',
+              boxShadow: '0 4px 24px rgba(0,0,0,0.3)',
             }}
           >
             <TierBadge tier="free" />
-            <div style={{ fontFamily: FRANK, fontSize: '22px', color: PARCH, fontWeight: 700, marginBottom: '4px' }}>
+            <div style={{ fontFamily: FRANK, fontSize: '22px', color: TEXT, fontWeight: 700, marginBottom: '4px' }}>
               חינמי
             </div>
-            <div style={{ fontFamily: ASST, fontSize: '13px', color: `${PARCH}60`, marginBottom: '20px' }}>
+            <div style={{ fontFamily: ASST, fontSize: '13px', color: MUTED, marginBottom: '20px' }}>
               Free
             </div>
             <div style={{ marginBottom: '24px' }}>
-              <span style={{ fontFamily: FRANK, fontSize: '38px', color: GOLD, fontWeight: 700 }}>₪0</span>
-              <span style={{ fontFamily: ASST, fontSize: '13px', color: `${PARCH}55`, marginRight: '6px' }}>/ לתמיד</span>
+              <span style={{ fontFamily: FRANK, fontSize: '38px', color: BIO_CYAN, fontWeight: 700 }}>₪0</span>
+              <span style={{ fontFamily: ASST, fontSize: '13px', color: MUTED, marginRight: '6px' }}>/ לתמיד</span>
             </div>
             <div style={{ flex: 1, marginBottom: '24px' }}>
               {FREE_FEATURES.map((f, i) => <FeatureRow key={i} {...f} />)}
@@ -289,8 +294,8 @@ export function PricingPage() {
               style={{
                 display: 'block', textAlign: 'center',
                 fontFamily: FRANK, fontSize: '15px', fontWeight: 700,
-                color: EARTH, background: `${GOLD}CC`,
-                padding: '13px', borderRadius: '10px',
+                color: NIGHT, background: BIO_CYAN,
+                padding: '13px', borderRadius: '100px',
                 textDecoration: 'none', transition: 'filter 0.2s',
               }}
               onMouseEnter={e => { (e.currentTarget as HTMLElement).style.filter = 'brightness(1.1)'; }}
@@ -305,38 +310,38 @@ export function PricingPage() {
             className="pricing-card"
             style={{
               position: 'relative',
-              background: 'linear-gradient(145deg, rgba(30,62,32,0.95) 0%, rgba(20,43,22,0.98) 100%)',
-              border: currentTier === 'grower' && profile ? `2px solid ${SAGE}` : `2px solid ${GOLD}`,
+              background: `linear-gradient(145deg, ${NIGHT_LIFT} 0%, ${NIGHT_CARD} 100%)`,
+              border: currentTier === 'grower' && profile ? `2px solid ${BIO_CYAN}` : `2px solid ${BIO_CYAN}`,
               borderRadius: '16px', padding: '28px 24px',
               display: 'flex', flexDirection: 'column',
-              boxShadow: `0 8px 36px rgba(245,200,64,0.18)`,
+              boxShadow: `0 8px 40px rgba(0,229,195,0.15)`,
             }}
           >
             <TierBadge tier="grower" />
-            {/* "Most popular" badge */}
             {(!profile || currentTier !== 'grower') && (
               <div style={{
                 position: 'absolute', top: -12, left: '50%', transform: 'translateX(-50%)',
-                background: GOLD, color: EARTH,
+                background: `linear-gradient(90deg, ${BIO_CYAN}, ${BIO_LIME})`,
+                color: NIGHT,
                 fontFamily: FRANK, fontSize: '11px', fontWeight: 700,
                 padding: '3px 14px', borderRadius: '99px',
                 whiteSpace: 'nowrap',
               }}>
-                הכי פופולרי ⭐
+                הכי פופולרי
               </div>
             )}
-            <div style={{ fontFamily: FRANK, fontSize: '22px', color: GOLD, fontWeight: 700, marginBottom: '4px' }}>
+            <div style={{ fontFamily: FRANK, fontSize: '22px', color: BIO_CYAN, fontWeight: 700, marginBottom: '4px' }}>
               גנן
             </div>
-            <div style={{ fontFamily: ASST, fontSize: '13px', color: `${PARCH}60`, marginBottom: '20px' }}>
+            <div style={{ fontFamily: ASST, fontSize: '13px', color: MUTED, marginBottom: '20px' }}>
               Grower
             </div>
             <div style={{ marginBottom: isAnnual ? '8px' : '24px' }}>
-              <span style={{ fontFamily: FRANK, fontSize: '38px', color: GOLD, fontWeight: 700 }}>₪{growerMonthly}</span>
-              <span style={{ fontFamily: ASST, fontSize: '13px', color: `${PARCH}55`, marginRight: '6px' }}>/ חודש</span>
+              <span style={{ fontFamily: FRANK, fontSize: '38px', color: BIO_CYAN, fontWeight: 700 }}>₪{growerMonthly}</span>
+              <span style={{ fontFamily: ASST, fontSize: '13px', color: MUTED, marginRight: '6px' }}>/ חודש</span>
             </div>
             {isAnnual && (
-              <div style={{ fontFamily: ASST, fontSize: '12px', color: `${PARCH}55`, marginBottom: '16px' }}>
+              <div style={{ fontFamily: ASST, fontSize: '12px', color: MUTED, marginBottom: '16px' }}>
                 ₪{growerMonthly * 12} לשנה — חיסכון של ₪{(18 - growerMonthly) * 12}
               </div>
             )}
@@ -348,8 +353,8 @@ export function PricingPage() {
               style={{
                 display: 'block', width: '100%',
                 fontFamily: FRANK, fontSize: '15px', fontWeight: 700,
-                color: EARTH, background: GOLD,
-                padding: '13px', borderRadius: '10px',
+                color: NIGHT, background: BIO_CYAN,
+                padding: '13px', borderRadius: '100px',
                 border: 'none', cursor: 'pointer', transition: 'filter 0.2s',
               }}
               onMouseEnter={e => { (e.currentTarget as HTMLElement).style.filter = 'brightness(1.1)'; }}
@@ -364,26 +369,26 @@ export function PricingPage() {
             className="pricing-card"
             style={{
               position: 'relative',
-              background: 'rgba(20,50,22,0.6)',
-              border: currentTier === 'pro' && profile ? `2px solid ${SAGE}` : '1px solid rgba(245,200,64,0.15)',
+              background: NIGHT_CARD,
+              border: currentTier === 'pro' && profile ? `2px solid ${BIO_CYAN}` : '1px solid rgba(0,229,195,0.1)',
               borderRadius: '16px', padding: '28px 24px',
               display: 'flex', flexDirection: 'column',
-              boxShadow: '0 4px 24px rgba(0,0,0,0.2)',
+              boxShadow: '0 4px 24px rgba(0,0,0,0.3)',
             }}
           >
             <TierBadge tier="pro" />
-            <div style={{ fontFamily: FRANK, fontSize: '22px', color: PARCH, fontWeight: 700, marginBottom: '4px' }}>
+            <div style={{ fontFamily: FRANK, fontSize: '22px', color: TEXT, fontWeight: 700, marginBottom: '4px' }}>
               מקצועי
             </div>
-            <div style={{ fontFamily: ASST, fontSize: '13px', color: `${PARCH}60`, marginBottom: '20px' }}>
+            <div style={{ fontFamily: ASST, fontSize: '13px', color: MUTED, marginBottom: '20px' }}>
               Pro
             </div>
             <div style={{ marginBottom: isAnnual ? '8px' : '24px' }}>
-              <span style={{ fontFamily: FRANK, fontSize: '38px', color: GOLD, fontWeight: 700 }}>₪{proMonthly}</span>
-              <span style={{ fontFamily: ASST, fontSize: '13px', color: `${PARCH}55`, marginRight: '6px' }}>/ חודש</span>
+              <span style={{ fontFamily: FRANK, fontSize: '38px', color: BIO_CYAN, fontWeight: 700 }}>₪{proMonthly}</span>
+              <span style={{ fontFamily: ASST, fontSize: '13px', color: MUTED, marginRight: '6px' }}>/ חודש</span>
             </div>
             {isAnnual && (
-              <div style={{ fontFamily: ASST, fontSize: '12px', color: `${PARCH}55`, marginBottom: '16px' }}>
+              <div style={{ fontFamily: ASST, fontSize: '12px', color: MUTED, marginBottom: '16px' }}>
                 ₪{proMonthly * 12} לשנה — חיסכון של ₪{(54 - proMonthly) * 12}
               </div>
             )}
@@ -395,8 +400,8 @@ export function PricingPage() {
               style={{
                 display: 'block', width: '100%',
                 fontFamily: FRANK, fontSize: '15px', fontWeight: 700,
-                color: EARTH, background: `${GOLD}CC`,
-                padding: '13px', borderRadius: '10px',
+                color: NIGHT, background: BIO_CYAN,
+                padding: '13px', borderRadius: '100px',
                 border: 'none', cursor: 'pointer', transition: 'filter 0.2s',
               }}
               onMouseEnter={e => { (e.currentTarget as HTMLElement).style.filter = 'brightness(1.1)'; }}
@@ -410,19 +415,20 @@ export function PricingPage() {
         {/* ── Garden pack addon ── */}
         <div style={{ maxWidth: '1100px', margin: '0 auto', padding: '0 20px 16px', animation: 'pricingFadeIn 0.5s ease 0.2s both' }}>
           <div style={{
-            border: `1px dashed ${GOLD}55`,
+            border: `1px dashed rgba(0,229,195,0.2)`,
             borderRadius: '14px', padding: '20px 24px',
+            background: NIGHT_CARD,
             display: 'flex', flexWrap: 'wrap', gap: '12px', alignItems: 'center',
             justifyContent: 'space-between',
           }}>
             <div>
-              <div style={{ fontFamily: FRANK, fontSize: '16px', color: GOLD, fontWeight: 700, marginBottom: '4px' }}>
+              <div style={{ fontFamily: FRANK, fontSize: '16px', color: BIO_CYAN, fontWeight: 700, marginBottom: '4px' }}>
                 ➕ חבילת גינות נוספת — למקצועי בלבד
               </div>
-              <div style={{ fontFamily: ASST, fontSize: '13px', color: `${PARCH}70` }}>
+              <div style={{ fontFamily: ASST, fontSize: '13px', color: TEXT_MID }}>
                 10 גינות נוספות ב-₪19 לחודש. ניתן לרכוש מספר חבילות.
               </div>
-              <div style={{ fontFamily: ASST, fontSize: '12px', color: `${PARCH}50`, marginTop: '4px' }}>
+              <div style={{ fontFamily: ASST, fontSize: '12px', color: MUTED, marginTop: '4px' }}>
                 דוגמה: 33 גינות = ₪54 + ₪19 + ₪19 = ₪92/חודש
               </div>
             </div>
@@ -430,8 +436,8 @@ export function PricingPage() {
               onClick={showToast}
               style={{
                 fontFamily: FRANK, fontSize: '13px', fontWeight: 700,
-                color: EARTH, background: `${GOLD}80`,
-                padding: '9px 20px', borderRadius: '8px',
+                color: NIGHT, background: BIO_CYAN,
+                padding: '9px 20px', borderRadius: '100px',
                 border: 'none', cursor: 'pointer', flexShrink: 0,
                 transition: 'filter 0.2s',
               }}
@@ -447,9 +453,9 @@ export function PricingPage() {
         <div style={{ textAlign: 'center', padding: '8px 24px 32px', animation: 'pricingFadeIn 0.5s ease 0.25s both' }}>
           <Link
             to="/shop"
-            style={{ fontFamily: ASST, fontSize: '13px', color: `${PARCH}50`, textDecoration: 'none' }}
-            onMouseEnter={e => { (e.currentTarget as HTMLElement).style.color = GOLD; }}
-            onMouseLeave={e => { (e.currentTarget as HTMLElement).style.color = `${PARCH}50`; }}
+            style={{ fontFamily: ASST, fontSize: '13px', color: MUTED, textDecoration: 'none' }}
+            onMouseEnter={e => { (e.currentTarget as HTMLElement).style.color = BIO_CYAN; }}
+            onMouseLeave={e => { (e.currentTarget as HTMLElement).style.color = MUTED; }}
           >
             מעדיף לקנות בלי מנוי? ← כנס לחנות
           </Link>
@@ -462,7 +468,7 @@ export function PricingPage() {
           animation: 'pricingFadeIn 0.5s ease 0.3s both',
         }}>
           <h2 style={{
-            fontFamily: FRANK, fontSize: '24px', color: GOLD,
+            fontFamily: FRANK, fontSize: '24px', color: BIO_CYAN,
             textAlign: 'center', marginBottom: '28px', fontWeight: 700,
           }}>
             שאלות נפוצות
@@ -478,11 +484,11 @@ export function PricingPage() {
                   gap: '12px',
                 }}
               >
-                <span style={{ fontFamily: FRANK, fontSize: '16px', color: PARCH, fontWeight: 600, textAlign: 'right', flex: 1 }}>
+                <span style={{ fontFamily: FRANK, fontSize: '16px', color: TEXT, fontWeight: 600, textAlign: 'right', flex: 1 }}>
                   {item.q}
                 </span>
                 <span style={{
-                  color: GOLD, fontSize: '18px', flexShrink: 0,
+                  color: BIO_CYAN, fontSize: '18px', flexShrink: 0,
                   transform: openFaq === i ? 'rotate(180deg)' : 'none',
                   transition: 'transform 0.2s',
                 }}>▾</span>

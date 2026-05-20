@@ -8,14 +8,15 @@ import { PlantDetailModal } from '../components/garden/PlantDetailModal';
 import { AdBanner } from '../components/ui/AdBanner';
 
 // ── Design tokens ────────────────────────────────────────────────────────────
-const EARTH  = '#142B16';
-const GOLD   = '#F5C840';
-const SAGE   = '#7DC084';
-const PARCH  = '#EDE0C4';
-const FRANK  = '"Frank Ruhl Libre", Georgia, serif';
-const ASSIST = '"Assistant", "Heebo", sans-serif';
-
-const NOISE_BG = `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='250' height='250'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.75' numOctaves='4' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='250' height='250' filter='url(%23n)' opacity='0.55'/%3E%3C/svg%3E")`;
+const NIGHT      = '#050d0a';
+const NIGHT_CARD = '#111f18';
+const BIO_CYAN   = '#00e5c3';
+const BIO_LIME   = '#aaff00';
+const TEXT       = '#e8f5ee';
+const TEXT_MID   = '#b0cfbf';
+const MUTED      = '#6b9080';
+const FRANK      = '"Frank Ruhl Libre", Georgia, serif';
+const DM_SANS    = "'DM Sans', 'Assistant', 'Heebo', sans-serif";
 
 const PLANTS_CSS = `
 @keyframes plant-shimmer {
@@ -29,9 +30,9 @@ const PLANTS_CSS = `
 .plant-skeleton {
   background: linear-gradient(
     90deg,
-    rgba(28,58,30,0.5) 25%,
-    rgba(48,90,52,0.6) 50%,
-    rgba(28,58,30,0.5) 75%
+    rgba(9,20,16,0.8) 25%,
+    rgba(17,31,24,0.9) 50%,
+    rgba(9,20,16,0.8) 75%
   );
   background-size: 800px 100%;
   animation: plant-shimmer 1.5s ease-in-out infinite;
@@ -41,11 +42,11 @@ const PLANTS_CSS = `
   animation: plant-card-in 0.4s ease-out both;
 }
 .plant-search-input::placeholder {
-  color: rgba(237,224,196,0.4);
+  color: rgba(176,207,191,0.35);
 }
 .plant-search-input:focus {
-  border-color: rgba(245,200,64,0.5) !important;
-  box-shadow: 0 0 0 3px rgba(245,200,64,0.07) !important;
+  border-color: rgba(0,229,195,0.45) !important;
+  box-shadow: 0 0 0 3px rgba(0,229,195,0.07) !important;
   outline: none;
 }
 `;
@@ -54,8 +55,8 @@ const PLANTS_CSS = `
 function SkeletonCard() {
   return (
     <div style={{
-      background:   'rgba(28,58,30,0.7)',
-      border:       '1px solid rgba(125,192,132,0.12)',
+      background:   NIGHT_CARD,
+      border:       '1px solid rgba(0,229,195,0.08)',
       borderRadius: '12px',
       padding:      '20px',
     }}>
@@ -105,21 +106,7 @@ export function PlantsPage() {
     <>
       <style>{PLANTS_CSS}</style>
 
-      {/* Noise overlay */}
-      <div
-        aria-hidden="true"
-        style={{
-          position:        'fixed',
-          inset:           0,
-          zIndex:          9998,
-          pointerEvents:   'none',
-          backgroundImage: NOISE_BG,
-          backgroundRepeat:'repeat',
-          opacity:         0.3,
-        }}
-      />
-
-      <div style={{ backgroundColor: EARTH, minHeight: '100vh', position: 'relative', zIndex: 0 }}>
+      <div style={{ backgroundColor: NIGHT, minHeight: '100vh', position: 'relative', zIndex: 0 }}>
         <div style={{ maxWidth: '1100px', margin: '0 auto', padding: '28px 16px 60px' }}>
 
           {/* Page header */}
@@ -128,7 +115,7 @@ export function PlantsPage() {
               fontFamily: FRANK,
               fontWeight: 700,
               fontSize:   '2rem',
-              color:      GOLD,
+              color:      BIO_CYAN,
               margin:     0,
               lineHeight: 1.1,
             }}>
@@ -146,9 +133,9 @@ export function PlantsPage() {
           {/* Error */}
           {error && (
             <p style={{
-              fontFamily: ASSIST,
+              fontFamily: DM_SANS,
               fontSize:   '13px',
-              color:      '#E06060',
+              color:      '#ff5c8a',
               textAlign:  'center',
               marginBottom:'16px',
             }}>
@@ -182,15 +169,15 @@ export function PlantsPage() {
                 fontFamily: FRANK,
                 fontWeight: 700,
                 fontSize:   '22px',
-                color:      GOLD,
+                color:      BIO_CYAN,
                 margin:     0,
               }}>
                 {t('encyclopedia.noResults')}
               </p>
               <p style={{
-                fontFamily: ASSIST,
+                fontFamily: DM_SANS,
                 fontSize:   '14px',
-                color:      SAGE,
+                color:      TEXT_MID,
                 margin:     0,
               }}>
                 נסה חיפוש אחר
@@ -200,18 +187,18 @@ export function PlantsPage() {
                   onClick={clearFilters}
                   style={{
                     marginTop:       '4px',
-                    fontFamily:      ASSIST,
+                    fontFamily:      DM_SANS,
                     fontSize:        '13px',
                     fontWeight:      500,
                     padding:         '7px 22px',
                     borderRadius:    '50px',
-                    border:          `1px solid ${GOLD}66`,
-                    color:           GOLD,
+                    border:          `1px solid rgba(0,229,195,0.3)`,
+                    color:           BIO_CYAN,
                     backgroundColor: 'transparent',
                     cursor:          'pointer',
                     transition:      'background-color 0.2s',
                   }}
-                  onMouseEnter={e => { (e.currentTarget as HTMLElement).style.backgroundColor = 'rgba(245,200,64,0.1)'; }}
+                  onMouseEnter={e => { (e.currentTarget as HTMLElement).style.backgroundColor = 'rgba(0,229,195,0.08)'; }}
                   onMouseLeave={e => { (e.currentTarget as HTMLElement).style.backgroundColor = 'transparent'; }}
                 >
                   {t('encyclopedia.clearFilters')}

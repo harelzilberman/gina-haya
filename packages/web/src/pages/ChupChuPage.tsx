@@ -6,12 +6,15 @@ import { useChupChu } from '../hooks/useChupChu';
 import { useAuthStore } from '../stores/authStore';
 
 // ── Design tokens ──────────────────────────────────────────────────────────
-const GOLD   = '#F5C840';
-const PARCH  = '#EDE0C4';
-const ASSIST = '"Assistant", "Heebo", sans-serif';
-const CAVEAT = "'Caveat', cursive";
-
-const NOISE_BG = `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='250' height='250'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.75' numOctaves='4' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='250' height='250' filter='url(%23n)' opacity='0.55'/%3E%3C/svg%3E")`;
+const NIGHT      = '#050d0a';
+const NIGHT_CARD = '#111f18';
+const BIO_CYAN   = '#00e5c3';
+const BIO_VIOLET = '#a78bfa';
+const TEXT       = '#e8f5ee';
+const TEXT_MID   = '#b0cfbf';
+const MUTED      = '#6b9080';
+const DM_SANS    = "'DM Sans', 'Assistant', 'Heebo', sans-serif";
+const CAVEAT     = "'Caveat', cursive";
 
 const SUGGESTED_QUESTIONS = [
   'מה היום הטוב ביותר לזרוע השבוע?',
@@ -32,10 +35,10 @@ const PAGE_CSS = `
   text-align: right;
   padding: 9px 16px;
   border-radius: 999px;
-  border: 1px solid rgba(245,200,64,0.35);
-  background-color: rgba(245,200,64,0.04);
-  color: rgba(237,224,196,0.65);
-  font-family: "Assistant","Heebo",sans-serif;
+  border: 1px solid rgba(0,229,195,0.2);
+  background-color: rgba(0,229,195,0.04);
+  color: rgba(176,207,191,0.7);
+  font-family: 'DM Sans','Assistant','Heebo',sans-serif;
   font-size: 13px;
   line-height: 1.4;
   cursor: pointer;
@@ -43,9 +46,9 @@ const PAGE_CSS = `
   display: block;
 }
 .ccp-chip:hover {
-  border-color: rgba(245,200,64,0.7);
-  background-color: rgba(245,200,64,0.09);
-  color: rgba(237,224,196,0.95);
+  border-color: rgba(0,229,195,0.5);
+  background-color: rgba(0,229,195,0.08);
+  color: #e8f5ee;
 }
 @media (max-width: 767px) {
   .ccp-left  { display: none !important; }
@@ -81,20 +84,6 @@ export function ChupChuPage() {
     <>
       <style>{PAGE_CSS}</style>
 
-      {/* Grain noise overlay */}
-      <div
-        aria-hidden="true"
-        style={{
-          position:        'fixed',
-          inset:           0,
-          zIndex:          9997,
-          pointerEvents:   'none',
-          backgroundImage: NOISE_BG,
-          backgroundRepeat:'repeat',
-          opacity:         0.25,
-        }}
-      />
-
       {/* Page wrapper */}
       <div
         className="ccp-wrap"
@@ -102,11 +91,7 @@ export function ChupChuPage() {
         style={{
           minHeight:       '100vh',
           position:        'relative',
-          backgroundImage: [
-            'radial-gradient(ellipse at 20% 50%, rgba(255,255,255,0.02) 0%, transparent 50%)',
-            'radial-gradient(ellipse at 80% 20%, rgba(255,255,255,0.02) 0%, transparent 50%)',
-            'radial-gradient(ellipse at 50% 40%, rgba(30,60,25,1) 0%, rgba(15,35,15,1) 100%)',
-          ].join(', '),
+          backgroundColor: NIGHT,
           display:     'flex',
           alignItems:  'flex-start',
           padding:     '32px 28px 60px',
@@ -136,7 +121,7 @@ export function ChupChuPage() {
             width:           '152px',
             height:          '152px',
             borderRadius:    '50%',
-            background:      'radial-gradient(circle, rgba(196,134,42,0.22) 0%, rgba(196,134,42,0.06) 50%, transparent 72%)',
+            background:      'radial-gradient(circle, rgba(0,229,195,0.18) 0%, rgba(0,229,195,0.05) 50%, transparent 72%)',
             display:         'flex',
             alignItems:      'center',
             justifyContent:  'center',
@@ -159,37 +144,37 @@ export function ChupChuPage() {
             <h2 style={{
               fontFamily: CAVEAT,
               fontSize:   '30px',
-              color:      GOLD,
+              color:      BIO_CYAN,
               margin:     '0 0 4px',
               lineHeight: 1,
             }}>
               צ'ופצ'ו
             </h2>
             <p style={{
-              fontFamily: ASSIST,
+              fontFamily: DM_SANS,
               fontSize:   '13px',
-              color:      `${PARCH}80`,
+              color:      MUTED,
               margin:     0,
             }}>
               המומחה הביודינמי שלך
             </p>
           </div>
 
-          {/* Gold divider */}
+          {/* Divider */}
           <div style={{
             width:      '75%',
             height:     '1px',
-            background: 'linear-gradient(to right, transparent, rgba(245,200,64,0.35), transparent)',
+            background: 'linear-gradient(to right, transparent, rgba(0,229,195,0.25), transparent)',
           }} />
 
           {/* Section label */}
           <p style={{
-            fontFamily:    ASSIST,
+            fontFamily:    DM_SANS,
             fontSize:      '10px',
             fontWeight:    700,
             letterSpacing: '0.14em',
             textTransform: 'uppercase' as const,
-            color:         `${PARCH}45`,
+            color:         MUTED,
             margin:        '0 0 -4px',
             alignSelf:     dir === 'rtl' ? 'flex-end' : 'flex-start',
           }}>
@@ -209,10 +194,10 @@ export function ChupChuPage() {
               width:           '100%',
               padding:         '5px 14px',
               borderRadius:    '50px',
-              backgroundColor: isAtLimit ? 'rgba(192,57,43,0.15)' : 'rgba(245,200,64,0.08)',
-              border:          `1px solid ${isAtLimit ? 'rgba(192,57,43,0.3)' : 'rgba(245,200,64,0.2)'}`,
+              backgroundColor: isAtLimit ? 'rgba(255,92,138,0.1)' : 'rgba(0,229,195,0.07)',
+              border:          `1px solid ${isAtLimit ? 'rgba(255,92,138,0.3)' : 'rgba(0,229,195,0.2)'}`,
             }}>
-              <span style={{ fontFamily: ASSIST, fontSize: '12px', fontWeight: 300, color: isAtLimit ? '#E07060' : GOLD }}>
+              <span style={{ fontFamily: DM_SANS, fontSize: '12px', fontWeight: 300, color: isAtLimit ? '#ff5c8a' : BIO_CYAN }}>
                 {t('usageCounter', { used: usageThisMonth, limit: monthlyLimit })}
               </span>
             </div>

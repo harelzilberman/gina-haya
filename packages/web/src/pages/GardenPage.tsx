@@ -5,14 +5,13 @@ import { GardenHeader } from '../components/garden/GardenHeader';
 import { GardenEditModal } from '../components/garden/GardenEditModal';
 import { MyPlants } from '../components/garden/MyPlants';
 
-const EARTH  = '#142B16';
-const GOLD   = '#F5C840';
-const PARCH  = '#EDE0C4';
-const SAGE   = '#7DC084';
-const FRANK  = '"Frank Ruhl Libre", Georgia, serif';
-const ASSIST = '"Assistant", "Heebo", sans-serif';
-
-const NOISE_BG = `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='250' height='250'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.75' numOctaves='4' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='250' height='250' filter='url(%23n)' opacity='0.55'/%3E%3C/svg%3E")`;
+const NIGHT      = '#050d0a';
+const NIGHT_CARD = '#111f18';
+const BIO_CYAN   = '#00e5c3';
+const TEXT_MID   = '#b0cfbf';
+const MUTED      = '#6b9080';
+const FRANK      = '"Frank Ruhl Libre", Georgia, serif';
+const DM_SANS    = "'DM Sans', 'Assistant', 'Heebo', sans-serif";
 
 export function GardenPage() {
   const { t } = useTranslation('garden');
@@ -26,7 +25,7 @@ export function GardenPage() {
   if (isLoading) {
     return (
       <div style={{
-        backgroundColor: EARTH,
+        backgroundColor: NIGHT,
         minHeight:       '100vh',
         display:         'flex',
         alignItems:      'center',
@@ -40,13 +39,13 @@ export function GardenPage() {
   if (!activeGarden) {
     return (
       <div style={{
-        backgroundColor: EARTH,
+        backgroundColor: NIGHT,
         minHeight:       '100vh',
         display:         'flex',
         alignItems:      'center',
         justifyContent:  'center',
       }}>
-        <p style={{ fontFamily: ASSIST, fontSize: '15px', color: `${PARCH}66` }}>
+        <p style={{ fontFamily: DM_SANS, fontSize: '15px', color: TEXT_MID }}>
           {t('noGarden')}
         </p>
       </div>
@@ -55,49 +54,36 @@ export function GardenPage() {
 
   return (
     <>
-      {/* Noise overlay */}
-      <div
-        aria-hidden="true"
-        style={{
-          position:        'fixed',
-          inset:           0,
-          zIndex:          9998,
-          pointerEvents:   'none',
-          backgroundImage: NOISE_BG,
-          backgroundRepeat:'repeat',
-          opacity:         0.28,
-        }}
-      />
-
-      <div style={{ backgroundColor: EARTH, minHeight: '100vh', position: 'relative', zIndex: 0 }}>
+      <div style={{ backgroundColor: NIGHT, minHeight: '100vh', position: 'relative', zIndex: 0 }}>
         <div style={{ maxWidth: '900px', margin: '0 auto', padding: '28px 16px 60px' }}>
 
           <GardenHeader garden={activeGarden} onEdit={() => setShowEdit(true)} />
 
           <MyPlants garden={activeGarden} />
 
-          {/* Phase 2 map teaser */}
+          {/* Map teaser */}
           <div style={{
-            padding:       '28px 24px',
-            borderRadius:  '16px',
-            border:        '2px dashed rgba(125,192,132,0.2)',
-            backgroundColor:'rgba(20,43,22,0.4)',
-            textAlign:     'center',
+            padding:         '28px 24px',
+            borderRadius:    '16px',
+            border:          '2px dashed rgba(0,229,195,0.15)',
+            backgroundColor: NIGHT_CARD,
+            textAlign:       'center',
           }}>
             <p style={{ fontSize: '28px', lineHeight: 1, marginBottom: '10px' }}>🗺️</p>
             <p style={{
-              fontFamily:  FRANK,
-              fontWeight:  600,
-              fontSize:    '16px',
-              color:       `${PARCH}60`,
-              margin:      '0 0 6px',
+              fontFamily: FRANK,
+              fontWeight: 600,
+              fontSize:   '16px',
+              color:      MUTED,
+              margin:     '0 0 6px',
             }}>
               {t('map.title')}
             </p>
             <p style={{
-              fontFamily: ASSIST,
+              fontFamily: DM_SANS,
               fontSize:   '13px',
-              color:      `${SAGE}66`,
+              color:      MUTED,
+              opacity:    0.6,
               margin:     0,
             }}>
               {t('map.phase2')}
