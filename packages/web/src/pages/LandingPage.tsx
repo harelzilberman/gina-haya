@@ -554,7 +554,7 @@ export function LandingPage() {
   }
 
   return (
-    <>
+    <div style={{ backgroundColor: NIGHT, minHeight: '100vh' }}>
       <style>{LP_CSS}</style>
       <ParticleCanvas />
       <AuroraBands />
@@ -571,6 +571,7 @@ export function LandingPage() {
           justifyContent: 'center',
           textAlign: 'center',
           padding: '120px 28px 80px',
+          backgroundColor: NIGHT,
           backgroundImage: LEAF_VEIN_BG,
           backgroundRepeat: 'repeat',
         }}
@@ -1095,6 +1096,6 @@ export function LandingPage() {
           </Reveal>
         </div>
       </section>
-    </>
+    </div>
   );
 }
