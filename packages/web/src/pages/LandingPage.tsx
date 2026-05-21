@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
+import { ChupChuChat } from '../components/chupchu/ChupChuChat';
 
 // ── Design tokens ──────────────────────────────────────────────────────────
 const NIGHT      = '#050d0a';
@@ -123,6 +124,59 @@ const LP_CSS = `
 @media (max-width: 768px) {
   .lp-hero-chupchu { display: none !important; }
   .lp-step-connector { display: none !important; }
+  .lp-chupchu-demo-wrap { max-width: 100%; }
+}
+
+@keyframes chupchu-section-glow {
+  0%,100% { opacity: 0.5; transform: scale(1); }
+  50%      { opacity: 0.8; transform: scale(1.05); }
+}
+.lp-chupchu-section {
+  position: relative;
+  overflow: hidden;
+}
+.lp-chupchu-section::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(ellipse 70% 60% at 50% 50%, rgba(0,229,195,0.06) 0%, transparent 70%);
+  animation: chupchu-section-glow 6s ease-in-out infinite;
+  pointer-events: none;
+}
+.lp-chupchu-demo-wrap {
+  max-width: 680px;
+  margin: 0 auto;
+  position: relative;
+  z-index: 1;
+}
+.lp-chupchu-demo-wrap::before {
+  content: '';
+  position: absolute;
+  inset: -2px;
+  border-radius: 20px;
+  background: linear-gradient(135deg, rgba(0,229,195,0.3), rgba(170,255,0,0.15), rgba(0,229,195,0.1));
+  z-index: -1;
+  filter: blur(1px);
+}
+.lp-chupchu-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 16px;
+  background: rgba(0,229,195,0.08);
+  border: 1px solid rgba(0,229,195,0.25);
+  border-radius: 100px;
+  font-family: ${DM_SANS};
+  font-size: 13px;
+  color: ${BIO_CYAN};
+  margin-bottom: 20px;
+}
+.lp-chupchu-orb {
+  position: absolute;
+  border-radius: 50%;
+  filter: blur(80px);
+  pointer-events: none;
+  z-index: 0;
 }
 `;
 
@@ -906,6 +960,123 @@ export function LandingPage() {
               </div>
             </Reveal>
           </div>
+        </div>
+      </section>
+
+      {/* ══ CHUPCHU DEMO ══════════════════════════════════════════════════ */}
+      <section
+        className="lp-chupchu-section"
+        style={{
+          padding:         '100px 24px',
+          backgroundColor: NIGHT_MID,
+          borderTop:       '1px solid rgba(0,229,195,0.08)',
+          borderBottom:    '1px solid rgba(0,229,195,0.08)',
+          textAlign:       'center',
+          direction:       'rtl',
+        }}
+      >
+        {/* Ambient orbs */}
+        <div className="lp-chupchu-orb" style={{
+          width: '400px', height: '400px',
+          background: 'rgba(0,229,195,0.07)',
+          top: '-100px', left: '10%',
+        }} />
+        <div className="lp-chupchu-orb" style={{
+          width: '300px', height: '300px',
+          background: 'rgba(170,255,0,0.05)',
+          bottom: '-80px', right: '15%',
+        }} />
+
+        {/* Eyebrow */}
+        <div className="lp-chupchu-badge">
+          <img src="/chupchu_final.png" alt="" style={{ width: '20px', height: '20px', objectFit: 'contain' }} />
+          נסו בחינם — ללא הרשמה
+        </div>
+
+        {/* Heading */}
+        <h2 style={{
+          fontFamily: FRANK,
+          fontSize:   'clamp(28px, 4vw, 44px)',
+          fontWeight: 700,
+          color:      TEXT,
+          margin:     '0 0 12px',
+          lineHeight: 1.2,
+        }}>
+          שאלו את צ'ופצ'ו
+          <span style={{ color: BIO_CYAN }}> עכשיו</span>
+        </h2>
+
+        <p style={{
+          fontFamily: DM_SANS,
+          fontSize:   '16px',
+          color:      TEXT_MID,
+          margin:     '0 auto 48px',
+          maxWidth:   '480px',
+          lineHeight: 1.65,
+        }}>
+          המדריך הביודינמי שלכם — שואל, מנחה, ומכיר את הגינה שלכם.
+          <br />
+          <span style={{ color: MUTED, fontSize: '13px' }}>3 שאלות חינם, ללא צורך בהרשמה</span>
+        </p>
+
+        {/* Suggested question chips */}
+        <div style={{
+          display: 'flex', flexWrap: 'wrap', gap: '10px',
+          justifyContent: 'center', marginBottom: '32px',
+          position: 'relative', zIndex: 1,
+        }}>
+          {[
+            'מתי הזמן הנכון לשתול עגבניות?',
+            'איך מכינים תה קומפוסט?',
+            'מה זה יום שורש בלוח הביודינמי?',
+            'איך להדביר כנימות בצורה טבעית?',
+          ].map(q => (
+            <button
+              key={q}
+              onClick={() => {
+                const el = document.querySelector('.chupchu-textarea') as HTMLTextAreaElement | null;
+                if (el) {
+                  // React-controlled input: set nativeInputValueSetter then fire input event
+                  const nativeInputValueSetter = Object.getOwnPropertyDescriptor(
+                    window.HTMLTextAreaElement.prototype, 'value'
+                  )?.set;
+                  nativeInputValueSetter?.call(el, q);
+                  el.dispatchEvent(new Event('input', { bubbles: true }));
+                  el.focus();
+                  el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                }
+              }}
+              style={{
+                padding: '8px 16px',
+                background: 'rgba(0,229,195,0.06)',
+                border: '1px solid rgba(0,229,195,0.2)',
+                borderRadius: '100px',
+                fontFamily: DM_SANS, fontSize: '13px',
+                color: TEXT_MID, cursor: 'pointer',
+                transition: 'border-color 0.2s, color 0.2s, background-color 0.2s',
+                direction: 'rtl',
+              }}
+              onMouseEnter={e => {
+                const el = e.currentTarget as HTMLElement;
+                el.style.borderColor = BIO_CYAN;
+                el.style.color = BIO_CYAN;
+                el.style.backgroundColor = 'rgba(0,229,195,0.1)';
+              }}
+              onMouseLeave={e => {
+                const el = e.currentTarget as HTMLElement;
+                el.style.borderColor = 'rgba(0,229,195,0.2)';
+                el.style.color = TEXT_MID;
+                el.style.backgroundColor = 'rgba(0,229,195,0.06)';
+              }}
+            >
+              {q}
+            </button>
+          ))}
+        </div>
+
+        {/* Embedded chat widget */}
+        <div className="lp-chupchu-demo-wrap">
+          <ChupChuChat compact />
         </div>
       </section>
 
