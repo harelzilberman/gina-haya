@@ -9,6 +9,8 @@ import { useChupChu } from '../../hooks/useChupChu';
 import { useAuthStore } from '../../stores/authStore';
 import { ChupChuGreeting } from './ChupChuGreeting';
 import { RateLimitBanner } from './RateLimitBanner';
+import { PlantConfirmBubble } from '../journal/PlantConfirmBubble';
+import type { ConfirmItem } from '../journal/PlantConfirmBubble';
 import './chupchu-chat.css';
 
 // ── Design tokens ────────────────────────────────────────────────────────────
@@ -490,6 +492,9 @@ export function ChupChuChat({ compact, initialMessage, onInitialMessageConsumed,
   const [guestLoading,   setGuestLoading]   = useState(false);
   const [showGuestWall,  setShowGuestWall]  = useState(() => !user && getGuestCount() >= GUEST_LIMIT);
 
+  // Plant confirm queue — populated by journal photo identification
+  const [confirmQueue, setConfirmQueue] = useState<ConfirmItem[]>([]);
+
   const displayMessages = user ? messages : guestMessages;
   const showLoading     = user ? isLoading : guestLoading;
   const displayPending  = user ? pendingMessage : null;
@@ -510,6 +515,18 @@ export function ChupChuChat({ compact, initialMessage, onInitialMessageConsumed,
   useEffect(() => {
     loadMemory().catch(() => {});
   // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  // Listen for plant-confirm events dispatched by JournalEntryForm after AI identification
+  useEffect(() => {
+    function handlePlantConfirm(e: Event) {
+      const detail = (e as CustomEvent).detail as ConfirmItem;
+      if (detail?.photoId) {
+        setConfirmQueue(prev => [...prev, detail]);
+      }
+    }
+    window.addEventListener('chupchu:plant-confirm', handlePlantConfirm);
+    return () => window.removeEventListener('chupchu:plant-confirm', handlePlantConfirm);
   }, []);
 
   useEffect(() => {
@@ -682,6 +699,15 @@ export function ChupChuChat({ compact, initialMessage, onInitialMessageConsumed,
 
         <div ref={messagesEndRef} />
       </div>
+
+      {/* Plant confirm queue — shown above task proposal */}
+      {confirmQueue.length > 0 && (
+        <PlantConfirmBubble
+          item={confirmQueue[0]}
+          onDone={() => setConfirmQueue(prev => prev.slice(1))}
+          onDismiss={() => setConfirmQueue(prev => prev.slice(1))}
+        />
+      )}
 
       {/* Task proposal card */}
       {proposedTasks && proposedTasks.length > 0 && (
