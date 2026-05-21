@@ -121,6 +121,9 @@ const LP_CSS = `
 ::-webkit-scrollbar-track { background: ${NIGHT}; }
 ::-webkit-scrollbar-thumb { background: rgba(0,229,195,0.25); border-radius: 3px; }
 
+@media (max-width: 900px) {
+  .lp-hero-chupchu-col { display: none !important; }
+}
 @media (max-width: 768px) {
   .lp-hero-chupchu { display: none !important; }
   .lp-step-connector { display: none !important; }
@@ -620,11 +623,13 @@ export function LandingPage() {
           zIndex: 1,
           minHeight: '100vh',
           display: 'flex',
-          flexDirection: 'column',
-          alignItems: 'center',
+          flexDirection: 'row',
           justifyContent: 'center',
-          textAlign: 'center',
-          padding: '120px 28px 80px',
+          alignItems: 'center',
+          textAlign: 'start',
+          gap: '60px',
+          flexWrap: 'wrap',
+          padding: '120px 60px 80px',
           backgroundColor: NIGHT,
           backgroundImage: [
             'linear-gradient(to bottom, rgba(5,13,10,0.72) 0%, rgba(5,13,10,0.55) 50%, rgba(5,13,10,0.82) 100%)',
@@ -635,120 +640,146 @@ export function LandingPage() {
           backgroundRepeat: 'no-repeat, no-repeat',
         }}
       >
-        {/* Eyebrow pill */}
-        <div className="lp-eyebrow" style={{ marginBottom: '28px' }}>
-          <span style={{
-            display: 'inline-flex', alignItems: 'center', gap: '8px',
-            background: 'rgba(0,229,195,0.08)',
-            border: '1px solid rgba(0,229,195,0.2)',
-            borderRadius: '100px', padding: '6px 18px',
-            fontFamily: DM_SANS, fontSize: '12px', fontWeight: 600,
-            letterSpacing: '0.12em', color: BIO_CYAN,
-          }}>
-            <span style={{ width: '6px', height: '6px', borderRadius: '50%', background: BIO_CYAN, boxShadow: `0 0 6px ${BIO_CYAN}`, display: 'inline-block' }} />
-            {isHe ? 'לוח ביודינמי · מרץ 2026' : 'Biodynamic Calendar · March 2026'}
-          </span>
+        {/* ── Left: text content ─────────────────────────────────────────── */}
+        <div style={{ flex: '1 1 440px', maxWidth: '580px', direction: isHe ? 'rtl' : 'ltr' }}>
+
+          {/* Eyebrow pill */}
+          <div className="lp-eyebrow" style={{ marginBottom: '28px' }}>
+            <span style={{
+              display: 'inline-flex', alignItems: 'center', gap: '8px',
+              background: 'rgba(0,229,195,0.08)',
+              border: '1px solid rgba(0,229,195,0.2)',
+              borderRadius: '100px', padding: '6px 18px',
+              fontFamily: DM_SANS, fontSize: '12px', fontWeight: 600,
+              letterSpacing: '0.12em', color: BIO_CYAN,
+            }}>
+              <span style={{ width: '6px', height: '6px', borderRadius: '50%', background: BIO_CYAN, boxShadow: `0 0 6px ${BIO_CYAN}`, display: 'inline-block' }} />
+              {isHe ? 'לוח ביודינמי · מרץ 2026' : 'Biodynamic Calendar · March 2026'}
+            </span>
+          </div>
+
+          {/* Headline */}
+          <h1 style={{ margin: '0 0 24px', lineHeight: 1.12 }}>
+            <span
+              className="lp-hero-line1"
+              style={{
+                display: 'block',
+                fontFamily: FRANK,
+                fontWeight: 700,
+                fontSize: 'clamp(42px, 6.5vw, 96px)',
+                color: TEXT,
+                textShadow: '0 0 60px rgba(0,229,195,0.15)',
+              }}
+            >
+              {isHe ? 'הגינה שלך' : 'Your Garden'}
+            </span>
+            <span
+              className="lp-hero-line2"
+              style={{
+                display: 'block',
+                fontFamily: FRANK,
+                fontWeight: 700,
+                fontSize: 'clamp(44px, 7vw, 100px)',
+                background: `linear-gradient(135deg, ${BIO_CYAN} 0%, ${BIO_LIME} 60%, ${BIO_CYAN} 100%)`,
+                WebkitBackgroundClip: 'text',
+                WebkitTextFillColor: 'transparent',
+                backgroundClip: 'text',
+                filter: 'drop-shadow(0 0 30px rgba(0,229,195,0.3))',
+              }}
+            >
+              {isHe ? 'חיה ונושמת' : 'Alive & Breathing'}
+            </span>
+          </h1>
+
+          {/* Sub */}
+          <p
+            className="lp-sub"
+            style={{
+              fontFamily: DM_SANS, fontWeight: 300, fontSize: 'clamp(15px, 2vw, 19px)',
+              lineHeight: 1.75, color: TEXT_MID, maxWidth: '540px', marginBottom: '40px',
+            }}
+          >
+            {isHe
+              ? 'הביאו את חוכמת החקלאות הביודינמית לגינה הביתית שלכם. לוחות ירח, תכנון חכם, וניתוח מבוסס בינה מלאכותית — לכל גנן, בכל רמה.'
+              : 'Bring the wisdom of biodynamic agriculture to your home garden. Moon calendars, smart planning, and AI-powered analysis — for every gardener, at every level.'}
+          </p>
+
+          {/* CTAs */}
+          <div
+            className="lp-ctas"
+            style={{ display: 'flex', gap: '14px', flexWrap: 'wrap', justifyContent: 'flex-start', marginBottom: '48px' }}
+          >
+            <Link
+              to="/signup"
+              className="lp-cta-primary"
+              style={{
+                display: 'inline-block', fontFamily: SYNE, fontWeight: 700,
+                fontSize: '15px', backgroundColor: BIO_CYAN, color: NIGHT,
+                padding: '13px 36px', borderRadius: '100px', textDecoration: 'none',
+                boxShadow: `0 4px 24px rgba(0,229,195,0.3)`, letterSpacing: '0.02em',
+              }}
+            >
+              {isHe ? 'התחל בחינם' : 'Start for Free'}
+            </Link>
+
+            <a
+              href="#features"
+              onClick={scrollToFeatures}
+              className="lp-cta-outline"
+              style={{
+                display: 'inline-block', fontFamily: DM_SANS, fontWeight: 500,
+                fontSize: '15px', color: TEXT_MID, padding: '12px 30px',
+                borderRadius: '100px', border: `1px solid rgba(0,229,195,0.25)`,
+                textDecoration: 'none', backgroundColor: 'transparent',
+              }}
+            >
+              {isHe ? 'ראה איך זה עובד' : 'See How It Works'}
+            </a>
+          </div>
+
+          {/* Trust row */}
+          <div className="lp-trust" style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+            <div style={{ display: 'flex' }}>
+              {['#4a7c59', '#7dc084', '#00e5c3'].map((c, i) => (
+                <div key={i} style={{
+                  width: '28px', height: '28px', borderRadius: '50%',
+                  background: c, border: `2px solid ${NIGHT}`,
+                  marginInlineStart: i > 0 ? '-8px' : '0',
+                }} />
+              ))}
+            </div>
+            <span style={{ fontFamily: DM_SANS, fontSize: '13px', color: MUTED }}>
+              {isHe ? '+2,000 גינאים כבר גדלים בחוכמה' : '+2,000 gardeners already growing wisely'}
+            </span>
+          </div>
+
         </div>
 
-        {/* Headline */}
-        <h1 style={{ margin: '0 0 24px', lineHeight: 1.12 }}>
-          <span
-            className="lp-hero-line1"
-            style={{
-              display: 'block',
-              fontFamily: FRANK,
-              fontWeight: 700,
-              fontSize: 'clamp(42px, 6.5vw, 96px)',
-              color: TEXT,
-              textShadow: '0 0 60px rgba(0,229,195,0.15)',
-            }}
-          >
-            {isHe ? 'הגינה שלך' : 'Your Garden'}
-          </span>
-          <span
-            className="lp-hero-line2"
-            style={{
-              display: 'block',
-              fontFamily: FRANK,
-              fontWeight: 700,
-              fontSize: 'clamp(44px, 7vw, 100px)',
-              background: `linear-gradient(135deg, ${BIO_CYAN} 0%, ${BIO_LIME} 60%, ${BIO_CYAN} 100%)`,
-              WebkitBackgroundClip: 'text',
-              WebkitTextFillColor: 'transparent',
-              backgroundClip: 'text',
-              filter: 'drop-shadow(0 0 30px rgba(0,229,195,0.3))',
-            }}
-          >
-            {isHe ? 'חיה ונושמת' : 'Alive & Breathing'}
-          </span>
-        </h1>
-
-        {/* Sub */}
-        <p
-          className="lp-sub"
+        {/* ── Right: ChupChu widget ──────────────────────────────────────── */}
+        <div
+          className="lp-hero-chupchu-col"
           style={{
-            fontFamily: DM_SANS, fontWeight: 300, fontSize: 'clamp(15px, 2vw, 19px)',
-            lineHeight: 1.75, color: TEXT_MID, maxWidth: '540px', marginBottom: '40px',
+            flex: '1 1 360px',
+            maxWidth: '420px',
+            width: '100%',
+            animation: 'lp-float 6s ease-in-out infinite',
+            position: 'relative',
           }}
         >
-          {isHe
-            ? 'הביאו את חוכמת החקלאות הביודינמית לגינה הביתית שלכם. לוחות ירח, תכנון חכם, וניתוח מבוסס בינה מלאכותית — לכל גנן, בכל רמה.'
-            : 'Bring the wisdom of biodynamic agriculture to your home garden. Moon calendars, smart planning, and AI-powered analysis — for every gardener, at every level.'}
-        </p>
-
-        {/* CTAs */}
-        <div
-          className="lp-ctas"
-          style={{ display: 'flex', gap: '14px', flexWrap: 'wrap', justifyContent: 'center', marginBottom: '48px' }}
-        >
-          <Link
-            to="/signup"
-            className="lp-cta-primary"
-            style={{
-              display: 'inline-block', fontFamily: SYNE, fontWeight: 700,
-              fontSize: '15px', backgroundColor: BIO_CYAN, color: NIGHT,
-              padding: '13px 36px', borderRadius: '100px', textDecoration: 'none',
-              boxShadow: `0 4px 24px rgba(0,229,195,0.3)`, letterSpacing: '0.02em',
-            }}
-          >
-            {isHe ? 'התחל בחינם' : 'Start for Free'}
-          </Link>
-
-          <a
-            href="#features"
-            onClick={scrollToFeatures}
-            className="lp-cta-outline"
-            style={{
-              display: 'inline-block', fontFamily: DM_SANS, fontWeight: 500,
-              fontSize: '15px', color: TEXT_MID, padding: '12px 30px',
-              borderRadius: '100px', border: `1px solid rgba(0,229,195,0.25)`,
-              textDecoration: 'none', backgroundColor: 'transparent',
-            }}
-          >
-            {isHe ? 'ראה איך זה עובד' : 'See How It Works'}
-          </a>
-        </div>
-
-        {/* Trust row */}
-        <div className="lp-trust" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '10px', marginBottom: '64px' }}>
-          <div style={{ display: 'flex' }}>
-            {['#4a7c59', '#7dc084', '#00e5c3'].map((c, i) => (
-              <div key={i} style={{
-                width: '28px', height: '28px', borderRadius: '50%',
-                background: c, border: `2px solid ${NIGHT}`,
-                marginInlineStart: i > 0 ? '-8px' : '0',
-              }} />
-            ))}
+          {/* Glowing border ring */}
+          <div style={{
+            position: 'absolute',
+            inset: '-2px',
+            borderRadius: '20px',
+            background: 'linear-gradient(135deg, rgba(0,229,195,0.4), rgba(170,255,0,0.2), rgba(0,229,195,0.1))',
+            zIndex: 0,
+            filter: 'blur(1px)',
+          }} />
+          <div style={{ position: 'relative', zIndex: 1 }}>
+            <ChupChuChat compact />
           </div>
-          <span style={{ fontFamily: DM_SANS, fontSize: '13px', color: MUTED }}>
-            {isHe ? '+2,000 גינאים כבר גדלים בחוכמה' : '+2,000 gardeners already growing wisely'}
-          </span>
         </div>
 
-        {/* Dashboard card */}
-        <div style={{ animation: 'lp-float 6s ease-in-out infinite' }}>
-          <TodayPreviewCard isHe={isHe} />
-        </div>
       </section>
 
       {/* ══ FEATURES ══════════════════════════════════════════════════════ */}
@@ -963,8 +994,8 @@ export function LandingPage() {
         </div>
       </section>
 
-      {/* ══ CHUPCHU DEMO ══════════════════════════════════════════════════ */}
-      <section
+      {/* ══ CHUPCHU DEMO — removed; ChupChu is now in the hero ═══════════ */}
+      {false && <section
         className="lp-chupchu-section"
         style={{
           padding:         '100px 24px',
@@ -1078,7 +1109,7 @@ export function LandingPage() {
         <div className="lp-chupchu-demo-wrap">
           <ChupChuChat compact />
         </div>
-      </section>
+      </section>}
 
       {/* ══ PRICING ═══════════════════════════════════════════════════════ */}
       <section
