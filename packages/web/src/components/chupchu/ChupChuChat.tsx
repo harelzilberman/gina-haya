@@ -12,12 +12,13 @@ import { RateLimitBanner } from './RateLimitBanner';
 import './chupchu-chat.css';
 
 // ── Design tokens ────────────────────────────────────────────────────────────
-const GOLD     = '#F5C840';
-const PARCH    = '#EDE0C4';
-const SAGE     = '#7DC084';
-const FRANK    = '"Frank Ruhl Libre", Georgia, serif';
-const ASSIST   = '"Assistant", "Heebo", sans-serif';
-const PLAYFAIR = '"Playfair Display", Georgia, serif';
+const NIGHT      = '#050d0a';
+const NIGHT_MID  = '#091410';
+const NIGHT_CARD = '#111f18';
+const BIO_CYAN   = '#00e5c3';
+const TEXT_MID   = '#b0cfbf';
+const FRANK      = '"Frank Ruhl Libre", Georgia, serif';
+const DM_SANS    = "'DM Sans', 'Assistant', 'Heebo', sans-serif";
 
 // ── Expression images ─────────────────────────────────────────────────────────
 const EXPRESSION_IMAGES: Record<ChupChuExpression, string> = {
@@ -52,8 +53,8 @@ function GuestSignupWall() {
   return (
     <div style={{
       padding:         '22px 18px',
-      backgroundColor: 'rgba(20,43,22,0.95)',
-      borderTop:       '1px solid rgba(245,200,64,0.3)',
+      backgroundColor: NIGHT_CARD,
+      borderTop:       '1px solid rgba(0,229,195,0.25)',
       display:         'flex',
       flexDirection:   'column',
       alignItems:      'center',
@@ -63,12 +64,12 @@ function GuestSignupWall() {
       <img
         src="/chupchu_final.png"
         alt="ChupChu"
-        style={{ width: '60px', height: '60px', objectFit: 'contain', filter: 'drop-shadow(0 0 10px rgba(245,200,64,0.45))' }}
+        style={{ width: '60px', height: '60px', objectFit: 'contain', filter: 'drop-shadow(0 0 10px rgba(0,229,195,0.35))' }}
       />
-      <h3 style={{ fontFamily: "'Caveat', cursive", fontSize: '21px', color: GOLD, margin: 0 }}>
+      <h3 style={{ fontFamily: "'Caveat', cursive", fontSize: '21px', color: BIO_CYAN, margin: 0 }}>
         רוצה להמשיך לדבר איתי?
       </h3>
-      <p style={{ fontFamily: ASSIST, fontSize: '13px', color: `${PARCH}CC`, margin: 0, lineHeight: 1.65, maxWidth: '280px' }}>
+      <p style={{ fontFamily: DM_SANS, fontSize: '13px', color: `${TEXT_MID}CC`, margin: 0, lineHeight: 1.65, maxWidth: '280px' }}>
         הצטרפו בחינם וקבלו גישה מלאה לצ'ופצ'ו, ללוח הביודינמי ולגינה החיה שלכם
       </p>
       <div style={{ display: 'flex', gap: '10px', width: '100%' }}>
@@ -76,7 +77,7 @@ function GuestSignupWall() {
           onClick={() => navigate('/signup')}
           style={{
             flex: 1, padding: '11px 12px',
-            backgroundColor: GOLD, color: '#142B16',
+            backgroundColor: BIO_CYAN, color: NIGHT,
             border: 'none', borderRadius: '10px',
             fontFamily: FRANK, fontSize: '14px', fontWeight: 700,
             cursor: 'pointer', transition: 'filter 0.15s',
@@ -90,26 +91,18 @@ function GuestSignupWall() {
           onClick={() => navigate('/login')}
           style={{
             flex: 1, padding: '11px 12px',
-            backgroundColor: 'transparent', color: GOLD,
-            border: '1px solid rgba(245,200,64,0.5)', borderRadius: '10px',
+            backgroundColor: 'transparent', color: BIO_CYAN,
+            border: '1px solid rgba(0,229,195,0.45)', borderRadius: '10px',
             fontFamily: FRANK, fontSize: '14px', fontWeight: 600,
-            cursor: 'pointer', transition: 'border-color 0.15s, color 0.15s',
+            cursor: 'pointer', transition: 'border-color 0.15s, background-color 0.15s',
           }}
-          onMouseEnter={e => {
-            const el = e.currentTarget as HTMLElement;
-            el.style.borderColor = GOLD;
-            el.style.color = '#F0D840';
-          }}
-          onMouseLeave={e => {
-            const el = e.currentTarget as HTMLElement;
-            el.style.borderColor = 'rgba(245,200,64,0.5)';
-            el.style.color = GOLD;
-          }}
+          onMouseEnter={e => { (e.currentTarget as HTMLElement).style.backgroundColor = 'rgba(0,229,195,0.08)'; }}
+          onMouseLeave={e => { (e.currentTarget as HTMLElement).style.backgroundColor = 'transparent'; }}
         >
           כניסה
         </button>
       </div>
-      <p style={{ fontFamily: ASSIST, fontSize: '11px', color: `${PARCH}50`, margin: 0 }}>
+      <p style={{ fontFamily: DM_SANS, fontSize: '11px', color: `${TEXT_MID}50`, margin: 0 }}>
         3 שיחות ניתנו לאורחים — ראיתם רק את ההתחלה 🌱
       </p>
     </div>
@@ -128,7 +121,8 @@ function ChupChuAvatar({ expression, size }: { expression: ChupChuExpression; si
         width:           `${size}px`,
         height:          `${size}px`,
         borderRadius:    '50%',
-        background:      `radial-gradient(circle at 40% 40%, #F5D060, ${GOLD}, #C8960A)`,
+        background:      'radial-gradient(circle at 40% 40%, rgba(0,229,195,0.45), rgba(0,180,150,0.2))',
+        border:          '1px solid rgba(0,229,195,0.3)',
         display:         'flex',
         alignItems:      'center',
         justifyContent:  'center',
@@ -136,8 +130,7 @@ function ChupChuAvatar({ expression, size }: { expression: ChupChuExpression; si
         position:        'relative',
       }}
     >
-      {/* emoji shows through when image fails */}
-      <span style={{ position: 'absolute', fontSize: `${fontSize}px`, lineHeight: 1 }}>🌕</span>
+      <span style={{ position: 'absolute', fontSize: `${fontSize}px`, lineHeight: 1 }}>🌱</span>
       <img
         src={EXPRESSION_IMAGES[expression]}
         alt=""
@@ -156,8 +149,8 @@ function TypingDots({ isRTL, expression }: { isRTL: boolean; expression: ChupChu
         <ChupChuAvatar expression={expression} size={28} />
         <div
           style={{
-            backgroundColor: 'rgba(28,58,30,0.8)',
-            border:          '1px solid rgba(245,200,64,0.15)',
+            backgroundColor: NIGHT_CARD,
+            border:          '1px solid rgba(0,229,195,0.15)',
             borderRadius:    '16px',
             padding:         '10px 16px',
           }}
@@ -173,7 +166,7 @@ function TypingDots({ isRTL, expression }: { isRTL: boolean; expression: ChupChu
                   width:            '7px',
                   height:           '7px',
                   borderRadius:     '50%',
-                  backgroundColor:  SAGE,
+                  backgroundColor:  TEXT_MID,
                   animationDelay:   `${delay}ms`,
                 }}
               />
@@ -189,7 +182,6 @@ function TypingDots({ isRTL, expression }: { isRTL: boolean; expression: ChupChu
 function MessageBubble({ message, isRTL }: { message: ChupChuMessage; isRTL: boolean }) {
   const isUser = message.role === 'user';
 
-  // In RTL: user on RIGHT, ChupChu on LEFT
   const rowJustify = isRTL
     ? (isUser ? 'flex-start' : 'flex-end')
     : (isUser ? 'flex-end'   : 'flex-start');
@@ -206,7 +198,7 @@ function MessageBubble({ message, isRTL }: { message: ChupChuMessage; isRTL: boo
         maxWidth:      '80%',
         flexDirection: isUser ? 'row-reverse' : 'row',
       }}>
-        {/* ChupChu avatar — assistant messages only, uses static emoji avatar */}
+        {/* ChupChu avatar — assistant messages only */}
         {!isUser && (
           <div
             className="chupchu-avatar-pulse"
@@ -216,7 +208,8 @@ function MessageBubble({ message, isRTL }: { message: ChupChuMessage; isRTL: boo
               width:           '28px',
               height:          '28px',
               borderRadius:    '50%',
-              background:      `radial-gradient(circle at 40% 40%, #F5D060, ${GOLD}, #C8960A)`,
+              background:      'radial-gradient(circle at 40% 40%, rgba(0,229,195,0.45), rgba(0,180,150,0.2))',
+              border:          '1px solid rgba(0,229,195,0.3)',
               display:         'flex',
               alignItems:      'center',
               justifyContent:  'center',
@@ -225,7 +218,7 @@ function MessageBubble({ message, isRTL }: { message: ChupChuMessage; isRTL: boo
               marginBottom:    '2px',
             }}
           >
-            🌕
+            🌱
           </div>
         )}
 
@@ -245,19 +238,18 @@ function MessageBubble({ message, isRTL }: { message: ChupChuMessage; isRTL: boo
             ...(isUser ? userCorner : chupChuCorner),
             ...(isUser
               ? {
-                  backgroundColor: 'rgba(74,128,80,0.3)',
-                  border:          '1px solid rgba(125,192,132,0.2)',
-                  color:           PARCH,
-                  fontFamily:      ASSIST,
+                  backgroundColor: 'rgba(0,229,195,0.08)',
+                  border:          '1px solid rgba(0,229,195,0.2)',
+                  color:           TEXT_MID,
+                  fontFamily:      DM_SANS,
                   fontWeight:      400,
                 }
               : {
-                  backgroundColor:  'rgba(28,58,30,0.8)',
-                  border:           '1px solid rgba(245,200,64,0.15)',
-                  borderInlineEnd:  `2px solid ${GOLD}`,
-                  color:            PARCH,
-                  fontFamily:       PLAYFAIR,
-                  fontStyle:        'italic',
+                  backgroundColor:  NIGHT_CARD,
+                  border:           '1px solid rgba(0,229,195,0.15)',
+                  borderInlineEnd:  `2px solid ${BIO_CYAN}`,
+                  color:            TEXT_MID,
+                  fontFamily:       FRANK,
                 }),
           }}
         >
@@ -291,7 +283,7 @@ const CATEGORY_ICON: Record<string, string> = {
 const PRIORITY_COLOR: Record<string, string> = {
   high:   '#E05555',
   medium: '#C8A040',
-  low:    '#7DC084',
+  low:    '#4A9C68',
 };
 
 interface TaskProposalCardProps {
@@ -352,14 +344,14 @@ function TaskProposalCard({ tasks, isRTL, isHe, onDismiss }: TaskProposalCardPro
   if (saved) {
     return (
       <div style={{
-        backgroundColor: 'rgba(28,58,30,0.9)',
-        border: `1px solid ${SAGE}`,
+        backgroundColor: NIGHT_CARD,
+        border: `1px solid ${BIO_CYAN}`,
         borderRadius: '12px',
         padding: '14px 16px',
         textAlign: 'center',
-        fontFamily: ASSIST,
+        fontFamily: DM_SANS,
         fontSize: '14px',
-        color: SAGE,
+        color: BIO_CYAN,
       }}>
         {isHe
           ? `✓ נוספו ${checked.size} משימות ליומן שלך`
@@ -370,8 +362,8 @@ function TaskProposalCard({ tasks, isRTL, isHe, onDismiss }: TaskProposalCardPro
 
   return (
     <div style={{
-      backgroundColor: 'rgba(20,43,22,0.95)',
-      border: `1px solid rgba(245,200,64,0.25)`,
+      backgroundColor: NIGHT_CARD,
+      border: `1px solid rgba(0,229,195,0.25)`,
       borderRadius: '12px',
       overflow: 'hidden',
       direction: isRTL ? 'rtl' : 'ltr',
@@ -380,15 +372,15 @@ function TaskProposalCard({ tasks, isRTL, isHe, onDismiss }: TaskProposalCardPro
       <div style={{
         display: 'flex', alignItems: 'center', justifyContent: 'space-between',
         padding: '10px 14px',
-        borderBottom: '1px solid rgba(245,200,64,0.12)',
-        backgroundColor: 'rgba(245,200,64,0.06)',
+        borderBottom: '1px solid rgba(0,229,195,0.12)',
+        backgroundColor: 'rgba(0,229,195,0.05)',
       }}>
-        <span style={{ fontFamily: FRANK, fontSize: '13px', fontWeight: 700, color: GOLD }}>
+        <span style={{ fontFamily: FRANK, fontSize: '13px', fontWeight: 700, color: BIO_CYAN }}>
           {isHe ? '📋 משימות מוצעות' : '📋 Suggested Tasks'}
         </span>
         <button onClick={onDismiss} style={{
           background: 'none', border: 'none', cursor: 'pointer',
-          color: `${PARCH}55`, fontSize: '14px', padding: '0 2px',
+          color: `${TEXT_MID}55`, fontSize: '14px', padding: '0 2px',
         }}>✕</button>
       </div>
 
@@ -404,24 +396,24 @@ function TaskProposalCard({ tasks, isRTL, isHe, onDismiss }: TaskProposalCardPro
               type="checkbox"
               checked={checked.has(i)}
               onChange={() => toggle(i)}
-              style={{ marginTop: '3px', flexShrink: 0, accentColor: GOLD }}
+              style={{ marginTop: '3px', flexShrink: 0, accentColor: BIO_CYAN }}
             />
             <div style={{ flex: 1, minWidth: 0 }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: '6px', flexWrap: 'wrap' }}>
                 <span style={{ fontSize: '13px' }}>{CATEGORY_ICON[task.category] ?? '📋'}</span>
-                <span style={{ fontFamily: ASSIST, fontSize: '13px', color: PARCH, fontWeight: 500 }}>
+                <span style={{ fontFamily: DM_SANS, fontSize: '13px', color: TEXT_MID, fontWeight: 500 }}>
                   {isHe ? task.title.he : task.title.en}
                 </span>
                 <span style={{
-                  fontSize: '10px', fontFamily: ASSIST, fontWeight: 600,
-                  color: PRIORITY_COLOR[task.priority] ?? PARCH,
+                  fontSize: '10px', fontFamily: DM_SANS, fontWeight: 600,
+                  color: PRIORITY_COLOR[task.priority] ?? TEXT_MID,
                   background: `${PRIORITY_COLOR[task.priority] ?? '#888'}22`,
                   borderRadius: '4px', padding: '1px 5px',
                 }}>
                   {task.priority}
                 </span>
               </div>
-              <div style={{ fontFamily: ASSIST, fontSize: '11px', color: `${PARCH}66`, marginTop: '2px' }}>
+              <div style={{ fontFamily: DM_SANS, fontSize: '11px', color: `${TEXT_MID}66`, marginTop: '2px' }}>
                 {formatDate(task.date)}
               </div>
             </div>
@@ -430,14 +422,14 @@ function TaskProposalCard({ tasks, isRTL, isHe, onDismiss }: TaskProposalCardPro
       </div>
 
       {/* Footer button */}
-      <div style={{ padding: '10px 14px', borderTop: '1px solid rgba(245,200,64,0.12)' }}>
+      <div style={{ padding: '10px 14px', borderTop: '1px solid rgba(0,229,195,0.12)' }}>
         <button
           onClick={handleAdd}
           disabled={saving || checked.size === 0}
           style={{
             width: '100%', padding: '9px', borderRadius: '8px', border: 'none',
-            backgroundColor: checked.size > 0 ? GOLD : 'rgba(245,200,64,0.2)',
-            color: checked.size > 0 ? '#142B16' : `${PARCH}44`,
+            backgroundColor: checked.size > 0 ? BIO_CYAN : 'rgba(0,229,195,0.15)',
+            color: checked.size > 0 ? NIGHT : `${TEXT_MID}44`,
             fontFamily: FRANK, fontSize: '13px', fontWeight: 700,
             cursor: saving || checked.size === 0 ? 'default' : 'pointer',
             opacity: saving ? 0.7 : 1,
@@ -494,12 +486,10 @@ export function ChupChuChat({ compact, initialMessage, onInitialMessageConsumed,
   const messagesEndRef    = useRef<HTMLDivElement>(null);
   const textareaRef       = useRef<HTMLTextAreaElement>(null);
 
-  // Guest-only state — ignored for authenticated users
   const [guestMessages,  setGuestMessages]  = useState<ChupChuMessage[]>([]);
   const [guestLoading,   setGuestLoading]   = useState(false);
   const [showGuestWall,  setShowGuestWall]  = useState(() => !user && getGuestCount() >= GUEST_LIMIT);
 
-  // Unified display variables — switch between store state (auth) and local state (guest)
   const displayMessages = user ? messages : guestMessages;
   const showLoading     = user ? isLoading : guestLoading;
   const displayPending  = user ? pendingMessage : null;
@@ -518,7 +508,7 @@ export function ChupChuChat({ compact, initialMessage, onInitialMessageConsumed,
   }, [messages, guestMessages, isLoading, guestLoading]);
 
   useEffect(() => {
-    loadMemory().catch(() => {/* fail silently — chat works without memory */});
+    loadMemory().catch(() => {});
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
@@ -537,7 +527,7 @@ export function ChupChuChat({ compact, initialMessage, onInitialMessageConsumed,
           );
         }
       } catch {
-        // fire-and-forget — ignore failures
+        // fire-and-forget
       }
     };
     window.addEventListener('beforeunload', handleUnload);
@@ -575,7 +565,6 @@ export function ChupChuChat({ compact, initialMessage, onInitialMessageConsumed,
     sendMessage(text);
   };
 
-  // Auto-send quickSend messages (from suggested question chips)
   // eslint-disable-next-line react-hooks/exhaustive-deps
   useEffect(() => {
     if (quickSend) {
@@ -602,12 +591,15 @@ export function ChupChuChat({ compact, initialMessage, onInitialMessageConsumed,
 
   const canSend = input.trim().length > 0 && !showLoading && !(isGuest ? showGuestWall : rateLimited);
 
+  // suppress unused warning
+  void triggerSummarize;
+
   return (
     <div dir={dir} className="chupchu-container" style={{
       display:         'flex',
       flexDirection:   'column',
-      backgroundColor: 'rgba(28,58,30,0.5)',
-      border:          '1px solid rgba(125,192,132,0.1)',
+      backgroundColor: NIGHT_CARD,
+      border:          '1px solid rgba(0,229,195,0.1)',
       borderRadius:    '16px',
       overflow:        'hidden',
     }}>
@@ -618,8 +610,8 @@ export function ChupChuChat({ compact, initialMessage, onInitialMessageConsumed,
         alignItems:      'center',
         gap:             '10px',
         padding:         '12px 18px',
-        backgroundColor: 'rgba(20,43,22,0.9)',
-        borderBottom:    '1px solid rgba(245,200,64,0.1)',
+        backgroundColor: NIGHT_MID,
+        borderBottom:    '1px solid rgba(0,229,195,0.1)',
       }}>
         <ChupChuAvatar expression={expression} size={40} />
         <div>
@@ -627,17 +619,17 @@ export function ChupChuChat({ compact, initialMessage, onInitialMessageConsumed,
             fontFamily: FRANK,
             fontWeight: 700,
             fontSize:   '16px',
-            color:      GOLD,
+            color:      BIO_CYAN,
             margin:     0,
             lineHeight: 1.2,
           }}>
             {t('title')}
           </h2>
           <p style={{
-            fontFamily: ASSIST,
+            fontFamily: DM_SANS,
             fontSize:   '11px',
             fontWeight: 300,
-            color:      `${PARCH}55`,
+            color:      `${TEXT_MID}55`,
             margin:     0,
           }}>
             {t('subtitle')}
@@ -665,7 +657,7 @@ export function ChupChuChat({ compact, initialMessage, onInitialMessageConsumed,
             <p style={{
               fontFamily: "'Caveat', cursive",
               fontSize:   '16px',
-              color:      'rgba(245,200,64,0.38)',
+              color:      'rgba(0,229,195,0.35)',
               textAlign:  'center',
               margin:     '6px 0 0',
               direction:  'rtl',
@@ -709,10 +701,10 @@ export function ChupChuChat({ compact, initialMessage, onInitialMessageConsumed,
       {/* Error */}
       {error && (
         <p style={{
-          fontFamily: ASSIST,
+          fontFamily: DM_SANS,
           fontSize:   '12px',
           textAlign:  isRTL ? 'right' : 'left',
-          color:      '#E06060',
+          color:      '#ff5c8a',
           padding:    '6px 16px 0',
           margin:     0,
         }}>
@@ -722,11 +714,11 @@ export function ChupChuChat({ compact, initialMessage, onInitialMessageConsumed,
 
       {/* Disclaimer */}
       <p style={{
-        fontFamily: ASSIST,
+        fontFamily: DM_SANS,
         fontWeight: 300,
         fontSize:   '11px',
         textAlign:  isRTL ? 'right' : 'left',
-        color:      `${PARCH}40`,
+        color:      `${TEXT_MID}40`,
         padding:    '6px 16px 0',
         margin:     0,
       }}>
@@ -742,15 +734,15 @@ export function ChupChuChat({ compact, initialMessage, onInitialMessageConsumed,
         position:        'sticky',
         bottom:          0,
         padding:         '12px 14px 14px',
-        backgroundColor: 'rgba(20,43,22,0.9)',
-        borderTop:       '1px solid rgba(125,192,132,0.1)',
+        backgroundColor: NIGHT_MID,
+        borderTop:       '1px solid rgba(0,229,195,0.1)',
       }}>
         <div className="chupchu-input-wrapper" style={{
           display:         'flex',
           alignItems:      'flex-end',
           gap:             '10px',
-          backgroundColor: 'rgba(28,58,30,0.8)',
-          border:          '1px solid rgba(125,192,132,0.2)',
+          backgroundColor: NIGHT_CARD,
+          border:          '1px solid rgba(0,229,195,0.2)',
           borderRadius:    '12px',
           padding:         '10px 12px',
           transition:      'border-color 0.2s',
@@ -770,9 +762,9 @@ export function ChupChuChat({ compact, initialMessage, onInitialMessageConsumed,
               border:     'none',
               outline:    'none',
               background: 'transparent',
-              fontFamily: ASSIST,
+              fontFamily: DM_SANS,
               fontSize:   '14px',
-              color:      PARCH,
+              color:      TEXT_MID,
               lineHeight: '1.5',
               maxHeight:  '120px',
               cursor:     (!isGuest && rateLimited) ? 'not-allowed' : 'text',
@@ -790,8 +782,8 @@ export function ChupChuChat({ compact, initialMessage, onInitialMessageConsumed,
               height:          '44px',
               borderRadius:    '8px',
               border:          'none',
-              backgroundColor: GOLD,
-              color:           '#142B16',
+              backgroundColor: BIO_CYAN,
+              color:           NIGHT,
               fontFamily:      FRANK,
               fontWeight:      700,
               fontSize:        '16px',

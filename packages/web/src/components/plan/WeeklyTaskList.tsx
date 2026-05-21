@@ -1,11 +1,11 @@
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 
-const GOLD   = '#F5C840';
-const PARCH  = '#EDE0C4';
-const SAGE   = '#7DC084';
+const GOLD   = '#00e5c3';
+const PARCH  = '#b0cfbf';
+const SAGE   = '#4A9C68';
 const FRANK  = '"Frank Ruhl Libre", Georgia, serif';
-const ASSIST = '"Assistant", "Heebo", sans-serif';
+const ASSIST = "'DM Sans', 'Assistant', 'Heebo', sans-serif";
 
 interface Props {
   tasks: string[];
@@ -47,8 +47,8 @@ export function WeeklyTaskList({ tasks, weekStart }: Props) {
     <div
       dir={isHe ? 'rtl' : 'ltr'}
       style={{
-        background:    'linear-gradient(145deg, rgba(28,58,30,0.7) 0%, rgba(20,43,22,0.82) 100%)',
-        border:        '1px solid rgba(245,200,64,0.12)',
+        background:    'linear-gradient(145deg, rgba(9,20,16,0.7) 0%, rgba(9,20,16,0.82) 100%)',
+        border:        '1px solid rgba(0,229,195,0.12)',
         borderRadius:  '14px',
         padding:       '18px 18px 14px',
         marginBottom:  '16px',
@@ -77,7 +77,7 @@ export function WeeklyTaskList({ tasks, weekStart }: Props) {
               gap:        '12px',
               padding:    '8px 0',
               cursor:     'pointer',
-              borderBottom: i < tasks.length - 1 ? '1px solid rgba(245,200,64,0.06)' : 'none',
+              borderBottom: i < tasks.length - 1 ? '1px solid rgba(0,229,195,0.06)' : 'none',
             }}
           >
             {/* Checkbox */}

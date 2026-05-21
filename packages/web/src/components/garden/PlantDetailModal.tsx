@@ -13,14 +13,12 @@ interface Props {
 }
 
 // ── Design tokens ────────────────────────────────────────────────────────────
-const EARTH    = '#142B16';
-const SOIL     = '#1C3A1E';
-const GOLD     = '#F5C840';
-const SAGE     = '#7DC084';
-const PARCH    = '#EDE0C4';
-const FRANK    = '"Frank Ruhl Libre", Georgia, serif';
-const ASSIST   = '"Assistant", "Heebo", sans-serif';
-const PLAYFAIR = '"Playfair Display", Georgia, serif';
+const NIGHT_CARD = '#111f18';
+const BIO_CYAN   = '#00e5c3';
+const TEXT_MID   = '#b0cfbf';
+const MUTED      = '#6b9080';
+const FRANK      = '"Frank Ruhl Libre", Georgia, serif';
+const DM_SANS    = "'DM Sans', 'Assistant', 'Heebo', sans-serif";
 
 const CATEGORY_EMOJIS: Record<string, string> = {
   vegetables:  '🥦',
@@ -31,10 +29,10 @@ const CATEGORY_EMOJIS: Record<string, string> = {
 };
 
 const DAY_TYPE_STYLES: Record<string, { bg: string; color: string }> = {
-  fruit:  { bg: 'rgba(245,200,64,0.18)',  color: GOLD },
-  root:   { bg: 'rgba(155,122,72,0.28)',  color: '#D4B070' },
-  flower: { bg: 'rgba(190,80,140,0.18)',  color: '#D88EC0' },
-  leaf:   { bg: 'rgba(74,128,80,0.28)',   color: SAGE },
+  fruit:  { bg: 'rgba(239,116,90,0.18)',  color: '#EF745A' },
+  root:   { bg: 'rgba(181,136,99,0.18)',  color: '#B58863' },
+  flower: { bg: 'rgba(196,132,200,0.18)', color: '#C884C8' },
+  leaf:   { bg: 'rgba(0,229,195,0.12)',   color: BIO_CYAN  },
 };
 const DAY_TYPE_EMOJIS: Record<string, string> = {
   fruit: '🍅', root: '🥕', flower: '🌸', leaf: '🌿',
@@ -54,7 +52,7 @@ const MODAL_CSS = `
 }
 .plant-modal-scroll::-webkit-scrollbar { width: 4px; }
 .plant-modal-scroll::-webkit-scrollbar-track { background: rgba(255,255,255,0.03); }
-.plant-modal-scroll::-webkit-scrollbar-thumb { background: rgba(125,192,132,0.2); border-radius: 2px; }
+.plant-modal-scroll::-webkit-scrollbar-thumb { background: rgba(0,229,195,0.2); border-radius: 2px; }
 `;
 
 // ── Photo gallery ─────────────────────────────────────────────────────────────
@@ -126,7 +124,7 @@ function PlantPhotoGallery({
       )}
 
       {/* Label */}
-      <p style={{ fontFamily: FRANK, fontSize: '12px', fontWeight: 400, color: `${PARCH}50`, margin: '0 0 8px' }}>
+      <p style={{ fontFamily: FRANK, fontSize: '12px', fontWeight: 400, color: `${TEXT_MID}50`, margin: '0 0 8px' }}>
         {isHe ? 'תמונות' : 'Photos'}
       </p>
 
@@ -149,7 +147,7 @@ function PlantPhotoGallery({
                 overflow:        'hidden',
                 cursor:          isLoaded && !isErrored ? 'pointer' : 'default',
                 flexShrink:      0,
-                backgroundColor: 'rgba(20,43,22,0.7)',
+                backgroundColor: 'rgba(9,20,16,0.8)',
               }}
             >
               {/* Emoji always as base layer */}
@@ -209,7 +207,7 @@ function MonthStrip({
         fontFamily:   FRANK,
         fontSize:     '12px',
         fontWeight:   400,
-        color:        `${PARCH}60`,
+        color:        `${TEXT_MID}60`,
         margin:       '0 0 10px',
         letterSpacing:'0.05em',
       }}>
@@ -222,18 +220,18 @@ function MonthStrip({
             <span
               key={m}
               style={{
-                fontFamily:      ASSIST,
+                fontFamily:      DM_SANS,
                 fontSize:        '11px',
                 fontWeight:      active ? 600 : 400,
                 padding:         '3px 8px',
                 borderRadius:    '6px',
                 minWidth:        '34px',
                 textAlign:       'center',
-                backgroundColor: active ? `${GOLD}22` : 'rgba(255,255,255,0.04)',
+                backgroundColor: active ? 'rgba(0,229,195,0.12)' : 'rgba(255,255,255,0.04)',
                 border:          active
-                  ? `1px solid ${GOLD}66`
+                  ? '1px solid rgba(0,229,195,0.45)'
                   : '1px solid rgba(255,255,255,0.06)',
-                color:           active ? GOLD : `${PARCH}33`,
+                color:           active ? BIO_CYAN : `${TEXT_MID}33`,
               }}
             >
               {monthNames[m - 1]}
@@ -317,15 +315,15 @@ export function PlantDetailModal({ plant, onClose }: Props) {
         <div
           className="plant-modal-card plant-modal-scroll"
           style={{
-            position:     'relative',
-            width:        '100%',
-            maxWidth:     '560px',
-            maxHeight:    '90vh',
-            overflowY:    'auto',
-            backgroundColor: SOIL,
-            border:       `1px solid rgba(245,200,64,0.2)`,
-            borderRadius: '16px',
-            padding:      '32px',
+            position:        'relative',
+            width:           '100%',
+            maxWidth:        '560px',
+            maxHeight:       '90vh',
+            overflowY:       'auto',
+            backgroundColor: NIGHT_CARD,
+            border:          '1px solid rgba(0,229,195,0.2)',
+            borderRadius:    '16px',
+            padding:         '32px',
           }}
         >
           {/* Close button — physically TOP-LEFT (in RTL: the far end) */}
@@ -339,9 +337,9 @@ export function PlantDetailModal({ plant, onClose }: Props) {
               width:           '32px',
               height:          '32px',
               borderRadius:    '50%',
-              backgroundColor: 'rgba(245,200,64,0.1)',
-              border:          '1px solid rgba(245,200,64,0.25)',
-              color:           GOLD,
+              backgroundColor: 'rgba(0,229,195,0.08)',
+              border:          '1px solid rgba(0,229,195,0.25)',
+              color:           BIO_CYAN,
               fontSize:        '18px',
               lineHeight:      1,
               display:         'flex',
@@ -350,8 +348,8 @@ export function PlantDetailModal({ plant, onClose }: Props) {
               cursor:          'pointer',
               transition:      'background-color 0.15s',
             }}
-            onMouseEnter={e => { (e.currentTarget as HTMLElement).style.backgroundColor = 'rgba(245,200,64,0.2)'; }}
-            onMouseLeave={e => { (e.currentTarget as HTMLElement).style.backgroundColor = 'rgba(245,200,64,0.1)'; }}
+            onMouseEnter={e => { (e.currentTarget as HTMLElement).style.backgroundColor = 'rgba(0,229,195,0.16)'; }}
+            onMouseLeave={e => { (e.currentTarget as HTMLElement).style.backgroundColor = 'rgba(0,229,195,0.08)'; }}
           >
             ×
           </button>
@@ -370,8 +368,8 @@ export function PlantDetailModal({ plant, onClose }: Props) {
               width:           '64px',
               height:          '64px',
               borderRadius:    '50%',
-              backgroundColor: 'rgba(74,128,80,0.3)',
-              border:          '1px solid rgba(125,192,132,0.25)',
+              backgroundColor: 'rgba(0,229,195,0.1)',
+              border:          '1px solid rgba(0,229,195,0.25)',
               display:         'flex',
               alignItems:      'center',
               justifyContent:  'center',
@@ -384,12 +382,12 @@ export function PlantDetailModal({ plant, onClose }: Props) {
 
             {/* Hebrew name */}
             <h2 style={{
-              fontFamily:  FRANK,
-              fontWeight:  700,
-              fontSize:    '28px',
-              color:       GOLD,
-              margin:      0,
-              lineHeight:  1.1,
+              fontFamily: FRANK,
+              fontWeight: 700,
+              fontSize:   '28px',
+              color:      BIO_CYAN,
+              margin:     0,
+              lineHeight: 1.1,
             }}>
               {plant.common_name_he}
             </h2>
@@ -397,10 +395,10 @@ export function PlantDetailModal({ plant, onClose }: Props) {
             {/* English name */}
             {plant.common_name_en && (
               <p style={{
-                fontFamily: ASSIST,
+                fontFamily: DM_SANS,
                 fontWeight: 400,
                 fontSize:   '16px',
-                color:      SAGE,
+                color:      TEXT_MID,
                 margin:     0,
               }}>
                 {plant.common_name_en}
@@ -410,10 +408,10 @@ export function PlantDetailModal({ plant, onClose }: Props) {
             {/* Latin name */}
             {plant.latin_name && (
               <p style={{
-                fontFamily: PLAYFAIR,
+                fontFamily: DM_SANS,
                 fontStyle:  'italic',
                 fontSize:   '14px',
-                color:      `${PARCH}50`,
+                color:      `${TEXT_MID}50`,
                 margin:     0,
               }}>
                 {plant.latin_name}
@@ -422,7 +420,7 @@ export function PlantDetailModal({ plant, onClose }: Props) {
           </div>
 
           {/* Divider */}
-          <div style={{ height: '1px', backgroundColor: 'rgba(125,192,132,0.1)', marginBottom: '20px' }} />
+          <div style={{ height: '1px', backgroundColor: 'rgba(0,229,195,0.1)', marginBottom: '20px' }} />
 
           {/* Photo gallery */}
           {plant.common_name_en && (
@@ -436,12 +434,12 @@ export function PlantDetailModal({ plant, onClose }: Props) {
           {/* Description */}
           {description && (
             <p style={{
-              fontFamily:  ASSIST,
-              fontWeight:  300,
-              fontSize:    '14px',
-              lineHeight:  1.9,
-              color:       `${PARCH}CC`,
-              margin:      '0 0 20px',
+              fontFamily: DM_SANS,
+              fontWeight: 300,
+              fontSize:   '14px',
+              lineHeight: 1.9,
+              color:      `${TEXT_MID}CC`,
+              margin:     '0 0 20px',
             }}>
               {description}
             </p>
@@ -454,7 +452,7 @@ export function PlantDetailModal({ plant, onClose }: Props) {
                 fontFamily:   FRANK,
                 fontSize:     '12px',
                 fontWeight:   400,
-                color:        `${PARCH}60`,
+                color:        `${TEXT_MID}60`,
                 margin:       '0 0 10px',
                 letterSpacing:'0.05em',
               }}>
@@ -462,12 +460,12 @@ export function PlantDetailModal({ plant, onClose }: Props) {
               </p>
               <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px' }}>
                 {plant.day_type_affinity.map(dt => {
-                  const s = DAY_TYPE_STYLES[dt] ?? { bg: 'rgba(100,100,100,0.2)', color: `${PARCH}99` };
+                  const s = DAY_TYPE_STYLES[dt] ?? { bg: 'rgba(100,100,100,0.2)', color: `${TEXT_MID}99` };
                   return (
                     <span
                       key={dt}
                       style={{
-                        fontFamily:      ASSIST,
+                        fontFamily:      DM_SANS,
                         fontSize:        '13px',
                         fontWeight:      500,
                         padding:         '5px 14px',
@@ -514,16 +512,16 @@ export function PlantDetailModal({ plant, onClose }: Props) {
                   width:           '100%',
                   padding:         '12px',
                   borderRadius:    '8px',
-                  border:          `1px solid ${SAGE}55`,
+                  border:          '1px solid rgba(0,229,195,0.3)',
                   backgroundColor: 'transparent',
                   fontFamily:      FRANK,
                   fontWeight:      600,
                   fontSize:        '15px',
-                  color:           SAGE,
+                  color:           MUTED,
                   cursor:          'pointer',
                   transition:      'background-color 0.15s',
                 }}
-                onMouseEnter={e => { (e.currentTarget as HTMLElement).style.backgroundColor = 'rgba(125,192,132,0.08)'; }}
+                onMouseEnter={e => { (e.currentTarget as HTMLElement).style.backgroundColor = 'rgba(0,229,195,0.06)'; }}
                 onMouseLeave={e => { (e.currentTarget as HTMLElement).style.backgroundColor = 'transparent'; }}
               >
                 {t('encyclopedia.loginToAdd')}
@@ -537,11 +535,11 @@ export function PlantDetailModal({ plant, onClose }: Props) {
                   padding:         '13px',
                   borderRadius:    '8px',
                   border:          'none',
-                  backgroundColor: added ? 'rgba(245,200,64,0.4)' : GOLD,
+                  backgroundColor: added ? 'rgba(0,229,195,0.4)' : BIO_CYAN,
                   fontFamily:      FRANK,
                   fontWeight:      600,
                   fontSize:        '15px',
-                  color:           EARTH,
+                  color:           '#050d0a',
                   cursor:          added || adding ? 'default' : 'pointer',
                   opacity:         adding ? 0.7 : 1,
                   transition:      'filter 0.2s, opacity 0.2s',

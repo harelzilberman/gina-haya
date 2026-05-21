@@ -18,9 +18,10 @@ const DAY_TYPES = [
   { key: 'leaf',   emoji: '🌿' },
 ] as const;
 
-const GOLD   = '#F5C840';
-const PARCH  = '#EDE0C4';
-const ASSIST = '"Assistant", "Heebo", sans-serif';
+const NIGHT_CARD = '#111f18';
+const BIO_CYAN   = '#00e5c3';
+const TEXT_MID   = '#b0cfbf';
+const DM_SANS    = "'DM Sans', 'Assistant', 'Heebo', sans-serif";
 
 export function PlantSearch({
   search,         onSearchChange,
@@ -32,7 +33,7 @@ export function PlantSearch({
   return (
     <div style={{ marginBottom: '24px', display: 'flex', flexDirection: 'column', gap: '12px' }}>
 
-      {/* Search input with icon */}
+      {/* Search input */}
       <div style={{ position: 'relative' }}>
         <input
           type="search"
@@ -43,19 +44,18 @@ export function PlantSearch({
           style={{
             width:           '100%',
             boxSizing:       'border-box',
-            backgroundColor: 'rgba(28,58,30,0.8)',
-            border:          '1px solid rgba(125,192,132,0.2)',
+            backgroundColor: NIGHT_CARD,
+            border:          '1px solid rgba(0,229,195,0.2)',
             borderRadius:    '12px',
             padding:         '13px 18px',
             paddingInlineEnd:'48px',
-            fontFamily:      ASSIST,
+            fontFamily:      DM_SANS,
             fontSize:        '14px',
             fontWeight:      400,
-            color:           PARCH,
+            color:           TEXT_MID,
             transition:      'border-color 0.2s, box-shadow 0.2s',
           }}
         />
-        {/* Search icon — logical end = left in RTL, right in LTR */}
         <span
           aria-hidden="true"
           style={{
@@ -64,7 +64,7 @@ export function PlantSearch({
             insetInlineEnd: '16px',
             transform:      'translateY(-50%)',
             fontSize:       '16px',
-            color:          `${PARCH}40`,
+            color:          `${TEXT_MID}40`,
             pointerEvents:  'none',
             lineHeight:     1,
           }}
@@ -73,7 +73,7 @@ export function PlantSearch({
         </span>
       </div>
 
-      {/* Category tabs — flow right-to-left in RTL naturally */}
+      {/* Category tabs */}
       <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px' }}>
         {CATEGORIES.map(cat => {
           const active = cat === 'all' ? category === '' : category === cat;
@@ -82,32 +82,32 @@ export function PlantSearch({
               key={cat}
               onClick={() => onCategoryChange(cat === 'all' ? '' : cat)}
               style={{
-                fontFamily:      ASSIST,
+                fontFamily:      DM_SANS,
                 fontSize:        '13px',
                 fontWeight:      active ? 600 : 400,
                 padding:         '6px 16px',
                 borderRadius:    '50px',
                 border:          active
-                  ? `1px solid rgba(245,200,64,0.5)`
-                  : '1px solid rgba(125,192,132,0.2)',
+                  ? '1px solid rgba(0,229,195,0.5)'
+                  : '1px solid rgba(0,229,195,0.15)',
                 backgroundColor: active
-                  ? 'rgba(245,200,64,0.15)'
-                  : 'rgba(28,58,30,0.6)',
-                color:           active ? GOLD : `${PARCH}99`,
+                  ? 'rgba(0,229,195,0.12)'
+                  : NIGHT_CARD,
+                color:           active ? BIO_CYAN : `${TEXT_MID}99`,
                 cursor:          'pointer',
                 transition:      'background-color 0.15s, border-color 0.15s, color 0.15s',
                 whiteSpace:      'nowrap',
               }}
               onMouseEnter={e => {
                 if (!active) {
-                  (e.currentTarget as HTMLElement).style.borderColor = 'rgba(125,192,132,0.4)';
-                  (e.currentTarget as HTMLElement).style.color = PARCH;
+                  (e.currentTarget as HTMLElement).style.borderColor = 'rgba(0,229,195,0.35)';
+                  (e.currentTarget as HTMLElement).style.color = TEXT_MID;
                 }
               }}
               onMouseLeave={e => {
                 if (!active) {
-                  (e.currentTarget as HTMLElement).style.borderColor = 'rgba(125,192,132,0.2)';
-                  (e.currentTarget as HTMLElement).style.color = `${PARCH}99`;
+                  (e.currentTarget as HTMLElement).style.borderColor = 'rgba(0,229,195,0.15)';
+                  (e.currentTarget as HTMLElement).style.color = `${TEXT_MID}99`;
                 }
               }}
             >
@@ -126,32 +126,32 @@ export function PlantSearch({
               key={key}
               onClick={() => onDayTypeChange(active ? '' : key)}
               style={{
-                fontFamily:      ASSIST,
+                fontFamily:      DM_SANS,
                 fontSize:        '12px',
                 fontWeight:      active ? 600 : 400,
                 padding:         '5px 14px',
                 borderRadius:    '50px',
                 border:          active
-                  ? `1px solid rgba(245,200,64,0.5)`
-                  : '1px solid rgba(125,192,132,0.15)',
+                  ? '1px solid rgba(0,229,195,0.5)'
+                  : '1px solid rgba(0,229,195,0.12)',
                 backgroundColor: active
-                  ? 'rgba(245,200,64,0.15)'
-                  : 'rgba(28,58,30,0.5)',
-                color:           active ? GOLD : `${PARCH}77`,
+                  ? 'rgba(0,229,195,0.12)'
+                  : NIGHT_CARD,
+                color:           active ? BIO_CYAN : `${TEXT_MID}77`,
                 cursor:          'pointer',
                 transition:      'background-color 0.15s, border-color 0.15s, color 0.15s',
                 whiteSpace:      'nowrap',
               }}
               onMouseEnter={e => {
                 if (!active) {
-                  (e.currentTarget as HTMLElement).style.borderColor = 'rgba(125,192,132,0.35)';
-                  (e.currentTarget as HTMLElement).style.color = `${PARCH}CC`;
+                  (e.currentTarget as HTMLElement).style.borderColor = 'rgba(0,229,195,0.3)';
+                  (e.currentTarget as HTMLElement).style.color = `${TEXT_MID}CC`;
                 }
               }}
               onMouseLeave={e => {
                 if (!active) {
-                  (e.currentTarget as HTMLElement).style.borderColor = 'rgba(125,192,132,0.15)';
-                  (e.currentTarget as HTMLElement).style.color = `${PARCH}77`;
+                  (e.currentTarget as HTMLElement).style.borderColor = 'rgba(0,229,195,0.12)';
+                  (e.currentTarget as HTMLElement).style.color = `${TEXT_MID}77`;
                 }
               }}
             >

@@ -1,11 +1,11 @@
 ﻿import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 
-const EARTH = '#142B16';
-const GOLD  = '#F5C840';
-const PARCH = '#EDE0C4';
+const EARTH = '#050d0a';
+const GOLD  = '#00e5c3';
+const PARCH = '#b0cfbf';
 const FRANK = '"Frank Ruhl Libre", Georgia, serif';
-const ASST  = '"Assistant", "Heebo", sans-serif';
+const ASST  = "'DM Sans', 'Assistant', 'Heebo', sans-serif";
 
 export type UpgradeLimitType =
   | 'plants' | 'trackers' | 'analysis' | 'chupchu' | 'gardens' | 'encyclopedia';
@@ -150,7 +150,7 @@ export function UpgradeModal({ isOpen, onClose, limitType, currentTier = 'free',
         dir={isHe ? 'rtl' : 'ltr'}
         style={{
           backgroundColor: '#1a3a1c',
-          border: '1px solid rgba(245,200,64,0.25)',
+          border: '1px solid rgba(0,229,195,0.25)',
           borderRadius: '16px',
           width: '100%',
           maxWidth: '420px',
@@ -160,8 +160,8 @@ export function UpgradeModal({ isOpen, onClose, limitType, currentTier = 'free',
       >
         {/* Header */}
         <div style={{
-          backgroundColor: '#142B16',
-          borderBottom: '1px solid rgba(245,200,64,0.1)',
+          backgroundColor: '#050d0a',
+          borderBottom: '1px solid rgba(0,229,195,0.1)',
           padding: '20px 24px 16px',
           display: 'flex',
           alignItems: 'center',
@@ -170,7 +170,7 @@ export function UpgradeModal({ isOpen, onClose, limitType, currentTier = 'free',
           <div style={{
             width: '64px', height: '64px', flexShrink: 0,
             borderRadius: '50%',
-            background: 'radial-gradient(circle at 40% 40%, #F5D060, #F5C840, #C8960A)',
+            background: 'radial-gradient(circle at 40% 40%, #b0e8e0, #00e5c3, #00a08a)',
             display: 'flex', alignItems: 'center', justifyContent: 'center',
             overflow: 'hidden', position: 'relative',
           }}>
@@ -187,7 +187,7 @@ export function UpgradeModal({ isOpen, onClose, limitType, currentTier = 'free',
           </h2>
           <button
             onClick={onClose}
-            style={{ background: 'none', border: 'none', color: 'rgba(237,224,196,0.4)', cursor: 'pointer', fontSize: '18px', padding: '4px', flexShrink: 0 }}
+            style={{ background: 'none', border: 'none', color: 'rgba(176,207,191,0.4)', cursor: 'pointer', fontSize: '18px', padding: '4px', flexShrink: 0 }}
           >
             âœ•
           </button>
@@ -227,17 +227,17 @@ export function UpgradeModal({ isOpen, onClose, limitType, currentTier = 'free',
                   width: '100%', padding: '12px',
                   backgroundColor: 'transparent',
                   color: GOLD,
-                  border: `1px solid rgba(245,200,64,0.4)`,
+                  border: `1px solid rgba(0,229,195,0.4)`,
                   borderRadius: '10px',
                   fontFamily: FRANK, fontSize: '15px', fontWeight: 600,
                   cursor: 'pointer', transition: 'border-color 0.2s, background-color 0.2s',
                 }}
                 onMouseEnter={e => {
                   (e.currentTarget as HTMLElement).style.borderColor = GOLD;
-                  (e.currentTarget as HTMLElement).style.backgroundColor = 'rgba(245,200,64,0.06)';
+                  (e.currentTarget as HTMLElement).style.backgroundColor = 'rgba(0,229,195,0.06)';
                 }}
                 onMouseLeave={e => {
-                  (e.currentTarget as HTMLElement).style.borderColor = 'rgba(245,200,64,0.4)';
+                  (e.currentTarget as HTMLElement).style.borderColor = 'rgba(0,229,195,0.4)';
                   (e.currentTarget as HTMLElement).style.backgroundColor = 'transparent';
                 }}
               >
@@ -251,7 +251,7 @@ export function UpgradeModal({ isOpen, onClose, limitType, currentTier = 'free',
               style={{
                 width: '100%', padding: '10px',
                 backgroundColor: 'transparent',
-                color: 'rgba(237,224,196,0.4)',
+                color: 'rgba(176,207,191,0.4)',
                 border: 'none',
                 fontFamily: ASST, fontSize: '13px',
                 cursor: 'pointer',

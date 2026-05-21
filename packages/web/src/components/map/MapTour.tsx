@@ -1,9 +1,9 @@
 import { useState, useEffect } from 'react';
 
-const GOLD   = '#F5C840';
-const PARCH  = '#EDE0C4';
+const GOLD   = '#00e5c3';
+const PARCH  = '#b0cfbf';
 const FRANK  = '"Frank Ruhl Libre", Georgia, serif';
-const ASSIST = '"Assistant", "Heebo", sans-serif';
+const ASSIST = "'DM Sans', 'Assistant', 'Heebo', sans-serif";
 const LS_KEY = 'has-seen-map-tour';
 
 interface TourStep {
@@ -145,7 +145,7 @@ function AnimatedHand({ spotRect }: { spotRect: SpotRect }) {
             position: 'fixed', left: cx + 2, top: cy + 2, zIndex: 10001,
             pointerEvents: 'none',
             width: '18px', height: '18px', borderRadius: '50%',
-            background: 'rgba(245,200,64,0.7)',
+            background: 'rgba(0,229,195,0.7)',
             animation: 'th-pulse 0.6s ease 0.85s 2',
           }} />
         </>
@@ -264,8 +264,8 @@ export function MapTour({ isOpen, onComplete, onSkip }: Props) {
           overflow: 'hidden',
           zIndex: 10000,
           pointerEvents: 'auto',
-          background: 'rgba(20,43,22,0.97)',
-          border: '1px solid rgba(245,200,64,0.3)',
+          background: 'rgba(9,20,16,0.97)',
+          border: '1px solid rgba(0,229,195,0.3)',
           borderRadius: '16px',
           padding: '20px',
           boxShadow: '0 8px 32px rgba(0,0,0,0.5)',
@@ -307,7 +307,7 @@ export function MapTour({ isOpen, onComplete, onSkip }: Props) {
               width: i === step ? '18px' : '6px',
               height: '6px',
               borderRadius: '50px',
-              background: i === step ? GOLD : 'rgba(245,200,64,0.2)',
+              background: i === step ? GOLD : 'rgba(0,229,195,0.2)',
               transition: 'all 0.25s',
             }} />
           ))}
@@ -319,7 +319,7 @@ export function MapTour({ isOpen, onComplete, onSkip }: Props) {
           style={{
             width: '100%', fontFamily: FRANK, fontSize: '14px', fontWeight: 700,
             padding: '10px 20px', borderRadius: '8px',
-            border: 'none', backgroundColor: GOLD, color: '#142B16',
+            border: 'none', backgroundColor: GOLD, color: '#050d0a',
             cursor: 'pointer', transition: 'filter 0.15s',
           }}
           onMouseEnter={e => { (e.currentTarget as HTMLElement).style.filter = 'brightness(1.08)'; }}

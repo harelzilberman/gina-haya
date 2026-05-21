@@ -98,11 +98,11 @@ const DAY_TYPE_MAP: Record<string, { emoji: string; label: string; color: string
   fruit:  { emoji: '🍎', label: 'פרי',   color: '#EF745A', bg: 'rgba(239,116,90,0.18)' },
   root:   { emoji: '🥕', label: 'שורש',  color: '#B58863', bg: 'rgba(181,136,99,0.18)' },
   flower: { emoji: '🌸', label: 'פרח',   color: '#C884C8', bg: 'rgba(196,132,200,0.18)' },
-  leaf:   { emoji: '🌿', label: 'עלה',   color: '#7DC084', bg: 'rgba(125,192,132,0.18)' },
+  leaf:   { emoji: '🌿', label: 'עלה',   color: '#4A9C68', bg: 'rgba(74,156,104,0.18)' },
 };
 
 const SCORE_COLOR: Record<string, string> = {
-  green:  '#4A7C59',
+  green:  '#4A9C68',
   yellow: '#C8A040',
   orange: '#C0622A',
   red:    '#A33030',
@@ -288,8 +288,8 @@ function DayActionCard({
                 </div>
                 <span style={{
                   fontFamily: ASST, fontSize: '11px', fontWeight: 700,
-                  background: p.action === 'harvest' ? 'rgba(74,124,89,0.25)' : 'rgba(181,136,99,0.25)',
-                  color: p.action === 'harvest' ? '#7DC084' : '#C8A070',
+                  background: p.action === 'harvest' ? 'rgba(74,156,104,0.25)' : 'rgba(181,136,99,0.25)',
+                  color: p.action === 'harvest' ? '#4A9C68' : '#C8A070',
                   borderRadius: '99px', padding: '2px 10px', flexShrink: 0,
                 }}>
                   {isHe ? ACTION_LABEL_HE[p.action] : ACTION_LABEL_EN[p.action]}

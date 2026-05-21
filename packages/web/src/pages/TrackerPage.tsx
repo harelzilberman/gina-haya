@@ -11,11 +11,11 @@ import { TaskApprovalModal } from '../components/tracker/TaskApprovalModal';
 import { UpgradeBanner } from '../components/upgrade/UpgradeBanner';
 import { usePlanLimit } from '../hooks/usePlanLimit';
 
-const EARTH = '#142B16';
-const GOLD  = '#F5C840';
-const PARCH = '#EDE0C4';
+const EARTH = '#050d0a';
+const GOLD  = '#00e5c3';
+const PARCH = '#b0cfbf';
 const FRANK = '"Frank Ruhl Libre", Georgia, serif';
-const ASST  = '"Assistant", "Heebo", sans-serif';
+const ASST  = "'DM Sans', 'Assistant', 'Heebo', sans-serif";
 
 export function TrackerPage() {
   const { t, i18n } = useTranslation('tracker');
@@ -81,14 +81,14 @@ export function TrackerPage() {
             <h1 style={{ fontFamily: FRANK, fontSize: '32px', color: GOLD, margin: '0 0 6px' }}>
               {t('title')}
             </h1>
-            <p style={{ fontFamily: ASST, fontSize: '14px', color: 'rgba(237,224,196,0.55)', margin: 0 }}>
+            <p style={{ fontFamily: ASST, fontSize: '14px', color: 'rgba(176,207,191,0.55)', margin: 0 }}>
               {t('subtitle')}
             </p>
           </div>
 
           <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start', gap: '8px' }}>
             {/* Tier indicator */}
-            <p style={{ fontFamily: ASST, fontSize: '12px', color: 'rgba(237,224,196,0.45)', margin: 0 }}>
+            <p style={{ fontFamily: ASST, fontSize: '12px', color: 'rgba(176,207,191,0.45)', margin: 0 }}>
               {trackerCountLabel}
             </p>
 
@@ -140,8 +140,8 @@ export function TrackerPage() {
         {/* Content */}
         {isLoading ? (
           <div style={{ textAlign: 'center', padding: '80px 0' }}>
-            <div style={{ fontSize: '48px', marginBottom: '16px' }} className="animate-pulse">🌕</div>
-            <p style={{ fontFamily: ASST, fontSize: '14px', color: 'rgba(237,224,196,0.45)' }}>
+            <div style={{ fontSize: '48px', marginBottom: '16px' }} className="animate-pulse">🌱</div>
+            <p style={{ fontFamily: ASST, fontSize: '14px', color: 'rgba(176,207,191,0.45)' }}>
               {t('loading')}
             </p>
           </div>
@@ -150,15 +150,15 @@ export function TrackerPage() {
           <div style={{
             textAlign: 'center',
             padding: '80px 24px',
-            border: '1px dashed rgba(245,200,64,0.2)',
+            border: '1px dashed rgba(0,229,195,0.2)',
             borderRadius: '16px',
-            backgroundColor: 'rgba(28,58,30,0.3)',
+            backgroundColor: 'rgba(9,20,16,0.3)',
           }}>
             <div style={{ fontSize: '64px', marginBottom: '20px' }}>🌱</div>
             <h2 style={{ fontFamily: FRANK, fontSize: '22px', color: GOLD, marginBottom: '12px' }}>
               {t('empty.title')}
             </h2>
-            <p style={{ fontFamily: ASST, fontSize: '15px', color: 'rgba(237,224,196,0.6)', marginBottom: '28px', lineHeight: 1.7, maxWidth: '400px', margin: '0 auto 28px' }}>
+            <p style={{ fontFamily: ASST, fontSize: '15px', color: 'rgba(176,207,191,0.6)', marginBottom: '28px', lineHeight: 1.7, maxWidth: '400px', margin: '0 auto 28px' }}>
               {t('empty.desc')}
             </p>
             <button
@@ -199,9 +199,9 @@ export function TrackerPage() {
             {atLimit && (
               <div style={{
                 textAlign: 'center', padding: '32px 24px',
-                border: '1px dashed rgba(245,200,64,0.25)',
+                border: '1px dashed rgba(0,229,195,0.25)',
                 borderRadius: '16px',
-                backgroundColor: 'rgba(28,58,30,0.3)',
+                backgroundColor: 'rgba(9,20,16,0.3)',
               }}>
                 <img
                   src="/chupchu_thinking.png"

@@ -1,7 +1,7 @@
 import { useToastStore } from '../../stores/toastStore';
 
 const TYPE_STYLES = {
-  success: { bg: '#4A7C59', icon: '✓' },
+  success: { bg: '#4A9C68', icon: '✓' },
   error:   { bg: '#A33030', icon: '✕' },
   info:    { bg: '#1B2A4A', icon: 'ℹ' },
 };

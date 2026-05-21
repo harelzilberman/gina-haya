@@ -1,12 +1,12 @@
 import { useState } from 'react';
 
-const GOLD   = '#F5C840';
-const PARCH  = '#EDE0C4';
+const GOLD   = '#00e5c3';
+const PARCH  = '#b0cfbf';
 const FRANK  = '"Frank Ruhl Libre", Georgia, serif';
-const ASSIST = '"Assistant", "Heebo", sans-serif';
+const ASSIST = "'DM Sans', 'Assistant', 'Heebo', sans-serif";
 
 const SCORE_COLOURS: Record<string, string> = {
-  green:  '#4A7C59',
+  green:  '#4A9C68',
   yellow: '#C8A040',
   orange: '#C0622A',
   red:    '#A33030',
@@ -18,7 +18,7 @@ const DAY_TYPE_BADGE: Record<string, { bg: string; color: string }> = {
   fruit:  { bg: 'rgba(200,160,64,0.15)',  color: '#C8A040' },
   root:   { bg: 'rgba(139,99,64,0.15)',   color: '#B08060' },
   flower: { bg: 'rgba(200,120,160,0.15)', color: '#C878A0' },
-  leaf:   { bg: 'rgba(74,124,89,0.15)',   color: '#4A7C59' },
+  leaf:   { bg: 'rgba(74,156,104,0.15)',  color: '#4A9C68' },
 };
 
 function scoreToColourKey(score: number | null): string {
@@ -78,8 +78,8 @@ export function HarvestCard({ harvest: h, onDelete }: Props) {
 
   return (
     <div dir="rtl" style={{
-      background:   'rgba(28,58,30,0.7)',
-      border:       '1px solid rgba(245,200,64,0.15)',
+      background:   'rgba(9,20,16,0.7)',
+      border:       '1px solid rgba(0,229,195,0.15)',
       borderRadius: '12px',
       padding:      '14px 16px',
       display:      'flex',

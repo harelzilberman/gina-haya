@@ -6,8 +6,8 @@ import type { BiodynamicDay } from '@gina-haya/shared';
 import { DayDetailModal } from './DayDetailModal';
 
 const SCORE_COLOURS: Record<string, string> = {
-  green:  '#4A7C59',
-  yellow: '#C8A040',
+  green:  '#4A9C68',
+  yellow: '#ffb830',
   orange: '#C0622A',
   red:    '#A33030',
   black:  '#333333',
@@ -18,9 +18,10 @@ interface Props {
   todayDate: string; // YYYY-MM-DD
 }
 
-const GOLD   = '#F5C840';
-const PARCH  = '#EDE0C4';
-const ASSIST = '"Assistant", "Heebo", sans-serif';
+const NIGHT_CARD = '#111f18';
+const BIO_CYAN   = '#00e5c3';
+const TEXT_MID   = '#b0cfbf';
+const DM_SANS    = "'DM Sans', 'Assistant', 'Heebo', sans-serif";
 
 const STRIP_CSS = `
 @keyframes ws-pill-in {
@@ -60,22 +61,22 @@ export function WeekStrip({ days, todayDate }: Props) {
       <style>{STRIP_CSS}</style>
 
       <div dir={dir} style={{
-        background:   'linear-gradient(145deg, rgba(28,58,30,0.8) 0%, rgba(20,43,22,0.9) 100%)',
-        border:       '1px solid rgba(245,200,64,0.1)',
-        borderRadius: '14px',
-        padding:      '16px 14px',
-        marginBottom: '12px',
+        background:    NIGHT_CARD,
+        border:        '1px solid rgba(0,229,195,0.12)',
+        borderRadius:  '14px',
+        padding:       '16px 14px',
+        marginBottom:  '12px',
         backdropFilter:'blur(8px)',
       }}>
         {/* Section label */}
         <p style={{
-          fontFamily:   ASSIST,
-          fontSize:     '11px',
-          fontWeight:   600,
-          letterSpacing:'0.1em',
-          textTransform:'uppercase',
-          color:        `${PARCH}44`,
-          margin:       '0 0 12px',
+          fontFamily:         DM_SANS,
+          fontSize:           '11px',
+          fontWeight:         600,
+          letterSpacing:      '0.1em',
+          textTransform:      'uppercase',
+          color:              `${TEXT_MID}44`,
+          margin:             '0 0 12px',
           paddingInlineStart: '2px',
         }}>
           {isHe ? 'השבוע' : 'This Week'}
@@ -92,17 +93,17 @@ export function WeekStrip({ days, todayDate }: Props) {
           msOverflowStyle: 'none',
         }}>
           {days.map((day, idx) => {
-            const isToday      = day.date === todayDate;
-            const isSelected   = selectedDay?.date === day.date;
-            const scoreColour  = SCORE_COLOURS[day.scoreColour];
+            const isToday    = day.date === todayDate;
+            const isSelected = selectedDay?.date === day.date;
+            const scoreColour = SCORE_COLOURS[day.scoreColour];
 
             const borderColour = isToday || isSelected
-              ? `${GOLD}88`
-              : 'rgba(245,200,64,0.1)';
+              ? 'rgba(0,229,195,0.55)'
+              : 'rgba(0,229,195,0.1)';
             const bgColour = isToday
-              ? 'rgba(245,200,64,0.1)'
+              ? 'rgba(0,229,195,0.1)'
               : isSelected
-                ? 'rgba(245,200,64,0.07)'
+                ? 'rgba(0,229,195,0.07)'
                 : 'rgba(255,255,255,0.03)';
 
             return (
@@ -128,23 +129,23 @@ export function WeekStrip({ days, todayDate }: Props) {
                 }}
                 onMouseEnter={e => {
                   if (!isToday && !isSelected) {
-                    (e.currentTarget as HTMLElement).style.backgroundColor = 'rgba(245,200,64,0.06)';
-                    (e.currentTarget as HTMLElement).style.borderColor = 'rgba(245,200,64,0.35)';
+                    (e.currentTarget as HTMLElement).style.backgroundColor = 'rgba(0,229,195,0.06)';
+                    (e.currentTarget as HTMLElement).style.borderColor = 'rgba(0,229,195,0.35)';
                   }
                 }}
                 onMouseLeave={e => {
                   if (!isToday && !isSelected) {
                     (e.currentTarget as HTMLElement).style.backgroundColor = 'rgba(255,255,255,0.03)';
-                    (e.currentTarget as HTMLElement).style.borderColor = 'rgba(245,200,64,0.1)';
+                    (e.currentTarget as HTMLElement).style.borderColor = 'rgba(0,229,195,0.1)';
                   }
                 }}
               >
                 {/* Weekday */}
                 <span style={{
-                  fontFamily:   ASSIST,
+                  fontFamily:   DM_SANS,
                   fontSize:     '10px',
                   fontWeight:   500,
-                  color:        isToday ? `${GOLD}99` : `${PARCH}44`,
+                  color:        isToday ? `${BIO_CYAN}99` : `${TEXT_MID}44`,
                   lineHeight:   1,
                   marginBottom: '4px',
                 }}>
@@ -153,10 +154,10 @@ export function WeekStrip({ days, todayDate }: Props) {
 
                 {/* Day number */}
                 <span style={{
-                  fontFamily:   ASSIST,
+                  fontFamily:   DM_SANS,
                   fontSize:     '18px',
                   fontWeight:   700,
-                  color:        isToday ? GOLD : `${PARCH}CC`,
+                  color:        isToday ? BIO_CYAN : `${TEXT_MID}CC`,
                   lineHeight:   1,
                   marginBottom: '5px',
                 }}>
@@ -186,9 +187,9 @@ export function WeekStrip({ days, todayDate }: Props) {
 
         {/* Hint text */}
         <p style={{
-          fontFamily: ASSIST,
+          fontFamily: DM_SANS,
           fontSize:   '11px',
-          color:      `${PARCH}40`,
+          color:      `${TEXT_MID}40`,
           textAlign:  'center',
           margin:     '10px 0 0',
         }}>

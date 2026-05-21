@@ -13,13 +13,13 @@ export type ProductId =
   | 'tracker_pack_10'
   | 'garden_pack';
 
-const EARTH  = '#142B16';
-const HEADER = '#1B3A1F';
-const GOLD   = '#F5C840';
-const PARCH  = '#EDE0C4';
-const SAGE   = '#7DC084';
+const EARTH  = '#050d0a';
+const HEADER = '#111f18';
+const GOLD   = '#00e5c3';
+const PARCH  = '#b0cfbf';
+const SAGE   = '#4A9C68';
 const FRANK  = '"Frank Ruhl Libre", Georgia, serif';
-const ASST   = '"Assistant", "Heebo", sans-serif';
+const ASST   = "'DM Sans', 'Assistant', 'Heebo', sans-serif";
 
 const PAGE_CSS = `
 @keyframes shopFadeIn {
@@ -43,9 +43,9 @@ const PAGE_CSS = `
 .shop-remove-btn {
   width: 100%; padding: 11px;
   font-family: ${ASST}; font-size: 13px; font-weight: 600;
-  color: rgba(237,224,196,0.5);
+  color: rgba(176,207,191,0.5);
   background: rgba(255,255,255,0.04);
-  border: 1px solid rgba(245,200,64,0.2); border-radius: 10px; cursor: pointer;
+  border: 1px solid rgba(0,229,195,0.2); border-radius: 10px; cursor: pointer;
   transition: color 0.2s, border-color 0.2s;
 }
 .shop-remove-btn:hover { color: #E06060; border-color: rgba(224,96,96,0.4); }
@@ -53,10 +53,10 @@ const PAGE_CSS = `
   width: 100%; padding: 11px;
   font-family: ${FRANK}; font-size: 14px; font-weight: 700;
   color: ${GOLD}; background: transparent;
-  border: 1.5px solid rgba(245,200,64,0.4); border-radius: 10px; cursor: pointer;
+  border: 1.5px solid rgba(0,229,195,0.4); border-radius: 10px; cursor: pointer;
   transition: background 0.2s, border-color 0.2s;
 }
-.shop-wood-btn:hover { background: rgba(245,200,64,0.08); border-color: ${GOLD}; }
+.shop-wood-btn:hover { background: rgba(0,229,195,0.08); border-color: ${GOLD}; }
 `;
 
 interface ProductDef {
@@ -201,7 +201,7 @@ function CartDrawer({
           position: 'fixed', top: 0, bottom: 0, right: 0, zIndex: 301,
           width: 'min(340px, 90vw)',
           backgroundColor: '#1a3a1c',
-          borderInlineStart: '1px solid rgba(245,200,64,0.15)',
+          borderInlineStart: '1px solid rgba(0,229,195,0.15)',
           display: 'flex', flexDirection: 'column',
           animation: 'drawerIn 0.25s ease both',
           boxShadow: '-20px 0 60px rgba(0,0,0,0.5)',
@@ -210,7 +210,7 @@ function CartDrawer({
         {/* Header */}
         <div style={{
           padding: '20px 20px 16px',
-          borderBottom: '1px solid rgba(245,200,64,0.1)',
+          borderBottom: '1px solid rgba(0,229,195,0.1)',
           display: 'flex', alignItems: 'center', justifyContent: 'space-between',
           flexShrink: 0,
         }}>
@@ -238,7 +238,7 @@ function CartDrawer({
                 style={{
                   display: 'flex', alignItems: 'center', justifyContent: 'space-between',
                   padding: '12px 0',
-                  borderBottom: '1px solid rgba(245,200,64,0.07)',
+                  borderBottom: '1px solid rgba(0,229,195,0.07)',
                   gap: '12px',
                 }}
               >
@@ -270,7 +270,7 @@ function CartDrawer({
         {/* Footer */}
         <div style={{
           padding: '16px 20px',
-          borderTop: '1px solid rgba(245,200,64,0.1)',
+          borderTop: '1px solid rgba(0,229,195,0.1)',
           flexShrink: 0,
         }}>
           <div style={{
@@ -287,7 +287,7 @@ function CartDrawer({
             disabled={cart.length === 0}
             style={{
               width: '100%', padding: '13px',
-              backgroundColor: cart.length > 0 ? GOLD : 'rgba(245,200,64,0.3)',
+              backgroundColor: cart.length > 0 ? GOLD : 'rgba(0,229,195,0.3)',
               color: EARTH, border: 'none', borderRadius: '10px',
               fontFamily: FRANK, fontSize: '16px', fontWeight: 700,
               cursor: cart.length > 0 ? 'pointer' : 'not-allowed',
@@ -323,16 +323,16 @@ function ProductCard({
       style={{
         position: 'relative',
         background: product.badge
-          ? 'linear-gradient(145deg, rgba(30,62,32,0.95) 0%, rgba(20,43,22,0.98) 100%)'
-          : 'rgba(20,50,22,0.6)',
+          ? 'linear-gradient(145deg, rgba(9,20,16,0.95) 0%, rgba(9,20,16,0.98) 100%)'
+          : 'rgba(9,20,16,0.6)',
         border: inCart
           ? `2px solid ${GOLD}`
           : product.badge
             ? `2px solid ${GOLD}`
-            : '1px solid rgba(245,200,64,0.15)',
+            : '1px solid rgba(0,229,195,0.15)',
         borderRadius: '14px', padding: '22px 20px',
         display: 'flex', flexDirection: 'column', gap: '14px',
-        boxShadow: product.badge ? `0 4px 24px rgba(245,200,64,0.12)` : '0 2px 12px rgba(0,0,0,0.15)',
+        boxShadow: product.badge ? `0 4px 24px rgba(0,229,195,0.12)` : '0 2px 12px rgba(0,0,0,0.15)',
       }}
     >
       {product.badge && !inCart && (
@@ -470,7 +470,7 @@ export function ShopPage() {
               zIndex: 401,
               width: 'min(480px, 92vw)',
               backgroundColor: '#1a3a1c',
-              border: '1px solid rgba(245,200,64,0.2)',
+              border: '1px solid rgba(0,229,195,0.2)',
               borderRadius: '18px',
               padding: '28px 28px 24px',
               boxShadow: '0 24px 80px rgba(0,0,0,0.6)',
@@ -504,7 +504,7 @@ export function ShopPage() {
                       width: '100%', boxSizing: 'border-box',
                       padding: '10px 12px', borderRadius: '8px',
                       background: 'rgba(255,255,255,0.06)',
-                      border: '1px solid rgba(245,200,64,0.15)',
+                      border: '1px solid rgba(0,229,195,0.15)',
                       color: PARCH, fontFamily: ASST, fontSize: '14px',
                       outline: 'none',
                     }}
@@ -520,7 +520,7 @@ export function ShopPage() {
                       width: '100%', boxSizing: 'border-box',
                       padding: '10px 12px', borderRadius: '8px',
                       background: 'rgba(255,255,255,0.06)',
-                      border: '1px solid rgba(245,200,64,0.15)',
+                      border: '1px solid rgba(0,229,195,0.15)',
                       color: PARCH, fontFamily: ASST, fontSize: '14px',
                       outline: 'none',
                     }}
@@ -536,7 +536,7 @@ export function ShopPage() {
                       width: '100%', boxSizing: 'border-box',
                       padding: '10px 12px', borderRadius: '8px',
                       background: 'rgba(255,255,255,0.06)',
-                      border: '1px solid rgba(245,200,64,0.15)',
+                      border: '1px solid rgba(0,229,195,0.15)',
                       color: PARCH, fontFamily: ASST, fontSize: '14px',
                       outline: 'none', resize: 'vertical',
                     }}
@@ -569,7 +569,7 @@ export function ShopPage() {
                   style={{
                     padding: '10px 28px',
                     background: 'transparent',
-                    border: `1.5px solid rgba(245,200,64,0.4)`,
+                    border: `1.5px solid rgba(0,229,195,0.4)`,
                     borderRadius: '10px',
                     color: GOLD, fontFamily: FRANK, fontSize: '14px', fontWeight: 700,
                     cursor: 'pointer',
@@ -598,7 +598,7 @@ export function ShopPage() {
           }}>
             חנות גינה חיה
           </h1>
-          <p style={{ fontFamily: ASST, fontSize: '16px', color: 'rgba(237,224,196,0.65)', margin: '0 0 8px' }}>
+          <p style={{ fontFamily: ASST, fontSize: '16px', color: 'rgba(176,207,191,0.65)', margin: '0 0 8px' }}>
             רכוש כלים בודדים — ללא מנוי
           </p>
           <p style={{ fontFamily: ASST, fontSize: '12px', color: `${SAGE}90`, margin: 0, letterSpacing: '0.02em' }}>
@@ -614,8 +614,8 @@ export function ShopPage() {
             animation: 'shopFadeIn 0.4s ease both',
           }}>
             <div style={{
-              backgroundColor: 'rgba(125,192,132,0.08)',
-              border: '1px solid rgba(125,192,132,0.2)',
+              backgroundColor: 'rgba(0,229,195,0.08)',
+              border: '1px solid rgba(0,229,195,0.2)',
               borderRadius: '12px',
               padding: '14px 20px',
               display: 'flex', flexWrap: 'wrap', gap: '16px',
@@ -705,15 +705,15 @@ export function ShopPage() {
               {COMING_SOON.map((item, i) => (
                 <div key={i} style={{
                   position: 'relative',
-                  background: 'rgba(20,50,22,0.3)',
-                  border: '1px solid rgba(245,200,64,0.07)',
+                  background: 'rgba(9,20,16,0.3)',
+                  border: '1px solid rgba(0,229,195,0.07)',
                   borderRadius: '14px', padding: '22px 20px',
                   opacity: 0.5,
                   display: 'flex', flexDirection: 'column', gap: '10px',
                 }}>
                   <div style={{
                     position: 'absolute', top: -10, insetInlineEnd: 16,
-                    background: 'rgba(245,200,64,0.15)', color: `${GOLD}AA`,
+                    background: 'rgba(0,229,195,0.15)', color: `${GOLD}AA`,
                     fontFamily: ASST, fontSize: '10px', fontWeight: 700,
                     padding: '2px 10px', borderRadius: '99px', letterSpacing: '0.05em',
                   }}>
@@ -734,7 +734,7 @@ export function ShopPage() {
           padding: '0 20px',
           animation: 'shopFadeIn 0.5s ease 0.15s both',
         }}>
-          <hr style={{ border: 'none', borderTop: '1px solid rgba(245,200,64,0.12)', margin: '0 0 40px' }} />
+          <hr style={{ border: 'none', borderTop: '1px solid rgba(0,229,195,0.12)', margin: '0 0 40px' }} />
 
           {/* Section header */}
           <div style={{ marginBottom: '24px' }}>
@@ -759,8 +759,8 @@ export function ShopPage() {
             {/* Chupchu quote */}
             <div style={{
               display: 'flex', alignItems: 'flex-start', gap: '10px',
-              background: 'rgba(125,192,132,0.07)',
-              border: '1px solid rgba(125,192,132,0.15)',
+              background: 'rgba(0,229,195,0.07)',
+              border: '1px solid rgba(0,229,195,0.15)',
               borderRadius: '12px', padding: '12px 16px',
               marginTop: '14px',
             }}>
@@ -792,28 +792,28 @@ export function ShopPage() {
                 style={{
                   position: 'relative',
                   background: product.badge
-                    ? 'linear-gradient(145deg, rgba(30,62,32,0.95) 0%, rgba(20,43,22,0.98) 100%)'
-                    : 'rgba(20,50,22,0.6)',
+                    ? 'linear-gradient(145deg, rgba(9,20,16,0.95) 0%, rgba(9,20,16,0.98) 100%)'
+                    : 'rgba(9,20,16,0.6)',
                   border: product.badge
-                    ? '2px solid rgba(245,200,64,0.3)'
-                    : '1px solid rgba(245,200,64,0.15)',
+                    ? '2px solid rgba(0,229,195,0.3)'
+                    : '1px solid rgba(0,229,195,0.15)',
                   borderRadius: '14px',
                   overflow: 'hidden',
                   display: 'flex', flexDirection: 'column',
-                  boxShadow: product.badge ? '0 4px 24px rgba(245,200,64,0.08)' : '0 2px 12px rgba(0,0,0,0.15)',
+                  boxShadow: product.badge ? '0 4px 24px rgba(0,229,195,0.08)' : '0 2px 12px rgba(0,0,0,0.15)',
                 }}
               >
                 {/* Icon area */}
                 <div style={{
                   position: 'relative',
-                  background: 'rgba(245,200,64,0.06)',
+                  background: 'rgba(0,229,195,0.06)',
                   padding: '24px 20px 18px',
                   textAlign: 'center',
                 }}>
                   {product.badge && (
                     <div style={{
                       position: 'absolute', top: 10, insetInlineStart: 12,
-                      background: 'rgba(245,200,64,0.18)',
+                      background: 'rgba(0,229,195,0.18)',
                       color: '#8B6914',
                       fontFamily: ASST, fontSize: '10px', fontWeight: 700,
                       padding: '2px 8px', borderRadius: '99px',
@@ -858,7 +858,7 @@ export function ShopPage() {
               position: 'absolute', inset: 0,
               display: 'flex', flexDirection: 'column',
               alignItems: 'center', justifyContent: 'center', gap: '10px',
-              background: 'rgba(20,43,22,0.55)',
+              background: 'rgba(9,20,16,0.55)',
               backdropFilter: 'blur(3px)',
               borderRadius: '14px',
               pointerEvents: 'none',
@@ -877,8 +877,8 @@ export function ShopPage() {
         {/* ── Bottom banner ── */}
         <div style={{ maxWidth: '900px', margin: '0 auto', padding: '0 20px 80px', animation: 'shopFadeIn 0.5s ease 0.2s both' }}>
           <div style={{
-            background: 'linear-gradient(135deg, rgba(30,62,32,0.7) 0%, rgba(20,43,22,0.8) 100%)',
-            border: '1px solid rgba(245,200,64,0.18)',
+            background: 'linear-gradient(135deg, rgba(9,20,16,0.7) 0%, rgba(9,20,16,0.8) 100%)',
+            border: '1px solid rgba(0,229,195,0.18)',
             borderRadius: '16px', padding: '24px 28px',
             display: 'flex', flexWrap: 'wrap', gap: '12px',
             alignItems: 'center', justifyContent: 'space-between',
@@ -920,7 +920,7 @@ export function ShopPage() {
             border: 'none', cursor: 'pointer',
             display: 'flex', alignItems: 'center', justifyContent: 'center',
             fontSize: '22px',
-            boxShadow: '0 8px 24px rgba(245,200,64,0.4)',
+            boxShadow: '0 8px 24px rgba(0,229,195,0.4)',
             transition: 'filter 0.2s, transform 0.2s',
           }}
           onMouseEnter={e => { (e.currentTarget as HTMLElement).style.transform = 'scale(1.08)'; }}

@@ -2,13 +2,13 @@ import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import type { GardenTask } from '../../api/tasks';
 
-const GOLD  = '#F5C840';
-const PARCH = '#EDE0C4';
-const ASSIST = '"Assistant", "Heebo", sans-serif';
+const GOLD  = '#00e5c3';
+const PARCH = '#b0cfbf';
+const ASSIST = "'DM Sans', 'Assistant', 'Heebo', sans-serif";
 const FRANK  = '"Frank Ruhl Libre", Georgia, serif';
 
 const TYPE_CONFIG = {
-  biodynamic: { emoji: '🌙', labelHe: 'ביודינמי',  labelEn: 'Biodynamic',   color: '#7DC084' },
+  biodynamic: { emoji: '🌙', labelHe: 'ביודינמי',  labelEn: 'Biodynamic',   color: '#4A9C68' },
   maintenance: { emoji: '🔧', labelHe: 'תחזוקה',    labelEn: 'Maintenance',  color: '#C8A040' },
   custom:      { emoji: '✏️', labelHe: 'אישי',      labelEn: 'Personal',     color: '#C884C8' },
 };
@@ -84,7 +84,7 @@ export function TaskManager({ tasks, onUpdateStatus, onDelete, onAdd, isLoading 
           style={{
             fontFamily: ASSIST, fontSize: '13px', fontWeight: 600,
             padding: '6px 14px', borderRadius: '8px', border: `1px solid ${GOLD}55`,
-            color: GOLD, background: 'rgba(245,200,64,0.08)', cursor: 'pointer',
+            color: GOLD, background: 'rgba(0,229,195,0.08)', cursor: 'pointer',
           }}
         >
           {isHe ? '+ הוסף משימה' : '+ Add task'}
@@ -105,7 +105,7 @@ export function TaskManager({ tasks, onUpdateStatus, onDelete, onAdd, isLoading 
           <div style={{ height: '4px', background: 'rgba(255,255,255,0.08)', borderRadius: '99px', overflow: 'hidden' }}>
             <div style={{
               height: '100%', borderRadius: '99px',
-              background: 'linear-gradient(90deg, #4A7C59, #F5C840)',
+              background: 'linear-gradient(90deg, #091410, #00e5c3)',
               width: `${total > 0 ? (done / total) * 100 : 0}%`,
               transition: 'width 0.5s ease',
             }} />
@@ -124,7 +124,7 @@ export function TaskManager({ tasks, onUpdateStatus, onDelete, onAdd, isLoading 
               padding: '4px 12px', borderRadius: '99px',
               border: `1px solid ${filter === f ? GOLD : 'rgba(255,255,255,0.1)'}`,
               color: filter === f ? GOLD : `${PARCH}60`,
-              background: filter === f ? 'rgba(245,200,64,0.1)' : 'transparent',
+              background: filter === f ? 'rgba(0,229,195,0.1)' : 'transparent',
               cursor: 'pointer',
             }}
           >
@@ -136,7 +136,7 @@ export function TaskManager({ tasks, onUpdateStatus, onDelete, onAdd, isLoading 
       {/* Add task form */}
       {showAddForm && (
         <div style={{
-          background: 'rgba(28,58,30,0.6)', border: '1px solid rgba(245,200,64,0.2)',
+          background: 'rgba(9,20,16,0.6)', border: '1px solid rgba(0,229,195,0.2)',
           borderRadius: '12px', padding: '16px', marginBottom: '16px',
         }}>
           <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
@@ -171,7 +171,7 @@ export function TaskManager({ tasks, onUpdateStatus, onDelete, onAdd, isLoading 
               </button>
               <button
                 onClick={handleAdd}
-                style={{ fontFamily: ASSIST, fontSize: '13px', fontWeight: 600, padding: '6px 14px', borderRadius: '8px', border: 'none', background: GOLD, color: '#142B16', cursor: 'pointer' }}
+                style={{ fontFamily: ASSIST, fontSize: '13px', fontWeight: 600, padding: '6px 14px', borderRadius: '8px', border: 'none', background: GOLD, color: '#050d0a', cursor: 'pointer' }}
               >
                 {isHe ? 'הוסף' : 'Add'}
               </button>
@@ -210,8 +210,8 @@ export function TaskManager({ tasks, onUpdateStatus, onDelete, onAdd, isLoading 
                     key={task.id}
                     style={{
                       display: 'flex', alignItems: 'center', gap: '12px',
-                      background: isDone ? 'rgba(74,124,89,0.15)' : isSkipped ? 'rgba(255,255,255,0.03)' : 'rgba(28,58,30,0.5)',
-                      border: `1px solid ${isDone ? 'rgba(74,124,89,0.3)' : 'rgba(255,255,255,0.07)'}`,
+                      background: isDone ? 'rgba(0,229,195,0.08)' : isSkipped ? 'rgba(255,255,255,0.03)' : 'rgba(9,20,16,0.5)',
+                      border: `1px solid ${isDone ? 'rgba(0,229,195,0.2)' : 'rgba(255,255,255,0.07)'}`,
                       borderRadius: '10px', padding: '10px 14px',
                       opacity: isSkipped ? 0.5 : 1,
                       transition: 'all 0.2s',
@@ -222,8 +222,8 @@ export function TaskManager({ tasks, onUpdateStatus, onDelete, onAdd, isLoading 
                       onClick={() => onUpdateStatus(task.id, isDone ? 'pending' : 'done')}
                       style={{
                         flexShrink: 0, width: '22px', height: '22px', borderRadius: '6px',
-                        border: `2px solid ${isDone ? '#4A7C59' : 'rgba(255,255,255,0.2)'}`,
-                        background: isDone ? '#4A7C59' : 'transparent',
+                        border: `2px solid ${isDone ? '#4A9C68' : 'rgba(255,255,255,0.2)'}`,
+                        background: isDone ? '#4A9C68' : 'transparent',
                         cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center',
                         fontSize: '12px', color: 'white', flexDirection: 'column',
                       }}
@@ -257,7 +257,7 @@ export function TaskManager({ tasks, onUpdateStatus, onDelete, onAdd, isLoading 
                       <span style={{
                         fontFamily: ASSIST, fontSize: '10px', fontWeight: 600,
                         padding: '2px 8px', borderRadius: '99px',
-                        background: 'rgba(74,124,89,0.2)', color: '#7DC084', flexShrink: 0,
+                        background: 'rgba(0,229,195,0.08)', color: '#4A9C68', flexShrink: 0,
                       }}>
                         {isHe ? '🌱 ממעקב הגידול' : '🌱 From growth tracker'}
                       </span>

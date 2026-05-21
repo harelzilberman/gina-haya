@@ -103,7 +103,7 @@ export const SHAPE_CONFIGS: Record<ShapeType, ShapeConfig> = {
   'bed': {
     type: 'bed', shapeKind: 'rect',
     labelHe: 'ערוגת גידול', labelEn: 'Growing bed', emoji: '🌱',
-    fill: 'rgba(74,128,80,0.35)', stroke: '#7DC084', strokeWidth: 2,
+    fill: 'rgba(74,156,104,0.35)', stroke: '#4A9C68', strokeWidth: 2,
     defaultWidth: 2, defaultHeight: 1,
   },
   'hydroponics': {
@@ -132,7 +132,7 @@ export const SHAPE_CONFIGS: Record<ShapeType, ShapeConfig> = {
   'vertical': {
     type: 'vertical', shapeKind: 'rect',
     labelHe: 'גידול אנכי', labelEn: 'Vertical growing', emoji: '🌿',
-    fill: 'rgba(34,100,34,0.25)', stroke: '#4A7C59', strokeWidth: 2,
+    fill: 'rgba(34,100,34,0.25)', stroke: '#4A9C68', strokeWidth: 2,
     strokeDash: [3, 3],
     defaultWidth: 0.3, defaultHeight: 2,
     pattern: 'trellis',
@@ -174,7 +174,7 @@ export const SHAPE_CONFIGS: Record<ShapeType, ShapeConfig> = {
   'sun-indicator': {
     type: 'sun-indicator', shapeKind: 'circle',
     labelHe: '☀️ דרום', labelEn: '☀️ South', emoji: '☀️',
-    fill: 'rgba(255,215,0,0.13)', stroke: '#F5C840', strokeWidth: 1.5,
+    fill: 'rgba(0,229,195,0.08)', stroke: '#00e5c3', strokeWidth: 1.5,
     strokeDash: [4, 3],
     defaultRadius: 1.2,
   },
@@ -195,7 +195,7 @@ export interface MapObjectType {
 }
 
 export const MAP_OBJECT_TYPES: MapObjectType[] = [
-  { type: 'bed',    labelHe: 'ערוגת גידול',  emoji: '🌱', color: 'rgba(74,128,80,0.4)',   border: '#7DC084', borderWidth: 2, borderDash: [] },
+  { type: 'bed',    labelHe: 'ערוגת גידול',  emoji: '🌱', color: 'rgba(74,156,104,0.4)',  border: '#4A9C68', borderWidth: 2, borderDash: [] },
   { type: 'raised', labelHe: 'ערוגה מוגבהת', emoji: '🪵', color: 'rgba(139,90,43,0.4)',   border: '#8B5E2A', borderWidth: 3, borderDash: [] },
   { type: 'pot',    labelHe: 'עציץ/מיכל',    emoji: '🪴', color: 'rgba(180,100,40,0.4)',  border: '#C0622A', borderWidth: 2, borderDash: [], isCircle: true },
   { type: 'wall',   labelHe: 'קיר בית',      emoji: '🏠', color: 'rgba(100,80,60,0.5)',   border: '#8B6914', borderWidth: 4, borderDash: [] },

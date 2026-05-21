@@ -6,8 +6,8 @@ import type { BiodynamicDay } from '@gina-haya/shared';
 import './today-card.css';
 
 const SCORE_COLOURS: Record<string, string> = {
-  green:  '#4A7C59',
-  yellow: '#C8A040',
+  green:  '#4A9C68',
+  yellow: '#ffb830',
   orange: '#C0622A',
   red:    '#A33030',
   black:  '#333333',
@@ -18,18 +18,19 @@ interface Props {
 }
 
 const DAY_TYPE_STYLES: Record<string, { bg: string; color: string; emoji: string }> = {
-  fruit:  { bg: 'rgba(192,98,42,0.18)',  color: '#E8956A', emoji: '🍅' },
-  root:   { bg: 'rgba(180,140,40,0.18)', color: '#D4B04A', emoji: '🥕' },
-  flower: { bg: 'rgba(160,80,160,0.18)', color: '#C884C8', emoji: '🌸' },
-  leaf:   { bg: 'rgba(74,128,80,0.22)',  color: '#7DC084', emoji: '🌿' },
+  fruit:  { bg: 'rgba(239,116,90,0.18)',  color: '#EF745A', emoji: '🍅' },
+  root:   { bg: 'rgba(181,136,99,0.18)',  color: '#B58863', emoji: '🥕' },
+  flower: { bg: 'rgba(196,132,200,0.18)', color: '#C884C8', emoji: '🌸' },
+  leaf:   { bg: 'rgba(0,229,195,0.15)',   color: '#00e5c3', emoji: '🌿' },
 };
 
 const RING_R             = 60;
 const RING_CIRCUMFERENCE = 2 * Math.PI * RING_R;
-const GOLD   = '#F5C840';
-const PARCH  = '#EDE0C4';
-const FRANK  = '"Frank Ruhl Libre", Georgia, serif';
-const ASSIST = '"Assistant", "Heebo", sans-serif';
+const NIGHT_CARD = '#111f18';
+const BIO_CYAN   = '#00e5c3';
+const TEXT_MID   = '#b0cfbf';
+const FRANK      = '"Frank Ruhl Libre", Georgia, serif';
+const DM_SANS    = "'DM Sans', 'Assistant', 'Heebo', sans-serif";
 
 
 let moonImgFailed = false;
@@ -475,16 +476,16 @@ export function MoonPhaseDisplay({ phaseAngle, phasePct, phaseHe, moonSignHe, as
     'רבע אחרון':  'Last Quarter',
     'סהר קטן':    'Waning Crescent',
   };
-  const moonSignLabel = isHe ? moonSignHe : (MOON_SIGN_EN[moonSignHe] ?? moonSignHe);
+  const moonSignLabel  = isHe ? moonSignHe : (MOON_SIGN_EN[moonSignHe] ?? moonSignHe);
   const phaseNameLabel = isHe ? phaseHe : (PHASE_NAME_EN[phaseHe] ?? phaseHe);
-  const isFullMoon = phasePct > 95;
+  const isFullMoon     = phasePct > 95;
 
   const daysToFull = phaseAngle <= 180
     ? Math.round((180 - phaseAngle) / 13.2)
     : Math.round((540 - phaseAngle) / 13.2);
   const daysToNew = Math.round((360 - phaseAngle) / 13.2);
 
-  const tiltDeg = getMoonTilt(phaseAngle, lat);
+  const tiltDeg  = getMoonTilt(phaseAngle, lat);
   const canvasRef = useRef<HTMLCanvasElement>(null);
 
   useEffect(() => {
@@ -493,7 +494,7 @@ export function MoonPhaseDisplay({ phaseAngle, phasePct, phaseHe, moonSignHe, as
     const dpr = window.devicePixelRatio || 1;
     canvas.width = 165 * dpr;
     canvas.height = 165 * dpr;
-    canvas.style.width = '165px';
+    canvas.style.width  = '165px';
     canvas.style.height = '165px';
     const ctx = canvas.getContext('2d');
     if (ctx) ctx.scale(dpr, dpr);
@@ -502,23 +503,21 @@ export function MoonPhaseDisplay({ phaseAngle, phasePct, phaseHe, moonSignHe, as
 
   return (
     <div style={{
-      display: 'flex', flexDirection: 'column', alignItems: 'center',
-      gap: '10px', padding: '20px 0 12px',
+      display:       'flex',
+      flexDirection: 'column',
+      alignItems:    'center',
+      gap:           '10px',
+      padding:       '20px 0 12px',
     }}>
-      <div style={{
-        position: 'relative',
-        width: '165px',
-        height: '165px',
-        flexShrink: 0,
-      }}>
+      <div style={{ position: 'relative', width: '165px', height: '165px', flexShrink: 0 }}>
         <div style={{
-          width: '165px',
-          height: '165px',
+          width:        '165px',
+          height:       '165px',
           borderRadius: '50%',
-          overflow: 'hidden',
-          boxShadow: isFullMoon
-            ? '0 0 0 2px rgba(245,200,64,0.40), 0 0 40px rgba(245,200,64,0.55), 0 0 12px rgba(245,200,64,0.3)'
-            : '0 0 0 2px rgba(245,200,64,0.40), 0 0 22px rgba(245,200,64,0.32), 0 0 6px rgba(245,200,64,0.15)',
+          overflow:     'hidden',
+          boxShadow:    isFullMoon
+            ? '0 0 0 2px rgba(0,229,195,0.35), 0 0 40px rgba(0,229,195,0.4), 0 0 12px rgba(0,229,195,0.2)'
+            : '0 0 0 2px rgba(0,229,195,0.30), 0 0 22px rgba(0,229,195,0.25), 0 0 6px rgba(0,229,195,0.12)',
         }}>
           <canvas
             ref={canvasRef}
@@ -529,63 +528,71 @@ export function MoonPhaseDisplay({ phaseAngle, phasePct, phaseHe, moonSignHe, as
         </div>
         {phasePct < 3 && (
           <div style={{
-            position: 'absolute', inset: 0,
-            display: 'flex', alignItems: 'center', justifyContent: 'center',
+            position:      'absolute',
+            inset:         0,
+            display:       'flex',
+            alignItems:    'center',
+            justifyContent:'center',
             pointerEvents: 'none',
-            zIndex: 10,
+            zIndex:        10,
           }}>
             <MoonSignSVG />
           </div>
         )}
       </div>
 
-      <div style={{ fontFamily: FRANK, fontSize: '18px', fontWeight: 700, color: GOLD }}>
+      <div style={{ fontFamily: FRANK, fontSize: '18px', fontWeight: 700, color: BIO_CYAN }}>
         {phaseNameLabel}
       </div>
 
-      <div style={{ fontFamily: ASSIST, fontSize: '13px', color: `${PARCH}60` }}>
+      <div style={{ fontFamily: DM_SANS, fontSize: '13px', color: `${TEXT_MID}60` }}>
         {isHe ? 'מזל הירח:' : 'Moon sign:'} {moonSignLabel}
       </div>
 
       <div style={{
-        display: 'inline-flex', alignItems: 'center', gap: '6px',
-        background: 'rgba(245,200,64,0.1)', border: '1px solid rgba(245,200,64,0.25)',
-        borderRadius: '99px', padding: '4px 14px',
-        fontFamily: ASSIST, fontSize: '12px', color: GOLD,
+        display:     'inline-flex',
+        alignItems:  'center',
+        gap:         '6px',
+        background:  'rgba(0,229,195,0.08)',
+        border:      '1px solid rgba(0,229,195,0.2)',
+        borderRadius:'99px',
+        padding:     '4px 14px',
+        fontFamily:  DM_SANS,
+        fontSize:    '12px',
+        color:       BIO_CYAN,
       }}>
         {ascending ? (isHe ? '↑ ירח עולה' : '↑ Ascending') : (isHe ? '↓ ירח יורד' : '↓ Descending')}
       </div>
 
       <div style={{ width: '100%', maxWidth: '200px' }}>
         <div style={{
-          display: 'flex', justifyContent: 'space-between',
-          fontSize: '10px', color: `${PARCH}35`, fontFamily: ASSIST, marginBottom: '4px',
+          display:        'flex',
+          justifyContent: 'space-between',
+          fontSize:       '10px',
+          color:          `${TEXT_MID}35`,
+          fontFamily:     DM_SANS,
+          marginBottom:   '4px',
         }}>
           <span>🌑</span><span>🌓</span><span>🌕</span><span>🌗</span>
         </div>
-        <div style={{
-          height: '3px', background: 'rgba(255,255,255,0.08)',
-          borderRadius: '99px', overflow: 'hidden',
-        }}>
+        <div style={{ height: '3px', background: 'rgba(255,255,255,0.08)', borderRadius: '99px', overflow: 'hidden' }}>
           <div style={{
-            height: '100%', borderRadius: '99px',
-            background: 'linear-gradient(90deg, #2d4a2f, #F5C840)',
-            width: `${phaseAngle / 360 * 100}%`,
+            height:     '100%',
+            borderRadius:'99px',
+            background: 'linear-gradient(90deg, #091410, #00e5c3)',
+            width:      `${phaseAngle / 360 * 100}%`,
             transition: 'width 0.5s ease',
           }} />
         </div>
       </div>
 
-      <div style={{
-        display: 'flex', gap: '16px',
-        fontFamily: ASSIST, fontSize: '11px', color: `${PARCH}50`,
-      }}>
+      <div style={{ display: 'flex', gap: '16px', fontFamily: DM_SANS, fontSize: '11px', color: `${TEXT_MID}50` }}>
         <span>{isHe ? 'ירח מלא:' : 'Full moon:'} {daysToFull === 0 ? (isHe ? 'היום!' : 'Today!') : (isHe ? `${daysToFull} ימים` : `${daysToFull} days`)}</span>
         <span>·</span>
         <span>{isHe ? 'ירח חדש:' : 'New moon:'} {daysToNew === 0 ? (isHe ? 'היום!' : 'Today!') : (isHe ? `${daysToNew} ימים` : `${daysToNew} days`)}</span>
       </div>
 
-      <div style={{ fontFamily: ASSIST, fontSize: '11px', color: `${PARCH}40` }}>
+      <div style={{ fontFamily: DM_SANS, fontSize: '11px', color: `${TEXT_MID}40` }}>
         {isHe ? 'תאורה:' : 'Illumination:'} {illumination}%
       </div>
     </div>
@@ -620,7 +627,7 @@ export function TodayCard({ day }: Props) {
   const [showDayTypeLegend, setShowDayTypeLegend] = useState(false);
   const { profile, user } = useAuthStore();
   const userLat: number = profile?.latitude ?? (user?.user_metadata?.latitude as number | undefined) ?? 31.7;
-  const displayLat = localLat ?? userLat;
+  const displayLat   = localLat ?? userLat;
   const isDefaultLat = !localLat && userLat === 31.7;
 
   const handleRequestLocation = () => {
@@ -639,7 +646,7 @@ export function TodayCard({ day }: Props) {
   const scoreColour  = SCORE_COLOURS[day.scoreColour];
   const targetOffset = RING_CIRCUMFERENCE * (1 - day.plantingScore / 10);
   const dashOffset   = mounted ? targetOffset : RING_CIRCUMFERENCE;
-  const dtStyle      = DAY_TYPE_STYLES[day.dayType] ?? { bg: 'rgba(100,100,100,0.18)', color: PARCH, emoji: '🌱' };
+  const dtStyle      = DAY_TYPE_STYLES[day.dayType] ?? { bg: 'rgba(100,100,100,0.18)', color: TEXT_MID, emoji: '🌱' };
 
   const DAY_TYPE_EN: Record<string, string> = {
     fruit: 'Fruit', root: 'Root', flower: 'Flower', leaf: 'Leaf',
@@ -648,14 +655,21 @@ export function TodayCard({ day }: Props) {
 
   return (
     <div dir={dir} style={{
-        background:     'linear-gradient(145deg, rgba(28,58,30,0.85) 0%, rgba(20,43,22,0.95) 100%)',
-        border:         '1px solid rgba(245,200,64,0.12)',
-        borderRadius:   '16px', padding: '24px 20px',
-        marginBottom:   '12px', backdropFilter: 'blur(8px)',
+        background:    NIGHT_CARD,
+        border:        '1px solid rgba(0,229,195,0.12)',
+        borderRadius:  '16px',
+        padding:       '24px 20px',
+        marginBottom:  '12px',
+        backdropFilter:'blur(8px)',
       }}>
         <p style={{
-          fontFamily: ASSIST, fontSize: '13px', fontWeight: 400,
-          textAlign: 'center', color: `${PARCH}88`, marginBottom: '20px', lineHeight: 1.4,
+          fontFamily:  DM_SANS,
+          fontSize:    '13px',
+          fontWeight:  400,
+          textAlign:   'center',
+          color:       `${TEXT_MID}88`,
+          marginBottom:'20px',
+          lineHeight:  1.4,
         }}>
           <FormattedDate dateStr={day.date} locale={isHe ? 'he-IL' : 'en-US'} />
         </p>
@@ -676,15 +690,20 @@ export function TodayCard({ day }: Props) {
             <button
               onClick={handleRequestLocation}
               style={{
-                background: 'none', border: `1px solid rgba(245,200,64,0.25)`,
-                borderRadius: '99px', padding: '4px 14px',
-                fontFamily: ASSIST, fontSize: '12px', color: `${GOLD}aa`, cursor: 'pointer',
+                background:   'none',
+                border:       '1px solid rgba(0,229,195,0.2)',
+                borderRadius: '99px',
+                padding:      '4px 14px',
+                fontFamily:   DM_SANS,
+                fontSize:     '12px',
+                color:        `${BIO_CYAN}aa`,
+                cursor:       'pointer',
               }}
             >
               📍 עדכן מיקום לתצוגה מדויקת
             </button>
             {locationError && (
-              <div style={{ fontFamily: ASSIST, fontSize: '11px', color: '#E24B4A', marginTop: '4px' }}>
+              <div style={{ fontFamily: DM_SANS, fontSize: '11px', color: '#E24B4A', marginTop: '4px' }}>
                 {locationError}
               </div>
             )}
@@ -708,13 +727,18 @@ export function TodayCard({ day }: Props) {
               {day.plantingScore}
             </text>
             <text x="70" y="93" textAnchor="middle" dominantBaseline="central"
-              fontSize="11" fontWeight="400" fill={`${PARCH}55`} fontFamily={ASSIST.replace(/"/g, '')}>
+              fontSize="11" fontWeight="400" fill={`${TEXT_MID}55`} fontFamily={DM_SANS.replace(/'/g, '')}>
               / 10
             </text>
           </svg>
           <p style={{
-            fontFamily: ASSIST, fontSize: '11px', fontWeight: 600,
-            letterSpacing: '0.1em', textTransform: 'uppercase' as const, color: `${PARCH}44`, marginTop: '4px',
+            fontFamily:    DM_SANS,
+            fontSize:      '11px',
+            fontWeight:    600,
+            letterSpacing: '0.1em',
+            textTransform: 'uppercase' as const,
+            color:         `${TEXT_MID}44`,
+            marginTop:     '4px',
           }}>
             {t('plantingScore.label')}
           </p>
@@ -722,10 +746,15 @@ export function TodayCard({ day }: Props) {
 
         <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '8px', marginBottom: showDayTypeLegend ? '8px' : '16px' }}>
           <span style={{
-            fontFamily: ASSIST, fontSize: '14px', fontWeight: 600,
-            padding: '6px 20px', borderRadius: '50px',
-            backgroundColor: dtStyle.bg, color: dtStyle.color,
-            border: `1px solid ${dtStyle.color}44`, letterSpacing: '0.03em',
+            fontFamily:      DM_SANS,
+            fontSize:        '14px',
+            fontWeight:      600,
+            padding:         '6px 20px',
+            borderRadius:    '50px',
+            backgroundColor: dtStyle.bg,
+            color:           dtStyle.color,
+            border:          `1px solid ${dtStyle.color}44`,
+            letterSpacing:   '0.03em',
           }}>
             {dtStyle.emoji} {dayTypeLabel}
           </span>
@@ -740,16 +769,18 @@ export function TodayCard({ day }: Props) {
 
         {showDayTypeLegend && (
           <div style={{
-            marginBottom: '16px', padding: '12px 16px',
-            background: 'rgba(0,0,0,0.25)', borderRadius: '10px',
-            border: '1px solid rgba(245,200,64,0.12)',
+            marginBottom: '16px',
+            padding:      '12px 16px',
+            background:   'rgba(0,0,0,0.25)',
+            borderRadius: '10px',
+            border:       '1px solid rgba(0,229,195,0.1)',
           }}>
             {DAY_TYPE_LEGEND.map(({ emoji, name, desc }) => (
-              <div key={name} style={{ display: 'flex', gap: '8px', marginBottom: '6px', fontFamily: ASSIST, alignItems: 'flex-start' }}>
+              <div key={name} style={{ display: 'flex', gap: '8px', marginBottom: '6px', fontFamily: DM_SANS, alignItems: 'flex-start' }}>
                 <span style={{ fontSize: '14px' }}>{emoji}</span>
                 <div>
-                  <span style={{ fontSize: '12px', fontWeight: 600, color: PARCH }}>{name}</span>
-                  <span style={{ fontSize: '11px', color: `${PARCH}60` }}> — {desc}</span>
+                  <span style={{ fontSize: '12px', fontWeight: 600, color: TEXT_MID }}>{name}</span>
+                  <span style={{ fontSize: '11px', color: `${TEXT_MID}60` }}> — {desc}</span>
                 </div>
               </div>
             ))}
@@ -760,20 +791,30 @@ export function TodayCard({ day }: Props) {
           <div style={{ display: 'flex', flexWrap: 'wrap', justifyContent: dir === 'rtl' ? 'flex-end' : 'flex-start', gap: '8px' }}>
             {day.prep500Recommended && (
               <span style={{
-                fontFamily: ASSIST, fontSize: '12px', fontWeight: 500,
-                padding: '5px 14px', borderRadius: '50px',
-                border: `1px solid ${GOLD}55`, color: GOLD,
-                backgroundColor: 'rgba(245,200,64,0.06)', letterSpacing: '0.02em',
+                fontFamily:      DM_SANS,
+                fontSize:        '12px',
+                fontWeight:      500,
+                padding:         '5px 14px',
+                borderRadius:    '50px',
+                border:          `1px solid ${BIO_CYAN}55`,
+                color:           BIO_CYAN,
+                backgroundColor: 'rgba(0,229,195,0.06)',
+                letterSpacing:   '0.02em',
               }}>
                 {t('prep.500recommended')}
               </span>
             )}
             {day.prep501Recommended && (
               <span style={{
-                fontFamily: ASSIST, fontSize: '12px', fontWeight: 500,
-                padding: '5px 14px', borderRadius: '50px',
-                border: `1px solid ${GOLD}55`, color: GOLD,
-                backgroundColor: 'rgba(245,200,64,0.06)', letterSpacing: '0.02em',
+                fontFamily:      DM_SANS,
+                fontSize:        '12px',
+                fontWeight:      500,
+                padding:         '5px 14px',
+                borderRadius:    '50px',
+                border:          `1px solid ${BIO_CYAN}55`,
+                color:           BIO_CYAN,
+                backgroundColor: 'rgba(0,229,195,0.06)',
+                letterSpacing:   '0.02em',
               }}>
                 {t('prep.501recommended')}
               </span>

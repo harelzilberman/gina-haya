@@ -3,38 +3,38 @@
   40%           { transform: translateY(-5px); }
 }
 @keyframes chupchu-glow {
-  0%, 100% { box-shadow: 0 0 8px rgba(245,200,64,0.25); }
-  50%      { box-shadow: 0 0 18px rgba(245,200,64,0.5); }
+  0%, 100% { box-shadow: 0 0 8px rgba(0,229,195,0.2); }
+  50%      { box-shadow: 0 0 18px rgba(0,229,195,0.4); }
 }
 
 .chupchu-dot          { animation: chupchu-bounce 1.4s ease-in-out infinite; }
 .chupchu-avatar-pulse { animation: chupchu-glow 3s ease-in-out infinite; }
 
-.chupchu-textarea::placeholder { color: rgba(237,224,196,0.3); }
-.chupchu-textarea:focus        { border-color: rgba(245,200,64,0.4) !important; outline: none; }
+.chupchu-textarea::placeholder { color: rgba(176,207,191,0.3); }
+.chupchu-textarea:focus        { border-color: rgba(0,229,195,0.4) !important; outline: none; }
 
 .chupchu-scroll::-webkit-scrollbar       { width: 4px; }
 .chupchu-scroll::-webkit-scrollbar-track { background: transparent; }
-.chupchu-scroll::-webkit-scrollbar-thumb { background: rgba(125,192,132,0.2); border-radius: 2px; }
+.chupchu-scroll::-webkit-scrollbar-thumb { background: rgba(0,229,195,0.2); border-radius: 2px; }
 
 /* Mobile: solid backgrounds so the chat is readable over any page background */
 @media (max-width: 768px) {
   .chupchu-container {
-    background-color: rgba(10, 20, 15, 0.97) !important;
+    background-color: rgba(5, 13, 10, 0.97) !important;
     backdrop-filter: none !important;
     -webkit-backdrop-filter: none !important;
   }
   .chupchu-bubble-user {
-    background-color: rgba(60, 110, 65, 0.85) !important;
-    border-color: rgba(125, 192, 132, 0.4) !important;
+    background-color: rgba(0, 229, 195, 0.1) !important;
+    border-color: rgba(0, 229, 195, 0.3) !important;
   }
   .chupchu-bubble-chupchu {
-    background-color: rgba(18, 42, 20, 0.95) !important;
-    border-color: rgba(245, 200, 64, 0.25) !important;
+    background-color: rgba(14, 30, 23, 0.95) !important;
+    border-color: rgba(0, 229, 195, 0.2) !important;
   }
   .chupchu-input-wrapper {
-    background-color: rgba(18, 42, 20, 0.95) !important;
-    border-color: rgba(125, 192, 132, 0.35) !important;
+    background-color: rgba(14, 30, 23, 0.95) !important;
+    border-color: rgba(0, 229, 195, 0.3) !important;
   }
 }
 

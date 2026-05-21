@@ -9,12 +9,11 @@ interface Props {
   onClose: () => void;
 }
 
-const EARTH  = '#142B16';
-const SOIL   = '#1C3A1E';
-const GOLD   = '#F5C840';
-const PARCH  = '#EDE0C4';
-const FRANK  = '"Frank Ruhl Libre", Georgia, serif';
-const ASSIST = '"Assistant", "Heebo", sans-serif';
+const NIGHT_CARD = '#111f18';
+const BIO_CYAN   = '#00e5c3';
+const TEXT_MID   = '#b0cfbf';
+const FRANK      = '"Frank Ruhl Libre", Georgia, serif';
+const DM_SANS    = "'DM Sans', 'Assistant', 'Heebo', sans-serif";
 
 const SOIL_TYPES = ['clay', 'sandy', 'loam', 'chalky', 'silty', 'peaty', 'mixed'];
 
@@ -24,13 +23,13 @@ const MODAL_CSS = `
   to   { opacity: 1; transform: scale(1); }
 }
 .garden-modal-card { animation: garden-modal-in 0.2s ease-out both; }
-.garden-input::placeholder { color: rgba(237,224,196,0.3); }
+.garden-input::placeholder { color: rgba(176,207,191,0.3); }
 .garden-input:focus {
-  border-color: rgba(245,200,64,0.4) !important;
+  border-color: rgba(0,229,195,0.4) !important;
   outline: none;
-  box-shadow: 0 0 0 2px rgba(245,200,64,0.06);
+  box-shadow: 0 0 0 2px rgba(0,229,195,0.06);
 }
-.garden-select option { background-color: #1C3A1E; color: #EDE0C4; }
+.garden-select option { background-color: #111f18; color: #b0cfbf; }
 `;
 
 export function GardenEditModal({ garden, onClose }: Props) {
@@ -70,22 +69,22 @@ export function GardenEditModal({ garden, onClose }: Props) {
   const inputStyle: React.CSSProperties = {
     width:           '100%',
     boxSizing:       'border-box',
-    backgroundColor: 'rgba(20,43,22,0.8)',
-    border:          '1px solid rgba(125,192,132,0.2)',
+    backgroundColor: 'rgba(9,20,16,0.85)',
+    border:          '1px solid rgba(0,229,195,0.2)',
     borderRadius:    '8px',
     padding:         '11px 14px',
-    fontFamily:      ASSIST,
+    fontFamily:      DM_SANS,
     fontSize:        '14px',
-    color:           PARCH,
+    color:           TEXT_MID,
     transition:      'border-color 0.2s',
   };
 
   const labelStyle: React.CSSProperties = {
     display:      'block',
-    fontFamily:   ASSIST,
+    fontFamily:   DM_SANS,
     fontWeight:   400,
     fontSize:     '13px',
-    color:        `${PARCH}70`,
+    color:        `${TEXT_MID}70`,
     marginBottom: '6px',
   };
 
@@ -113,8 +112,8 @@ export function GardenEditModal({ garden, onClose }: Props) {
             position:        'relative',
             width:           '100%',
             maxWidth:        '448px',
-            backgroundColor: SOIL,
-            border:          '1px solid rgba(245,200,64,0.2)',
+            backgroundColor: NIGHT_CARD,
+            border:          '1px solid rgba(0,229,195,0.2)',
             borderRadius:    '16px',
             padding:         '32px',
             maxHeight:       '90vh',
@@ -132,9 +131,9 @@ export function GardenEditModal({ garden, onClose }: Props) {
               width:           '32px',
               height:          '32px',
               borderRadius:    '50%',
-              backgroundColor: 'rgba(245,200,64,0.1)',
-              border:          '1px solid rgba(245,200,64,0.25)',
-              color:           GOLD,
+              backgroundColor: 'rgba(0,229,195,0.08)',
+              border:          '1px solid rgba(0,229,195,0.25)',
+              color:           BIO_CYAN,
               fontSize:        '18px',
               cursor:          'pointer',
               display:         'flex',
@@ -142,19 +141,19 @@ export function GardenEditModal({ garden, onClose }: Props) {
               justifyContent:  'center',
               transition:      'background-color 0.15s',
             }}
-            onMouseEnter={e => { (e.currentTarget as HTMLElement).style.backgroundColor = 'rgba(245,200,64,0.2)'; }}
-            onMouseLeave={e => { (e.currentTarget as HTMLElement).style.backgroundColor = 'rgba(245,200,64,0.1)'; }}
+            onMouseEnter={e => { (e.currentTarget as HTMLElement).style.backgroundColor = 'rgba(0,229,195,0.16)'; }}
+            onMouseLeave={e => { (e.currentTarget as HTMLElement).style.backgroundColor = 'rgba(0,229,195,0.08)'; }}
           >
             ×
           </button>
 
           {/* Title */}
           <h2 style={{
-            fontFamily:   FRANK,
-            fontWeight:   700,
-            fontSize:     '20px',
-            color:        GOLD,
-            margin:       '0 0 24px',
+            fontFamily:         FRANK,
+            fontWeight:         700,
+            fontSize:           '20px',
+            color:              BIO_CYAN,
+            margin:             '0 0 24px',
             paddingInlineStart: '4px',
           }}>
             {t('editGarden')}
@@ -227,11 +226,11 @@ export function GardenEditModal({ garden, onClose }: Props) {
                 flex:            1,
                 padding:         '11px',
                 borderRadius:    '8px',
-                border:          '1px solid rgba(125,192,132,0.2)',
+                border:          '1px solid rgba(0,229,195,0.2)',
                 backgroundColor: 'transparent',
-                fontFamily:      ASSIST,
+                fontFamily:      DM_SANS,
                 fontSize:        '14px',
-                color:           `${PARCH}77`,
+                color:           `${TEXT_MID}77`,
                 cursor:          'pointer',
                 transition:      'background-color 0.15s',
               }}
@@ -248,11 +247,11 @@ export function GardenEditModal({ garden, onClose }: Props) {
                 padding:         '11px',
                 borderRadius:    '8px',
                 border:          'none',
-                backgroundColor: GOLD,
+                backgroundColor: BIO_CYAN,
                 fontFamily:      FRANK,
                 fontWeight:      600,
                 fontSize:        '14px',
-                color:           EARTH,
+                color:           '#050d0a',
                 cursor:          !name.trim() || saving ? 'default' : 'pointer',
                 opacity:         !name.trim() || saving ? 0.6 : 1,
                 transition:      'filter 0.15s, opacity 0.15s',

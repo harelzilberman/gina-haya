@@ -2,8 +2,8 @@ import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 
-const GOLD = '#F5C840';
-const ASST = '"Assistant", "Heebo", sans-serif';
+const GOLD = '#00e5c3';
+const ASST = "'DM Sans', 'Assistant', 'Heebo', sans-serif";
 
 const RESOURCE_LABELS: Record<string, { he: string; en: string }> = {
   plants:   { he: 'צמחים בגינה', en: 'plants in garden' },
@@ -65,7 +65,7 @@ export function UpgradeBanner({ type, current, limit, tier }: Props) {
         onClick={() => setDismissed(true)}
         style={{
           background: 'none', border: 'none',
-          color: 'rgba(237,224,196,0.35)', cursor: 'pointer',
+          color: 'rgba(176,207,191,0.35)', cursor: 'pointer',
           fontSize: '14px', padding: '2px 4px', lineHeight: 1,
           flexShrink: 0,
         }}

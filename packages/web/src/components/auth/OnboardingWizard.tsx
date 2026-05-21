@@ -85,7 +85,7 @@ function Step0({ onAgree }: { onAgree: () => void }) {
           target="_blank"
           rel="noopener noreferrer"
           className="text-xs underline"
-          style={{ color: '#4A7C59', display: 'block', marginBottom: '16px' }}
+          style={{ color: '#4A9C68', display: 'block', marginBottom: '16px' }}
         >
           {t('onboarding.readFullPolicy')}
         </a>
@@ -105,7 +105,7 @@ function Step0({ onAgree }: { onAgree: () => void }) {
         disabled={!agreed}
         className="w-full rounded-lg py-3 text-sm font-medium text-white transition"
         style={{
-          backgroundColor: agreed ? '#4A7C59' : '#9CA3AF',
+          backgroundColor: agreed ? '#4A9C68' : '#9CA3AF',
           cursor: agreed ? 'pointer' : 'not-allowed',
         }}
       >
@@ -175,8 +175,8 @@ function Step2({
               onClick={() => onChange(card.value)}
               className="rounded-xl border-2 p-4 flex flex-col items-center gap-1 transition"
               style={{
-                borderColor: selected ? '#4A7C59' : '#E5E7EB',
-                backgroundColor: selected ? 'rgba(74,124,89,0.08)' : 'white',
+                borderColor: selected ? '#4A9C68' : '#E5E7EB',
+                backgroundColor: selected ? 'rgba(74,156,104,0.08)' : 'white',
               }}
             >
               <span className="text-2xl">{card.emoji}</span>
@@ -262,9 +262,9 @@ function Step3({
                   onClick={() => onToggle(p.id, p.commonNameHe, p.commonNameEn)}
                   className="rounded-full px-3 py-1 text-sm font-medium transition"
                   style={{
-                    backgroundColor: selected ? '#4A7C59' : 'white',
+                    backgroundColor: selected ? '#4A9C68' : 'white',
                     color: selected ? 'white' : '#1B2A4A',
-                    border: selected ? '1.5px solid #4A7C59' : '1.5px solid #E5E7EB',
+                    border: selected ? '1.5px solid #4A9C68' : '1.5px solid #E5E7EB',
                   }}
                 >
                   {lang === 'he' ? p.commonNameHe : p.commonNameEn}
@@ -279,7 +279,7 @@ function Step3({
         onClick={onFinish}
         disabled={isSaving}
         className="w-full rounded-lg py-3 text-sm font-medium text-white mb-3 transition"
-        style={{ backgroundColor: '#4A7C59' }}
+        style={{ backgroundColor: '#4A9C68' }}
       >
         {isSaving ? t('onboarding.saving') : t('onboarding.finish')}
       </button>
@@ -299,7 +299,7 @@ function NavButtons({ onContinue, onSkip }: { onContinue: () => void; onSkip: ()
       <button
         onClick={onContinue}
         className="w-full rounded-lg py-3 text-sm font-medium text-white mb-3 transition hover:opacity-90"
-        style={{ backgroundColor: '#4A7C59' }}
+        style={{ backgroundColor: '#4A9C68' }}
       >
         {t('onboarding.continue')}
       </button>

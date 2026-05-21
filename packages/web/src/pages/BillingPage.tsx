@@ -6,13 +6,13 @@ import { useUpgradeModalStore } from '../stores/upgradeModalStore';
 import { useTier } from '../hooks/useTier';
 import { api } from '../api/client';
 
-const EARTH  = '#142B16';
-const GOLD   = '#F5C840';
-const SAGE   = '#7DC084';
+const EARTH  = '#050d0a';
+const GOLD   = '#00e5c3';
+const SAGE   = '#4A9C68';
 const CLAY   = '#9B7A48';
-const PARCH  = '#EDE0C4';
+const PARCH  = '#b0cfbf';
 const FRANK  = '"Frank Ruhl Libre", Georgia, serif';
-const ASSIST = '"Assistant", "Heebo", sans-serif';
+const ASSIST = "'DM Sans', 'Assistant', 'Heebo', sans-serif";
 const PLAYFAIR = '"Playfair Display", Georgia, serif';
 
 const NOISE_BG = `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='250' height='250'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.75' numOctaves='4' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='250' height='250' filter='url(%23n)' opacity='0.55'/%3E%3C/svg%3E")`;
@@ -46,8 +46,8 @@ const TIER_FEATURES_EN: Record<string, string[]> = {
 };
 
 const cardStyle = (highlight?: boolean): React.CSSProperties => ({
-  background:    'rgba(28,58,30,0.7)',
-  border:        highlight ? `2px solid ${GOLD}` : '1px solid rgba(125,192,132,0.15)',
+  background:    'rgba(9,20,16,0.7)',
+  border:        highlight ? `2px solid ${GOLD}` : '1px solid rgba(0,229,195,0.15)',
   borderRadius:  '16px',
   padding:       '24px',
   backdropFilter:'blur(8px)',
@@ -132,8 +132,8 @@ export function BillingPage() {
           {status === 'success' && (
             <div style={{
               ...cardStyle(),
-              border:          '1px solid rgba(125,192,132,0.4)',
-              backgroundColor: 'rgba(74,128,80,0.15)',
+              border:          '1px solid rgba(0,229,195,0.4)',
+              backgroundColor: 'rgba(74,156,104,0.15)',
               fontFamily:      ASSIST,
               fontSize:        '14px',
               color:           SAGE,
@@ -280,7 +280,7 @@ export function BillingPage() {
                         flex:            1,
                         padding:         '9px',
                         borderRadius:    '8px',
-                        border:          '1px solid rgba(125,192,132,0.2)',
+                        border:          '1px solid rgba(0,229,195,0.2)',
                         backgroundColor: 'transparent',
                         fontFamily:      ASSIST,
                         fontSize:        '13px',

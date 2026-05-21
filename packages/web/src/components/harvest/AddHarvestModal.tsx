@@ -3,17 +3,17 @@ import { useGardenStore } from '../../stores/gardenStore';
 import { useHarvestStore, type AddHarvestData } from '../../stores/harvestStore';
 import { useToday } from '../../hooks/useCalendar';
 
-const GOLD   = '#F5C840';
-const PARCH  = '#EDE0C4';
-const EARTH  = '#1C3A1E';
+const GOLD   = '#00e5c3';
+const PARCH  = '#b0cfbf';
+const EARTH  = '#050d0a';
 const FRANK  = '"Frank Ruhl Libre", Georgia, serif';
-const ASSIST = '"Assistant", "Heebo", sans-serif';
+const ASSIST = "'DM Sans', 'Assistant', 'Heebo', sans-serif";
 
 const MODAL_CSS = `
 .harvest-input {
   width: 100%;
-  background: rgba(20,43,22,0.8);
-  border: 1px solid rgba(125,192,132,0.2);
+  background: rgba(9,20,16,0.8);
+  border: 1px solid rgba(0,229,195,0.2);
   border-radius: 8px;
   padding: 9px 12px;
   font-family: ${ASSIST};
@@ -25,11 +25,11 @@ const MODAL_CSS = `
   transition: border-color 0.2s;
   box-sizing: border-box;
 }
-.harvest-input:focus { border-color: rgba(245,200,64,0.4); }
-.harvest-input::placeholder { color: rgba(237,224,196,0.3); }
+.harvest-input:focus { border-color: rgba(0,229,195,0.4); }
+.harvest-input::placeholder { color: rgba(176,207,191,0.3); }
 .harvest-select {
-  background: rgba(20,43,22,0.8);
-  border: 1px solid rgba(125,192,132,0.2);
+  background: rgba(9,20,16,0.8);
+  border: 1px solid rgba(0,229,195,0.2);
   border-radius: 8px;
   padding: 9px 12px;
   font-family: ${ASSIST};
@@ -40,7 +40,7 @@ const MODAL_CSS = `
   transition: border-color 0.2s;
   cursor: pointer;
 }
-.harvest-select:focus { border-color: rgba(245,200,64,0.4); }
+.harvest-select:focus { border-color: rgba(0,229,195,0.4); }
 `;
 
 const DAY_TYPE_HE: Record<string, string> = {
@@ -156,7 +156,7 @@ export function AddHarvestModal({ onClose }: Props) {
           maxHeight:       '90vh',
           overflowY:       'auto',
           backgroundColor: EARTH,
-          border:          '1px solid rgba(245,200,64,0.2)',
+          border:          '1px solid rgba(0,229,195,0.2)',
           borderRadius:    '16px',
           padding:         '24px 22px',
           direction:       'rtl',
@@ -229,8 +229,8 @@ export function AddHarvestModal({ onClose }: Props) {
           {plantNameHe && !useCustomPlant && (
             <div style={{
               padding: '8px 12px',
-              backgroundColor: 'rgba(245,200,64,0.08)',
-              border: '1px solid rgba(245,200,64,0.2)',
+              backgroundColor: 'rgba(0,229,195,0.08)',
+              border: '1px solid rgba(0,229,195,0.2)',
               borderRadius: '8px',
               fontFamily: ASSIST,
               fontSize: '14px',
@@ -311,8 +311,8 @@ export function AddHarvestModal({ onClose }: Props) {
           {day && (
             <div style={{
               padding: '8px 12px',
-              backgroundColor: 'rgba(20,43,22,0.6)',
-              border: '1px solid rgba(245,200,64,0.1)',
+              backgroundColor: 'rgba(9,20,16,0.6)',
+              border: '1px solid rgba(0,229,195,0.1)',
               borderRadius: '8px',
             }}>
               <div style={{ fontFamily: ASSIST, fontSize: '11px', color: `${PARCH}44`, marginBottom: '4px' }}>
@@ -339,8 +339,8 @@ export function AddHarvestModal({ onClose }: Props) {
               fontFamily:      FRANK,
               fontWeight:      700,
               fontSize:        '16px',
-              color:           '#142B16',
-              backgroundColor: isSaving ? 'rgba(245,200,64,0.5)' : GOLD,
+              color:           '#050d0a',
+              backgroundColor: isSaving ? 'rgba(0,229,195,0.5)' : GOLD,
               border:          'none',
               borderRadius:    '8px',
               padding:         '12px',

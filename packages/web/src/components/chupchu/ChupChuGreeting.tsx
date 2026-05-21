@@ -1,11 +1,10 @@
 import { useTranslation } from 'react-i18next';
 import { useToday } from '../../hooks/useCalendar';
 
-const MOON_GOLD = '#B7924A';
-const GOLD      = '#F5C840';
-const PARCH     = '#EDE0C4';
-const PLAYFAIR  = '"Playfair Display", Georgia, serif';
-const ASSIST    = '"Assistant", "Heebo", sans-serif';
+const BIO_CYAN = '#00e5c3';
+const TEXT_MID = '#b0cfbf';
+const FRANK    = '"Frank Ruhl Libre", Georgia, serif';
+const DM_SANS  = "'DM Sans', 'Assistant', 'Heebo', sans-serif";
 
 const DAY_TYPE_HE: Record<string, string> = {
   fruit:  'יום פרי 🍅',
@@ -36,7 +35,8 @@ export function ChupChuGreeting() {
             width:          '28px',
             height:         '28px',
             borderRadius:   '50%',
-            background:     `radial-gradient(circle at 40% 40%, #F5D060, ${GOLD}, #C8960A)`,
+            background:     'radial-gradient(circle at 40% 40%, rgba(0,229,195,0.5), rgba(0,180,150,0.2))',
+            border:         '1px solid rgba(0,229,195,0.3)',
             display:        'flex',
             alignItems:     'center',
             justifyContent: 'center',
@@ -46,27 +46,27 @@ export function ChupChuGreeting() {
           }}
           aria-hidden="true"
         >
-          🌕
+          🌱
         </div>
 
         {/* Bubble */}
         <div
           style={{
-            borderRadius:    '16px',
+            borderRadius:        '16px',
             borderTopLeftRadius: '4px',
-            padding:         '10px 14px',
-            fontSize:        '14px',
-            lineHeight:      1.65,
-            backgroundColor: 'var(--color-background-secondary, rgba(28,58,30,0.8))',
-            border:          '1px solid rgba(245,200,64,0.15)',
-            borderInlineEnd: `2px solid ${GOLD}`,
-            color:           `var(--color-text-primary, ${PARCH})`,
-            fontFamily:      PLAYFAIR,
+            padding:             '10px 14px',
+            fontSize:            '14px',
+            lineHeight:          1.65,
+            backgroundColor:     '#111f18',
+            border:              '1px solid rgba(0,229,195,0.15)',
+            borderInlineEnd:     `2px solid ${BIO_CYAN}`,
+            color:               TEXT_MID,
+            fontFamily:          FRANK,
           }}
         >
           <p style={{ margin: 0 }}>{t('greeting')}</p>
           {calendarLine && (
-            <p style={{ margin: '4px 0 0', fontSize: '12px', fontFamily: ASSIST, color: `${PARCH}99` }}>
+            <p style={{ margin: '4px 0 0', fontSize: '12px', fontFamily: DM_SANS, color: `${TEXT_MID}99` }}>
               {calendarLine}
             </p>
           )}

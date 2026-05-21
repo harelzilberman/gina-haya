@@ -1,7 +1,7 @@
 import { useTranslation } from 'react-i18next';
 
 const NAVY = '#1B2A4A';
-const SAGE = '#4A7C59';
+const SAGE = '#4A9C68';
 const CREAM = '#FDF6EC';
 
 export function PrivacyPolicyPage() {

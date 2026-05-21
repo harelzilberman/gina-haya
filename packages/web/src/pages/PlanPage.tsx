@@ -12,10 +12,10 @@ import { NotificationBanner } from '../components/plan/NotificationBanner';
 import { useTasks } from '../hooks/useTasks';
 import { printWeeklyPlan } from '../utils/printPlan';
 
-const GOLD   = '#F5C840';
-const PARCH  = '#EDE0C4';
+const GOLD   = '#00e5c3';
+const PARCH  = '#b0cfbf';
 const FRANK  = '"Frank Ruhl Libre", Georgia, serif';
-const ASSIST = '"Assistant", "Heebo", sans-serif';
+const ASSIST = "'DM Sans', 'Assistant', 'Heebo', sans-serif";
 
 const PLAN_CSS = `
 @keyframes plan-moon-pulse {
@@ -40,7 +40,7 @@ function LoadingState() {
       justifyContent: 'center', minHeight: 'calc(100vh - 80px)',
       padding: '40px 16px', textAlign: 'center',
     }}>
-      <span style={{ fontSize: '56px', animation: 'plan-moon-pulse 2.5s ease-in-out infinite' }}>🌕</span>
+      <span style={{ fontSize: '56px', animation: 'plan-moon-pulse 2.5s ease-in-out infinite' }}>🌱</span>
       <p style={{ fontFamily: FRANK, fontSize: '20px', color: GOLD, margin: '20px 0 8px' }}>
         {t('loading.title')}
       </p>
@@ -101,7 +101,7 @@ function NoGardenPrompt({ onNavigate }: { onNavigate: () => void }) {
         style={{
           fontFamily: FRANK, fontSize: '15px', fontWeight: 700,
           padding: '12px 28px', borderRadius: '8px', border: 'none',
-          backgroundColor: GOLD, color: '#142B16', cursor: 'pointer',
+          backgroundColor: GOLD, color: '#050d0a', cursor: 'pointer',
         }}
       >
         {t('noGarden.cta')}
@@ -163,28 +163,28 @@ export function PlanPage() {
   const isGardenLoading = !gardenCheckStarted || gardenStore.isLoading;
 
   if (isGardenLoading) return (
-    <div style={{ background: '#142B16', minHeight: '100vh' }}>
+    <div style={{ background: '#050d0a', minHeight: '100vh' }}>
       <style>{PLAN_CSS}</style>
       <LoadingState />
     </div>
   );
 
   if (gardenStore.gardens.length === 0) return (
-    <div style={{ background: '#142B16', minHeight: '100vh' }}>
+    <div style={{ background: '#050d0a', minHeight: '100vh' }}>
       <style>{PLAN_CSS}</style>
       <NoGardenPrompt onNavigate={() => navigate('/garden')} />
     </div>
   );
 
   if (planStore.isLoading || (!planStore.weeklyPlan && !planStore.error)) return (
-    <div style={{ background: '#142B16', minHeight: '100vh' }}>
+    <div style={{ background: '#050d0a', minHeight: '100vh' }}>
       <style>{PLAN_CSS}</style>
       <LoadingState />
     </div>
   );
 
   if (planStore.error && !planStore.weeklyPlan) return (
-    <div style={{ background: '#142B16', minHeight: '100vh' }}>
+    <div style={{ background: '#050d0a', minHeight: '100vh' }}>
       <style>{PLAN_CSS}</style>
       <ErrorState error={planStore.error} onRetry={() => planStore.loadWeeklyPlan()} />
     </div>
@@ -193,7 +193,7 @@ export function PlanPage() {
   const plan = planStore.weeklyPlan!;
 
   return (
-    <div dir={isHe ? 'rtl' : 'ltr'} style={{ background: '#142B16', minHeight: '100vh', paddingTop: '80px', paddingBottom: '64px' }}>
+    <div dir={isHe ? 'rtl' : 'ltr'} style={{ background: '#050d0a', minHeight: '100vh', paddingTop: '80px', paddingBottom: '64px' }}>
       <style>{PLAN_CSS}</style>
 
       {/* Noise overlay */}
@@ -236,7 +236,7 @@ export function PlanPage() {
             style={{
               fontFamily: ASSIST, fontSize: '14px', fontWeight: 500,
               padding: '11px 28px', borderRadius: '8px',
-              border: 'rgba(245,200,64,0.25) 1px solid',
+              border: 'rgba(0,229,195,0.25) 1px solid',
               color: `${PARCH}88`, backgroundColor: 'transparent', cursor: 'pointer',
               transition: 'color 0.2s, border-color 0.2s',
             }}
@@ -246,7 +246,7 @@ export function PlanPage() {
             }}
             onMouseLeave={e => {
               (e.currentTarget as HTMLElement).style.color = `${PARCH}88`;
-              (e.currentTarget as HTMLElement).style.borderColor = 'rgba(245,200,64,0.25)';
+              (e.currentTarget as HTMLElement).style.borderColor = 'rgba(0,229,195,0.25)';
             }}
           >
             {t('printButton')}

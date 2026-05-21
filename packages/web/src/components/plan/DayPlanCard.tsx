@@ -2,15 +2,15 @@ import { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import type { DayPlan } from '../../stores/planStore';
 
-const GOLD      = '#F5C840';
-const PARCH     = '#EDE0C4';
-const SAGE      = '#7DC084';
+const GOLD      = '#00e5c3';
+const PARCH     = '#b0cfbf';
+const SAGE      = '#4A9C68';
 const NODE_RED  = '#A33030';
 const FRANK     = '"Frank Ruhl Libre", Georgia, serif';
-const ASSIST    = '"Assistant", "Heebo", sans-serif';
+const ASSIST    = "'DM Sans', 'Assistant', 'Heebo', sans-serif";
 
 const SCORE_COLOURS: Record<string, string> = {
-  green:  '#4A7C59',
+  green:  '#4A9C68',
   yellow: '#C8A040',
   orange: '#C0622A',
   red:    '#A33030',
@@ -21,7 +21,7 @@ const DAY_TYPE_STYLES: Record<string, { bg: string; color: string }> = {
   fruit:  { bg: 'rgba(192,98,42,0.18)',  color: '#E8956A' },
   root:   { bg: 'rgba(180,140,40,0.18)', color: '#D4B04A' },
   flower: { bg: 'rgba(160,80,160,0.18)', color: '#C884C8' },
-  leaf:   { bg: 'rgba(74,128,80,0.22)',  color: SAGE      },
+  leaf:   { bg: 'rgba(74,156,104,0.22)',  color: SAGE      },
 };
 
 const DAY_TYPE_EN: Record<string, string> = {
@@ -50,7 +50,7 @@ export function DayPlanCard({ day, isToday, isExpanded, onToggle, forceExpanded 
     return () => cancelAnimationFrame(id);
   }, []);
 
-  const scoreColour  = SCORE_COLOURS[day.scoreColour] ?? '#4A7C59';
+  const scoreColour  = SCORE_COLOURS[day.scoreColour] ?? '#4A9C68';
   const dtStyle      = DAY_TYPE_STYLES[day.dayType] ?? { bg: 'rgba(100,100,100,0.18)', color: PARCH };
   const dashOffset   = mounted ? SMALL_C * (1 - day.plantingScore / 10) : SMALL_C;
 
@@ -58,11 +58,11 @@ export function DayPlanCard({ day, isToday, isExpanded, onToggle, forceExpanded 
     ? 'rgba(163,48,48,0.4)'
     : isToday
       ? GOLD
-      : 'rgba(245,200,64,0.12)';
+      : 'rgba(0,229,195,0.12)';
 
   const cardBg = day.nodeActive
-    ? 'linear-gradient(145deg, rgba(163,48,48,0.12) 0%, rgba(20,43,22,0.85) 100%)'
-    : 'linear-gradient(145deg, rgba(28,58,30,0.7) 0%, rgba(20,43,22,0.82) 100%)';
+    ? 'linear-gradient(145deg, rgba(163,48,48,0.12) 0%, rgba(9,20,16,0.85) 100%)'
+    : 'linear-gradient(145deg, rgba(9,20,16,0.7) 0%, rgba(9,20,16,0.82) 100%)';
 
   const dayNameEn = new Date(day.date + 'T12:00:00').toLocaleDateString('en-US', { weekday: 'long' });
   const dateEn    = new Date(day.date + 'T12:00:00').toLocaleDateString('en-US', { day: 'numeric', month: 'long' });
@@ -309,8 +309,8 @@ export function DayPlanCard({ day, isToday, isExpanded, onToggle, forceExpanded 
             gap:             '8px',
             padding:         '8px 12px',
             borderRadius:    '8px',
-            backgroundColor: 'rgba(245,200,64,0.04)',
-            border:          '1px solid rgba(245,200,64,0.08)',
+            backgroundColor: 'rgba(0,229,195,0.04)',
+            border:          '1px solid rgba(0,229,195,0.08)',
             marginBottom:    '14px',
           }}>
             <span style={{ fontSize: '14px' }}>
@@ -328,11 +328,11 @@ export function DayPlanCard({ day, isToday, isExpanded, onToggle, forceExpanded 
             <div className="chupchu-tip" style={{
               padding:            '12px 14px',
               borderRadius:       '8px',
-              backgroundColor:    'rgba(245,200,64,0.04)',
+              backgroundColor:    'rgba(0,229,195,0.04)',
               borderInlineStart:  `3px solid ${GOLD}66`,
-              borderTop:          '1px solid rgba(245,200,64,0.08)',
-              borderBottom:       '1px solid rgba(245,200,64,0.08)',
-              borderInlineEnd:    '1px solid rgba(245,200,64,0.08)',
+              borderTop:          '1px solid rgba(0,229,195,0.08)',
+              borderBottom:       '1px solid rgba(0,229,195,0.08)',
+              borderInlineEnd:    '1px solid rgba(0,229,195,0.08)',
             }}>
               <p style={{
                 fontFamily:  ASSIST,

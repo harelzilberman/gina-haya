@@ -5,8 +5,8 @@ interface Props {
   day: BiodynamicDay;
 }
 
-const GOLD   = '#F5C840';
-const ASSIST = '"Assistant", "Heebo", sans-serif';
+const BIO_CYAN = '#00e5c3';
+const DM_SANS  = "'DM Sans', 'Assistant', 'Heebo', sans-serif";
 
 const BANNER_CSS = `
 @keyframes node-pulse {
@@ -41,28 +41,28 @@ export function NodeBlackoutBanner({ day }: Props) {
       <div
         role="alert"
         style={{
-          width:          '100%',
-          padding:        '12px 20px',
-          marginBottom:   '4px',
-          backgroundColor:'rgba(8,14,8,0.88)',
-          borderBottom:   `1px solid ${GOLD}33`,
-          borderTop:      `2px solid ${GOLD}55`,
-          backdropFilter: 'blur(6px)',
-          display:        'flex',
-          flexDirection:  'column',
-          alignItems:     'center',
-          gap:            '4px',
+          width:           '100%',
+          padding:         '12px 20px',
+          marginBottom:    '4px',
+          backgroundColor: 'rgba(8,14,8,0.88)',
+          borderBottom:    `1px solid ${BIO_CYAN}33`,
+          borderTop:       `2px solid ${BIO_CYAN}55`,
+          backdropFilter:  'blur(6px)',
+          display:         'flex',
+          flexDirection:   'column',
+          alignItems:      'center',
+          gap:             '4px',
         }}
       >
         <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
           <span className="node-dot" style={{ fontSize: '14px', lineHeight: 1 }}>⚫</span>
           <p style={{
-            fontFamily:   ASSIST,
-            fontSize:     '13px',
-            fontWeight:   700,
-            color:        GOLD,
-            margin:       0,
-            letterSpacing:'0.04em',
+            fontFamily:    DM_SANS,
+            fontSize:      '13px',
+            fontWeight:    700,
+            color:         BIO_CYAN,
+            margin:        0,
+            letterSpacing: '0.04em',
           }}>
             {t('nodeBlackout.active')}
           </p>
@@ -71,9 +71,9 @@ export function NodeBlackoutBanner({ day }: Props) {
 
         {endTime && (
           <p style={{
-            fontFamily: ASSIST,
+            fontFamily: DM_SANS,
             fontSize:   '12px',
-            color:      `${GOLD}77`,
+            color:      `${BIO_CYAN}77`,
             margin:     0,
           }}>
             {t('nodeBlackout.endsAt', { time: endTime })}

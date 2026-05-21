@@ -3,11 +3,11 @@ import { useNavigate } from 'react-router-dom';
 import { useGardenSwitcherStore } from '../../stores/gardenSwitcherStore';
 import { useToastStore } from '../../stores/toastStore';
 
-const EARTH = '#142B16';
-const GOLD  = '#F5C840';
-const PARCH = '#EDE0C4';
-const FRANK = '"Frank Ruhl Libre", Georgia, serif';
-const ASST  = '"Assistant", "Heebo", sans-serif';
+const NIGHT_CARD = '#111f18';
+const BIO_CYAN   = '#00e5c3';
+const TEXT_MID   = '#b0cfbf';
+const FRANK      = '"Frank Ruhl Libre", Georgia, serif';
+const DM_SANS    = "'DM Sans', 'Assistant', 'Heebo', sans-serif";
 
 interface Props {
   isOpen: boolean;
@@ -35,8 +35,8 @@ export function CreateGardenModal({ isOpen, onClose, onCreated }: Props) {
     setError('');
     try {
       const garden = await createGarden({
-        name: name.trim(),
-        location: location.trim() || undefined,
+        name:        name.trim(),
+        location:    location.trim() || undefined,
         description: description.trim() || undefined,
       });
       // Await full switch (resets + reloads map/trackers) before closing
@@ -54,17 +54,25 @@ export function CreateGardenModal({ isOpen, onClose, onCreated }: Props) {
   }
 
   const inputStyle: React.CSSProperties = {
-    width: '100%', boxSizing: 'border-box',
-    backgroundColor: 'rgba(255,255,255,0.05)',
-    border: '1px solid rgba(245,200,64,0.25)',
-    borderRadius: '6px', padding: '10px 12px',
-    fontFamily: ASST, fontSize: '14px', color: PARCH,
-    outline: 'none', direction: 'rtl',
+    width:           '100%',
+    boxSizing:       'border-box',
+    backgroundColor: 'rgba(9,20,16,0.85)',
+    border:          '1px solid rgba(0,229,195,0.2)',
+    borderRadius:    '6px',
+    padding:         '10px 12px',
+    fontFamily:      DM_SANS,
+    fontSize:        '14px',
+    color:           TEXT_MID,
+    outline:         'none',
+    direction:       'rtl',
   };
 
   const labelStyle: React.CSSProperties = {
-    display: 'block', fontFamily: ASST, fontSize: '13px',
-    color: `${PARCH}BB`, marginBottom: '6px',
+    display:      'block',
+    fontFamily:   DM_SANS,
+    fontSize:     '13px',
+    color:        `${TEXT_MID}BB`,
+    marginBottom: '6px',
   };
 
   return (
@@ -72,33 +80,46 @@ export function CreateGardenModal({ isOpen, onClose, onCreated }: Props) {
       role="dialog"
       aria-modal="true"
       style={{
-        position: 'fixed', inset: 0, zIndex: 600,
-        display: 'flex', alignItems: 'center', justifyContent: 'center',
-        backgroundColor: 'rgba(0,0,0,0.7)', backdropFilter: 'blur(6px)',
-        padding: '16px',
+        position:        'fixed',
+        inset:           0,
+        zIndex:          600,
+        display:         'flex',
+        alignItems:      'center',
+        justifyContent:  'center',
+        backgroundColor: 'rgba(0,0,0,0.7)',
+        backdropFilter:  'blur(6px)',
+        padding:         '16px',
       }}
       onClick={e => { if (e.target === e.currentTarget && !isSubmitting) onClose(); }}
     >
       <div
         dir="rtl"
         style={{
-          backgroundColor: '#1a3a1c',
-          border: '1px solid rgba(245,200,64,0.2)',
-          borderRadius: '14px',
-          padding: '28px 24px',
-          width: '100%', maxWidth: '420px',
-          boxShadow: '0 20px 70px rgba(0,0,0,0.6)',
+          backgroundColor: NIGHT_CARD,
+          border:          '1px solid rgba(0,229,195,0.2)',
+          borderRadius:    '14px',
+          padding:         '28px 24px',
+          width:           '100%',
+          maxWidth:        '420px',
+          boxShadow:       '0 20px 70px rgba(0,0,0,0.6)',
         }}
       >
         {/* Header */}
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '24px' }}>
-          <h2 style={{ fontFamily: FRANK, fontSize: '20px', color: GOLD, margin: 0 }}>
+          <h2 style={{ fontFamily: FRANK, fontSize: '20px', color: BIO_CYAN, margin: 0 }}>
             גינה חדשה 🌿
           </h2>
           <button
             onClick={onClose}
             disabled={isSubmitting}
-            style={{ background: 'none', border: 'none', color: `${PARCH}50`, cursor: 'pointer', fontSize: '20px', padding: '4px' }}
+            style={{
+              background: 'none',
+              border:     'none',
+              color:      `${TEXT_MID}50`,
+              cursor:     'pointer',
+              fontSize:   '20px',
+              padding:    '4px',
+            }}
           >
             ✕
           </button>
@@ -141,7 +162,13 @@ export function CreateGardenModal({ isOpen, onClose, onCreated }: Props) {
           </div>
 
           {error && (
-            <p style={{ fontFamily: ASST, fontSize: '13px', color: '#e06060', marginBottom: '16px', textAlign: 'right' }}>
+            <p style={{
+              fontFamily:  DM_SANS,
+              fontSize:    '13px',
+              color:       '#e06060',
+              marginBottom:'16px',
+              textAlign:   'right',
+            }}>
               {error}
             </p>
           )}
@@ -152,10 +179,15 @@ export function CreateGardenModal({ isOpen, onClose, onCreated }: Props) {
               onClick={onClose}
               disabled={isSubmitting}
               style={{
-                flex: 1, padding: '12px',
-                background: 'transparent', color: `${PARCH}80`,
-                border: '1px solid rgba(237,224,196,0.2)', borderRadius: '8px',
-                fontFamily: ASST, fontSize: '14px', cursor: 'pointer',
+                flex:        1,
+                padding:     '12px',
+                background:  'transparent',
+                color:       `${TEXT_MID}80`,
+                border:      '1px solid rgba(0,229,195,0.2)',
+                borderRadius:'8px',
+                fontFamily:  DM_SANS,
+                fontSize:    '14px',
+                cursor:      'pointer',
               }}
             >
               ביטול
@@ -164,12 +196,17 @@ export function CreateGardenModal({ isOpen, onClose, onCreated }: Props) {
               type="submit"
               disabled={isSubmitting || !name.trim()}
               style={{
-                flex: 2, padding: '12px',
-                backgroundColor: isSubmitting || !name.trim() ? 'rgba(245,200,64,0.4)' : GOLD,
-                color: EARTH, border: 'none', borderRadius: '8px',
-                fontFamily: FRANK, fontSize: '15px', fontWeight: 700,
-                cursor: isSubmitting || !name.trim() ? 'not-allowed' : 'pointer',
-                transition: 'filter 0.2s',
+                flex:            2,
+                padding:         '12px',
+                backgroundColor: isSubmitting || !name.trim() ? 'rgba(0,229,195,0.35)' : BIO_CYAN,
+                color:           '#050d0a',
+                border:          'none',
+                borderRadius:    '8px',
+                fontFamily:      FRANK,
+                fontSize:        '15px',
+                fontWeight:      700,
+                cursor:          isSubmitting || !name.trim() ? 'not-allowed' : 'pointer',
+                transition:      'filter 0.2s',
               }}
               onMouseEnter={e => { if (!isSubmitting && name.trim()) (e.currentTarget as HTMLElement).style.filter = 'brightness(1.1)'; }}
               onMouseLeave={e => { (e.currentTarget as HTMLElement).style.filter = 'none'; }}

@@ -4,14 +4,14 @@ import { useAuthStore } from '../../stores/authStore';
 import { useTier } from '../../hooks/useTier';
 import { api } from '../../api/client';
 
-const EARTH    = '#142B16';
-const SOIL     = '#1C3A1E';
-const GOLD     = '#F5C840';
-const SAGE     = '#7DC084';
+const EARTH    = '#050d0a';
+const SOIL     = '#111f18';
+const GOLD     = '#00e5c3';
+const SAGE     = '#4A9C68';
 const CLAY     = '#9B7A48';
-const PARCH    = '#EDE0C4';
+const PARCH    = '#b0cfbf';
 const FRANK    = '"Frank Ruhl Libre", Georgia, serif';
-const ASSIST   = '"Assistant", "Heebo", sans-serif';
+const ASSIST   = "'DM Sans', 'Assistant', 'Heebo', sans-serif";
 const PLAYFAIR = '"Playfair Display", Georgia, serif';
 
 const MODAL_CSS = `
@@ -24,7 +24,7 @@ const MODAL_CSS = `
 }
 .upgrade-modal-scroll::-webkit-scrollbar { width: 4px; }
 .upgrade-modal-scroll::-webkit-scrollbar-track { background: transparent; }
-.upgrade-modal-scroll::-webkit-scrollbar-thumb { background: rgba(125,192,132,0.2); border-radius: 2px; }
+.upgrade-modal-scroll::-webkit-scrollbar-thumb { background: rgba(0,229,195,0.2); border-radius: 2px; }
 `;
 
 type TierKey = 'free' | 'grower' | 'gardener_pro' | 'professional';
@@ -127,7 +127,7 @@ export function UpgradeModal() {
             maxHeight:       '90vh',
             overflowY:       'auto',
             backgroundColor: SOIL,
-            border:          '1px solid rgba(245,200,64,0.2)',
+            border:          '1px solid rgba(0,229,195,0.2)',
             borderRadius:    '16px',
           }}
         >
@@ -137,7 +137,7 @@ export function UpgradeModal() {
             alignItems:   'center',
             justifyContent:'space-between',
             padding:      '24px 28px 20px',
-            borderBottom: '1px solid rgba(125,192,132,0.1)',
+            borderBottom: '1px solid rgba(0,229,195,0.1)',
             position:     'sticky',
             top:          0,
             backgroundColor: SOIL,
@@ -170,8 +170,8 @@ export function UpgradeModal() {
                 width:           '34px',
                 height:          '34px',
                 borderRadius:    '50%',
-                backgroundColor: 'rgba(245,200,64,0.1)',
-                border:          '1px solid rgba(245,200,64,0.25)',
+                backgroundColor: 'rgba(0,229,195,0.1)',
+                border:          '1px solid rgba(0,229,195,0.25)',
                 color:           GOLD,
                 fontSize:        '18px',
                 cursor:          'pointer',
@@ -181,8 +181,8 @@ export function UpgradeModal() {
                 transition:      'background-color 0.15s',
                 flexShrink:      0,
               }}
-              onMouseEnter={e => { (e.currentTarget as HTMLElement).style.backgroundColor = 'rgba(245,200,64,0.2)'; }}
-              onMouseLeave={e => { (e.currentTarget as HTMLElement).style.backgroundColor = 'rgba(245,200,64,0.1)'; }}
+              onMouseEnter={e => { (e.currentTarget as HTMLElement).style.backgroundColor = 'rgba(0,229,195,0.2)'; }}
+              onMouseLeave={e => { (e.currentTarget as HTMLElement).style.backgroundColor = 'rgba(0,229,195,0.1)'; }}
             >
               ×
             </button>
@@ -210,12 +210,12 @@ export function UpgradeModal() {
                     display:         'flex',
                     flexDirection:   'column',
                     gap:             '12px',
-                    background:      'rgba(20,43,22,0.6)',
+                    background:      'rgba(9,20,16,0.6)',
                     border:          isCurrent
                       ? `2px solid ${SAGE}88`
                       : isPro
                       ? `2px solid ${GOLD}`
-                      : '1px solid rgba(125,192,132,0.15)',
+                      : '1px solid rgba(0,229,195,0.15)',
                     transform:       isPro ? 'scale(1.02)' : 'none',
                   }}
                 >
@@ -249,7 +249,7 @@ export function UpgradeModal() {
                       fontSize:        '11px',
                       padding:         '3px 12px',
                       borderRadius:    '50px',
-                      backgroundColor: 'rgba(74,128,80,0.3)',
+                      backgroundColor: 'rgba(74,156,104,0.3)',
                       border:          `1px solid ${SAGE}44`,
                       color:           SAGE,
                       whiteSpace:      'nowrap',
@@ -338,7 +338,7 @@ export function UpgradeModal() {
                         if (loading !== tier) {
                           const el = e.currentTarget as HTMLElement;
                           if (isPro) el.style.filter = 'brightness(1.1)';
-                          else el.style.backgroundColor = 'rgba(245,200,64,0.1)';
+                          else el.style.backgroundColor = 'rgba(0,229,195,0.1)';
                         }
                       }}
                       onMouseLeave={e => {

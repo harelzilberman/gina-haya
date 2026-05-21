@@ -6,15 +6,16 @@ interface Props {
   day: BiodynamicDay;
 }
 
-const GOLD     = '#F5C840';
-const PARCH    = '#EDE0C4';
-const ASSIST   = '"Assistant", "Heebo", sans-serif';
-const PLAYFAIR = '"Playfair Display", Georgia, serif';
+const NIGHT_CARD = '#111f18';
+const BIO_CYAN   = '#00e5c3';
+const TEXT_MID   = '#b0cfbf';
+const FRANK      = '"Frank Ruhl Libre", Georgia, serif';
+const DM_SANS    = "'DM Sans', 'Assistant', 'Heebo', sans-serif";
 
 const CHUPCHU_CSS = `
 @keyframes chupchu-glow {
-  0%, 100% { box-shadow: 0 0 12px rgba(245,200,64,0.3), 0 0 4px rgba(245,200,64,0.15); }
-  50%       { box-shadow: 0 0 22px rgba(245,200,64,0.5), 0 0 8px rgba(245,200,64,0.25); }
+  0%, 100% { box-shadow: 0 0 12px rgba(0,229,195,0.2), 0 0 4px rgba(0,229,195,0.1); }
+  50%       { box-shadow: 0 0 22px rgba(0,229,195,0.4), 0 0 8px rgba(0,229,195,0.2); }
 }
 .chupchu-avatar { animation: chupchu-glow 3s ease-in-out infinite; }
 `;
@@ -49,17 +50,17 @@ export function ChupChuDailySummary({ day }: Props) {
       <div
         dir={dir}
         style={{
-          display:           'flex',
-          gap:               '14px',
-          alignItems:        'flex-start',
-          padding:           '18px 18px 18px 18px',
-          paddingRight:      '16px',
-          marginBottom:      '12px',
-          background:        'linear-gradient(145deg, rgba(28,58,30,0.8) 0%, rgba(20,43,22,0.9) 100%)',
-          borderRadius:      '14px',
-          border:            '1px solid rgba(245,200,64,0.1)',
-          borderRight:       `3px solid ${GOLD}`,
-          backdropFilter:    'blur(8px)',
+          display:        'flex',
+          gap:            '14px',
+          alignItems:     'flex-start',
+          padding:        '18px 18px 18px 18px',
+          paddingRight:   '16px',
+          marginBottom:   '12px',
+          background:     NIGHT_CARD,
+          borderRadius:   '14px',
+          border:         '1px solid rgba(0,229,195,0.12)',
+          borderRight:    `3px solid ${BIO_CYAN}`,
+          backdropFilter: 'blur(8px)',
         }}
       >
         {/* ChupChu avatar */}
@@ -71,7 +72,8 @@ export function ChupChuDailySummary({ day }: Props) {
             width:           '44px',
             height:          '44px',
             borderRadius:    '50%',
-            background:      `radial-gradient(circle at 40% 40%, #F5D060, ${GOLD}, #C8960A)`,
+            background:      'radial-gradient(circle at 40% 40%, rgba(0,229,195,0.45), rgba(0,180,150,0.2))',
+            border:          '1px solid rgba(0,229,195,0.3)',
             display:         'flex',
             alignItems:      'center',
             justifyContent:  'center',
@@ -79,29 +81,29 @@ export function ChupChuDailySummary({ day }: Props) {
             lineHeight:      1,
           }}
         >
-          🌕
+          🌱
         </div>
 
         {/* Text */}
         <div style={{ flex: 1, minWidth: 0, textAlign: dir === 'rtl' ? 'right' : 'left' }}>
           <p style={{
-            fontFamily:   ASSIST,
-            fontSize:     '11px',
-            fontWeight:   700,
-            letterSpacing:'0.1em',
-            textTransform:'uppercase',
-            color:        GOLD,
-            margin:       '0 0 6px',
+            fontFamily:    DM_SANS,
+            fontSize:      '11px',
+            fontWeight:    700,
+            letterSpacing: '0.1em',
+            textTransform: 'uppercase',
+            color:         BIO_CYAN,
+            margin:        '0 0 6px',
           }}>
             {isHe ? 'צ\'ופצ\'ו אומר:' : 'Chupchu says:'}
           </p>
           <p style={{
-            fontFamily:  PLAYFAIR,
-            fontStyle:   'italic',
-            fontSize:    '14px',
-            lineHeight:  1.7,
-            color:       `${PARCH}CC`,
-            margin:      0,
+            fontFamily: FRANK,
+            fontStyle:  'italic',
+            fontSize:   '14px',
+            lineHeight: 1.7,
+            color:      `${TEXT_MID}CC`,
+            margin:     0,
           }}>
             {summary}
           </p>

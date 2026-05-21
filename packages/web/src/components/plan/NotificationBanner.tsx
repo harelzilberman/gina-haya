@@ -1,9 +1,9 @@
 import { useState } from 'react';
 import { usePushNotifications } from '../../hooks/usePushNotifications';
 
-const GOLD  = '#F5C840';
-const PARCH = '#EDE0C4';
-const ASSIST = '"Assistant", "Heebo", sans-serif';
+const GOLD  = '#00e5c3';
+const PARCH = '#b0cfbf';
+const ASSIST = "'DM Sans', 'Assistant', 'Heebo', sans-serif";
 
 export function NotificationBanner() {
   const { permission, isSubscribed, isLoading, subscribe } = usePushNotifications();
@@ -15,7 +15,7 @@ export function NotificationBanner() {
   return (
     <div style={{
       display: 'flex', alignItems: 'center', gap: '12px',
-      background: 'rgba(245,200,64,0.08)', border: '1px solid rgba(245,200,64,0.25)',
+      background: 'rgba(0,229,195,0.08)', border: '1px solid rgba(0,229,195,0.25)',
       borderRadius: '12px', padding: '14px 16px', marginBottom: '20px',
       direction: 'rtl',
     }}>
@@ -38,7 +38,7 @@ export function NotificationBanner() {
         <button
           onClick={subscribe}
           disabled={isLoading}
-          style={{ fontFamily: ASSIST, fontSize: '12px', fontWeight: 600, padding: '5px 14px', borderRadius: '6px', border: 'none', background: GOLD, color: '#142B16', cursor: 'pointer', opacity: isLoading ? 0.7 : 1 }}
+          style={{ fontFamily: ASSIST, fontSize: '12px', fontWeight: 600, padding: '5px 14px', borderRadius: '6px', border: 'none', background: GOLD, color: '#050d0a', cursor: 'pointer', opacity: isLoading ? 0.7 : 1 }}
         >
           {isLoading ? '...' : 'הפעל'}
         </button>

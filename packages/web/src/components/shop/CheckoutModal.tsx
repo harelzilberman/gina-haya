@@ -5,11 +5,11 @@ import { useAuthStore } from '../../stores/authStore';
 import type { Credits } from '../../hooks/useCredits';
 import type { ProductId } from '../../pages/ShopPage';
 
-const EARTH = '#142B16';
-const GOLD  = '#F5C840';
-const PARCH = '#EDE0C4';
+const EARTH = '#050d0a';
+const GOLD  = '#00e5c3';
+const PARCH = '#b0cfbf';
 const FRANK = '"Frank Ruhl Libre", Georgia, serif';
-const ASST  = '"Assistant", "Heebo", sans-serif';
+const ASST  = "'DM Sans', 'Assistant', 'Heebo', sans-serif";
 
 export interface CartItem {
   productId: ProductId;
@@ -86,7 +86,7 @@ export function CheckoutModal({ cart, onClose, onSuccess }: Props) {
           dir="rtl"
           style={{
             backgroundColor: '#1a3a1c',
-            border: '1px solid rgba(245,200,64,0.25)',
+            border: '1px solid rgba(0,229,195,0.25)',
             borderRadius: '16px',
             width: '100%',
             maxWidth: '440px',
@@ -96,8 +96,8 @@ export function CheckoutModal({ cart, onClose, onSuccess }: Props) {
         >
           {/* Header */}
           <div style={{
-            backgroundColor: '#142B16',
-            borderBottom: '1px solid rgba(245,200,64,0.1)',
+            backgroundColor: '#050d0a',
+            borderBottom: '1px solid rgba(0,229,195,0.1)',
             padding: '18px 24px',
             display: 'flex',
             alignItems: 'center',
@@ -109,7 +109,7 @@ export function CheckoutModal({ cart, onClose, onSuccess }: Props) {
             {step === 'summary' && (
               <button
                 onClick={onClose}
-                style={{ background: 'none', border: 'none', color: 'rgba(237,224,196,0.4)', cursor: 'pointer', fontSize: '18px' }}
+                style={{ background: 'none', border: 'none', color: 'rgba(176,207,191,0.4)', cursor: 'pointer', fontSize: '18px' }}
               >
                 ✕
               </button>
@@ -138,7 +138,7 @@ export function CheckoutModal({ cart, onClose, onSuccess }: Props) {
                 {/* Credit summary */}
                 <div style={{
                   backgroundColor: 'rgba(255,255,255,0.04)',
-                  border: '1px solid rgba(245,200,64,0.15)',
+                  border: '1px solid rgba(0,229,195,0.15)',
                   borderRadius: '10px',
                   padding: '16px',
                   marginBottom: '20px',
@@ -193,7 +193,7 @@ export function CheckoutModal({ cart, onClose, onSuccess }: Props) {
                         display: 'flex', justifyContent: 'space-between',
                         alignItems: 'center',
                         padding: '10px 0',
-                        borderBottom: '1px solid rgba(245,200,64,0.08)',
+                        borderBottom: '1px solid rgba(0,229,195,0.08)',
                       }}
                     >
                       <span style={{ fontFamily: ASST, fontSize: '14px', color: PARCH }}>
@@ -211,7 +211,7 @@ export function CheckoutModal({ cart, onClose, onSuccess }: Props) {
                   display: 'flex', justifyContent: 'space-between',
                   alignItems: 'center',
                   padding: '12px 0 20px',
-                  borderBottom: '1px solid rgba(245,200,64,0.15)',
+                  borderBottom: '1px solid rgba(0,229,195,0.15)',
                   marginBottom: '20px',
                 }}>
                   <span style={{ fontFamily: FRANK, fontSize: '16px', color: PARCH }}>סה"כ</span>
@@ -223,7 +223,7 @@ export function CheckoutModal({ cart, onClose, onSuccess }: Props) {
                 {/* Payment method placeholder */}
                 <div style={{
                   backgroundColor: 'rgba(255,255,255,0.04)',
-                  border: '1px dashed rgba(245,200,64,0.2)',
+                  border: '1px dashed rgba(0,229,195,0.2)',
                   borderRadius: '10px',
                   padding: '14px 16px',
                   marginBottom: '20px',

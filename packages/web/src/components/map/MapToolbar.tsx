@@ -3,10 +3,10 @@ import { useTranslation } from 'react-i18next';
 import type { MapTool } from '../../stores/mapStore';
 import type { WizardStatus } from '../../stores/mapStore';
 
-const GOLD   = '#F5C840';
-const PARCH  = '#EDE0C4';
-const FOREST = '#142B16';
-const ASSIST = '"Assistant", "Heebo", sans-serif';
+const GOLD   = '#00e5c3';
+const PARCH  = '#b0cfbf';
+const FOREST = '#050d0a';
+const ASSIST = "'DM Sans', 'Assistant', 'Heebo', sans-serif";
 const FRANK  = '"Frank Ruhl Libre", Georgia, serif';
 
 interface Props {
@@ -122,9 +122,9 @@ function CategoryDropdown({
           fontWeight: isActive ? 700 : 400,
           padding: '0 12px',
           borderRadius: '6px',
-          border: `1px solid ${isActive ? GOLD : 'rgba(245,200,64,0.2)'}`,
+          border: `1px solid ${isActive ? GOLD : 'rgba(0,229,195,0.2)'}`,
           color: isActive ? GOLD : `${PARCH}99`,
-          backgroundColor: isActive ? 'rgba(245,200,64,0.1)' : 'transparent',
+          backgroundColor: isActive ? 'rgba(0,229,195,0.1)' : 'transparent',
           cursor: 'pointer',
           minHeight: '44px',
           minWidth: '44px',
@@ -149,8 +149,8 @@ function CategoryDropdown({
             position: 'fixed',
             top: dropPos.top,
             left: dropPos.left,
-            backgroundColor: 'rgba(10,24,11,0.99)',
-            border: '1px solid rgba(245,200,64,0.3)',
+            backgroundColor: 'rgba(9,20,16,0.99)',
+            border: '1px solid rgba(0,229,195,0.3)',
             borderRadius: '10px',
             padding: '6px',
             minWidth: '180px',
@@ -174,7 +174,7 @@ function CategoryDropdown({
                 textAlign: isHe ? 'right' : 'left',
                 border: 'none',
                 background: selectedTool === item.tool
-                  ? 'rgba(245,200,64,0.15)'
+                  ? 'rgba(0,229,195,0.15)'
                   : 'transparent',
                 color: selectedTool === item.tool ? GOLD : PARCH,
                 cursor: 'pointer',
@@ -186,7 +186,7 @@ function CategoryDropdown({
               }}
               onMouseEnter={e => {
                 if (selectedTool !== item.tool)
-                  (e.currentTarget as HTMLElement).style.background = 'rgba(245,200,64,0.08)';
+                  (e.currentTarget as HTMLElement).style.background = 'rgba(0,229,195,0.08)';
               }}
               onMouseLeave={e => {
                 if (selectedTool !== item.tool)
@@ -223,9 +223,9 @@ export function MapToolbar({
   const canWizard = hasSavedMap && (wizardStatus?.canRun ?? true);
   const wizardLabel = wizardStatus
     ? (isHe
-        ? `🌕 מצ'ופצ'ו (${wizardStatus.runsUsedThisMonth}/${wizardStatus.limit ?? '∞'})`
-        : `🌕 Chupchu (${wizardStatus.runsUsedThisMonth}/${wizardStatus.limit ?? '∞'})`)
-    : (isHe ? "🌕 מצ'ופצ'ו" : '🌕 Chupchu');
+        ? `🌱 מצ'ופצ'ו (${wizardStatus.runsUsedThisMonth}/${wizardStatus.limit ?? '∞'})`
+        : `🌱 Chupchu (${wizardStatus.runsUsedThisMonth}/${wizardStatus.limit ?? '∞'})`)
+    : (isHe ? "🌱 מצ'ופצ'ו" : '🌱 Chupchu');
 
   return (
     <div data-tour="toolbar" className="gina-toolbar-scroll" dir={isHe ? 'rtl' : 'ltr'} style={{
@@ -240,8 +240,8 @@ export function MapToolbar({
       scrollbarWidth: 'none' as any,
       padding: '4px 8px',
       gap: '6px',
-      background: 'rgba(20,43,22,0.94)',
-      border: '1px solid rgba(245,200,64,0.2)',
+      background: 'rgba(9,20,16,0.94)',
+      border: '1px solid rgba(0,229,195,0.2)',
       borderRadius: '10px',
       boxShadow: '0 4px 16px rgba(0,0,0,0.5)',
       maxWidth: isMobile ? '240px' : 'calc(100vw - 280px)',
@@ -266,7 +266,7 @@ export function MapToolbar({
         />
       ))}
 
-      <div style={{ width: '1px', height: '28px', background: 'rgba(245,200,64,0.15)', flexShrink: 0 }} />
+      <div style={{ width: '1px', height: '28px', background: 'rgba(0,229,195,0.15)', flexShrink: 0 }} />
 
       {/* Right section */}
       <div style={{ display: 'flex', alignItems: 'center', gap: '6px', flexShrink: 0, flexWrap: 'nowrap' }}>
@@ -279,7 +279,7 @@ export function MapToolbar({
             ...ghostBtn,
             color: selectedTool === 'select' ? FOREST : `${PARCH}88`,
             background: selectedTool === 'select' ? GOLD : 'transparent',
-            border: `1px solid ${selectedTool === 'select' ? GOLD : 'rgba(245,200,64,0.2)'}`,
+            border: `1px solid ${selectedTool === 'select' ? GOLD : 'rgba(0,229,195,0.2)'}`,
             fontWeight: selectedTool === 'select' ? 700 : 400,
           }}
           title={isHe ? 'בחר' : 'Select'}
@@ -292,7 +292,7 @@ export function MapToolbar({
 
         {!isMobile && (
           <>
-            <div style={{ width: '1px', height: '28px', background: 'rgba(245,200,64,0.15)' }} />
+            <div style={{ width: '1px', height: '28px', background: 'rgba(0,229,195,0.15)' }} />
 
             {/* Sun zones */}
             <button
@@ -302,8 +302,8 @@ export function MapToolbar({
               style={{
                 ...ghostBtn,
                 color: showSunZones ? GOLD : `${PARCH}66`,
-                border: `1px solid ${showSunZones ? `${GOLD}66` : 'rgba(245,200,64,0.2)'}`,
-                background: showSunZones ? 'rgba(245,200,64,0.1)' : 'transparent',
+                border: `1px solid ${showSunZones ? `${GOLD}66` : 'rgba(0,229,195,0.2)'}`,
+                background: showSunZones ? 'rgba(0,229,195,0.1)' : 'transparent',
               }}
             >
               ☀️ {isHe ? 'שמש' : 'Sun'}
@@ -320,8 +320,8 @@ export function MapToolbar({
                   fontFamily: ASSIST,
                   fontSize: '13px',
                   color: PARCH,
-                  background: 'rgba(245,200,64,0.06)',
-                  border: '1px solid rgba(245,200,64,0.2)',
+                  background: 'rgba(0,229,195,0.06)',
+                  border: '1px solid rgba(0,229,195,0.2)',
                   borderRadius: '5px',
                   padding: '4px 6px',
                   outline: 'none',
@@ -331,7 +331,7 @@ export function MapToolbar({
               <span style={{ fontFamily: ASSIST, fontSize: '11px', color: `${PARCH}44` }}>°</span>
             </div>
 
-            <div style={{ width: '1px', height: '28px', background: 'rgba(245,200,64,0.15)' }} />
+            <div style={{ width: '1px', height: '28px', background: 'rgba(0,229,195,0.15)' }} />
 
             {/* Save status */}
             <span data-tour="save-btn" style={{ display: 'flex', alignItems: 'center' }}>
@@ -374,7 +374,7 @@ export function MapToolbar({
             style={{
               ...ghostBtn,
               color: saveAsTemplateDisabled ? `${PARCH}33` : `${PARCH}99`,
-              border: `1px solid ${saveAsTemplateDisabled ? 'rgba(245,200,64,0.08)' : 'rgba(245,200,64,0.2)'}`,
+              border: `1px solid ${saveAsTemplateDisabled ? 'rgba(0,229,195,0.08)' : 'rgba(0,229,195,0.2)'}`,
               cursor: saveAsTemplateDisabled ? 'not-allowed' : 'pointer',
               opacity: saveAsTemplateDisabled ? 0.4 : 1,
             }}
@@ -400,7 +400,7 @@ export function MapToolbar({
             flexShrink: 0,
             border: 'none',
             color: canWizard ? FOREST : `${PARCH}44`,
-            backgroundColor: canWizard ? GOLD : 'rgba(245,200,64,0.15)',
+            backgroundColor: canWizard ? GOLD : 'rgba(0,229,195,0.15)',
             cursor: canWizard ? 'pointer' : 'not-allowed',
             opacity: canWizard ? 1 : 0.5,
             whiteSpace: 'nowrap',
@@ -410,7 +410,7 @@ export function MapToolbar({
             alignItems: 'center',
           }}
         >
-          {isMobile ? '🌕' : wizardLabel}
+          {isMobile ? '🌱' : wizardLabel}
         </button>
 
         {/* Tour help button */}
@@ -434,7 +434,7 @@ const ghostBtn: React.CSSProperties = {
   fontSize: '13px',
   padding: '0 10px',
   borderRadius: '6px',
-  border: '1px solid rgba(245,200,64,0.2)',
+  border: '1px solid rgba(0,229,195,0.2)',
   color: `${PARCH}88`,
   backgroundColor: 'transparent',
   cursor: 'pointer',

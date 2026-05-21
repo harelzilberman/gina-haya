@@ -7,19 +7,18 @@ import { mapAuthError, MIN_PASSWORD_LENGTH } from '../../utils/authErrors';
 import { supabase } from '../../lib/supabase';
 import { EmailVerificationScreen } from './EmailVerificationScreen';
 
-const EARTH  = '#142B16';
-const GOLD   = '#F5C840';
-const SAGE   = '#7DC084';
-const PARCH  = '#EDE0C4';
-const FRANK  = '"Frank Ruhl Libre", Georgia, serif';
-const ASSIST = '"Assistant", "Heebo", sans-serif';
+const NIGHT    = '#050d0a';
+const BIO_CYAN = '#00e5c3';
+const TEXT_MID = '#b0cfbf';
+const FRANK    = '"Frank Ruhl Libre", Georgia, serif';
+const DM_SANS  = "'DM Sans', 'Assistant', 'Heebo', sans-serif";
 
 const FORM_CSS = `
-.auth-signup-input::placeholder { color: rgba(237,224,196,0.3); }
+.auth-signup-input::placeholder { color: rgba(176,207,191,0.3); }
 .auth-signup-input:focus {
-  border-color: rgba(245,200,64,0.5) !important;
+  border-color: rgba(0,229,195,0.5) !important;
   outline: none;
-  box-shadow: 0 0 0 3px rgba(245,200,64,0.06);
+  box-shadow: 0 0 0 3px rgba(0,229,195,0.07);
 }
 @keyframes authSpin { to { transform: rotate(360deg) } }
 .auth-spinner {
@@ -59,22 +58,22 @@ export function SignupForm() {
   const inputStyle: React.CSSProperties = {
     width:           '100%',
     boxSizing:       'border-box',
-    backgroundColor: 'rgba(20,43,22,0.8)',
-    border:          '1px solid rgba(125,192,132,0.2)',
+    backgroundColor: 'rgba(9,20,16,0.85)',
+    border:          '1px solid rgba(0,229,195,0.2)',
     borderRadius:    '8px',
     padding:         '12px 16px',
-    fontFamily:      ASSIST,
+    fontFamily:      DM_SANS,
     fontSize:        '14px',
-    color:           PARCH,
+    color:           TEXT_MID,
     transition:      'border-color 0.2s, box-shadow 0.2s',
   };
 
   const labelStyle: React.CSSProperties = {
     display:      'block',
-    fontFamily:   ASSIST,
+    fontFamily:   DM_SANS,
     fontWeight:   400,
     fontSize:     '13px',
-    color:        `${PARCH}70`,
+    color:        `${TEXT_MID}70`,
     marginBottom: '6px',
   };
 
@@ -99,7 +98,7 @@ export function SignupForm() {
             padding:         '12px 14px',
             backgroundColor: 'rgba(192,57,43,0.15)',
             border:          '1px solid rgba(192,57,43,0.35)',
-            fontFamily:      ASSIST,
+            fontFamily:      DM_SANS,
             fontSize:        '13px',
             color:           '#E07070',
           }}>
@@ -153,7 +152,7 @@ export function SignupForm() {
           <label style={{
             display: 'flex', gap: '8px', fontSize: '13px',
             alignItems: 'flex-start', cursor: 'pointer',
-            color: `${PARCH}90`, fontFamily: ASSIST,
+            color: `${TEXT_MID}90`, fontFamily: DM_SANS,
           }}>
             <input
               type="checkbox"
@@ -163,9 +162,9 @@ export function SignupForm() {
             />
             <span>
               {t('agreeToTerms')}{' '}
-              <a href="/privacy" target="_blank" rel="noopener noreferrer" style={{ color: SAGE }}>{t('privacyPolicy')}</a>
+              <a href="/privacy" target="_blank" rel="noopener noreferrer" style={{ color: BIO_CYAN }}>{t('privacyPolicy')}</a>
               {' '}{t('and')}{' '}
-              <a href="/terms" target="_blank" rel="noopener noreferrer" style={{ color: SAGE }}>{t('termsOfService')}</a>
+              <a href="/terms" target="_blank" rel="noopener noreferrer" style={{ color: BIO_CYAN }}>{t('termsOfService')}</a>
             </span>
           </label>
 
@@ -177,11 +176,11 @@ export function SignupForm() {
               padding:         '13px',
               borderRadius:    '8px',
               border:          'none',
-              backgroundColor: GOLD,
+              backgroundColor: BIO_CYAN,
               fontFamily:      FRANK,
               fontWeight:      600,
               fontSize:        '15px',
-              color:           EARTH,
+              color:           NIGHT,
               cursor:          isLoading || !agreedToTerms ? 'default' : 'pointer',
               opacity:         isLoading || !agreedToTerms ? 0.7 : 1,
               transition:      'filter 0.2s',
@@ -196,9 +195,9 @@ export function SignupForm() {
 
         {/* Divider */}
         <div style={{ display: 'flex', alignItems: 'center', gap: '12px', margin: '20px 0' }}>
-          <div style={{ flex: 1, height: '1px', backgroundColor: 'rgba(125,192,132,0.15)' }} />
-          <span style={{ fontFamily: ASSIST, fontSize: '12px', color: `${PARCH}40` }}>או</span>
-          <div style={{ flex: 1, height: '1px', backgroundColor: 'rgba(125,192,132,0.15)' }} />
+          <div style={{ flex: 1, height: '1px', backgroundColor: 'rgba(0,229,195,0.15)' }} />
+          <span style={{ fontFamily: DM_SANS, fontSize: '12px', color: `${TEXT_MID}40` }}>או</span>
+          <div style={{ flex: 1, height: '1px', backgroundColor: 'rgba(0,229,195,0.15)' }} />
         </div>
 
         {/* Google */}
@@ -214,27 +213,27 @@ export function SignupForm() {
             gap:             '10px',
             padding:         '11px',
             borderRadius:    '8px',
-            border:          '1px solid rgba(125,192,132,0.2)',
-            backgroundColor: 'rgba(28,58,30,0.6)',
-            fontFamily:      ASSIST,
+            border:          '1px solid rgba(0,229,195,0.2)',
+            backgroundColor: 'rgba(9,20,16,0.7)',
+            fontFamily:      DM_SANS,
             fontSize:        '14px',
-            color:           PARCH,
+            color:           TEXT_MID,
             cursor:          isLoading ? 'default' : 'pointer',
             opacity:         isLoading ? 0.6 : 1,
             transition:      'background-color 0.15s',
           }}
-          onMouseEnter={e => { if (!isLoading) (e.currentTarget as HTMLElement).style.backgroundColor = 'rgba(28,58,30,0.9)'; }}
-          onMouseLeave={e => { (e.currentTarget as HTMLElement).style.backgroundColor = 'rgba(28,58,30,0.6)'; }}
+          onMouseEnter={e => { if (!isLoading) (e.currentTarget as HTMLElement).style.backgroundColor = 'rgba(0,229,195,0.07)'; }}
+          onMouseLeave={e => { (e.currentTarget as HTMLElement).style.backgroundColor = 'rgba(9,20,16,0.7)'; }}
         >
           <GoogleIcon />
           {t('signup.googleButton')}
         </button>
 
-        <p style={{ marginTop: '12px', textAlign: 'center', fontFamily: ASSIST, fontSize: '13px', color: `${PARCH}55` }}>
+        <p style={{ marginTop: '12px', textAlign: 'center', fontFamily: DM_SANS, fontSize: '13px', color: `${TEXT_MID}55` }}>
           {t('signup.hasAccount')}{' '}
-          <Link to="/login" style={{ color: SAGE, fontWeight: 500, textDecoration: 'none' }}
-            onMouseEnter={e => { (e.currentTarget as HTMLElement).style.color = GOLD; }}
-            onMouseLeave={e => { (e.currentTarget as HTMLElement).style.color = SAGE; }}
+          <Link to="/login" style={{ color: BIO_CYAN, fontWeight: 500, textDecoration: 'none' }}
+            onMouseEnter={e => { (e.currentTarget as HTMLElement).style.opacity = '0.8'; }}
+            onMouseLeave={e => { (e.currentTarget as HTMLElement).style.opacity = '1'; }}
           >
             {t('signup.loginLink')}
           </Link>

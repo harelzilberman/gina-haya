@@ -4,8 +4,8 @@ import { useTranslation } from 'react-i18next';
 const STORAGE_KEY = 'map-grid-info-seen';
 
 const FRANK = '"Frank Ruhl Libre", Georgia, serif';
-const ASSIST = '"Assistant", "Heebo", sans-serif';
-const GOLD = '#F5C840';
+const ASSIST = "'DM Sans', 'Assistant', 'Heebo', sans-serif";
+const GOLD = '#00e5c3';
 
 export function GridInfoBox() {
   const { i18n } = useTranslation();
@@ -28,8 +28,8 @@ export function GridInfoBox() {
     <div style={{
       position: 'absolute', top: '12px', left: '50%', transform: 'translateX(-50%)',
       zIndex: 20, pointerEvents: 'auto',
-      background: 'rgba(20,43,22,0.92)',
-      border: `1px solid rgba(245,200,64,0.30)`,
+      background: 'rgba(9,20,16,0.92)',
+      border: `1px solid rgba(0,229,195,0.30)`,
       borderRadius: '12px', padding: '10px 36px 10px 16px',
       display: 'flex', alignItems: 'center', gap: '8px',
       whiteSpace: 'nowrap',

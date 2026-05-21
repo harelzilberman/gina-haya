@@ -5,11 +5,11 @@ import type { WizardStatus, PlantPreview, MapData } from '../../stores/mapStore'
 import { PLANTS } from '../../data/companions';
 import { getPlantByName, getPlantSpacing, PLANT_TABLE } from '../../data/plantTable';
 
-const GOLD   = '#F5C840';
-const PARCH  = '#EDE0C4';
-const SAGE   = '#7DC084';
+const GOLD   = '#00e5c3';
+const PARCH  = '#b0cfbf';
+const SAGE   = '#4A9C68';
 const FRANK  = '"Frank Ruhl Libre", Georgia, serif';
-const ASSIST = '"Assistant", "Heebo", sans-serif';
+const ASSIST = "'DM Sans', 'Assistant', 'Heebo', sans-serif";
 
 interface WishlistItem {
   nameHe: string;
@@ -377,11 +377,11 @@ export function WizardModal({ mapId, wizardStatus, onClose, onRefreshStatus, onP
     <div style={{
       position: 'fixed', inset: 0, zIndex: 300,
       display: 'flex', alignItems: 'center', justifyContent: 'center',
-      background: 'rgba(10,24,12,0.8)', backdropFilter: 'blur(4px)',
+      background: 'rgba(9,20,16,0.8)', backdropFilter: 'blur(4px)',
     }}>
       <div style={{
-        background: 'linear-gradient(160deg,rgba(24,52,26,0.99),rgba(20,43,22,0.99))',
-        border: '1px solid rgba(245,200,64,0.15)',
+        background: 'linear-gradient(160deg,rgba(14,30,23,0.99),rgba(9,20,16,0.99))',
+        border: '1px solid rgba(0,229,195,0.15)',
         borderRadius: '16px', padding: '28px',
         width: '100%', maxWidth: '580px', maxHeight: '85vh',
         display: 'flex', flexDirection: 'column', gap: '16px',
@@ -391,7 +391,7 @@ export function WizardModal({ mapId, wizardStatus, onClose, onRefreshStatus, onP
         {/* Header */}
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
           <h2 style={{ fontFamily: FRANK, fontSize: '20px', color: GOLD, margin: 0 }}>
-            🌕 אשף תכנון הגינה
+            🌱 אשף תכנון הגינה
           </h2>
           <button onClick={onClose}
             style={{ background: 'none', border: 'none', color: `${PARCH}55`, cursor: 'pointer', fontSize: '18px' }}>✕</button>
@@ -415,7 +415,7 @@ export function WizardModal({ mapId, wizardStatus, onClose, onRefreshStatus, onP
         {/* Loading */}
         {loading && (
           <div style={{ textAlign: 'center', padding: '32px 0' }}>
-            <div style={{ fontSize: '48px', animation: 'spin 3s linear infinite', display: 'inline-block' }}>🌕</div>
+            <div style={{ fontSize: '48px', animation: 'spin 3s linear infinite', display: 'inline-block' }}>🌱</div>
             <p style={{ fontFamily: FRANK, fontSize: '16px', color: GOLD, margin: '16px 0 6px' }}>
               צ'ופצ'ו בודק את הגינה שלך...
             </p>
@@ -466,14 +466,14 @@ export function WizardModal({ mapId, wizardStatus, onClose, onRefreshStatus, onP
                 style={{
                   width: '100%', boxSizing: 'border-box',
                   fontFamily: ASSIST, fontSize: '13px', color: PARCH,
-                  background: 'rgba(245,200,64,0.06)', border: '1px solid rgba(245,200,64,0.2)',
+                  background: 'rgba(0,229,195,0.06)', border: '1px solid rgba(0,229,195,0.2)',
                   borderRadius: '8px', padding: '10px 14px', outline: 'none',
                 }}
               />
               {suggestions.length > 0 && (
                 <div style={{
                   position: 'absolute', top: '100%', insetInlineStart: 0, zIndex: 10,
-                  width: '100%', background: 'rgba(20,43,22,0.98)', border: '1px solid rgba(245,200,64,0.2)',
+                  width: '100%', background: 'rgba(9,20,16,0.98)', border: '1px solid rgba(0,229,195,0.2)',
                   borderRadius: '8px', overflow: 'hidden', marginTop: '2px',
                 }}>
                   {suggestions.map(s => (
@@ -491,10 +491,10 @@ export function WizardModal({ mapId, wizardStatus, onClose, onRefreshStatus, onP
             <button onClick={runWizard}
               style={{
                 fontFamily: FRANK, fontSize: '15px', fontWeight: 700, padding: '12px',
-                borderRadius: '8px', border: 'none', backgroundColor: GOLD, color: '#142B16',
+                borderRadius: '8px', border: 'none', backgroundColor: GOLD, color: '#050d0a',
                 cursor: 'pointer', width: '100%',
               }}>
-              🌕 בקש מצ'ופצ'ו לתכנן
+              🌱 בקש מצ'ופצ'ו לתכנן
             </button>
           </>
         )}
@@ -502,7 +502,7 @@ export function WizardModal({ mapId, wizardStatus, onClose, onRefreshStatus, onP
         {/* Plan results */}
         {plan && !loading && (
           <>
-            <div style={{ padding: '14px', borderRadius: '10px', background: 'rgba(74,128,80,0.12)', border: '1px solid rgba(125,192,132,0.2)' }}>
+            <div style={{ padding: '14px', borderRadius: '10px', background: 'rgba(0,229,195,0.06)', border: '1px solid rgba(0,229,195,0.2)' }}>
               <p style={{ fontFamily: ASSIST, fontSize: '13px', color: `${PARCH}CC`, lineHeight: 1.6, margin: 0 }}>
                 {plan.summary}
               </p>
@@ -510,17 +510,17 @@ export function WizardModal({ mapId, wizardStatus, onClose, onRefreshStatus, onP
 
             {/* Beds */}
             {plan.beds?.map((bed, i) => (
-              <div key={i} style={{ padding: '14px', borderRadius: '10px', border: '1px solid rgba(245,200,64,0.12)', background: 'rgba(20,43,22,0.5)' }}>
+              <div key={i} style={{ padding: '14px', borderRadius: '10px', border: '1px solid rgba(0,229,195,0.12)', background: 'rgba(9,20,16,0.5)' }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '10px' }}>
                   <h4 style={{ fontFamily: FRANK, fontSize: '15px', color: GOLD, margin: 0 }}>{bed.name}</h4>
-                  <span style={{ fontFamily: ASSIST, fontSize: '11px', padding: '2px 8px', borderRadius: '50px', background: 'rgba(125,192,132,0.15)', color: SAGE }}>{bed.sunExposure}</span>
+                  <span style={{ fontFamily: ASSIST, fontSize: '11px', padding: '2px 8px', borderRadius: '50px', background: 'rgba(0,229,195,0.12)', color: SAGE }}>{bed.sunExposure}</span>
                 </div>
                 <p style={{ fontFamily: ASSIST, fontSize: '12px', color: `${PARCH}66`, margin: '0 0 8px' }}>📍 {bed.location}</p>
                 <div style={{ display: 'flex', flexWrap: 'wrap', gap: '5px', marginBottom: '8px' }}>
                   {bed.plants?.map((p, j) => (
                     <span key={j} style={{
                       fontFamily: ASSIST, fontSize: '11px', padding: '3px 10px', borderRadius: '50px',
-                      background: 'rgba(74,128,80,0.18)', border: '1px solid rgba(125,192,132,0.25)', color: `${PARCH}CC`,
+                      background: 'rgba(0,229,195,0.07)', border: '1px solid rgba(0,229,195,0.25)', color: `${PARCH}CC`,
                     }}>
                       {p.nameHe} ×{p.quantity ?? 1}{formatSpacing(p)}
                     </span>
@@ -567,13 +567,13 @@ export function WizardModal({ mapId, wizardStatus, onClose, onRefreshStatus, onP
                 style={{
                   flex: 2, fontFamily: FRANK, fontSize: '14px', fontWeight: 700,
                   padding: '11px', borderRadius: '8px', border: 'none',
-                  backgroundColor: GOLD, color: '#142B16', cursor: 'pointer',
+                  backgroundColor: GOLD, color: '#050d0a', cursor: 'pointer',
                 }}
               >
                 🌱 הנח צמחים במפה
               </button>
               <button onClick={onClose}
-                style={{ flex: 1, fontFamily: ASSIST, fontSize: '13px', padding: '11px', borderRadius: '8px', border: `1px solid rgba(245,200,64,0.2)`, color: `${PARCH}88`, background: 'none', cursor: 'pointer' }}>
+                style={{ flex: 1, fontFamily: ASSIST, fontSize: '13px', padding: '11px', borderRadius: '8px', border: `1px solid rgba(0,229,195,0.2)`, color: `${PARCH}88`, background: 'none', cursor: 'pointer' }}>
                 סגור
               </button>
             </div>
@@ -586,7 +586,7 @@ export function WizardModal({ mapId, wizardStatus, onClose, onRefreshStatus, onP
 
 function Section({ title, color, children }: { title: string; color: string; children: React.ReactNode }) {
   return (
-    <div style={{ padding: '10px 14px', borderRadius: '8px', border: '1px solid rgba(245,200,64,0.08)', background: 'rgba(20,43,22,0.4)' }}>
+    <div style={{ padding: '10px 14px', borderRadius: '8px', border: '1px solid rgba(0,229,195,0.08)', background: 'rgba(9,20,16,0.4)' }}>
       <p style={{ fontFamily: ASSIST, fontSize: '11px', fontWeight: 600, color, letterSpacing: '0.06em', textTransform: 'uppercase', margin: '0 0 6px' }}>{title}</p>
       {children}
     </div>
@@ -594,11 +594,11 @@ function Section({ title, color, children }: { title: string; color: string; chi
 }
 
 const tipStyle: React.CSSProperties = {
-  fontFamily: ASSIST, fontSize: '12px', color: 'rgba(237,224,196,0.7)', lineHeight: 1.5, margin: '2px 0',
+  fontFamily: ASSIST, fontSize: '12px', color: 'rgba(176,207,191,0.7)', lineHeight: 1.5, margin: '2px 0',
 };
 
 const qtyBtn: React.CSSProperties = {
-  background: 'rgba(245,200,64,0.15)', border: '1px solid rgba(245,200,64,0.3)',
+  background: 'rgba(0,229,195,0.15)', border: '1px solid rgba(0,229,195,0.3)',
   color: GOLD, cursor: 'pointer', fontSize: '11px', padding: '0 5px', lineHeight: '16px',
   borderRadius: '3px', fontFamily: ASSIST,
 };

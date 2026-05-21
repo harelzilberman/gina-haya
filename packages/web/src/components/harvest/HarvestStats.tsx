@@ -1,16 +1,16 @@
 import type { HarvestStats } from '../../stores/harvestStore';
 
-const GOLD   = '#F5C840';
-const PARCH  = '#EDE0C4';
-const SAGE   = '#7DC084';
+const GOLD   = '#00e5c3';
+const PARCH  = '#b0cfbf';
+const SAGE   = '#4A9C68';
 const FRANK  = '"Frank Ruhl Libre", Georgia, serif';
-const ASSIST = '"Assistant", "Heebo", sans-serif';
+const ASSIST = "'DM Sans', 'Assistant', 'Heebo', sans-serif";
 
 const DAY_TYPE_COLOURS: Record<string, string> = {
   fruit:  '#C8A040',
   root:   '#8B6340',
   flower: '#C878A0',
-  leaf:   '#4A7C59',
+  leaf:   '#4A9C68',
 };
 const DAY_TYPE_HE: Record<string, string> = {
   fruit: 'פרי', root: 'שורש', flower: 'פרח', leaf: 'עלה',
@@ -26,8 +26,8 @@ export function HarvestStats({ stats }: Props) {
 
   return (
     <div dir="rtl" style={{
-      background:    'linear-gradient(145deg, rgba(28,58,30,0.8) 0%, rgba(20,43,22,0.9) 100%)',
-      border:        '1px solid rgba(245,200,64,0.2)',
+      background:    'linear-gradient(145deg, rgba(9,20,16,0.8) 0%, rgba(9,20,16,0.9) 100%)',
+      border:        '1px solid rgba(0,229,195,0.2)',
       borderRadius:  '14px',
       padding:       '18px 20px',
       marginBottom:  '16px',
@@ -80,8 +80,8 @@ export function HarvestStats({ stats }: Props) {
                 fontSize: '12px',
                 padding: '3px 10px',
                 borderRadius: '50px',
-                backgroundColor: 'rgba(245,200,64,0.08)',
-                border: '1px solid rgba(245,200,64,0.2)',
+                backgroundColor: 'rgba(0,229,195,0.08)',
+                border: '1px solid rgba(0,229,195,0.2)',
                 color: PARCH,
               }}>
                 {p.nameHe} <span style={{ color: GOLD, fontWeight: 600 }}>{p.count}×</span>

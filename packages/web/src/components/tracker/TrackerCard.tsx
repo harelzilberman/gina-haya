@@ -6,15 +6,15 @@ import { useTrackerStore } from '../../stores/trackerStore';
 import { api } from '../../api/client';
 import { useAuthStore } from '../../stores/authStore';
 
-const GOLD  = '#F5C840';
-const PARCH = '#EDE0C4';
-const SAGE  = '#4A7C59';
-const FRANK = '"Frank Ruhl Libre", Georgia, serif';
-const ASST  = '"Assistant", "Heebo", sans-serif';
+const NIGHT_CARD = '#111f18';
+const BIO_CYAN   = '#00e5c3';
+const TEXT_MID   = '#b0cfbf';
+const FRANK      = '"Frank Ruhl Libre", Georgia, serif';
+const DM_SANS    = "'DM Sans', 'Assistant', 'Heebo', sans-serif";
 
 const HEALTH_COLOURS: Record<string, string> = {
   excellent: '#5cb85c',
-  good:      '#7DC084',
+  good:      '#4A9C68',
   fair:      '#e6a817',
   poor:      '#d9534f',
 };
@@ -42,9 +42,9 @@ export function TrackerCard({ tracker, onAddCheckin, onDeleted }: Props) {
   const [loadingCheckins, setLoadingCheckins] = useState(false);
   const [confirmDelete, setConfirmDelete] = useState(false);
 
-  const latest = tracker.latest_checkin;
-  const analysis = latest?.ai_analysis;
-  const healthColor = analysis ? (HEALTH_COLOURS[analysis.health] ?? SAGE) : 'rgba(237,224,196,0.2)';
+  const latest     = tracker.latest_checkin;
+  const analysis   = latest?.ai_analysis;
+  const healthColor = analysis ? (HEALTH_COLOURS[analysis.health] ?? NIGHT_CARD) : 'rgba(176,207,191,0.2)';
   const healthLabel = analysis ? (isHe ? analysis.healthHe : ((analysis as any).healthEn ?? analysis.health)) : null;
   const stageLabel  = analysis ? (isHe ? analysis.growthStageHe : ((analysis as any).growthStageEn ?? analysis.growthStageHe)) : null;
 
@@ -74,11 +74,11 @@ export function TrackerCard({ tracker, onAddCheckin, onDeleted }: Props) {
   return (
     <div
       style={{
-        backgroundColor: 'rgba(28,58,30,0.7)',
-        border: `1px solid ${isExpanded ? 'rgba(245,200,64,0.3)' : 'rgba(245,200,64,0.12)'}`,
-        borderRadius: '12px',
-        overflow: 'hidden',
-        transition: 'border-color 0.2s',
+        backgroundColor: NIGHT_CARD,
+        border:          `1px solid ${isExpanded ? 'rgba(0,229,195,0.3)' : 'rgba(0,229,195,0.12)'}`,
+        borderRadius:    '12px',
+        overflow:        'hidden',
+        transition:      'border-color 0.2s',
       }}
     >
       {/* Card header */}
@@ -91,16 +91,18 @@ export function TrackerCard({ tracker, onAddCheckin, onDeleted }: Props) {
           <div style={{ display: 'flex', flexDirection: 'column', gap: '4px', alignItems: 'flex-end' }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
               <div style={{
-                width: '10px', height: '10px', borderRadius: '50%',
+                width:           '10px',
+                height:          '10px',
+                borderRadius:    '50%',
                 backgroundColor: healthColor,
-                boxShadow: `0 0 6px ${healthColor}88`,
+                boxShadow:       `0 0 6px ${healthColor}88`,
               }} />
-              <span style={{ fontFamily: ASST, fontSize: '12px', color: 'rgba(237,224,196,0.5)' }}>
+              <span style={{ fontFamily: DM_SANS, fontSize: '12px', color: `${TEXT_MID}50` }}>
                 {t(`card.locations.${tracker.location_type}`, { defaultValue: tracker.location_type })}
               </span>
             </div>
             {tracker.location_description && (
-              <span style={{ fontFamily: ASST, fontSize: '11px', color: 'rgba(237,224,196,0.35)' }}>
+              <span style={{ fontFamily: DM_SANS, fontSize: '11px', color: `${TEXT_MID}35` }}>
                 {tracker.location_description}
               </span>
             )}
@@ -108,10 +110,10 @@ export function TrackerCard({ tracker, onAddCheckin, onDeleted }: Props) {
 
           {/* Left side: plant name */}
           <div style={{ textAlign: 'right' }}>
-            <h3 style={{ fontFamily: FRANK, fontSize: '18px', color: GOLD, margin: '0 0 2px' }}>
+            <h3 style={{ fontFamily: FRANK, fontSize: '18px', color: BIO_CYAN, margin: '0 0 2px' }}>
               {isHe ? tracker.plant_name_he : (tracker.plant_name_en || tracker.plant_name_he)}
             </h3>
-            <p style={{ fontFamily: ASST, fontSize: '12px', color: 'rgba(237,224,196,0.5)', margin: 0, fontStyle: 'italic' }}>
+            <p style={{ fontFamily: DM_SANS, fontSize: '12px', color: `${TEXT_MID}50`, margin: 0, fontStyle: 'italic' }}>
               {isHe ? tracker.plant_name_en : tracker.plant_name_he}
             </p>
           </div>
@@ -124,14 +126,25 @@ export function TrackerCard({ tracker, onAddCheckin, onDeleted }: Props) {
             {analysis && (
               <>
                 <span style={{
-                  padding: '2px 10px', borderRadius: '12px', fontFamily: ASST, fontSize: '11px', fontWeight: 600,
-                  backgroundColor: `${healthColor}22`, border: `1px solid ${healthColor}55`, color: healthColor,
+                  padding:         '2px 10px',
+                  borderRadius:    '12px',
+                  fontFamily:      DM_SANS,
+                  fontSize:        '11px',
+                  fontWeight:      600,
+                  backgroundColor: `${healthColor}22`,
+                  border:          `1px solid ${healthColor}55`,
+                  color:           healthColor,
                 }}>
                   {healthLabel}
                 </span>
                 <span style={{
-                  padding: '2px 10px', borderRadius: '12px', fontFamily: ASST, fontSize: '11px',
-                  backgroundColor: 'rgba(74,124,89,0.2)', border: '1px solid rgba(74,124,89,0.4)', color: '#7DC084',
+                  padding:         '2px 10px',
+                  borderRadius:    '12px',
+                  fontFamily:      DM_SANS,
+                  fontSize:        '11px',
+                  backgroundColor: 'rgba(0,229,195,0.1)',
+                  border:          '1px solid rgba(0,229,195,0.25)',
+                  color:           BIO_CYAN,
                 }}>
                   {stageLabel}
                 </span>
@@ -142,11 +155,11 @@ export function TrackerCard({ tracker, onAddCheckin, onDeleted }: Props) {
           {/* Last checkin */}
           <div style={{ textAlign: 'right' }}>
             {latest ? (
-              <p style={{ fontFamily: ASST, fontSize: '11px', color: 'rgba(237,224,196,0.45)', margin: 0 }}>
+              <p style={{ fontFamily: DM_SANS, fontSize: '11px', color: `${TEXT_MID}45`, margin: 0 }}>
                 {t('card.lastCheckin', { count: daysSince(latest.checkin_date) })}
               </p>
             ) : (
-              <p style={{ fontFamily: ASST, fontSize: '11px', color: 'rgba(237,224,196,0.3)', margin: 0 }}>
+              <p style={{ fontFamily: DM_SANS, fontSize: '11px', color: `${TEXT_MID}30`, margin: 0 }}>
                 {t('card.neverChecked')}
               </p>
             )}
@@ -155,7 +168,7 @@ export function TrackerCard({ tracker, onAddCheckin, onDeleted }: Props) {
 
         {/* Expand indicator */}
         <div style={{ textAlign: 'center', marginTop: '10px' }}>
-          <span style={{ fontFamily: ASST, fontSize: '11px', color: 'rgba(245,200,64,0.4)' }}>
+          <span style={{ fontFamily: DM_SANS, fontSize: '11px', color: 'rgba(0,229,195,0.4)' }}>
             {isExpanded ? '▲' : '▼'}
           </span>
         </div>
@@ -163,27 +176,27 @@ export function TrackerCard({ tracker, onAddCheckin, onDeleted }: Props) {
 
       {/* Action buttons */}
       <div style={{
-        display: 'flex',
-        justifyContent: 'space-between',
-        alignItems: 'center',
-        padding: '10px 18px',
-        borderTop: '1px solid rgba(245,200,64,0.08)',
+        display:         'flex',
+        justifyContent:  'space-between',
+        alignItems:      'center',
+        padding:         '10px 18px',
+        borderTop:       '1px solid rgba(0,229,195,0.08)',
         backgroundColor: 'rgba(0,0,0,0.15)',
       }}>
         {confirmDelete ? (
           <div style={{ display: 'flex', gap: '8px', alignItems: 'center', width: '100%', justifyContent: 'flex-end' }}>
-            <span style={{ fontFamily: ASST, fontSize: '12px', color: 'rgba(237,224,196,0.6)' }}>
+            <span style={{ fontFamily: DM_SANS, fontSize: '12px', color: `${TEXT_MID}60` }}>
               {t('card.deleteConfirm')}
             </span>
             <button
               onClick={() => setConfirmDelete(false)}
-              style={{ fontFamily: ASST, fontSize: '12px', color: 'rgba(237,224,196,0.6)', background: 'none', border: 'none', cursor: 'pointer' }}
+              style={{ fontFamily: DM_SANS, fontSize: '12px', color: `${TEXT_MID}60`, background: 'none', border: 'none', cursor: 'pointer' }}
             >
               {t('card.cancel')}
             </button>
             <button
               onClick={handleDelete}
-              style={{ fontFamily: ASST, fontSize: '12px', color: '#e06060', background: 'none', border: 'none', cursor: 'pointer', fontWeight: 600 }}
+              style={{ fontFamily: DM_SANS, fontSize: '12px', color: '#e06060', background: 'none', border: 'none', cursor: 'pointer', fontWeight: 600 }}
             >
               {t('card.delete')}
             </button>
@@ -193,12 +206,20 @@ export function TrackerCard({ tracker, onAddCheckin, onDeleted }: Props) {
             <button
               onClick={() => setConfirmDelete(true)}
               style={{
-                fontFamily: ASST, fontSize: '12px', color: 'rgba(220,100,100,0.5)',
-                background: 'none', border: 'none', cursor: 'pointer',
-                padding: '0 8px', borderRadius: '4px',
-                transition: 'color 0.15s',
-                minWidth: '44px', minHeight: '44px',
-                display: 'flex', alignItems: 'center', justifyContent: 'center',
+                fontFamily:     DM_SANS,
+                fontSize:       '12px',
+                color:          'rgba(220,100,100,0.5)',
+                background:     'none',
+                border:         'none',
+                cursor:         'pointer',
+                padding:        '0 8px',
+                borderRadius:   '4px',
+                transition:     'color 0.15s',
+                minWidth:       '44px',
+                minHeight:      '44px',
+                display:        'flex',
+                alignItems:     'center',
+                justifyContent: 'center',
               }}
               onMouseEnter={e => { (e.currentTarget as HTMLElement).style.color = '#e06060'; }}
               onMouseLeave={e => { (e.currentTarget as HTMLElement).style.color = 'rgba(220,100,100,0.5)'; }}
@@ -208,14 +229,16 @@ export function TrackerCard({ tracker, onAddCheckin, onDeleted }: Props) {
             <button
               onClick={(e) => { e.stopPropagation(); onAddCheckin(tracker.id); }}
               style={{
-                fontFamily: FRANK, fontSize: '14px', fontWeight: 600,
-                color: '#142B16',
-                backgroundColor: GOLD,
-                border: 'none',
-                borderRadius: '20px',
-                padding: '6px 18px',
-                cursor: 'pointer',
-                transition: 'filter 0.2s',
+                fontFamily:      FRANK,
+                fontSize:        '14px',
+                fontWeight:      600,
+                color:           '#050d0a',
+                backgroundColor: BIO_CYAN,
+                border:          'none',
+                borderRadius:    '20px',
+                padding:         '6px 18px',
+                cursor:          'pointer',
+                transition:      'filter 0.2s',
               }}
               onMouseEnter={e => { (e.currentTarget as HTMLElement).style.filter = 'brightness(1.1)'; }}
               onMouseLeave={e => { (e.currentTarget as HTMLElement).style.filter = 'none'; }}
@@ -229,14 +252,14 @@ export function TrackerCard({ tracker, onAddCheckin, onDeleted }: Props) {
       {/* Expanded checkin history */}
       {isExpanded && (
         <div style={{
-          borderTop: '1px solid rgba(245,200,64,0.12)',
-          padding: '12px 18px',
+          borderTop: '1px solid rgba(0,229,195,0.1)',
+          padding:   '12px 18px',
           maxHeight: '500px',
           overflowY: 'auto',
         }}>
           {loadingCheckins ? (
             <div style={{ textAlign: 'center', padding: '16px' }}>
-              <span style={{ fontSize: '24px' }} className="animate-pulse">🌕</span>
+              <span style={{ fontSize: '24px' }} className="animate-pulse">🌱</span>
             </div>
           ) : (
             <CheckinHistory checkins={checkins} />

@@ -1,10 +1,11 @@
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 
-const GOLD = '#F5C840';
-const PARCH = '#EDE0C4';
-const FRANK = '"Frank Ruhl Libre", Georgia, serif';
-const ASST  = '"Assistant", "Heebo", sans-serif';
+const NIGHT    = '#050d0a';
+const BIO_CYAN = '#00e5c3';
+const TEXT_MID = '#b0cfbf';
+const FRANK    = '"Frank Ruhl Libre", Georgia, serif';
+const DM_SANS  = "'DM Sans', 'Assistant', 'Heebo', sans-serif";
 
 interface Props {
   tier: string | null;
@@ -24,19 +25,19 @@ export function RateLimitBanner({ tier }: Props) {
         margin: '0 16px 12px',
         borderRadius: '12px',
         padding: '16px',
-        backgroundColor: 'rgba(20,43,22,0.95)',
-        border: `1px solid rgba(245,200,64,0.3)`,
+        backgroundColor: '#111f18',
+        border: `1px solid rgba(0,229,195,0.3)`,
         textAlign: 'center',
       }}
       role="alert"
     >
       <div style={{ fontSize: '32px', marginBottom: '8px' }}>🌙</div>
-      <p style={{ fontFamily: FRANK, fontSize: '15px', color: GOLD, margin: '0 0 6px' }}>
+      <p style={{ fontFamily: FRANK, fontSize: '15px', color: BIO_CYAN, margin: '0 0 6px' }}>
         {isGrowerTier
           ? (isHe ? 'הגעת ל-50 שיחות החודשיות' : 'You reached 50 monthly messages')
           : (isHe ? 'צ\'ופצ\'ו עייף קצת...' : 'Chupchu needs a rest...')}
       </p>
-      <p style={{ fontFamily: ASST, fontSize: '13px', color: `${PARCH}99`, margin: '0 0 14px', lineHeight: 1.5 }}>
+      <p style={{ fontFamily: DM_SANS, fontSize: '13px', color: `${TEXT_MID}99`, margin: '0 0 14px', lineHeight: 1.5 }}>
         {isGrowerTier
           ? (isHe ? 'שדרג למקצועי לשיחות ללא הגבלה עם צ\'ופצ\'ו.' : 'Upgrade to Pro for unlimited Chupchu messages.')
           : (isHe ? 'ניצלת את 20 השיחות החינמיות. שדרג לגנן ב-₪18 לחודש.' : 'Used all 20 free messages. Upgrade for ₪18/mo.')}
@@ -45,7 +46,7 @@ export function RateLimitBanner({ tier }: Props) {
         onClick={() => navigate('/pricing')}
         style={{
           fontFamily: FRANK, fontSize: '14px', fontWeight: 700,
-          color: '#142B16', backgroundColor: GOLD,
+          color: NIGHT, backgroundColor: BIO_CYAN,
           border: 'none', borderRadius: '8px',
           padding: '9px 22px', cursor: 'pointer',
           transition: 'filter 0.2s',

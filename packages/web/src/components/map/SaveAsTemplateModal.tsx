@@ -5,10 +5,10 @@ import type { TemplateMeta } from '../../stores/mapStore';
 import type { MapObject } from '../../stores/mapStore';
 import { api } from '../../api/client';
 
-const GOLD   = '#F5C840';
-const FOREST = '#142B16';
-const PARCH  = '#EDE0C4';
-const ASSIST = '"Assistant", "Heebo", sans-serif';
+const GOLD   = '#00e5c3';
+const FOREST = '#050d0a';
+const PARCH  = '#b0cfbf';
+const ASSIST = "'DM Sans', 'Assistant', 'Heebo', sans-serif";
 const FRANK  = '"Frank Ruhl Libre", Georgia, serif';
 
 interface Props {
@@ -101,26 +101,26 @@ export function SaveAsTemplateModal({ isOpen, onClose, onSuccess, mapObjects, ac
 
   const lbl: React.CSSProperties = {
     fontFamily: ASSIST, fontSize: 12, fontWeight: 600,
-    color: 'rgba(237,224,196,0.55)', display: 'block',
+    color: 'rgba(176,207,191,0.55)', display: 'block',
     marginBottom: 5, textAlign: 'right',
   };
 
   return (
     <>
       <style>{`
-        .satm-input { background: rgba(255,255,255,0.07); border: 1px solid rgba(245,200,64,0.2); border-radius: 7px; padding: 8px 11px; font-size: 13px; font-family: ${ASSIST}; color: ${PARCH}; outline: none; width: 100%; box-sizing: border-box; transition: border-color 0.15s; direction: rtl; }
-        .satm-input:focus { border-color: rgba(245,200,64,0.5); }
-        .satm-input::placeholder { color: rgba(237,224,196,0.3); }
+        .satm-input { background: rgba(9,20,16,0.85); border: 1px solid rgba(0,229,195,0.2); border-radius: 7px; padding: 8px 11px; font-size: 13px; font-family: ${ASSIST}; color: ${PARCH}; outline: none; width: 100%; box-sizing: border-box; transition: border-color 0.15s; direction: rtl; }
+        .satm-input:focus { border-color: rgba(0,229,195,0.5); }
+        .satm-input::placeholder { color: rgba(176,207,191,0.3); }
         .satm-input-ltr { direction: ltr; text-align: left; }
-        .satm-textarea { background: rgba(255,255,255,0.07); border: 1px solid rgba(245,200,64,0.2); border-radius: 7px; padding: 8px 11px; font-size: 13px; font-family: ${ASSIST}; color: ${PARCH}; outline: none; width: 100%; box-sizing: border-box; resize: vertical; min-height: 58px; transition: border-color 0.15s; direction: rtl; }
-        .satm-textarea:focus { border-color: rgba(245,200,64,0.5); }
-        .satm-textarea::placeholder { color: rgba(237,224,196,0.3); }
+        .satm-textarea { background: rgba(9,20,16,0.85); border: 1px solid rgba(0,229,195,0.2); border-radius: 7px; padding: 8px 11px; font-size: 13px; font-family: ${ASSIST}; color: ${PARCH}; outline: none; width: 100%; box-sizing: border-box; resize: vertical; min-height: 58px; transition: border-color 0.15s; direction: rtl; }
+        .satm-textarea:focus { border-color: rgba(0,229,195,0.5); }
+        .satm-textarea::placeholder { color: rgba(176,207,191,0.3); }
         .satm-textarea-ltr { direction: ltr; text-align: left; }
-        .satm-select { background: rgba(10,28,12,0.98); border: 1px solid rgba(245,200,64,0.2); border-radius: 7px; padding: 8px 11px; font-size: 13px; font-family: ${ASSIST}; color: ${PARCH}; outline: none; width: 100%; box-sizing: border-box; cursor: pointer; direction: rtl; }
-        .satm-select:focus { border-color: rgba(245,200,64,0.5); }
-        .satm-radio { display: flex; align-items: flex-start; gap: 10px; padding: 10px 12px; border-radius: 8px; cursor: pointer; border: 1px solid rgba(245,200,64,0.12); transition: background 0.12s, border-color 0.12s; }
-        .satm-radio:hover { background: rgba(245,200,64,0.04); border-color: rgba(245,200,64,0.22); }
-        .satm-radio.active { background: rgba(245,200,64,0.08); border-color: rgba(245,200,64,0.35); }
+        .satm-select { background: rgba(9,20,16,0.98); border: 1px solid rgba(0,229,195,0.2); border-radius: 7px; padding: 8px 11px; font-size: 13px; font-family: ${ASSIST}; color: ${PARCH}; outline: none; width: 100%; box-sizing: border-box; cursor: pointer; direction: rtl; }
+        .satm-select:focus { border-color: rgba(0,229,195,0.5); }
+        .satm-radio { display: flex; align-items: flex-start; gap: 10px; padding: 10px 12px; border-radius: 8px; cursor: pointer; border: 1px solid rgba(0,229,195,0.12); transition: background 0.12s, border-color 0.12s; }
+        .satm-radio:hover { background: rgba(0,229,195,0.04); border-color: rgba(0,229,195,0.22); }
+        .satm-radio.active { background: rgba(0,229,195,0.08); border-color: rgba(0,229,195,0.35); }
       `}</style>
 
       {/* Backdrop */}
@@ -141,8 +141,8 @@ export function SaveAsTemplateModal({ isOpen, onClose, onSuccess, mapObjects, ac
           style={{
             width: '100%', maxWidth: 500,
             maxHeight: '90dvh',
-            background: `linear-gradient(180deg, #1a3a1c 0%, ${FOREST} 100%)`,
-            border: '1px solid rgba(245,200,64,0.22)',
+            background: `linear-gradient(180deg, #0e1e17 0%, ${FOREST} 100%)`,
+            border: '1px solid rgba(0,229,195,0.22)',
             borderRadius: 14,
             boxShadow: '0 24px 80px rgba(0,0,0,0.7)',
             display: 'flex', flexDirection: 'column',
@@ -153,7 +153,7 @@ export function SaveAsTemplateModal({ isOpen, onClose, onSuccess, mapObjects, ac
           <div style={{
             display: 'flex', alignItems: 'center', justifyContent: 'space-between',
             padding: '18px 22px 14px',
-            borderBottom: '1px solid rgba(245,200,64,0.1)',
+            borderBottom: '1px solid rgba(0,229,195,0.1)',
             flexShrink: 0,
           }}>
             {/* Title on right (flex-start in RTL) */}
@@ -165,8 +165,8 @@ export function SaveAsTemplateModal({ isOpen, onClose, onSuccess, mapObjects, ac
               onClick={onClose}
               style={{
                 width: 30, height: 30, borderRadius: '50%',
-                border: '1px solid rgba(245,200,64,0.2)',
-                background: 'transparent', color: 'rgba(237,224,196,0.5)',
+                border: '1px solid rgba(0,229,195,0.2)',
+                background: 'transparent', color: 'rgba(176,207,191,0.5)',
                 cursor: 'pointer', fontSize: 15, display: 'flex',
                 alignItems: 'center', justifyContent: 'center', flexShrink: 0,
               }}
@@ -187,7 +187,7 @@ export function SaveAsTemplateModal({ isOpen, onClose, onSuccess, mapObjects, ac
                 >
                   <div style={{
                     width: 16, height: 16, borderRadius: '50%', marginTop: 1, flexShrink: 0,
-                    border: `2px solid ${saveMode === 'update' ? GOLD : 'rgba(245,200,64,0.3)'}`,
+                    border: `2px solid ${saveMode === 'update' ? GOLD : 'rgba(0,229,195,0.3)'}`,
                     background: saveMode === 'update' ? GOLD : 'transparent',
                     display: 'flex', alignItems: 'center', justifyContent: 'center',
                   }}>
@@ -197,7 +197,7 @@ export function SaveAsTemplateModal({ isOpen, onClose, onSuccess, mapObjects, ac
                     <div style={{ fontFamily: FRANK, fontSize: 13, fontWeight: 700, color: PARCH }}>
                       עדכן תבנית קיימת
                     </div>
-                    <div style={{ fontFamily: ASSIST, fontSize: 12, color: 'rgba(237,224,196,0.5)', marginTop: 2 }}>
+                    <div style={{ fontFamily: ASSIST, fontSize: 12, color: 'rgba(176,207,191,0.5)', marginTop: 2 }}>
                       {`עדכן את "${activeTemplate.titleHe}"`}
                     </div>
                   </div>
@@ -209,7 +209,7 @@ export function SaveAsTemplateModal({ isOpen, onClose, onSuccess, mapObjects, ac
                 >
                   <div style={{
                     width: 16, height: 16, borderRadius: '50%', marginTop: 1, flexShrink: 0,
-                    border: `2px solid ${saveMode === 'new' ? GOLD : 'rgba(245,200,64,0.3)'}`,
+                    border: `2px solid ${saveMode === 'new' ? GOLD : 'rgba(0,229,195,0.3)'}`,
                     background: saveMode === 'new' ? GOLD : 'transparent',
                     display: 'flex', alignItems: 'center', justifyContent: 'center',
                   }}>
@@ -268,7 +268,7 @@ export function SaveAsTemplateModal({ isOpen, onClose, onSuccess, mapObjects, ac
             </div>
 
             {/* 7. מספר אלמנטים */}
-            <div style={{ fontFamily: ASSIST, fontSize: 12, color: 'rgba(237,224,196,0.4)', textAlign: 'right' }}>
+            <div style={{ fontFamily: ASSIST, fontSize: 12, color: 'rgba(176,207,191,0.4)', textAlign: 'right' }}>
               {mapObjects.length} אלמנטים יישמרו בתבנית
             </div>
           </div>
@@ -277,7 +277,7 @@ export function SaveAsTemplateModal({ isOpen, onClose, onSuccess, mapObjects, ac
           <div style={{
             display: 'flex', gap: 10, justifyContent: 'flex-start',
             padding: '14px 22px',
-            borderTop: '1px solid rgba(245,200,64,0.1)',
+            borderTop: '1px solid rgba(0,229,195,0.1)',
             flexShrink: 0,
           }}>
             {/* שמור is flex-start = right in RTL visually, but we want it prominent */}
@@ -288,9 +288,9 @@ export function SaveAsTemplateModal({ isOpen, onClose, onSuccess, mapObjects, ac
                 fontFamily: FRANK, fontSize: 14, fontWeight: 700,
                 padding: '9px 26px', borderRadius: 7,
                 cursor: canSave && !isSaving ? 'pointer' : 'not-allowed',
-                background: canSave ? GOLD : 'rgba(245,200,64,0.2)',
+                background: canSave ? GOLD : 'rgba(0,229,195,0.2)',
                 border: 'none',
-                color: canSave ? FOREST : 'rgba(237,224,196,0.3)',
+                color: canSave ? FOREST : 'rgba(176,207,191,0.3)',
                 opacity: canSave && !isSaving ? 1 : 0.6,
               }}
             >
@@ -302,8 +302,8 @@ export function SaveAsTemplateModal({ isOpen, onClose, onSuccess, mapObjects, ac
                 fontFamily: ASSIST, fontSize: 14, fontWeight: 500,
                 padding: '9px 22px', borderRadius: 7, cursor: 'pointer',
                 background: 'transparent',
-                border: '1px solid rgba(245,200,64,0.25)',
-                color: 'rgba(237,224,196,0.6)',
+                border: '1px solid rgba(0,229,195,0.25)',
+                color: 'rgba(176,207,191,0.6)',
               }}
             >
               ביטול

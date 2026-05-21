@@ -2,11 +2,11 @@ import { useState, useRef } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 
-const GOLD   = '#F5C840';
-const PARCH  = '#EDE0C4';
-const FOREST = '#142B16';
+const GOLD   = '#00e5c3';
+const PARCH  = '#b0cfbf';
+const FOREST = '#050d0a';
 const FRANK  = '"Frank Ruhl Libre", Georgia, serif';
-const ASSIST = '"Assistant", "Heebo", sans-serif';
+const ASSIST = "'DM Sans', 'Assistant', 'Heebo', sans-serif";
 
 interface Video {
   id: string;
@@ -148,8 +148,8 @@ function VideoCard({ video, onClick }: { video: Video; onClick: () => void }) {
         height: '124px',
         borderRadius: '8px',
         overflow: 'hidden',
-        background: 'rgba(20,43,22,0.6)',
-        border: `1px solid ${hovered ? 'rgba(245,200,64,0.4)' : 'rgba(245,200,64,0.1)'}`,
+        background: 'rgba(9,20,16,0.6)',
+        border: `1px solid ${hovered ? 'rgba(0,229,195,0.4)' : 'rgba(0,229,195,0.1)'}`,
         transition: 'border-color 0.2s',
       }}>
         <img
@@ -167,7 +167,7 @@ function VideoCard({ video, onClick }: { video: Video; onClick: () => void }) {
           }}>
             <div style={{
               width: '44px', height: '44px', borderRadius: '50%',
-              background: 'rgba(245,200,64,0.9)',
+              background: 'rgba(0,229,195,0.9)',
               display: 'flex', alignItems: 'center', justifyContent: 'center',
             }}>
               <div style={{
@@ -184,10 +184,10 @@ function VideoCard({ video, onClick }: { video: Video; onClick: () => void }) {
         {video.comingSoon && (
           <div style={{
             position: 'absolute', top: '8px', insetInlineStart: '8px',
-            background: 'rgba(20,43,22,0.9)',
-            border: '1px solid rgba(245,200,64,0.3)',
+            background: 'rgba(9,20,16,0.9)',
+            border: '1px solid rgba(0,229,195,0.3)',
             borderRadius: '4px', padding: '2px 8px',
-            fontFamily: ASSIST, fontSize: '10px', color: 'rgba(237,224,196,0.7)',
+            fontFamily: ASSIST, fontSize: '10px', color: 'rgba(176,207,191,0.7)',
           }}>
             {'בקרוב 🎬'}
           </div>
@@ -205,7 +205,7 @@ function VideoCard({ video, onClick }: { video: Video; onClick: () => void }) {
         <div style={{
           position: 'absolute', bottom: '6px', insetInlineStart: '6px',
           background: 'rgba(0,0,0,0.7)', borderRadius: '3px',
-          padding: '1px 6px', fontFamily: ASSIST, fontSize: '10px', color: 'rgba(237,224,196,0.7)',
+          padding: '1px 6px', fontFamily: ASSIST, fontSize: '10px', color: 'rgba(176,207,191,0.7)',
         }}>
           {video.duration}
         </div>
@@ -221,7 +221,7 @@ function VideoCard({ video, onClick }: { video: Video; onClick: () => void }) {
         {video.titleHe}
       </p>
       <p style={{
-        fontFamily: ASSIST, fontSize: '11px', color: 'rgba(237,224,196,0.45)',
+        fontFamily: ASSIST, fontSize: '11px', color: 'rgba(176,207,191,0.45)',
         margin: 0, lineHeight: 1.4,
         display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical',
         overflow: 'hidden',
@@ -261,7 +261,7 @@ function VideoRow({ category, videos, onSelect }: {
           style={{
             position: 'absolute', insetInlineStart: '-16px', top: '50px',
             zIndex: 10, width: '32px', height: '32px', borderRadius: '50%',
-            background: 'rgba(20,43,22,0.9)', border: '1px solid rgba(245,200,64,0.2)',
+            background: 'rgba(9,20,16,0.9)', border: '1px solid rgba(0,229,195,0.2)',
             color: GOLD, cursor: 'pointer', fontSize: '14px',
             display: 'flex', alignItems: 'center', justifyContent: 'center',
           }}
@@ -286,7 +286,7 @@ function VideoRow({ category, videos, onSelect }: {
           style={{
             position: 'absolute', insetInlineEnd: '-16px', top: '50px',
             zIndex: 10, width: '32px', height: '32px', borderRadius: '50%',
-            background: 'rgba(20,43,22,0.9)', border: '1px solid rgba(245,200,64,0.2)',
+            background: 'rgba(9,20,16,0.9)', border: '1px solid rgba(0,229,195,0.2)',
             color: GOLD, cursor: 'pointer', fontSize: '14px',
             display: 'flex', alignItems: 'center', justifyContent: 'center',
           }}
@@ -311,8 +311,8 @@ function VideoModal({ video, onClose }: { video: Video; onClose: () => void }) {
       <div
         onClick={e => e.stopPropagation()}
         style={{
-          background: 'linear-gradient(160deg, rgba(24,52,26,0.99), rgba(20,43,22,0.99))',
-          border: '1px solid rgba(245,200,64,0.15)',
+          background: 'linear-gradient(160deg, rgba(14,30,23,0.99), rgba(9,20,16,0.99))',
+          border: '1px solid rgba(0,229,195,0.15)',
           borderRadius: '16px', overflow: 'hidden',
           width: '100%', maxWidth: '680px',
           boxShadow: '0 24px 80px rgba(0,0,0,0.7)',
@@ -338,7 +338,7 @@ function VideoModal({ video, onClose }: { video: Video; onClose: () => void }) {
             <p style={{ fontFamily: FRANK, fontSize: '18px', color: GOLD, margin: '0 0 8px' }}>
               {t('videoModal.inProgress')}
             </p>
-            <p style={{ fontFamily: ASSIST, fontSize: '13px', color: 'rgba(237,224,196,0.5)', margin: 0 }}>
+            <p style={{ fontFamily: ASSIST, fontSize: '13px', color: 'rgba(176,207,191,0.5)', margin: 0 }}>
               {t('videoModal.followYouTube')}
             </p>
           </div>
@@ -351,24 +351,24 @@ function VideoModal({ video, onClose }: { video: Video; onClose: () => void }) {
             </h3>
             <button
               onClick={onClose}
-              style={{ background: 'none', border: 'none', color: 'rgba(237,224,196,0.5)', cursor: 'pointer', fontSize: '20px', flexShrink: 0 }}
+              style={{ background: 'none', border: 'none', color: 'rgba(176,207,191,0.5)', cursor: 'pointer', fontSize: '20px', flexShrink: 0 }}
             >✕</button>
           </div>
-          <p style={{ fontFamily: ASSIST, fontSize: '14px', color: 'rgba(237,224,196,0.7)', margin: '10px 0 16px', lineHeight: 1.6 }}>
+          <p style={{ fontFamily: ASSIST, fontSize: '14px', color: 'rgba(176,207,191,0.7)', margin: '10px 0 16px', lineHeight: 1.6 }}>
             {video.descHe}
           </p>
           <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
             <span style={{
               fontFamily: ASSIST, fontSize: '12px', padding: '4px 12px',
-              borderRadius: '99px', border: '1px solid rgba(245,200,64,0.25)',
-              color: GOLD, background: 'rgba(245,200,64,0.08)',
+              borderRadius: '99px', border: '1px solid rgba(0,229,195,0.25)',
+              color: GOLD, background: 'rgba(0,229,195,0.08)',
             }}>
               {video.format === 'yt' ? '▶ YouTube' : video.format === 'reel' ? '📱 Reel' : '▶ YouTube + 📱 Reel'}
             </span>
             <span style={{
               fontFamily: ASSIST, fontSize: '12px', padding: '4px 12px',
-              borderRadius: '99px', border: '1px solid rgba(237,224,196,0.15)',
-              color: 'rgba(237,224,196,0.6)',
+              borderRadius: '99px', border: '1px solid rgba(176,207,191,0.15)',
+              color: 'rgba(176,207,191,0.6)',
             }}>
               ⏱ {video.duration}
             </span>
@@ -424,7 +424,7 @@ function SubjectModal({
     borderRadius: '10px',
     marginBottom: '8px',
     transition: 'transform 0.15s, background 0.15s',
-    border: '1px solid rgba(245,200,64,0.08)',
+    border: '1px solid rgba(0,229,195,0.08)',
   };
 
   return (
@@ -444,8 +444,8 @@ function SubjectModal({
         <div
           onClick={e => e.stopPropagation()}
           style={{
-            background: 'linear-gradient(145deg, rgba(28,58,30,0.97), rgba(15,35,17,0.99))',
-            border: '1px solid rgba(245,200,64,0.2)',
+            background: 'linear-gradient(145deg, rgba(9,20,16,0.97), rgba(15,35,17,0.99))',
+            border: '1px solid rgba(0,229,195,0.2)',
             borderRadius: '16px', overflow: 'hidden',
             maxWidth: '500px', width: '92%',
             maxHeight: '90vh', overflowY: 'auto',
@@ -484,8 +484,8 @@ function SubjectModal({
               {category && (
                 <span style={{
                   fontFamily: ASSIST, fontSize: '11px',
-                  background: 'rgba(245,200,64,0.12)', color: GOLD,
-                  border: '1px solid rgba(245,200,64,0.25)',
+                  background: 'rgba(0,229,195,0.12)', color: GOLD,
+                  border: '1px solid rgba(0,229,195,0.25)',
                   borderRadius: '99px', padding: '2px 10px',
                 }}>
                   {t('filters.' + category.id)}
@@ -506,7 +506,7 @@ function SubjectModal({
                 onClick={() => { onClose(); onPlayVideo(video); }}
                 onMouseEnter={e => {
                   (e.currentTarget as HTMLDivElement).style.transform = 'scale(1.01)';
-                  (e.currentTarget as HTMLDivElement).style.background = 'rgba(245,200,64,0.06)';
+                  (e.currentTarget as HTMLDivElement).style.background = 'rgba(0,229,195,0.06)';
                 }}
                 onMouseLeave={e => {
                   (e.currentTarget as HTMLDivElement).style.transform = 'scale(1)';
@@ -537,7 +537,7 @@ function SubjectModal({
                 }}
                 onMouseEnter={e => {
                   (e.currentTarget as HTMLDivElement).style.transform = 'scale(1.01)';
-                  (e.currentTarget as HTMLDivElement).style.background = 'rgba(245,200,64,0.06)';
+                  (e.currentTarget as HTMLDivElement).style.background = 'rgba(0,229,195,0.06)';
                 }}
                 onMouseLeave={e => {
                   (e.currentTarget as HTMLDivElement).style.transform = 'scale(1)';
@@ -557,8 +557,8 @@ function SubjectModal({
                 ) : (
                   <span style={{
                     fontFamily: ASSIST, fontSize: '10px',
-                    background: 'rgba(245,200,64,0.1)', color: GOLD,
-                    border: '1px solid rgba(245,200,64,0.2)',
+                    background: 'rgba(0,229,195,0.1)', color: GOLD,
+                    border: '1px solid rgba(0,229,195,0.2)',
                     borderRadius: '4px', padding: '2px 7px', flexShrink: 0,
                   }}>{t('comingSoon')}</span>
                 )}
@@ -636,8 +636,8 @@ function CrossNavLink({ to, label }: { to: string; label: string }) {
         display: 'inline-flex', alignItems: 'center', gap: '6px',
         fontFamily: ASSIST, fontSize: '13px',
         color: GOLD,
-        background: hovered ? 'rgba(245,200,64,0.14)' : 'rgba(245,200,64,0.07)',
-        border: `1px solid ${hovered ? 'rgba(245,200,64,0.4)' : 'rgba(245,200,64,0.2)'}`,
+        background: hovered ? 'rgba(0,229,195,0.14)' : 'rgba(0,229,195,0.07)',
+        border: `1px solid ${hovered ? 'rgba(0,229,195,0.4)' : 'rgba(0,229,195,0.2)'}`,
         borderRadius: '99px',
         padding: '7px 18px',
         textDecoration: 'none',
@@ -675,7 +675,7 @@ export function GuidesPage() {
       dir={isHe ? 'rtl' : 'ltr'}
       style={{
         minHeight: '100vh',
-        background: 'linear-gradient(180deg, #0e1e0f 0%, #142B16 30%, #0a1a0c 100%)',
+        background: 'linear-gradient(180deg, #0e1e17 0%, #091410 30%, #091410 100%)',
         padding: '40px 48px 60px',
         fontFamily: ASSIST,
       }}
@@ -685,7 +685,7 @@ export function GuidesPage() {
         <h1 style={{ fontFamily: FRANK, fontSize: '32px', color: GOLD, margin: '0 0 8px' }}>
           {t('title')}
         </h1>
-        <p style={{ fontFamily: ASSIST, fontSize: '15px', color: 'rgba(237,224,196,0.6)', margin: 0 }}>
+        <p style={{ fontFamily: ASSIST, fontSize: '15px', color: 'rgba(176,207,191,0.6)', margin: 0 }}>
           {t('subtitle')}
         </p>
       </div>
@@ -705,8 +705,8 @@ export function GuidesPage() {
           style={{
             width: '100%', boxSizing: 'border-box',
             padding: '10px 16px', borderRadius: '24px',
-            border: '1px solid rgba(245,200,64,0.25)',
-            background: 'rgba(20,43,22,0.7)',
+            border: '1px solid rgba(0,229,195,0.25)',
+            background: 'rgba(9,20,16,0.7)',
             color: PARCH, fontSize: '14px', fontFamily: ASSIST,
             outline: 'none', direction: isHe ? 'rtl' : 'ltr',
           }}
@@ -722,9 +722,9 @@ export function GuidesPage() {
             style={{
               fontFamily: ASSIST, fontSize: '13px',
               padding: '6px 16px', borderRadius: '99px',
-              border: `1px solid ${activeFilter === cat.id ? GOLD : 'rgba(245,200,64,0.2)'}`,
-              background: activeFilter === cat.id ? 'rgba(245,200,64,0.15)' : 'transparent',
-              color: activeFilter === cat.id ? GOLD : 'rgba(237,224,196,0.6)',
+              border: `1px solid ${activeFilter === cat.id ? GOLD : 'rgba(0,229,195,0.2)'}`,
+              background: activeFilter === cat.id ? 'rgba(0,229,195,0.15)' : 'transparent',
+              color: activeFilter === cat.id ? GOLD : 'rgba(176,207,191,0.6)',
               cursor: 'pointer', transition: 'all 0.15s',
             }}
           >

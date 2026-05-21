@@ -31,7 +31,7 @@ function SaveIndicator({ isSaving, lastSaved, saveError, onRetry }: {
 
   if (!isSaving && !showSaved && !saveError) return null;
 
-  const ASST = '"Assistant","Heebo",sans-serif';
+  const ASST = "'DM Sans','Assistant','Heebo',sans-serif";
 
   return (
     <>
@@ -39,23 +39,23 @@ function SaveIndicator({ isSaving, lastSaved, saveError, onRetry }: {
       <div style={{
         position: 'absolute', top: '12px', left: '12px',
         display: 'flex', alignItems: 'center', gap: '6px',
-        backgroundColor: 'rgba(20,43,22,0.92)',
-        border: `1px solid ${saveError ? 'rgba(217,83,79,0.4)' : 'rgba(245,200,64,0.2)'}`,
+        backgroundColor: 'rgba(9,20,16,0.92)',
+        border: `1px solid ${saveError ? 'rgba(217,83,79,0.4)' : 'rgba(0,229,195,0.2)'}`,
         borderRadius: '6px', padding: '5px 10px', zIndex: 100,
         boxShadow: '0 2px 8px rgba(0,0,0,0.3)',
       }}>
         {isSaving && (
           <>
             <span style={{
-              width: '11px', height: '11px', border: '2px solid rgba(237,224,196,0.2)',
-              borderTopColor: 'rgba(237,224,196,0.6)', borderRadius: '50%',
+              width: '11px', height: '11px', border: '2px solid rgba(176,207,191,0.2)',
+              borderTopColor: 'rgba(176,207,191,0.6)', borderRadius: '50%',
               display: 'inline-block', animation: 'mapSpin 0.8s linear infinite', flexShrink: 0,
             }} />
-            <span style={{ fontFamily: ASST, fontSize: '12px', color: 'rgba(237,224,196,0.55)' }}>שומר...</span>
+            <span style={{ fontFamily: ASST, fontSize: '12px', color: 'rgba(176,207,191,0.55)' }}>שומר...</span>
           </>
         )}
         {!isSaving && showSaved && !saveError && (
-          <span style={{ fontFamily: ASST, fontSize: '12px', color: '#7DC084' }}>נשמר ✓</span>
+          <span style={{ fontFamily: ASST, fontSize: '12px', color: '#4A9C68' }}>נשמר ✓</span>
         )}
         {saveError && (
           <>
@@ -63,8 +63,8 @@ function SaveIndicator({ isSaving, lastSaved, saveError, onRetry }: {
             <button
               onClick={onRetry}
               style={{
-                fontFamily: ASST, fontSize: '11px', color: '#F5C840',
-                background: 'none', border: '1px solid rgba(245,200,64,0.35)',
+                fontFamily: ASST, fontSize: '11px', color: '#00e5c3',
+                background: 'none', border: '1px solid rgba(0,229,195,0.35)',
                 borderRadius: '4px', padding: '2px 7px', cursor: 'pointer', marginRight: '2px',
               }}
             >
@@ -184,14 +184,14 @@ export function MapPage() {
 
   if (store.isLoading) {
     return (
-      <div style={{ background: '#142B16', minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+      <div style={{ background: '#050d0a', minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
         <span style={{ fontSize: '48px' }}>🗺️</span>
       </div>
     );
   }
 
   return (
-    <div dir={isHe ? 'rtl' : 'ltr'} style={{ background: '#142B16' }}>
+    <div dir={isHe ? 'rtl' : 'ltr'} style={{ background: '#050d0a' }}>
       {/* Canvas area — fills viewport between navbar and bottom nav */}
       <div style={{ position: 'fixed', top: 'var(--navbar-height)', insetInlineStart: 0, insetInlineEnd: 0, height: 'calc(100dvh - var(--navbar-height) - var(--bottomnav-height))', display: 'flex', flexDirection: isHe ? 'row-reverse' : 'row', overflow: 'hidden' }}>
         <MapToolbar
@@ -254,8 +254,8 @@ export function MapPage() {
             width: '260px',
             height: 'calc(100% - 56px)',
             overflow: 'hidden',
-            background: 'rgba(20,43,22,0.97)',
-            borderInlineStart: '1px solid rgba(245,200,64,0.15)',
+            background: 'rgba(9,20,16,0.97)',
+            borderInlineStart: '1px solid rgba(0,229,195,0.15)',
             zIndex: 10,
             display: 'flex',
             flexDirection: 'column',
@@ -313,9 +313,9 @@ export function MapPage() {
       {toast && (
         <div style={{
           position: 'fixed', bottom: '100px', left: '50%', transform: 'translateX(-50%)',
-          background: 'rgba(74,128,80,0.97)', border: '1px solid rgba(125,192,132,0.3)',
+          background: 'rgba(9,20,16,0.97)', border: '1px solid rgba(0,229,195,0.3)',
           borderRadius: '10px', padding: '10px 20px', zIndex: 500,
-          fontFamily: '"Assistant","Heebo",sans-serif', fontSize: '13px', color: '#E8F5E9',
+          fontFamily: "'DM Sans','Assistant','Heebo',sans-serif", fontSize: '13px', color: '#e8f5ee',
           whiteSpace: 'nowrap', boxShadow: '0 4px 20px rgba(0,0,0,0.4)',
         }}>
           {toast}

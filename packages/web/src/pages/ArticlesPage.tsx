@@ -107,7 +107,7 @@ export function ArticlesPage() {
       dir={isRTL ? 'rtl' : 'ltr'}
       style={{
         minHeight: '100vh',
-        background: 'linear-gradient(180deg, #0e1e0f 0%, #142B16 30%, #0a1a0c 100%)',
+        background: 'linear-gradient(180deg, #0e1e17 0%, #091410 30%, #091410 100%)',
         padding: '40px 48px 60px',
         fontFamily: ASSIST,
       }}
@@ -180,7 +180,7 @@ export function ArticlesPage() {
             <button
               onClick={() => setSearchQuery('')}
               style={{
-                fontFamily: ASSIST, fontSize: '13px', color: '#142B16',
+                fontFamily: ASSIST, fontSize: '13px', color: '#050d0a',
                 background: GOLD, border: 'none', borderRadius: '99px',
                 padding: '8px 20px', cursor: 'pointer', marginTop: '8px',
               }}

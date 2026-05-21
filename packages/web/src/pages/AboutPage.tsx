@@ -1,12 +1,12 @@
 import { useTranslation } from 'react-i18next';
 
 const CAVEAT    = '"Caveat", cursive';
-const ASSISTANT = '"Assistant", "Heebo", sans-serif';
+const ASSISTANT = "'DM Sans', 'Assistant', 'Heebo', sans-serif";
 const FRANK     = '"Frank Ruhl Libre", Georgia, serif';
 const PLAYFAIR  = '"Playfair Display", Georgia, serif';
-const FOREST    = '#142B16';
-const GOLD      = '#F5C840';
-const PARCHMENT = '#EDE0C4';
+const FOREST    = '#050d0a';
+const GOLD      = '#00e5c3';
+const PARCHMENT = '#b0cfbf';
 const LEAF_GREEN = '#B0D8A8';
 
 const HE_STORY_PARAS = [
@@ -61,7 +61,7 @@ export function AboutPage() {
         background: `linear-gradient(160deg, ${FOREST} 0%, #1e4420 100%)`,
         padding: 'clamp(40px, 8vw, 80px) 24px clamp(32px, 6vw, 60px)',
         textAlign: 'center',
-        borderBottom: `1px solid rgba(245,200,64,0.15)`,
+        borderBottom: `1px solid rgba(0,229,195,0.15)`,
       }}>
         <div style={{ fontSize: '48px', lineHeight: 1, marginBottom: '16px' }}>🌿</div>
         <h1 style={{
@@ -97,10 +97,10 @@ export function AboutPage() {
             alignItems: 'flex-start',
             flexWrap: 'wrap',
             backgroundColor: '#FFF8EE',
-            border: '1.5px solid rgba(245,200,64,0.4)',
+            border: '1.5px solid rgba(0,229,195,0.4)',
             borderRadius: '18px',
             padding: 'clamp(20px, 4vw, 36px)',
-            boxShadow: '0 6px 32px rgba(20,43,22,0.09)',
+            boxShadow: '0 6px 32px rgba(9,20,16,0.09)',
           }}
         >
           {/* Avatar column */}
@@ -112,9 +112,9 @@ export function AboutPage() {
                 width: 'clamp(64px, 12vw, 90px)',
                 height: 'clamp(64px, 12vw, 90px)',
                 borderRadius: '50%',
-                border: `2px solid rgba(245,200,64,0.5)`,
+                border: `2px solid rgba(0,229,195,0.5)`,
                 objectFit: 'cover',
-                boxShadow: '0 2px 12px rgba(20,43,22,0.15)',
+                boxShadow: '0 2px 12px rgba(9,20,16,0.15)',
               }}
             />
             <span style={{
@@ -153,7 +153,7 @@ export function AboutPage() {
           color: '#8a7a60',
           margin: 0,
           lineHeight: 1.6,
-          borderInlineStart: `3px solid rgba(245,200,64,0.4)`,
+          borderInlineStart: `3px solid rgba(0,229,195,0.4)`,
           paddingInlineStart: '12px',
         }}>
           {isHe
@@ -166,7 +166,7 @@ export function AboutPage() {
       <div style={{ maxWidth: '820px', margin: '48px auto 0', padding: '0 20px' }}>
         <div style={{
           height: '1px',
-          background: 'linear-gradient(to right, transparent, rgba(20,43,22,0.18), transparent)',
+          background: 'linear-gradient(to right, transparent, rgba(9,20,16,0.18), transparent)',
         }} />
       </div>
 
@@ -229,16 +229,16 @@ function ContactLink({ href, icon, label, external }: {
         padding: '10px 16px',
         borderRadius: '10px',
         backgroundColor: '#FFF8EE',
-        border: '1px solid rgba(20,43,22,0.1)',
+        border: '1px solid rgba(9,20,16,0.1)',
         transition: 'border-color 0.2s, box-shadow 0.2s',
         maxWidth: '340px',
       }}
       onMouseEnter={e => {
-        (e.currentTarget as HTMLElement).style.borderColor = 'rgba(245,200,64,0.5)';
-        (e.currentTarget as HTMLElement).style.boxShadow = '0 2px 10px rgba(20,43,22,0.08)';
+        (e.currentTarget as HTMLElement).style.borderColor = 'rgba(0,229,195,0.5)';
+        (e.currentTarget as HTMLElement).style.boxShadow = '0 2px 10px rgba(9,20,16,0.08)';
       }}
       onMouseLeave={e => {
-        (e.currentTarget as HTMLElement).style.borderColor = 'rgba(20,43,22,0.1)';
+        (e.currentTarget as HTMLElement).style.borderColor = 'rgba(9,20,16,0.1)';
         (e.currentTarget as HTMLElement).style.boxShadow = 'none';
       }}
     >

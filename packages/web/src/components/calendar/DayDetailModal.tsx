@@ -3,16 +3,16 @@ import { useTranslation } from 'react-i18next';
 import { useDirection } from '../../hooks/useDirection';
 import type { BiodynamicDay } from '@gina-haya/shared';
 
-const GOLD     = '#F5C840';
-const PARCH    = '#EDE0C4';
-const SAGE_GRN = '#7DC084';
-const FRANK    = '"Frank Ruhl Libre", Georgia, serif';
-const PLAYFAIR = '"Playfair Display", Georgia, serif';
-const ASSIST   = '"Assistant", "Heebo", sans-serif';
+const NIGHT_CARD = '#111f18';
+const BIO_CYAN   = '#00e5c3';
+const TEXT_MID   = '#b0cfbf';
+const MUTED      = '#6b9080';
+const FRANK      = '"Frank Ruhl Libre", Georgia, serif';
+const DM_SANS    = "'DM Sans', 'Assistant', 'Heebo', sans-serif";
 
 const SCORE_COLOURS: Record<string, string> = {
-  green:  '#7DC084',
-  yellow: '#F5C840',
+  green:  '#4A9C68',
+  yellow: '#ffb830',
   orange: '#C0622A',
   red:    '#A33030',
   black:  '#555555',
@@ -23,10 +23,10 @@ const DAY_TYPE_EMOJIS: Record<string, string> = {
 };
 
 const DAY_TYPE_COLOURS: Record<string, string> = {
-  fruit:  '#7DC084',
-  root:   '#C8A040',
-  flower: '#D4709A',
-  leaf:   '#7DC084',
+  fruit:  '#EF745A',
+  root:   '#B58863',
+  flower: '#C884C8',
+  leaf:   '#00e5c3',
 };
 
 const TIPS_HE: Record<string, string[]> = {
@@ -122,10 +122,10 @@ export function DayDetailModal({ day, onClose }: Props) {
     return () => window.removeEventListener('keydown', handler);
   }, [onClose]);
 
-  const scoreColour  = SCORE_COLOURS[day.scoreColour] ?? GOLD;
-  const dayColour    = DAY_TYPE_COLOURS[day.dayType] ?? SAGE_GRN;
-  const tips         = isHe ? TIPS_HE[day.dayType] : TIPS_EN[day.dayType];
-  const isAscending  = day.ascendingDescending === 'ascending';
+  const scoreColour = SCORE_COLOURS[day.scoreColour] ?? BIO_CYAN;
+  const dayColour   = DAY_TYPE_COLOURS[day.dayType] ?? MUTED;
+  const tips        = isHe ? TIPS_HE[day.dayType] : TIPS_EN[day.dayType];
+  const isAscending = day.ascendingDescending === 'ascending';
 
   const fullDate = new Date(day.date + 'T12:00:00').toLocaleDateString(
     isHe ? 'he-IL' : 'en-US',
@@ -179,8 +179,8 @@ export function DayDetailModal({ day, onClose }: Props) {
           width:           'min(520px, calc(100vw - 32px))',
           maxHeight:       'calc(100vh - 64px)',
           overflowY:       'auto',
-          backgroundColor: '#1C3A1E',
-          border:          '1px solid rgba(245,200,64,0.25)',
+          backgroundColor: NIGHT_CARD,
+          border:          '1px solid rgba(0,229,195,0.2)',
           borderRadius:    '16px',
           boxShadow:       '0 24px 80px rgba(0,0,0,0.7)',
           scrollbarWidth:  'none',
@@ -189,7 +189,7 @@ export function DayDetailModal({ day, onClose }: Props) {
         {/* ── HEADER ── */}
         <div style={{
           padding:      '20px 20px 16px',
-          borderBottom: '1px solid rgba(245,200,64,0.08)',
+          borderBottom: '1px solid rgba(0,229,195,0.08)',
           position:     'relative',
         }}>
           {/* Close button */}
@@ -203,9 +203,9 @@ export function DayDetailModal({ day, onClose }: Props) {
               width:           '28px',
               height:          '28px',
               borderRadius:    '50%',
-              border:          '1px solid rgba(245,200,64,0.2)',
+              border:          '1px solid rgba(0,229,195,0.2)',
               backgroundColor: 'transparent',
-              color:           GOLD,
+              color:           BIO_CYAN,
               fontSize:        '15px',
               lineHeight:      1,
               cursor:          'pointer',
@@ -215,7 +215,7 @@ export function DayDetailModal({ day, onClose }: Props) {
               padding:         0,
               transition:      'background-color 0.15s',
             }}
-            onMouseEnter={e => { (e.currentTarget as HTMLElement).style.backgroundColor = 'rgba(245,200,64,0.1)'; }}
+            onMouseEnter={e => { (e.currentTarget as HTMLElement).style.backgroundColor = 'rgba(0,229,195,0.1)'; }}
             onMouseLeave={e => { (e.currentTarget as HTMLElement).style.backgroundColor = 'transparent'; }}
           >
             ✕
@@ -223,12 +223,12 @@ export function DayDetailModal({ day, onClose }: Props) {
 
           {/* Full date */}
           <p style={{
-            fontFamily:    ASSIST,
+            fontFamily:    DM_SANS,
             fontSize:      '12px',
             fontWeight:    600,
             letterSpacing: '0.1em',
             textTransform: 'uppercase',
-            color:         `${PARCH}55`,
+            color:         `${TEXT_MID}55`,
             margin:        '0 0 10px',
             paddingInlineEnd: '36px',
           }}>
@@ -237,11 +237,11 @@ export function DayDetailModal({ day, onClose }: Props) {
 
           {/* Day type badge + Score */}
           <div style={{
-            display:    'flex',
-            alignItems: 'center',
+            display:        'flex',
+            alignItems:     'center',
             justifyContent: 'space-between',
-            flexWrap:   'wrap',
-            gap:        '12px',
+            flexWrap:       'wrap',
+            gap:            '12px',
           }}>
             <div style={{
               display:         'inline-flex',
@@ -262,7 +262,7 @@ export function DayDetailModal({ day, onClose }: Props) {
               <span style={{ fontFamily: FRANK, fontSize: '36px', fontWeight: 700, lineHeight: 1, color: scoreColour }}>
                 {day.plantingScore}
               </span>
-              <span style={{ fontFamily: ASSIST, fontSize: '14px', color: `${PARCH}55` }}>
+              <span style={{ fontFamily: DM_SANS, fontSize: '14px', color: `${TEXT_MID}55` }}>
                 / 10
               </span>
             </div>
@@ -280,10 +280,10 @@ export function DayDetailModal({ day, onClose }: Props) {
               borderRadius:    '10px',
               padding:         '12px 16px',
             }}>
-              <p style={{ fontFamily: ASSIST, fontSize: '14px', fontWeight: 700, color: '#E06060', margin: '0 0 4px' }}>
+              <p style={{ fontFamily: DM_SANS, fontSize: '14px', fontWeight: 700, color: '#E06060', margin: '0 0 4px' }}>
                 ⚫ {isHe ? 'יום צומת — יום מנוחה לגינה' : 'Node Day — rest day for the garden'}
               </p>
-              <p style={{ fontFamily: ASSIST, fontSize: '13px', color: `${PARCH}77`, margin: 0 }}>
+              <p style={{ fontFamily: DM_SANS, fontSize: '13px', color: `${TEXT_MID}77`, margin: 0 }}>
                 {isHe
                   ? 'הימנע משתילה, קציר ועבודות קרקע'
                   : 'Avoid planting, harvesting and soil work'}
@@ -293,23 +293,23 @@ export function DayDetailModal({ day, onClose }: Props) {
 
           {/* MOON SECTION */}
           <div style={{
-            backgroundColor: 'rgba(20,43,22,0.6)',
-            border:          '1px solid rgba(245,200,64,0.08)',
+            backgroundColor: 'rgba(9,20,16,0.6)',
+            border:          '1px solid rgba(0,229,195,0.08)',
             borderRadius:    '10px',
             padding:         '14px 16px',
           }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '8px' }}>
-              <span style={{ fontSize: '18px', color: GOLD }}>{isAscending ? '↑' : '↓'}</span>
-              <span style={{ fontFamily: FRANK, fontSize: '15px', fontWeight: 600, color: GOLD }}>
+              <span style={{ fontSize: '18px', color: BIO_CYAN }}>{isAscending ? '↑' : '↓'}</span>
+              <span style={{ fontFamily: FRANK, fontSize: '15px', fontWeight: 600, color: BIO_CYAN }}>
                 {moonLabel}
               </span>
             </div>
-            <p style={{ fontFamily: ASSIST, fontSize: '13px', color: `${PARCH}AA`, margin: '0 0 8px', lineHeight: 1.6 }}>
+            <p style={{ fontFamily: DM_SANS, fontSize: '13px', color: `${TEXT_MID}AA`, margin: '0 0 8px', lineHeight: 1.6 }}>
               {moonDesc}
             </p>
-            <p style={{ fontFamily: ASSIST, fontSize: '12px', color: `${PARCH}66`, margin: 0 }}>
+            <p style={{ fontFamily: DM_SANS, fontSize: '12px', color: `${TEXT_MID}66`, margin: 0 }}>
               {isHe ? 'מזל הירח:' : 'Moon sign:'}{' '}
-              <span style={{ color: SAGE_GRN }}>{isHe ? day.moonSignHe : day.moonSign}</span>
+              <span style={{ color: MUTED }}>{isHe ? day.moonSignHe : day.moonSign}</span>
             </p>
           </div>
 
@@ -319,7 +319,7 @@ export function DayDetailModal({ day, onClose }: Props) {
               fontFamily:    FRANK,
               fontSize:      '14px',
               fontWeight:    600,
-              color:         GOLD,
+              color:         BIO_CYAN,
               margin:        '0 0 10px',
               letterSpacing: '0.02em',
             }}>
@@ -328,9 +328,9 @@ export function DayDetailModal({ day, onClose }: Props) {
             <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
               {(tips ?? []).map((tip, i) => (
                 <p key={i} style={{
-                  fontFamily:         ASSIST,
+                  fontFamily:         DM_SANS,
                   fontSize:           '13px',
-                  color:              `${PARCH}99`,
+                  color:              `${TEXT_MID}99`,
                   lineHeight:         1.55,
                   margin:             0,
                   paddingInlineStart: '4px',
@@ -346,12 +346,12 @@ export function DayDetailModal({ day, onClose }: Props) {
             <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
               {day.prep500Recommended && (
                 <div style={{
-                  backgroundColor: 'rgba(245,200,64,0.08)',
-                  border:          '1px solid rgba(245,200,64,0.25)',
+                  backgroundColor: 'rgba(0,229,195,0.06)',
+                  border:          '1px solid rgba(0,229,195,0.2)',
                   borderRadius:    '8px',
                   padding:         '10px 14px',
                 }}>
-                  <p style={{ fontFamily: ASSIST, fontSize: '13px', color: GOLD, margin: 0 }}>
+                  <p style={{ fontFamily: DM_SANS, fontSize: '13px', color: BIO_CYAN, margin: 0 }}>
                     {isHe
                       ? '✅ זמן מומלץ למריחת פרפרט 500 (16:00–19:00)'
                       : '✅ Recommended time to apply BD-500 (16:00–19:00)'}
@@ -360,12 +360,12 @@ export function DayDetailModal({ day, onClose }: Props) {
               )}
               {day.prep501Recommended && (
                 <div style={{
-                  backgroundColor: 'rgba(245,200,64,0.08)',
-                  border:          '1px solid rgba(245,200,64,0.25)',
+                  backgroundColor: 'rgba(0,229,195,0.06)',
+                  border:          '1px solid rgba(0,229,195,0.2)',
                   borderRadius:    '8px',
                   padding:         '10px 14px',
                 }}>
-                  <p style={{ fontFamily: ASSIST, fontSize: '13px', color: GOLD, margin: 0 }}>
+                  <p style={{ fontFamily: DM_SANS, fontSize: '13px', color: BIO_CYAN, margin: 0 }}>
                     {isHe
                       ? '✅ זמן מומלץ למריחת פרפרט 501 (עלות השחר–09:00)'
                       : '✅ Recommended time to apply BD-501 (dawn–09:00)'}
@@ -380,31 +380,31 @@ export function DayDetailModal({ day, onClose }: Props) {
             display:           'flex',
             gap:               '12px',
             alignItems:        'flex-start',
-            backgroundColor:   'rgba(20,43,22,0.7)',
-            border:            '1px solid rgba(245,200,64,0.08)',
-            borderInlineStart: `3px solid ${GOLD}`,
+            backgroundColor:   'rgba(9,20,16,0.7)',
+            border:            '1px solid rgba(0,229,195,0.08)',
+            borderInlineStart: `3px solid ${BIO_CYAN}`,
             borderRadius:      '10px',
             padding:           '14px 16px',
           }}>
-            <span style={{ fontSize: '20px', flexShrink: 0 }}>🌕</span>
+            <span style={{ fontSize: '20px', flexShrink: 0 }}>🌱</span>
             <div style={{ flex: 1, minWidth: 0 }}>
               <p style={{
-                fontFamily:    ASSIST,
+                fontFamily:    DM_SANS,
                 fontSize:      '11px',
                 fontWeight:    700,
                 letterSpacing: '0.1em',
                 textTransform: 'uppercase',
-                color:         GOLD,
+                color:         BIO_CYAN,
                 margin:        '0 0 6px',
               }}>
                 {isHe ? "צ'ופצ'ו ממליץ:" : 'ChupChu recommends:'}
               </p>
               <p style={{
-                fontFamily: PLAYFAIR,
+                fontFamily: FRANK,
                 fontStyle:  'italic',
                 fontSize:   '13px',
                 lineHeight: 1.7,
-                color:      `${PARCH}CC`,
+                color:      `${TEXT_MID}CC`,
                 margin:     0,
               }}>
                 {monSummary}

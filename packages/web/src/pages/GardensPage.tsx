@@ -9,12 +9,12 @@ import type { Garden } from '../stores/gardenStore';
 import { api } from '../api/client';
 import { useAuthStore } from '../stores/authStore';
 
-const EARTH = '#142B16';
-const GOLD  = '#F5C840';
-const PARCH = '#EDE0C4';
-const SAGE  = '#7DC084';
+const EARTH = '#050d0a';
+const GOLD  = '#00e5c3';
+const PARCH = '#b0cfbf';
+const SAGE  = '#4A9C68';
 const FRANK = '"Frank Ruhl Libre", Georgia, serif';
-const ASST  = '"Assistant", "Heebo", sans-serif';
+const ASST  = "'DM Sans', 'Assistant', 'Heebo', sans-serif";
 
 const NOISE_BG = `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='250' height='250'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.75' numOctaves='4' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='250' height='250' filter='url(%23n)' opacity='0.55'/%3E%3C/svg%3E")`;
 
@@ -163,7 +163,7 @@ export function GardensPage() {
                 style={{
                   padding: '10px 20px',
                   backgroundColor: 'transparent', color: GOLD,
-                  border: `1px solid rgba(245,200,64,0.4)`, borderRadius: '8px',
+                  border: `1px solid rgba(0,229,195,0.4)`, borderRadius: '8px',
                   fontFamily: ASST, fontSize: '13px', fontWeight: 600,
                   cursor: 'pointer',
                 }}
@@ -176,7 +176,7 @@ export function GardensPage() {
           {/* Garden cards */}
           {gardens.length === 0 ? (
             <div style={{
-              background: 'rgba(28,58,30,0.5)', border: '1px dashed rgba(245,200,64,0.2)',
+              background: 'rgba(9,20,16,0.5)', border: '1px dashed rgba(0,229,195,0.2)',
               borderRadius: '12px', padding: '48px 24px', textAlign: 'center',
             }}>
               <div style={{ fontSize: '48px', marginBottom: '12px' }}>🌱</div>
@@ -205,8 +205,8 @@ export function GardensPage() {
                   <div
                     key={garden.id}
                     style={{
-                      background: 'rgba(28,58,30,0.6)',
-                      border: `1px solid ${isActive ? `rgba(245,200,64,0.4)` : 'rgba(125,192,132,0.15)'}`,
+                      background: 'rgba(9,20,16,0.6)',
+                      border: `1px solid ${isActive ? `rgba(0,229,195,0.4)` : 'rgba(0,229,195,0.15)'}`,
                       borderRadius: '12px', padding: '20px',
                       transition: 'border-color 0.2s',
                       position: 'relative',
@@ -218,8 +218,8 @@ export function GardensPage() {
                         position: 'absolute', top: '12px', insetInlineEnd: '12px',
                         fontFamily: ASST, fontSize: '10px', fontWeight: 700,
                         padding: '2px 8px', borderRadius: '10px',
-                        backgroundColor: 'rgba(245,200,64,0.15)',
-                        color: GOLD, border: '1px solid rgba(245,200,64,0.3)',
+                        backgroundColor: 'rgba(0,229,195,0.15)',
+                        color: GOLD, border: '1px solid rgba(0,229,195,0.3)',
                         letterSpacing: '0.04em',
                       }}>
                         גינה פעילה
@@ -236,7 +236,7 @@ export function GardensPage() {
                           style={{
                             width: '100%', boxSizing: 'border-box',
                             backgroundColor: 'rgba(255,255,255,0.07)',
-                            border: '1px solid rgba(245,200,64,0.4)',
+                            border: '1px solid rgba(0,229,195,0.4)',
                             borderRadius: '6px', padding: '8px 12px',
                             fontFamily: FRANK, fontSize: '16px', color: GOLD,
                             outline: 'none', direction: 'rtl', marginBottom: '8px',
@@ -250,7 +250,7 @@ export function GardensPage() {
                           style={{
                             width: '100%', boxSizing: 'border-box',
                             backgroundColor: 'rgba(255,255,255,0.05)',
-                            border: '1px solid rgba(245,200,64,0.2)',
+                            border: '1px solid rgba(0,229,195,0.2)',
                             borderRadius: '6px', padding: '7px 12px',
                             fontFamily: ASST, fontSize: '13px', color: PARCH,
                             outline: 'none', direction: 'rtl', marginBottom: '12px',
@@ -263,7 +263,7 @@ export function GardensPage() {
                             style={{
                               flex: 1, padding: '8px',
                               background: 'transparent', color: `${PARCH}70`,
-                              border: '1px solid rgba(237,224,196,0.2)', borderRadius: '6px',
+                              border: '1px solid rgba(176,207,191,0.2)', borderRadius: '6px',
                               fontFamily: ASST, fontSize: '13px', cursor: 'pointer',
                             }}
                           >
@@ -342,8 +342,8 @@ export function GardensPage() {
                               onClick={() => navigate('/map')}
                               style={{
                                 padding: '7px 14px',
-                                backgroundColor: 'rgba(245,200,64,0.12)', color: GOLD,
-                                border: `1px solid rgba(245,200,64,0.3)`, borderRadius: '6px',
+                                backgroundColor: 'rgba(0,229,195,0.12)', color: GOLD,
+                                border: `1px solid rgba(0,229,195,0.3)`, borderRadius: '6px',
                                 fontFamily: FRANK, fontSize: '13px', fontWeight: 600,
                                 cursor: 'pointer',
                               }}
@@ -360,7 +360,7 @@ export function GardensPage() {
                             style={{
                               padding: '7px 12px',
                               background: 'transparent', color: `${PARCH}80`,
-                              border: '1px solid rgba(237,224,196,0.2)', borderRadius: '6px',
+                              border: '1px solid rgba(176,207,191,0.2)', borderRadius: '6px',
                               fontFamily: ASST, fontSize: '12px', cursor: 'pointer',
                             }}
                           >
@@ -373,7 +373,7 @@ export function GardensPage() {
                               style={{
                                 padding: '7px 10px',
                                 background: 'transparent', color: `${PARCH}60`,
-                                border: '1px solid rgba(237,224,196,0.15)', borderRadius: '6px',
+                                border: '1px solid rgba(176,207,191,0.15)', borderRadius: '6px',
                                 fontFamily: ASST, fontSize: '12px', cursor: 'pointer',
                               }}
                             >
@@ -424,7 +424,7 @@ export function GardensPage() {
           <div
             dir="rtl"
             style={{
-              backgroundColor: '#1a3a1c', border: '1px solid rgba(220,80,80,0.3)',
+              backgroundColor: '#111f18', border: '1px solid rgba(220,80,80,0.3)',
               borderRadius: '14px', padding: '28px 24px',
               width: '100%', maxWidth: '380px',
               boxShadow: '0 20px 70px rgba(0,0,0,0.6)',
@@ -446,7 +446,7 @@ export function GardensPage() {
                 style={{
                   flex: 1, padding: '11px',
                   background: 'transparent', color: `${PARCH}80`,
-                  border: '1px solid rgba(237,224,196,0.2)', borderRadius: '8px',
+                  border: '1px solid rgba(176,207,191,0.2)', borderRadius: '8px',
                   fontFamily: ASST, fontSize: '14px', cursor: 'pointer',
                 }}
               >

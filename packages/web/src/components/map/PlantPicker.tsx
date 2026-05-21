@@ -3,11 +3,11 @@ import { PLANTS } from '../../data/companions';
 import type { PlantData } from '../../data/companions';
 import { useGardenStore } from '../../stores/gardenStore';
 
-const GOLD   = '#F5C840';
-const PARCH  = '#EDE0C4';
-const SAGE   = '#7DC084';
+const GOLD   = '#00e5c3';
+const PARCH  = '#b0cfbf';
+const SAGE   = '#4A9C68';
 const FRANK  = '"Frank Ruhl Libre", Georgia, serif';
-const ASSIST = '"Assistant", "Heebo", sans-serif';
+const ASSIST = "'DM Sans', 'Assistant', 'Heebo', sans-serif";
 
 const CAT_LABELS: Record<string, string> = {
   fruit: 'פרי 🍅', root: 'שורש 🥕', leaf: 'עלה 🥬', flower: 'פרח 🌸',
@@ -59,8 +59,8 @@ export function PlantPicker({ activePlant, onSetActivePlant }: Props) {
       maxHeight: '70vh',
       display: 'flex',
       flexDirection: 'column',
-      background: 'rgba(20,43,22,0.97)',
-      borderTop: '1px solid rgba(245,200,64,0.15)',
+      background: 'rgba(9,20,16,0.97)',
+      borderTop: '1px solid rgba(0,229,195,0.15)',
       borderRadius: '16px 16px 0 0',
       overflow: 'hidden',
     } : {
@@ -69,12 +69,12 @@ export function PlantPicker({ activePlant, onSetActivePlant }: Props) {
       height: '100%',
       display: 'flex',
       flexDirection: 'column',
-      background: 'rgba(20,43,22,0.97)',
-      borderInlineStart: '1px solid rgba(245,200,64,0.15)',
+      background: 'rgba(9,20,16,0.97)',
+      borderInlineStart: '1px solid rgba(0,229,195,0.15)',
       overflow: 'hidden',
     }}>
       {/* Header */}
-      <div style={{ padding: '14px 14px 8px', borderBottom: '1px solid rgba(245,200,64,0.08)' }}>
+      <div style={{ padding: '14px 14px 8px', borderBottom: '1px solid rgba(0,229,195,0.08)' }}>
         <h3 style={{ fontFamily: FRANK, fontSize: '14px', color: GOLD, margin: '0 0 8px' }}>
           🌱 בחר צמח לשתילה
         </h3>
@@ -100,7 +100,7 @@ export function PlantPicker({ activePlant, onSetActivePlant }: Props) {
           style={{
             width: '100%', boxSizing: 'border-box',
             fontFamily: ASSIST, fontSize: '12px', color: PARCH,
-            background: 'rgba(245,200,64,0.06)', border: '1px solid rgba(245,200,64,0.15)',
+            background: 'rgba(0,229,195,0.06)', border: '1px solid rgba(0,229,195,0.15)',
             borderRadius: '6px', padding: '7px 10px', outline: 'none', marginBottom: '6px',
           }}
         />
@@ -142,12 +142,12 @@ function PlantRow({ plant, active, isGarden = false, onSelect }: { plant: PlantD
       }}>
       <span style={{ fontSize: '18px' }}>{plant.emoji}</span>
       <div style={{ flex: 1 }}>
-        <div style={{ fontFamily: '"Assistant","Heebo",sans-serif', fontSize: '12px', fontWeight: active ? 600 : 400, color: active ? GOLD : '#EDE0C4CC' }}>{plant.nameHe}</div>
-        <div style={{ fontFamily: '"Assistant","Heebo",sans-serif', fontSize: '10px', color: 'rgba(237,224,196,0.35)' }}>{plant.nameEn}</div>
+        <div style={{ fontFamily: 'DM Sans, Assistant, Heebo, sans-serif', fontSize: '12px', fontWeight: active ? 600 : 400, color: active ? GOLD : '#b0cfbfCC' }}>{plant.nameHe}</div>
+        <div style={{ fontFamily: 'DM Sans, Assistant, Heebo, sans-serif', fontSize: '10px', color: 'rgba(176,207,191,0.35)' }}>{plant.nameEn}</div>
       </div>
       <span style={{
-        fontFamily: '"Assistant","Heebo",sans-serif', fontSize: '10px', padding: '2px 6px',
-        borderRadius: '50px', background: 'rgba(125,192,132,0.15)', color: '#7DC084',
+        fontFamily: 'DM Sans, Assistant, Heebo, sans-serif', fontSize: '10px', padding: '2px 6px',
+        borderRadius: '50px', background: 'rgba(0,229,195,0.12)', color: '#00e5c3',
       }}>{plant.spacingCm} ס"מ</span>
     </button>
   );
@@ -155,12 +155,12 @@ function PlantRow({ plant, active, isGarden = false, onSelect }: { plant: PlantD
 
 const filterBtn = (active: boolean): React.CSSProperties => ({
   fontFamily: ASSIST, fontSize: '10px', padding: '3px 8px', borderRadius: '50px',
-  border: `1px solid ${active ? GOLD + '66' : 'rgba(245,200,64,0.15)'}`,
+  border: `1px solid ${active ? GOLD + '66' : 'rgba(0,229,195,0.15)'}`,
   color: active ? GOLD : `${PARCH}55`, backgroundColor: active ? `${GOLD}15` : 'transparent',
   cursor: 'pointer',
 });
 
 const sectionLabel: React.CSSProperties = {
   fontFamily: ASSIST, fontSize: '10px', fontWeight: 600, letterSpacing: '0.07em',
-  textTransform: 'uppercase', color: 'rgba(237,224,196,0.3)', margin: '8px 0 4px',
+  textTransform: 'uppercase', color: 'rgba(176,207,191,0.3)', margin: '8px 0 4px',
 };

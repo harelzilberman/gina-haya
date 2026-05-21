@@ -291,11 +291,11 @@ export default function App() {
                 position: 'absolute', bottom: '60px', left: 0,
                 width: '220px', padding: '12px 14px',
                 background: 'rgba(10,26,12,0.96)',
-                border: '1px solid rgba(245,200,64,0.25)',
+                border: '1px solid rgba(0,229,195,0.25)',
                 borderRadius: '12px',
                 boxShadow: '0 8px 24px rgba(0,0,0,0.4)',
                 fontSize: '13px', fontFamily: '"Assistant","Heebo",sans-serif',
-                color: 'rgba(237,224,196,0.85)', lineHeight: 1.5,
+                color: 'rgba(176,207,191,0.85)', lineHeight: 1.5,
                 direction: 'rtl', pointerEvents: 'none',
               }}>
                 זה צ'ופצ'ו — הגנן הביודינמי שלך! 🌿
@@ -310,7 +310,7 @@ export default function App() {
                   style={{
                     position: 'absolute', top: -4, right: -4,
                     width: 18, height: 18, borderRadius: '50%',
-                    background: '#F5C840', color: '#142B16',
+                    background: '#00e5c3', color: '#050d0a',
                     fontSize: '11px', fontWeight: 700,
                     display: 'flex', alignItems: 'center', justifyContent: 'center',
                     cursor: 'pointer', zIndex: 1,
@@ -337,22 +337,22 @@ export default function App() {
                   width:           '52px',
                   height:          '52px',
                   borderRadius:    '50%',
-                  backgroundColor: '#F5C840',
+                  backgroundColor: '#00e5c3',
                   border:          'none',
                   cursor:          'pointer',
                   fontSize:        isChupChuPanelOpen ? '20px' : '26px',
                   fontWeight:      700,
-                  color:           '#142B16',
+                  color:           '#050d0a',
                   display:         'flex',
                   alignItems:      'center',
                   justifyContent:  'center',
-                  boxShadow:       '0 4px 20px rgba(245,200,64,0.45)',
+                  boxShadow:       '0 4px 20px rgba(0,229,195,0.45)',
                   transition:      'filter 0.2s, transform 0.2s',
                 }}
                 onMouseEnter={e => { (e.currentTarget as HTMLElement).style.filter = 'brightness(1.1)'; }}
                 onMouseLeave={e => { (e.currentTarget as HTMLElement).style.filter = 'none'; }}
               >
-                {isChupChuPanelOpen ? '✕' : '🌕'}
+                {isChupChuPanelOpen ? '✕' : '🌱'}
               </button>
             </div>
           </div>
@@ -368,7 +368,7 @@ export default function App() {
           justifyContent: 'space-between',
           alignItems: 'center',
           fontSize: '12px',
-          color: 'rgba(237,224,196,0.4)',
+          color: 'rgba(176,207,191,0.4)',
           direction: 'rtl',
           flexShrink: 0,
         }}
@@ -376,7 +376,7 @@ export default function App() {
         <span>© 2026 גינה חיה</span>
         <a
           href="mailto:gina.haya.contact@gmail.com"
-          style={{ color: 'rgba(237,224,196,0.5)', textDecoration: 'none' }}
+          style={{ color: 'rgba(176,207,191,0.5)', textDecoration: 'none' }}
         >
           📧 צור קשר
         </a>

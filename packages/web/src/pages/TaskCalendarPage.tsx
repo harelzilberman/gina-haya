@@ -30,14 +30,14 @@ function useWindowWidth() {
 }
 
 // ── Design tokens ──────────────────────────────────────────────────────────
-const EARTH = '#142B16';
-const GOLD  = '#F5C840';
-const PARCH = '#EDE0C4';
+const EARTH = '#050d0a';
+const GOLD  = '#00e5c3';
+const PARCH = '#b0cfbf';
 const FRANK = '"Frank Ruhl Libre", Georgia, serif';
-const ASST  = '"Assistant", "Heebo", sans-serif';
+const ASST  = "'DM Sans', 'Assistant', 'Heebo', sans-serif";
 
 const TYPE_CONFIG = {
-  biodynamic: { emoji: '🌙', label: 'biodynamic', color: '#7DC084' },
+  biodynamic: { emoji: '🌙', label: 'biodynamic', color: '#4A9C68' },
   maintenance: { emoji: '🔧', label: 'maintenance', color: '#C8A040' },
   custom:      { emoji: '✏️', label: 'custom',      color: '#C884C8' },
 };
@@ -46,7 +46,7 @@ const DAY_TYPE_STYLES: Record<string, { bg: string; color: string; emoji: string
   fruit:  { bg: 'rgba(239,116,90,0.18)',  color: '#EF745A', emoji: '🍎', labelKey: 'dayTypes.fruit'  },
   root:   { bg: 'rgba(181,136,99,0.18)',  color: '#B58863', emoji: '🥕', labelKey: 'dayTypes.root'   },
   flower: { bg: 'rgba(196,132,200,0.18)', color: '#C884C8', emoji: '🌸', labelKey: 'dayTypes.flower' },
-  leaf:   { bg: 'rgba(125,192,132,0.18)', color: '#7DC084', emoji: '🌿', labelKey: 'dayTypes.leaf'   },
+  leaf:   { bg: 'rgba(74,156,104,0.18)', color: '#4A9C68', emoji: '🌿', labelKey: 'dayTypes.leaf'   },
 };
 
 const DAY_TYPE_DESCS_HE: Record<string, string> = {
@@ -207,13 +207,13 @@ function DraggableTaskCard({
   const priorityColor =
     task.source_action === 'high'   ? '#EF745A' :
     task.source_action === 'medium' ? GOLD :
-    task.source_action === 'low'    ? '#7DC084' : undefined;
+    task.source_action === 'low'    ? '#4A9C68' : undefined;
 
   const cardStyle: React.CSSProperties = {
     transform: CSS.Transform.toString(transform),
     opacity:   isDragging ? 0.4 : isSkipped ? 0.5 : 1,
-    background: isDone ? 'rgba(74,124,89,0.15)' : src.bg,
-    border:     `1px solid ${isDone ? 'rgba(74,124,89,0.4)' : src.border}`,
+    background: isDone ? 'rgba(0,229,195,0.08)' : src.bg,
+    border:     `1px solid ${isDone ? 'rgba(0,229,195,0.2)' : src.border}`,
     borderRadius: '7px',
     padding:    '5px 8px 6px',
     display:    'flex',
@@ -254,8 +254,8 @@ function DraggableTaskCard({
         >
           <span style={{
             width: '16px', height: '16px', borderRadius: '4px', flexShrink: 0,
-            border: `1.5px solid ${isDone ? '#4A7C59' : 'rgba(255,255,255,0.25)'}`,
-            background: isDone ? '#4A7C59' : 'transparent',
+            border: `1.5px solid ${isDone ? '#4A9C68' : 'rgba(255,255,255,0.25)'}`,
+            background: isDone ? '#4A9C68' : 'transparent',
             display: 'flex', alignItems: 'center', justifyContent: 'center',
             fontSize: '10px', color: 'white',
           }}>
@@ -346,8 +346,8 @@ function DroppableDayCell({
         ref={setNodeRef}
         onClick={() => onDayClick(date)}
         style={{
-          background: isOver ? 'rgba(245,200,64,0.08)' : isToday ? 'rgba(245,200,64,0.07)' : 'rgba(20,50,22,0.35)',
-          border: `1px solid ${isToday ? 'rgba(245,200,64,0.3)' : 'rgba(255,255,255,0.06)'}`,
+          background: isOver ? 'rgba(0,229,195,0.08)' : isToday ? 'rgba(0,229,195,0.07)' : 'rgba(9,20,16,0.35)',
+          border: `1px solid ${isToday ? 'rgba(0,229,195,0.3)' : 'rgba(255,255,255,0.06)'}`,
           borderRadius: '6px',
           padding: '4px 2px',
           minHeight: '52px',
@@ -367,7 +367,7 @@ function DroppableDayCell({
         {tasks.length > 0 && (
           <span style={{
             fontFamily: ASST, fontSize: '9px', fontWeight: 700,
-            background: 'rgba(245,200,64,0.2)', color: GOLD,
+            background: 'rgba(0,229,195,0.2)', color: GOLD,
             borderRadius: '99px', padding: '1px 4px', lineHeight: 1.4,
           }}>
             {tasks.length}
@@ -383,11 +383,11 @@ function DroppableDayCell({
       onClick={() => onDayClick(date)}
       style={{
         background: isOver
-          ? 'rgba(245,200,64,0.08)'
+          ? 'rgba(0,229,195,0.08)'
           : isToday
-            ? 'rgba(245,200,64,0.05)'
-            : 'rgba(20,50,22,0.35)',
-        border: `1px solid ${isOver ? 'rgba(245,200,64,0.4)' : isToday ? 'rgba(245,200,64,0.25)' : 'rgba(255,255,255,0.06)'}`,
+            ? 'rgba(0,229,195,0.05)'
+            : 'rgba(9,20,16,0.35)',
+        border: `1px solid ${isOver ? 'rgba(0,229,195,0.4)' : isToday ? 'rgba(0,229,195,0.25)' : 'rgba(255,255,255,0.06)'}`,
         borderRadius: '10px',
         padding: compact ? '6px' : '8px',
         minHeight: compact ? '90px' : '120px',
@@ -516,7 +516,7 @@ function TaskModal({
 
   const inputStyle: React.CSSProperties = {
     width: '100%', boxSizing: 'border-box',
-    background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(245,200,64,0.2)',
+    background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(0,229,195,0.2)',
     borderRadius: '6px', padding: '8px 10px',
     fontFamily: ASST, fontSize: '14px', color: PARCH,
     outline: 'none', direction: isHe ? 'rtl' : 'ltr',
@@ -532,7 +532,7 @@ function TaskModal({
       onClick={e => { if (e.target === e.currentTarget) onClose(); }}
     >
       <div style={{
-        background: '#1a3a1c', border: '1px solid rgba(245,200,64,0.2)',
+        background: '#111f18', border: '1px solid rgba(0,229,195,0.2)',
         borderRadius: '12px', padding: '24px', width: '100%', maxWidth: '400px',
         direction: isHe ? 'rtl' : 'ltr',
       }}>
@@ -578,7 +578,7 @@ function TaskModal({
                   style={{
                     flex: 1, padding: '6px', borderRadius: '6px', cursor: 'pointer',
                     border: `1px solid ${status === s ? GOLD : 'rgba(255,255,255,0.1)'}`,
-                    background: status === s ? 'rgba(245,200,64,0.12)' : 'transparent',
+                    background: status === s ? 'rgba(0,229,195,0.12)' : 'transparent',
                     color: status === s ? GOLD : `${PARCH}60`,
                     fontFamily: ASST, fontSize: '11px',
                   }}
@@ -617,8 +617,8 @@ function TaskModal({
               disabled={!title.trim()}
               style={{
                 padding: '8px 18px', borderRadius: '6px', border: 'none',
-                background: title.trim() ? GOLD : 'rgba(245,200,64,0.3)',
-                color: EARTH, cursor: title.trim() ? 'pointer' : 'not-allowed',
+                background: title.trim() ? GOLD : 'rgba(0,229,195,0.3)',
+                color: '#050d0a', cursor: title.trim() ? 'pointer' : 'not-allowed',
                 fontFamily: FRANK, fontSize: '14px', fontWeight: 700,
               }}
             >
@@ -647,22 +647,22 @@ function ModalTaskRow({ task, onStatusToggle }: { task: GardenTask; onStatusTogg
   const priorityColor =
     task.source_action === 'high'   ? '#EF745A' :
     task.source_action === 'medium' ? GOLD :
-    task.source_action === 'low'    ? '#7DC084' : undefined;
+    task.source_action === 'low'    ? '#4A9C68' : undefined;
 
   return (
     <div style={{
       display: 'flex', alignItems: 'center', gap: '10px',
       padding: '10px 12px', marginBottom: '6px',
-      background: isDone ? 'rgba(74,124,89,0.10)' : src.bg,
-      border: `1px solid ${isDone ? 'rgba(74,124,89,0.3)' : src.border}`,
+      background: isDone ? 'rgba(0,229,195,0.06)' : src.bg,
+      border: `1px solid ${isDone ? 'rgba(0,229,195,0.15)' : src.border}`,
       borderRadius: '8px',
     }}>
       <button
         onClick={() => onStatusToggle(task)}
         style={{
           flexShrink: 0, width: '20px', height: '20px', borderRadius: '5px',
-          border: `1.5px solid ${isDone ? '#4A7C59' : 'rgba(255,255,255,0.3)'}`,
-          background: isDone ? '#4A7C59' : 'transparent',
+          border: `1.5px solid ${isDone ? '#4A9C68' : 'rgba(255,255,255,0.3)'}`,
+          background: isDone ? '#4A9C68' : 'transparent',
           cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center',
           fontSize: '11px', color: 'white', padding: 0,
         }}
@@ -735,7 +735,7 @@ function DayDetailModal({ date, tasks, bd, onClose, onStatusToggle, onAddTask }:
         <div
           onClick={e => e.stopPropagation()}
           style={{
-            background: 'rgba(20,43,22,0.98)', border: '1px solid rgba(245,200,64,0.25)',
+            background: 'rgba(9,20,16,0.98)', border: '1px solid rgba(0,229,195,0.25)',
             borderRadius: '16px', padding: '24px',
             maxWidth: '480px', width: '90%', maxHeight: '80vh', overflowY: 'auto',
             direction: isHe ? 'rtl' : 'ltr',
@@ -828,7 +828,7 @@ function DayDetailModal({ date, tasks, bd, onClose, onStatusToggle, onAddTask }:
                 placeholder={t('dayModal.addTaskPlaceholder')}
                 style={{
                   flex: 1, background: 'rgba(255,255,255,0.05)',
-                  border: '1px solid rgba(245,200,64,0.25)',
+                  border: '1px solid rgba(0,229,195,0.25)',
                   borderRadius: '8px', padding: '8px 12px',
                   fontFamily: ASST, fontSize: '13px', color: PARCH,
                   outline: 'none', direction: isHe ? 'rtl' : 'ltr',
@@ -838,9 +838,9 @@ function DayDetailModal({ date, tasks, bd, onClose, onStatusToggle, onAddTask }:
                 onClick={handleAddSubmit}
                 disabled={!newTitle.trim()}
                 style={{
-                  background: newTitle.trim() ? GOLD : 'rgba(245,200,64,0.3)',
+                  background: newTitle.trim() ? GOLD : 'rgba(0,229,195,0.3)',
                   border: 'none', borderRadius: '8px', padding: '8px 14px',
-                  color: EARTH, fontFamily: FRANK, fontSize: '13px', fontWeight: 700,
+                  color: '#050d0a', fontFamily: FRANK, fontSize: '13px', fontWeight: 700,
                   cursor: newTitle.trim() ? 'pointer' : 'not-allowed',
                 }}
               >
@@ -855,7 +855,7 @@ function DayDetailModal({ date, tasks, bd, onClose, onStatusToggle, onAddTask }:
               onClick={() => setAddingTask(true)}
               style={{
                 fontFamily: ASST, fontSize: '13px', color: GOLD,
-                background: 'rgba(245,200,64,0.08)', border: '1px solid rgba(245,200,64,0.2)',
+                background: 'rgba(0,229,195,0.08)', border: '1px solid rgba(0,229,195,0.2)',
                 borderRadius: '8px', padding: '9px 14px', cursor: 'pointer',
               }}
             >
@@ -1088,7 +1088,7 @@ export function TaskCalendarPage() {
             </div>
 
             {/* View toggle */}
-            <div style={{ display: 'flex', border: '1px solid rgba(245,200,64,0.2)', borderRadius: '8px', overflow: 'hidden', flexShrink: 0 }}>
+            <div style={{ display: 'flex', border: '1px solid rgba(0,229,195,0.2)', borderRadius: '8px', overflow: 'hidden', flexShrink: 0 }}>
               {(['week', 'month'] as const).map(v => (
                 <button
                   key={v}
@@ -1096,7 +1096,7 @@ export function TaskCalendarPage() {
                   style={{
                     fontFamily: ASST, fontSize: '12px', fontWeight: 600,
                     padding: isMobile ? '6px 10px' : '6px 14px', border: 'none', cursor: 'pointer',
-                    background: view === v ? 'rgba(245,200,64,0.15)' : 'transparent',
+                    background: view === v ? 'rgba(0,229,195,0.15)' : 'transparent',
                     color: view === v ? GOLD : `${PARCH}60`,
                   }}
                 >
@@ -1119,7 +1119,7 @@ export function TaskCalendarPage() {
               <span style={{ fontFamily: FRANK, fontSize: isMobile ? '13px' : '15px', color: PARCH, textAlign: 'center' }}>{headerLabel}</span>
               <button
                 onClick={goToday}
-                style={{ background: 'none', border: '1px solid rgba(245,200,64,0.25)', borderRadius: '6px', color: GOLD, cursor: 'pointer', padding: '4px 8px', fontFamily: ASST, fontSize: '11px', fontWeight: 600, flexShrink: 0 }}
+                style={{ background: 'none', border: '1px solid rgba(0,229,195,0.25)', borderRadius: '6px', color: GOLD, cursor: 'pointer', padding: '4px 8px', fontFamily: ASST, fontSize: '11px', fontWeight: 600, flexShrink: 0 }}
               >
                 {t('nav.today')}
               </button>
@@ -1144,7 +1144,7 @@ export function TaskCalendarPage() {
                   padding: '4px 8px', borderRadius: '99px',
                   border: `1px solid ${filter === f ? GOLD : 'rgba(255,255,255,0.1)'}`,
                   color: filter === f ? GOLD : `${PARCH}55`,
-                  background: filter === f ? 'rgba(245,200,64,0.1)' : 'transparent',
+                  background: filter === f ? 'rgba(0,229,195,0.1)' : 'transparent',
                   cursor: 'pointer',
                 }}
               >
@@ -1173,7 +1173,7 @@ export function TaskCalendarPage() {
             <div style={{
               marginTop: '4px', marginBottom: '4px', padding: '10px 14px',
               background: 'rgba(0,0,0,0.2)', borderRadius: '8px',
-              border: '1px solid rgba(245,200,64,0.1)',
+              border: '1px solid rgba(0,229,195,0.1)',
               display: 'flex', flexWrap: 'wrap', gap: '10px',
             }}>
               {Object.entries(DAY_TYPE_DESCS_HE).map(([type, desc]) => {
@@ -1222,10 +1222,10 @@ export function TaskCalendarPage() {
         {isBootstrapping && (
           <div style={{
             display: 'flex', alignItems: 'center', gap: '10px',
-            background: 'rgba(245,200,64,0.07)', border: '1px solid rgba(245,200,64,0.2)',
+            background: 'rgba(0,229,195,0.07)', border: '1px solid rgba(0,229,195,0.2)',
             borderRadius: '10px', padding: '12px 16px', marginBottom: '12px',
           }}>
-            <span style={{ fontSize: '20px', animation: 'spin 2s linear infinite' }}>🌕</span>
+            <span style={{ fontSize: '20px', animation: 'spin 2s linear infinite' }}>🌱</span>
             <span style={{ fontFamily: ASST, fontSize: '13px', color: `${PARCH}80` }}>
               {t('bootstrapping')}
             </span>
@@ -1236,8 +1236,8 @@ export function TaskCalendarPage() {
         {noPlan && !isBootstrapping && tasks.length === 0 && (
           <div style={{
             textAlign: 'center', padding: '60px 24px',
-            border: '1px dashed rgba(245,200,64,0.2)', borderRadius: '16px',
-            background: 'rgba(28,58,30,0.3)',
+            border: '1px dashed rgba(0,229,195,0.2)', borderRadius: '16px',
+            background: 'rgba(9,20,16,0.3)',
           }}>
             <div style={{ fontSize: '56px', marginBottom: '16px' }}>📋</div>
             <h2 style={{ fontFamily: FRANK, fontSize: '20px', color: GOLD, marginBottom: '10px' }}>
@@ -1250,7 +1250,7 @@ export function TaskCalendarPage() {
               to="/plan"
               style={{
                 fontFamily: FRANK, fontSize: '15px', fontWeight: 700,
-                color: EARTH, background: GOLD,
+                color: '#050d0a', background: GOLD,
                 padding: '10px 24px', borderRadius: '8px',
                 textDecoration: 'none', display: 'inline-block',
               }}
@@ -1263,7 +1263,7 @@ export function TaskCalendarPage() {
         {/* Calendar grid */}
         {isLoading ? (
           <div style={{ textAlign: 'center', padding: '60px 0' }}>
-            <div style={{ fontSize: '48px' }} className="animate-pulse">🌕</div>
+            <div style={{ fontSize: '48px' }} className="animate-pulse">🌱</div>
             <p style={{ fontFamily: ASST, fontSize: '14px', color: `${PARCH}50`, marginTop: '12px' }}>{t('loading')}</p>
           </div>
         ) : noPlan && tasks.length === 0 ? null : (
@@ -1330,7 +1330,7 @@ export function TaskCalendarPage() {
             <DragOverlay>
               {draggingTask && (
                 <div style={{
-                  background: 'rgba(20,50,22,0.95)', border: `1px solid ${GOLD}44`,
+                  background: 'rgba(9,20,16,0.95)', border: `1px solid ${GOLD}44`,
                   borderRadius: '7px', padding: '6px 10px',
                   fontFamily: ASST, fontSize: '12px', color: PARCH,
                   boxShadow: '0 8px 32px rgba(0,0,0,0.5)',

@@ -12,10 +12,10 @@ const CANVAS_W = 2000;    // virtual canvas px
 const CANVAS_H = 1600;
 const MIN_SCALE = 0.2;
 const MAX_SCALE = 5;
-const GOLD  = '#F5C840';
-const PARCH = '#EDE0C4';
+const GOLD  = '#00e5c3';
+const PARCH = '#b0cfbf';
 const FRANK = '"Frank Ruhl Libre", Georgia, serif';
-const ASSIST = '"Assistant", "Heebo", sans-serif';
+const ASSIST = "'DM Sans', 'Assistant', 'Heebo', sans-serif";
 
 // Tool → shape kind mapping
 const TOOL_KIND: Partial<Record<MapTool, 'polygon' | 'rect' | 'circle'>> = {
@@ -176,7 +176,7 @@ function SvgDefs() {
         <line x1="0" y1="1" x2="30" y2="1" stroke="rgba(160,110,60,0.15)" strokeWidth="0.3"/>
       </pattern>
       <pattern id="pat-trellis" width="8" height="8" patternUnits="userSpaceOnUse">
-        <path d="M4,0 L4,8 M0,4 L8,4" stroke="rgba(74,124,89,0.3)" strokeWidth="0.5"/>
+        <path d="M4,0 L4,8 M0,4 L8,4" stroke="rgba(74,156,104,0.3)" strokeWidth="0.5"/>
       </pattern>
       <filter id="shadow-sm">
         <feDropShadow dx="0" dy="1" stdDeviation="2" floodColor="#000" floodOpacity="0.3"/>
@@ -297,7 +297,7 @@ function SelectionOverlay({
   onStartResize: (handle: string, e: React.MouseEvent) => void;
 }) {
   const handleStyle = (cursor: string): React.CSSProperties => ({
-    fill: GOLD, stroke: '#142B16', strokeWidth: 1.5,
+    fill: GOLD, stroke: '#050d0a', strokeWidth: 1.5,
     cursor, filter: 'url(#shadow-sm)',
   });
 
@@ -381,8 +381,8 @@ function RotationHandle({ cx, cy, onStart }: { cx: number; cy: number; onStart: 
   return (
     <g style={{ cursor: 'grab' }} onMouseDown={e => { e.stopPropagation(); onStart(e); }}>
       <line x1={cx} y1={cy+10} x2={cx} y2={cy} stroke={GOLD} strokeWidth={1} strokeDasharray="3,2" />
-      <circle cx={cx} cy={cy} r={6} fill={GOLD} stroke="#142B16" strokeWidth={1.5} />
-      <text x={cx} y={cy+4} textAnchor="middle" fontSize={8} fill="#142B16" style={{ userSelect: 'none', pointerEvents: 'none' }}>
+      <circle cx={cx} cy={cy} r={6} fill={GOLD} stroke="#050d0a" strokeWidth={1.5} />
+      <text x={cx} y={cy+4} textAnchor="middle" fontSize={8} fill="#050d0a" style={{ userSelect: 'none', pointerEvents: 'none' }}>
         ↻
       </text>
     </g>
@@ -408,7 +408,7 @@ function DrawPreview({ drawing, cursor }: { drawing: DrawState; cursor: [number,
           opacity={0.7}
         />
         {pts.map(([x,y], i) => (
-          <circle key={i} cx={x*PX} cy={y*PX} r={5} fill={GOLD} stroke="#142B16" strokeWidth={1.5} />
+          <circle key={i} cx={x*PX} cy={y*PX} r={5} fill={GOLD} stroke="#050d0a" strokeWidth={1.5} />
         ))}
         {/* Close hint circle */}
         {pts.length >= 3 && (
@@ -432,7 +432,7 @@ function DrawPreview({ drawing, cursor }: { drawing: DrawState; cursor: [number,
     return (
       <g transform={`rotate(${rot},${cx},${cy})`}>
         <rect x={rx} y={ry} width={rw} height={rh}
-          fill={cfg?.fill ?? 'rgba(245,200,64,0.1)'}
+          fill={cfg?.fill ?? 'rgba(0,229,195,0.1)'}
           stroke={stroke} strokeWidth={cfg?.strokeWidth ?? 2}
           strokeDasharray={strokeDash}
           opacity={0.75}
@@ -446,7 +446,7 @@ function DrawPreview({ drawing, cursor }: { drawing: DrawState; cursor: [number,
     const cx = drawing.center[0]*PX, cy = drawing.center[1]*PX;
     return (
       <circle cx={cx} cy={cy} r={r*PX}
-        fill={cfg?.fill ?? 'rgba(245,200,64,0.1)'}
+        fill={cfg?.fill ?? 'rgba(0,229,195,0.1)'}
         stroke={stroke} strokeWidth={cfg?.strokeWidth ?? 2}
         opacity={0.75}
       />
@@ -466,7 +466,7 @@ function Grid() {
     const isMajor = (x / PX) % major === 0;
     lines.push(
       <line key={`v${x}`} x1={x} y1={0} x2={x} y2={CANVAS_H}
-        stroke={isMajor ? 'rgba(125,192,132,0.45)' : 'rgba(125,192,132,0.25)'}
+        stroke={isMajor ? 'rgba(0,229,195,0.45)' : 'rgba(0,229,195,0.25)'}
         strokeWidth={isMajor ? 1.5 : 0.75}
       />
     );
@@ -475,7 +475,7 @@ function Grid() {
     const isMajor = (y / PX) % major === 0;
     lines.push(
       <line key={`h${y}`} x1={0} y1={y} x2={CANVAS_W} y2={y}
-        stroke={isMajor ? 'rgba(125,192,132,0.45)' : 'rgba(125,192,132,0.25)'}
+        stroke={isMajor ? 'rgba(0,229,195,0.45)' : 'rgba(0,229,195,0.25)'}
         strokeWidth={isMajor ? 1.5 : 0.75}
       />
     );
@@ -498,7 +498,7 @@ function NorthArrow({ angle, svgW, onDragStart, isHe }: {
     <g transform={`translate(${x},${y})`} style={{ cursor: 'grab' }} onMouseDown={onDragStart}>
       {/* Background circle */}
       <circle cx={size/2} cy={size/2} r={size/2}
-        fill="rgba(20,43,22,0.85)" stroke="rgba(245,200,64,0.25)" strokeWidth={1} />
+        fill="rgba(9,20,16,0.85)" stroke="rgba(0,229,195,0.25)" strokeWidth={1} />
       {/* Arrow rotated to northAngle */}
       <g transform={`rotate(${angle},${size/2},${size/2})`}>
         {/* North (gold) */}
@@ -613,8 +613,8 @@ function PostDrawPopup({
         top: '50%',
         transform: 'translate(-50%, -50%)',
         zIndex: 200,
-        background: 'rgba(14,30,15,0.98)',
-        border: `1px solid rgba(245,200,64,0.30)`,
+        background: 'rgba(9,20,16,0.98)',
+        border: `1px solid rgba(0,229,195,0.30)`,
         borderRadius: '12px', padding: '14px',
         width: '220px', boxShadow: '0 4px 20px rgba(0,0,0,0.5)',
         fontFamily: ASSIST, direction: isHe ? 'rtl' : 'ltr',
@@ -634,7 +634,7 @@ function PostDrawPopup({
           onKeyDown={e => { if (e.key === 'Enter') confirm(); if (e.key === 'Escape') onCancel(); }}
           style={{
             fontFamily: ASSIST, fontSize: '13px', color: PARCH,
-            background: 'rgba(245,200,64,0.08)', border: '1px solid rgba(245,200,64,0.25)',
+            background: 'rgba(0,229,195,0.08)', border: '1px solid rgba(0,229,195,0.25)',
             borderRadius: '6px', padding: '6px 8px', outline: 'none',
           }}
         />
@@ -649,7 +649,7 @@ function PostDrawPopup({
               placeholder={isHe ? 'למשל: לימון, זית...' : 'e.g. lemon, olive...'}
               style={{
                 fontFamily: ASSIST, fontSize: '13px', color: PARCH,
-                background: 'rgba(245,200,64,0.08)', border: '1px solid rgba(245,200,64,0.25)',
+                background: 'rgba(0,229,195,0.08)', border: '1px solid rgba(0,229,195,0.25)',
                 borderRadius: '6px', padding: '6px 8px', outline: 'none',
               }}
             />
@@ -668,12 +668,12 @@ function PostDrawPopup({
       <div style={{ display: 'flex', gap: '8px' }}>
         <button onClick={confirm} style={{
           flex: 1, padding: '7px', borderRadius: '7px', border: 'none',
-          background: GOLD, color: '#142B16', fontFamily: ASSIST, fontSize: '12px',
+          background: GOLD, color: '#050d0a', fontFamily: ASSIST, fontSize: '12px',
           fontWeight: 700, cursor: 'pointer',
         }}>{isHe ? 'אישור' : 'OK'}</button>
         <button onClick={onCancel} style={{
           flex: 1, padding: '7px', borderRadius: '7px',
-          border: '1px solid rgba(245,200,64,0.25)', background: 'transparent',
+          border: '1px solid rgba(0,229,195,0.25)', background: 'transparent',
           color: `${PARCH}77`, fontFamily: ASSIST, fontSize: '12px', cursor: 'pointer',
         }}>{isHe ? 'ביטול' : 'Cancel'}</button>
       </div>
@@ -706,8 +706,8 @@ function PlantPopup({
           position: 'fixed', left: '50%', top: '50%',
           transform: 'translate(-50%, -50%)',
           zIndex: 300,
-          background: 'rgba(14,30,15,0.98)',
-          border: '1px solid rgba(245,200,64,0.30)',
+          background: 'rgba(9,20,16,0.98)',
+          border: '1px solid rgba(0,229,195,0.30)',
           borderRadius: '12px', padding: '16px',
           width: '240px',
           boxShadow: '0 4px 24px rgba(0,0,0,0.6)',
@@ -750,7 +750,7 @@ function PlantPopup({
             onChange={e => setNotes(e.target.value)}
             style={{
               fontFamily: ASSIST, fontSize: '12px', color: PARCH, resize: 'none',
-              background: 'rgba(245,200,64,0.08)', border: '1px solid rgba(245,200,64,0.25)',
+              background: 'rgba(0,229,195,0.08)', border: '1px solid rgba(0,229,195,0.25)',
               borderRadius: '6px', padding: '6px 8px', outline: 'none',
             }}
           />
@@ -762,7 +762,7 @@ function PlantPopup({
             onClick={() => { onUpdate(plant.id, { notes }); onClose(); }}
             style={{
               flex: 1, padding: '7px', borderRadius: '7px', border: 'none',
-              background: GOLD, color: '#142B16', fontFamily: ASSIST,
+              background: GOLD, color: '#050d0a', fontFamily: ASSIST,
               fontSize: '12px', fontWeight: 700, cursor: 'pointer',
             }}
           >{isHe ? 'שמור' : 'Save'}</button>
@@ -1322,13 +1322,13 @@ export function GardenCanvas({
 
   // ── Render ─────────────────────────────────────────────────────────────────
   return (
-    <div ref={containerRef} style={{ position: 'relative', width: '100%', height: '100%', overflow: 'hidden', background: '#0e1e0f' }}>
+    <div ref={containerRef} style={{ position: 'relative', width: '100%', height: '100%', overflow: 'hidden', background: '#091410' }}>
       <button
         onClick={() => setT({ x: 0, y: 0, s: 0.6 })}
         style={{
           position: 'absolute', top: 8, right: 8, zIndex: 10,
           padding: '4px 10px', borderRadius: 8, fontSize: 12,
-          background: 'rgba(0,0,0,0.5)', color: '#F5C840', border: 'none', cursor: 'pointer',
+          background: 'rgba(0,0,0,0.5)', color: '#00e5c3', border: 'none', cursor: 'pointer',
         }}
       >
         ↺ {isHe ? 'איפוס' : 'Reset'}
@@ -1419,8 +1419,8 @@ export function GardenCanvas({
                 style={{ cursor: selectedTool === 'select' ? 'move' : 'pointer', opacity: plantDrag?.id === p.id ? 0.7 : 1 }}
                 onClick={e => { if (selectedTool === 'select') { e.stopPropagation(); } }}>
                 <circle cx={cx} cy={cy} r={18}
-                  fill="rgba(20,43,22,0.85)"
-                  stroke={clampFlashId === p.id ? '#e6a817' : 'rgba(125,192,132,0.5)'}
+                  fill="rgba(9,20,16,0.85)"
+                  stroke={clampFlashId === p.id ? '#e6a817' : 'rgba(0,229,195,0.5)'}
                   strokeWidth={clampFlashId === p.id ? 2.5 : 1.5} />
                 <text x={cx} y={cy + 7} textAnchor="middle" fontSize={20}
                   style={{ userSelect: 'none', pointerEvents: 'none' }}>{p.emoji}</text>
@@ -1436,8 +1436,8 @@ export function GardenCanvas({
                 cx={p.x * PX}
                 cy={p.y * PX}
                 r={Math.max(2, (p.spacing * PX) / 2)}
-                fill="rgba(245,200,64,0.06)"
-                stroke="rgba(245,200,64,0.3)"
+                fill="rgba(0,229,195,0.06)"
+                stroke="rgba(0,229,195,0.3)"
                 strokeWidth={1}
                 strokeDasharray="4,3"
               />
@@ -1446,8 +1446,8 @@ export function GardenCanvas({
                 cx={p.x * PX}
                 cy={p.y * PX}
                 r={16}
-                fill="rgba(245,200,64,0.2)"
-                stroke="rgba(245,200,64,0.6)"
+                fill="rgba(0,229,195,0.2)"
+                stroke="rgba(0,229,195,0.6)"
                 strokeWidth={1.5}
                 strokeDasharray="3,2"
               />
@@ -1532,7 +1532,7 @@ export function GardenCanvas({
             <div
               style={{
                 position: 'fixed', insetInlineStart: clampedX, insetBlockStart: clampedY, zIndex: 400,
-                background: 'rgba(14,30,15,0.97)', border: '1px solid rgba(245,200,64,0.25)',
+                background: 'rgba(9,20,16,0.97)', border: '1px solid rgba(0,229,195,0.25)',
                 borderRadius: '8px', padding: '4px',
                 boxShadow: '0 4px 16px rgba(0,0,0,0.5)',
                 fontFamily: ASSIST, direction: isHe ? 'rtl' : 'ltr',
@@ -1554,7 +1554,7 @@ export function GardenCanvas({
                     textAlign: isHe ? 'right' : 'left', borderRadius: '5px',
                     whiteSpace: 'nowrap',
                   }}
-                  onMouseEnter={e => (e.currentTarget.style.background = 'rgba(245,200,64,0.1)')}
+                  onMouseEnter={e => (e.currentTarget.style.background = 'rgba(0,229,195,0.1)')}
                   onMouseLeave={e => (e.currentTarget.style.background = 'none')}
                 >
                   {item.label}
@@ -1588,22 +1588,22 @@ export function GardenCanvas({
           left: 0,
           right: 0,
           zIndex: 300,
-          background: 'rgba(20,43,22,0.97)',
-          borderTop: '1px solid rgba(245,200,64,0.25)',
+          background: 'rgba(9,20,16,0.97)',
+          borderTop: '1px solid rgba(0,229,195,0.25)',
           padding: '12px 20px',
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'space-between',
           direction: isHe ? 'rtl' : 'ltr',
-          fontFamily: '"Assistant","Heebo",sans-serif',
+          fontFamily: "'DM Sans','Assistant','Heebo',sans-serif",
         }}>
           <div>
-            <span style={{ color: '#F5C840', fontSize: '14px', fontWeight: 600 }}>
+            <span style={{ color: '#00e5c3', fontSize: '14px', fontWeight: 600 }}>
               {isHe
-                ? `🌕 צ'ופצ'ו ממליץ למקם ${previewPlants.length} צמחים`
-                : `🌕 Chupchu recommends placing ${previewPlants.length} plants`}
+                ? `🌱 צ'ופצ'ו ממליץ למקם ${previewPlants.length} צמחים`
+                : `🌱 Chupchu recommends placing ${previewPlants.length} plants`}
             </span>
-            <span style={{ color: 'rgba(237,224,196,0.6)', fontSize: '12px', marginRight: '8px' }}>
+            <span style={{ color: '#b0cfbf99', fontSize: '12px', marginRight: '8px' }}>
               {isHe ? '— מאשר?' : '— confirm?'}
             </span>
           </div>
@@ -1612,10 +1612,10 @@ export function GardenCanvas({
               onClick={onCancelPreview}
               style={{
                 padding: '7px 16px', borderRadius: '7px',
-                border: '1px solid rgba(245,200,64,0.25)',
+                border: '1px solid rgba(0,229,195,0.25)',
                 background: 'transparent',
-                color: 'rgba(237,224,196,0.7)',
-                fontFamily: '"Assistant","Heebo",sans-serif',
+                color: '#b0cfbf99',
+                fontFamily: "'DM Sans','Assistant','Heebo',sans-serif",
                 fontSize: '13px', cursor: 'pointer',
               }}
             >
@@ -1625,8 +1625,8 @@ export function GardenCanvas({
               onClick={onConfirmPreview}
               style={{
                 padding: '7px 20px', borderRadius: '7px',
-                border: 'none', background: '#F5C840',
-                color: '#142B16', fontFamily: '"Frank Ruhl Libre",Georgia,serif',
+                border: 'none', background: '#00e5c3',
+                color: '#050d0a', fontFamily: '"Frank Ruhl Libre",Georgia,serif',
                 fontSize: '13px', fontWeight: 700, cursor: 'pointer',
               }}
             >

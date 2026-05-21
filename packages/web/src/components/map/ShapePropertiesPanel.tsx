@@ -2,10 +2,10 @@ import { useTranslation } from 'react-i18next';
 import type { MapObject } from '../../stores/mapStore';
 import { SHAPE_CONFIGS } from '../../data/mapObjects';
 
-const GOLD   = '#F5C840';
-const PARCH  = '#EDE0C4';
+const GOLD   = '#00e5c3';
+const PARCH  = '#b0cfbf';
 const FRANK  = '"Frank Ruhl Libre", Georgia, serif';
-const ASSIST = '"Assistant", "Heebo", sans-serif';
+const ASSIST = "'DM Sans', 'Assistant', 'Heebo', sans-serif";
 
 interface Props {
   object: MapObject;
@@ -29,8 +29,8 @@ function NumInput({ label, value, onChange, readOnly, unit = 'מ׳', step = 0.1,
           onChange={e => onChange?.(Math.max(min, parseFloat(e.target.value) || min))}
           style={{
             width: '60px', fontFamily: ASSIST, fontSize: '12px', color: readOnly ? `${PARCH}44` : PARCH,
-            background: readOnly ? 'rgba(245,200,64,0.03)' : 'rgba(245,200,64,0.08)',
-            border: `1px solid ${readOnly ? 'rgba(245,200,64,0.10)' : 'rgba(245,200,64,0.25)'}`,
+            background: readOnly ? 'rgba(0,229,195,0.03)' : 'rgba(0,229,195,0.08)',
+            border: `1px solid ${readOnly ? 'rgba(0,229,195,0.10)' : 'rgba(0,229,195,0.25)'}`,
             borderRadius: '5px', padding: '4px 6px', outline: 'none', textAlign: 'center',
             cursor: readOnly ? 'not-allowed' : 'text',
           }}
@@ -50,7 +50,7 @@ function TextInput({ label, value, onChange }: { label: string; value: string; o
         onChange={e => onChange(e.target.value)}
         style={{
           fontFamily: ASSIST, fontSize: '12px', color: PARCH,
-          background: 'rgba(245,200,64,0.08)', border: '1px solid rgba(245,200,64,0.25)',
+          background: 'rgba(0,229,195,0.08)', border: '1px solid rgba(0,229,195,0.25)',
           borderRadius: '5px', padding: '5px 8px', outline: 'none',
         }}
       />
@@ -80,7 +80,7 @@ export function ShapePropertiesPanel({ object, onUpdate, onDelete, onToggleLock 
     <div style={{
       position: 'absolute', bottom: '16px', insetInlineEnd: '16px',
       zIndex: 30, width: '220px',
-      background: 'rgba(20,43,22,0.95)', border: '1px solid rgba(245,200,64,0.20)',
+      background: 'rgba(9,20,16,0.95)', border: '1px solid rgba(0,229,195,0.20)',
       borderRadius: '14px', padding: '14px',
       display: 'flex', flexDirection: 'column', gap: '10px',
       fontFamily: ASSIST, direction: isHe ? 'rtl' : 'ltr',

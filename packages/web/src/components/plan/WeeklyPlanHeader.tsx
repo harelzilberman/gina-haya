@@ -1,10 +1,10 @@
 import { useTranslation } from 'react-i18next';
 import { usePlanStore, type WeeklyPlan } from '../../stores/planStore';
 
-const GOLD   = '#F5C840';
-const PARCH  = '#EDE0C4';
+const GOLD   = '#00e5c3';
+const PARCH  = '#b0cfbf';
 const FRANK  = '"Frank Ruhl Libre", Georgia, serif';
-const ASSIST = '"Assistant", "Heebo", sans-serif';
+const ASSIST = "'DM Sans', 'Assistant', 'Heebo', sans-serif";
 
 const HE_DAYS = ['ראשון', 'שני', 'שלישי', 'רביעי', 'חמישי', 'שישי', 'שבת'];
 const EN_DAYS = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
@@ -90,7 +90,7 @@ export function WeeklyPlanHeader({ plan }: Props) {
           onMouseEnter={e => {
             if (!isRegenerating) {
               (e.currentTarget as HTMLElement).style.borderColor = GOLD;
-              (e.currentTarget as HTMLElement).style.backgroundColor = 'rgba(245,200,64,0.06)';
+              (e.currentTarget as HTMLElement).style.backgroundColor = 'rgba(0,229,195,0.06)';
             }
           }}
           onMouseLeave={e => {
@@ -125,8 +125,8 @@ export function WeeklyPlanHeader({ plan }: Props) {
 
       {/* Week summary */}
       <div style={{
-        background:    'linear-gradient(145deg, rgba(28,58,30,0.7) 0%, rgba(20,43,22,0.8) 100%)',
-        border:        '1px solid rgba(245,200,64,0.12)',
+        background:    'linear-gradient(145deg, rgba(9,20,16,0.7) 0%, rgba(9,20,16,0.8) 100%)',
+        border:        '1px solid rgba(0,229,195,0.12)',
         borderRadius:  '12px',
         padding:       '16px 18px',
         marginBottom:  '14px',
@@ -149,7 +149,7 @@ export function WeeklyPlanHeader({ plan }: Props) {
             color:      `${PARCH}66`,
             margin:     '10px 0 0',
             textAlign:  isHe ? 'right' : 'left',
-            borderTop:  '1px solid rgba(245,200,64,0.08)',
+            borderTop:  '1px solid rgba(0,229,195,0.08)',
             paddingTop: '10px',
           }}>
             🌤 {plan.weatherSummary}
@@ -187,8 +187,8 @@ function BestDayCard({
 }) {
   return (
     <div style={{
-      background:    'linear-gradient(145deg, rgba(28,58,30,0.6) 0%, rgba(20,43,22,0.75) 100%)',
-      border:        '1px solid rgba(245,200,64,0.1)',
+      background:    'linear-gradient(145deg, rgba(9,20,16,0.6) 0%, rgba(9,20,16,0.75) 100%)',
+      border:        '1px solid rgba(0,229,195,0.1)',
       borderRadius:  '10px',
       padding:       '14px 14px 12px',
       textAlign:     isHe ? 'right' : 'left',

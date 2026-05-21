@@ -6,19 +6,18 @@ import { mapAuthError, MIN_PASSWORD_LENGTH } from '../../utils/authErrors';
 import { supabase } from '../../lib/supabase';
 import { EmailVerificationScreen } from './EmailVerificationScreen';
 
-const EARTH  = '#142B16';
-const GOLD   = '#F5C840';
-const SAGE   = '#7DC084';
-const PARCH  = '#EDE0C4';
-const FRANK  = '"Frank Ruhl Libre", Georgia, serif';
-const ASSIST = '"Assistant", "Heebo", sans-serif';
+const NIGHT    = '#050d0a';
+const BIO_CYAN = '#00e5c3';
+const TEXT_MID = '#b0cfbf';
+const FRANK    = '"Frank Ruhl Libre", Georgia, serif';
+const DM_SANS  = "'DM Sans', 'Assistant', 'Heebo', sans-serif";
 
 const FORM_CSS = `
-.auth-input::placeholder { color: rgba(237,224,196,0.3); }
+.auth-input::placeholder { color: rgba(176,207,191,0.3); }
 .auth-input:focus {
-  border-color: rgba(245,200,64,0.5) !important;
+  border-color: rgba(0,229,195,0.5) !important;
   outline: none;
-  box-shadow: 0 0 0 3px rgba(245,200,64,0.06);
+  box-shadow: 0 0 0 3px rgba(0,229,195,0.07);
 }
 @keyframes authSpin { to { transform: rotate(360deg) } }
 .auth-spinner {
@@ -54,13 +53,13 @@ export function LoginForm() {
   const inputStyle: React.CSSProperties = {
     width:           '100%',
     boxSizing:       'border-box',
-    backgroundColor: 'rgba(20,43,22,0.8)',
-    border:          '1px solid rgba(125,192,132,0.2)',
+    backgroundColor: 'rgba(9,20,16,0.85)',
+    border:          '1px solid rgba(0,229,195,0.2)',
     borderRadius:    '8px',
     padding:         '12px 16px',
-    fontFamily:      ASSIST,
+    fontFamily:      DM_SANS,
     fontSize:        '14px',
-    color:           PARCH,
+    color:           TEXT_MID,
     transition:      'border-color 0.2s, box-shadow 0.2s',
   };
 
@@ -84,7 +83,7 @@ export function LoginForm() {
           padding:         '12px 14px',
           backgroundColor: 'rgba(192,57,43,0.15)',
           border:          '1px solid rgba(192,57,43,0.35)',
-          fontFamily:      ASSIST,
+          fontFamily:      DM_SANS,
           fontSize:        '13px',
           color:           '#E07070',
         }}>
@@ -96,10 +95,10 @@ export function LoginForm() {
         <div style={{ marginBottom: '14px' }}>
           <label style={{
             display:      'block',
-            fontFamily:   ASSIST,
+            fontFamily:   DM_SANS,
             fontWeight:   400,
             fontSize:     '13px',
-            color:        `${PARCH}70`,
+            color:        `${TEXT_MID}70`,
             marginBottom: '6px',
           }}>
             {t('login.emailLabel')}
@@ -120,10 +119,10 @@ export function LoginForm() {
         <div style={{ marginBottom: '22px' }}>
           <label style={{
             display:      'block',
-            fontFamily:   ASSIST,
+            fontFamily:   DM_SANS,
             fontWeight:   400,
             fontSize:     '13px',
-            color:        `${PARCH}70`,
+            color:        `${TEXT_MID}70`,
             marginBottom: '6px',
           }}>
             {t('login.passwordLabel')}
@@ -148,11 +147,11 @@ export function LoginForm() {
             padding:         '13px',
             borderRadius:    '8px',
             border:          'none',
-            backgroundColor: GOLD,
+            backgroundColor: BIO_CYAN,
             fontFamily:      FRANK,
             fontWeight:      600,
             fontSize:        '15px',
-            color:           EARTH,
+            color:           NIGHT,
             cursor:          isLoading ? 'default' : 'pointer',
             opacity:         isLoading ? 0.7 : 1,
             transition:      'filter 0.2s',
@@ -166,9 +165,9 @@ export function LoginForm() {
 
       {/* Divider */}
       <div style={{ display: 'flex', alignItems: 'center', gap: '12px', margin: '18px 0' }}>
-        <div style={{ flex: 1, height: '1px', backgroundColor: 'rgba(125,192,132,0.15)' }} />
-        <span style={{ fontFamily: ASSIST, fontSize: '12px', color: `${PARCH}40` }}>או</span>
-        <div style={{ flex: 1, height: '1px', backgroundColor: 'rgba(125,192,132,0.15)' }} />
+        <div style={{ flex: 1, height: '1px', backgroundColor: 'rgba(0,229,195,0.15)' }} />
+        <span style={{ fontFamily: DM_SANS, fontSize: '12px', color: `${TEXT_MID}40` }}>או</span>
+        <div style={{ flex: 1, height: '1px', backgroundColor: 'rgba(0,229,195,0.15)' }} />
       </div>
 
       {/* Google */}
@@ -184,17 +183,17 @@ export function LoginForm() {
           gap:             '10px',
           padding:         '11px',
           borderRadius:    '8px',
-          border:          '1px solid rgba(125,192,132,0.2)',
-          backgroundColor: 'rgba(28,58,30,0.6)',
-          fontFamily:      ASSIST,
+          border:          '1px solid rgba(0,229,195,0.2)',
+          backgroundColor: 'rgba(9,20,16,0.7)',
+          fontFamily:      DM_SANS,
           fontSize:        '14px',
-          color:           PARCH,
+          color:           TEXT_MID,
           cursor:          isLoading ? 'default' : 'pointer',
           opacity:         isLoading ? 0.6 : 1,
           transition:      'background-color 0.15s',
         }}
-        onMouseEnter={e => { if (!isLoading) (e.currentTarget as HTMLElement).style.backgroundColor = 'rgba(28,58,30,0.9)'; }}
-        onMouseLeave={e => { (e.currentTarget as HTMLElement).style.backgroundColor = 'rgba(28,58,30,0.6)'; }}
+        onMouseEnter={e => { if (!isLoading) (e.currentTarget as HTMLElement).style.backgroundColor = 'rgba(0,229,195,0.07)'; }}
+        onMouseLeave={e => { (e.currentTarget as HTMLElement).style.backgroundColor = 'rgba(9,20,16,0.7)'; }}
       >
         <svg width="18" height="18" viewBox="0 0 18 18" fill="none">
           <path d="M17.64 9.2c0-.637-.057-1.251-.164-1.84H9v3.481h4.844a4.14 4.14 0 0 1-1.796 2.716v2.259h2.908c1.702-1.567 2.684-3.875 2.684-6.615Z" fill="#4285F4"/>
@@ -205,20 +204,20 @@ export function LoginForm() {
         {t('login.googleButton')}
       </button>
 
-      <p style={{ marginTop: '18px', textAlign: 'center', fontFamily: ASSIST, fontSize: '13px', color: `${PARCH}55` }}>
+      <p style={{ marginTop: '18px', textAlign: 'center', fontFamily: DM_SANS, fontSize: '13px', color: `${TEXT_MID}55` }}>
         {t('login.noAccount')}{' '}
-        <Link to="/signup" style={{ color: SAGE, fontWeight: 500, textDecoration: 'none' }}
-          onMouseEnter={e => { (e.currentTarget as HTMLElement).style.color = GOLD; }}
-          onMouseLeave={e => { (e.currentTarget as HTMLElement).style.color = SAGE; }}
+        <Link to="/signup" style={{ color: BIO_CYAN, fontWeight: 500, textDecoration: 'none' }}
+          onMouseEnter={e => { (e.currentTarget as HTMLElement).style.opacity = '0.8'; }}
+          onMouseLeave={e => { (e.currentTarget as HTMLElement).style.opacity = '1'; }}
         >
           {t('login.signupLink')}
         </Link>
       </p>
 
-      <p style={{ marginTop: '8px', textAlign: 'center', fontFamily: ASSIST, fontSize: '12px' }}>
-        <Link to="/reset-password" style={{ color: `${PARCH}40`, textDecoration: 'none' }}
-          onMouseEnter={e => { (e.currentTarget as HTMLElement).style.color = SAGE; }}
-          onMouseLeave={e => { (e.currentTarget as HTMLElement).style.color = `${PARCH}40`; }}
+      <p style={{ marginTop: '8px', textAlign: 'center', fontFamily: DM_SANS, fontSize: '12px' }}>
+        <Link to="/reset-password" style={{ color: `${TEXT_MID}40`, textDecoration: 'none' }}
+          onMouseEnter={e => { (e.currentTarget as HTMLElement).style.color = BIO_CYAN; }}
+          onMouseLeave={e => { (e.currentTarget as HTMLElement).style.color = `${TEXT_MID}40`; }}
         >
           {t('login.forgotPassword')}
         </Link>
