@@ -16,16 +16,17 @@ const MUTED      = '#6b9080';
 const FRANK      = '"Frank Ruhl Libre", Georgia, serif';
 const DM_SANS    = "'DM Sans', 'Assistant', 'Heebo', sans-serif";
 
-const ACTION_CHIPS = [
-  { value: 'watering',    emoji: '💧', he: 'השקייה',   en: 'Watering'    },
-  { value: 'planting',    emoji: '🌱', he: 'שתילה',    en: 'Planting'    },
-  { value: 'harvesting',  emoji: '🌾', he: 'קטיף',     en: 'Harvesting'  },
-  { value: 'fertilizing', emoji: '🧪', he: 'דישון',    en: 'Fertilizing' },
-  { value: 'pruning',     emoji: '✂️', he: 'גיזום',    en: 'Pruning'     },
-  { value: 'observation', emoji: '👁️', he: 'תצפית',   en: 'Observation' },
-  { value: 'treatment',   emoji: '🩹', he: 'טיפול',    en: 'Treatment'   },
-  { value: 'other',       emoji: '📝', he: 'אחר',      en: 'Other'       },
-] as const;
+// label = Hebrew UI text, value = English DB enum value
+const ACTION_CHIPS: { label: string; value: string }[] = [
+  { label: 'שתילה 🌱',  value: 'planted'   },
+  { label: 'קטיף 🌿',   value: 'harvested' },
+  { label: 'טיפול 💧',  value: 'treated'   },
+  { label: 'תצפית 👁',  value: 'observed'  },
+  { label: 'דישון 🧪',  value: 'treated'   },
+  { label: 'גיזום ✂️',  value: 'treated'   },
+  { label: 'השקיה 💧',  value: 'treated'   },
+  { label: 'אחר 📋',    value: 'observed'  },
+];
 
 interface UploadedPhoto {
   storagePath: string;
@@ -209,7 +210,7 @@ export function JournalEntryForm({ onCreated, onCancel, isRTL, isHe }: Props) {
                     cursor: 'pointer', transition: 'all 0.15s',
                   }}
                 >
-                  {chip.emoji} {isHe ? chip.he : chip.en}
+                  {chip.label}
                 </button>
               );
             })}

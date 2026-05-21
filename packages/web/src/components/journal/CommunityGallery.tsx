@@ -27,15 +27,12 @@ interface GalleryEntry {
   users: { display_name: string | null; avatar_url: string | null } | null;
 }
 
+// Keys are the English DB enum values
 const ACTION_EMOJI: Record<string, string> = {
-  watering:    '💧',
-  planting:    '🌱',
-  harvesting:  '🌾',
-  fertilizing: '🧪',
-  pruning:     '✂️',
-  observation: '👁️',
-  treatment:   '🩹',
-  other:       '📝',
+  planted:   '🌱',
+  harvested: '🌿',
+  treated:   '💧',
+  observed:  '👁',
 };
 
 interface Props {

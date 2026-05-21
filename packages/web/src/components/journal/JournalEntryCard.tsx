@@ -13,15 +13,12 @@ const MUTED      = '#6b9080';
 const FRANK      = '"Frank Ruhl Libre", Georgia, serif';
 const DM_SANS    = "'DM Sans', 'Assistant', 'Heebo', sans-serif";
 
+// Keys are the English DB enum values
 const ACTION_LABELS: Record<string, { he: string; en: string; emoji: string; color: string }> = {
-  watering:     { he: 'השקייה',    en: 'Watering',     emoji: '💧', color: '#38bdf8' },
-  planting:     { he: 'שתילה',     en: 'Planting',      emoji: '🌱', color: BIO_CYAN  },
-  harvesting:   { he: 'קטיף',      en: 'Harvesting',    emoji: '🌾', color: BIO_AMBER },
-  fertilizing:  { he: 'דישון',     en: 'Fertilizing',   emoji: '🧪', color: '#a78bfa' },
-  pruning:      { he: 'גיזום',     en: 'Pruning',       emoji: '✂️', color: '#fb923c' },
-  observation:  { he: 'תצפית',     en: 'Observation',   emoji: '👁️', color: '#34d399' },
-  treatment:    { he: 'טיפול',     en: 'Treatment',     emoji: '🩹', color: '#f472b6' },
-  other:        { he: 'אחר',       en: 'Other',         emoji: '📝', color: MUTED     },
+  planted:   { he: 'שתילה',  en: 'Planted',   emoji: '🌱', color: BIO_CYAN  },
+  harvested: { he: 'קטיף',   en: 'Harvested', emoji: '🌿', color: BIO_AMBER },
+  treated:   { he: 'טיפול',  en: 'Treated',   emoji: '💧', color: '#38bdf8' },
+  observed:  { he: 'תצפית',  en: 'Observed',  emoji: '👁', color: '#34d399' },
 };
 
 interface Photo {
