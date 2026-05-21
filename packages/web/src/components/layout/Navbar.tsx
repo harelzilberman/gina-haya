@@ -20,6 +20,11 @@ const MUTED      = '#6b9080';
 const FRANK      = '"Frank Ruhl Libre", Georgia, serif';
 const DM_SANS    = "'DM Sans', 'Assistant', 'Heebo', sans-serif";
 
+// Shared dropdown chrome — module-level so NavDropdown can reference them
+const dropdownBg     = `linear-gradient(180deg, ${NIGHT_LIFT} 0%, ${NIGHT} 100%)`;
+const dropdownBorder = '1px solid rgba(0,229,195,0.14)';
+const dropdownShadow = '0 12px 48px rgba(0,0,0,0.6), 0 0 0 1px rgba(0,229,195,0.06)';
+
 const NAVBAR_CSS = `
 .gina-nav-link {
   position: relative;
@@ -49,16 +54,86 @@ const NAVBAR_CSS = `
 }
 `;
 
+// ── Shared dropdown renderer ───────────────────────────────────────────────
+function NavDropdown({
+  label, isOpen, setOpen, nodeRef, items,
+}: {
+  label:   string;
+  isOpen:  boolean;
+  setOpen: (v: boolean) => void;
+  nodeRef: React.RefObject<HTMLDivElement>;
+  items:   { label: string; to: string }[];
+}) {
+  return (
+    <div ref={nodeRef} style={{ position: 'relative' }}>
+      <button
+        onClick={() => setOpen(!isOpen)}
+        className="gina-nav-link"
+        style={{
+          fontFamily: DM_SANS, fontSize: '14px', fontWeight: 500,
+          color: isOpen ? BIO_CYAN : TEXT_MID,
+          background: 'none', border: 'none', cursor: 'pointer',
+          display: 'flex', alignItems: 'center', gap: '4px', padding: '4px 0',
+        }}
+      >
+        {label}
+        <svg width="10" height="10" viewBox="0 0 10 10" fill="none"
+          style={{ transform: isOpen ? 'rotate(180deg)' : 'none', transition: 'transform 0.2s', opacity: 0.6 }}>
+          <path d="M2 3.5L5 6.5L8 3.5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+        </svg>
+      </button>
+      {isOpen && (
+        <div style={{
+          position: 'absolute', top: 'calc(100% + 10px)',
+          insetInlineStart: 0,
+          minWidth: '180px',
+          background: dropdownBg,
+          border: dropdownBorder,
+          borderRadius: '12px',
+          boxShadow: dropdownShadow,
+          padding: '6px 0',
+          zIndex: 200,
+        }}>
+          {items.map(item => (
+            <Link key={item.to} to={item.to}
+              className="gina-dropdown-item"
+              onClick={() => setOpen(false)}
+              style={{
+                display: 'block', padding: '9px 16px',
+                fontFamily: DM_SANS, fontSize: '14px',
+                color: TEXT_MID, textDecoration: 'none',
+                transition: 'background-color 0.15s, color 0.15s',
+              }}>
+              {item.label}
+            </Link>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
+// ── Main navbar ────────────────────────────────────────────────────────────
 export function Navbar() {
   const { t, i18n } = useTranslation('common');
   const { dir } = useDirection();
   const { user, profile, signOut } = useAuthStore();
   const navigate = useNavigate();
-  const [dropdownOpen, setDropdownOpen] = useState(false);
-  const [mobileOpen, setMobileOpen] = useState(false);
-  const [moreOpen, setMoreOpen] = useState(false);
+
+  // Dropdown state
+  const [dropdownOpen, setDropdownOpen] = useState(false);   // user avatar menu
+  const [mobileOpen,   setMobileOpen]   = useState(false);   // mobile drawer
+  const [gardenOpen,   setGardenOpen]   = useState(false);   // Garden dropdown
+  const [tasksOpen,    setTasksOpen]    = useState(false);   // Tasks dropdown
+  const [readOpen,     setReadOpen]     = useState(false);   // Read/Watch dropdown
+  const [moreOpen,     setMoreOpen]     = useState(false);   // More dropdown
+
   const dropdownRef = useRef<HTMLDivElement>(null);
-  const moreRef = useRef<HTMLDivElement>(null);
+  const gardenRef   = useRef<HTMLDivElement>(null);
+  const tasksRef    = useRef<HTMLDivElement>(null);
+  const readRef     = useRef<HTMLDivElement>(null);
+  const moreRef     = useRef<HTMLDivElement>(null);
+
   const isHebrew = i18n.language === 'he';
 
   function toggleLanguage() {
@@ -72,7 +147,10 @@ export function Navbar() {
   useEffect(() => {
     function handleClick(e: MouseEvent) {
       if (dropdownRef.current && !dropdownRef.current.contains(e.target as Node)) setDropdownOpen(false);
-      if (moreRef.current && !moreRef.current.contains(e.target as Node)) setMoreOpen(false);
+      if (gardenRef.current  && !gardenRef.current.contains(e.target as Node))   setGardenOpen(false);
+      if (tasksRef.current   && !tasksRef.current.contains(e.target as Node))    setTasksOpen(false);
+      if (readRef.current    && !readRef.current.contains(e.target as Node))     setReadOpen(false);
+      if (moreRef.current    && !moreRef.current.contains(e.target as Node))     setMoreOpen(false);
     }
     document.addEventListener('mousedown', handleClick);
     return () => document.removeEventListener('mousedown', handleClick);
@@ -99,10 +177,6 @@ export function Navbar() {
     navigate('/');
   }
 
-  const dropdownBg = `linear-gradient(180deg, ${NIGHT_LIFT} 0%, ${NIGHT} 100%)`;
-  const dropdownBorder = '1px solid rgba(0,229,195,0.14)';
-  const dropdownShadow = '0 12px 48px rgba(0,0,0,0.6), 0 0 0 1px rgba(0,229,195,0.06)';
-
   const langToggle = (
     <button
       onClick={toggleLanguage}
@@ -118,6 +192,25 @@ export function Navbar() {
       {isHebrew ? 'EN' : 'עב'}
     </button>
   );
+
+  // ── Mobile styles ────────────────────────────────────────────────────────
+  const mobileLink: React.CSSProperties = {
+    fontFamily: DM_SANS, fontSize: '16px', color: TEXT_MID,
+    textDecoration: 'none', padding: '10px 0',
+    borderBottom: '1px solid rgba(0,229,195,0.05)',
+    transition: 'color 0.15s',
+  };
+  const mobileSub: React.CSSProperties = {
+    ...mobileLink,
+    fontSize: '14px',
+    paddingInlineStart: '16px',
+    color: MUTED,
+  };
+  const mobileSection: React.CSSProperties = {
+    fontFamily: DM_SANS, fontSize: '11px', fontWeight: 700,
+    color: BIO_CYAN, letterSpacing: '0.08em', textTransform: 'uppercase',
+    padding: '14px 0 4px',
+  };
 
   return (
     <>
@@ -152,64 +245,89 @@ export function Navbar() {
           </div>
         </Link>
 
-        {/* Center nav links — desktop, logged-in only */}
+        {/* Desktop nav — visible when logged in */}
         {user && (
-          <div className="gina-desktop-nav" style={{ flex: '1 1 auto', minWidth: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '4px' }}>
-            {[
-              { label: isHebrew ? 'בית' : 'Home',    to: '/'         },
-              { label: t('nav.map'),                  to: '/map'      },
-              { label: t('nav.tracker'),              to: '/tracker'  },
-              { label: t('nav.calendar'),             to: '/calendar' },
-              { label: t('nav.tasks'),                to: '/tasks'    },
-            ].map(item => (
-              <Link key={item.to} to={item.to} className="gina-nav-link" onClick={() => setMobileOpen(false)}
-                style={{ fontFamily: DM_SANS, fontSize: '14px', fontWeight: 400, color: TEXT_MID, padding: '6px 12px', borderRadius: '8px', whiteSpace: 'nowrap' }}>
-                {item.label}
-              </Link>
-            ))}
+          <div className="gina-desktop-nav" style={{
+            display: 'flex', alignItems: 'center',
+            gap: '24px', marginInlineStart: '32px', flex: 1,
+          }}>
 
-            {/* ChupChu link */}
-            <Link to="/chupchu" className="gina-nav-link" onClick={() => setMobileOpen(false)}
-              style={{ fontFamily: DM_SANS, fontSize: '14px', fontWeight: 600, color: BIO_CYAN, display: 'flex', alignItems: 'center', gap: '5px', padding: '6px 12px', borderRadius: '8px', whiteSpace: 'nowrap' }}>
-              <svg width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
-                <path d="M12 2C6.5 2 3 7 3 12c0 3 1.5 5.5 4 7 .5-3 2-5.5 5-7-3 2-4.5 5-4.5 8 1 .5 2.5 1 4.5 1 5.5 0 9-4.5 9-9S17.5 2 12 2z"/>
-              </svg>
-              {t('nav.chupchu')}
+            {/* 1. Home */}
+            <Link to="/" className="gina-nav-link"
+              style={{ fontFamily: DM_SANS, fontSize: '14px', fontWeight: 500, color: TEXT_MID, textDecoration: 'none' }}>
+              {isHebrew ? 'בית' : 'Home'}
             </Link>
 
-            {/* More dropdown */}
-            <div ref={moreRef} style={{ position: 'relative' }}>
-              <span className="gina-nav-link" onClick={() => setMoreOpen(v => !v)}
-                style={{ fontFamily: DM_SANS, fontSize: '14px', fontWeight: 400, color: TEXT_MID, cursor: 'pointer',
-                  display: 'inline-flex', alignItems: 'center', gap: '4px', padding: '6px 12px', borderRadius: '8px', whiteSpace: 'nowrap' }}>
-                {isHebrew ? 'עוד' : 'More'}
-                <span style={{ fontSize: '8px', opacity: 0.5, marginTop: '1px' }}>▾</span>
-              </span>
-              {moreOpen && (
-                <div style={{ position: 'absolute', top: 'calc(100% + 10px)', left: '50%', transform: 'translateX(-50%)',
-                  minWidth: '170px', background: dropdownBg, border: dropdownBorder, borderRadius: '12px',
-                  boxShadow: dropdownShadow, padding: '6px 0', zIndex: 200 }}>
-                  {[
-                    { label: t('nav.plan'),      to: '/plan'     },
-                    { label: t('nav.plants'),    to: '/plants'   },
-                    { label: isHebrew ? 'סרטונים'  : 'Videos',   to: '/guides'   },
-                    { label: isHebrew ? 'יומן גינה' : 'Journal',  to: '/journal'  },
-                    { label: isHebrew ? 'מאמרים'   : 'Articles', to: '/articles' },
-                    { label: isHebrew ? 'חנות'     : 'Shop',      to: '/shop'     },
-                    { label: isHebrew ? 'תמחור'    : 'Pricing',   to: '/pricing'  },
-                    { label: isHebrew ? 'עזרה'     : 'Help',      to: '/help'     },
-                    { label: isHebrew ? 'אודות'    : 'About',     to: '/about'    },
-                    ...(isProUser ? [{ label: isHebrew ? 'הגינות שלי' : 'My Gardens', to: '/gardens' }] : []),
-                  ].map(item => (
-                    <Link key={item.to} to={item.to} className="gina-dropdown-item"
-                      onClick={() => { setMoreOpen(false); setMobileOpen(false); }}
-                      style={{ display: 'block', padding: '9px 16px', fontFamily: DM_SANS, fontSize: '14px', color: TEXT_MID, textDecoration: 'none', transition: 'background-color 0.15s, color 0.15s' }}>
-                      {item.label}
-                    </Link>
-                  ))}
-                </div>
-              )}
-            </div>
+            {/* 2. Garden dropdown */}
+            <NavDropdown
+              label={isHebrew ? 'גינה' : 'Garden'}
+              isOpen={gardenOpen}
+              setOpen={setGardenOpen}
+              nodeRef={gardenRef}
+              items={[
+                { label: isHebrew ? 'יומן גינה'   : 'Garden Journal', to: '/journal'  },
+                { label: isHebrew ? 'עוקב צמחים'  : 'Plant Tracker',  to: '/tracker'  },
+                { label: isHebrew ? 'מפת גינה'    : 'Garden Map',     to: '/map'      },
+                { label: isHebrew ? 'הגינות שלי'  : 'My Gardens',     to: '/gardens'  },
+              ]}
+            />
+
+            {/* 3. Biodynamic Calendar — plain link */}
+            <Link to="/calendar" className="gina-nav-link"
+              style={{ fontFamily: DM_SANS, fontSize: '14px', fontWeight: 500, color: TEXT_MID, textDecoration: 'none' }}>
+              {isHebrew ? 'לוח ביודינמי' : 'Biodynamic Calendar'}
+            </Link>
+
+            {/* 4. Tasks dropdown */}
+            <NavDropdown
+              label={isHebrew ? 'משימות' : 'Tasks'}
+              isOpen={tasksOpen}
+              setOpen={setTasksOpen}
+              nodeRef={tasksRef}
+              items={[
+                { label: isHebrew ? 'משימות'      : 'Tasks',       to: '/tasks' },
+                { label: isHebrew ? 'תכנון שבועי' : 'Weekly Plan', to: '/plan'  },
+              ]}
+            />
+
+            {/* 5. Chupchu — plain link */}
+            <Link to="/chupchu" className="gina-nav-link"
+              style={{ fontFamily: DM_SANS, fontSize: '14px', fontWeight: 500, color: TEXT_MID, textDecoration: 'none' }}>
+              {isHebrew ? "צ'ופצ'ו" : 'Chupchu'}
+            </Link>
+
+            {/* 6. Read / Watch dropdown */}
+            <NavDropdown
+              label={isHebrew ? 'קרא/צפה' : 'Read/Watch'}
+              isOpen={readOpen}
+              setOpen={setReadOpen}
+              nodeRef={readRef}
+              items={[
+                { label: isHebrew ? 'אנציקלופדיה' : 'Encyclopedia', to: '/plants'   },
+                { label: isHebrew ? 'מאמרים'      : 'Articles',     to: '/articles' },
+                { label: isHebrew ? 'סרטונים'     : 'Videos',       to: '/guides'   },
+              ]}
+            />
+
+            {/* 7. More dropdown */}
+            <NavDropdown
+              label={isHebrew ? 'עוד' : 'More'}
+              isOpen={moreOpen}
+              setOpen={setMoreOpen}
+              nodeRef={moreRef}
+              items={[
+                { label: isHebrew ? 'חנות'  : 'Store',   to: '/shop'    },
+                { label: isHebrew ? 'תמחור' : 'Pricing', to: '/pricing' },
+                { label: isHebrew ? 'אודות' : 'About',   to: '/about'   },
+              ]}
+            />
+
+            {/* 8. Help — plain link */}
+            <Link to="/help" className="gina-nav-link"
+              style={{ fontFamily: DM_SANS, fontSize: '14px', fontWeight: 500, color: TEXT_MID, textDecoration: 'none' }}>
+              {isHebrew ? 'עזרה' : 'Help'}
+            </Link>
+
           </div>
         )}
 
@@ -374,36 +492,29 @@ export function Navbar() {
           background: `linear-gradient(180deg, rgba(5,13,10,0.97) 0%, rgba(5,13,10,0.99) 100%)`,
           backdropFilter: 'blur(20px)', borderBottom: '1px solid rgba(0,229,195,0.1)',
           padding: '16px 24px 24px', display: 'flex', flexDirection: 'column', gap: '2px' }}>
+
           {user && (
             <>
-              {[
-                { label: isHebrew ? 'בית' : 'Home',          to: '/'         },
-                { label: t('nav.calendar'),                    to: '/calendar' },
-                { label: t('nav.plan'),                        to: '/plan'     },
-                { label: t('nav.map'),                         to: '/map'      },
-                { label: t('nav.plants'),                      to: '/plants'   },
-                { label: t('nav.garden'),                      to: '/garden'   },
-                ...(isProUser ? [{ label: isHebrew ? 'הגינות שלי' : 'My Gardens', to: '/gardens' }] : []),
-                { label: t('nav.tracker'),                     to: '/tracker'  },
-                { label: t('nav.tasks'),                       to: '/tasks'    },
-                { label: isHebrew ? 'יומן גינה' : 'Journal',  to: '/journal'  },
-                { label: isHebrew ? 'סרטונים'  : 'Videos',   to: '/guides'   },
-                { label: isHebrew ? 'מאמרים'   : 'Articles', to: '/articles' },
-                { label: t('nav.chupchu'),                     to: '/chupchu'  },
-                { label: t('nav.settings'),                    to: '/settings' },
-                { label: isHebrew ? 'תמחור' : 'Pricing',      to: '/pricing'  },
-                { label: isHebrew ? 'חנות'  : 'Shop',         to: '/shop'     },
-                { label: isHebrew ? 'עזרה'  : 'Help',         to: '/help'     },
-                { label: isHebrew ? 'אודות' : 'About',        to: '/about'    },
-              ].map(item => (
-                <Link key={item.to} to={item.to} onClick={() => setMobileOpen(false)}
-                  style={{ fontFamily: DM_SANS, fontSize: '16px', color: TEXT_MID, textDecoration: 'none', padding: '10px 0',
-                    borderBottom: '1px solid rgba(0,229,195,0.05)', transition: 'color 0.15s' }}
-                  onMouseEnter={e => { (e.currentTarget as HTMLElement).style.color = BIO_CYAN; }}
-                  onMouseLeave={e => { (e.currentTarget as HTMLElement).style.color = TEXT_MID; }}>
-                  {item.label}
-                </Link>
-              ))}
+              <Link to="/"         onClick={() => setMobileOpen(false)} style={mobileLink}>{isHebrew ? 'בית'           : 'Home'}</Link>
+              <div style={mobileSection}>{isHebrew ? 'גינה' : 'Garden'}</div>
+              <Link to="/journal"  onClick={() => setMobileOpen(false)} style={mobileSub}>{isHebrew ? 'יומן גינה'    : 'Garden Journal'}</Link>
+              <Link to="/tracker"  onClick={() => setMobileOpen(false)} style={mobileSub}>{isHebrew ? 'עוקב צמחים'  : 'Plant Tracker'}</Link>
+              <Link to="/map"      onClick={() => setMobileOpen(false)} style={mobileSub}>{isHebrew ? 'מפת גינה'    : 'Garden Map'}</Link>
+              <Link to="/gardens"  onClick={() => setMobileOpen(false)} style={mobileSub}>{isHebrew ? 'הגינות שלי'  : 'My Gardens'}</Link>
+              <Link to="/calendar" onClick={() => setMobileOpen(false)} style={mobileLink}>{isHebrew ? 'לוח ביודינמי' : 'Biodynamic Calendar'}</Link>
+              <div style={mobileSection}>{isHebrew ? 'משימות' : 'Tasks'}</div>
+              <Link to="/tasks"    onClick={() => setMobileOpen(false)} style={mobileSub}>{isHebrew ? 'משימות'       : 'Tasks'}</Link>
+              <Link to="/plan"     onClick={() => setMobileOpen(false)} style={mobileSub}>{isHebrew ? 'תכנון שבועי'  : 'Weekly Plan'}</Link>
+              <Link to="/chupchu"  onClick={() => setMobileOpen(false)} style={mobileLink}>{isHebrew ? "צ'ופצ'ו"      : 'Chupchu'}</Link>
+              <div style={mobileSection}>{isHebrew ? 'קרא/צפה' : 'Read/Watch'}</div>
+              <Link to="/plants"   onClick={() => setMobileOpen(false)} style={mobileSub}>{isHebrew ? 'אנציקלופדיה'  : 'Encyclopedia'}</Link>
+              <Link to="/articles" onClick={() => setMobileOpen(false)} style={mobileSub}>{isHebrew ? 'מאמרים'       : 'Articles'}</Link>
+              <Link to="/guides"   onClick={() => setMobileOpen(false)} style={mobileSub}>{isHebrew ? 'סרטונים'      : 'Videos'}</Link>
+              <div style={mobileSection}>{isHebrew ? 'עוד' : 'More'}</div>
+              <Link to="/shop"     onClick={() => setMobileOpen(false)} style={mobileSub}>{isHebrew ? 'חנות'          : 'Store'}</Link>
+              <Link to="/pricing"  onClick={() => setMobileOpen(false)} style={mobileSub}>{isHebrew ? 'תמחור'         : 'Pricing'}</Link>
+              <Link to="/about"    onClick={() => setMobileOpen(false)} style={mobileSub}>{isHebrew ? 'אודות'          : 'About'}</Link>
+              <Link to="/help"     onClick={() => setMobileOpen(false)} style={mobileLink}>{isHebrew ? 'עזרה'          : 'Help'}</Link>
               <div style={{ height: '1px', backgroundColor: 'rgba(0,229,195,0.1)', margin: '8px 0' }} />
               <button onClick={handleSignOut}
                 style={{ fontFamily: DM_SANS, fontSize: '16px', color: 'rgba(255,100,100,0.8)', background: 'none', border: 'none', cursor: 'pointer', textAlign: 'start', padding: '10px 0' }}>
@@ -411,6 +522,7 @@ export function Navbar() {
               </button>
             </>
           )}
+
           {!user && (
             <>
               <Link to="/login"   onClick={() => setMobileOpen(false)} style={{ fontFamily: DM_SANS, fontSize: '16px', color: TEXT_MID, textDecoration: 'none', padding: '10px 0' }}>{t('nav.login')}</Link>
@@ -421,6 +533,7 @@ export function Navbar() {
               <Link to="/about"   onClick={() => setMobileOpen(false)} style={{ fontFamily: DM_SANS, fontSize: '16px', color: TEXT_MID, textDecoration: 'none', padding: '10px 0' }}>{isHebrew ? 'אודות' : 'About'}</Link>
             </>
           )}
+
           <div style={{ paddingTop: '12px' }}>{langToggle}</div>
         </div>
       )}
