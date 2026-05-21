@@ -66,16 +66,31 @@ journalRouter.get('/entries', async (req: any, res) => {
 // Get public entries for the community gallery
 journalRouter.get('/gallery', async (req: any, res) => {
   try {
-    const { data, error } = await db
+    // Fetch public entries + their photos
+    const { data: entries, error } = await db
       .from('journal_entries')
-      .select(`
-        id, action_type, note, entry_date,
-        journal_photos(id, storage_path, caption),
-        users(display_name)
-      `)
+      .select(`id, action_type, note, entry_date, user_id, journal_photos(id, storage_path, caption)`)
       .eq('is_public', true)
       .order('entry_date', { ascending: false })
       .limit(40);
+
+    if (error) throw error;
+
+    // Fetch display names for the unique user_ids (public.users is separate from auth.users)
+    const userIds = [...new Set((entries || []).map((e: any) => e.user_id))];
+    let userMap: Record<string, string> = {};
+    if (userIds.length > 0) {
+      const { data: users } = await db
+        .from('users')
+        .select('id, display_name')
+        .in('id', userIds);
+      userMap = Object.fromEntries((users || []).map((u: any) => [u.id, u.display_name]));
+    }
+
+    const data = (entries || []).map((e: any) => ({
+      ...e,
+      display_name: userMap[e.user_id] || null,
+    }));
 
     if (error) throw error;
     res.json(data || []);
