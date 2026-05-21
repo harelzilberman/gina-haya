@@ -426,41 +426,13 @@ export function Navbar() {
                       </>
                     )}
 
-                    {[
-                      { label: isHebrew ? 'בית' : 'Home',              to: '/'         },
-                      { label: t('nav.garden'),                          to: '/garden'   },
-                      ...(isProUser ? [{ label: isHebrew ? 'הגינות שלי' : 'My Gardens', to: '/gardens' }] : []),
-                      { label: t('nav.calendar'),                        to: '/calendar' },
-                      { label: t('nav.plan'),                            to: '/plan'     },
-                      { label: t('nav.map'),                             to: '/map'      },
-                      { label: t('nav.tracker'),                         to: '/tracker'  },
-                      { label: t('nav.tasks'),                           to: '/tasks'    },
-                      { label: isHebrew ? 'יומן גינה' : 'Journal',       to: '/journal'  },
-                      { label: isHebrew ? 'סרטונים'  : 'Videos',        to: '/guides'   },
-                      { label: isHebrew ? 'מאמרים'   : 'Articles',      to: '/articles' },
-                      { label: t('nav.chupchu'),                         to: '/chupchu'  },
-                      { label: t('nav.settings'),                        to: '/settings' },
-                    ].map(item => (
-                      <Link key={item.to} to={item.to} className="gina-dropdown-item"
-                        onClick={() => setDropdownOpen(false)}
-                        style={{ display: 'block', padding: '9px 16px', fontFamily: DM_SANS, fontSize: '14px',
-                          color: TEXT_MID, textDecoration: 'none', transition: 'background-color 0.15s, color 0.15s' }}>
-                        {item.label}
-                      </Link>
-                    ))}
-
-                    <div style={{ height: '1px', backgroundColor: 'rgba(0,229,195,0.1)', margin: '4px 0' }} />
-                    {[
-                      { label: isHebrew ? 'תמחור' : 'Pricing', to: '/pricing' },
-                      { label: isHebrew ? 'חנות'  : 'Shop',    to: '/shop'    },
-                    ].map(item => (
-                      <Link key={item.to} to={item.to} className="gina-dropdown-item"
-                        onClick={() => setDropdownOpen(false)}
-                        style={{ display: 'block', padding: '9px 16px', fontFamily: DM_SANS, fontSize: '14px',
-                          color: TEXT_MID, textDecoration: 'none', transition: 'background-color 0.15s, color 0.15s' }}>
-                        {item.label}
-                      </Link>
-                    ))}
+                    {/* Settings */}
+                    <Link to="/settings" className="gina-dropdown-item"
+                      onClick={() => setDropdownOpen(false)}
+                      style={{ display: 'block', padding: '9px 16px', fontFamily: DM_SANS, fontSize: '14px',
+                        color: TEXT_MID, textDecoration: 'none', transition: 'background-color 0.15s, color 0.15s' }}>
+                      {isHebrew ? 'הגדרות' : 'Settings'}
+                    </Link>
 
                     <div style={{ height: '1px', backgroundColor: 'rgba(0,229,195,0.1)', margin: '4px 0' }} />
                     <button onClick={handleSignOut}
