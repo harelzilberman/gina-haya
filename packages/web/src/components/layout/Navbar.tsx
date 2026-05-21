@@ -212,6 +212,12 @@ export function Navbar() {
     padding: '14px 0 4px',
   };
 
+  const navLinkStyle = (_isHe: boolean): React.CSSProperties => ({
+    fontFamily: DM_SANS, fontSize: '14px', fontWeight: 500,
+    color: TEXT_MID, textDecoration: 'none',
+    whiteSpace: 'nowrap',
+  });
+
   return (
     <>
       <style>{NAVBAR_CSS}</style>
@@ -225,6 +231,7 @@ export function Navbar() {
           backdropFilter: 'blur(20px)', WebkitBackdropFilter: 'blur(20px)',
           borderBottom: '1px solid rgba(0,229,195,0.1)',
           boxShadow: '0 2px 40px rgba(0,0,0,0.4)',
+          direction: isHebrew ? 'rtl' : 'ltr',
         }}
       >
         {/* Logo */}
@@ -248,13 +255,11 @@ export function Navbar() {
         {/* Desktop nav — visible when logged in */}
         {user && (
           <div className="gina-desktop-nav" style={{
-            display: 'flex', alignItems: 'center',
-            gap: '24px', marginInlineStart: '32px', flex: 1,
+            display: 'flex', alignItems: 'center', gap: '24px', marginInlineStart: '32px',
           }}>
 
             {/* 1. Home */}
-            <Link to="/" className="gina-nav-link"
-              style={{ fontFamily: DM_SANS, fontSize: '14px', fontWeight: 500, color: TEXT_MID, textDecoration: 'none' }}>
+            <Link to="/" className="gina-nav-link" style={navLinkStyle(isHebrew)}>
               {isHebrew ? 'בית' : 'Home'}
             </Link>
 
@@ -273,8 +278,7 @@ export function Navbar() {
             />
 
             {/* 3. Biodynamic Calendar — plain link */}
-            <Link to="/calendar" className="gina-nav-link"
-              style={{ fontFamily: DM_SANS, fontSize: '14px', fontWeight: 500, color: TEXT_MID, textDecoration: 'none' }}>
+            <Link to="/calendar" className="gina-nav-link" style={navLinkStyle(isHebrew)}>
               {isHebrew ? 'לוח ביודינמי' : 'Biodynamic Calendar'}
             </Link>
 
@@ -291,8 +295,7 @@ export function Navbar() {
             />
 
             {/* 5. Chupchu — plain link */}
-            <Link to="/chupchu" className="gina-nav-link"
-              style={{ fontFamily: DM_SANS, fontSize: '14px', fontWeight: 500, color: TEXT_MID, textDecoration: 'none' }}>
+            <Link to="/chupchu" className="gina-nav-link" style={navLinkStyle(isHebrew)}>
               {isHebrew ? "צ'ופצ'ו" : 'Chupchu'}
             </Link>
 
@@ -323,8 +326,7 @@ export function Navbar() {
             />
 
             {/* 8. Help — plain link */}
-            <Link to="/help" className="gina-nav-link"
-              style={{ fontFamily: DM_SANS, fontSize: '14px', fontWeight: 500, color: TEXT_MID, textDecoration: 'none' }}>
+            <Link to="/help" className="gina-nav-link" style={navLinkStyle(isHebrew)}>
               {isHebrew ? 'עזרה' : 'Help'}
             </Link>
 
