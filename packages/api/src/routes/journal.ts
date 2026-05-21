@@ -71,7 +71,7 @@ journalRouter.get('/gallery', async (req: any, res) => {
       .select(`
         id, action_type, note, entry_date,
         journal_photos(id, storage_path, caption),
-        users(display_name, avatar_url)
+        users(display_name)
       `)
       .eq('is_public', true)
       .order('entry_date', { ascending: false })
