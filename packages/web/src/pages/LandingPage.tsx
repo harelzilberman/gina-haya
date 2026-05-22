@@ -625,7 +625,7 @@ export function LandingPage() {
           display: 'flex',
           flexDirection: 'row',
           justifyContent: 'center',
-          alignItems: 'center',
+          alignItems: 'flex-start',
           textAlign: 'start',
           gap: '60px',
           flexWrap: 'wrap',
