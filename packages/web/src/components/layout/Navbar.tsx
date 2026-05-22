@@ -334,7 +334,7 @@ export function Navbar() {
         )}
 
         {/* Right side actions */}
-        <div className="gina-desktop-actions" style={{ flexShrink: 0, display: 'flex', alignItems: 'center', gap: '10px', marginInlineStart: user ? undefined : 'auto' }}>
+        <div className="gina-desktop-actions" style={{ flexShrink: 0, display: 'flex', alignItems: 'center', gap: '10px', marginInlineStart: 'auto' }}>
           {langToggle}
 
           {!user ? (
