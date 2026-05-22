@@ -4,6 +4,7 @@ import Anthropic from '@anthropic-ai/sdk';
 import { db } from '../db/client';
 import { verifyToken } from '../middleware/auth';
 import { askChupChu, type ProposedTask } from '../services/claude';
+import { compressImageForClaude } from '../services/plantVision';
 import { fetchWeatherForRegion, getCachedWeatherForCoords } from '../services/weather';
 import type { ChupChuMessage, ChupChuContext } from '@gina-haya/shared';
 import { todayInIsrael } from '@gina-haya/shared';
@@ -173,10 +174,13 @@ Create an updated summary and structured facts. Return JSON only:
 // ── POST /api/chupchu/chat ──────────────────────────────────────────────────
 chupChuRouter.post('/chat', async (req: any, res) => {
   try {
-    const { message, gardenId, location } = req.body;
+    const { message, gardenId, location, imageBase64 } = req.body;
 
-    if (!message || !message.trim()) {
-      return res.status(400).json({ error: 'Message is required' });
+    const hasImage = typeof imageBase64 === 'string' && imageBase64.length > 0;
+    const hasText  = typeof message === 'string' && message.trim().length > 0;
+
+    if (!hasText && !hasImage) {
+      return res.status(400).json({ error: 'Message or image is required' });
     }
 
     const userId = req.user.id;
@@ -395,9 +399,29 @@ chupChuRouter.post('/chat', async (req: any, res) => {
     }
 
     // ── 9. Call Claude API ────────────────────────────────────────────────
+
+    // Compress image if provided — bail early on size errors
+    let compressedImage: { data: string; mimeType: 'image/jpeg' } | undefined;
+    if (hasImage) {
+      try {
+        const result = await compressImageForClaude(imageBase64);
+        compressedImage = { data: result.data, mimeType: result.mimeType };
+      } catch (imgErr: any) {
+        if (imgErr.code === 'image_too_large') {
+          return res.status(400).json({ error: lang === 'he' ? 'התמונה גדולה מדי. אנא השתמש בתמונה קטנה יותר.' : 'Image is too large. Please use a smaller image.' });
+        }
+        throw imgErr;
+      }
+    }
+
+    // Content stored in DB (never store raw image bytes)
+    const messageContent = hasText
+      ? message.trim()
+      : (lang === 'he' ? '🌿 [תמונה לזיהוי צמח]' : '🌿 [Plant image for identification]');
+
     const newUserMessage: ChupChuMessage = {
       role: 'user',
-      content: message.trim(),
+      content: messageContent,
       timestamp: new Date().toISOString(),
     };
 
@@ -413,7 +437,8 @@ chupChuRouter.post('/chat', async (req: any, res) => {
     const { response: chupChuText, proposedTasks } = await askChupChu(
       [...last20Messages, newUserMessage],
       context,
-      extraContext || undefined
+      extraContext || undefined,
+      compressedImage,
     );
 
     const chupChuMessage: ChupChuMessage = {

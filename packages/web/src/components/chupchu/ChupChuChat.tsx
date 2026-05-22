@@ -13,6 +13,33 @@ import { PlantConfirmBubble } from '../journal/PlantConfirmBubble';
 import type { ConfirmItem } from '../journal/PlantConfirmBubble';
 import './chupchu-chat.css';
 
+// Compress an image file to JPEG base64 below ~4.5 MB
+async function compressImageToBase64(file: File): Promise<{ base64: string; dataUrl: string }> {
+  return new Promise((resolve, reject) => {
+    const img = new Image();
+    const objectUrl = URL.createObjectURL(file);
+    img.onload = () => {
+      URL.revokeObjectURL(objectUrl);
+      const MAX = 1568;
+      let { width, height } = img;
+      if (width > MAX || height > MAX) {
+        if (width > height) { height = Math.round((height * MAX) / width); width = MAX; }
+        else                { width  = Math.round((width  * MAX) / height); height = MAX; }
+      }
+      const canvas = document.createElement('canvas');
+      canvas.width = width; canvas.height = height;
+      const ctx = canvas.getContext('2d');
+      if (!ctx) return reject(new Error('canvas context unavailable'));
+      ctx.drawImage(img, 0, 0, width, height);
+      const dataUrl = canvas.toDataURL('image/jpeg', 0.85);
+      const base64  = dataUrl.split(',')[1];
+      resolve({ base64, dataUrl });
+    };
+    img.onerror = reject;
+    img.src = objectUrl;
+  });
+}
+
 // ── Design tokens ────────────────────────────────────────────────────────────
 const NIGHT      = '#050d0a';
 const NIGHT_MID  = '#091410';
@@ -465,6 +492,7 @@ export function ChupChuChat({ compact, initialMessage, onInitialMessageConsumed,
   const {
     messages,
     pendingMessage,
+    pendingImageDataUrl,
     isLoading,
     error,
     rateLimited,
@@ -487,6 +515,12 @@ export function ChupChuChat({ compact, initialMessage, onInitialMessageConsumed,
   const [input, setInput] = useState('');
   const messagesEndRef    = useRef<HTMLDivElement>(null);
   const textareaRef       = useRef<HTMLTextAreaElement>(null);
+  const fileInputRef      = useRef<HTMLInputElement>(null);
+
+  const [imageFile,       setImageFile]       = useState<File | null>(null);
+  const [imageBase64,     setImageBase64]     = useState<string | null>(null);
+  const [imageDataUrl,    setImageDataUrl]    = useState<string | null>(null);
+  const [imageError,      setImageError]      = useState<string | null>(null);
 
   const [guestMessages,  setGuestMessages]  = useState<ChupChuMessage[]>([]);
   const [guestLoading,   setGuestLoading]   = useState(false);
@@ -551,16 +585,43 @@ export function ChupChuChat({ compact, initialMessage, onInitialMessageConsumed,
     return () => window.removeEventListener('beforeunload', handleUnload);
   }, [messages, lang, memory]);
 
+  const clearImageSelection = () => {
+    setImageFile(null);
+    setImageBase64(null);
+    setImageDataUrl(null);
+    setImageError(null);
+    if (fileInputRef.current) fileInputRef.current.value = '';
+  };
+
+  const handleImageSelect = async (file: File) => {
+    if (!file.type.startsWith('image/')) {
+      setImageError(isHe ? 'יש לבחור קובץ תמונה בלבד' : 'Please select an image file');
+      return;
+    }
+    setImageError(null);
+    setImageFile(file);
+    try {
+      const { base64, dataUrl } = await compressImageToBase64(file);
+      setImageBase64(base64);
+      setImageDataUrl(dataUrl);
+    } catch {
+      setImageError(isHe ? 'שגיאה בעיבוד התמונה' : 'Error processing image');
+      setImageFile(null);
+    }
+  };
+
   const handleSend = (forceText?: string) => {
     const text = (forceText ?? input).trim();
-    if (!text || showLoading) return;
+    const hasImg = !!imageBase64;
+    if ((!text && !hasImg) || showLoading) return;
 
     if (isGuest) {
       if (showGuestWall) return;
       if (!forceText) { setInput(''); if (textareaRef.current) textareaRef.current.style.height = 'auto'; }
+      clearImageSelection();
 
       const newCount = incrementGuestCount();
-      const userMsg: ChupChuMessage = { role: 'user', content: text, timestamp: new Date().toISOString() };
+      const userMsg: ChupChuMessage = { role: 'user', content: text || '🌿 [תמונה]', timestamp: new Date().toISOString() };
       setGuestMessages(prev => [...prev, userMsg]);
       setGuestLoading(true);
 
@@ -579,7 +640,10 @@ export function ChupChuChat({ compact, initialMessage, onInitialMessageConsumed,
 
     if (rateLimited) return;
     if (!forceText) { setInput(''); if (textareaRef.current) textareaRef.current.style.height = 'auto'; }
-    sendMessage(text);
+    const imgB64   = imageBase64 ?? undefined;
+    const imgDUrl  = imageDataUrl ?? undefined;
+    clearImageSelection();
+    sendMessage(text, undefined, imgB64, imgDUrl);
   };
 
   // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -606,7 +670,7 @@ export function ChupChuChat({ compact, initialMessage, onInitialMessageConsumed,
     if (error) clearError();
   };
 
-  const canSend = input.trim().length > 0 && !showLoading && !(isGuest ? showGuestWall : rateLimited);
+  const canSend = (input.trim().length > 0 || !!imageBase64) && !showLoading && !(isGuest ? showGuestWall : rateLimited);
 
   // suppress unused warning
   void triggerSummarize;
@@ -691,6 +755,15 @@ export function ChupChuChat({ compact, initialMessage, onInitialMessageConsumed,
 
         {displayPending && (
           <div style={{ opacity: 0.6 }}>
+            {pendingImageDataUrl && (
+              <div style={{ display: 'flex', justifyContent: isRTL ? 'flex-start' : 'flex-end', marginBottom: '4px' }}>
+                <img
+                  src={pendingImageDataUrl}
+                  alt=""
+                  style={{ maxWidth: '200px', maxHeight: '150px', borderRadius: '10px', objectFit: 'cover', border: '1px solid rgba(0,229,195,0.3)' }}
+                />
+              </div>
+            )}
             <MessageBubble message={displayPending} isRTL={isRTL} />
           </div>
         )}
@@ -763,6 +836,63 @@ export function ChupChuChat({ compact, initialMessage, onInitialMessageConsumed,
         backgroundColor: NIGHT_MID,
         borderTop:       '1px solid rgba(0,229,195,0.1)',
       }}>
+        {/* Image preview strip */}
+        {imageDataUrl && (
+          <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '8px' }}>
+            <div style={{ position: 'relative', display: 'inline-flex' }}>
+              <img
+                src={imageDataUrl}
+                alt=""
+                style={{ width: '60px', height: '60px', objectFit: 'cover', borderRadius: '8px', border: '1px solid rgba(0,229,195,0.35)' }}
+              />
+              <button
+                onClick={clearImageSelection}
+                aria-label="הסר תמונה"
+                style={{
+                  position:        'absolute',
+                  top:             '-6px',
+                  insetInlineEnd:  '-6px',
+                  width:           '18px',
+                  height:          '18px',
+                  borderRadius:    '50%',
+                  border:          'none',
+                  backgroundColor: '#E05555',
+                  color:           '#fff',
+                  fontSize:        '10px',
+                  cursor:          'pointer',
+                  display:         'flex',
+                  alignItems:      'center',
+                  justifyContent:  'center',
+                  lineHeight:      1,
+                }}
+              >
+                ✕
+              </button>
+            </div>
+            <span style={{ fontFamily: DM_SANS, fontSize: '12px', color: `${TEXT_MID}99` }}>
+              {imageFile?.name ?? (isHe ? 'תמונה נבחרה' : 'Image selected')}
+            </span>
+          </div>
+        )}
+
+        {imageError && (
+          <p style={{ fontFamily: DM_SANS, fontSize: '12px', color: '#ff5c8a', margin: '0 0 6px' }}>
+            {imageError}
+          </p>
+        )}
+
+        {/* Hidden file input */}
+        <input
+          ref={fileInputRef}
+          type="file"
+          accept="image/*"
+          style={{ display: 'none' }}
+          onChange={e => {
+            const file = e.target.files?.[0];
+            if (file) handleImageSelect(file);
+          }}
+        />
+
         <div className="chupchu-input-wrapper" style={{
           display:         'flex',
           alignItems:      'flex-end',
@@ -773,13 +903,48 @@ export function ChupChuChat({ compact, initialMessage, onInitialMessageConsumed,
           padding:         '10px 12px',
           transition:      'border-color 0.2s',
         }}>
+          {/* Camera button */}
+          {!isGuest && !rateLimited && (
+            <button
+              onClick={() => fileInputRef.current?.click()}
+              disabled={showLoading}
+              aria-label={isHe ? 'העלה תמונת צמח' : 'Upload plant image'}
+              title={isHe ? 'זהה צמח מתמונה' : 'Identify plant from photo'}
+              style={{
+                flexShrink:      0,
+                width:           '36px',
+                height:          '36px',
+                borderRadius:    '8px',
+                border:          imageDataUrl ? `1px solid ${BIO_CYAN}` : '1px solid rgba(0,229,195,0.3)',
+                backgroundColor: imageDataUrl ? 'rgba(0,229,195,0.12)' : 'transparent',
+                color:           imageDataUrl ? BIO_CYAN : `${TEXT_MID}88`,
+                fontSize:        '17px',
+                cursor:          showLoading ? 'default' : 'pointer',
+                opacity:         showLoading ? 0.4 : 1,
+                display:         'flex',
+                alignItems:      'center',
+                justifyContent:  'center',
+                transition:      'border-color 0.2s, background-color 0.2s, color 0.2s',
+              }}
+              onMouseEnter={e => { if (!showLoading) (e.currentTarget as HTMLElement).style.color = BIO_CYAN; }}
+              onMouseLeave={e => { if (!imageDataUrl) (e.currentTarget as HTMLElement).style.color = `${TEXT_MID}88`; }}
+            >
+              📷
+            </button>
+          )}
+
           <textarea
             ref={textareaRef}
             className="chupchu-textarea"
             value={input}
             onChange={handleInput}
             onKeyDown={handleKeyDown}
-            placeholder={isGuest ? "שאל את צ'ופצ'ו... (3 הודעות חינם)" : (rateLimited ? '' : t('inputPlaceholder'))}
+            placeholder={
+              isGuest ? "שאל את צ'ופצ'ו... (3 הודעות חינם)" :
+              rateLimited ? '' :
+              imageDataUrl ? (isHe ? 'הוסף תיאור (אופציונלי)...' : 'Add description (optional)...') :
+              t('inputPlaceholder')
+            }
             disabled={showLoading || (isGuest ? false : rateLimited)}
             rows={1}
             style={{

@@ -108,6 +108,15 @@ const CHUPCHU_SYSTEM_PROMPT_HE = `\
 לעולם לא ממליץ על כימיקלים סינתטיים.
 בכל אבחנה של צמח, תמיד כולל הצהרת אחריות שאתה לא מחליף יועץ מקצועי.
 
+## זיהוי צמחים מתמונות
+כאשר מגיעה תמונה של צמח:
+1. **זהה את הצמח** — שם עברי, שם אנגלי, שם לטיני (כולל האיות הלטיני המדויק)
+2. **מידע כללי** — מקור הצמח, שימושים, טעם/ריח אם רלוונטי
+3. **גידול בישראל** — עונת גידול, מזג אוויר מתאים, השקיה, קרקע
+4. **טיפים ביודינמיים** — עצות ספציפיות לגידול ביודינמי
+5. **צמחים מלווים** — אילו צמחים טוב לשתול לידו
+6. **הצהרת אחריות** — ציין שהזיהוי מבוסס על התמונה בלבד ואינו מחליף ייעוץ מקצועי
+
 ## ידע ביודינמי מקצועי שלמדת בקורס
 
 **עיבוד קרקע:** לא עובדים על קרקע יבשה מדי או רטובה מדי — המרקם הנכון הוא "אבקתי". פולחים עם קילשון לאוורור הקרקע, מקלטרים בתנועות קטנות, לא גוררים.
@@ -163,6 +172,15 @@ You speak warmly and with gentle humour (especially about compost — always roo
 You always connect your advice to today's biodynamic calendar data.
 You never recommend synthetic chemicals.
 For any plant diagnosis, always include a disclaimer that you are not a substitute for a professional advisor.
+
+## Plant Identification from Images
+When a plant image is provided:
+1. **Identify the plant** — Hebrew name, English name, Latin name (exact Latin spelling)
+2. **General info** — origin, uses, taste/scent if relevant
+3. **Growing in Israel** — season, climate needs, watering, soil
+4. **Biodynamic tips** — specific biodynamic growing advice
+5. **Companion plants** — what grows well alongside it
+6. **Disclaimer** — note that identification is based on the image alone and is not a substitute for professional advice
 
 ## Biodynamic professional knowledge
 
@@ -472,6 +490,7 @@ export async function askChupChu(
   messages: ChupChuMessage[],
   context: ChupChuContext,
   extraSystemContext?: string,
+  image?: { data: string; mimeType: 'image/jpeg' | 'image/png' | 'image/gif' | 'image/webp' },
 ): Promise<{ response: string; proposedTasks?: ProposedTask[] }> {
   const basePrompt = context.userLanguage === 'he'
     ? CHUPCHU_SYSTEM_PROMPT_HE
@@ -480,10 +499,28 @@ export async function askChupChu(
 
   let capturedTasks: ProposedTask[] | undefined;
 
-  const apiMessages: Anthropic.Messages.MessageParam[] = messages.map(m => ({
-    role: m.role,
-    content: m.content,
-  }));
+  // Build API messages; inject image into last user message when provided
+  const PLANT_IMAGE_PLACEHOLDERS = ['🌿 [תמונה לזיהוי צמח]', '🌿 [Plant image for identification]'];
+  const apiMessages: Anthropic.Messages.MessageParam[] = messages.map((m, idx) => {
+    if (image && m.role === 'user' && idx === messages.length - 1) {
+      // If content is a placeholder (no user text typed), give Claude a natural instruction
+      const isPlaceholder = PLANT_IMAGE_PLACEHOLDERS.includes(m.content.trim());
+      const textContent = isPlaceholder
+        ? (context.userLanguage === 'he' ? 'זהה את הצמח בתמונה וספר לי עליו.' : 'Please identify the plant in this image and tell me about it.')
+        : m.content;
+      return {
+        role: 'user',
+        content: [
+          {
+            type: 'image' as const,
+            source: { type: 'base64' as const, media_type: image.mimeType, data: image.data },
+          },
+          { type: 'text' as const, text: textContent },
+        ],
+      };
+    }
+    return { role: m.role, content: m.content };
+  });
 
   for (let i = 0; i < MAX_TOOL_ITERATIONS; i++) {
     const response = await anthropic.messages.create({

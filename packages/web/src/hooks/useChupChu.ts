@@ -8,16 +8,18 @@ export function useChupChu() {
   const sendMessageFn = useChupChuStore(state => state.sendMessage);
 
   const sendMessage = useCallback(
-    async (text: string, gardenId?: string) => {
-      if (!text.trim()) return;
-      await sendMessageFn(text, gardenId);
+    async (text: string, gardenId?: string, imageBase64?: string, imageDataUrl?: string) => {
+      const hasImage = typeof imageBase64 === 'string' && imageBase64.length > 0;
+      if (!text.trim() && !hasImage) return;
+      await sendMessageFn(text, gardenId, imageBase64, imageDataUrl);
     },
     [sendMessageFn],
   );
 
   return {
-    messages:           store.messages,
-    pendingMessage:     store.pendingMessage,
+    messages:            store.messages,
+    pendingMessage:      store.pendingMessage,
+    pendingImageDataUrl: store.pendingImageDataUrl,
     isLoading:          store.isLoading,
     error:              store.error,
     rateLimited:        store.rateLimited,

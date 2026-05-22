@@ -74,6 +74,7 @@ function scheduleExpressionReset(set: (partial: Partial<ChupChuState>) => void, 
 interface ChupChuState {
   messages: ChupChuMessage[];
   pendingMessage: ChupChuMessage | null;
+  pendingImageDataUrl: string | null;
   isLoading: boolean;
   error: string | null;
   rateLimited: boolean;
@@ -84,7 +85,7 @@ interface ChupChuState {
   proposedTasks: ProposedTask[] | null;
   memory: ChupChuMemory | null;
 
-  sendMessage: (text: string, gardenId?: string) => Promise<void>;
+  sendMessage: (text: string, gardenId?: string, imageBase64?: string, imageDataUrl?: string) => Promise<void>;
   loadHistory: () => Promise<void>;
   clearHistory: () => Promise<void>;
   clearError: () => void;
@@ -95,17 +96,18 @@ interface ChupChuState {
 }
 
 export const useChupChuStore = create<ChupChuState>((set, get) => ({
-  messages:       [],
-  pendingMessage: null,
-  isLoading:      false,
-  error:          null,
-  rateLimited:    false,
-  rateLimitTier:  null,
-  usageThisMonth: 0,
-  monthlyLimit:   20,
-  expression:     'default',
-  proposedTasks:  null,
-  memory:         null,
+  messages:            [],
+  pendingMessage:      null,
+  pendingImageDataUrl: null,
+  isLoading:           false,
+  error:               null,
+  rateLimited:         false,
+  rateLimitTier:       null,
+  usageThisMonth:      0,
+  monthlyLimit:        20,
+  expression:          'default',
+  proposedTasks:       null,
+  memory:              null,
 
   clearError:          () => set({ error: null }),
   setExpression:       (e) => set({ expression: e }),
@@ -142,22 +144,40 @@ export const useChupChuStore = create<ChupChuState>((set, get) => ({
     }
   },
 
-  sendMessage: async (text, gardenId) => {
+  sendMessage: async (text, gardenId, imageBase64, imageDataUrl) => {
     const token = getToken();
-    if (!token || !text.trim()) return;
+    const hasImage = typeof imageBase64 === 'string' && imageBase64.length > 0;
+    if (!token || (!text.trim() && !hasImage)) return;
 
     const resolvedGardenId = gardenId ?? getActiveGardenId();
 
     const userMsg: ChupChuMessage = {
       role:      'user',
-      content:   text.trim(),
+      content:   text.trim() || '🌿 [תמונה לזיהוי צמח]',
       timestamp: new Date().toISOString(),
     };
     // Track as pending — not yet confirmed by server
-    set({ pendingMessage: userMsg, isLoading: true, error: null, expression: 'thinking', proposedTasks: null });
+    set({
+      pendingMessage:      userMsg,
+      pendingImageDataUrl: imageDataUrl ?? null,
+      isLoading:           true,
+      error:               null,
+      expression:          'thinking',
+      proposedTasks:       null,
+    });
 
     try {
       const location = await getLocationFromIP();
+
+      const body: Record<string, unknown> = {
+        message:  text.trim(),
+        gardenId: resolvedGardenId,
+        location,
+      };
+      if (hasImage) {
+        body.imageBase64  = imageBase64;
+        body.imageMimeType = 'image/jpeg';
+      }
 
       const res = await fetch(`${API_BASE}/api/chupchu/chat`, {
         method: 'POST',
@@ -165,19 +185,20 @@ export const useChupChuStore = create<ChupChuState>((set, get) => ({
           'Content-Type':  'application/json',
           'Authorization': `Bearer ${token}`,
         },
-        body: JSON.stringify({ message: text.trim(), gardenId: resolvedGardenId, location }),
+        body: JSON.stringify(body),
       });
 
       if (res.status === 429) {
         const data = await res.json();
         set({
-          pendingMessage: null,
-          isLoading:      false,
-          rateLimited:    true,
-          rateLimitTier:  data.tier ?? null,
-          usageThisMonth: data.messagesUsedThisMonth ?? get().usageThisMonth,
-          monthlyLimit:   data.monthlyLimit ?? get().monthlyLimit,
-          expression:     'surprised',
+          pendingMessage:      null,
+          pendingImageDataUrl: null,
+          isLoading:           false,
+          rateLimited:         true,
+          rateLimitTier:       data.tier ?? null,
+          usageThisMonth:      data.messagesUsedThisMonth ?? get().usageThisMonth,
+          monthlyLimit:        data.monthlyLimit ?? get().monthlyLimit,
+          expression:          'surprised',
         });
         scheduleExpressionReset(set);
         return;
@@ -185,7 +206,7 @@ export const useChupChuStore = create<ChupChuState>((set, get) => ({
 
       if (!res.ok) {
         const data = await res.json().catch(() => ({}));
-        set({ pendingMessage: null, isLoading: false, error: data.error ?? 'שגיאה בשליחת ההודעה', expression: 'surprised' });
+        set({ pendingMessage: null, pendingImageDataUrl: null, isLoading: false, error: data.error ?? 'שגיאה בשליחת ההודעה', expression: 'surprised' });
         scheduleExpressionReset(set);
         return;
       }
@@ -200,18 +221,19 @@ export const useChupChuStore = create<ChupChuState>((set, get) => ({
       const isWise = WISE_KEYWORDS.some(kw => data.response.toLowerCase().includes(kw.toLowerCase()));
 
       set(s => ({
-        messages:       [...s.messages, userMsg, assistantMsg],
-        pendingMessage: null,
-        isLoading:      false,
-        rateLimited:    false,
-        usageThisMonth: data.messagesUsedThisMonth ?? s.usageThisMonth,
-        monthlyLimit:   data.monthlyLimit           ?? s.monthlyLimit,
-        expression:     isWise ? 'wise' : 'happy',
-        proposedTasks:  data.proposedTasks && data.proposedTasks.length > 0 ? data.proposedTasks : null,
+        messages:            [...s.messages, userMsg, assistantMsg],
+        pendingMessage:      null,
+        pendingImageDataUrl: null,
+        isLoading:           false,
+        rateLimited:         false,
+        usageThisMonth:      data.messagesUsedThisMonth ?? s.usageThisMonth,
+        monthlyLimit:        data.monthlyLimit           ?? s.monthlyLimit,
+        expression:          isWise ? 'wise' : 'happy',
+        proposedTasks:       data.proposedTasks && data.proposedTasks.length > 0 ? data.proposedTasks : null,
       }));
       scheduleExpressionReset(set);
     } catch (err: any) {
-      set({ pendingMessage: null, isLoading: false, error: err.message ?? 'שגיאה בשליחת ההודעה', expression: 'surprised' });
+      set({ pendingMessage: null, pendingImageDataUrl: null, isLoading: false, error: err.message ?? 'שגיאה בשליחת ההודעה', expression: 'surprised' });
       scheduleExpressionReset(set);
     }
   },
