@@ -63,6 +63,11 @@ export default function App() {
   } = useChupChuPanelStore();
   const { loadHistory } = useChupChu();
 
+  // Scroll to top on every route change
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, [location.pathname]);
+
   // Central RTL/LTR management
   useEffect(() => {
     const isRTL = i18n.language === 'he';
