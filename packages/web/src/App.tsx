@@ -26,6 +26,7 @@ import { GardensPage } from './pages/GardensPage';
 import { HelpPage } from './pages/HelpPage';
 import { AboutPage } from './pages/AboutPage';
 import { AdminTemplatesPage } from './pages/AdminTemplatesPage';
+import { AdminKnowledgePage } from './pages/AdminKnowledgePage';
 import { JournalPage } from './pages/JournalPage';
 import { ProtectedRoute } from './components/auth/ProtectedRoute';
 import { OnboardingWizard } from './components/auth/OnboardingWizard';
@@ -254,6 +255,7 @@ export default function App() {
           />
 
           <Route path="/admin/templates" element={<AdminTemplatesPage />} />
+          <Route path="/admin/knowledge" element={<AdminKnowledgePage />} />
 
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>

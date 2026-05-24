@@ -2,6 +2,7 @@ import fs from 'fs';
 import path from 'path';
 import Anthropic from '@anthropic-ai/sdk';
 import type { ChupChuContext, ChupChuMessage } from '@gina-haya/shared';
+import { db } from '../db/client';
 
 const anthropic = new Anthropic({
   apiKey: process.env.ANTHROPIC_API_KEY!,
@@ -162,6 +163,7 @@ const CHUPCHU_SYSTEM_PROMPT_HE = `\
 ## שימון בכלים
 כשאתה זקוק למידע ספציפי — נתוני לוח היום, פרטי הגינה, מזג אוויר, מידע על צמח, הוראות פרפרט, או קציר אחרון — השתמש בכלים המתאימים לפני שאתה עונה.
 לפני מענה על שאלות גינון מפורטות — בדוק אם יש מאמר רלוונטי ב-ARTICLE_INDEX וקרא אותו עם get_article.
+כשמשתמש מתאר בעיה בצמח, חסר תזונתי, מחלה, או מזיק — חפש תמיד תחילה במאגר הידע עם search_knowledge_base, ואחר כך שלב את הממצאים עם הידע הביודינמי שלך.
 
 ${ARTICLE_INDEX}
 `;
@@ -227,6 +229,7 @@ Rules:
 ## Tool use
 When you need specific information — today's calendar, the user's garden, weather, plant details, prep instructions, or recent harvests — call the appropriate tool before answering.
 Before answering detailed gardening questions, check whether a relevant article exists in the ARTICLE_INDEX below and read it with get_article.
+When a user describes a plant problem, nutrient deficiency, disease, or pest — always search the knowledge base first with search_knowledge_base, then combine findings with biodynamic knowledge.
 
 ${ARTICLE_INDEX}
 `;
@@ -307,6 +310,20 @@ const CHUPCHU_TOOLS: Anthropic.Messages.Tool[] = [
         },
       },
       required: ['slug'],
+    },
+  },
+  {
+    name: 'search_knowledge_base',
+    description: 'חפש במאגר הידע של גינה חיה — קבצי PDF שהועלו על מחלות צמחים, טיפולים טבעיים, ביודינמיקה. השתמש בכלי זה כשמשתמש מתאר תסמינים של מחלה, מזיק, חסר תזונתי, או כשצריך מידע מקצועי על טיפול בצמח.',
+    input_schema: {
+      type: 'object',
+      properties: {
+        query: {
+          type: 'string',
+          description: 'מה לחפש — תסמינים, שם מחלה, חסר, מזיק, שם צמח. לדוגמה: "עלים צהובים חסר מגנזיום", "כנימות שורש", "אבקה לבנה על עלים"',
+        },
+      },
+      required: ['query'],
     },
   },
   {
@@ -540,24 +557,61 @@ export async function askChupChu(
     if (response.stop_reason === 'tool_use') {
       apiMessages.push({ role: 'assistant', content: response.content });
 
-      const toolResults: Anthropic.Messages.ToolResultBlockParam[] = response.content
-        .filter((b): b is Anthropic.Messages.ToolUseBlock => b.type === 'tool_use')
-        .map(b => {
-          if (b.name === 'create_tasks') {
-            const input = b.input as { tasks: ProposedTask[] };
-            capturedTasks = input.tasks ?? [];
+      const toolResults: Anthropic.Messages.ToolResultBlockParam[] = await Promise.all(
+        response.content
+          .filter((b): b is Anthropic.Messages.ToolUseBlock => b.type === 'tool_use')
+          .map(async b => {
+            if (b.name === 'create_tasks') {
+              const input = b.input as { tasks: ProposedTask[] };
+              capturedTasks = input.tasks ?? [];
+              return {
+                type: 'tool_result' as const,
+                tool_use_id: b.id,
+                content: JSON.stringify({ success: true, count: capturedTasks.length }),
+              };
+            }
+
+            if (b.name === 'search_knowledge_base') {
+              const { query } = b.input as { query: string };
+              try {
+                const { data, error } = await db
+                  .from('knowledge_base')
+                  .select('chunk_text, source_file, title')
+                  .textSearch('chunk_text', query.split(' ').join(' | '), {
+                    type: 'websearch',
+                    config: 'simple',
+                  })
+                  .limit(4);
+
+                if (error || !data || data.length === 0) {
+                  return {
+                    type: 'tool_result' as const,
+                    tool_use_id: b.id,
+                    content: 'לא נמצא מידע רלוונטי במאגר הידע.',
+                  };
+                }
+
+                return {
+                  type: 'tool_result' as const,
+                  tool_use_id: b.id,
+                  content: data.map(row => `[מקור: ${row.source_file}]\n${row.chunk_text}`).join('\n\n---\n\n'),
+                };
+              } catch {
+                return {
+                  type: 'tool_result' as const,
+                  tool_use_id: b.id,
+                  content: 'שגיאה בחיפוש במאגר הידע.',
+                };
+              }
+            }
+
             return {
               type: 'tool_result' as const,
               tool_use_id: b.id,
-              content: JSON.stringify({ success: true, count: capturedTasks.length }),
+              content: handleToolCall(b.name, b.input as Record<string, unknown>, context),
             };
-          }
-          return {
-            type: 'tool_result' as const,
-            tool_use_id: b.id,
-            content: handleToolCall(b.name, b.input as Record<string, unknown>, context),
-          };
-        });
+          }),
+      );
 
       apiMessages.push({ role: 'user', content: toolResults });
       continue;

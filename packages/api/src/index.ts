@@ -60,6 +60,7 @@ import { journalRouter }  from './routes/journal';
 import { shopRouter }       from './routes/shop';
 import { templatesRouter }  from './routes/templates';
 import { dashboardRouter }  from './routes/dashboard';
+import knowledgeRouter      from './routes/knowledge';
 import { startCronJobs } from './services/cronJobs';
 
 app.use('/api/auth',     authRouter);
@@ -78,9 +79,10 @@ app.use('/api/tasks',    tasksRouter);
 app.use('/api/push',     pushRouter);
 app.use('/api/articles', articlesRouter);
 app.use('/api/journal',  journalRouter);
-app.use('/api/shop',      shopRouter);
-app.use('/api/templates', templatesRouter);
-app.use('/api/dashboard', dashboardRouter);
+app.use('/api/shop',             shopRouter);
+app.use('/api/templates',        templatesRouter);
+app.use('/api/dashboard',        dashboardRouter);
+app.use('/api/admin/knowledge',  knowledgeRouter);
 
 app.use((_req, res) => {
   res.status(404).json({ error: 'Not found' });
