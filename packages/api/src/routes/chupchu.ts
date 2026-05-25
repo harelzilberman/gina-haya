@@ -3,7 +3,7 @@ import { Router, type IRouter } from 'express';
 import Anthropic from '@anthropic-ai/sdk';
 import { db } from '../db/client';
 import { verifyToken } from '../middleware/auth';
-import { askChupChu, type ProposedTask } from '../services/claude';
+import { askChupChu, type ProposedTask, type MobileToolCall } from '../services/claude';
 import { compressImageForClaude } from '../services/plantVision';
 import { fetchWeatherForRegion, getCachedWeatherForCoords } from '../services/weather';
 import type { ChupChuMessage, ChupChuContext } from '@gina-haya/shared';
@@ -53,7 +53,7 @@ chupChuRouter.delete('/history', async (req: any, res) => {
       .eq('user_id', req.user.id);
     res.json({ success: true });
   } catch (err: any) {
-    console.error('[Chupchu] Error:', err.message);
+    console.error('[DELETE /api/chupchu/history]', err.message);
     res.status(500).json({ error: 'אירעה שגיאה. נסה שוב מאוחר יותר.' });
   }
 });
@@ -434,7 +434,7 @@ chupChuRouter.post('/chat', async (req: any, res) => {
       : `## Today's Date\nToday is ${todayFormatted}. Use this to calculate "tomorrow", "this week" etc.`;
 
     const extraContext = [memorySection, dateSection, weatherSection, taskContext].filter(Boolean).join('\n\n');
-    const { response: chupChuText, proposedTasks } = await askChupChu(
+    const { response: chupChuText, proposedTasks, mobileTool } = await askChupChu(
       [...last20Messages, newUserMessage],
       context,
       extraContext || undefined,
@@ -483,6 +483,7 @@ chupChuRouter.post('/chat', async (req: any, res) => {
       messagesUsedThisMonth,
       monthlyLimit,
       ...(proposedTasks && proposedTasks.length > 0 ? { proposedTasks } : {}),
+      ...(mobileTool ? { mobileTool } : {}),
     });
 
     } finally {
@@ -490,7 +491,109 @@ chupChuRouter.post('/chat', async (req: any, res) => {
     }
 
   } catch (err: any) {
-    console.error('[Chupchu] Error:', err.message);
+    console.error('[POST /api/chupchu/chat]', err.message);
     res.status(500).json({ error: 'אירעה שגיאה. נסה שוב מאוחר יותר.' });
+  }
+});
+
+// ── GET /api/chupchu/pending-tasks ──────────────────────────────────────────
+chupChuRouter.get('/pending-tasks', async (req: any, res) => {
+  try {
+    const { data } = await db
+      .from('tasks')
+      .select('id, title, due_date, priority, category')
+      .eq('user_id', req.user.id)
+      .is('completed_at', null)
+      .order('due_date', { ascending: true, nullsFirst: false })
+      .limit(2);
+    res.json(data ?? []);
+  } catch (err: any) {
+    console.error('[GET /api/chupchu/pending-tasks]', err.message);
+    res.json([]);
+  }
+});
+
+// ── POST /api/chupchu/execute-tool ──────────────────────────────────────────
+chupChuRouter.post('/execute-tool', async (req: any, res) => {
+  const { tool_name, params } = req.body as { tool_name: string; params: Record<string, any> };
+  const userId = req.user.id;
+
+  try {
+    switch (tool_name) {
+      case 'create_journal_entry': {
+        await db.from('journal_entries').insert({
+          user_id:    userId,
+          text:       params.text,
+          date:       params.date,
+          photo_url:  params.photo_url ?? null,
+          created_at: new Date().toISOString(),
+        });
+        break;
+      }
+      case 'create_task': {
+        await db.from('tasks').insert({
+          user_id:    userId,
+          title:      params.title,
+          due_date:   params.due_date ?? null,
+          priority:   'medium',
+          category:   'general',
+          created_at: new Date().toISOString(),
+        });
+        break;
+      }
+      case 'add_map_marker': {
+        await db.from('garden_map_markers').insert({
+          user_id:       userId,
+          plant_name:    params.plant_name,
+          location_hint: params.location_hint,
+          x:             params.x ?? null,
+          y:             params.y ?? null,
+          created_at:    new Date().toISOString(),
+        });
+        break;
+      }
+      case 'log_bd_prep': {
+        await db.from('bd_applications').insert({
+          user_id:    userId,
+          prep_name:  params.prep_name,
+          date:       params.date,
+          created_at: new Date().toISOString(),
+        });
+        break;
+      }
+      default:
+        return res.status(400).json({ error: `Unknown tool: ${tool_name}` });
+    }
+    res.json({ success: true });
+  } catch (err: any) {
+    console.error('[POST /api/chupchu/execute-tool]', err.message);
+    res.status(500).json({ error: 'שגיאה בביצוע הפעולה. נסה שוב.' });
+  }
+});
+
+// ── POST /api/chupchu/upload-journal-photo ───────────────────────────────────
+chupChuRouter.post('/upload-journal-photo', async (req: any, res) => {
+  try {
+    const { base64, mimeType = 'image/jpeg' } = req.body as { base64: string; mimeType?: string };
+    if (!base64) return res.status(400).json({ error: 'base64 required' });
+
+    const ext      = mimeType === 'image/png' ? 'png' : 'jpg';
+    const filename = `${req.user.id}/${Date.now()}.${ext}`;
+    const buffer   = Buffer.from(base64, 'base64');
+
+    const { error } = await db.storage
+      .from('journal-photos')
+      .upload(filename, buffer, { contentType: mimeType, upsert: false });
+
+    if (error) throw error;
+
+    const { data: { publicUrl } } = db.storage
+      .from('journal-photos')
+      .getPublicUrl(filename);
+
+    res.json({ url: publicUrl });
+  } catch (err: any) {
+    console.error('[POST /api/chupchu/upload-journal-photo]', err.message);
+    res.status(500).json({ error: 'שגיאה בהעלאת התמונה.' });
   }
 });

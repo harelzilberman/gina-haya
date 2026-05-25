@@ -1,64 +1,61 @@
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { Text } from 'react-native';
 
-import { CalendarScreen }  from '../screens/CalendarScreen';
-import { TasksScreen }     from '../screens/TasksScreen';
-import { ChupChuScreen }     from '../screens/ChupChuScreen';
-import { SettingsScreen }  from '../screens/SettingsScreen';
+import { HomeScreen }     from '../screens/HomeScreen';
+import { CalendarScreen } from '../screens/CalendarScreen';
+import { GuidesScreen }   from '../screens/GuidesScreen';
 
 export type TabParamList = {
+  Home:     undefined;
   Calendar: undefined;
-  Tasks:    undefined;
-  ChupChu:    undefined;
-  Settings: undefined;
+  Guides:   undefined;
 };
 
 const Tab = createBottomTabNavigator<TabParamList>();
 
 const ICON: Record<string, string> = {
+  Home:     '🌱',
   Calendar: '📅',
-  Tasks:    '✅',
-  ChupChu:    '🌕',
-  Settings: '⚙️',
+  Guides:   '📖',
 };
 
 const LABEL: Record<string, string> = {
+  Home:     'בית',
   Calendar: 'לוח',
-  Tasks:    'משימות',
-  ChupChu:    "צ'ופצ'ו",
-  Settings: 'הגדרות',
+  Guides:   'מדריכים',
 };
 
 export function AppNavigator() {
   return (
     <Tab.Navigator
-      initialRouteName="Calendar"
+      initialRouteName="Home"
       screenOptions={({ route }) => ({
         headerShown: false,
         tabBarStyle: {
-          backgroundColor: '#0f2212',
-          borderTopColor:  'rgba(200,168,75,0.2)',
-          height:          60,
-          paddingBottom:   8,
+          backgroundColor: '#0e0e08',
+          borderTopColor:  'rgba(196,134,10,0.2)',
+          height:          64,
+          paddingBottom:   10,
+          paddingTop:      4,
         },
-        tabBarActiveTintColor:   '#c8a84b',
-        tabBarInactiveTintColor: 'rgba(237,224,196,0.45)',
+        tabBarActiveTintColor:   '#c4860a',
+        tabBarInactiveTintColor: 'rgba(245,240,232,0.4)',
         tabBarIcon: ({ focused }) => (
-          <Text style={{ fontSize: 20, opacity: focused ? 1 : 0.6 }}>
+          <Text style={{ fontSize: 28, opacity: focused ? 1 : 0.55 }}>
             {ICON[route.name]}
           </Text>
         ),
         tabBarLabel: LABEL[route.name] ?? route.name,
         tabBarLabelStyle: {
           fontFamily: 'System',
-          fontSize: 11,
+          fontSize:   13,
+          marginTop:  2,
         },
       })}
     >
-      <Tab.Screen name="Calendar"  component={CalendarScreen}  />
-      <Tab.Screen name="Tasks"     component={TasksScreen}     />
-      <Tab.Screen name="ChupChu"     component={ChupChuScreen}     />
-      <Tab.Screen name="Settings"  component={SettingsScreen}  />
+      <Tab.Screen name="Home"     component={HomeScreen}     />
+      <Tab.Screen name="Calendar" component={CalendarScreen} />
+      <Tab.Screen name="Guides"   component={GuidesScreen}   />
     </Tab.Navigator>
   );
 }

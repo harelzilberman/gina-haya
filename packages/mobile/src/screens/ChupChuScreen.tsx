@@ -39,9 +39,9 @@ export function ChupChuScreen() {
     setSending(true);
 
     try {
-      const response = await sendChupChuMessage(text, messages);
+      const result = await sendChupChuMessage(text, messages);
       const monMsg: ChupChuMessage = {
-        role: 'assistant', content: response, timestamp: new Date().toISOString(),
+        role: 'assistant', content: result.response, timestamp: new Date().toISOString(),
       };
       setMessages(prev => [...prev, monMsg]);
     } catch (err: any) {

@@ -1,33 +1,25 @@
 import { useState } from 'react';
 import {
-  View, Text, TextInput, TouchableOpacity,
-  StyleSheet, KeyboardAvoidingView, Platform, ActivityIndicator,
+  View, Text, TouchableOpacity,
+  StyleSheet, Image, ActivityIndicator, Alert,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { login } from '../services/auth';
+import { signInWithGoogle } from '../services/auth';
 
 interface Props {
   onLogin: () => void;
 }
 
 export function LoginScreen({ onLogin }: Props) {
-  const [email,    setEmail]    = useState('');
-  const [password, setPassword] = useState('');
-  const [loading,  setLoading]  = useState(false);
-  const [error,    setError]    = useState<string | null>(null);
+  const [loading, setLoading] = useState(false);
 
-  const handleLogin = async () => {
-    setError(null);
-    if (!email.trim() || !password) {
-      setError('נא למלא אימייל וסיסמה');
-      return;
-    }
+  const handleGoogle = async () => {
     setLoading(true);
     try {
-      await login(email.trim(), password);
+      await signInWithGoogle();
       onLogin();
     } catch (err: any) {
-      setError(err.message ?? 'שגיאה בכניסה. בדוק פרטים ונסה שוב.');
+      Alert.alert('שגיאה בכניסה', err.message ?? 'נסה שוב מאוחר יותר');
     } finally {
       setLoading(false);
     }
@@ -35,51 +27,39 @@ export function LoginScreen({ onLogin }: Props) {
 
   return (
     <SafeAreaView style={styles.safe}>
-      <KeyboardAvoidingView
-        style={styles.container}
-        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-      >
-        {/* Logo */}
-        <Text style={styles.logo}>🌱</Text>
-        <Text style={styles.title}>גינה חיה</Text>
-        <Text style={styles.subtitle}>Gina Haya</Text>
+      <View style={styles.container}>
+        {/* Chupchu character */}
+        <Image
+          source={{ uri: 'https://gina-haya.vercel.app/chupchu_final.png' }}
+          style={styles.chupchu}
+          resizeMode="contain"
+        />
 
-        {/* Form */}
-        <View style={styles.form}>
-          <TextInput
-            style={styles.input}
-            value={email}
-            onChangeText={setEmail}
-            placeholder="אימייל"
-            placeholderTextColor="rgba(237,224,196,0.35)"
-            keyboardType="email-address"
-            autoCapitalize="none"
-            textAlign="right"
-          />
-          <TextInput
-            style={styles.input}
-            value={password}
-            onChangeText={setPassword}
-            placeholder="סיסמה"
-            placeholderTextColor="rgba(237,224,196,0.35)"
-            secureTextEntry
-            textAlign="right"
-          />
+        {/* Welcome text */}
+        <Text style={styles.welcome}>שלום, אני צ'ופצ'ו</Text>
+        <Text style={styles.subtitle}>המומחה הביודינמי שלך — גינה חיה</Text>
 
-          {error && <Text style={styles.error}>{error}</Text>}
+        {/* Google sign-in */}
+        <TouchableOpacity
+          style={[styles.googleBtn, loading && styles.btnDisabled]}
+          onPress={handleGoogle}
+          disabled={loading}
+          activeOpacity={0.85}
+        >
+          {loading ? (
+            <ActivityIndicator color="#1a1a0e" />
+          ) : (
+            <>
+              <Text style={styles.googleIcon}>G</Text>
+              <Text style={styles.googleText}>כניסה עם Google</Text>
+            </>
+          )}
+        </TouchableOpacity>
 
-          <TouchableOpacity
-            style={[styles.button, loading && styles.buttonDisabled]}
-            onPress={handleLogin}
-            disabled={loading}
-          >
-            {loading
-              ? <ActivityIndicator color="#1a3a2a" />
-              : <Text style={styles.buttonText}>כניסה</Text>
-            }
-          </TouchableOpacity>
-        </View>
-      </KeyboardAvoidingView>
+        <Text style={styles.disclaimer}>
+          בכניסה אתה מסכים לתנאי השימוש של גינה חיה
+        </Text>
+      </View>
     </SafeAreaView>
   );
 }
@@ -87,61 +67,62 @@ export function LoginScreen({ onLogin }: Props) {
 const styles = StyleSheet.create({
   safe: {
     flex: 1,
-    backgroundColor: '#1a3a2a',
+    backgroundColor: '#1a1a0e',
   },
   container: {
     flex: 1,
     alignItems: 'center',
     justifyContent: 'center',
     padding: 32,
+    gap: 16,
   },
-  logo: {
-    fontSize: 56,
-    marginBottom: 12,
+  chupchu: {
+    width: 160,
+    height: 160,
+    marginBottom: 8,
   },
-  title: {
-    fontSize: 32,
+  welcome: {
+    fontSize: 28,
     fontWeight: '700',
-    color: '#c8a84b',
-    marginBottom: 4,
-  },
-  subtitle: {
-    fontSize: 14,
-    color: 'rgba(200,168,75,0.6)',
-    fontStyle: 'italic',
-    marginBottom: 40,
-  },
-  form: {
-    width: '100%',
-    gap: 12,
-  },
-  input: {
-    backgroundColor: 'rgba(28,58,30,0.8)',
-    borderWidth: 1,
-    borderColor: 'rgba(200,168,75,0.25)',
-    borderRadius: 10,
-    padding: 14,
-    fontSize: 16,
-    color: '#EDE0C4',
-  },
-  error: {
-    color: '#E06060',
-    fontSize: 13,
+    color: '#f5f0e8',
     textAlign: 'center',
   },
-  button: {
-    backgroundColor: '#c8a84b',
-    borderRadius: 10,
-    padding: 16,
+  subtitle: {
+    fontSize: 15,
+    color: 'rgba(245,240,232,0.55)',
+    textAlign: 'center',
+    marginBottom: 24,
+  },
+  googleBtn: {
+    flexDirection: 'row-reverse',
     alignItems: 'center',
+    justifyContent: 'center',
+    gap: 12,
+    backgroundColor: '#f5f0e8',
+    borderRadius: 14,
+    height: 56,
+    width: '100%',
+    elevation: 4,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.25,
+    shadowRadius: 4,
+  },
+  btnDisabled: { opacity: 0.6 },
+  googleIcon: {
+    fontSize: 20,
+    fontWeight: '800',
+    color: '#c4860a',
+  },
+  googleText: {
+    fontSize: 17,
+    fontWeight: '600',
+    color: '#1a1a0e',
+  },
+  disclaimer: {
+    fontSize: 11,
+    color: 'rgba(245,240,232,0.3)',
+    textAlign: 'center',
     marginTop: 8,
-  },
-  buttonDisabled: {
-    opacity: 0.6,
-  },
-  buttonText: {
-    color: '#1a3a2a',
-    fontSize: 16,
-    fontWeight: '700',
   },
 });

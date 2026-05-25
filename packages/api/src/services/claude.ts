@@ -244,6 +244,28 @@ export interface ProposedTask {
   priority: 'low' | 'medium' | 'high';
 }
 
+// Mobile tool call — returned to client for user confirmation before execution
+export interface MobileToolCall {
+  name: 'create_journal_entry' | 'create_task' | 'add_map_marker' | 'log_bd_prep';
+  params: Record<string, unknown>;
+  descriptionHe: string; // shown in confirmation card
+}
+
+function mobileToolDescription(name: string, params: Record<string, unknown>): string {
+  switch (name) {
+    case 'create_journal_entry':
+      return `מוסיף רשומת יומן: ${String(params.text ?? '').substring(0, 60)}`;
+    case 'create_task':
+      return `מוסיף משימה: ${params.title}${params.due_date ? ` ל-${params.due_date}` : ''}`;
+    case 'add_map_marker':
+      return `מסמן על המפה: ${params.plant_name} — ${params.location_hint}`;
+    case 'log_bd_prep':
+      return `מתעד יישום פרפרט ${params.prep_name} בתאריך ${params.date}`;
+    default:
+      return 'ביצוע פעולה';
+  }
+}
+
 // ── Tool definitions ───────────────────────────────────────────────────────
 
 const CHUPCHU_TOOLS: Anthropic.Messages.Tool[] = [
@@ -324,6 +346,69 @@ const CHUPCHU_TOOLS: Anthropic.Messages.Tool[] = [
         },
       },
       required: ['query'],
+    },
+  },
+  // ── Mobile voice tools — returned to client for confirmation ───────────
+  {
+    name: 'create_journal_entry',
+    description: 'Create a garden journal entry for the user. Call when the user describes something notable that happened in their garden and wants to remember it.',
+    input_schema: {
+      type: 'object' as const,
+      properties: {
+        text:  { type: 'string', description: 'Journal entry text in Hebrew, as the user described it' },
+        date:  { type: 'string', description: 'ISO date YYYY-MM-DD (today unless specified)' },
+      },
+      required: ['text', 'date'],
+    },
+  },
+  {
+    name: 'create_task',
+    description: 'Create a single garden task from a mobile voice request. Use when user explicitly asks to remember or schedule one specific garden action. Different from create_tasks which proposes batches.',
+    input_schema: {
+      type: 'object' as const,
+      properties: {
+        title:    { type: 'string', description: 'Short task title in Hebrew' },
+        due_date: { type: 'string', description: 'ISO date YYYY-MM-DD (optional)' },
+      },
+      required: ['title'],
+    },
+  },
+  {
+    name: 'add_map_marker',
+    description: 'Add a plant location marker to the garden map based on what the user described.',
+    input_schema: {
+      type: 'object' as const,
+      properties: {
+        plant_name:    { type: 'string', description: 'Name of the plant in Hebrew' },
+        location_hint: { type: 'string', description: 'Description of location in the garden (e.g. "ליד הגדר הצפונית")' },
+        x: { type: 'number', description: 'Optional X coordinate (0-100)' },
+        y: { type: 'number', description: 'Optional Y coordinate (0-100)' },
+      },
+      required: ['plant_name', 'location_hint'],
+    },
+  },
+  {
+    name: 'log_bd_prep',
+    description: 'Log that the user applied a biodynamic preparation today. Call when user says they applied or made a BD preparation.',
+    input_schema: {
+      type: 'object' as const,
+      properties: {
+        prep_name: { type: 'string', description: 'Preparation name, e.g. "500", "501", "508", "compost"' },
+        date:      { type: 'string', description: 'ISO date YYYY-MM-DD' },
+      },
+      required: ['prep_name', 'date'],
+    },
+  },
+  {
+    name: 'get_upcoming_bd_days',
+    description: 'Get upcoming biodynamic days of a specific type (fruit, root, flower, leaf). Useful when user asks when the next good day for a specific activity is.',
+    input_schema: {
+      type: 'object' as const,
+      properties: {
+        day_type: { type: 'string', enum: ['fruit', 'root', 'flower', 'leaf'], description: 'The biodynamic day type to search for' },
+        count:    { type: 'number', description: 'How many upcoming days to return (default 3)' },
+      },
+      required: ['day_type'],
     },
   },
   {
@@ -508,13 +593,14 @@ export async function askChupChu(
   context: ChupChuContext,
   extraSystemContext?: string,
   image?: { data: string; mimeType: 'image/jpeg' | 'image/png' | 'image/gif' | 'image/webp' },
-): Promise<{ response: string; proposedTasks?: ProposedTask[] }> {
+): Promise<{ response: string; proposedTasks?: ProposedTask[]; mobileTool?: MobileToolCall }> {
   const basePrompt = context.userLanguage === 'he'
     ? CHUPCHU_SYSTEM_PROMPT_HE
     : CHUPCHU_SYSTEM_PROMPT_EN;
   const systemPrompt = extraSystemContext ? basePrompt + extraSystemContext : basePrompt;
 
   let capturedTasks: ProposedTask[] | undefined;
+  let capturedMobileTool: MobileToolCall | undefined;
 
   // Build API messages; inject image into last user message when provided
   const PLANT_IMAGE_PLACEHOLDERS = ['🌿 [תמונה לזיהוי צמח]', '🌿 [Plant image for identification]'];
@@ -551,7 +637,7 @@ export async function askChupChu(
     if (response.stop_reason === 'end_turn') {
       const textBlock = response.content.find(b => b.type === 'text');
       if (!textBlock || textBlock.type !== 'text') throw new Error('No text response from Claude');
-      return { response: textBlock.text, proposedTasks: capturedTasks };
+      return { response: textBlock.text, proposedTasks: capturedTasks, mobileTool: capturedMobileTool };
     }
 
     if (response.stop_reason === 'tool_use') {
@@ -561,6 +647,22 @@ export async function askChupChu(
         response.content
           .filter((b): b is Anthropic.Messages.ToolUseBlock => b.type === 'tool_use')
           .map(async b => {
+            // Mobile voice tools — capture for client confirmation, don't execute yet
+            const MOBILE_TOOLS = ['create_journal_entry', 'create_task', 'add_map_marker', 'log_bd_prep'] as const;
+            if ((MOBILE_TOOLS as readonly string[]).includes(b.name)) {
+              const params = b.input as Record<string, unknown>;
+              capturedMobileTool = {
+                name: b.name as MobileToolCall['name'],
+                params,
+                descriptionHe: mobileToolDescription(b.name, params),
+              };
+              return {
+                type: 'tool_result' as const,
+                tool_use_id: b.id,
+                content: JSON.stringify({ pending_confirmation: true }),
+              };
+            }
+
             if (b.name === 'create_tasks') {
               const input = b.input as { tasks: ProposedTask[] };
               capturedTasks = input.tasks ?? [];
@@ -569,6 +671,30 @@ export async function askChupChu(
                 tool_use_id: b.id,
                 content: JSON.stringify({ success: true, count: capturedTasks.length }),
               };
+            }
+
+            if (b.name === 'get_upcoming_bd_days') {
+              const { day_type, count = 3 } = b.input as { day_type: string; count?: number };
+              try {
+                const today = new Date().toISOString().split('T')[0];
+                const { data } = await db
+                  .from('biodynamic_calendar')
+                  .select('date, day_type, planting_score, moon_sign')
+                  .eq('day_type', day_type)
+                  .gte('date', today)
+                  .order('date', { ascending: true })
+                  .limit(Math.min(count, 7));
+                if (!data || data.length === 0) {
+                  return { type: 'tool_result' as const, tool_use_id: b.id, content: 'אין נתונים זמינים.' };
+                }
+                return {
+                  type: 'tool_result' as const,
+                  tool_use_id: b.id,
+                  content: data.map((r: any) => `${r.date}: ${r.day_type}, ציון ${r.planting_score}, ${r.moon_sign}`).join('\n'),
+                };
+              } catch {
+                return { type: 'tool_result' as const, tool_use_id: b.id, content: 'שגיאה בטעינת הלוח.' };
+              }
             }
 
             if (b.name === 'search_knowledge_base') {
@@ -622,7 +748,7 @@ export async function askChupChu(
         .filter((b): b is Anthropic.Messages.TextBlock => b.type === 'text')
         .map(b => b.text)
         .join('');
-      return { response: (partial || '') + '\n\n_(התגובה קוצרה — שאל אותי שוב לפרטים נוספים)_' };
+      return { response: (partial || '') + '\n\n_(התגובה קוצרה — שאל אותי שוב לפרטים נוספים)_', mobileTool: capturedMobileTool };
     }
 
     // Unknown stop reason — exit loop and throw below

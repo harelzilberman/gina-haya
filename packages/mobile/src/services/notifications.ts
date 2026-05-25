@@ -76,3 +76,23 @@ export async function scheduleDailyNotification(): Promise<void> {
     },
   });
 }
+
+export async function scheduleTaskNotification(
+  title: string,
+  dueDateISO: string,
+): Promise<void> {
+  const dueDate = new Date(dueDateISO);
+  dueDate.setHours(8, 0, 0, 0);
+  if (dueDate <= new Date()) return; // skip past dates
+
+  await Notifications.scheduleNotificationAsync({
+    content: {
+      title: 'גינה חיה 🌱',
+      body:  title,
+    },
+    trigger: {
+      type:  Notifications.SchedulableTriggerInputTypes.DATE,
+      date:  dueDate,
+    },
+  });
+}

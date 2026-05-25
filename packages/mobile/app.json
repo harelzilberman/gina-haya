@@ -10,18 +10,30 @@
     "splash": {
       "image": "./assets/splash.png",
       "resizeMode": "contain",
-      "backgroundColor": "#1a3a2a"
+      "backgroundColor": "#1a1a0e"
     },
     "android": {
       "package": "com.ginahaya.app",
       "adaptiveIcon": {
         "foregroundImage": "./assets/adaptive-icon.png",
-        "backgroundColor": "#1a3a2a"
-      }
+        "backgroundColor": "#1a1a0e"
+      },
+      "intentFilters": [
+        {
+          "action": "VIEW",
+          "autoVerify": true,
+          "data": [
+            {
+              "scheme": "com.ginahaya.app"
+            }
+          ],
+          "category": ["BROWSABLE", "DEFAULT"]
+        }
+      ]
     },
     "notification": {
       "icon": "./assets/notification-icon.png",
-      "color": "#c8a84b"
+      "color": "#c4860a"
     },
     "plugins": [
       "expo-notifications",
@@ -31,7 +43,22 @@
         {
           "locationAlwaysAndWhenInUsePermission": "מאפשר לאפליקציה לקבוע המלצות לפי אזורך"
         }
-      ]
-    ]
+      ],
+      [
+        "expo-av",
+        {
+          "microphonePermission": "גינה חיה צריכה גישה למיקרופון כדי שתוכל לדבר עם צ'ופצ'ו"
+        }
+      ],
+      [
+        "expo-image-picker",
+        {
+          "photosPermission": "גינה חיה צריכה גישה לגלריה כדי להוסיף תמונות ליומן",
+          "cameraPermission": "גינה חיה צריכה גישה למצלמה כדי לצלם תמונות ליומן"
+        }
+      ],
+      "expo-web-browser"
+    ],
+    "scheme": "com.ginahaya.app"
   }
 }
