@@ -131,7 +131,7 @@ export function drawMoon(canvas: HTMLCanvasElement, phasePct: number, phaseAngle
         // Waxing crescent: shadow eats into right side — earthshine overlay
         ctx.save();
         ctx.beginPath();
-        ctx.ellipse(cx, cy, tRx, r, 0, -Math.PI / 2, Math.PI / 2);
+        ctx.ellipse(cx, cy, tRx + 2, r, 0, -Math.PI / 2, Math.PI / 2);
         ctx.lineTo(cx, cy - r);
         ctx.closePath();
         ctx.fillStyle = 'rgba(4, 8, 20, 0.93)';
@@ -139,9 +139,10 @@ export function drawMoon(canvas: HTMLCanvasElement, phasePct: number, phaseAngle
         ctx.restore();
       } else if (tRx > 1) {
         // Waxing gibbous: restore the left half-ellipse as lit (spills past center).
+        // +2px overlap on tRx eliminates the 1px anti-aliasing seam at x=cx.
         ctx.save();
         ctx.beginPath();
-        ctx.ellipse(cx, cy, tRx, r, 0, Math.PI / 2, 3 * Math.PI / 2);
+        ctx.ellipse(cx, cy, tRx + 2, r, 0, Math.PI / 2, 3 * Math.PI / 2);
         ctx.lineTo(cx, cy - r);
         ctx.closePath();
         ctx.clip();
@@ -160,7 +161,7 @@ export function drawMoon(canvas: HTMLCanvasElement, phasePct: number, phaseAngle
         // Waning crescent: shadow eats into left side — earthshine overlay
         ctx.save();
         ctx.beginPath();
-        ctx.ellipse(cx, cy, tRx, r, 0, Math.PI / 2, 3 * Math.PI / 2);
+        ctx.ellipse(cx, cy, tRx + 2, r, 0, Math.PI / 2, 3 * Math.PI / 2);
         ctx.lineTo(cx, cy - r);
         ctx.closePath();
         ctx.fillStyle = 'rgba(4, 8, 20, 0.93)';
@@ -168,9 +169,10 @@ export function drawMoon(canvas: HTMLCanvasElement, phasePct: number, phaseAngle
         ctx.restore();
       } else if (tRx > 1) {
         // Waning gibbous: restore the right half-ellipse as lit (spills past center).
+        // +2px overlap on tRx eliminates the 1px anti-aliasing seam at x=cx.
         ctx.save();
         ctx.beginPath();
-        ctx.ellipse(cx, cy, tRx, r, 0, -Math.PI / 2, Math.PI / 2);
+        ctx.ellipse(cx, cy, tRx + 2, r, 0, -Math.PI / 2, Math.PI / 2);
         ctx.lineTo(cx, cy - r);
         ctx.closePath();
         ctx.clip();
