@@ -1,5 +1,5 @@
 {
-  "buildCommand": "pnpm --filter @gina-haya/shared build && pnpm --filter @gina-haya/i18n build && pnpm --filter @gina-haya/web build",
+  "buildCommand": "pnpm --filter @gina-haya/web build",
   "outputDirectory": "packages/web/dist",
   "installCommand": "npm install -g pnpm@9.15.0 && pnpm install --no-frozen-lockfile",
   "framework": null,
