@@ -94,150 +94,112 @@ export function drawMoon(canvas: HTMLCanvasElement, phasePct: number, phaseAngle
     ctx.save();
     ctx.clearRect(0, 0, size, size);
 
+    // Tilt rotation
     ctx.translate(cx, cy);
     ctx.rotate(tiltDeg * Math.PI / 180);
     ctx.translate(-cx, -cy);
 
-    // Clip entire rendering to the moon disc
+    // Clip everything to the moon disc
     ctx.beginPath();
     ctx.arc(cx, cy, r, 0, Math.PI * 2);
     ctx.clip();
 
-    // Draw full moon texture first so ~28% shows through the dark side (earthshine / ashen light)
-    drawMoonSurface(ctx, size);
-    ctx.fillStyle = 'rgba(4, 8, 20, 0.93)';
-    ctx.beginPath();
-    ctx.arc(cx, cy, r, 0, Math.PI * 2);
-    ctx.fill();
-
-    if (phasePct < 2) { ctx.restore(); return; }
-
-    const f        = phasePct / 100;
-    const isWaning = phaseAngle > 180;
-    // tRx: x-radius of terminator ellipse — 0 at quarter, r at new/full
-    const tRx      = r * Math.abs(1 - 2 * f);
-
     if (phasePct >= 98) {
+      // Full moon — texture only
       drawMoonSurface(ctx, size);
-    } else if (!isWaning) {
-      // ── WAXING: lit on RIGHT ──────────────────────────────
-      // Base: draw moon texture in the right half
-      ctx.save();
-      ctx.beginPath(); ctx.rect(cx, 0, size, size); ctx.clip();
-      drawMoonSurface(ctx, size);
-      ctx.restore();
-
-      if (f < 0.5) {
-        // Waxing crescent: shadow eats into right side — earthshine overlay
-        ctx.save();
-        ctx.beginPath();
-        ctx.ellipse(cx, cy, tRx + 2, r, 0, -Math.PI / 2, Math.PI / 2);
-        ctx.lineTo(cx, cy - r);
-        ctx.closePath();
-        ctx.fillStyle = 'rgba(4, 8, 20, 0.93)';
-        ctx.fill();
-        ctx.restore();
-      } else if (tRx > 1) {
-        // Waxing gibbous: restore the left half-ellipse as lit (spills past center).
-        // +2px overlap on tRx eliminates the 1px anti-aliasing seam at x=cx.
-        ctx.save();
-        ctx.beginPath();
-        ctx.ellipse(cx, cy, tRx + 2, r, 0, Math.PI / 2, 3 * Math.PI / 2);
-        ctx.lineTo(cx, cy - r);
-        ctx.closePath();
-        ctx.clip();
-        drawMoonSurface(ctx, size);
-        ctx.restore();
-      }
-    } else {
-      // ── WANING: lit on LEFT ───────────────────────────────
-      // Base: draw moon texture in the left half
-      ctx.save();
-      ctx.beginPath(); ctx.rect(0, 0, cx, size); ctx.clip();
-      drawMoonSurface(ctx, size);
-      ctx.restore();
-
-      if (f < 0.5) {
-        // Waning crescent: shadow eats into left side — earthshine overlay
-        ctx.save();
-        ctx.beginPath();
-        ctx.ellipse(cx, cy, tRx + 2, r, 0, Math.PI / 2, 3 * Math.PI / 2);
-        ctx.lineTo(cx, cy - r);
-        ctx.closePath();
-        ctx.fillStyle = 'rgba(4, 8, 20, 0.93)';
-        ctx.fill();
-        ctx.restore();
-      } else if (tRx > 1) {
-        // Waning gibbous: restore the right half-ellipse as lit (spills past center).
-        // +2px overlap on tRx eliminates the 1px anti-aliasing seam at x=cx.
-        ctx.save();
-        ctx.beginPath();
-        ctx.ellipse(cx, cy, tRx + 2, r, 0, -Math.PI / 2, Math.PI / 2);
-        ctx.lineTo(cx, cy - r);
-        ctx.closePath();
-        ctx.clip();
-        drawMoonSurface(ctx, size);
-        ctx.restore();
-      }
-    }
-
-    // Glow on lit side only — clipped to lit half
-    if (phasePct < 98) {
-      const isWaxing = !isWaning;
-      ctx.save();
-      ctx.beginPath();
-      ctx.arc(cx, cy, r, 0, Math.PI * 2);
-      ctx.clip();
-
-      // Clip to lit half only (opposite of shadow side)
-      ctx.beginPath();
-      if (isWaxing) {
-        ctx.arc(cx, cy, r, -Math.PI / 2, Math.PI / 2, false);
-        ctx.ellipse(cx, cy, tRx, r, 0, Math.PI / 2, -Math.PI / 2, true);
-      } else {
-        ctx.arc(cx, cy, r, Math.PI / 2, (3 * Math.PI) / 2, false);
-        ctx.ellipse(cx, cy, tRx, r, 0, -Math.PI / 2, Math.PI / 2, true);
-      }
-      ctx.closePath();
-      ctx.clip();
-
-      // Warm glow gradient centered on lit edge
-      const litGrad = ctx.createRadialGradient(
-        isWaxing ? cx + r * 0.5 : cx - r * 0.5, cy, 0,
-        isWaxing ? cx + r * 0.5 : cx - r * 0.5, cy, r * 0.9
-      );
-      litGrad.addColorStop(0,   'rgba(255, 250, 220, 0.65)');
-      litGrad.addColorStop(0.5, 'rgba(255, 245, 200, 0.30)');
-      litGrad.addColorStop(1,   'rgba(0, 0, 0, 0)');
-      ctx.fillStyle = litGrad;
+    } else if (phasePct < 2) {
+      // New moon — dark disc
+      ctx.fillStyle = '#080e14';
       ctx.fillRect(0, 0, size, size);
-      ctx.restore();
-    }
+    } else {
+      const f = phasePct / 100;
+      const isWaning = phaseAngle > 180;
+      // tRx: x-radius of the terminator ellipse (0 at quarter, r at new/full)
+      const tRx = r * Math.abs(1 - 2 * f);
 
-    // Soft terminator line (skip near new/full moon)
-    if (phasePct >= 2 && phasePct < 98 && tRx > 4) {
-      const tX = isWaning ? cx + tRx : cx - tRx;
-      const terminatorGrad = ctx.createLinearGradient(tX - 8, cy, tX + 8, cy);
-      terminatorGrad.addColorStop(0,   'rgba(0,0,0,0)');
-      terminatorGrad.addColorStop(0.5, 'rgba(0,0,0,0.4)');
-      terminatorGrad.addColorStop(1,   'rgba(0,0,0,0)');
-      ctx.save();
+      // ── Phase shape via composite ops — no nested clip regions, no seam ──
+      //
+      // Strategy: start with a full dark disc, punch out the lit shape using
+      // destination-out (turns those pixels transparent), then draw the moon
+      // texture behind all transparent pixels with destination-over.
+      // No two clip regions ever meet at the same boundary, so no seam.
+
+      // Step 1: full dark disc
+      ctx.fillStyle = '#080e14';
+      ctx.fillRect(0, 0, size, size);
+
+      // Step 2: punch out the lit half (right=waxing, left=waning)
+      ctx.globalCompositeOperation = 'destination-out';
+      ctx.fillStyle = 'black'; // only alpha matters for destination-out
       ctx.beginPath();
-      ctx.ellipse(tX, cy, 8, r, 0, 0, Math.PI * 2);
-      ctx.fillStyle = terminatorGrad;
+      if (!isWaning) {
+        ctx.arc(cx, cy, r + 1, -Math.PI / 2, Math.PI / 2); // right semicircle
+      } else {
+        ctx.arc(cx, cy, r + 1, Math.PI / 2, (3 * Math.PI) / 2); // left semicircle
+      }
+      ctx.lineTo(cx, cy);
+      ctx.closePath();
       ctx.fill();
-      ctx.restore();
+
+      if (f >= 0.5 && tRx > 1) {
+        // Gibbous: also punch out the half-ellipse that extends into the dark side.
+        // Both destination-out fills overlap at x=cx; dest-out over transparent = no-op,
+        // so there is no seam at the join boundary.
+        ctx.beginPath();
+        if (!isWaning) {
+          // Waxing gibbous: lit bulges left of centre
+          ctx.ellipse(cx, cy, tRx + 0.5, r + 0.5, 0, Math.PI / 2, (3 * Math.PI) / 2);
+        } else {
+          // Waning gibbous: lit bulges right of centre
+          ctx.ellipse(cx, cy, tRx + 0.5, r + 0.5, 0, -Math.PI / 2, Math.PI / 2);
+        }
+        ctx.lineTo(cx, cy);
+        ctx.closePath();
+        ctx.fill();
+      }
+
+      if (f < 0.5) {
+        // Crescent: fill dark terminator half-ellipse back over the punched-out half.
+        // This is a plain source-over fill — no clip boundary involved.
+        ctx.globalCompositeOperation = 'source-over';
+        ctx.fillStyle = '#080e14';
+        ctx.beginPath();
+        if (!isWaning) {
+          // Waxing crescent: shadow eats into the right (lit) side from centre
+          ctx.ellipse(cx, cy, tRx + 0.5, r + 0.5, 0, -Math.PI / 2, Math.PI / 2);
+        } else {
+          // Waning crescent: shadow eats into the left (lit) side from centre
+          ctx.ellipse(cx, cy, tRx + 0.5, r + 0.5, 0, Math.PI / 2, (3 * Math.PI) / 2);
+        }
+        ctx.lineTo(cx, cy);
+        ctx.closePath();
+        ctx.fill();
+      }
+
+      // Step 3: draw moon texture behind the transparent lit pixels in one pass
+      ctx.globalCompositeOperation = 'destination-over';
+      drawMoonSurface(ctx, size);
+      ctx.globalCompositeOperation = 'source-over';
     }
 
-    // Spherical shading overlay — stronger edge darkening for 3D depth
+    // Earthshine: faint blue-grey glow on the dark side
+    if (phasePct >= 2 && phasePct < 98) {
+      const isWaning = phaseAngle > 180;
+      const dir = isWaning ? 1 : -1;
+      const earthGrad = ctx.createRadialGradient(cx + dir * r * 0.3, cy, 0, cx, cy, r);
+      earthGrad.addColorStop(0, 'rgba(80,120,160,0.09)');
+      earthGrad.addColorStop(1, 'rgba(0,0,0,0)');
+      ctx.fillStyle = earthGrad;
+      ctx.fillRect(0, 0, size, size);
+    }
+
+    // Spherical shading — edge darkening for 3D depth
     const grad = ctx.createRadialGradient(cx * 0.65, cy * 0.65, 0, cx, cy, r);
-    grad.addColorStop(0,   'rgba(255,245,200,0.12)');
+    grad.addColorStop(0,   'rgba(255,245,200,0.10)');
     grad.addColorStop(0.5, 'rgba(0,0,0,0)');
-    grad.addColorStop(1,   'rgba(0,0,0,0.65)');
-    ctx.beginPath();
-    ctx.arc(cx, cy, r, 0, Math.PI * 2);
+    grad.addColorStop(1,   'rgba(0,0,0,0.60)');
     ctx.fillStyle = grad;
-    ctx.fill();
+    ctx.fillRect(0, 0, size, size);
 
     ctx.restore();
   };
