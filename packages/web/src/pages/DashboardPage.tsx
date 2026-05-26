@@ -5,7 +5,7 @@ import { useToday } from '../hooks/useCalendar';
 import { useTasks } from '../hooks/useTasks';
 import { useAuthStore } from '../stores/authStore';
 import { useChupChuPanelStore } from '../stores/chupChuPanelStore';
-import { drawMoon, getMoonTilt, MoonSignSVG } from '../components/calendar/TodayCardV2';
+import { drawMoon, getMoonTilt, MoonSignSVG, inferPhaseAngle } from '../components/calendar/TodayCardV2';
 import { getBDPlainSummary, type BDPlainSummary, type DayType } from '../utils/bdPlainLanguage';
 import { useTodayActions, type TodayActionsData } from '../hooks/useTodayActions';
 
@@ -185,25 +185,29 @@ function moonEmoji(pct: number): string {
 }
 
 // ── Moon canvas (bare — no labels) ────────────────────────────────────────
+// Border/shadow are on the wrapper div, NOT on the canvas, to avoid
+// canvas.offsetWidth including the border and inflating drawMoon's size param.
 function MoonCanvas({ phasePct, phaseAngle }: { phasePct: number; phaseAngle: number }) {
   const ref = useRef<HTMLCanvasElement>(null);
   const tilt = getMoonTilt(phaseAngle, 31.5);
   useEffect(() => {
-    if (ref.current) drawMoon(ref.current, phasePct, phaseAngle, tilt);
+    if (!ref.current) return;
+    const canvas = ref.current;
+    const dpr = window.devicePixelRatio || 1;
+    canvas.width = 165 * dpr;
+    canvas.height = 165 * dpr;
+    canvas.style.width = '165px';
+    canvas.style.height = '165px';
+    const ctx = canvas.getContext('2d');
+    if (ctx) ctx.scale(dpr, dpr);
+    drawMoon(canvas, phasePct, phaseAngle, tilt);
   }, [phasePct, phaseAngle, tilt]);
   return (
     <canvas
       ref={ref}
       width={165}
       height={165}
-      style={{
-        borderRadius: '50%',
-        border: '2px solid rgba(0,229,195,0.35)',
-        boxShadow: phasePct > 95
-          ? '0 0 32px rgba(0,229,195,0.28)'
-          : '0 0 16px rgba(0,229,195,0.14)',
-        display: 'block',
-      }}
+      style={{ display: 'block', width: '165px', height: '165px' }}
     />
   );
 }
@@ -900,10 +904,17 @@ export function DashboardPage() {
 
                 {/* Moon canvas — RTL end (left side visually) */}
                 <div style={{ flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                  <div style={{ position: 'relative', width: '165px', height: '165px' }}>
+                  <div style={{
+                    position: 'relative', width: '165px', height: '165px',
+                    borderRadius: '50%', overflow: 'hidden',
+                    border: '2px solid rgba(0,229,195,0.30)',
+                    boxShadow: (day.moonPhasePct ?? 0) > 95
+                      ? '0 0 0 2px rgba(0,229,195,0.35), 0 0 40px rgba(0,229,195,0.4), 0 0 12px rgba(0,229,195,0.2)'
+                      : '0 0 22px rgba(0,229,195,0.25), 0 0 6px rgba(0,229,195,0.12)',
+                  }}>
                     <MoonCanvas
                       phasePct={day.moonPhasePct ?? 0}
-                      phaseAngle={day.moonPhaseAngle ?? (day.moonPhasePct ?? 0) / 100 * 360}
+                      phaseAngle={day.moonPhaseAngle ?? inferPhaseAngle(day.moonPhasePct ?? 0, day.moonPhaseNameHe ?? '')}
                     />
                     {(day.moonPhasePct ?? 0) < 3 && (
                       <div style={{

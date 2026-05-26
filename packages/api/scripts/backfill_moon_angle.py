@@ -1,8 +1,10 @@
 #!/usr/bin/env python3
 """
 One-time backfill: populate moon_phase_angle for rows where it is NULL.
-Uses the correct inverse illumination formula:
-  angle = acos(1 - 2 * pct/100) * 180/pi
+Uses the correct inverse illumination formula, taking waxing/waning into account:
+  base  = acos(1 - 2 * pct/100) * 180/pi   → always in [0°, 180°]
+  angle = base           for waxing phases (new moon → full moon, 0°–180°)
+  angle = 360 - base     for waning phases  (full moon → new moon, 180°–360°)
 """
 
 import os
@@ -30,10 +32,16 @@ HEADERS = {
 }
 
 
+WAXING_PHASES_HE = {
+    'ירח חדש', 'סהר גדל', 'רבע ראשון', 'גיבנת גדלה', 'ירח מלא',
+}
+
+
 def fetch_null_rows():
-    # Use raw URL — requests params= encodes '.' in values which breaks PostgREST filters
+    # Fetch pct + phase name so we can determine waxing vs waning
     url = (f'{SUPABASE_URL}/rest/v1/biodynamic_calendar'
-           f'?select=date,moon_phase_pct&moon_phase_angle=is.null&order=date.asc&limit=10000')
+           f'?select=date,moon_phase_pct,moon_phase_name_he'
+           f'&moon_phase_angle=is.null&order=date.asc&limit=10000')
     r = requests.get(url, headers=HEADERS)
     r.raise_for_status()
     return r.json()
@@ -60,7 +68,9 @@ def main():
     for row in rows:
         pct = row.get('moon_phase_pct') or 0
         pct_fraction = pct / 100
-        angle = math.acos(max(-1.0, min(1.0, 1 - 2 * pct_fraction))) * (180 / math.pi)
+        base = math.acos(max(-1.0, min(1.0, 1 - 2 * pct_fraction))) * (180 / math.pi)
+        phase_name_he = row.get('moon_phase_name_he') or ''
+        angle = base if phase_name_he in WAXING_PHASES_HE else 360 - base
         update_row(row['date'], angle)
         updated += 1
         if updated % 50 == 0:

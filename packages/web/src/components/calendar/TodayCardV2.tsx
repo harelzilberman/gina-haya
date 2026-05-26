@@ -62,6 +62,20 @@ function drawMoonSurface(ctx: CanvasRenderingContext2D, size: number) {
   }
 }
 
+// Hebrew names of waxing phases (including full moon boundary)
+const WAXING_PHASE_NAMES_HE = new Set([
+  'ירח חדש', 'סהר גדל', 'רבע ראשון', 'גיבנת גדלה', 'ירח מלא',
+]);
+
+/**
+ * Derive a 0°–360° phase angle from illumination % and phase name.
+ * Math.acos only returns 0–180° (waxing half); for waning phases we mirror to 180–360°.
+ */
+export function inferPhaseAngle(phasePct: number, phaseNameHe: string): number {
+  const base = Math.acos(Math.max(-1, Math.min(1, 1 - 2 * (phasePct / 100)))) * (180 / Math.PI);
+  return WAXING_PHASE_NAMES_HE.has(phaseNameHe) ? base : 360 - base;
+}
+
 export function getMoonTilt(phaseAngle: number, lat: number): number {
   const latFactor = (lat / 90);
   const baseTilt = -90 * latFactor;
@@ -676,9 +690,9 @@ export function TodayCard({ day }: Props) {
 
         <MoonPhaseDisplay
           phasePct={day.moonPhasePct ?? 0}
-          phaseAngle={day.moonPhaseAngle !== undefined
+          phaseAngle={day.moonPhaseAngle != null
             ? day.moonPhaseAngle
-            : Math.acos(Math.max(-1, Math.min(1, 1 - 2 * (day.moonPhasePct ?? 0) / 100))) * (180 / Math.PI)}
+            : inferPhaseAngle(day.moonPhasePct ?? 0, day.moonPhaseNameHe ?? day.moonPhaseHe ?? '')}
           phaseHe={day.moonPhaseNameHe ?? day.moonPhaseHe ?? 'ירח'}
           moonSignHe={day.moonSignHe ?? ''}
           ascending={day.ascendingDescending === 'ascending'}
