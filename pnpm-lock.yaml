@@ -161,12 +161,12 @@ importers:
       expo:
         specifier: ~52.0.0
         version: 52.0.49(@babel/core@7.29.0)(@babel/preset-env@7.29.5)(react-native@0.76.9)(react@18.3.1)
+      expo-audio:
+        specifier: ~0.3.0
+        version: 0.3.5(expo@52.0.49)(react-native@0.76.9)(react@18.3.1)
       expo-auth-session:
         specifier: ~6.0.0
         version: 6.0.3(expo@52.0.49)(react-native@0.76.9)(react@18.3.1)
-      expo-av:
-        specifier: ~15.0.0
-        version: 15.0.2(expo@52.0.49)(react-native@0.76.9)(react@18.3.1)
       expo-constants:
         specifier: ~17.0.0
         version: 17.0.8(expo@52.0.49)(react-native@0.76.9)
@@ -7312,6 +7312,18 @@ packages:
       - supports-color
     dev: false
 
+  /expo-audio@0.3.5(expo@52.0.49)(react-native@0.76.9)(react@18.3.1):
+    resolution: {integrity: sha512-gzpDH3vZI1FDL1Q8pXryACtNIW+idZ/zIZ8WqdTRzJuzxucazrG2gLXUS2ngcXQBn09Jyz4RUnU10Tu2N7/Hgg==}
+    peerDependencies:
+      expo: '*'
+      react: '*'
+      react-native: '*'
+    dependencies:
+      expo: 52.0.49(@babel/core@7.29.0)(@babel/preset-env@7.29.5)(react-native@0.76.9)(react@18.3.1)
+      react: 18.3.1
+      react-native: 0.76.9(@babel/core@7.29.0)(@babel/preset-env@7.29.5)(@types/react@18.3.28)(react@18.3.1)
+    dev: false
+
   /expo-auth-session@6.0.3(expo@52.0.49)(react-native@0.76.9)(react@18.3.1):
     resolution: {integrity: sha512-s7LmmMPiiY1NXrlcXkc4+09Hlfw9X1CpaQOCDkwfQEodG1uCYGQi/WImTnDzw5YDkWI79uC8F1mB8EIerilkDA==}
     peerDependencies:
@@ -7329,22 +7341,6 @@ packages:
     transitivePeerDependencies:
       - expo
       - supports-color
-    dev: false
-
-  /expo-av@15.0.2(expo@52.0.49)(react-native@0.76.9)(react@18.3.1):
-    resolution: {integrity: sha512-AHIHXdqLgK1dfHZF0JzX3YSVySGMrWn9QtPzaVjw54FAzvXfMt4sIoq4qRL/9XWCP9+ICcCs/u3EcvmxQjrfcA==}
-    peerDependencies:
-      expo: '*'
-      react: '*'
-      react-native: '*'
-      react-native-web: '*'
-    peerDependenciesMeta:
-      react-native-web:
-        optional: true
-    dependencies:
-      expo: 52.0.49(@babel/core@7.29.0)(@babel/preset-env@7.29.5)(react-native@0.76.9)(react@18.3.1)
-      react: 18.3.1
-      react-native: 0.76.9(@babel/core@7.29.0)(@babel/preset-env@7.29.5)(@types/react@18.3.28)(react@18.3.1)
     dev: false
 
   /expo-constants@17.0.8(expo@52.0.49)(react-native@0.76.9):

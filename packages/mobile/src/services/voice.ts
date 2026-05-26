@@ -1,40 +1,45 @@
-import { Audio } from 'expo-av';
+import {
+  AudioRecorder,
+  RecordingPresets,
+  requestRecordingPermissionsAsync,
+  setAudioModeAsync,
+} from 'expo-audio';
 import * as Speech from 'expo-speech';
 
 const OPENAI_KEY = process.env.EXPO_PUBLIC_OPENAI_KEY ?? '';
 
-let activeRecording: Audio.Recording | null = null;
+let activeRecorder: AudioRecorder | null = null;
 
 export async function startRecording(): Promise<void> {
-  await Audio.requestPermissionsAsync();
-  await Audio.setAudioModeAsync({
-    allowsRecordingIOS: true,
-    playsInSilentModeIOS: true,
+  await requestRecordingPermissionsAsync();
+  await setAudioModeAsync({
+    allowsRecording: true,
+    playsInSilentMode: true,
   });
-  const recording = new Audio.Recording();
-  await recording.prepareToRecordAsync({
-    ...Audio.RecordingOptionsPresets.HIGH_QUALITY,
+
+  const recorder = new AudioRecorder({
+    ...RecordingPresets.HIGH_QUALITY,
     android: {
-      ...Audio.RecordingOptionsPresets.HIGH_QUALITY.android,
-      extension: '.m4a',
-      outputFormat: Audio.AndroidOutputFormat.MPEG_4,
-      audioEncoder: Audio.AndroidAudioEncoder.AAC,
+      ...RecordingPresets.HIGH_QUALITY.android,
+      outputFormat: 'mpeg4',
+      audioEncoder: 'aac',
     },
   });
-  await recording.startAsync();
-  activeRecording = recording;
+  await recorder.prepareToRecordAsync();
+  recorder.record();
+  activeRecorder = recorder;
 }
 
 export async function stopRecordingAndTranscribe(): Promise<string> {
-  if (!activeRecording) throw new Error('No active recording');
-  await activeRecording.stopAndUnloadAsync();
-  const uri = activeRecording.getURI();
-  activeRecording = null;
+  if (!activeRecorder) throw new Error('No active recording');
+  await activeRecorder.stop();
+  const uri = activeRecorder.uri;
+  activeRecorder = null;
 
   if (!uri) throw new Error('אין קובץ הקלטה');
   if (!OPENAI_KEY) throw new Error('מפתח OpenAI לא מוגדר');
 
-  await Audio.setAudioModeAsync({ allowsRecordingIOS: false });
+  await setAudioModeAsync({ allowsRecording: false });
 
   const formData = new FormData();
   formData.append('file', { uri, type: 'audio/m4a', name: 'audio.m4a' } as any);
