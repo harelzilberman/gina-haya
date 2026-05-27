@@ -5,9 +5,13 @@ import { cacheTasks, getCachedTasks } from './offline';
 export interface PendingTask {
   id: string;
   title: string;
+  /** ISO date string (YYYY-MM-DD) from garden_tasks.date */
+  date: string;
+  /** Alias for date — kept for backward compatibility */
   due_date: string | null;
   priority: 'low' | 'medium' | 'high';
   category: string;
+  status: 'pending' | 'done' | 'skipped';
 }
 
 export async function fetchPendingTasks(): Promise<PendingTask[]> {

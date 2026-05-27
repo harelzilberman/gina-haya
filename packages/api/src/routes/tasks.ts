@@ -90,7 +90,7 @@ tasksRouter.post('/from-plan', async (req, res) => {
       taskRows = [];
 
       for (const task of (plan.gardenTasks ?? [])) {
-        taskRows.push({ date: plan.weekStart ?? today, title: String(task), type: 'maintenance', source_action: String(task) });
+        taskRows.push({ date: plan.weekStart ?? today, title: String(task), type: 'maintenance', source_action: 'weekly_plan' });
       }
       for (const day of (plan.days ?? [])) {
         if (day.prep500) {
@@ -100,7 +100,7 @@ tasksRouter.post('/from-plan', async (req, res) => {
           taskRows.push({ date: day.date, title: 'הכנת פרפרט 501', type: 'biodynamic', source_action: 'prep501' });
         }
         for (const action of (day.recommendedActions ?? []).slice(0, 2)) {
-          taskRows.push({ date: day.date, title: String(action), type: 'maintenance', source_action: String(action) });
+          taskRows.push({ date: day.date, title: String(action), type: 'maintenance', source_action: 'weekly_plan' });
         }
       }
 

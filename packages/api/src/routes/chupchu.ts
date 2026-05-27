@@ -500,13 +500,14 @@ chupChuRouter.post('/chat', async (req: any, res) => {
 chupChuRouter.get('/pending-tasks', async (req: any, res) => {
   try {
     const { data } = await db
-      .from('tasks')
-      .select('id, title, due_date, priority, category')
+      .from('garden_tasks')
+      .select('id, title, date, priority, category, status')
       .eq('user_id', req.user.id)
-      .is('completed_at', null)
-      .order('due_date', { ascending: true, nullsFirst: false })
-      .limit(2);
-    res.json(data ?? []);
+      .eq('status', 'pending')
+      .order('date', { ascending: true, nullsFirst: false })
+      .limit(10);
+    // Return date as due_date so mobile clients don't need an update
+    res.json((data ?? []).map((t: any) => ({ ...t, due_date: t.date })));
   } catch (err: any) {
     console.error('[GET /api/chupchu/pending-tasks]', err.message);
     res.json([]);
@@ -531,13 +532,16 @@ chupChuRouter.post('/execute-tool', async (req: any, res) => {
         break;
       }
       case 'create_task': {
-        await db.from('tasks').insert({
-          user_id:    userId,
-          title:      params.title,
-          due_date:   params.due_date ?? null,
-          priority:   'medium',
-          category:   'general',
-          created_at: new Date().toISOString(),
+        await db.from('garden_tasks').insert({
+          user_id:       userId,
+          title:         params.title,
+          date:          params.due_date ?? new Date().toISOString().slice(0, 10),
+          type:          'custom',
+          status:        'pending',
+          priority:      params.priority ?? 'medium',
+          category:      params.category ?? 'general',
+          source_action: 'chupchu',
+          created_at:    new Date().toISOString(),
         });
         break;
       }
