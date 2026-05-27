@@ -6,12 +6,14 @@ import {
 import { SafeAreaView } from 'react-native-safe-area-context';
 import * as SecureStore from 'expo-secure-store';
 import * as Notifications from 'expo-notifications';
-import { getCurrentUserEmail, logout } from '../services/auth';
+import { getCurrentUserEmail } from '../services/auth';
 import { scheduleDailyNotification } from '../services/notifications';
+import { useAuth } from '../context/AuthContext';
 
 const NOTIF_HOUR_KEY = 'gina_haya_notif_hour';
 
 export function SettingsScreen() {
+  const { signOut } = useAuth();
   const [email,         setEmail]         = useState<string | null>(null);
   const [notifEnabled,  setNotifEnabled]  = useState(false);
   const [notifHour,     setNotifHour]     = useState(7);
@@ -50,9 +52,8 @@ export function SettingsScreen() {
   };
 
   const handleLogout = async () => {
-    await logout();
-    // App.tsx re-checks auth state on next render — restart navigation to trigger login
-    // In a real app this would emit an event; for the scaffold, clearing state is enough
+    // signOut() clears SecureStore + fires onAuthStateChange → App shows LoginScreen
+    await signOut();
   };
 
   return (

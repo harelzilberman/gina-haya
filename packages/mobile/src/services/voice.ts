@@ -11,7 +11,10 @@ const OPENAI_KEY = process.env.EXPO_PUBLIC_OPENAI_KEY ?? '';
 let activeRecorder: AudioRecorder | null = null;
 
 export async function startRecording(): Promise<void> {
-  await requestRecordingPermissionsAsync();
+  const { granted } = await requestRecordingPermissionsAsync();
+  if (!granted) {
+    throw new Error('נא לאפשר גישה למיקרופון בהגדרות');
+  }
   await setAudioModeAsync({
     allowsRecording: true,
     playsInSilentMode: true,

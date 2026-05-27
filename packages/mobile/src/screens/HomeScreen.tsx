@@ -117,7 +117,7 @@ export function HomeScreen() {
         await startRecording();
         setVoiceState('recording');
       } catch (err: any) {
-        Alert.alert('שגיאה', 'לא ניתן להתחיל הקלטה — אנא אפשר גישה למיקרופון');
+        Alert.alert('שגיאה', err.message ?? 'לא ניתן להתחיל הקלטה');
       }
     }
   };
