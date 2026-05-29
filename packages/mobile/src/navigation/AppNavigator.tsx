@@ -4,11 +4,13 @@ import { Text } from 'react-native';
 import { HomeScreen }     from '../screens/HomeScreen';
 import { CalendarScreen } from '../screens/CalendarScreen';
 import { GuidesScreen }   from '../screens/GuidesScreen';
+import ChatScreen         from '../screens/ChatScreen';
 
 export type TabParamList = {
   Home:     undefined;
   Calendar: undefined;
   Guides:   undefined;
+  Chat:     undefined;
 };
 
 const Tab = createBottomTabNavigator<TabParamList>();
@@ -17,12 +19,14 @@ const ICON: Record<string, string> = {
   Home:     '🌱',
   Calendar: '📅',
   Guides:   '📖',
+  Chat:     '🤖',
 };
 
 const LABEL: Record<string, string> = {
   Home:     'בית',
   Calendar: 'לוח',
   Guides:   'מדריכים',
+  Chat:     "צ'ופצ'ו",
 };
 
 export function AppNavigator() {
@@ -56,6 +60,7 @@ export function AppNavigator() {
       <Tab.Screen name="Home"     component={HomeScreen}     />
       <Tab.Screen name="Calendar" component={CalendarScreen} />
       <Tab.Screen name="Guides"   component={GuidesScreen}   />
+      <Tab.Screen name="Chat"     component={ChatScreen}     />
     </Tab.Navigator>
   );
 }
