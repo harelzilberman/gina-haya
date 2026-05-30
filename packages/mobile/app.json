@@ -50,7 +50,6 @@
       "color": "#c4860a"
     },
     "plugins": [
-      "expo-notifications",
       "expo-secure-store",
       [
         "expo-location",

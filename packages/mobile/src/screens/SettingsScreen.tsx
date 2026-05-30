@@ -5,9 +5,7 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import * as SecureStore from 'expo-secure-store';
-import * as Notifications from 'expo-notifications';
 import { getCurrentUserEmail } from '../services/auth';
-import { scheduleDailyNotification } from '../services/notifications';
 import { useAuth } from '../context/AuthContext';
 
 const NOTIF_HOUR_KEY = 'gina_haya_notif_hour';
@@ -21,34 +19,19 @@ export function SettingsScreen() {
 
   useEffect(() => {
     getCurrentUserEmail().then(setEmail);
-    Notifications.getPermissionsAsync().then(({ status }) => {
-      setNotifEnabled(status === 'granted');
-    });
     SecureStore.getItemAsync(NOTIF_HOUR_KEY).then(val => {
       if (val) setNotifHour(parseInt(val, 10));
     });
   }, []);
 
-  const handleToggleNotifications = async (value: boolean) => {
-    if (value) {
-      const { status } = await Notifications.requestPermissionsAsync();
-      if (status === 'granted') {
-        setNotifEnabled(true);
-        await scheduleDailyNotification();
-      }
-    } else {
-      await Notifications.cancelAllScheduledNotificationsAsync();
-      setNotifEnabled(false);
-    }
+  const handleToggleNotifications = async (_value: boolean) => {
+    // Push notifications disabled for Expo Go development — no-op.
   };
 
   const changeNotifHour = async (delta: number) => {
     const next = Math.min(23, Math.max(0, notifHour + delta));
     setNotifHour(next);
     await SecureStore.setItemAsync(NOTIF_HOUR_KEY, String(next));
-    if (notifEnabled) {
-      await scheduleDailyNotification();
-    }
   };
 
   const handleLogout = async () => {
