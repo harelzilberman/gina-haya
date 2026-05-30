@@ -39,7 +39,7 @@ export async function login(email: string, password: string): Promise<void> {
 }
 
 export async function signInWithGoogle(): Promise<void> {
-  const redirectTo = AuthSession.makeRedirectUri({ scheme: 'com.ginahaya.app' });
+  const redirectTo = AuthSession.makeRedirectUri({ scheme: 'ginahaya' });
 
   const { data, error } = await supabase.auth.signInWithOAuth({
     provider: 'google',

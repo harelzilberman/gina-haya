@@ -27,7 +27,8 @@
           "autoVerify": true,
           "data": [
             {
-              "scheme": "ginahaya"
+              "scheme": "ginahaya",
+              "host": "auth"
             }
           ],
           "category": [
