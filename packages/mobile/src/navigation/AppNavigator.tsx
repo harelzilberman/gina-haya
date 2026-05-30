@@ -1,5 +1,6 @@
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { Text } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { HomeScreen }     from '../screens/HomeScreen';
 import { CalendarScreen } from '../screens/CalendarScreen';
@@ -30,6 +31,8 @@ const LABEL: Record<string, string> = {
 };
 
 export function AppNavigator() {
+  const insets = useSafeAreaInsets();
+
   return (
     <Tab.Navigator
       initialRouteName="Home"
@@ -38,9 +41,9 @@ export function AppNavigator() {
         tabBarStyle: {
           backgroundColor: '#0e0e08',
           borderTopColor:  'rgba(196,134,10,0.2)',
-          height:          64,
-          paddingBottom:   10,
-          paddingTop:      4,
+          height:          56 + insets.bottom,
+          paddingBottom:   insets.bottom + 6,
+          paddingTop:      6,
         },
         tabBarActiveTintColor:   '#c4860a',
         tabBarInactiveTintColor: 'rgba(245,240,232,0.4)',
