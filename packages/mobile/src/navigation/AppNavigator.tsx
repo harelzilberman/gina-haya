@@ -2,32 +2,32 @@ import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { Text } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
-import { HomeScreen }     from '../screens/HomeScreen';
 import { CalendarScreen } from '../screens/CalendarScreen';
 import { GuidesScreen }   from '../screens/GuidesScreen';
-import ChatScreen         from '../screens/ChatScreen';
+import { SettingsScreen } from '../screens/SettingsScreen';
+import { ChupChuScreen }  from '../screens/ChupChuScreen';
 
 export type TabParamList = {
-  Home:     undefined;
+  Chupchu:  undefined;
   Calendar: undefined;
   Guides:   undefined;
-  Chat:     undefined;
+  Settings: undefined;
 };
 
 const Tab = createBottomTabNavigator<TabParamList>();
 
 const ICON: Record<string, string> = {
-  Home:     '🌱',
+  Chupchu:  '🤖',
   Calendar: '📅',
   Guides:   '📖',
-  Chat:     '🤖',
+  Settings: '⚙️',
 };
 
 const LABEL: Record<string, string> = {
-  Home:     'בית',
+  Chupchu:  "צ'ופצ'ו",
   Calendar: 'לוח',
   Guides:   'מדריכים',
-  Chat:     "צ'ופצ'ו",
+  Settings: 'הגדרות',
 };
 
 export function AppNavigator() {
@@ -35,7 +35,7 @@ export function AppNavigator() {
 
   return (
     <Tab.Navigator
-      initialRouteName="Home"
+      initialRouteName="Chupchu"
       screenOptions={({ route }) => ({
         headerShown: false,
         tabBarStyle: {
@@ -48,22 +48,22 @@ export function AppNavigator() {
         tabBarActiveTintColor:   '#c4860a',
         tabBarInactiveTintColor: 'rgba(245,240,232,0.4)',
         tabBarIcon: ({ focused }) => (
-          <Text style={{ fontSize: 28, opacity: focused ? 1 : 0.55 }}>
+          <Text style={{ fontSize: 24, opacity: focused ? 1 : 0.5 }}>
             {ICON[route.name]}
           </Text>
         ),
         tabBarLabel: LABEL[route.name] ?? route.name,
         tabBarLabelStyle: {
           fontFamily: 'System',
-          fontSize:   13,
+          fontSize:   12,
           marginTop:  2,
         },
       })}
     >
-      <Tab.Screen name="Home"     component={HomeScreen}     />
+      <Tab.Screen name="Chupchu"  component={ChupChuScreen}  />
       <Tab.Screen name="Calendar" component={CalendarScreen} />
       <Tab.Screen name="Guides"   component={GuidesScreen}   />
-      <Tab.Screen name="Chat"     component={ChatScreen}     />
+      <Tab.Screen name="Settings" component={SettingsScreen} />
     </Tab.Navigator>
   );
 }
