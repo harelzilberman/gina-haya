@@ -3,7 +3,7 @@ import * as WebBrowser from 'expo-web-browser';
 import * as AuthSession from 'expo-auth-session';
 import { createClient } from '@supabase/supabase-js';
 
-WebBrowser.maybeCompleteAuthSession();
+// maybeCompleteAuthSession() moved to App.tsx with a Platform guard (Android doesn't need it).
 
 const SUPABASE_URL      = process.env.EXPO_PUBLIC_SUPABASE_URL!;
 const SUPABASE_ANON_KEY = process.env.EXPO_PUBLIC_SUPABASE_ANON_KEY!;
