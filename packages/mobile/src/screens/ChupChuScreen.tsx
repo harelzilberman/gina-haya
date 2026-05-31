@@ -77,46 +77,52 @@ const VOICE_LABEL: Record<VoiceState, string> = {
 
 // ─── Animated head hooks ──────────────────────────────────────────────────────
 
-function useAntennaPulse(offsetMs: number) {
-  const opacity = useRef(new Animated.Value(0.3)).current;
+function useFirefly(baseDelay: number) {
+  const opacity = useRef(new Animated.Value(0)).current;
   useEffect(() => {
-    const delay = setTimeout(() => {
-      Animated.loop(
+    const flicker = () => {
+      const onDuration  = 800  + Math.random() * 1200;
+      const offDuration = 1000 + Math.random() * 2000;
+      const pauseBefore = baseDelay + Math.random() * 1500;
+      setTimeout(() => {
         Animated.sequence([
-          Animated.timing(opacity, { toValue: 0.3, duration: 800, useNativeDriver: true }),
-          Animated.timing(opacity, { toValue: 1.0, duration: 800, useNativeDriver: true }),
-        ]),
-      ).start();
-    }, offsetMs);
-    return () => clearTimeout(delay);
-  }, [opacity, offsetMs]);
+          Animated.timing(opacity, { toValue: 0.9,  duration: onDuration,  useNativeDriver: true }),
+          Animated.timing(opacity, { toValue: 0.05, duration: offDuration, useNativeDriver: true }),
+        ]).start(() => flicker());
+      }, pauseBefore);
+    };
+    flicker();
+  }, [opacity, baseDelay]);
   return opacity;
 }
 
-function useEyeGlow(offsetMs: number) {
-  const opacity = useRef(new Animated.Value(0.0)).current;
+function useEyeGlow(isSpeaking: boolean, offsetMs: number) {
+  const opacity = useRef(new Animated.Value(0.1)).current;
   useEffect(() => {
-    const t = setTimeout(() => {
-      Animated.loop(
-        Animated.sequence([
-          Animated.timing(opacity, { toValue: 0.15, duration: 1200, useNativeDriver: true }),
-          Animated.timing(opacity, { toValue: 0.6,  duration: 1000, useNativeDriver: true }),
-        ]),
-      ).start();
-    }, offsetMs);
-    return () => clearTimeout(t);
-  }, [opacity, offsetMs]);
+    const anim = isSpeaking
+      ? Animated.loop(Animated.sequence([
+          Animated.timing(opacity, { toValue: 0.8, duration: 300, useNativeDriver: true }),
+          Animated.timing(opacity, { toValue: 0.2, duration: 300, useNativeDriver: true }),
+        ]))
+      : Animated.loop(Animated.sequence([
+          Animated.delay(offsetMs),
+          Animated.timing(opacity, { toValue: 0.35, duration: 2500, useNativeDriver: true }),
+          Animated.timing(opacity, { toValue: 0.05, duration: 3000, useNativeDriver: true }),
+        ]));
+    anim.start();
+    return () => anim.stop();
+  }, [isSpeaking, opacity, offsetMs]);
   return opacity;
 }
 
 // ─── Sub-components ───────────────────────────────────────────────────────────
 
-function ChupChuHead() {
+function ChupChuHead({ isSpeaking }: { isSpeaking: boolean }) {
   const [imgSize, setImgSize] = useState({ width: 0, height: 0 });
-  const leftEyeOpacity        = useEyeGlow(0);
-  const rightEyeOpacity       = useEyeGlow(600);
-  const leftAntennaOpacity    = useAntennaPulse(0);
-  const rightAntennaOpacity   = useAntennaPulse(1600);
+  const leftEyeOpacity      = useEyeGlow(isSpeaking, 0);
+  const rightEyeOpacity     = useEyeGlow(isSpeaking, 1200);
+  const leftAntennaOpacity  = useFirefly(0);
+  const rightAntennaOpacity = useFirefly(1800);
 
   // Percentages measured from original 1536x1024 image
   const pct = {
@@ -145,13 +151,13 @@ function ChupChuHead() {
             {/* Eye glow overlays */}
             <Animated.View style={[styles.eyeGlow, {
               position: 'absolute',
-              left: iw * pct.leftEye.x + 37.7 + (20 * 0.45),
+              left: iw * pct.leftEye.x + 46.7 + (20 * 0.09),
               top:  ih * pct.leftEye.y - 14.04 + (26 * 0.45),
               opacity: leftEyeOpacity,
             }]} />
             <Animated.View style={[styles.eyeGlow, {
               position: 'absolute',
-              left: iw * pct.rightEye.x + 37.7 + (20 * 0.45),
+              left: iw * pct.rightEye.x + 46.7 + (20 * 0.09),
               top:  ih * pct.rightEye.y - 2.34 + (28 * 0.18),
               opacity: rightEyeOpacity,
             }]} />
@@ -497,7 +503,7 @@ export function ChupChuScreen() {
   // ── FlatList header (head + dashboard) ───────────────────────────────────
   const ListHeader = (
     <>
-      <ChupChuHead />
+      <ChupChuHead isSpeaking={voiceState === 'speaking'} />
       <DashboardRow calDay={calDay} tasks={tasks} loading={dashLoading} />
     </>
   );
@@ -627,13 +633,13 @@ const styles = StyleSheet.create({
     width: 6.45,
     height: 6.45,
     borderRadius: 3.23,
-    backgroundColor: '#ffcc00',
+    backgroundColor: '#ffc83d',
   },
   eyeGlow: {
-    width: 16.4,
-    height: 22.96,
-    borderRadius: 8.2,
-    backgroundColor: '#ffe066',
+    width: 20,
+    height: 28,
+    borderRadius: 10,
+    backgroundColor: '#ffe8a0',
   },
   leftEye:  {},
   rightEye: {},
