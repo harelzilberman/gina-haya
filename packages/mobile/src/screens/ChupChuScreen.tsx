@@ -7,6 +7,7 @@ import {
   FlatList,
   Image,
   KeyboardAvoidingView,
+  Modal,
   Platform,
   StyleSheet,
   Text,
@@ -76,6 +77,27 @@ const MOON_SIGNS_HE: Record<string, string> = {
   Sagittarius: 'קשת', Capricorn: 'גדי', Aquarius: 'דלי', Pisces: 'דגים',
 };
 
+const DAY_TYPE_INFO: Record<string, string> = {
+  fruit:  'יום פרי — זמן מצוין לקטיף, זריעת פירות וירקות פרי כמו עגבניות, מלפפונים ופלפלים. הכוחות ביקום תומכים בפיתוח הפרי.',
+  root:   'יום שורש — זמן מעולה לשתילת שורשים, גזר, סלק, צנון ובצל. הירח תומך בגדילה מתחת לאדמה.',
+  flower: 'יום פרח — הזמן הטוב ביותר לפרחים, עשבי תיבול ולשתילת צמחים לצורכי נוי. כוחות הפריחה בשיאם.',
+  leaf:   'יום עלה — יום טוב לירקות עלים כמו חסה, תרד ועשבי תיבול. השקיה ודישון עלים יעילים במיוחד.',
+};
+
+const SCORE_INFO: Record<number, string> = {
+  10: 'יום מושלם לגינון! כל הכוחות הביודינמיים בשיאם.',
+  9:  'יום מצוין — כמעט כל פעילות גינון תצליח היום.',
+  8:  'יום טוב מאוד לגינון ושתילה.',
+  7:  'יום טוב — תנאים נוחים לרוב פעילויות הגינון.',
+  6:  'יום סביר — עדיף להתמקד בפעילויות הקשורות לסוג היום.',
+  5:  'יום בינוני — אפשר לגנן אבל לא זמן השיא.',
+  4:  'יום חלש יחסית — עדיף לפעולות תחזוקה בלבד.',
+  3:  'יום לא אידיאלי לשתילה — עדיף לחכות.',
+  2:  'יום חלש — עדיף להימנע משתילה ורכיבה.',
+  1:  'יום קשה — מומלץ להימנע מפעילות גינון משמעותית.',
+  0:  'יום מנוחה לגינה — תן לאדמה לנוח.',
+};
+
 const VOICE_LABEL: Record<VoiceState, string> = {
   idle:         'דבר עם צ\'ופצ\'ו',
   recording:    'מקליט... לחץ לעצור',
@@ -87,20 +109,31 @@ const VOICE_LABEL: Record<VoiceState, string> = {
 // ─── Animated head hooks ──────────────────────────────────────────────────────
 
 function useFirefly(baseDelay: number) {
-  const opacity = useRef(new Animated.Value(0)).current;
+  const opacity  = useRef(new Animated.Value(0)).current;
+  const alive    = useRef(true);
+  const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
   useEffect(() => {
+    alive.current = true;
     const flicker = () => {
+      if (!alive.current) return;
       const onDuration  = 800  + Math.random() * 1200;
       const offDuration = 1000 + Math.random() * 2000;
       const pauseBefore = baseDelay + Math.random() * 1500;
-      setTimeout(() => {
+      timerRef.current = setTimeout(() => {
+        if (!alive.current) return;
         Animated.sequence([
           Animated.timing(opacity, { toValue: 0.9,  duration: onDuration,  useNativeDriver: true }),
           Animated.timing(opacity, { toValue: 0.05, duration: offDuration, useNativeDriver: true }),
-        ]).start(() => flicker());
+        ]).start(({ finished }) => { if (finished) flicker(); });
       }, pauseBefore);
     };
     flicker();
+    return () => {
+      alive.current = false;
+      if (timerRef.current) clearTimeout(timerRef.current);
+      opacity.stopAnimation();
+    };
   }, [opacity, baseDelay]);
   return opacity;
 }
@@ -194,11 +227,12 @@ function ChupChuHead({ isSpeaking }: { isSpeaking: boolean }) {
 }
 
 function DashboardRow({
-  calDay, tasks, loading,
+  calDay, tasks, loading, onCardPress,
 }: {
   calDay: any;
   tasks: PendingTask[];
   loading: boolean;
+  onCardPress: (card: 'day' | 'moon' | 'score') => void;
 }) {
   if (loading && !calDay) {
     return (
@@ -208,26 +242,26 @@ function DashboardRow({
     );
   }
 
-  const dayLabel  = calDay ? (DAY_TYPE_LABELS[calDay.dayType]  ?? calDay.dayType)               : '—';
-  const moonLabel = calDay?.moonSign ? (MOON_SIGNS_HE[calDay.moonSign] ?? calDay.moonSign)       : '—';
+  const dayLabel  = calDay ? (DAY_TYPE_LABELS[calDay.dayType]  ?? calDay.dayType) : '—';
+  const moonLabel = calDay?.moonSign ? (MOON_SIGNS_HE[calDay.moonSign] ?? calDay.moonSign) : '—';
   const score     = calDay?.plantingScore ?? null;
 
   return (
     <View style={styles.dashRow}>
       {/* Day type */}
-      <View style={styles.dashCard}>
+      <TouchableOpacity style={styles.dashCard} onPress={() => onCardPress('day')}>
         <Text style={styles.dashCardValue} numberOfLines={1}>{dayLabel}</Text>
         <Text style={styles.dashCardLabel}>סוג יום</Text>
-      </View>
+      </TouchableOpacity>
 
       {/* Moon */}
-      <View style={styles.dashCard}>
+      <TouchableOpacity style={styles.dashCard} onPress={() => onCardPress('moon')}>
         <Text style={styles.dashCardValue} numberOfLines={1}>🌙 {moonLabel}</Text>
         <Text style={styles.dashCardLabel}>מזל הירח</Text>
-      </View>
+      </TouchableOpacity>
 
       {/* Score / tasks */}
-      <View style={styles.dashCard}>
+      <TouchableOpacity style={styles.dashCard} onPress={() => onCardPress('score')}>
         {score !== null ? (
           <>
             <Text style={[
@@ -244,7 +278,7 @@ function DashboardRow({
             <Text style={styles.dashCardLabel}>משימות</Text>
           </>
         )}
-      </View>
+      </TouchableOpacity>
     </View>
   );
 }
@@ -302,6 +336,7 @@ export function ChupChuScreen() {
   const [dashLoading, setDashLoading] = useState(true);
   const [toolCall,    setToolCall]    = useState<MobileToolCall | null>(null);
   const [executing,   setExecuting]   = useState(false);
+  const [activeCard,  setActiveCard]  = useState<'day' | 'moon' | 'score' | null>(null);
 
   const listRef = useRef<FlatList>(null);
   const today   = new Date().toISOString().split('T')[0];
@@ -487,7 +522,7 @@ export function ChupChuScreen() {
   const ListHeader = (
     <>
       <ChupChuHead isSpeaking={voiceState === 'speaking'} />
-      <DashboardRow calDay={calDay} tasks={tasks} loading={dashLoading} />
+      <DashboardRow calDay={calDay} tasks={tasks} loading={dashLoading} onCardPress={setActiveCard} />
     </>
   );
 
@@ -518,6 +553,53 @@ export function ChupChuScreen() {
           ListFooterComponent={sending ? <TypingIndicator /> : null}
           style={styles.list}
         />
+
+        {/* Dashboard info modal */}
+        <Modal
+          visible={activeCard !== null}
+          transparent
+          animationType="slide"
+          onRequestClose={() => setActiveCard(null)}
+        >
+          <TouchableOpacity
+            style={styles.modalOverlay}
+            onPress={() => setActiveCard(null)}
+            activeOpacity={1}
+          >
+            <View style={styles.modalSheet}>
+              <View style={styles.modalHandle} />
+
+              {activeCard === 'day' && (
+                <View style={styles.modalContent}>
+                  <Text style={styles.modalTitle}>{DAY_TYPE_LABELS[calDay?.dayType] ?? '—'}</Text>
+                  <Text style={styles.modalBody}>{DAY_TYPE_INFO[calDay?.dayType] ?? ''}</Text>
+                </View>
+              )}
+
+              {activeCard === 'moon' && (
+                <View style={styles.modalContent}>
+                  <Text style={styles.modalTitle}>🌙 {MOON_SIGNS_HE[calDay?.moonSign] ?? '—'}</Text>
+                  <Text style={styles.modalSubtitle}>
+                    {calDay?.ascendingDescending === 'ascending' ? '🌒 ירח עולה' : '🌘 ירח יורד'}
+                  </Text>
+                  {calDay?.moonriseTime && <Text style={styles.modalBody}>זריחת ירח: {calDay.moonriseTime}</Text>}
+                  {calDay?.moonsetTime  && <Text style={styles.modalBody}>שקיעת ירח: {calDay.moonsetTime}</Text>}
+                </View>
+              )}
+
+              {activeCard === 'score' && (
+                <View style={styles.modalContent}>
+                  <Text style={styles.modalTitle}>ניקוד שתילה {calDay?.plantingScore ?? '—'}/10</Text>
+                  <Text style={styles.modalBody}>{SCORE_INFO[calDay?.plantingScore ?? 0] ?? ''}</Text>
+                </View>
+              )}
+
+              <TouchableOpacity style={styles.modalClose} onPress={() => setActiveCard(null)}>
+                <Text style={styles.modalCloseText}>סגור</Text>
+              </TouchableOpacity>
+            </View>
+          </TouchableOpacity>
+        </Modal>
 
         {/* Input bar */}
         <View style={styles.inputBar}>
@@ -774,5 +856,62 @@ const styles = StyleSheet.create({
     paddingVertical: 4,
     backgroundColor: '#07110a',
     writingDirection: 'rtl',
+  },
+
+  // Dashboard info modals
+  modalOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0,0,0,0.6)',
+    justifyContent: 'flex-end',
+  },
+  modalSheet: {
+    backgroundColor: '#0d2010',
+    borderTopLeftRadius: 24,
+    borderTopRightRadius: 24,
+    padding: 24,
+    paddingBottom: 40,
+    borderTopWidth: 1,
+    borderColor: 'rgba(196,134,10,0.3)',
+    gap: 12,
+  },
+  modalHandle: {
+    width: 40,
+    height: 4,
+    borderRadius: 2,
+    backgroundColor: 'rgba(196,134,10,0.4)',
+    alignSelf: 'center',
+    marginBottom: 8,
+  },
+  modalContent: { gap: 10 },
+  modalTitle: {
+    fontSize: 22,
+    fontWeight: '700',
+    color: '#e8d4a8',
+    textAlign: 'right',
+  },
+  modalSubtitle: {
+    fontSize: 16,
+    color: '#c4860a',
+    textAlign: 'right',
+  },
+  modalBody: {
+    fontSize: 15,
+    color: '#a8c4a0',
+    textAlign: 'right',
+    lineHeight: 24,
+  },
+  modalClose: {
+    backgroundColor: 'rgba(196,134,10,0.15)',
+    borderWidth: 1,
+    borderColor: 'rgba(196,134,10,0.3)',
+    borderRadius: 12,
+    padding: 14,
+    alignItems: 'center',
+    marginTop: 8,
+  },
+  modalCloseText: {
+    color: '#c4860a',
+    fontSize: 16,
+    fontWeight: '600',
   },
 });
