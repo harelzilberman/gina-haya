@@ -324,6 +324,35 @@ function MessageBubble({ message }: { message: Message }) {
   );
 }
 
+function PhotoActionCard({
+  onJournal,
+  onTrack,
+  onDismiss,
+}: {
+  onJournal: () => void;
+  onTrack: () => void;
+  onDismiss: () => void;
+}) {
+  return (
+    <View style={styles.actionCard}>
+      <Text style={styles.actionCardTitle}>רוצה לתעד את זה? 📸</Text>
+      <View style={styles.actionCardButtons}>
+        <TouchableOpacity style={styles.actionBtn} onPress={onJournal}>
+          <Text style={styles.actionBtnIcon}>📓</Text>
+          <Text style={styles.actionBtnText}>הוסף ליומן</Text>
+        </TouchableOpacity>
+        <TouchableOpacity style={[styles.actionBtn, styles.actionBtnTrack]} onPress={onTrack}>
+          <Text style={styles.actionBtnIcon}>📊</Text>
+          <Text style={styles.actionBtnText}>התחל מעקב</Text>
+        </TouchableOpacity>
+      </View>
+      <TouchableOpacity onPress={onDismiss} style={styles.actionDismiss}>
+        <Text style={styles.actionDismissText}>לא תודה</Text>
+      </TouchableOpacity>
+    </View>
+  );
+}
+
 // ─── Main screen ──────────────────────────────────────────────────────────────
 
 export function ChupChuScreen() {
@@ -339,6 +368,10 @@ export function ChupChuScreen() {
   const [executing,   setExecuting]   = useState(false);
   const [activeCard,  setActiveCard]  = useState<'day' | 'moon' | 'score' | null>(null);
   const [analyzing,   setAnalyzing]   = useState(false);
+  const [pendingPhotoAction, setPendingPhotoAction] = useState<{
+    base64: string;
+    analysis: string;
+  } | null>(null);
 
   const listRef = useRef<FlatList>(null);
   const today   = new Date().toISOString().split('T')[0];
@@ -463,12 +496,16 @@ export function ChupChuScreen() {
       console.log('🔴 ANALYZE STATUS:', response.status);
       const data = await response.json();
       console.log('🔴 ANALYZE RESPONSE:', JSON.stringify(data));
-      setMessages(prev => [...prev, {
+      const botMsg = {
         id: (Date.now() + 1).toString(),
-        role: 'chupchu',
+        role: 'chupchu' as const,
         text: `${data.response ?? 'לא הצלחתי לנתח את התמונה'}\nצ'יפ ✦`,
         timestamp: new Date(),
-      }]);
+      };
+      setMessages(prev => [...prev, botMsg]);
+      if (data.response) {
+        setPendingPhotoAction({ base64, analysis: data.response });
+      }
     } catch {
       setMessages(prev => [...prev, {
         id: Date.now().toString(),
@@ -524,6 +561,64 @@ export function ChupChuScreen() {
         { text: 'ביטול', style: 'cancel' },
       ]
     );
+  };
+
+  // ── Photo action handlers ─────────────────────────────────────────────────
+  const handleJournalFromPhoto = async () => {
+    if (!pendingPhotoAction) return;
+    try {
+      const token = await getToken();
+      await fetch('https://powerful-embrace-production-95ea.up.railway.app/api/chupchu/execute-tool', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+        body: JSON.stringify({
+          tool_name: 'create_journal_entry',
+          params: {
+            notes: pendingPhotoAction.analysis,
+            title: 'תמונה מהגינה',
+          },
+        }),
+      });
+      setMessages(prev => [...prev, {
+        id: Date.now().toString(),
+        role: 'chupchu',
+        text: "נרשם ביומן! ✦ אשמור את זה בזיכרון הגינה שלך\nצ'יפ ✦",
+        timestamp: new Date(),
+      }]);
+    } catch {
+      // silent fail
+    } finally {
+      setPendingPhotoAction(null);
+    }
+  };
+
+  const handleTrackFromPhoto = async () => {
+    if (!pendingPhotoAction) return;
+    try {
+      const token = await getToken();
+      await fetch('https://powerful-embrace-production-95ea.up.railway.app/api/chupchu/execute-tool', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+        body: JSON.stringify({
+          tool_name: 'create_task',
+          params: {
+            title: 'מעקב — תמונה מהגינה',
+            notes: pendingPhotoAction.analysis,
+            priority: 'medium',
+          },
+        }),
+      });
+      setMessages(prev => [...prev, {
+        id: Date.now().toString(),
+        role: 'chupchu',
+        text: "נוצרה משימת מעקב! אעקוב איתך אחרי ההתפתחות 🌱\nצ'יפ ✦",
+        timestamp: new Date(),
+      }]);
+    } catch {
+      // silent fail
+    } finally {
+      setPendingPhotoAction(null);
+    }
   };
 
   // ── Voice ─────────────────────────────────────────────────────────────────
@@ -647,7 +742,19 @@ export function ChupChuScreen() {
           renderItem={({ item }) => <MessageBubble message={item} />}
           contentContainerStyle={styles.listContent}
           ListHeaderComponent={ListHeader}
-          ListFooterComponent={sending ? <TypingIndicator /> : null}
+          ListFooterComponent={
+            <>
+              {sending && <TypingIndicator />}
+              {analyzing && <TypingIndicator />}
+              {pendingPhotoAction && (
+                <PhotoActionCard
+                  onJournal={handleJournalFromPhoto}
+                  onTrack={handleTrackFromPhoto}
+                  onDismiss={() => setPendingPhotoAction(null)}
+                />
+              )}
+            </>
+          }
           style={styles.list}
         />
 
@@ -1031,5 +1138,57 @@ const styles = StyleSheet.create({
     color: '#c4860a',
     fontSize: 16,
     fontWeight: '600',
+  },
+
+  // Photo action card
+  actionCard: {
+    marginHorizontal: 14,
+    marginVertical: 8,
+    backgroundColor: '#0d2010',
+    borderWidth: 1,
+    borderColor: 'rgba(196,134,10,0.3)',
+    borderRadius: 14,
+    padding: 14,
+    gap: 10,
+  },
+  actionCardTitle: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: '#e8d4a8',
+    textAlign: 'right',
+  },
+  actionCardButtons: {
+    flexDirection: 'row-reverse',
+    gap: 8,
+  },
+  actionBtn: {
+    flex: 1,
+    flexDirection: 'row-reverse',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 6,
+    backgroundColor: 'rgba(74,124,63,0.2)',
+    borderWidth: 1,
+    borderColor: 'rgba(74,124,63,0.4)',
+    borderRadius: 10,
+    paddingVertical: 10,
+  },
+  actionBtnTrack: {
+    backgroundColor: 'rgba(196,134,10,0.15)',
+    borderColor: 'rgba(196,134,10,0.3)',
+  },
+  actionBtnIcon: { fontSize: 16 },
+  actionBtnText: {
+    fontSize: 13,
+    fontWeight: '600',
+    color: '#c8e0c0',
+  },
+  actionDismiss: {
+    alignItems: 'center',
+    paddingVertical: 4,
+  },
+  actionDismissText: {
+    fontSize: 12,
+    color: 'rgba(245,240,232,0.35)',
   },
 });
