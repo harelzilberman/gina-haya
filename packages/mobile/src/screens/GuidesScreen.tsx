@@ -1,7 +1,5 @@
-import { useState } from 'react';
-import { ScrollView, Text, View, StyleSheet, TouchableOpacity, Modal } from 'react-native';
+import { ScrollView, Text, View, StyleSheet, TouchableOpacity, Linking } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { WebView } from 'react-native-webview';
 
 const GUIDES = [
   { emoji: '🌿', title: 'תה קומפוסט', subtitle: 'המדריך המלא לאדמה חיה', url: 'https://gina-haya.com/articles/compost-tea' },
@@ -20,12 +18,8 @@ const PREPS = [
 ];
 
 export function GuidesScreen() {
-  const [activeUrl, setActiveUrl] = useState<string | null>(null);
-  const [activeTitle, setActiveTitle] = useState<string>('');
-
-  const openArticle = (url: string, title: string) => {
-    setActiveTitle(title);
-    setActiveUrl(url);
+  const openArticle = (url: string) => {
+    Linking.openURL(url);
   };
 
   return (
@@ -38,7 +32,7 @@ export function GuidesScreen() {
           <TouchableOpacity
             key={g.url}
             style={styles.card}
-            onPress={() => openArticle(g.url, g.title)}
+            onPress={() => openArticle(g.url)}
             activeOpacity={0.75}
           >
             <Text style={styles.cardEmoji}>{g.emoji}</Text>
@@ -55,7 +49,7 @@ export function GuidesScreen() {
           <TouchableOpacity
             key={p.key}
             style={[styles.card, styles.prepCard]}
-            onPress={() => openArticle(p.url, p.label)}
+            onPress={() => openArticle(p.url)}
             activeOpacity={0.75}
           >
             <Text style={styles.prepNum}>{p.key}</Text>
@@ -67,32 +61,6 @@ export function GuidesScreen() {
           </TouchableOpacity>
         ))}
       </ScrollView>
-
-      {/* Article WebView Modal */}
-      <Modal
-        visible={activeUrl !== null}
-        animationType="slide"
-        onRequestClose={() => setActiveUrl(null)}
-      >
-        <SafeAreaView style={styles.webviewSafe}>
-          <View style={styles.webviewHeader}>
-            <TouchableOpacity
-              style={styles.closeBtn}
-              onPress={() => setActiveUrl(null)}
-            >
-              <Text style={styles.closeBtnText}>✕ סגור</Text>
-            </TouchableOpacity>
-            <Text style={styles.webviewTitle} numberOfLines={1}>{activeTitle}</Text>
-          </View>
-          {activeUrl && (
-            <WebView
-              source={{ uri: activeUrl }}
-              style={styles.webview}
-              startInLoadingState
-            />
-          )}
-        </SafeAreaView>
-      </Modal>
     </SafeAreaView>
   );
 }
@@ -126,22 +94,4 @@ const styles = StyleSheet.create({
   cardTitle: { fontSize: 15, fontWeight: '600', color: '#f5f0e8', textAlign: 'right' },
   cardSub: { fontSize: 12, color: 'rgba(245,240,232,0.5)', textAlign: 'right', marginTop: 2 },
   arrow: { fontSize: 16, color: 'rgba(196,134,10,0.5)' },
-  webviewSafe: { flex: 1, backgroundColor: '#1a1a0e' },
-  webviewHeader: {
-    flexDirection: 'row-reverse', alignItems: 'center',
-    padding: 12, gap: 12,
-    borderBottomWidth: 1, borderBottomColor: 'rgba(196,134,10,0.2)',
-    backgroundColor: '#1a1a0e',
-  },
-  webviewTitle: {
-    flex: 1, fontSize: 15, fontWeight: '600',
-    color: '#f5f0e8', textAlign: 'right',
-  },
-  closeBtn: {
-    backgroundColor: 'rgba(196,134,10,0.15)',
-    borderRadius: 8, paddingHorizontal: 12, paddingVertical: 6,
-    borderWidth: 1, borderColor: 'rgba(196,134,10,0.3)',
-  },
-  closeBtnText: { color: '#c4860a', fontSize: 14, fontWeight: '600' },
-  webview: { flex: 1 },
 });
