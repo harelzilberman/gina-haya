@@ -32,10 +32,19 @@ import {
 } from '../services/chupchu';
 import { fetchTodayCalendar }              from '../services/calendar';
 import { fetchPendingTasks, type PendingTask } from '../services/tasks';
-import {
-  startRecording, stopRecordingAndTranscribe,
-  speakHebrew, stopSpeaking,
-} from '../services/voice';
+let startRecording: any, stopRecordingAndTranscribe: any, speakHebrew: any, stopSpeaking: any;
+try {
+  const voice = require('../services/voice');
+  startRecording            = voice.startRecording;
+  stopRecordingAndTranscribe = voice.stopRecordingAndTranscribe;
+  speakHebrew               = voice.speakHebrew;
+  stopSpeaking              = voice.stopSpeaking;
+} catch {
+  startRecording             = async () => { throw new Error('Voice not available'); };
+  stopRecordingAndTranscribe = async () => null;
+  speakHebrew                = async () => {};
+  stopSpeaking               = () => {};
+}
 import { cacheBdDay, getCachedBdDay } from '../services/offline';
 import * as ImagePicker from 'expo-image-picker';
 
@@ -395,54 +404,28 @@ export function ChupChuScreen() {
       }
       if (voiceState === 'recording') {
         setVoiceState('transcribing');
-        try {
-          const text = await stopRecordingAndTranscribe();
-          if (!text) { setVoiceState('idle'); return; }
-
-          // Show user's transcribed text as a bubble
-          const userMsg: Message = {
-            id: Date.now().toString(), role: 'user',
-            text, timestamp: new Date(),
-          };
-          setMessages(prev => [...prev, userMsg]);
-          setVoiceState('thinking');
-
-          const result = await sendChupChuMessage(text, []);
-          const botMsg: Message = {
-            id: (Date.now() + 1).toString(), role: 'chupchu',
-            text: `${result.response}\nצ'יפ ✦`, timestamp: new Date(),
-          };
-          setMessages(prev => [...prev, botMsg]);
-          if (result.mobileTool) setToolCall(result.mobileTool);
-
-          setVoiceState('speaking');
-          await speakHebrew(result.response);
-          setVoiceState('idle');
-        } catch (err: any) {
-          setVoiceState('idle');
-          Alert.alert('שגיאה', err.message ?? 'אירעה שגיאה, נסה שוב');
-        }
+        const text = await stopRecordingAndTranscribe();
+        if (!text) { setVoiceState('idle'); return; }
+        setVoiceState('thinking');
+        const result = await sendChupChuMessage(text, []);
+        setMessages(prev => [...prev, {
+          id: Date.now().toString(),
+          role: 'chupchu',
+          text: `${result.response}\nצ'יפ ✦`,
+          timestamp: new Date(),
+        }]);
+        setVoiceState('speaking');
+        await speakHebrew(result.response);
+        setVoiceState('idle');
         return;
       }
       if (voiceState === 'idle') {
-        if (offline) {
-          Alert.alert('אין חיבור', 'אני צריך חיבור לאינטרנט כדי לעזור לך');
-          return;
-        }
-        if (typeof startRecording !== 'function') {
-          Alert.alert('שגיאה', 'שירות הקול אינו זמין');
-          return;
-        }
-        try {
-          await startRecording();
-          setVoiceState('recording');
-        } catch (err: any) {
-          Alert.alert('שגיאה', err.message ?? 'לא ניתן להתחיל הקלטה');
-        }
+        await startRecording();
+        setVoiceState('recording');
       }
     } catch (err: any) {
       setVoiceState('idle');
-      Alert.alert('שגיאה', err.message ?? 'בעיה עם המיקרופון');
+      Alert.alert('המיקרופון אינו זמין', 'פונקציית הקול אינה זמינה ב-Expo Go. השתמש בהקלדה.');
     }
   };
 
