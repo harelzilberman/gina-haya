@@ -432,35 +432,15 @@ export function ChupChuScreen() {
   };
 
   // ── Photo analysis ───────────────────────────────────────────────────────
-  const handlePhotoAnalysis = async () => {
+  const analyzeImage = async (base64: string) => {
+    setMessages(prev => [...prev, {
+      id: Date.now().toString(),
+      role: 'user',
+      text: '📸 שלחתי תמונה מהגינה',
+      timestamp: new Date(),
+    }]);
+    setAnalyzing(true);
     try {
-      const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
-      if (status !== 'granted') {
-        Alert.alert('נדרשת הרשאה', 'אנא אשר גישה לגלריה בהגדרות');
-        return;
-      }
-
-      const result = await ImagePicker.launchImageLibraryAsync({
-        mediaTypes: ImagePicker.MediaTypeOptions.Images,
-        quality: 0.7,
-        base64: true,
-        allowsEditing: true,
-      });
-
-      if (result.canceled || !result.assets[0]) return;
-
-      const base64 = result.assets[0].base64;
-      if (!base64) return;
-
-      const userMsg: Message = {
-        id: Date.now().toString(),
-        role: 'user',
-        text: '📸 שלחתי תמונה מהגינה',
-        timestamp: new Date(),
-      };
-      setMessages(prev => [...prev, userMsg]);
-      setAnalyzing(true);
-
       const token = await getToken();
       if (!token) throw new Error('Not authenticated');
 
@@ -480,15 +460,16 @@ export function ChupChuScreen() {
         }
       );
 
+      console.log('🔴 ANALYZE STATUS:', response.status);
       const data = await response.json();
-      const botMsg: Message = {
+      console.log('🔴 ANALYZE RESPONSE:', JSON.stringify(data));
+      setMessages(prev => [...prev, {
         id: (Date.now() + 1).toString(),
         role: 'chupchu',
         text: `${data.response ?? 'לא הצלחתי לנתח את התמונה'}\nצ'יפ ✦`,
         timestamp: new Date(),
-      };
-      setMessages(prev => [...prev, botMsg]);
-    } catch (err: any) {
+      }]);
+    } catch {
       setMessages(prev => [...prev, {
         id: Date.now().toString(),
         role: 'chupchu',
@@ -498,6 +479,51 @@ export function ChupChuScreen() {
     } finally {
       setAnalyzing(false);
     }
+  };
+
+  const handlePhotoAnalysis = () => {
+    Alert.alert(
+      'בחר תמונה',
+      'מאיפה לטעון את התמונה?',
+      [
+        {
+          text: 'מצלמה',
+          onPress: async () => {
+            const { status } = await ImagePicker.requestCameraPermissionsAsync();
+            if (status !== 'granted') {
+              Alert.alert('אין הרשאה', 'נדרשת הרשאה למצלמה');
+              return;
+            }
+            const result = await ImagePicker.launchCameraAsync({
+              quality: 0.7,
+              base64: true,
+            });
+            if (!result.canceled && result.assets[0]?.base64) {
+              await analyzeImage(result.assets[0].base64);
+            }
+          },
+        },
+        {
+          text: 'גלריה',
+          onPress: async () => {
+            const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
+            if (status !== 'granted') {
+              Alert.alert('נדרשת הרשאה', 'אנא אשר גישה לגלריה בהגדרות');
+              return;
+            }
+            const result = await ImagePicker.launchImageLibraryAsync({
+              mediaTypes: ImagePicker.MediaTypeOptions.Images,
+              quality: 0.7,
+              base64: true,
+            });
+            if (!result.canceled && result.assets[0]?.base64) {
+              await analyzeImage(result.assets[0].base64);
+            }
+          },
+        },
+        { text: 'ביטול', style: 'cancel' },
+      ]
+    );
   };
 
   // ── Voice ─────────────────────────────────────────────────────────────────
