@@ -617,7 +617,7 @@ const styles = StyleSheet.create({
     width: 6.45,
     height: 6.45,
     borderRadius: 3.23,
-    backgroundColor: '#ffc83d',
+    backgroundColor: '#c8ff4a',
   },
   eyeGlow: {
     width: 20,
