@@ -44,6 +44,55 @@ chupChuRouter.get('/history', async (req: any, res) => {
   }
 });
 
+// ── POST /api/chupchu/analyze-image ────────────────────────────────────────
+chupChuRouter.post('/analyze-image', async (req: any, res) => {
+  try {
+    const { image, mimeType = 'image/jpeg', language = 'he' } = req.body;
+    if (!image) return res.status(400).json({ error: 'No image provided' });
+
+    const langInstruction = language === 'he'
+      ? 'ענה בעברית בלבד.'
+      : 'Reply in English only.';
+
+    const response = await anthropicClient.messages.create({
+      model: 'claude-opus-4-5',
+      max_tokens: 1024,
+      messages: [{
+        role: 'user',
+        content: [
+          {
+            type: 'image',
+            source: {
+              type: 'base64',
+              media_type: mimeType as any,
+              data: image,
+            },
+          },
+          {
+            type: 'text',
+            text: `אתה צ'ופצ'ו, מומחה גינון ביודינמי חכם וחמים. ${langInstruction}
+נתח את התמונה הזו מהגינה ותן:
+1. מה אתה רואה בתמונה
+2. האם יש בעיות (מחלות, מזיקים, חוסרים)
+3. המלצות מעשיות לטיפול
+דבר בגוף ראשון כצ'ופצ'ו, בחמימות ובביטחון.`,
+          },
+        ],
+      }],
+    });
+
+    const text = response.content
+      .filter((b: any) => b.type === 'text')
+      .map((b: any) => (b as any).text)
+      .join('');
+
+    res.json({ response: text });
+  } catch (err: any) {
+    console.error('[POST /api/chupchu/analyze-image]', err.message);
+    res.status(500).json({ error: err.message });
+  }
+});
+
 // ── DELETE /api/chupchu/history ─────────────────────────────────────────────
 chupChuRouter.delete('/history', async (req: any, res) => {
   try {

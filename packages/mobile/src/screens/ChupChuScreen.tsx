@@ -31,6 +31,7 @@ import {
   executeTool, uploadJournalPhoto,
   type MobileToolCall,
 } from '../services/chupchu';
+import { getToken }                           from '../services/auth';
 import { fetchTodayCalendar }              from '../services/calendar';
 import { fetchPendingTasks, type PendingTask } from '../services/tasks';
 let startRecording: any, stopRecordingAndTranscribe: any, speakHebrew: any, stopSpeaking: any;
@@ -337,6 +338,7 @@ export function ChupChuScreen() {
   const [toolCall,    setToolCall]    = useState<MobileToolCall | null>(null);
   const [executing,   setExecuting]   = useState(false);
   const [activeCard,  setActiveCard]  = useState<'day' | 'moon' | 'score' | null>(null);
+  const [analyzing,   setAnalyzing]   = useState(false);
 
   const listRef = useRef<FlatList>(null);
   const today   = new Date().toISOString().split('T')[0];
@@ -426,6 +428,75 @@ export function ChupChuScreen() {
       }]);
     } finally {
       setSending(false);
+    }
+  };
+
+  // ── Photo analysis ───────────────────────────────────────────────────────
+  const handlePhotoAnalysis = async () => {
+    try {
+      const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
+      if (status !== 'granted') {
+        Alert.alert('נדרשת הרשאה', 'אנא אשר גישה לגלריה בהגדרות');
+        return;
+      }
+
+      const result = await ImagePicker.launchImageLibraryAsync({
+        mediaTypes: ImagePicker.MediaTypeOptions.Images,
+        quality: 0.7,
+        base64: true,
+        allowsEditing: true,
+      });
+
+      if (result.canceled || !result.assets[0]) return;
+
+      const base64 = result.assets[0].base64;
+      if (!base64) return;
+
+      const userMsg: Message = {
+        id: Date.now().toString(),
+        role: 'user',
+        text: '📸 שלחתי תמונה מהגינה',
+        timestamp: new Date(),
+      };
+      setMessages(prev => [...prev, userMsg]);
+      setAnalyzing(true);
+
+      const token = await getToken();
+      if (!token) throw new Error('Not authenticated');
+
+      const response = await fetch(
+        'https://powerful-embrace-production-95ea.up.railway.app/api/chupchu/analyze-image',
+        {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${token}`,
+          },
+          body: JSON.stringify({
+            image: base64,
+            mimeType: 'image/jpeg',
+            language: 'he',
+          }),
+        }
+      );
+
+      const data = await response.json();
+      const botMsg: Message = {
+        id: (Date.now() + 1).toString(),
+        role: 'chupchu',
+        text: `${data.response ?? 'לא הצלחתי לנתח את התמונה'}\nצ'יפ ✦`,
+        timestamp: new Date(),
+      };
+      setMessages(prev => [...prev, botMsg]);
+    } catch (err: any) {
+      setMessages(prev => [...prev, {
+        id: Date.now().toString(),
+        role: 'chupchu',
+        text: "צ'יפ... לא הצלחתי לנתח את התמונה, נסה שוב\nצ'יפ ✦",
+        timestamp: new Date(),
+      }]);
+    } finally {
+      setAnalyzing(false);
     }
   };
 
@@ -609,6 +680,15 @@ export function ChupChuScreen() {
             onPress={handleMicPress}
             disabled={voiceState === 'transcribing' || voiceState === 'thinking' || sending}
           />
+
+          {/* Camera button */}
+          <TouchableOpacity
+            style={[styles.cameraBtn, (analyzing || sending) && styles.sendDisabled]}
+            onPress={handlePhotoAnalysis}
+            disabled={analyzing || sending}
+          >
+            <Text style={styles.cameraIcon}>📷</Text>
+          </TouchableOpacity>
 
           {/* Text input */}
           <TextInput
@@ -847,6 +927,18 @@ const styles = StyleSheet.create({
   },
   sendDisabled: { opacity: 0.35 },
   sendArrow: { fontSize: 18, color: '#e8f5eb', fontWeight: '700' },
+  cameraBtn: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    backgroundColor: '#0d2010',
+    borderWidth: 1,
+    borderColor: '#1a3d1f',
+    alignItems: 'center',
+    justifyContent: 'center',
+    flexShrink: 0,
+  },
+  cameraIcon: { fontSize: 20 },
 
   // Voice hint
   voiceHint: {
