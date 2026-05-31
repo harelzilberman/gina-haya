@@ -1,5 +1,6 @@
 import 'react-native-gesture-handler';
-import { View, ActivityIndicator, StyleSheet, I18nManager, Platform } from 'react-native';
+import { useEffect } from 'react';
+import { View, ActivityIndicator, StyleSheet, I18nManager, Platform, StatusBar as RNStatusBar } from 'react-native';
 import * as WebBrowser from 'expo-web-browser';
 import { NavigationContainer } from '@react-navigation/native';
 import { StatusBar } from 'expo-status-bar';
@@ -25,6 +26,18 @@ function AppContent() {
 
   // Push notifications disabled for Expo Go — re-enable with a development build.
 
+  useEffect(() => {
+    if (Platform.OS === 'android') {
+      RNStatusBar.setTranslucent(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    if (isAuthed) {
+      // notifications disabled for now
+    }
+  }, [isAuthed]);
+
   // Show a splash/loading screen while restoring the session from SecureStore
   if (isLoading) {
     return (
@@ -41,7 +54,6 @@ function AppContent() {
         {isAuthed ? (
           <AppNavigator />
         ) : (
-          // onLogin is a no-op — the AuthContext's onAuthStateChange drives navigation
           <LoginScreen onLogin={() => {}} />
         )}
       </NavigationContainer>
