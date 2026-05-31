@@ -3,6 +3,7 @@ import {
   ActivityIndicator,
   Alert,
   Animated,
+  Dimensions,
   FlatList,
   Image,
   KeyboardAvoidingView,
@@ -13,6 +14,10 @@ import {
   TouchableOpacity,
   View,
 } from 'react-native';
+
+const SCREEN_W = Dimensions.get('window').width;
+const IMG_W    = SCREEN_W - 32;
+const IMG_H    = IMG_W * (1024 / 1536);
 import { SafeAreaView } from 'react-native-safe-area-context';
 import NetInfo from '@react-native-community/netinfo';
 
@@ -72,14 +77,30 @@ const VOICE_LABEL: Record<VoiceState, string> = {
 
 // ─── Animated head hooks ──────────────────────────────────────────────────────
 
+function useAntennaPulse(offsetMs: number) {
+  const opacity = useRef(new Animated.Value(0.3)).current;
+  useEffect(() => {
+    const delay = setTimeout(() => {
+      Animated.loop(
+        Animated.sequence([
+          Animated.timing(opacity, { toValue: 0.3, duration: 800, useNativeDriver: true }),
+          Animated.timing(opacity, { toValue: 1.0, duration: 800, useNativeDriver: true }),
+        ]),
+      ).start();
+    }, offsetMs);
+    return () => clearTimeout(delay);
+  }, [opacity, offsetMs]);
+  return opacity;
+}
+
 function useEyeGlow(offsetMs: number) {
-  const opacity = useRef(new Animated.Value(0.2)).current;
+  const opacity = useRef(new Animated.Value(0.0)).current;
   useEffect(() => {
     const t = setTimeout(() => {
       Animated.loop(
         Animated.sequence([
-          Animated.timing(opacity, { toValue: 0.2,  duration: 1200, useNativeDriver: true }),
-          Animated.timing(opacity, { toValue: 0.95, duration: 1000, useNativeDriver: true }),
+          Animated.timing(opacity, { toValue: 0.15, duration: 1200, useNativeDriver: true }),
+          Animated.timing(opacity, { toValue: 0.6,  duration: 1000, useNativeDriver: true }),
         ]),
       ).start();
     }, offsetMs);
@@ -88,61 +109,67 @@ function useEyeGlow(offsetMs: number) {
   return opacity;
 }
 
-function useAntennaPulse(offsetMs: number) {
-  const scale = useRef(new Animated.Value(1)).current;
-  useEffect(() => {
-    const t = setTimeout(() => {
-      Animated.loop(
-        Animated.sequence([
-          Animated.timing(scale, { toValue: 0.6, duration: 800, useNativeDriver: true }),
-          Animated.timing(scale, { toValue: 1,   duration: 800, useNativeDriver: true }),
-        ]),
-      ).start();
-    }, offsetMs);
-    return () => clearTimeout(t);
-  }, [scale, offsetMs]);
-  return scale;
-}
-
-function useBlink() {
-  const scaleY = useRef(new Animated.Value(1)).current;
-  useEffect(() => {
-    const loop = () => {
-      const t = setTimeout(() => {
-        Animated.sequence([
-          Animated.timing(scaleY, { toValue: 0.05, duration: 80, useNativeDriver: true }),
-          Animated.timing(scaleY, { toValue: 1,    duration: 80, useNativeDriver: true }),
-        ]).start(() => loop());
-      }, 4000 + Math.random() * 2000);
-      return t;
-    };
-    const t = loop();
-    return () => clearTimeout(t);
-  }, [scaleY]);
-  return scaleY;
-}
-
 // ─── Sub-components ───────────────────────────────────────────────────────────
 
 function ChupChuHead() {
-  const leftEye      = useEyeGlow(0);
-  const rightEye     = useEyeGlow(600);
-  const leftAntenna  = useAntennaPulse(0);
-  const rightAntenna = useAntennaPulse(1600);
-  const blinkScaleY  = useBlink();
+  const [imgSize, setImgSize] = useState({ width: 0, height: 0 });
+  const leftEyeOpacity        = useEyeGlow(0);
+  const rightEyeOpacity       = useEyeGlow(600);
+  const leftAntennaOpacity    = useAntennaPulse(0);
+  const rightAntennaOpacity   = useAntennaPulse(1600);
+
+  // Percentages measured from original 1536x1024 image
+  const pct = {
+    leftAntenna:  { x: 0.213, y: 0.298 },
+    rightAntenna: { x: 0.541, y: 0.161 },
+    leftEye:      { x: 0.318, y: 0.490 },
+    rightEye:     { x: 0.420, y: 0.487 },
+  };
+
+  const { width: iw, height: ih } = imgSize;
 
   return (
     <View style={styles.headSection}>
       <View style={styles.imageWrap}>
-        <Animated.View style={[styles.antennaTip, styles.leftAntennaTip,  { transform: [{ scale: leftAntenna  }] }]} />
-        <Animated.View style={[styles.antennaTip, styles.rightAntennaTip, { transform: [{ scale: rightAntenna }] }]} />
-
-        <Animated.View style={[styles.imageContainer, { transform: [{ scaleY: blinkScaleY }] }]}>
-          <Image source={require('../assets/chupchu_head.jpg')} style={styles.headImage} />
-        </Animated.View>
-
-        <Animated.View style={[styles.eyeGlow, styles.leftEye,  { opacity: leftEye  }]} />
-        <Animated.View style={[styles.eyeGlow, styles.rightEye, { opacity: rightEye }]} />
+        <Image
+          source={require('../assets/chupchu_from_the_tree.png')}
+          style={styles.headImage}
+          resizeMode="contain"
+          onLayout={e => {
+            const { width, height } = e.nativeEvent.layout;
+            setImgSize({ width, height });
+          }}
+        />
+        {iw > 0 && (
+          <>
+            {/* Eye glow overlays */}
+            <Animated.View style={[styles.eyeGlow, {
+              position: 'absolute',
+              left: iw * pct.leftEye.x + 37.7 + (20 * 0.45),
+              top:  ih * pct.leftEye.y - 14.04 + (26 * 0.45),
+              opacity: leftEyeOpacity,
+            }]} />
+            <Animated.View style={[styles.eyeGlow, {
+              position: 'absolute',
+              left: iw * pct.rightEye.x + 37.7 + (20 * 0.45),
+              top:  ih * pct.rightEye.y - 2.34 + (28 * 0.18),
+              opacity: rightEyeOpacity,
+            }]} />
+            {/* Antenna pulse dots */}
+            <Animated.View style={[styles.antennaTip, {
+              position: 'absolute',
+              left: iw * pct.leftAntenna.x + 57.84,
+              top:  ih * pct.leftAntenna.y - 7.46,
+              opacity: leftAntennaOpacity,
+            }]} />
+            <Animated.View style={[styles.antennaTip, {
+              position: 'absolute',
+              left: iw * pct.rightAntenna.x + (7.87 * 0.5) + (7.87 * 1.36),
+              top:  ih * pct.rightAntenna.y + (7.87 * 4) + (7.87 * 0.45),
+              opacity: rightAntennaOpacity,
+            }]} />
+          </>
+        )}
       </View>
 
       <Text style={styles.headName}>צ'ופצ'ו ✦</Text>
@@ -354,53 +381,62 @@ export function ChupChuScreen() {
 
   // ── Voice ─────────────────────────────────────────────────────────────────
   const handleMicPress = async () => {
-    if (voiceState === 'speaking') {
-      stopSpeaking();
-      setVoiceState('idle');
-      return;
-    }
-    if (voiceState === 'recording') {
-      setVoiceState('transcribing');
-      try {
-        const text = await stopRecordingAndTranscribe();
-        if (!text) { setVoiceState('idle'); return; }
-
-        // Show user's transcribed text as a bubble
-        const userMsg: Message = {
-          id: Date.now().toString(), role: 'user',
-          text, timestamp: new Date(),
-        };
-        setMessages(prev => [...prev, userMsg]);
-        setVoiceState('thinking');
-
-        const result = await sendChupChuMessage(text, []);
-        const botMsg: Message = {
-          id: (Date.now() + 1).toString(), role: 'chupchu',
-          text: `${result.response}\nצ'יפ ✦`, timestamp: new Date(),
-        };
-        setMessages(prev => [...prev, botMsg]);
-        if (result.mobileTool) setToolCall(result.mobileTool);
-
-        setVoiceState('speaking');
-        await speakHebrew(result.response);
+    try {
+      if (voiceState === 'speaking') {
+        stopSpeaking();
         setVoiceState('idle');
-      } catch (err: any) {
-        setVoiceState('idle');
-        Alert.alert('שגיאה', err.message ?? 'אירעה שגיאה, נסה שוב');
-      }
-      return;
-    }
-    if (voiceState === 'idle') {
-      if (offline) {
-        Alert.alert('אין חיבור', 'אני צריך חיבור לאינטרנט כדי לעזור לך');
         return;
       }
-      try {
-        await startRecording();
-        setVoiceState('recording');
-      } catch (err: any) {
-        Alert.alert('שגיאה', err.message ?? 'לא ניתן להתחיל הקלטה');
+      if (voiceState === 'recording') {
+        setVoiceState('transcribing');
+        try {
+          const text = await stopRecordingAndTranscribe();
+          if (!text) { setVoiceState('idle'); return; }
+
+          // Show user's transcribed text as a bubble
+          const userMsg: Message = {
+            id: Date.now().toString(), role: 'user',
+            text, timestamp: new Date(),
+          };
+          setMessages(prev => [...prev, userMsg]);
+          setVoiceState('thinking');
+
+          const result = await sendChupChuMessage(text, []);
+          const botMsg: Message = {
+            id: (Date.now() + 1).toString(), role: 'chupchu',
+            text: `${result.response}\nצ'יפ ✦`, timestamp: new Date(),
+          };
+          setMessages(prev => [...prev, botMsg]);
+          if (result.mobileTool) setToolCall(result.mobileTool);
+
+          setVoiceState('speaking');
+          await speakHebrew(result.response);
+          setVoiceState('idle');
+        } catch (err: any) {
+          setVoiceState('idle');
+          Alert.alert('שגיאה', err.message ?? 'אירעה שגיאה, נסה שוב');
+        }
+        return;
       }
+      if (voiceState === 'idle') {
+        if (offline) {
+          Alert.alert('אין חיבור', 'אני צריך חיבור לאינטרנט כדי לעזור לך');
+          return;
+        }
+        if (typeof startRecording !== 'function') {
+          Alert.alert('שגיאה', 'שירות הקול אינו זמין');
+          return;
+        }
+        try {
+          await startRecording();
+          setVoiceState('recording');
+        } catch (err: any) {
+          Alert.alert('שגיאה', err.message ?? 'לא ניתן להתחיל הקלטה');
+        }
+      }
+    } catch (err: any) {
+      setVoiceState('idle');
+      Alert.alert('שגיאה', err.message ?? 'בעיה עם המיקרופון');
     }
   };
 
@@ -579,49 +615,28 @@ const styles = StyleSheet.create({
     paddingBottom: 8,
   },
   imageWrap: {
-    width: 160,
-    height: 180,
+    width: '100%',
+    aspectRatio: 1536 / 1024,
     position: 'relative',
-    alignItems: 'center',
-    justifyContent: 'flex-end',
-  },
-  antennaTip: {
-    position: 'absolute',
-    width: 10,
-    height: 10,
-    borderRadius: 5,
-    backgroundColor: '#f5a623',
-    shadowColor: '#f5a623',
-    shadowOffset: { width: 0, height: 0 },
-    shadowOpacity: 0.9,
-    shadowRadius: 6,
-    elevation: 6,
-  },
-  leftAntennaTip:  { top: 8, left: 42 },
-  rightAntennaTip: { top: 8, right: 42 },
-  imageContainer: {
-    width: 120,
-    height: 120,
-    borderRadius: 60,
-    overflow: 'hidden',
-    borderWidth: 2,
-    borderColor: '#1a3d1f',
-    marginTop: 40,
   },
   headImage: {
-    width: 120,
-    height: 120,
-    borderRadius: 60,
+    width: '100%',
+    height: '100%',
+  },
+  antennaTip: {
+    width: 6.45,
+    height: 6.45,
+    borderRadius: 3.23,
+    backgroundColor: '#ffcc00',
   },
   eyeGlow: {
-    position: 'absolute',
-    width: 22,
-    height: 14,
-    borderRadius: 11,
-    backgroundColor: '#f5a623',
+    width: 16.4,
+    height: 22.96,
+    borderRadius: 8.2,
+    backgroundColor: '#ffe066',
   },
-  leftEye:  { top: 92, left: 26 },
-  rightEye: { top: 92, right: 26 },
+  leftEye:  {},
+  rightEye: {},
   headName: {
     marginTop: 10,
     fontSize: 17,
@@ -658,12 +673,12 @@ const styles = StyleSheet.create({
   dashCardValue: {
     fontSize: 13,
     fontWeight: '700',
-    color: '#e8d4a8',
+    color: '#f0e8d0',
     textAlign: 'center',
   },
   dashCardLabel: {
     fontSize: 10,
-    color: '#2d5035',
+    color: '#8ab89a',
     textAlign: 'center',
     writingDirection: 'rtl',
   },
@@ -705,7 +720,7 @@ const styles = StyleSheet.create({
     writingDirection: 'rtl',
     textAlign: 'right',
   },
-  bubbleTextChupchu: { color: '#d4c49a' },
+  bubbleTextChupchu: { color: '#d4ecd8' },
   bubbleTextUser:    { color: '#b8d4be' },
 
   // Typing indicator
