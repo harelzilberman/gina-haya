@@ -1,14 +1,16 @@
 import { useEffect, useState } from 'react';
 import {
   View, Text, TouchableOpacity, StyleSheet,
-  Switch, ScrollView, Platform,
+  Switch, ScrollView, Platform, Alert,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import * as SecureStore from 'expo-secure-store';
+import * as Notifications from 'expo-notifications';
 import { getCurrentUserEmail } from '../services/auth';
 import { useAuth } from '../context/AuthContext';
 
-const NOTIF_HOUR_KEY = 'gina_haya_notif_hour';
+const NOTIF_HOUR_KEY    = 'gina_haya_notif_hour';
+const NOTIF_ENABLED_KEY = 'gina_haya_notif_enabled';
 
 export function SettingsScreen() {
   const { signOut } = useAuth();
@@ -22,16 +24,49 @@ export function SettingsScreen() {
     SecureStore.getItemAsync(NOTIF_HOUR_KEY).then(val => {
       if (val) setNotifHour(parseInt(val, 10));
     });
+    SecureStore.getItemAsync(NOTIF_ENABLED_KEY).then(val => {
+      if (val === 'true') setNotifEnabled(true);
+    });
   }, []);
 
-  const handleToggleNotifications = async (_value: boolean) => {
-    // Push notifications disabled for Expo Go development — no-op.
+  const scheduleDaily = async (hour: number) => {
+    await Notifications.cancelAllScheduledNotificationsAsync();
+    await Notifications.scheduleNotificationAsync({
+      content: {
+        title: 'גינה חיה 🌿',
+        body: 'בוקר טוב! מה קורה בגינה היום?',
+        sound: true,
+      },
+      trigger: {
+        type: Notifications.SchedulableTriggerInputTypes.DAILY,
+        hour,
+        minute: 0,
+      },
+    });
+  };
+
+  const handleToggleNotifications = async (value: boolean) => {
+    if (value) {
+      const { status } = await Notifications.requestPermissionsAsync();
+      if (status !== 'granted') {
+        Alert.alert('הרשאה נדרשת', 'כדי לקבל התראות יש לאשר גישה בהגדרות המכשיר.');
+        return;
+      }
+      await scheduleDaily(notifHour);
+    } else {
+      await Notifications.cancelAllScheduledNotificationsAsync();
+    }
+    setNotifEnabled(value);
+    await SecureStore.setItemAsync(NOTIF_ENABLED_KEY, String(value));
   };
 
   const changeNotifHour = async (delta: number) => {
     const next = Math.min(23, Math.max(0, notifHour + delta));
     setNotifHour(next);
     await SecureStore.setItemAsync(NOTIF_HOUR_KEY, String(next));
+    if (notifEnabled) {
+      await scheduleDaily(next);
+    }
   };
 
   const handleLogout = async () => {
