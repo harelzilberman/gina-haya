@@ -1,25 +1,30 @@
-import {
-  AudioRecorder,
-  RecordingPresets,
-  requestRecordingPermissionsAsync,
-  setAudioModeAsync,
-} from 'expo-audio';
 import * as Speech from 'expo-speech';
 
 const OPENAI_KEY = process.env.EXPO_PUBLIC_OPENAI_KEY ?? '';
 
-let activeRecorder: AudioRecorder | null = null;
+// Lazy load expo-audio to avoid crash if native module unavailable
+let AudioRecorder: any = null;
+let RecordingPresets: any = null;
+let requestRecordingPermissionsAsync: any = null;
+let setAudioModeAsync: any = null;
+
+try {
+  const audio = require('expo-audio');
+  AudioRecorder = audio.AudioRecorder;
+  RecordingPresets = audio.RecordingPresets;
+  requestRecordingPermissionsAsync = audio.requestRecordingPermissionsAsync;
+  setAudioModeAsync = audio.setAudioModeAsync;
+} catch {
+  // expo-audio not available in this environment
+}
+
+let activeRecorder: any = null;
 
 export async function startRecording(): Promise<void> {
+  if (!AudioRecorder) throw new Error('הקלטה אינה זמינה ב-Expo Go');
   const { granted } = await requestRecordingPermissionsAsync();
-  if (!granted) {
-    throw new Error('נא לאפשר גישה למיקרופון בהגדרות');
-  }
-  await setAudioModeAsync({
-    allowsRecording: true,
-    playsInSilentMode: true,
-  });
-
+  if (!granted) throw new Error('אין אישור גישה למיקרופון בהגדרות');
+  await setAudioModeAsync({ allowsRecording: true, playsInSilentMode: true });
   const recorder = new AudioRecorder({
     ...RecordingPresets.HIGH_QUALITY,
     android: {
@@ -38,28 +43,22 @@ export async function stopRecordingAndTranscribe(): Promise<string> {
   await activeRecorder.stop();
   const uri = activeRecorder.uri;
   activeRecorder = null;
-
   if (!uri) throw new Error('אין קובץ הקלטה');
   if (!OPENAI_KEY) throw new Error('מפתח OpenAI לא מוגדר');
-
   await setAudioModeAsync({ allowsRecording: false });
-
   const formData = new FormData();
   formData.append('file', { uri, type: 'audio/m4a', name: 'audio.m4a' } as any);
   formData.append('model', 'whisper-1');
   formData.append('language', 'he');
-
   const response = await fetch('https://api.openai.com/v1/audio/transcriptions', {
     method: 'POST',
     headers: { Authorization: `Bearer ${OPENAI_KEY}` },
     body: formData,
   });
-
   if (!response.ok) {
     const err = await response.json().catch(() => ({}));
     throw new Error(err.error?.message ?? `Whisper error ${response.status}`);
   }
-
   const { text } = await response.json();
   return (text ?? '').trim();
 }
