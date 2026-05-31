@@ -498,7 +498,8 @@ export function ChupChuScreen() {
 
       <KeyboardAvoidingView
         style={styles.flex}
-        behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+        keyboardVerticalOffset={Platform.OS === 'android' ? 90 : 0}
       >
         {/* Header bar */}
         <View style={styles.header}>
