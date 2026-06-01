@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { useNavigation } from '@react-navigation/native';
-import Svg, { Circle, Ellipse, G, Line, Path, Rect, Text as SvgText } from 'react-native-svg';
+import Svg, { Circle, Ellipse, G, Line, Path } from 'react-native-svg';
 import {
   ActivityIndicator,
   Alert,
@@ -162,6 +162,14 @@ function useEyeGlow(isSpeaking: boolean, offsetMs: number) {
 
 // ─── Sub-components ───────────────────────────────────────────────────────────
 
+const signMessages = [
+  'לחץ לתפריט',
+  'הגינה שלך',
+  'כל המסכים',
+  'press me',
+  'web app →',
+];
+
 function ChupChuHead({ isSpeaking, onSpiderPress }: { isSpeaking: boolean; onSpiderPress: () => void }) {
   const [imgSize, setImgSize] = useState({ width: 0, height: 0 });
   const leftEyeOpacity      = useEyeGlow(isSpeaking, 0);
@@ -169,12 +177,30 @@ function ChupChuHead({ isSpeaking, onSpiderPress }: { isSpeaking: boolean; onSpi
   const leftAntennaOpacity  = useFirefly(0);
   const rightAntennaOpacity = useFirefly(1800);
 
-  // Percentages measured from original 1536x1024 image
+  const [signIndex, setSignIndex] = useState(0);
+  const signOpacity = useRef(new Animated.Value(1)).current;
+
+  useEffect(() => {
+    const cycle = () => {
+      Animated.sequence([
+        Animated.delay(2200),
+        Animated.timing(signOpacity, { toValue: 0, duration: 400, useNativeDriver: true }),
+        Animated.timing(signOpacity, { toValue: 1, duration: 400, useNativeDriver: true }),
+      ]).start(() => {
+        setSignIndex(i => (i + 1) % signMessages.length);
+        cycle();
+      });
+    };
+    cycle();
+    return () => signOpacity.stopAnimation();
+  }, [signOpacity]);
+
+  // Percentages measured from new chupchu_web_in_hole.png
   const pct = {
-    leftAntenna:  { x: 0.213, y: 0.298 },
-    rightAntenna: { x: 0.541, y: 0.161 },
-    leftEye:      { x: 0.318, y: 0.490 },
-    rightEye:     { x: 0.420, y: 0.487 },
+    leftAntenna:  { x: 0.48, y: 0.18 },
+    rightAntenna: { x: 0.64, y: 0.14 },
+    leftEye:      { x: 0.50, y: 0.44 },
+    rightEye:     { x: 0.61, y: 0.43 },
   };
 
   const { width: iw, height: ih } = imgSize;
@@ -183,7 +209,7 @@ function ChupChuHead({ isSpeaking, onSpiderPress }: { isSpeaking: boolean; onSpi
     <View style={styles.headSection}>
       <View style={styles.imageWrap}>
         <Image
-          source={require('../assets/chupchu_from_the_tree.png')}
+          source={require('../assets/chupchu_web_in_hole.png')}
           style={styles.headImage}
           resizeMode="contain"
           onLayout={e => {
@@ -222,87 +248,23 @@ function ChupChuHead({ isSpeaking, onSpiderPress }: { isSpeaking: boolean; onSpi
           </>
         )}
 
-        {/* Spider button — top-left corner */}
+        {/* Animated sign text overlay on the spider's sign */}
         <TouchableOpacity
-          style={styles.spiderBtn}
+          style={styles.signTapZone}
           onPress={onSpiderPress}
-          activeOpacity={0.8}
+          activeOpacity={0.7}
         >
-          <Svg width={70} height={80} viewBox="0 0 60 75">
-            {/* Web background — radial lines */}
-            {[0,30,60,90,120,150,180,210,240,270,300,330].map(deg => {
-              const rad = deg * Math.PI / 180;
-              return <Line key={deg}
-                x1={30} y1={30}
-                x2={30 + Math.cos(rad)*28}
-                y2={30 + Math.sin(rad)*28}
-                stroke="rgba(255,255,255,0.35)"
-                strokeWidth={0.5}
-              />;
-            })}
-            {/* Concentric rings */}
-            {[8,14,20,26].map(r => (
-              <Circle key={r} cx={30} cy={30} r={r}
-                fill="none"
-                stroke="rgba(255,255,255,0.3)"
-                strokeWidth={0.4}
-              />
-            ))}
-            {/* Sparkles at web intersections */}
-            {[[30,4],[52,18],[52,42],[30,56],[8,42],[8,18]].map(([x,y],i) => (
-              <G key={i}>
-                <Line x1={x-2} y1={y} x2={x+2} y2={y} stroke="rgba(200,255,100,0.7)" strokeWidth={0.6}/>
-                <Line x1={x} y1={y-2} x2={x} y2={y+2} stroke="rgba(200,255,100,0.7)" strokeWidth={0.6}/>
-              </G>
-            ))}
-
-            {/* Spider — all elements rotated so head points down, abdomen up */}
-            <G transform="rotate(180, 30, 35)">
-              {/* Thread */}
-              <Line x1={30} y1={0} x2={30} y2={18} stroke="rgba(255,255,255,0.4)" strokeWidth={0.6} />
-
-              {/* Abdomen */}
-              <Ellipse cx={30} cy={30} rx={7} ry={9}
-                fill="#1a0f00" stroke="#8b6914" strokeWidth={0.8} />
-              <Ellipse cx={30} cy={28} rx={3} ry={4} fill="#2d1a00" opacity={0.8} />
-              <Line x1={27} y1={32} x2={33} y2={32} stroke="#8b6914" strokeWidth={0.4} opacity={0.6}/>
-              <Line x1={26} y1={34} x2={34} y2={34} stroke="#8b6914" strokeWidth={0.4} opacity={0.5}/>
-
-              {/* Head */}
-              <Circle cx={30} cy={20} r={5}
-                fill="#1a0f00" stroke="#8b6914" strokeWidth={0.8} />
-              <Circle cx={28} cy={19} r={1.2} fill="#c8ff4a" />
-              <Circle cx={32} cy={19} r={1.2} fill="#c8ff4a" />
-              <Circle cx={28.4} cy={18.6} r={0.4} fill="#ffffff" />
-              <Circle cx={32.4} cy={18.6} r={0.4} fill="#ffffff" />
-
-              {/* Legs left */}
-              <Path d="M 24,22 Q 16,18 12,14" stroke="#3d2200" strokeWidth={1.2} fill="none" strokeLinecap="round"/>
-              <Path d="M 24,24 Q 15,23 10,22" stroke="#3d2200" strokeWidth={1.2} fill="none" strokeLinecap="round"/>
-              <Path d="M 24,26 Q 15,28 11,30" stroke="#3d2200" strokeWidth={1.2} fill="none" strokeLinecap="round"/>
-              <Path d="M 25,28 Q 17,34 14,38" stroke="#3d2200" strokeWidth={1.2} fill="none" strokeLinecap="round"/>
-
-              {/* Legs right */}
-              <Path d="M 36,22 Q 44,18 48,14" stroke="#3d2200" strokeWidth={1.2} fill="none" strokeLinecap="round"/>
-              <Path d="M 36,24 Q 45,23 50,22" stroke="#3d2200" strokeWidth={1.2} fill="none" strokeLinecap="round"/>
-              <Path d="M 36,26 Q 45,28 49,30" stroke="#3d2200" strokeWidth={1.2} fill="none" strokeLinecap="round"/>
-              <Path d="M 35,28 Q 43,34 46,38" stroke="#3d2200" strokeWidth={1.2} fill="none" strokeLinecap="round"/>
-
-              {/* Fang lines from mouth to sign corners */}
-              <Path d="M 26,42 Q 22,44 18,43" stroke="#8b6914" strokeWidth={0.9} fill="none"/>
-              <Path d="M 34,42 Q 38,44 42,43" stroke="#8b6914" strokeWidth={0.9} fill="none"/>
-              {/* Sign — counter-rotated so text reads correctly */}
-              <G transform="rotate(180, 30, 49)">
-                <Rect x={16} y={40} width={28} height={18} rx={2}
-                  fill="#f5f0e0" stroke="#8b6914" strokeWidth={0.8} />
-                <SvgText x={30} y={51} fontSize={7} fontWeight="bold"
-                  fill="#3d2200" textAnchor="middle">WEB</SvgText>
-                <SvgText x={30} y={56} fontSize={4.5}
-                  fill="#8b6914" textAnchor="middle">app</SvgText>
-              </G>
-            </G>
-          </Svg>
+          <Animated.Text style={[styles.signText, { opacity: signOpacity }]}>
+            {signMessages[signIndex]}
+          </Animated.Text>
         </TouchableOpacity>
+
+        {/* Wide tap zone covering the whole web area */}
+        <TouchableOpacity
+          style={styles.webTapZone}
+          onPress={onSpiderPress}
+          activeOpacity={0}
+        />
       </View>
 
       <Text style={styles.headName}>צ'ופצ'ו ✦</Text>
@@ -1314,12 +1276,32 @@ const styles = StyleSheet.create({
     fontWeight: '600',
   },
 
-  // Spider button
-  spiderBtn: {
+  // Sign tap zone (over the spider's sign in the image)
+  signTapZone: {
     position: 'absolute',
-    top: 18,
-    left: 18,
+    top: '35%',
+    left: '2%',
+    width: '30%',
+    height: '22%',
+    alignItems: 'center',
+    justifyContent: 'center',
     zIndex: 10,
+  },
+  signText: {
+    fontSize: 11,
+    fontWeight: '700',
+    color: '#2d1a00',
+    textAlign: 'center',
+    fontFamily: 'System',
+  },
+  // Wide tap zone covering the whole web area
+  webTapZone: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    width: '45%',
+    height: '80%',
+    zIndex: 9,
   },
 
   // Spider web navigation modal
