@@ -174,6 +174,15 @@ function ChupChuHead({ isSpeaking, onSpiderPress }: { isSpeaking: boolean; onSpi
   const [imgSize, setImgSize] = useState({ width: 0, height: 0 });
   const leftEyeOpacity      = useEyeGlow(isSpeaking, 0);
   const rightEyeOpacity     = useEyeGlow(isSpeaking, 1200);
+  const leftEyeHaloAnim     = useEyeGlow(isSpeaking, 900);
+  const rightEyeHaloAnim    = useEyeGlow(isSpeaking, 300);
+
+  const leftEyeHaloOpacity  = leftEyeHaloAnim.interpolate({
+    inputRange: [0, 1], outputRange: [0.15, 0.55],
+  });
+  const rightEyeHaloOpacity = rightEyeHaloAnim.interpolate({
+    inputRange: [0, 1], outputRange: [0.15, 0.55],
+  });
   const leftAntennaOpacity  = useFirefly(0);
   const rightAntennaOpacity = useFirefly(1800);
 
@@ -219,13 +228,34 @@ function ChupChuHead({ isSpeaking, onSpiderPress }: { isSpeaking: boolean; onSpi
         />
         {iw > 0 && (
           <>
-            {/* Eye glow overlays */}
+            {/* Left eye — halo (behind) + bright core */}
+            <Animated.View style={{
+              position: 'absolute',
+              width: 20,
+              height: 30,
+              borderRadius: 10,
+              backgroundColor: '#e07020',
+              left: iw * 0.415 + (20 * 0.36) + (20 * 0.09) + (14.6 * 0.18) + (9.34 * 0.18) - 3.5,
+              top:  ih * 0.522 - (28 * 0.54) + (16.31 * 0.5) - 4,
+              opacity: leftEyeHaloOpacity,
+            }} />
             <Animated.View style={[styles.eyeGlow, {
               position: 'absolute',
               left: iw * 0.415 + (20 * 0.36) + (20 * 0.09) + (14.6 * 0.18) + (9.34 * 0.18),
               top:  ih * 0.522 - (28 * 0.54) + (16.31 * 0.5),
               opacity: leftEyeOpacity,
             }]} />
+            {/* Right eye — halo (behind) + bright core */}
+            <Animated.View style={{
+              position: 'absolute',
+              width: 20,
+              height: 30,
+              borderRadius: 10,
+              backgroundColor: '#e07020',
+              left: iw * 0.507 + (20 * 0.36) + (20 * 0.36) - (20 * 0.09) + (14.6 * 0.09) - 3.5,
+              top:  ih * 0.506 - (28 * 0.54) + (28 * 0.45) - 4,
+              opacity: rightEyeHaloOpacity,
+            }} />
             <Animated.View style={[styles.eyeGlow, {
               position: 'absolute',
               left: iw * 0.507 + (20 * 0.36) + (20 * 0.36) - (20 * 0.09) + (14.6 * 0.09),
