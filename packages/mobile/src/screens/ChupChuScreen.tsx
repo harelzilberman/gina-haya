@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { useNavigation } from '@react-navigation/native';
-import Svg, { Circle, Ellipse, G, Line, Path } from 'react-native-svg';
+import Svg, { Circle, ClipPath, Defs, Ellipse, G, Line, Path, Circle as SvgCircle } from 'react-native-svg';
+const AnimatedSvgCircle = Animated.createAnimatedComponent(SvgCircle);
 import {
   ActivityIndicator,
   Alert,
@@ -158,23 +159,6 @@ function useFirefly(baseDelay: number) {
   return opacity;
 }
 
-function useEyeRipple(offsetMs: number) {
-  const anim = useRef(new Animated.Value(0)).current;
-  useEffect(() => {
-    const delay = setTimeout(() => {
-      Animated.loop(
-        Animated.timing(anim, {
-          toValue: 1,
-          duration: 1600,
-          useNativeDriver: false,
-        })
-      ).start();
-    }, offsetMs);
-    return () => clearTimeout(delay);
-  }, [anim, offsetMs]);
-  return anim;
-}
-
 // ─── Sub-components ───────────────────────────────────────────────────────────
 
 const signMessages = [
@@ -195,6 +179,20 @@ function ChupChuHead({ isSpeaking, onSpiderPress }: { isSpeaking: boolean; onSpi
   const rightRipple3 = useEyeRipple(1366);
   const leftAntennaOpacity  = useFirefly(0);
   const rightAntennaOpacity = useFirefly(1800);
+
+  const leftGlowAnim  = useRef(new Animated.Value(0.3)).current;
+  const rightGlowAnim = useRef(new Animated.Value(0.3)).current;
+  useEffect(() => {
+    const makeAnim = (val: Animated.Value) => Animated.loop(Animated.sequence([
+      Animated.timing(val, { toValue: 0.85, duration: 1800, useNativeDriver: false }),
+      Animated.timing(val, { toValue: 0.3,  duration: 1800, useNativeDriver: false }),
+    ]));
+    const la = makeAnim(leftGlowAnim);
+    const ra = makeAnim(rightGlowAnim);
+    setTimeout(() => ra.start(), 900);
+    la.start();
+    return () => { la.stop(); ra.stop(); };
+  }, [leftGlowAnim, rightGlowAnim]);
 
   const [signIndex, setSignIndex] = useState(0);
   const signOpacity = useRef(new Animated.Value(1)).current;
@@ -238,46 +236,38 @@ function ChupChuHead({ isSpeaking, onSpiderPress }: { isSpeaking: boolean; onSpi
         />
         {iw > 0 && (
           <>
-            {/* Left eye — clipped lens container */}
-            <View style={{
-              position: 'absolute',
-              left: iw * 0.451 - 6 - (18 * 0.06),
-              top:  ih * 0.479 - 6 + (18 * 0.5) - (18 * 0.09),
-              width: 18,
-              height: 18,
-              borderRadius: 9,
-              overflow: 'hidden',
-            }}>
-              {[leftRipple1, leftRipple2, leftRipple3].map((anim, i) => (
-                <Animated.View key={i} style={{
-                  position: 'absolute', left: 0, top: 0,
-                  width: 18, height: 18, borderRadius: 9,
-                  backgroundColor: anim.interpolate({ inputRange: [0, 0.5, 1], outputRange: ['#ffffff', '#ffcc44', '#ff8c00'] }),
-                  opacity: anim.interpolate({ inputRange: [0, 0.3, 1], outputRange: [0.9, 0.7, 0] }),
-                  transform: [{ scale: anim.interpolate({ inputRange: [0, 1], outputRange: [0.1, 1.0] }) }],
-                }} />
-              ))}
-            </View>
-            {/* Right eye — clipped lens container */}
-            <View style={{
-              position: 'absolute',
-              left: iw * 0.535 - 6,
-              top:  ih * 0.479 - 6 + (18 * 0.5) + (18 * 0.09) + (18 * 0.06),
-              width: 18,
-              height: 18,
-              borderRadius: 9,
-              overflow: 'hidden',
-            }}>
-              {[rightRipple1, rightRipple2, rightRipple3].map((anim, i) => (
-                <Animated.View key={i} style={{
-                  position: 'absolute', left: 0, top: 0,
-                  width: 18, height: 18, borderRadius: 9,
-                  backgroundColor: anim.interpolate({ inputRange: [0, 0.5, 1], outputRange: ['#ffffff', '#ffcc44', '#ff8c00'] }),
-                  opacity: anim.interpolate({ inputRange: [0, 0.3, 1], outputRange: [0.9, 0.7, 0] }),
-                  transform: [{ scale: anim.interpolate({ inputRange: [0, 1], outputRange: [0.1, 1.0] }) }],
-                }} />
-              ))}
-            </View>
+            {/* Left eye — SVG clipped glow (locked position) */}
+            <Svg
+              width={18}
+              height={18}
+              style={{ position: 'absolute', left: iw * 0.451 - 8.08, top: ih * 0.479 + 1.38 }}
+            >
+              <Defs>
+                <ClipPath id="leftLensClip">
+                  <SvgCircle cx={9} cy={9} r={9} />
+                </ClipPath>
+              </Defs>
+              <G clipPath="url(#leftLensClip)">
+                <AnimatedSvgCircle cx={9} cy={9} r={9} fill="#ffcc44" opacity={leftGlowAnim} />
+                <AnimatedSvgCircle cx={9} cy={9} r={5} fill="#ffffff" opacity={leftGlowAnim} />
+              </G>
+            </Svg>
+            {/* Right eye — SVG clipped glow (locked position) */}
+            <Svg
+              width={18}
+              height={18}
+              style={{ position: 'absolute', left: iw * 0.535 - 2, top: ih * 0.479 + 5.7 }}
+            >
+              <Defs>
+                <ClipPath id="rightLensClip">
+                  <SvgCircle cx={9} cy={9} r={9} />
+                </ClipPath>
+              </Defs>
+              <G clipPath="url(#rightLensClip)">
+                <AnimatedSvgCircle cx={9} cy={9} r={9} fill="#ffcc44" opacity={rightGlowAnim} />
+                <AnimatedSvgCircle cx={9} cy={9} r={5} fill="#ffffff" opacity={rightGlowAnim} />
+              </G>
+            </Svg>
             {/* Antenna pulse dots — locked positions, firefly animated */}
             <Animated.View style={[styles.antennaTip, {
               position: 'absolute',
