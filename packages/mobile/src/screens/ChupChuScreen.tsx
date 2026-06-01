@@ -151,8 +151,8 @@ function useEyeGlow(isSpeaking: boolean, offsetMs: number) {
         ]))
       : Animated.loop(Animated.sequence([
           Animated.delay(offsetMs),
-          Animated.timing(opacity, { toValue: 0.35, duration: 2500, useNativeDriver: true }),
-          Animated.timing(opacity, { toValue: 0.05, duration: 3000, useNativeDriver: true }),
+          Animated.timing(opacity, { toValue: 0.75, duration: 2500, useNativeDriver: true }),
+          Animated.timing(opacity, { toValue: 0.25, duration: 3000, useNativeDriver: true }),
         ]));
     anim.start();
     return () => anim.stop();
@@ -1054,7 +1054,7 @@ const styles = StyleSheet.create({
     width: 9.34,
     height: 16.31,
     borderRadius: 4.67,
-    backgroundColor: '#ffe8a0',
+    backgroundColor: '#e8621a',
   },
   leftEye:  {},
   rightEye: {},
