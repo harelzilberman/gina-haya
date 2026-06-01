@@ -195,12 +195,12 @@ function ChupChuHead({ isSpeaking, onSpiderPress }: { isSpeaking: boolean; onSpi
     return () => signOpacity.stopAnimation();
   }, [signOpacity]);
 
-  // Percentages measured from new chupchu_web_in_hole.png
+  // Percentages measured from chupchu_web_in_hole.png
   const pct = {
-    leftAntenna:  { x: 0.48, y: 0.18 },
-    rightAntenna: { x: 0.64, y: 0.14 },
-    leftEye:      { x: 0.50, y: 0.44 },
-    rightEye:     { x: 0.61, y: 0.43 },
+    leftAntenna:  { x: 0.366, y: 0.120 },
+    rightAntenna: { x: 0.475, y: 0.064 },
+    leftEye:      { x: 0.415, y: 0.522 },
+    rightEye:     { x: 0.507, y: 0.506 },
   };
 
   const { width: iw, height: ih } = imgSize;
@@ -222,27 +222,27 @@ function ChupChuHead({ isSpeaking, onSpiderPress }: { isSpeaking: boolean; onSpi
             {/* Eye glow overlays */}
             <Animated.View style={[styles.eyeGlow, {
               position: 'absolute',
-              left: iw * pct.leftEye.x + 46.7 + (20 * 0.09),
-              top:  ih * pct.leftEye.y - 14.04 + (26 * 0.45),
+              left: iw * 0.415 + (20 * 0.36) + (20 * 0.09) + (14.6 * 0.18) + (9.34 * 0.18),
+              top:  ih * 0.522 - (28 * 0.54) + (16.31 * 0.5),
               opacity: leftEyeOpacity,
             }]} />
             <Animated.View style={[styles.eyeGlow, {
               position: 'absolute',
-              left: iw * pct.rightEye.x + 46.7 + (20 * 0.09),
-              top:  ih * pct.rightEye.y - 2.34 + (28 * 0.18),
+              left: iw * 0.507 + (20 * 0.36) + (20 * 0.36) - (20 * 0.09) + (14.6 * 0.09),
+              top:  ih * 0.506 - (28 * 0.54) + (28 * 0.45),
               opacity: rightEyeOpacity,
             }]} />
-            {/* Antenna pulse dots */}
+            {/* Antenna pulse dots — locked positions, firefly animated */}
             <Animated.View style={[styles.antennaTip, {
               position: 'absolute',
-              left: iw * pct.leftAntenna.x + 57.84,
-              top:  ih * pct.leftAntenna.y - 7.46,
+              left: iw * 0.366 + 0.45,
+              top:  ih * 0.120 + 36.89,
               opacity: leftAntennaOpacity,
             }]} />
             <Animated.View style={[styles.antennaTip, {
               position: 'absolute',
-              left: iw * pct.rightAntenna.x + (7.87 * 0.5) + (7.87 * 1.36),
-              top:  ih * pct.rightAntenna.y + (7.87 * 4) + (7.87 * 0.45),
+              left: iw * 0.475 + 39.28,
+              top:  ih * 0.064 + 58.05,
               opacity: rightAntennaOpacity,
             }]} />
           </>
@@ -1051,9 +1051,9 @@ const styles = StyleSheet.create({
     backgroundColor: '#c8ff4a',
   },
   eyeGlow: {
-    width: 20,
-    height: 28,
-    borderRadius: 10,
+    width: 9.34,
+    height: 16.31,
+    borderRadius: 4.67,
     backgroundColor: '#ffe8a0',
   },
   leftEye:  {},
