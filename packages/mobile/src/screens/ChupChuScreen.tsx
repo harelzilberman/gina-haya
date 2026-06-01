@@ -228,7 +228,7 @@ function ChupChuHead({ isSpeaking, onSpiderPress }: { isSpeaking: boolean; onSpi
           onPress={onSpiderPress}
           activeOpacity={0.8}
         >
-          <Svg width={82} height={95} viewBox="0 0 60 75">
+          <Svg width={70} height={80} viewBox="0 0 60 75">
             {/* Web background — radial lines */}
             {[0,30,60,90,120,150,180,210,240,270,300,330].map(deg => {
               const rad = deg * Math.PI / 180;
@@ -288,18 +288,18 @@ function ChupChuHead({ isSpeaking, onSpiderPress }: { isSpeaking: boolean; onSpi
               <Path d="M 36,26 Q 45,28 49,30" stroke="#3d2200" strokeWidth={1.2} fill="none" strokeLinecap="round"/>
               <Path d="M 35,28 Q 43,34 46,38" stroke="#3d2200" strokeWidth={1.2} fill="none" strokeLinecap="round"/>
 
-              {/* Sign */}
-              <Rect x={16} y={40} width={28} height={18} rx={2}
-                fill="#f5f0e0" stroke="#8b6914" strokeWidth={0.8} />
-              {/* Fang lines from mouth to sign corners (replacing old strings) */}
+              {/* Fang lines from mouth to sign corners */}
               <Path d="M 26,42 Q 22,44 18,43" stroke="#8b6914" strokeWidth={0.9} fill="none"/>
               <Path d="M 34,42 Q 38,44 42,43" stroke="#8b6914" strokeWidth={0.9} fill="none"/>
-              <SvgText x={30} y={51}
-                fontSize={7} fontWeight="bold" fill="#3d2200"
-                textAnchor="middle">WEB</SvgText>
-              <SvgText x={30} y={56}
-                fontSize={4.5} fill="#8b6914"
-                textAnchor="middle">app</SvgText>
+              {/* Sign — counter-rotated so text reads correctly */}
+              <G transform="rotate(180, 30, 49)">
+                <Rect x={16} y={40} width={28} height={18} rx={2}
+                  fill="#f5f0e0" stroke="#8b6914" strokeWidth={0.8} />
+                <SvgText x={30} y={51} fontSize={7} fontWeight="bold"
+                  fill="#3d2200" textAnchor="middle">WEB</SvgText>
+                <SvgText x={30} y={56} fontSize={4.5}
+                  fill="#8b6914" textAnchor="middle">app</SvgText>
+              </G>
             </G>
           </Svg>
         </TouchableOpacity>
@@ -1317,8 +1317,8 @@ const styles = StyleSheet.create({
   // Spider button
   spiderBtn: {
     position: 'absolute',
-    top: 2,
-    left: 8,
+    top: 18,
+    left: 18,
     zIndex: 10,
   },
 
