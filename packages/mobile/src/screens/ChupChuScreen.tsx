@@ -226,8 +226,8 @@ function ChupChuHead({ isSpeaking, onSpiderPress }: { isSpeaking: boolean; onSpi
               <Animated.View key={`le${i}`} style={{
                 position: 'absolute',
                 width: 16,
-                height: 14,
-                borderRadius: 7,
+                height: 11,
+                borderRadius: 5,
                 left: iw * 0.415 + (20 * 0.36) + (20 * 0.09) + (14.6 * 0.18) + (9.34 * 0.18),
                 top:  ih * 0.522 - (28 * 0.54) + (16.31 * 0.5),
                 backgroundColor: anim.interpolate({
@@ -249,8 +249,8 @@ function ChupChuHead({ isSpeaking, onSpiderPress }: { isSpeaking: boolean; onSpi
               <Animated.View key={`re${i}`} style={{
                 position: 'absolute',
                 width: 16,
-                height: 14,
-                borderRadius: 7,
+                height: 11,
+                borderRadius: 5,
                 left: iw * 0.507 + (20 * 0.36) + (20 * 0.36) - (20 * 0.09) + (14.6 * 0.09),
                 top:  ih * 0.506 - (28 * 0.54) + (28 * 0.45) + (14 * 0.45),
                 backgroundColor: anim.interpolate({
