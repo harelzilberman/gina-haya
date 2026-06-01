@@ -148,7 +148,7 @@ function useEyeRipple(offsetMs: number) {
       Animated.loop(
         Animated.timing(anim, {
           toValue: 1,
-          duration: 1800,
+          duration: 1600,
           useNativeDriver: false,
         })
       ).start();
@@ -171,11 +171,11 @@ const signMessages = [
 function ChupChuHead({ isSpeaking, onSpiderPress }: { isSpeaking: boolean; onSpiderPress: () => void }) {
   const [imgSize, setImgSize] = useState({ width: 0, height: 0 });
   const leftRipple1  = useEyeRipple(0);
-  const leftRipple2  = useEyeRipple(730);
-  const leftRipple3  = useEyeRipple(1460);
+  const leftRipple2  = useEyeRipple(600);
+  const leftRipple3  = useEyeRipple(1200);
   const rightRipple1 = useEyeRipple(300);
-  const rightRipple2 = useEyeRipple(1030);
-  const rightRipple3 = useEyeRipple(1760);
+  const rightRipple2 = useEyeRipple(900);
+  const rightRipple3 = useEyeRipple(1500);
   const leftAntennaOpacity  = useFirefly(0);
   const rightAntennaOpacity = useFirefly(1800);
 
@@ -201,8 +201,8 @@ function ChupChuHead({ isSpeaking, onSpiderPress }: { isSpeaking: boolean; onSpi
   const pct = {
     leftAntenna:  { x: 0.366, y: 0.120 },
     rightAntenna: { x: 0.475, y: 0.064 },
-    leftEye:      { x: 0.442, y: 0.531 },
-    rightEye:     { x: 0.533, y: 0.508 },
+    leftEye:      { x: 0.454, y: 0.472 },
+    rightEye:     { x: 0.535, y: 0.472 },
   };
 
   const { width: iw, height: ih } = imgSize;
@@ -221,52 +221,48 @@ function ChupChuHead({ isSpeaking, onSpiderPress }: { isSpeaking: boolean; onSpi
         />
         {iw > 0 && (
           <>
-            {/* Left eye — 3 ripple layers */}
-            {[leftRipple1, leftRipple2, leftRipple3].map((anim, i) => (
-              <Animated.View key={`le${i}`} style={{
-                position: 'absolute',
-                width: 12,
-                height: 12,
-                borderRadius: 6,
-                left: iw * pct.leftEye.x,
-                top:  ih * pct.leftEye.y,
-                backgroundColor: anim.interpolate({
-                  inputRange: [0, 0.3, 1],
-                  outputRange: ['#ffe566', '#ff9500', '#ff4400'],
-                }),
-                opacity: anim.interpolate({
-                  inputRange: [0, 1],
-                  outputRange: [0.85, 0],
-                }),
-                transform: [{ scale: anim.interpolate({
-                  inputRange: [0, 1],
-                  outputRange: [0.2, 1.8],
-                }) }],
-              }} />
-            ))}
-            {/* Right eye — 3 ripple layers */}
-            {[rightRipple1, rightRipple2, rightRipple3].map((anim, i) => (
-              <Animated.View key={`re${i}`} style={{
-                position: 'absolute',
-                width: 12,
-                height: 12,
-                borderRadius: 6,
-                left: iw * pct.rightEye.x,
-                top:  ih * pct.rightEye.y,
-                backgroundColor: anim.interpolate({
-                  inputRange: [0, 0.3, 1],
-                  outputRange: ['#ffe566', '#ff9500', '#ff4400'],
-                }),
-                opacity: anim.interpolate({
-                  inputRange: [0, 1],
-                  outputRange: [0.85, 0],
-                }),
-                transform: [{ scale: anim.interpolate({
-                  inputRange: [0, 1],
-                  outputRange: [0.2, 1.8],
-                }) }],
-              }} />
-            ))}
+            {/* Left eye — clipped lens container */}
+            <View style={{
+              position: 'absolute',
+              left: iw * 0.451 - 6 - (18 * 0.06),
+              top:  ih * 0.479 - 6 + (18 * 0.5) - (18 * 0.09),
+              width: 18,
+              height: 18,
+              borderRadius: 9,
+              overflow: 'hidden',
+            }}>
+              {[leftRipple1, leftRipple2, leftRipple3].map((ripple, i) => (
+                <Animated.View key={i} style={{
+                  position: 'absolute',
+                  left: 0, top: 0,
+                  width: 18, height: 18, borderRadius: 9,
+                  backgroundColor: ripple.interpolate({ inputRange: [0, 0.5, 1], outputRange: ['#ffffff', '#ffcc44', '#ff8c00'] }),
+                  opacity: ripple.interpolate({ inputRange: [0, 0.3, 1], outputRange: [0.9, 0.7, 0] }),
+                  transform: [{ scale: ripple.interpolate({ inputRange: [0, 1], outputRange: [0.1, 1.8] }) }],
+                }} />
+              ))}
+            </View>
+            {/* Right eye — clipped lens container */}
+            <View style={{
+              position: 'absolute',
+              left: iw * 0.535 - 6,
+              top:  ih * 0.479 - 6 + (18 * 0.5) + (18 * 0.09) + (18 * 0.06),
+              width: 18,
+              height: 18,
+              borderRadius: 9,
+              overflow: 'hidden',
+            }}>
+              {[rightRipple1, rightRipple2, rightRipple3].map((ripple, i) => (
+                <Animated.View key={i} style={{
+                  position: 'absolute',
+                  left: 0, top: 0,
+                  width: 18, height: 18, borderRadius: 9,
+                  backgroundColor: ripple.interpolate({ inputRange: [0, 0.5, 1], outputRange: ['#ffffff', '#ffcc44', '#ff8c00'] }),
+                  opacity: ripple.interpolate({ inputRange: [0, 0.3, 1], outputRange: [0.9, 0.7, 0] }),
+                  transform: [{ scale: ripple.interpolate({ inputRange: [0, 1], outputRange: [0.1, 1.8] }) }],
+                }} />
+              ))}
+            </View>
             {/* Antenna pulse dots — locked positions, firefly animated */}
             <Animated.View style={[styles.antennaTip, {
               position: 'absolute',
