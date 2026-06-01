@@ -111,23 +111,6 @@ const VOICE_LABEL: Record<VoiceState, string> = {
 
 // ─── Animated head hooks ──────────────────────────────────────────────────────
 
-function useEyeRipple(offsetMs: number) {
-  const anim = useRef(new Animated.Value(0)).current;
-  useEffect(() => {
-    const delay = setTimeout(() => {
-      Animated.loop(
-        Animated.timing(anim, {
-          toValue: 1,
-          duration: 1600,
-          useNativeDriver: false,
-        })
-      ).start();
-    }, offsetMs);
-    return () => clearTimeout(delay);
-  }, [anim, offsetMs]);
-  return anim;
-}
-
 function useFirefly(baseDelay: number) {
   const opacity  = useRef(new Animated.Value(0)).current;
   const alive    = useRef(true);
@@ -170,28 +153,8 @@ const signMessages = [
 
 function ChupChuHead({ isSpeaking, onSpiderPress }: { isSpeaking: boolean; onSpiderPress: () => void }) {
   const [imgSize, setImgSize] = useState({ width: 0, height: 0 });
-  const leftRipple1  = useEyeRipple(0);
-  const leftRipple2  = useEyeRipple(533);
-  const leftRipple3  = useEyeRipple(1066);
-  const rightRipple1 = useEyeRipple(300);
-  const rightRipple2 = useEyeRipple(833);
-  const rightRipple3 = useEyeRipple(1366);
   const leftAntennaOpacity  = useFirefly(0);
   const rightAntennaOpacity = useFirefly(1800);
-
-  const leftGlowOpacity  = useRef(new Animated.Value(0.3)).current;
-  const rightGlowOpacity = useRef(new Animated.Value(0.3)).current;
-  useEffect(() => {
-    const makeAnim = (val: Animated.Value) => Animated.loop(Animated.sequence([
-      Animated.timing(val, { toValue: 0.9, duration: 1800, useNativeDriver: true }),
-      Animated.timing(val, { toValue: 0.3, duration: 1800, useNativeDriver: true }),
-    ]));
-    const la = makeAnim(leftGlowOpacity);
-    const ra = makeAnim(rightGlowOpacity);
-    la.start();
-    setTimeout(() => ra.start(), 900);
-    return () => { la.stop(); ra.stop(); };
-  }, [leftGlowOpacity, rightGlowOpacity]);
 
   const [signIndex, setSignIndex] = useState(0);
   const signOpacity = useRef(new Animated.Value(1)).current;
@@ -235,34 +198,6 @@ function ChupChuHead({ isSpeaking, onSpiderPress }: { isSpeaking: boolean; onSpi
         />
         {iw > 0 && (
           <>
-            {/* Left eye — glow dot + rim overlay */}
-            <View style={{ position: 'absolute', left: iw * 0.451 - 8.08, top: ih * 0.479 + 1.38 }}>
-              <Animated.View style={{
-                width: 14, height: 14, borderRadius: 7,
-                backgroundColor: '#ffe8a0',
-                opacity: leftGlowOpacity,
-              }} />
-              <View style={{
-                position: 'absolute', left: -4, top: -4,
-                width: 22, height: 22, borderRadius: 11,
-                borderWidth: 5, borderColor: '#3d1e08',
-                backgroundColor: 'transparent',
-              }} />
-            </View>
-            {/* Right eye — glow dot + rim overlay */}
-            <View style={{ position: 'absolute', left: iw * 0.535 - 2, top: ih * 0.479 + 5.7 }}>
-              <Animated.View style={{
-                width: 14, height: 14, borderRadius: 7,
-                backgroundColor: '#ffe8a0',
-                opacity: rightGlowOpacity,
-              }} />
-              <View style={{
-                position: 'absolute', left: -4, top: -4,
-                width: 22, height: 22, borderRadius: 11,
-                borderWidth: 5, borderColor: '#3d1e08',
-                backgroundColor: 'transparent',
-              }} />
-            </View>
             {/* Antenna pulse dots — locked positions, firefly animated */}
             <Animated.View style={[styles.antennaTip, {
               position: 'absolute',
