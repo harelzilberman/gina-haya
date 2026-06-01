@@ -1,7 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { useNavigation } from '@react-navigation/native';
-import Svg, { Circle, ClipPath, Defs, Ellipse, G, Line, Path, Circle as SvgCircle } from 'react-native-svg';
-const AnimatedSvgCircle = Animated.createAnimatedComponent(SvgCircle);
+import Svg, { Circle, Ellipse, G, Line, Path } from 'react-native-svg';
 import {
   ActivityIndicator,
   Alert,
@@ -180,19 +179,19 @@ function ChupChuHead({ isSpeaking, onSpiderPress }: { isSpeaking: boolean; onSpi
   const leftAntennaOpacity  = useFirefly(0);
   const rightAntennaOpacity = useFirefly(1800);
 
-  const leftGlowAnim  = useRef(new Animated.Value(0.3)).current;
-  const rightGlowAnim = useRef(new Animated.Value(0.3)).current;
+  const leftGlowOpacity  = useRef(new Animated.Value(0.3)).current;
+  const rightGlowOpacity = useRef(new Animated.Value(0.3)).current;
   useEffect(() => {
     const makeAnim = (val: Animated.Value) => Animated.loop(Animated.sequence([
-      Animated.timing(val, { toValue: 0.85, duration: 1800, useNativeDriver: false }),
-      Animated.timing(val, { toValue: 0.3,  duration: 1800, useNativeDriver: false }),
+      Animated.timing(val, { toValue: 0.9, duration: 1800, useNativeDriver: true }),
+      Animated.timing(val, { toValue: 0.3, duration: 1800, useNativeDriver: true }),
     ]));
-    const la = makeAnim(leftGlowAnim);
-    const ra = makeAnim(rightGlowAnim);
-    setTimeout(() => ra.start(), 900);
+    const la = makeAnim(leftGlowOpacity);
+    const ra = makeAnim(rightGlowOpacity);
     la.start();
+    setTimeout(() => ra.start(), 900);
     return () => { la.stop(); ra.stop(); };
-  }, [leftGlowAnim, rightGlowAnim]);
+  }, [leftGlowOpacity, rightGlowOpacity]);
 
   const [signIndex, setSignIndex] = useState(0);
   const signOpacity = useRef(new Animated.Value(1)).current;
@@ -236,38 +235,34 @@ function ChupChuHead({ isSpeaking, onSpiderPress }: { isSpeaking: boolean; onSpi
         />
         {iw > 0 && (
           <>
-            {/* Left eye — SVG clipped glow (locked position) */}
-            <Svg
-              width={18}
-              height={18}
-              style={{ position: 'absolute', left: iw * 0.451 - 8.08, top: ih * 0.479 + 1.38 }}
-            >
-              <Defs>
-                <ClipPath id="leftLensClip">
-                  <SvgCircle cx={9} cy={9} r={9} />
-                </ClipPath>
-              </Defs>
-              <G clipPath="url(#leftLensClip)">
-                <AnimatedSvgCircle cx={9} cy={9} r={9} fill="#ffcc44" opacity={leftGlowAnim} />
-                <AnimatedSvgCircle cx={9} cy={9} r={5} fill="#ffffff" opacity={leftGlowAnim} />
-              </G>
-            </Svg>
-            {/* Right eye — SVG clipped glow (locked position) */}
-            <Svg
-              width={18}
-              height={18}
-              style={{ position: 'absolute', left: iw * 0.535 - 2, top: ih * 0.479 + 5.7 }}
-            >
-              <Defs>
-                <ClipPath id="rightLensClip">
-                  <SvgCircle cx={9} cy={9} r={9} />
-                </ClipPath>
-              </Defs>
-              <G clipPath="url(#rightLensClip)">
-                <AnimatedSvgCircle cx={9} cy={9} r={9} fill="#ffcc44" opacity={rightGlowAnim} />
-                <AnimatedSvgCircle cx={9} cy={9} r={5} fill="#ffffff" opacity={rightGlowAnim} />
-              </G>
-            </Svg>
+            {/* Left eye — glow dot + rim overlay */}
+            <View style={{ position: 'absolute', left: iw * 0.451 - 8.08, top: ih * 0.479 + 1.38 }}>
+              <Animated.View style={{
+                width: 14, height: 14, borderRadius: 7,
+                backgroundColor: '#ffe8a0',
+                opacity: leftGlowOpacity,
+              }} />
+              <View style={{
+                position: 'absolute', left: -4, top: -4,
+                width: 22, height: 22, borderRadius: 11,
+                borderWidth: 5, borderColor: '#3d1e08',
+                backgroundColor: 'transparent',
+              }} />
+            </View>
+            {/* Right eye — glow dot + rim overlay */}
+            <View style={{ position: 'absolute', left: iw * 0.535 - 2, top: ih * 0.479 + 5.7 }}>
+              <Animated.View style={{
+                width: 14, height: 14, borderRadius: 7,
+                backgroundColor: '#ffe8a0',
+                opacity: rightGlowOpacity,
+              }} />
+              <View style={{
+                position: 'absolute', left: -4, top: -4,
+                width: 22, height: 22, borderRadius: 11,
+                borderWidth: 5, borderColor: '#3d1e08',
+                backgroundColor: 'transparent',
+              }} />
+            </View>
             {/* Antenna pulse dots — locked positions, firefly animated */}
             <Animated.View style={[styles.antennaTip, {
               position: 'absolute',
