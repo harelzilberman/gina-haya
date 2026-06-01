@@ -252,7 +252,7 @@ function ChupChuHead({ isSpeaking, onSpiderPress }: { isSpeaking: boolean; onSpi
                 height: 14,
                 borderRadius: 7,
                 left: iw * 0.507 + (20 * 0.36) + (20 * 0.36) - (20 * 0.09) + (14.6 * 0.09),
-                top:  ih * 0.506 - (28 * 0.54) + (28 * 0.45),
+                top:  ih * 0.506 - (28 * 0.54) + (28 * 0.45) + (14 * 0.45),
                 backgroundColor: anim.interpolate({
                   inputRange: [0, 1],
                   outputRange: ['#ffe8a0', '#ff8c00'],
