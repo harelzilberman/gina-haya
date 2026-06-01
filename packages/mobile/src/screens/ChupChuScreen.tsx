@@ -148,7 +148,7 @@ function useEyeRipple(offsetMs: number) {
       Animated.loop(
         Animated.timing(anim, {
           toValue: 1,
-          duration: 2200,
+          duration: 1800,
           useNativeDriver: false,
         })
       ).start();
@@ -201,8 +201,8 @@ function ChupChuHead({ isSpeaking, onSpiderPress }: { isSpeaking: boolean; onSpi
   const pct = {
     leftAntenna:  { x: 0.366, y: 0.120 },
     rightAntenna: { x: 0.475, y: 0.064 },
-    leftEye:      { x: 0.415, y: 0.522 },
-    rightEye:     { x: 0.507, y: 0.506 },
+    leftEye:      { x: 0.442, y: 0.531 },
+    rightEye:     { x: 0.533, y: 0.508 },
   };
 
   const { width: iw, height: ih } = imgSize;
@@ -225,11 +225,11 @@ function ChupChuHead({ isSpeaking, onSpiderPress }: { isSpeaking: boolean; onSpi
             {[leftRipple1, leftRipple2, leftRipple3].map((anim, i) => (
               <Animated.View key={`le${i}`} style={{
                 position: 'absolute',
-                width: 16,
-                height: 11,
-                borderRadius: 5,
-                left: iw * 0.415 + (20 * 0.36) + (20 * 0.09) + (14.6 * 0.18) + (9.34 * 0.18),
-                top:  ih * 0.522 - (28 * 0.54) + (16.31 * 0.5),
+                width: 12,
+                height: 12,
+                borderRadius: 6,
+                left: iw * pct.leftEye.x,
+                top:  ih * pct.leftEye.y,
                 backgroundColor: anim.interpolate({
                   inputRange: [0, 0.3, 1],
                   outputRange: ['#ffe566', '#ff9500', '#ff4400'],
@@ -240,7 +240,7 @@ function ChupChuHead({ isSpeaking, onSpiderPress }: { isSpeaking: boolean; onSpi
                 }),
                 transform: [{ scale: anim.interpolate({
                   inputRange: [0, 1],
-                  outputRange: [0.8, 2.2],
+                  outputRange: [0.2, 1.8],
                 }) }],
               }} />
             ))}
@@ -248,11 +248,11 @@ function ChupChuHead({ isSpeaking, onSpiderPress }: { isSpeaking: boolean; onSpi
             {[rightRipple1, rightRipple2, rightRipple3].map((anim, i) => (
               <Animated.View key={`re${i}`} style={{
                 position: 'absolute',
-                width: 16,
-                height: 11,
-                borderRadius: 5,
-                left: iw * 0.507 + (20 * 0.36) + (20 * 0.36) - (20 * 0.09) + (14.6 * 0.09),
-                top:  ih * 0.506 - (28 * 0.54) + (28 * 0.45) + (14 * 0.45),
+                width: 12,
+                height: 12,
+                borderRadius: 6,
+                left: iw * pct.rightEye.x,
+                top:  ih * pct.rightEye.y,
                 backgroundColor: anim.interpolate({
                   inputRange: [0, 0.3, 1],
                   outputRange: ['#ffe566', '#ff9500', '#ff4400'],
@@ -263,7 +263,7 @@ function ChupChuHead({ isSpeaking, onSpiderPress }: { isSpeaking: boolean; onSpi
                 }),
                 transform: [{ scale: anim.interpolate({
                   inputRange: [0, 1],
-                  outputRange: [0.8, 2.2],
+                  outputRange: [0.2, 1.8],
                 }) }],
               }} />
             ))}
