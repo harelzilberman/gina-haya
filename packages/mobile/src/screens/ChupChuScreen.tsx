@@ -225,22 +225,22 @@ function ChupChuHead({ isSpeaking, onSpiderPress }: { isSpeaking: boolean; onSpi
             {[leftRipple1, leftRipple2, leftRipple3].map((anim, i) => (
               <Animated.View key={`le${i}`} style={{
                 position: 'absolute',
-                width: 14,
+                width: 16,
                 height: 14,
                 borderRadius: 7,
                 left: iw * 0.415 + (20 * 0.36) + (20 * 0.09) + (14.6 * 0.18) + (9.34 * 0.18),
                 top:  ih * 0.522 - (28 * 0.54) + (16.31 * 0.5),
                 backgroundColor: anim.interpolate({
-                  inputRange: [0, 1],
-                  outputRange: ['#ffe8a0', '#ff8c00'],
+                  inputRange: [0, 0.3, 1],
+                  outputRange: ['#ffe566', '#ff9500', '#ff4400'],
                 }),
                 opacity: anim.interpolate({
                   inputRange: [0, 1],
-                  outputRange: [0.75, 0],
+                  outputRange: [0.85, 0],
                 }),
                 transform: [{ scale: anim.interpolate({
                   inputRange: [0, 1],
-                  outputRange: [0.3, 2.5],
+                  outputRange: [0.8, 2.2],
                 }) }],
               }} />
             ))}
@@ -248,22 +248,22 @@ function ChupChuHead({ isSpeaking, onSpiderPress }: { isSpeaking: boolean; onSpi
             {[rightRipple1, rightRipple2, rightRipple3].map((anim, i) => (
               <Animated.View key={`re${i}`} style={{
                 position: 'absolute',
-                width: 14,
+                width: 16,
                 height: 14,
                 borderRadius: 7,
                 left: iw * 0.507 + (20 * 0.36) + (20 * 0.36) - (20 * 0.09) + (14.6 * 0.09),
                 top:  ih * 0.506 - (28 * 0.54) + (28 * 0.45) + (14 * 0.45),
                 backgroundColor: anim.interpolate({
-                  inputRange: [0, 1],
-                  outputRange: ['#ffe8a0', '#ff8c00'],
+                  inputRange: [0, 0.3, 1],
+                  outputRange: ['#ffe566', '#ff9500', '#ff4400'],
                 }),
                 opacity: anim.interpolate({
                   inputRange: [0, 1],
-                  outputRange: [0.75, 0],
+                  outputRange: [0.85, 0],
                 }),
                 transform: [{ scale: anim.interpolate({
                   inputRange: [0, 1],
-                  outputRange: [0.3, 2.5],
+                  outputRange: [0.8, 2.2],
                 }) }],
               }} />
             ))}
