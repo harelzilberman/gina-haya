@@ -111,6 +111,23 @@ const VOICE_LABEL: Record<VoiceState, string> = {
 
 // ─── Animated head hooks ──────────────────────────────────────────────────────
 
+function useEyeRipple(offsetMs: number) {
+  const anim = useRef(new Animated.Value(0)).current;
+  useEffect(() => {
+    const delay = setTimeout(() => {
+      Animated.loop(
+        Animated.timing(anim, {
+          toValue: 1,
+          duration: 1600,
+          useNativeDriver: false,
+        })
+      ).start();
+    }, offsetMs);
+    return () => clearTimeout(delay);
+  }, [anim, offsetMs]);
+  return anim;
+}
+
 function useFirefly(baseDelay: number) {
   const opacity  = useRef(new Animated.Value(0)).current;
   const alive    = useRef(true);
@@ -171,11 +188,11 @@ const signMessages = [
 function ChupChuHead({ isSpeaking, onSpiderPress }: { isSpeaking: boolean; onSpiderPress: () => void }) {
   const [imgSize, setImgSize] = useState({ width: 0, height: 0 });
   const leftRipple1  = useEyeRipple(0);
-  const leftRipple2  = useEyeRipple(600);
-  const leftRipple3  = useEyeRipple(1200);
+  const leftRipple2  = useEyeRipple(533);
+  const leftRipple3  = useEyeRipple(1066);
   const rightRipple1 = useEyeRipple(300);
-  const rightRipple2 = useEyeRipple(900);
-  const rightRipple3 = useEyeRipple(1500);
+  const rightRipple2 = useEyeRipple(833);
+  const rightRipple3 = useEyeRipple(1366);
   const leftAntennaOpacity  = useFirefly(0);
   const rightAntennaOpacity = useFirefly(1800);
 
@@ -231,14 +248,13 @@ function ChupChuHead({ isSpeaking, onSpiderPress }: { isSpeaking: boolean; onSpi
               borderRadius: 9,
               overflow: 'hidden',
             }}>
-              {[leftRipple1, leftRipple2, leftRipple3].map((ripple, i) => (
+              {[leftRipple1, leftRipple2, leftRipple3].map((anim, i) => (
                 <Animated.View key={i} style={{
-                  position: 'absolute',
-                  left: 0, top: 0,
+                  position: 'absolute', left: 0, top: 0,
                   width: 18, height: 18, borderRadius: 9,
-                  backgroundColor: ripple.interpolate({ inputRange: [0, 0.5, 1], outputRange: ['#ffffff', '#ffcc44', '#ff8c00'] }),
-                  opacity: ripple.interpolate({ inputRange: [0, 0.3, 1], outputRange: [0.9, 0.7, 0] }),
-                  transform: [{ scale: ripple.interpolate({ inputRange: [0, 1], outputRange: [0.1, 1.8] }) }],
+                  backgroundColor: anim.interpolate({ inputRange: [0, 0.5, 1], outputRange: ['#ffffff', '#ffcc44', '#ff8c00'] }),
+                  opacity: anim.interpolate({ inputRange: [0, 0.3, 1], outputRange: [0.9, 0.7, 0] }),
+                  transform: [{ scale: anim.interpolate({ inputRange: [0, 1], outputRange: [0.1, 1.0] }) }],
                 }} />
               ))}
             </View>
@@ -252,14 +268,13 @@ function ChupChuHead({ isSpeaking, onSpiderPress }: { isSpeaking: boolean; onSpi
               borderRadius: 9,
               overflow: 'hidden',
             }}>
-              {[rightRipple1, rightRipple2, rightRipple3].map((ripple, i) => (
+              {[rightRipple1, rightRipple2, rightRipple3].map((anim, i) => (
                 <Animated.View key={i} style={{
-                  position: 'absolute',
-                  left: 0, top: 0,
+                  position: 'absolute', left: 0, top: 0,
                   width: 18, height: 18, borderRadius: 9,
-                  backgroundColor: ripple.interpolate({ inputRange: [0, 0.5, 1], outputRange: ['#ffffff', '#ffcc44', '#ff8c00'] }),
-                  opacity: ripple.interpolate({ inputRange: [0, 0.3, 1], outputRange: [0.9, 0.7, 0] }),
-                  transform: [{ scale: ripple.interpolate({ inputRange: [0, 1], outputRange: [0.1, 1.8] }) }],
+                  backgroundColor: anim.interpolate({ inputRange: [0, 0.5, 1], outputRange: ['#ffffff', '#ffcc44', '#ff8c00'] }),
+                  opacity: anim.interpolate({ inputRange: [0, 0.3, 1], outputRange: [0.9, 0.7, 0] }),
+                  transform: [{ scale: anim.interpolate({ inputRange: [0, 1], outputRange: [0.1, 1.0] }) }],
                 }} />
               ))}
             </View>
