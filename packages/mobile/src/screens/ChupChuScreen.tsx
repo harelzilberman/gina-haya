@@ -151,8 +151,8 @@ function useEyeGlow(isSpeaking: boolean, offsetMs: number) {
         ]))
       : Animated.loop(Animated.sequence([
           Animated.delay(offsetMs),
-          Animated.timing(opacity, { toValue: 0.85, duration: 1800, useNativeDriver: true }),
-          Animated.timing(opacity, { toValue: 0.15, duration: 1500, useNativeDriver: true }),
+          Animated.timing(opacity, { toValue: 0.9, duration: 1800, useNativeDriver: true }),
+          Animated.timing(opacity, { toValue: 0.27, duration: 1500, useNativeDriver: true }),
         ]));
     anim.start();
     return () => anim.stop();
