@@ -225,9 +225,9 @@ function ChupChuHead({ isSpeaking, onSpiderPress }: { isSpeaking: boolean; onSpi
             {[leftRipple1, leftRipple2, leftRipple3].map((anim, i) => (
               <Animated.View key={`le${i}`} style={{
                 position: 'absolute',
-                width: 13,
-                height: 22,
-                borderRadius: 6.5,
+                width: 14,
+                height: 14,
+                borderRadius: 7,
                 left: iw * 0.415 + (20 * 0.36) + (20 * 0.09) + (14.6 * 0.18) + (9.34 * 0.18),
                 top:  ih * 0.522 - (28 * 0.54) + (16.31 * 0.5),
                 backgroundColor: anim.interpolate({
@@ -248,9 +248,9 @@ function ChupChuHead({ isSpeaking, onSpiderPress }: { isSpeaking: boolean; onSpi
             {[rightRipple1, rightRipple2, rightRipple3].map((anim, i) => (
               <Animated.View key={`re${i}`} style={{
                 position: 'absolute',
-                width: 13,
-                height: 22,
-                borderRadius: 6.5,
+                width: 14,
+                height: 14,
+                borderRadius: 7,
                 left: iw * 0.507 + (20 * 0.36) + (20 * 0.36) - (20 * 0.09) + (14.6 * 0.09),
                 top:  ih * 0.506 - (28 * 0.54) + (28 * 0.45),
                 backgroundColor: anim.interpolate({
