@@ -141,23 +141,21 @@ function useFirefly(baseDelay: number) {
   return opacity;
 }
 
-function useEyeGlow(isSpeaking: boolean, offsetMs: number) {
-  const opacity = useRef(new Animated.Value(0.1)).current;
+function useEyeRipple(offsetMs: number) {
+  const anim = useRef(new Animated.Value(0)).current;
   useEffect(() => {
-    const anim = isSpeaking
-      ? Animated.loop(Animated.sequence([
-          Animated.timing(opacity, { toValue: 0.8, duration: 300, useNativeDriver: true }),
-          Animated.timing(opacity, { toValue: 0.2, duration: 300, useNativeDriver: true }),
-        ]))
-      : Animated.loop(Animated.sequence([
-          Animated.delay(offsetMs),
-          Animated.timing(opacity, { toValue: 0.9, duration: 1800, useNativeDriver: true }),
-          Animated.timing(opacity, { toValue: 0.27, duration: 1500, useNativeDriver: true }),
-        ]));
-    anim.start();
-    return () => anim.stop();
-  }, [isSpeaking, opacity, offsetMs]);
-  return opacity;
+    const delay = setTimeout(() => {
+      Animated.loop(
+        Animated.timing(anim, {
+          toValue: 1,
+          duration: 2200,
+          useNativeDriver: false,
+        })
+      ).start();
+    }, offsetMs);
+    return () => clearTimeout(delay);
+  }, [anim, offsetMs]);
+  return anim;
 }
 
 // ─── Sub-components ───────────────────────────────────────────────────────────
@@ -172,17 +170,12 @@ const signMessages = [
 
 function ChupChuHead({ isSpeaking, onSpiderPress }: { isSpeaking: boolean; onSpiderPress: () => void }) {
   const [imgSize, setImgSize] = useState({ width: 0, height: 0 });
-  const leftEyeOpacity      = useEyeGlow(isSpeaking, 0);
-  const rightEyeOpacity     = useEyeGlow(isSpeaking, 1200);
-  const leftEyeHaloAnim     = useEyeGlow(isSpeaking, 900);
-  const rightEyeHaloAnim    = useEyeGlow(isSpeaking, 300);
-
-  const leftEyeHaloOpacity  = leftEyeHaloAnim.interpolate({
-    inputRange: [0, 1], outputRange: [0.15, 0.55],
-  });
-  const rightEyeHaloOpacity = rightEyeHaloAnim.interpolate({
-    inputRange: [0, 1], outputRange: [0.15, 0.55],
-  });
+  const leftRipple1  = useEyeRipple(0);
+  const leftRipple2  = useEyeRipple(730);
+  const leftRipple3  = useEyeRipple(1460);
+  const rightRipple1 = useEyeRipple(300);
+  const rightRipple2 = useEyeRipple(1030);
+  const rightRipple3 = useEyeRipple(1760);
   const leftAntennaOpacity  = useFirefly(0);
   const rightAntennaOpacity = useFirefly(1800);
 
@@ -228,40 +221,52 @@ function ChupChuHead({ isSpeaking, onSpiderPress }: { isSpeaking: boolean; onSpi
         />
         {iw > 0 && (
           <>
-            {/* Left eye — halo (behind) + bright core */}
-            <Animated.View style={{
-              position: 'absolute',
-              width: 20,
-              height: 30,
-              borderRadius: 10,
-              backgroundColor: '#e07020',
-              left: iw * 0.415 + (20 * 0.36) + (20 * 0.09) + (14.6 * 0.18) + (9.34 * 0.18) - 3.5,
-              top:  ih * 0.522 - (28 * 0.54) + (16.31 * 0.5) - 4,
-              opacity: leftEyeHaloOpacity,
-            }} />
-            <Animated.View style={[styles.eyeGlow, {
-              position: 'absolute',
-              left: iw * 0.415 + (20 * 0.36) + (20 * 0.09) + (14.6 * 0.18) + (9.34 * 0.18),
-              top:  ih * 0.522 - (28 * 0.54) + (16.31 * 0.5),
-              opacity: leftEyeOpacity,
-            }]} />
-            {/* Right eye — halo (behind) + bright core */}
-            <Animated.View style={{
-              position: 'absolute',
-              width: 20,
-              height: 30,
-              borderRadius: 10,
-              backgroundColor: '#e07020',
-              left: iw * 0.507 + (20 * 0.36) + (20 * 0.36) - (20 * 0.09) + (14.6 * 0.09) - 3.5,
-              top:  ih * 0.506 - (28 * 0.54) + (28 * 0.45) - 4,
-              opacity: rightEyeHaloOpacity,
-            }} />
-            <Animated.View style={[styles.eyeGlow, {
-              position: 'absolute',
-              left: iw * 0.507 + (20 * 0.36) + (20 * 0.36) - (20 * 0.09) + (14.6 * 0.09),
-              top:  ih * 0.506 - (28 * 0.54) + (28 * 0.45),
-              opacity: rightEyeOpacity,
-            }]} />
+            {/* Left eye — 3 ripple layers */}
+            {[leftRipple1, leftRipple2, leftRipple3].map((anim, i) => (
+              <Animated.View key={`le${i}`} style={{
+                position: 'absolute',
+                width: 13,
+                height: 22,
+                borderRadius: 6.5,
+                left: iw * 0.415 + (20 * 0.36) + (20 * 0.09) + (14.6 * 0.18) + (9.34 * 0.18),
+                top:  ih * 0.522 - (28 * 0.54) + (16.31 * 0.5),
+                backgroundColor: anim.interpolate({
+                  inputRange: [0, 1],
+                  outputRange: ['#ffe8a0', '#ff8c00'],
+                }),
+                opacity: anim.interpolate({
+                  inputRange: [0, 1],
+                  outputRange: [0.75, 0],
+                }),
+                transform: [{ scale: anim.interpolate({
+                  inputRange: [0, 1],
+                  outputRange: [0.3, 2.5],
+                }) }],
+              }} />
+            ))}
+            {/* Right eye — 3 ripple layers */}
+            {[rightRipple1, rightRipple2, rightRipple3].map((anim, i) => (
+              <Animated.View key={`re${i}`} style={{
+                position: 'absolute',
+                width: 13,
+                height: 22,
+                borderRadius: 6.5,
+                left: iw * 0.507 + (20 * 0.36) + (20 * 0.36) - (20 * 0.09) + (14.6 * 0.09),
+                top:  ih * 0.506 - (28 * 0.54) + (28 * 0.45),
+                backgroundColor: anim.interpolate({
+                  inputRange: [0, 1],
+                  outputRange: ['#ffe8a0', '#ff8c00'],
+                }),
+                opacity: anim.interpolate({
+                  inputRange: [0, 1],
+                  outputRange: [0.75, 0],
+                }),
+                transform: [{ scale: anim.interpolate({
+                  inputRange: [0, 1],
+                  outputRange: [0.3, 2.5],
+                }) }],
+              }} />
+            ))}
             {/* Antenna pulse dots — locked positions, firefly animated */}
             <Animated.View style={[styles.antennaTip, {
               position: 'absolute',
