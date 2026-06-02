@@ -1,5 +1,4 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
-import { useNavigation } from '@react-navigation/native';
 import Svg, { Circle, Ellipse, G, Line, Path } from 'react-native-svg';
 import {
   ActivityIndicator,
@@ -143,36 +142,10 @@ function useFirefly(baseDelay: number) {
 
 // ─── Sub-components ───────────────────────────────────────────────────────────
 
-const signMessages = [
-  'תפריט →',
-  'לאתר',
-  'menu →',
-  'לחץ כאן',
-  'web app',
-];
-
-function ChupChuHead({ isSpeaking, onSpiderPress }: { isSpeaking: boolean; onSpiderPress: () => void }) {
+function ChupChuHead({ isSpeaking }: { isSpeaking: boolean }) {
   const [imgSize, setImgSize] = useState({ width: 0, height: 0 });
   const leftAntennaOpacity  = useFirefly(0);
   const rightAntennaOpacity = useFirefly(1800);
-
-  const [signIndex, setSignIndex] = useState(0);
-  const signOpacity = useRef(new Animated.Value(1)).current;
-
-  useEffect(() => {
-    const cycle = () => {
-      Animated.sequence([
-        Animated.delay(2200),
-        Animated.timing(signOpacity, { toValue: 0, duration: 400, useNativeDriver: true }),
-        Animated.timing(signOpacity, { toValue: 1, duration: 400, useNativeDriver: true }),
-      ]).start(() => {
-        setSignIndex(i => (i + 1) % signMessages.length);
-        cycle();
-      });
-    };
-    cycle();
-    return () => signOpacity.stopAnimation();
-  }, [signOpacity]);
 
   // Percentages measured from chupchu_web_in_hole.png
   const pct = {
@@ -214,43 +187,6 @@ function ChupChuHead({ isSpeaking, onSpiderPress }: { isSpeaking: boolean; onSpi
           </>
         )}
 
-        {iw > 0 && (
-          <>
-            {/* Animated sign text overlay on the spider's sign */}
-            <TouchableOpacity
-              style={{
-                position: 'absolute',
-                top: ih * 0.38,
-                left: iw * 0.02,
-                width: iw * 0.30,
-                height: ih * 0.22,
-                alignItems: 'center',
-                justifyContent: 'center',
-                zIndex: 10,
-              }}
-              onPress={onSpiderPress}
-              activeOpacity={0.7}
-            >
-              <Animated.Text style={[styles.signText, { opacity: signOpacity }]}>
-                {signMessages[signIndex]}
-              </Animated.Text>
-            </TouchableOpacity>
-
-            {/* Wide tap zone covering spider+sign area */}
-            <TouchableOpacity
-              style={{
-                position: 'absolute',
-                top: ih * 0.28,
-                left: 0,
-                width: iw * 0.35,
-                height: ih * 0.42,
-                zIndex: 9,
-              }}
-              onPress={onSpiderPress}
-              activeOpacity={0}
-            />
-          </>
-        )}
       </View>
 
       <Text style={styles.headName}>צ'ופצ'ו ✦</Text>
@@ -388,7 +324,6 @@ function PhotoActionCard({
 // ─── Main screen ──────────────────────────────────────────────────────────────
 
 export function ChupChuScreen() {
-  const navigation = useNavigation<any>();
   const [messages,    setMessages]    = useState<Message[]>([]);
   const [input,       setInput]       = useState('');
   const [sending,     setSending]     = useState(false);
@@ -401,7 +336,6 @@ export function ChupChuScreen() {
   const [executing,   setExecuting]   = useState(false);
   const [activeCard,  setActiveCard]  = useState<'day' | 'moon' | 'score' | null>(null);
   const [analyzing,   setAnalyzing]   = useState(false);
-  const [webMenuOpen, setWebMenuOpen] = useState(false);
   const [pendingPhotoAction, setPendingPhotoAction] = useState<{
     base64: string;
     analysis: string;
@@ -747,7 +681,7 @@ export function ChupChuScreen() {
   // ── FlatList header (head + dashboard) ───────────────────────────────────
   const ListHeader = (
     <>
-      <ChupChuHead isSpeaking={voiceState === 'speaking'} onSpiderPress={() => setWebMenuOpen(true)} />
+      <ChupChuHead isSpeaking={voiceState === 'speaking'} />
       <DashboardRow calDay={calDay} tasks={tasks} loading={dashLoading} onCardPress={setActiveCard} />
     </>
   );
@@ -835,94 +769,6 @@ export function ChupChuScreen() {
               <TouchableOpacity style={styles.modalClose} onPress={() => setActiveCard(null)}>
                 <Text style={styles.modalCloseText}>סגור</Text>
               </TouchableOpacity>
-            </View>
-          </TouchableOpacity>
-        </Modal>
-
-        {/* Spider web navigation modal */}
-        <Modal
-          visible={webMenuOpen}
-          transparent
-          animationType="fade"
-          onRequestClose={() => setWebMenuOpen(false)}
-        >
-          <TouchableOpacity
-            style={styles.webMenuOverlay}
-            activeOpacity={1}
-            onPress={() => setWebMenuOpen(false)}
-          >
-            <View style={styles.webMenuContainer}>
-
-              {/* Spider web SVG background */}
-              <Svg width={300} height={300} viewBox="0 0 300 300" style={StyleSheet.absoluteFill}>
-                {[0,1,2,3,4,5,6].map(i => {
-                  const angle = (i * 360/7 - 90) * Math.PI / 180;
-                  return (
-                    <Line key={i}
-                      x1={150} y1={150}
-                      x2={150 + Math.cos(angle)*130}
-                      y2={150 + Math.sin(angle)*130}
-                      stroke="rgba(255,255,255,0.15)"
-                      strokeWidth={0.8}
-                    />
-                  );
-                })}
-                {[35,70,105,130].map(r => (
-                  <Circle key={r} cx={150} cy={150} r={r}
-                    fill="none"
-                    stroke="rgba(255,255,255,0.12)"
-                    strokeWidth={0.6}
-                  />
-                ))}
-              </Svg>
-
-              {/* Center spider */}
-              <TouchableOpacity
-                style={styles.webMenuCenter}
-                onPress={() => setWebMenuOpen(false)}
-              >
-                <Svg width={40} height={40} viewBox="0 0 60 60">
-                  <Ellipse cx={30} cy={35} rx={7} ry={9} fill="#1a0f00" stroke="#8b6914" strokeWidth={1}/>
-                  <Circle cx={30} cy={24} r={6} fill="#1a0f00" stroke="#8b6914" strokeWidth={1}/>
-                  <Circle cx={27} cy={23} r={1.5} fill="#c8ff4a"/>
-                  <Circle cx={33} cy={23} r={1.5} fill="#c8ff4a"/>
-                  <Path d="M 23,27 Q 14,22 10,18" stroke="#3d2200" strokeWidth={1.5} fill="none"/>
-                  <Path d="M 23,30 Q 13,29 9,28" stroke="#3d2200" strokeWidth={1.5} fill="none"/>
-                  <Path d="M 37,27 Q 46,22 50,18" stroke="#3d2200" strokeWidth={1.5} fill="none"/>
-                  <Path d="M 37,30 Q 47,29 51,28" stroke="#3d2200" strokeWidth={1.5} fill="none"/>
-                </Svg>
-              </TouchableOpacity>
-
-              {/* Nav items at radial positions */}
-              {[
-                { label: 'לוח ביודינמי', emoji: '📅', screen: 'Calendar', angle: -90 },
-                { label: 'יומן גינה',    emoji: '📓', screen: null,       angle: -39 },
-                { label: 'משימות',       emoji: '✅', screen: null,       angle: 12  },
-                { label: 'מדריכים',      emoji: '📖', screen: 'Guides',   angle: 63  },
-                { label: 'הגדרות',       emoji: '⚙️', screen: 'Settings', angle: 114 },
-                { label: 'מפת גינה',     emoji: '🗺️', screen: null,       angle: 165 },
-                { label: 'מעקב',         emoji: '📊', screen: null,       angle: 216 },
-              ].map((item, i) => {
-                const rad = item.angle * Math.PI / 180;
-                const dist = 105;
-                const x = 150 + Math.cos(rad) * dist;
-                const y = 150 + Math.sin(rad) * dist;
-                return (
-                  <TouchableOpacity
-                    key={i}
-                    style={[styles.webMenuItem, { left: x - 30, top: y - 30 }]}
-                    onPress={() => {
-                      setWebMenuOpen(false);
-                      if (item.screen) navigation.navigate(item.screen);
-                    }}
-                  >
-                    <View style={styles.webMenuIcon}>
-                      <Text style={styles.webMenuEmoji}>{item.emoji}</Text>
-                    </View>
-                    <Text style={styles.webMenuLabel}>{item.label}</Text>
-                  </TouchableOpacity>
-                );
-              })}
             </View>
           </TouchableOpacity>
         </Modal>
@@ -1266,87 +1112,6 @@ const styles = StyleSheet.create({
     color: '#c4860a',
     fontSize: 16,
     fontWeight: '600',
-  },
-
-  // Sign tap zone (over the spider's sign in the image)
-  signTapZone: {
-    position: 'absolute',
-    top: '42%',
-    left: '2%',
-    width: '28%',
-    height: '20%',
-    alignItems: 'center',
-    justifyContent: 'center',
-    zIndex: 10,
-  },
-  signText: {
-    fontSize: 12,
-    fontWeight: '800',
-    color: '#1a0a00',
-    textAlign: 'center',
-    textShadowColor: 'rgba(255,255,255,0.3)',
-    textShadowOffset: { width: 0, height: 0 },
-    textShadowRadius: 2,
-  },
-  // Wide tap zone covering the spider and sign area
-  webTapZone: {
-    position: 'absolute',
-    top: '30%',
-    left: '0%',
-    width: '32%',
-    height: '40%',
-    zIndex: 9,
-  },
-
-  // Spider web navigation modal
-  webMenuOverlay: {
-    flex: 1,
-    backgroundColor: 'rgba(0,0,0,0.85)',
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  webMenuContainer: {
-    width: 300,
-    height: 300,
-    position: 'relative',
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  webMenuCenter: {
-    width: 50,
-    height: 50,
-    borderRadius: 25,
-    backgroundColor: '#0d2010',
-    borderWidth: 1,
-    borderColor: 'rgba(196,134,10,0.4)',
-    alignItems: 'center',
-    justifyContent: 'center',
-    zIndex: 10,
-  },
-  webMenuItem: {
-    position: 'absolute',
-    width: 60,
-    height: 60,
-    alignItems: 'center',
-    justifyContent: 'center',
-    gap: 2,
-  },
-  webMenuIcon: {
-    width: 44,
-    height: 44,
-    borderRadius: 22,
-    backgroundColor: '#0d2010',
-    borderWidth: 1,
-    borderColor: 'rgba(196,134,10,0.35)',
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  webMenuEmoji: { fontSize: 20 },
-  webMenuLabel: {
-    fontSize: 9,
-    color: '#e8d4a8',
-    textAlign: 'center',
-    writingDirection: 'rtl',
   },
 
   // Photo action card
