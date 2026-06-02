@@ -65,7 +65,7 @@ type VoiceState = 'idle' | 'recording' | 'transcribing' | 'thinking' | 'speaking
 
 // ─── Constants ────────────────────────────────────────────────────────────────
 
-const GREETING = 'שלום! בואו נדבר על הגינה שלך היום.\nאני כאן כדי לעזור.\nצ\'יפ ✦';
+const GREETING = 'שלום! מה הגינה שלך צריכה היום?\nצ\'יפ ✦';
 
 const DAY_TYPE_LABELS: Record<string, string> = {
   fruit:  'יום פרי 🍎',
