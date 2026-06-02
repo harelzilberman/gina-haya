@@ -21,6 +21,7 @@ const SCREEN_W = Dimensions.get('window').width;
 const IMG_W    = SCREEN_W - 32;
 const IMG_H    = IMG_W * (1024 / 1536);
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { useNavigation } from '@react-navigation/native';
 import NetInfo from '@react-native-community/netinfo';
 
 import { MicButton }        from '../components/MicButton';
@@ -147,7 +148,7 @@ const signMessages = [
   'לחץ\nכאן',
 ];
 
-function ChupChuHead({ isSpeaking }: { isSpeaking: boolean }) {
+function ChupChuHead({ isSpeaking, onSpiderPress }: { isSpeaking: boolean; onSpiderPress: () => void }) {
   const [imgSize, setImgSize] = useState({ width: 0, height: 0 });
   const leftAntennaOpacity  = useFirefly(0);
   const rightAntennaOpacity = useFirefly(1800);
@@ -226,19 +227,22 @@ function ChupChuHead({ isSpeaking }: { isSpeaking: boolean }) {
         )}
 
         {iw > 0 && (
-          <Animated.View style={{
-            position: 'absolute',
-            left: iw * 0.6 + (60 * 0.333) + 7 + (44.77 * 0.09),
-            top: ih * 0.3 + (25 * 1.5) + (25 * 0.5) - (25 * 0.05) - 4 + 5 - 2.5,
-            width: 49.2 * (1 - 0.09),
-            height: 28,
-            alignItems: 'center',
-            justifyContent: 'center',
-            zIndex: 20,
-            transform: [{ rotate: '-1.53deg' }],
-            opacity: signOpacity,
-          }}>
-            <Text style={{
+          <TouchableOpacity
+            onPress={onSpiderPress}
+            activeOpacity={0.7}
+            style={{
+              position: 'absolute',
+              left: iw * 0.6 + (60 * 0.333) + 7 + (44.77 * 0.09),
+              top: ih * 0.3 + (25 * 1.5) + (25 * 0.5) - (25 * 0.05) - 4 + 5 - 2.5,
+              width: 49.2 * (1 - 0.09),
+              height: 28,
+              alignItems: 'center',
+              justifyContent: 'center',
+              zIndex: 20,
+              transform: [{ rotate: '-1.53deg' }],
+            }}
+          >
+            <Animated.Text style={{
               fontSize: 10,
               fontWeight: '900',
               color: '#6b8a1a',
@@ -247,10 +251,11 @@ function ChupChuHead({ isSpeaking }: { isSpeaking: boolean }) {
               includeFontPadding: false,
               lineHeight: 12,
               writingDirection: 'rtl',
+              opacity: signOpacity,
             }}>
               {signMessages[signIndex]}
-            </Text>
-          </Animated.View>
+            </Animated.Text>
+          </TouchableOpacity>
         )}
 
       </View>
@@ -390,6 +395,7 @@ function PhotoActionCard({
 // ─── Main screen ──────────────────────────────────────────────────────────────
 
 export function ChupChuScreen() {
+  const navigation = useNavigation<any>();
   const [messages,    setMessages]    = useState<Message[]>([]);
   const [input,       setInput]       = useState('');
   const [sending,     setSending]     = useState(false);
@@ -402,6 +408,7 @@ export function ChupChuScreen() {
   const [executing,   setExecuting]   = useState(false);
   const [activeCard,  setActiveCard]  = useState<'day' | 'moon' | 'score' | null>(null);
   const [analyzing,   setAnalyzing]   = useState(false);
+  const [webMenuOpen, setWebMenuOpen] = useState(false);
   const [pendingPhotoAction, setPendingPhotoAction] = useState<{
     base64: string;
     analysis: string;
@@ -747,7 +754,7 @@ export function ChupChuScreen() {
   // ── FlatList header (head + dashboard) ───────────────────────────────────
   const ListHeader = (
     <>
-      <ChupChuHead isSpeaking={voiceState === 'speaking'} />
+      <ChupChuHead isSpeaking={voiceState === 'speaking'} onSpiderPress={() => setWebMenuOpen(true)} />
       <DashboardRow calDay={calDay} tasks={tasks} loading={dashLoading} onCardPress={setActiveCard} />
     </>
   );
@@ -896,6 +903,102 @@ export function ChupChuScreen() {
         onConfirm={handleToolConfirm}
         onCancel={() => setToolCall(null)}
       />
+
+      {/* Spider Web Navigation Modal */}
+      <Modal
+        visible={webMenuOpen}
+        transparent
+        animationType="fade"
+        onRequestClose={() => setWebMenuOpen(false)}
+      >
+        <View style={{
+          flex: 1,
+          backgroundColor: 'rgba(0,0,0,0.92)',
+          alignItems: 'center',
+          justifyContent: 'center',
+        }}>
+          {/* Spider web background image */}
+          <Image
+            source={require('../assets/spider_web.png')}
+            style={{
+              position: 'absolute',
+              width: '100%',
+              height: '100%',
+              opacity: 0.25,
+            }}
+            resizeMode="cover"
+          />
+
+          {/* Nav items scattered on web */}
+          {[
+            { label: 'מפת הגינה', emoji: '🗺️', screen: null,       left: '42%', top: '40%', isCenter: true },
+            { label: 'לוח ביודינמי', emoji: '📅', screen: 'Calendar', left: '55%', top: '15%' },
+            { label: 'מדריכים',    emoji: '📖', screen: 'Guides',   left: '78%', top: '30%' },
+            { label: 'הגדרות',     emoji: '⚙️', screen: 'Settings', left: '72%', top: '62%' },
+            { label: 'יומן',       emoji: '📓', screen: null,       left: '45%', top: '72%' },
+            { label: 'משימות',     emoji: '✅', screen: null,       left: '18%', top: '60%' },
+            { label: "צ'ופצ'ו",   photo: true, screen: 'Chupchu',  left: '20%', top: '25%' },
+          ].map((item, i) => (
+            <TouchableOpacity
+              key={i}
+              style={{
+                position: 'absolute',
+                left: item.left,
+                top: item.top,
+                alignItems: 'center',
+                transform: [{ translateX: -30 }, { translateY: -30 }],
+              }}
+              onPress={() => {
+                setWebMenuOpen(false);
+                if (item.screen) navigation.navigate(item.screen);
+              }}
+            >
+              {/* Cocoon/oval shape */}
+              <View style={{
+                width: item.isCenter ? 70 : 56,
+                height: item.isCenter ? 56 : 44,
+                borderRadius: item.isCenter ? 28 : 22,
+                backgroundColor: item.isCenter ? 'rgba(10,31,13,0.95)' : 'rgba(6,14,8,0.88)',
+                borderWidth: item.isCenter ? 2 : 1,
+                borderColor: item.isCenter ? 'rgba(196,134,10,0.9)' : 'rgba(255,255,255,0.25)',
+                alignItems: 'center',
+                justifyContent: 'center',
+                overflow: 'hidden',
+              }}>
+                {item.photo ? (
+                  <Image
+                    source={require('../assets/chupchu_web_in_hole.png')}
+                    style={{ width: 56, height: 44, opacity: 0.9 }}
+                    resizeMode="cover"
+                  />
+                ) : (
+                  <Text style={{ fontSize: item.isCenter ? 28 : 22 }}>{item.emoji}</Text>
+                )}
+              </View>
+              <Text style={{
+                fontSize: 9,
+                color: item.isCenter ? '#c4860a' : 'rgba(232,212,168,0.85)',
+                textAlign: 'center',
+                marginTop: 3,
+                fontWeight: item.isCenter ? '700' : '500',
+                textShadowColor: 'rgba(0,0,0,0.8)',
+                textShadowOffset: { width: 0, height: 1 },
+                textShadowRadius: 2,
+              }}>{item.label}</Text>
+            </TouchableOpacity>
+          ))}
+
+          {/* Close by tapping background */}
+          <TouchableOpacity
+            style={{ position: 'absolute', bottom: 40, alignSelf: 'center' }}
+            onPress={() => setWebMenuOpen(false)}
+          >
+            <Text style={{ color: 'rgba(245,240,232,0.4)', fontSize: 12, direction: 'rtl' }}>
+              לחץ כאן לסגירה
+            </Text>
+          </TouchableOpacity>
+        </View>
+      </Modal>
     </SafeAreaView>
   );
 }
