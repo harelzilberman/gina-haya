@@ -8,6 +8,7 @@ import {
   FlatList,
   Image,
   KeyboardAvoidingView,
+  Linking,
   Modal,
   Platform,
   StyleSheet,
@@ -994,10 +995,10 @@ export function ChupChuScreen() {
           {[
             { label: 'מפת הגינה', emoji: '🗺️', screen: null,       left: '45%', top: '45%', isCenter: true },
             { label: 'לוח ביודינמי', emoji: '📅', screen: 'Calendar', left: '45%', top: '72%' },
-            { label: 'מדריכים',    emoji: '📖', screen: 'Guides',   left: '55%', top: '15%' },
+            { label: 'מדריכים',    emoji: '📖', screen: null,       left: '55%', top: '15%', isGuides: true },
             { label: 'הגדרות',     emoji: '⚙️', screen: 'Settings', left: '72%', top: '62%' },
             { label: 'יומן',       emoji: '📓', screen: null,       left: '8%',  top: '48%' },
-            { label: 'משימות',     emoji: '✅', screen: null,       left: '5%',  top: '25%' },
+            { label: 'משימות',     emoji: '✅', screen: 'Tasks',    left: '5%',  top: '25%' },
             { label: "צ'ופצ'ו",   photo: true, screen: 'Chupchu',  left: '18%', top: '60%' },
           ].map((item, i) => (
             <Animated.View
@@ -1028,7 +1029,11 @@ export function ChupChuScreen() {
                 }}
                 onPress={() => {
                   handleCloseWebMenu();
-                  if (item.screen) navigation.navigate(item.screen);
+                  if (item.isGuides) {
+                    Linking.openURL('https://gina-haya.com/articles');
+                  } else if (item.screen) {
+                    navigation.navigate(item.screen);
+                  }
                 }}
               >
               {/* Cocoon/oval shape */}
