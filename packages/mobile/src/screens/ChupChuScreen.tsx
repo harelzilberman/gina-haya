@@ -143,11 +143,8 @@ function useFirefly(baseDelay: number) {
 // ─── Sub-components ───────────────────────────────────────────────────────────
 
 const signMessages = [
-  'תפריט →',
-  'לאתר',
-  'menu →',
+  'לתפריט',
   'לחץ כאן',
-  'web app',
 ];
 
 function ChupChuHead({ isSpeaking }: { isSpeaking: boolean }) {
@@ -241,7 +238,16 @@ function ChupChuHead({ isSpeaking }: { isSpeaking: boolean }) {
             transform: [{ rotate: '-1.53deg' }],
             opacity: signOpacity,
           }}>
-            <Text style={{ fontSize: 11, fontWeight: '900', color: '#2a1000' }}>
+            <Text style={{
+              fontSize: 11,
+              fontWeight: '900',
+              color: '#6b8a1a',
+              textAlign: 'center',
+              textAlignVertical: 'center',
+              includeFontPadding: false,
+              lineHeight: 25,
+              writingDirection: 'rtl',
+            }}>
               {signMessages[signIndex]}
             </Text>
           </Animated.View>
