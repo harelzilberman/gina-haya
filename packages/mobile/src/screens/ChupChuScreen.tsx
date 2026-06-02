@@ -417,6 +417,52 @@ export function ChupChuScreen() {
   const listRef = useRef<FlatList>(null);
   const today   = new Date().toISOString().split('T')[0];
 
+  // Web menu animation
+  const webScale = useRef(new Animated.Value(0)).current;
+  const webOpacity = useRef(new Animated.Value(0)).current;
+  const iconAnims = useRef(Array(7).fill(null).map(() => new Animated.Value(0))).current;
+
+  // ── Web menu animation ───────────────────────────────────────────────────
+  useEffect(() => {
+    if (webMenuOpen) {
+      // Reset
+      webScale.setValue(0);
+      webOpacity.setValue(0);
+      iconAnims.forEach(a => a.setValue(0));
+
+      // Web spins out from top-left (spider position)
+      Animated.parallel([
+        Animated.timing(webScale, {
+          toValue: 1,
+          duration: 600,
+          useNativeDriver: true,
+        }),
+        Animated.timing(webOpacity, {
+          toValue: 1,
+          duration: 400,
+          useNativeDriver: true,
+        }),
+      ]).start(() => {
+        // Icons drop onto web one by one
+        Animated.stagger(80, iconAnims.map(anim =>
+          Animated.spring(anim, {
+            toValue: 1,
+            tension: 50,
+            friction: 6,
+            useNativeDriver: true,
+          })
+        )).start();
+      });
+    }
+  }, [webMenuOpen, webScale, webOpacity, iconAnims]);
+
+  const handleCloseWebMenu = () => {
+    Animated.parallel([
+      Animated.timing(webScale, { toValue: 0, duration: 300, useNativeDriver: true }),
+      Animated.timing(webOpacity, { toValue: 0, duration: 200, useNativeDriver: true }),
+    ]).start(() => setWebMenuOpen(false));
+  };
+
   // ── Network ──────────────────────────────────────────────────────────────
   useEffect(() => {
     const unsub = NetInfo.addEventListener(state => {
@@ -909,14 +955,29 @@ export function ChupChuScreen() {
         visible={webMenuOpen}
         transparent
         animationType="fade"
-        onRequestClose={() => setWebMenuOpen(false)}
+        onRequestClose={handleCloseWebMenu}
       >
         <View style={{
           flex: 1,
           backgroundColor: 'rgba(0,0,0,0.92)',
-          alignItems: 'center',
-          justifyContent: 'center',
         }}>
+          <Animated.View style={{
+            flex: 1,
+            alignItems: 'center',
+            justifyContent: 'center',
+            transform: [
+              { scale: webScale },
+              { translateX: webScale.interpolate({
+                inputRange: [0, 1],
+                outputRange: [-150, 0],
+              })},
+              { translateY: webScale.interpolate({
+                inputRange: [0, 1],
+                outputRange: [-200, 0],
+              })},
+            ],
+            opacity: webOpacity,
+          }}>
           {/* Spider web background image */}
           <Image
             source={require('../assets/spider_web.png')}
@@ -931,28 +992,45 @@ export function ChupChuScreen() {
 
           {/* Nav items scattered on web */}
           {[
-            { label: 'מפת הגינה', emoji: '🗺️', screen: null,       left: '42%', top: '40%', isCenter: true },
-            { label: 'לוח ביודינמי', emoji: '📅', screen: 'Calendar', left: '55%', top: '15%' },
-            { label: 'מדריכים',    emoji: '📖', screen: 'Guides',   left: '78%', top: '30%' },
+            { label: 'מפת הגינה', emoji: '🗺️', screen: null,       left: '45%', top: '45%', isCenter: true },
+            { label: 'לוח ביודינמי', emoji: '📅', screen: 'Calendar', left: '45%', top: '72%' },
+            { label: 'מדריכים',    emoji: '📖', screen: 'Guides',   left: '55%', top: '15%' },
             { label: 'הגדרות',     emoji: '⚙️', screen: 'Settings', left: '72%', top: '62%' },
-            { label: 'יומן',       emoji: '📓', screen: null,       left: '45%', top: '72%' },
-            { label: 'משימות',     emoji: '✅', screen: null,       left: '18%', top: '60%' },
-            { label: "צ'ופצ'ו",   photo: true, screen: 'Chupchu',  left: '20%', top: '25%' },
+            { label: 'יומן',       emoji: '📓', screen: null,       left: '8%',  top: '48%' },
+            { label: 'משימות',     emoji: '✅', screen: null,       left: '5%',  top: '25%' },
+            { label: "צ'ופצ'ו",   photo: true, screen: 'Chupchu',  left: '18%', top: '60%' },
           ].map((item, i) => (
-            <TouchableOpacity
+            <Animated.View
               key={i}
               style={{
                 position: 'absolute',
                 left: item.left,
                 top: item.top,
                 alignItems: 'center',
-                transform: [{ translateX: -30 }, { translateY: -30 }],
-              }}
-              onPress={() => {
-                setWebMenuOpen(false);
-                if (item.screen) navigation.navigate(item.screen);
+                transform: [
+                  { translateX: -30 },
+                  { translateY: -30 },
+                  { scale: iconAnims[i].interpolate({
+                    inputRange: [0, 1],
+                    outputRange: [0, 1],
+                  })},
+                  { translateY: iconAnims[i].interpolate({
+                    inputRange: [0, 1],
+                    outputRange: [-20, 0],
+                  })},
+                ],
+                opacity: iconAnims[i],
               }}
             >
+              <TouchableOpacity
+                style={{
+                  alignItems: 'center',
+                }}
+                onPress={() => {
+                  handleCloseWebMenu();
+                  if (item.screen) navigation.navigate(item.screen);
+                }}
+              >
               {/* Cocoon/oval shape */}
               <View style={{
                 width: item.isCenter ? 70 : 56,
@@ -985,18 +1063,20 @@ export function ChupChuScreen() {
                 textShadowOffset: { width: 0, height: 1 },
                 textShadowRadius: 2,
               }}>{item.label}</Text>
-            </TouchableOpacity>
+              </TouchableOpacity>
+            </Animated.View>
           ))}
 
           {/* Close by tapping background */}
           <TouchableOpacity
             style={{ position: 'absolute', bottom: 40, alignSelf: 'center' }}
-            onPress={() => setWebMenuOpen(false)}
+            onPress={handleCloseWebMenu}
           >
             <Text style={{ color: 'rgba(245,240,232,0.4)', fontSize: 12, direction: 'rtl' }}>
               לחץ כאן לסגירה
             </Text>
           </TouchableOpacity>
+          </Animated.View>
         </View>
       </Modal>
     </SafeAreaView>
