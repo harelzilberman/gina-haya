@@ -162,6 +162,21 @@ function ChupChuHead({ isSpeaking }: { isSpeaking: boolean }) {
     const cycle = () => {
       Animated.sequence([
         Animated.delay(3000),
+        Animated.timing(signOpacity, { toValue: 0, duration: 500, useNativeDriver: true }),
+        Animated.timing(signOpacity, { toValue: 1, duration: 500, useNativeDriver: true }),
+      ]).start(() => {
+        setSignIndex(i => (i + 1) % signMessages.length);
+        cycle();
+      });
+    };
+    cycle();
+    return () => signOpacity.stopAnimation();
+  }, [signOpacity]);
+
+  useEffect(() => {
+    const cycle = () => {
+      Animated.sequence([
+        Animated.delay(3000),
         Animated.timing(signOpacity, { toValue: 0, duration: 600, useNativeDriver: true }),
         Animated.timing(signOpacity, { toValue: 1, duration: 600, useNativeDriver: true }),
       ]).start(() => {
@@ -196,27 +211,6 @@ function ChupChuHead({ isSpeaking }: { isSpeaking: boolean }) {
           }}
         />
         {iw > 0 && (
-          <TouchableOpacity
-            style={{
-              position: 'absolute',
-              top: ih * 0.38,
-              left: iw * 0.02,
-              width: iw * 0.30,
-              height: ih * 0.22,
-              alignItems: 'center',
-              justifyContent: 'center',
-              zIndex: 10,
-            }}
-            activeOpacity={0.7}
-            onPress={() => {}}
-          >
-            <Animated.Text style={[styles.signText, { opacity: signOpacity }]}>
-              {signMessages[signIndex]}
-            </Animated.Text>
-          </TouchableOpacity>
-        )}
-
-        {iw > 0 && (
           <>
             {/* Antenna pulse dots — locked positions, firefly animated */}
             <Animated.View style={[styles.antennaTip, {
@@ -232,6 +226,25 @@ function ChupChuHead({ isSpeaking }: { isSpeaking: boolean }) {
               opacity: rightAntennaOpacity,
             }]} />
           </>
+        )}
+
+        {iw > 0 && (
+          <Animated.View style={{
+            position: 'absolute',
+            left: iw * 0.6 + (60 * 0.333) + 7 + (44.77 * 0.09),
+            top: ih * 0.3 + (25 * 1.5) + (25 * 0.5) - (25 * 0.05),
+            width: 49.2 * (1 - 0.09),
+            height: 25,
+            alignItems: 'center',
+            justifyContent: 'center',
+            zIndex: 20,
+            transform: [{ rotate: '-1.53deg' }],
+            opacity: signOpacity,
+          }}>
+            <Text style={{ fontSize: 11, fontWeight: '900', color: '#2a1000' }}>
+              {signMessages[signIndex]}
+            </Text>
+          </Animated.View>
         )}
 
       </View>
