@@ -37,19 +37,7 @@ import {
 import { getToken }                           from '../services/auth';
 import { fetchTodayCalendar }              from '../services/calendar';
 import { fetchPendingTasks, type PendingTask } from '../services/tasks';
-let startRecording: any, stopRecordingAndTranscribe: any, speakHebrew: any, stopSpeaking: any;
-try {
-  const voice = require('../services/voice');
-  startRecording            = voice.startRecording;
-  stopRecordingAndTranscribe = voice.stopRecordingAndTranscribe;
-  speakHebrew               = voice.speakHebrew;
-  stopSpeaking              = voice.stopSpeaking;
-} catch {
-  startRecording             = async () => { throw new Error('Voice not available'); };
-  stopRecordingAndTranscribe = async () => null;
-  speakHebrew                = async () => {};
-  stopSpeaking               = () => {};
-}
+import { startRecording, stopRecordingAndTranscribe, speakHebrew, stopSpeaking } from '../services/voice';
 import { cacheBdDay, getCachedBdDay } from '../services/offline';
 import * as ImagePicker from 'expo-image-picker';
 

@@ -1,27 +1,16 @@
 import * as Speech from 'expo-speech';
+import {
+  AudioRecorder,
+  RecordingPresets,
+  requestRecordingPermissionsAsync,
+  setAudioModeAsync,
+} from 'expo-audio';
 
 const OPENAI_KEY = process.env.EXPO_PUBLIC_OPENAI_KEY ?? '';
-
-// Lazy load expo-audio to avoid crash if native module unavailable
-let AudioRecorder: any = null;
-let RecordingPresets: any = null;
-let requestRecordingPermissionsAsync: any = null;
-let setAudioModeAsync: any = null;
-
-try {
-  const audio = require('expo-audio');
-  AudioRecorder = audio.AudioRecorder;
-  RecordingPresets = audio.RecordingPresets;
-  requestRecordingPermissionsAsync = audio.requestRecordingPermissionsAsync;
-  setAudioModeAsync = audio.setAudioModeAsync;
-} catch {
-  // expo-audio not available in this environment
-}
 
 let activeRecorder: any = null;
 
 export async function startRecording(): Promise<void> {
-  if (!AudioRecorder) throw new Error('הקלטה אינה זמינה ב-Expo Go');
   const { granted } = await requestRecordingPermissionsAsync();
   if (!granted) throw new Error('אין אישור גישה למיקרופון בהגדרות');
   await setAudioModeAsync({ allowsRecording: true, playsInSilentMode: true });
