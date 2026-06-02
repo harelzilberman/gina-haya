@@ -728,7 +728,7 @@ export function ChupChuScreen() {
       }
     } catch (err: any) {
       setVoiceState('idle');
-      Alert.alert('המיקרופון אינו זמין', 'פונקציית הקול אינה זמינה ב-Expo Go. השתמש בהקלדה.');
+      Alert.alert('שגיאה', err.message ?? 'בעיה עם המיקרופון');
     }
   };
 
