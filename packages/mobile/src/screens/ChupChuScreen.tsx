@@ -144,11 +144,11 @@ function useFirefly(baseDelay: number) {
 // ─── Sub-components ───────────────────────────────────────────────────────────
 
 const signMessages = [
-  'לחץ לתפריט',
-  'הגינה שלך',
-  'כל המסכים',
-  'press me',
-  'web app →',
+  'תפריט →',
+  'לאתר',
+  'menu →',
+  'לחץ כאן',
+  'web app',
 ];
 
 function ChupChuHead({ isSpeaking, onSpiderPress }: { isSpeaking: boolean; onSpiderPress: () => void }) {
@@ -1251,28 +1251,30 @@ const styles = StyleSheet.create({
   // Sign tap zone (over the spider's sign in the image)
   signTapZone: {
     position: 'absolute',
-    top: '35%',
+    top: '42%',
     left: '2%',
-    width: '30%',
-    height: '22%',
+    width: '28%',
+    height: '20%',
     alignItems: 'center',
     justifyContent: 'center',
     zIndex: 10,
   },
   signText: {
-    fontSize: 11,
-    fontWeight: '700',
-    color: '#2d1a00',
+    fontSize: 12,
+    fontWeight: '800',
+    color: '#1a0a00',
     textAlign: 'center',
-    fontFamily: 'System',
+    textShadowColor: 'rgba(255,255,255,0.3)',
+    textShadowOffset: { width: 0, height: 0 },
+    textShadowRadius: 2,
   },
-  // Wide tap zone covering the whole web area
+  // Wide tap zone covering the spider and sign area
   webTapZone: {
     position: 'absolute',
-    top: 0,
-    left: 0,
-    width: '45%',
-    height: '80%',
+    top: '30%',
+    left: '0%',
+    width: '32%',
+    height: '40%',
     zIndex: 9,
   },
 
