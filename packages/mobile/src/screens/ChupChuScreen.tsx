@@ -239,7 +239,7 @@ function ChupChuHead({ isSpeaking }: { isSpeaking: boolean }) {
             opacity: signOpacity,
           }}>
             <Text style={{
-              fontSize: 11,
+              fontSize: 13,
               fontWeight: '900',
               color: '#6b8a1a',
               textAlign: 'center',
