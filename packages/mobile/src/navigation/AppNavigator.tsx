@@ -1,5 +1,5 @@
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
-import { Text } from 'react-native';
+import { Image, Text } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { CalendarScreen } from '../screens/CalendarScreen';
@@ -48,9 +48,24 @@ export function AppNavigator() {
         tabBarActiveTintColor:   '#c4860a',
         tabBarInactiveTintColor: 'rgba(245,240,232,0.4)',
         tabBarIcon: ({ focused }) => (
-          <Text style={{ fontSize: 24, opacity: focused ? 1 : 0.5 }}>
-            {ICON[route.name]}
-          </Text>
+          route.name === 'Chupchu' ? (
+            <Image
+              source={require('../assets/chupchu_web_in_hole.png')}
+              style={{
+                width: 28,
+                height: 28,
+                borderRadius: 14,
+                opacity: focused ? 1 : 0.45,
+                borderWidth: focused ? 1.5 : 0,
+                borderColor: '#c4860a',
+              }}
+              resizeMode="cover"
+            />
+          ) : (
+            <Text style={{ fontSize: 24, opacity: focused ? 1 : 0.5 }}>
+              {ICON[route.name]}
+            </Text>
+          )
         ),
         tabBarLabel: LABEL[route.name] ?? route.name,
         tabBarLabelStyle: {
