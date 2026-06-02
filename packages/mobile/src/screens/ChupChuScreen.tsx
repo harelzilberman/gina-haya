@@ -229,7 +229,7 @@ function ChupChuHead({ isSpeaking }: { isSpeaking: boolean }) {
           <Animated.View style={{
             position: 'absolute',
             left: iw * 0.6 + (60 * 0.333) + 7 + (44.77 * 0.09),
-            top: ih * 0.3 + (25 * 1.5) + (25 * 0.5) - (25 * 0.05) - 4 + 5,
+            top: ih * 0.3 + (25 * 1.5) + (25 * 0.5) - (25 * 0.05) - 4 + 5 - 2.5,
             width: 49.2 * (1 - 0.09),
             height: 28,
             alignItems: 'center',
