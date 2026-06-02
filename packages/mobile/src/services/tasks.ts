@@ -30,19 +30,22 @@ export async function fetchPendingTasks(): Promise<PendingTask[]> {
 export async function completeTask(taskId: string): Promise<void> {
   const token = await getToken();
   if (!token) throw new Error('Not authenticated');
-  await apiFetch(`/api/chupchu/tasks/${taskId}/complete`, token, { method: 'PATCH' });
+  await apiFetch(`/api/tasks/${taskId}`, token, {
+    method: 'PATCH',
+    body: JSON.stringify({ status: 'done' }),
+  });
 }
 
 export async function deleteTask(taskId: string): Promise<void> {
   const token = await getToken();
   if (!token) throw new Error('Not authenticated');
-  await apiFetch(`/api/chupchu/tasks/${taskId}`, token, { method: 'DELETE' });
+  await apiFetch(`/api/tasks/${taskId}`, token, { method: 'DELETE' });
 }
 
 export async function updateTaskTitle(taskId: string, title: string): Promise<void> {
   const token = await getToken();
   if (!token) throw new Error('Not authenticated');
-  await apiFetch(`/api/chupchu/tasks/${taskId}`, token, {
+  await apiFetch(`/api/tasks/${taskId}`, token, {
     method: 'PATCH',
     body: JSON.stringify({ title }),
   });
