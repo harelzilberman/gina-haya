@@ -214,23 +214,43 @@ function ChupChuHead({ isSpeaking, onSpiderPress }: { isSpeaking: boolean; onSpi
           </>
         )}
 
-        {/* Animated sign text overlay on the spider's sign */}
-        <TouchableOpacity
-          style={styles.signTapZone}
-          onPress={onSpiderPress}
-          activeOpacity={0.7}
-        >
-          <Animated.Text style={[styles.signText, { opacity: signOpacity }]}>
-            {signMessages[signIndex]}
-          </Animated.Text>
-        </TouchableOpacity>
+        {iw > 0 && (
+          <>
+            {/* Animated sign text overlay on the spider's sign */}
+            <TouchableOpacity
+              style={{
+                position: 'absolute',
+                top: ih * 0.38,
+                left: iw * 0.02,
+                width: iw * 0.30,
+                height: ih * 0.22,
+                alignItems: 'center',
+                justifyContent: 'center',
+                zIndex: 10,
+              }}
+              onPress={onSpiderPress}
+              activeOpacity={0.7}
+            >
+              <Animated.Text style={[styles.signText, { opacity: signOpacity }]}>
+                {signMessages[signIndex]}
+              </Animated.Text>
+            </TouchableOpacity>
 
-        {/* Wide tap zone covering the whole web area */}
-        <TouchableOpacity
-          style={styles.webTapZone}
-          onPress={onSpiderPress}
-          activeOpacity={0}
-        />
+            {/* Wide tap zone covering spider+sign area */}
+            <TouchableOpacity
+              style={{
+                position: 'absolute',
+                top: ih * 0.28,
+                left: 0,
+                width: iw * 0.35,
+                height: ih * 0.42,
+                zIndex: 9,
+              }}
+              onPress={onSpiderPress}
+              activeOpacity={0}
+            />
+          </>
+        )}
       </View>
 
       <Text style={styles.headName}>צ'ופצ'ו ✦</Text>
