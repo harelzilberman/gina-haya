@@ -1,10 +1,10 @@
 import { useCallback, useState } from 'react';
 import {
   View, Text, ScrollView, ActivityIndicator,
-  StyleSheet, RefreshControl, TouchableOpacity,
+  StyleSheet, RefreshControl, TouchableOpacity, Alert,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { fetchPendingTasks, type PendingTask } from '../services/tasks';
+import { fetchPendingTasks, type PendingTask, completeTask, deleteTask, updateTaskTitle } from '../services/tasks';
 
 export function TasksScreen() {
   const [tasks,     setTasks]     = useState<PendingTask[]>([]);
@@ -30,6 +30,61 @@ export function TasksScreen() {
 
   const priorityColor = (p: string) =>
     p === 'high' ? '#e05050' : p === 'medium' ? '#c4860a' : '#4a7c3f';
+
+  const handleTaskLongPress = (task: PendingTask) => {
+    Alert.alert(
+      task.title,
+      'מה תרצה לעשות?',
+      [
+        {
+          text: '✓ סמן כהושלם',
+          onPress: async () => {
+            try {
+              await completeTask(task.id);
+              setTasks(prev => prev.filter(t => t.id !== task.id));
+            } catch (err: any) {
+              Alert.alert('שגיאה', err.message);
+            }
+          },
+        },
+        {
+          text: '✏️ ערוך כותרת',
+          onPress: () => {
+            Alert.prompt(
+              'ערוך משימה',
+              'שנה את כותרת המשימה',
+              async (newTitle) => {
+                if (!newTitle?.trim()) return;
+                try {
+                  await updateTaskTitle(task.id, newTitle.trim());
+                  setTasks(prev => prev.map(t =>
+                    t.id === task.id ? { ...t, title: newTitle.trim() } : t
+                  ));
+                } catch (err: any) {
+                  Alert.alert('שגיאה', err.message);
+                }
+              },
+              'plain-text',
+              task.title,
+            );
+          },
+        },
+        {
+          text: '🗑️ מחק',
+          style: 'destructive',
+          onPress: async () => {
+            try {
+              await deleteTask(task.id);
+              setTasks(prev => prev.filter(t => t.id !== task.id));
+            } catch (err: any) {
+              Alert.alert('שגיאה', err.message);
+            }
+          },
+        },
+        { text: 'ביטול', style: 'cancel' },
+      ]
+    );
+  };
 
   return (
     <SafeAreaView style={styles.safe}>
@@ -57,10 +112,17 @@ export function TasksScreen() {
         )}
 
         {tasks.map(task => (
-          <View key={task.id} style={styles.taskCard}>
+          <TouchableOpacity key={task.id} style={styles.taskCard} onPress={() => handleTaskLongPress(task)}>
             <View style={[styles.priorityBar, { backgroundColor: priorityColor(task.priority) }]} />
             <View style={styles.taskBody}>
-              <Text style={styles.taskTitle}>{task.title}</Text>
+              <Text style={[
+                styles.taskTitle,
+                {
+                  textDecorationLine: task.status === 'done' ? 'line-through' : 'none',
+                  opacity: task.status === 'done' ? 0.4 : 1,
+                }
+              ]}>{task.title}</Text>
+              <Text style={styles.taskHint}>לחץ לאפשרויות</Text>
               <View style={styles.taskMeta}>
                 {task.due_date && (
                   <Text style={styles.taskDate}>
@@ -77,7 +139,7 @@ export function TasksScreen() {
                 {task.status === 'done' ? '✓' : task.status === 'skipped' ? '–' : '○'}
               </Text>
             </View>
-          </View>
+          </TouchableOpacity>
         ))}
       </ScrollView>
     </SafeAreaView>
@@ -107,6 +169,7 @@ const styles = StyleSheet.create({
   priorityBar: { width: 4, alignSelf: 'stretch' },
   taskBody: { flex: 1, padding: 12, gap: 4, alignItems: 'flex-end' },
   taskTitle: { fontSize: 15, color: '#f5f0e8', textAlign: 'right', fontWeight: '500' },
+  taskHint: { fontSize: 10, color: 'rgba(237,224,196,0.25)', textAlign: 'right' },
   taskMeta: { flexDirection: 'row-reverse', gap: 10, alignItems: 'center' },
   taskDate: { fontSize: 12, color: 'rgba(237,224,196,0.5)' },
   taskCategory: { fontSize: 11, fontWeight: '600' },

@@ -26,3 +26,24 @@ export async function fetchPendingTasks(): Promise<PendingTask[]> {
     return cached as PendingTask[];
   }
 }
+
+export async function completeTask(taskId: string): Promise<void> {
+  const token = await getToken();
+  if (!token) throw new Error('Not authenticated');
+  await apiFetch(`/api/chupchu/tasks/${taskId}/complete`, token, { method: 'PATCH' });
+}
+
+export async function deleteTask(taskId: string): Promise<void> {
+  const token = await getToken();
+  if (!token) throw new Error('Not authenticated');
+  await apiFetch(`/api/chupchu/tasks/${taskId}`, token, { method: 'DELETE' });
+}
+
+export async function updateTaskTitle(taskId: string, title: string): Promise<void> {
+  const token = await getToken();
+  if (!token) throw new Error('Not authenticated');
+  await apiFetch(`/api/chupchu/tasks/${taskId}`, token, {
+    method: 'PATCH',
+    body: JSON.stringify({ title }),
+  });
+}
