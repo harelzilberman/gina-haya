@@ -142,10 +142,36 @@ function useFirefly(baseDelay: number) {
 
 // ─── Sub-components ───────────────────────────────────────────────────────────
 
+const signMessages = [
+  'תפריט →',
+  'לאתר',
+  'menu →',
+  'לחץ כאן',
+  'web app',
+];
+
 function ChupChuHead({ isSpeaking }: { isSpeaking: boolean }) {
   const [imgSize, setImgSize] = useState({ width: 0, height: 0 });
   const leftAntennaOpacity  = useFirefly(0);
   const rightAntennaOpacity = useFirefly(1800);
+
+  const [signIndex, setSignIndex] = useState(0);
+  const signOpacity = useRef(new Animated.Value(1)).current;
+
+  useEffect(() => {
+    const cycle = () => {
+      Animated.sequence([
+        Animated.delay(3000),
+        Animated.timing(signOpacity, { toValue: 0, duration: 600, useNativeDriver: true }),
+        Animated.timing(signOpacity, { toValue: 1, duration: 600, useNativeDriver: true }),
+      ]).start(() => {
+        setSignIndex(i => (i + 1) % signMessages.length);
+        cycle();
+      });
+    };
+    cycle();
+    return () => signOpacity.stopAnimation();
+  }, [signOpacity]);
 
   // Percentages measured from chupchu_web_in_hole.png
   const pct = {
@@ -169,6 +195,27 @@ function ChupChuHead({ isSpeaking }: { isSpeaking: boolean }) {
             setImgSize({ width, height });
           }}
         />
+        {iw > 0 && (
+          <TouchableOpacity
+            style={{
+              position: 'absolute',
+              top: ih * 0.38,
+              left: iw * 0.02,
+              width: iw * 0.30,
+              height: ih * 0.22,
+              alignItems: 'center',
+              justifyContent: 'center',
+              zIndex: 10,
+            }}
+            activeOpacity={0.7}
+            onPress={() => {}}
+          >
+            <Animated.Text style={[styles.signText, { opacity: signOpacity }]}>
+              {signMessages[signIndex]}
+            </Animated.Text>
+          </TouchableOpacity>
+        )}
+
         {iw > 0 && (
           <>
             {/* Antenna pulse dots — locked positions, firefly animated */}
@@ -1112,6 +1159,15 @@ const styles = StyleSheet.create({
     color: '#c4860a',
     fontSize: 16,
     fontWeight: '600',
+  },
+
+  // Sign text on spider's sign
+  signText: {
+    fontSize: 13,
+    fontWeight: '900',
+    color: '#1a0800',
+    textAlign: 'center',
+    letterSpacing: 0.3,
   },
 
   // Photo action card
