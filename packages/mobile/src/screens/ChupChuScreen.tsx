@@ -158,9 +158,9 @@ function ChupChuHead({ isSpeaking }: { isSpeaking: boolean }) {
   useEffect(() => {
     const cycle = () => {
       Animated.sequence([
-        Animated.delay(3000),
-        Animated.timing(signOpacity, { toValue: 0, duration: 500, useNativeDriver: true }),
-        Animated.timing(signOpacity, { toValue: 1, duration: 500, useNativeDriver: true }),
+        Animated.delay(4500),
+        Animated.timing(signOpacity, { toValue: 0, duration: 800, useNativeDriver: true }),
+        Animated.timing(signOpacity, { toValue: 1, duration: 800, useNativeDriver: true }),
       ]).start(() => {
         setSignIndex(i => (i + 1) % signMessages.length);
         cycle();
