@@ -3,14 +3,14 @@ import { Image, Text } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { CalendarScreen } from '../screens/CalendarScreen';
-import { GuidesScreen }   from '../screens/GuidesScreen';
+import { TasksScreen }    from '../screens/TasksScreen';
 import { SettingsScreen } from '../screens/SettingsScreen';
 import { ChupChuScreen }  from '../screens/ChupChuScreen';
 
 export type TabParamList = {
   Chupchu:  undefined;
   Calendar: undefined;
-  Guides:   undefined;
+  Tasks:    undefined;
   Settings: undefined;
 };
 
@@ -19,14 +19,14 @@ const Tab = createBottomTabNavigator<TabParamList>();
 const ICON: Record<string, string> = {
   Chupchu:  '🤖',
   Calendar: '📅',
-  Guides:   '📖',
+  Tasks:    '✅',
   Settings: '⚙️',
 };
 
 const LABEL: Record<string, string> = {
   Chupchu:  "צ'ופצ'ו",
   Calendar: 'לוח',
-  Guides:   'מדריכים',
+  Tasks:    'משימות',
   Settings: 'הגדרות',
 };
 
@@ -77,7 +77,7 @@ export function AppNavigator() {
     >
       <Tab.Screen name="Chupchu"  component={ChupChuScreen}  />
       <Tab.Screen name="Calendar" component={CalendarScreen} />
-      <Tab.Screen name="Guides"   component={GuidesScreen}   />
+      <Tab.Screen name="Tasks"    component={TasksScreen}    />
       <Tab.Screen name="Settings" component={SettingsScreen} />
     </Tab.Navigator>
   );
