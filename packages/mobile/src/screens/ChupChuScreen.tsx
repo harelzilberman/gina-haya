@@ -973,7 +973,7 @@ export function ChupChuScreen() {
               })},
               { translateY: webScale.interpolate({
                 inputRange: [0, 1],
-                outputRange: [-200, 0],
+                outputRange: [-284, 0],
               })},
             ],
             opacity: webOpacity,
