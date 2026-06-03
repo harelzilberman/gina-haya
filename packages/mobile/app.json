@@ -1,5 +1,6 @@
 {
   "expo": {
+    "entryPoint": "./index.js",
     "name": "גינה חיה",
     "slug": "gina-haya",
     "owner": "harel_zilberman",

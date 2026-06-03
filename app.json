@@ -1,0 +1,12 @@
+{
+  "expo": {
+    "extra": {
+      "eas": {
+        "projectId": "4c0ca0ce-90d4-4c12-b58f-11ffbdcc6410"
+      }
+    },
+    "android": {
+      "package": "com.harel_zilberman.ginahaya"
+    }
+  }
+}
