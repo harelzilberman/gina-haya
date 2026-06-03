@@ -159,7 +159,7 @@ export function GardenMapScreen() {
         <ScrollView
           style={{ flex: 1 }}
           maximumZoomScale={4}
-          minimumZoomScale={0.2}
+          minimumZoomScale={0.3}
           bouncesZoom={true}
           centerContent={true}
           showsHorizontalScrollIndicator={false}
@@ -167,8 +167,9 @@ export function GardenMapScreen() {
         >
           <ScrollView
             horizontal
+            style={{ flex: 1 }}
             showsHorizontalScrollIndicator={false}
-            contentContainerStyle={{ flexGrow: 1 }}
+            showsVerticalScrollIndicator={false}
           >
             <Svg
               width={CANVAS_W}
