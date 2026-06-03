@@ -398,8 +398,9 @@ export function ChupChuScreen() {
   const [executing,   setExecuting]   = useState(false);
   const [activeCard,  setActiveCard]  = useState<'day' | 'moon' | 'score' | null>(null);
   const [analyzing,   setAnalyzing]   = useState(false);
-  const [webMenuOpen, setWebMenuOpen] = useState(false);
-  const [webViewUrl,  setWebViewUrl]  = useState<string | null>(null);
+  const [webMenuOpen,   setWebMenuOpen]   = useState(false);
+  const [webViewUrl,    setWebViewUrl]    = useState<string | null>(null);
+  const [webViewToken,  setWebViewToken]  = useState<string | null>(null);
   const [pendingPhotoAction, setPendingPhotoAction] = useState<{
     base64: string;
     analysis: string;
@@ -452,6 +453,12 @@ export function ChupChuScreen() {
       Animated.timing(webScale, { toValue: 0, duration: 300, useNativeDriver: true }),
       Animated.timing(webOpacity, { toValue: 0, duration: 200, useNativeDriver: true }),
     ]).start(() => setWebMenuOpen(false));
+  };
+
+  const openAuthenticatedWebView = async (url: string) => {
+    const token = await getToken();
+    setWebViewToken(token);
+    setWebViewUrl(url);
   };
 
   // ── Network ──────────────────────────────────────────────────────────────
@@ -1020,9 +1027,9 @@ export function ChupChuScreen() {
                 onPress={() => {
                   handleCloseWebMenu();
                   if (item.isCenter) {
-                    setWebViewUrl('https://gina-haya.com/map');
+                    openAuthenticatedWebView('https://gina-haya.com/map');
                   } else if (item.isGuides) {
-                    setWebViewUrl('https://gina-haya.com/articles');
+                    openAuthenticatedWebView('https://gina-haya.com/articles');
                   } else if (item.screen) {
                     navigation.navigate(item.screen);
                   }
@@ -1111,6 +1118,21 @@ export function ChupChuScreen() {
               source={{ uri: webViewUrl }}
               style={{ flex: 1 }}
               startInLoadingState
+              userAgent="Mozilla/5.0 (Linux; Android 10; Mobile) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Mobile Safari/537.36"
+              injectedJavaScript={webViewToken ? `
+                (function() {
+                  localStorage.setItem('supabase.auth.token', JSON.stringify({
+                    access_token: '${webViewToken}',
+                    token_type: 'bearer'
+                  }));
+                })();
+              ` : undefined}
+              onNavigationStateChange={(navState) => {
+                if (navState.url.includes('accounts.google.com')) {
+                  setWebViewUrl(null);
+                  Linking.openURL(navState.url);
+                }
+              }}
             />
           )}
         </SafeAreaView>
