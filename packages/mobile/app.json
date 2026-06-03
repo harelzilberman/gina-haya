@@ -17,7 +17,7 @@
       "backgroundColor": "#1a1a0e"
     },
     "android": {
-      "package": "com.ginahaya.app",
+      "package": "com.harel_zilberman.ginahaya",
       "adaptiveIcon": {
         "foregroundImage": "./assets/adaptive-icon.png",
         "backgroundColor": "#1a1a0e"
