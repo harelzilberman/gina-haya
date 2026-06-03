@@ -1,11 +1,6 @@
 import * as SecureStore from 'expo-secure-store';
-import * as AuthSession from 'expo-auth-session';
-import * as QueryParams from 'expo-auth-session/build/QueryParams';
-import * as WebBrowser from 'expo-web-browser';
-import * as Linking from 'expo-linking';
+import { GoogleSignin, statusCodes } from '@react-native-google-signin/google-signin';
 import { createClient } from '@supabase/supabase-js';
-
-WebBrowser.maybeCompleteAuthSession();
 
 const SUPABASE_URL      = process.env.EXPO_PUBLIC_SUPABASE_URL!;
 const SUPABASE_ANON_KEY = process.env.EXPO_PUBLIC_SUPABASE_ANON_KEY!;
@@ -40,52 +35,35 @@ export async function login(email: string, password: string): Promise<void> {
   }
 }
 
+export function configureGoogleSignIn() {
+  GoogleSignin.configure({
+    webClientId: '417815147012-h4a52rrmeleq0kfgops6pg0ugu4u9s1a.apps.googleusercontent.com',
+    iosClientId: undefined,
+  });
+}
+
 export async function signInWithGoogle(): Promise<void> {
-  const redirectUri = AuthSession.makeRedirectUri({
-    scheme: 'ginahaya',
-    path: 'auth',
-  });
+  try {
+    await GoogleSignin.hasPlayServices();
+    const userInfo = await GoogleSignin.signIn();
+    const idToken = userInfo.data?.idToken ?? (userInfo as any).idToken;
 
-  console.log('🔴 Redirect URI:', redirectUri);
+    console.log('🔴 Got ID token:', !!idToken);
 
-  const { data, error } = await supabase.auth.signInWithOAuth({
-    provider: 'google',
-    options: {
-      redirectTo: redirectUri,
-      skipBrowserRedirect: true,
-    },
-  });
+    if (!idToken) throw new Error('No ID token');
 
-  if (error || !data?.url) {
-    console.log('🔴 OAuth error:', error);
-    return;
-  }
-
-  const result = await WebBrowser.openAuthSessionAsync(
-    data.url,
-    redirectUri,
-  );
-
-  console.log('🔴 Result type:', result.type);
-
-  if (result.type !== 'success') return;
-
-  console.log('🔴 Result URL:', result.url);
-
-  const { params, errorCode } = QueryParams.getQueryParams(result.url);
-
-  console.log('🔴 Params:', JSON.stringify(params));
-  console.log('🔴 Error code:', errorCode);
-
-  if (params.access_token && params.refresh_token) {
-    await supabase.auth.setSession({
-      access_token: params.access_token as string,
-      refresh_token: params.refresh_token as string,
+    const { data, error } = await supabase.auth.signInWithIdToken({
+      provider: 'google',
+      token: idToken,
     });
-    console.log('🔴 Session set!');
-  } else if (params.code) {
-    const { error: exchangeError } = await supabase.auth.exchangeCodeForSession(params.code as string);
-    console.log('🔴 Code exchange:', exchangeError);
+
+    console.log('🔴 Supabase result:', !!data.session, error);
+  } catch (error: any) {
+    if (error.code === statusCodes.SIGN_IN_CANCELLED) {
+      console.log('🔴 Cancelled');
+    } else {
+      console.log('🔴 Error:', error);
+    }
   }
 }
 

@@ -1,7 +1,6 @@
 import 'react-native-gesture-handler';
 import { useEffect } from 'react';
 import { View, ActivityIndicator, StyleSheet, I18nManager, Platform, StatusBar as RNStatusBar } from 'react-native';
-import * as WebBrowser from 'expo-web-browser';
 import { NavigationContainer } from '@react-navigation/native';
 import { StatusBar } from 'expo-status-bar';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
@@ -10,8 +9,7 @@ import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { AuthProvider, useAuth } from './src/context/AuthContext';
 import { AppNavigator } from './src/navigation/AppNavigator';
 import { LoginScreen } from './src/screens/LoginScreen';
-
-WebBrowser.maybeCompleteAuthSession();
+import { configureGoogleSignIn } from './src/services/auth';
 
 // Force RTL for Hebrew-first layout
 I18nManager.allowRTL(true);
@@ -60,6 +58,8 @@ function AppContent() {
 
 // ─── Root — AuthProvider must wrap everything ─────────────────────────────────
 export default function App() {
+  useEffect(() => { configureGoogleSignIn(); }, []);
+
   return (
     <GestureHandlerRootView style={{ flex: 1 }}>
       <AuthProvider>
