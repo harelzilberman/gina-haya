@@ -2,6 +2,8 @@
   "name": "gina-haya",
   "private": true,
   "scripts": {
+    "mobile": "pnpm --filter mobile start",
+    "mobile:reset": "pnpm --filter mobile start:reset",
     "dev": "pnpm --filter web dev & pnpm --filter api dev",
     "dev:web": "pnpm --filter web dev",
     "dev:api": "pnpm --filter api dev",
