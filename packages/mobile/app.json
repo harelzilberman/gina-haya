@@ -75,6 +75,12 @@
           "photosPermission": "גינה חיה צריכה גישה לגלריה כדי להוסיף תמונות ליומן",
           "cameraPermission": "גינה חיה צריכה גישה למצלמה כדי לצלם תמונות ליומן"
         }
+      ],
+      [
+        "@react-native-google-signin/google-signin",
+        {
+          "iosUrlScheme": ""
+        }
       ]
     ],
     "scheme": "ginahaya",

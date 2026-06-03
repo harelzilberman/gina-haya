@@ -43,28 +43,26 @@ export function configureGoogleSignIn() {
 }
 
 export async function signInWithGoogle(): Promise<void> {
-  try {
-    await GoogleSignin.hasPlayServices();
-    const userInfo = await GoogleSignin.signIn();
-    const idToken = userInfo.data?.idToken ?? (userInfo as any).idToken;
+  await GoogleSignin.hasPlayServices({ showPlayServicesUpdateDialog: true });
 
-    console.log('🔴 Got ID token:', !!idToken);
+  const userInfo = await GoogleSignin.signIn();
+  const idToken = userInfo.data?.idToken ?? (userInfo as any).idToken;
 
-    if (!idToken) throw new Error('No ID token');
+  console.log('🔴 Got idToken:', !!idToken);
 
-    const { data, error } = await supabase.auth.signInWithIdToken({
-      provider: 'google',
-      token: idToken,
-    });
-
-    console.log('🔴 Supabase result:', !!data.session, error);
-  } catch (error: any) {
-    if (error.code === statusCodes.SIGN_IN_CANCELLED) {
-      console.log('🔴 Cancelled');
-    } else {
-      console.log('🔴 Error:', error);
-    }
+  if (!idToken) {
+    throw new Error('לא התקבל טוקן מ-Google');
   }
+
+  const { data, error } = await supabase.auth.signInWithIdToken({
+    provider: 'google',
+    token: idToken,
+  });
+
+  console.log('🔴 Supabase session:', !!data?.session, 'error:', error?.message);
+
+  if (error) throw error;
+  if (!data?.session) throw new Error('לא נוצרה סשן');
 }
 
 export async function logout(): Promise<void> {
