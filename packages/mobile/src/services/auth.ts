@@ -39,16 +39,25 @@ export async function login(email: string, password: string): Promise<void> {
 }
 
 export async function signInWithGoogle(): Promise<void> {
-  const redirectTo = AuthSession.makeRedirectUri({ scheme: 'ginahaya' });
+  __DEV__
+    ? AuthSession.makeRedirectUri({ scheme: 'ginahaya', path: 'auth' })
+    : AuthSession.makeRedirectUri({ scheme: 'ginahaya', path: 'auth' });
+
+  // Force native scheme always
+  const finalRedirect = 'ginahaya://auth';
+  console.log('🔴 DEV BUILD REDIRECT URI:', finalRedirect);
+  console.log('🔴 OAUTH URL will be:', `${process.env.EXPO_PUBLIC_SUPABASE_URL}/auth/v1/authorize`);
 
   const { data, error } = await supabase.auth.signInWithOAuth({
     provider: 'google',
-    options: { redirectTo, skipBrowserRedirect: true },
+    options: { redirectTo: finalRedirect, skipBrowserRedirect: true },
   });
+  console.log('🔴 OAUTH ERROR:', error);
+  console.log('🔴 OAUTH URL:', data?.url);
   if (error) throw new Error(error.message);
   if (!data.url) throw new Error('לא התקבל URL לאימות');
 
-  const result = await WebBrowser.openAuthSessionAsync(data.url, redirectTo);
+  const result = await WebBrowser.openAuthSessionAsync(data.url, finalRedirect);
   if (result.type !== 'success') return;
 
   // Parse tokens from the redirect URL fragment

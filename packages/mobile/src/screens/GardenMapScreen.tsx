@@ -9,7 +9,7 @@ import {
   TouchableOpacity,
   Modal,
 } from 'react-native';
-import Svg, { Rect, Circle, Polygon, Text as SvgText } from 'react-native-svg';
+import Svg, { Rect, Circle, Polygon, Text as SvgText, Line } from 'react-native-svg';
 import { getToken } from '../services/auth';
 
 // ── Types ─────────────────────────────────────────────────────────────────────
@@ -187,7 +187,7 @@ export function GardenMapScreen() {
 
                 {/* Grid lines every 250px (5m) */}
                 {Array.from({ length: Math.ceil(CANVAS_W / 250) + 1 }).map((_, i) => (
-                  <line
+                  <Line
                     key={`vgrid-${i}`}
                     x1={i * 250}
                     y1={0}
@@ -198,7 +198,7 @@ export function GardenMapScreen() {
                   />
                 ))}
                 {Array.from({ length: Math.ceil(CANVAS_H / 250) + 1 }).map((_, i) => (
-                  <line
+                  <Line
                     key={`hgrid-${i}`}
                     x1={0}
                     y1={i * 250}
