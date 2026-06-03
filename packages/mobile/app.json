@@ -51,6 +51,9 @@
       "icon": "./assets/notification-icon.png",
       "color": "#c4860a"
     },
+    "experiments": {
+      "newArchEnabled": true
+    },
     "plugins": [
       "react-native-edge-to-edge",
       "expo-secure-store",
