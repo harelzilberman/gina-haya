@@ -1,9 +1,8 @@
 import * as SecureStore from 'expo-secure-store';
-import * as WebBrowser from 'expo-web-browser';
-import * as AuthSession from 'expo-auth-session';
+import * as Linking from 'expo-linking';
 import { createClient } from '@supabase/supabase-js';
 
-// maybeCompleteAuthSession() is called in App.tsx on all platforms for OAuth deep link handling.
+// OAuth redirect is handled via Linking listener in App.tsx
 
 const SUPABASE_URL      = process.env.EXPO_PUBLIC_SUPABASE_URL!;
 const SUPABASE_ANON_KEY = process.env.EXPO_PUBLIC_SUPABASE_ANON_KEY!;
@@ -39,58 +38,24 @@ export async function login(email: string, password: string): Promise<void> {
 }
 
 export async function signInWithGoogle(): Promise<void> {
-  // Warm up the browser for faster OAuth
-  await WebBrowser.warmUpAsync();
+  const redirectUri = 'ginahaya://auth';
 
-  try {
-    __DEV__
-      ? AuthSession.makeRedirectUri({ scheme: 'ginahaya', path: 'auth' })
-      : AuthSession.makeRedirectUri({ scheme: 'ginahaya', path: 'auth' });
+  const { data, error } = await supabase.auth.signInWithOAuth({
+    provider: 'google',
+    options: {
+      redirectTo: redirectUri,
+      skipBrowserRedirect: true,
+    },
+  });
 
-    // Force native scheme always
-    const finalRedirect = 'ginahaya://auth';
-    console.log('🔴 DEV BUILD REDIRECT URI:', finalRedirect);
-    console.log('🔴 OAUTH URL will be:', `${process.env.EXPO_PUBLIC_SUPABASE_URL}/auth/v1/authorize`);
-
-    const { data, error } = await supabase.auth.signInWithOAuth({
-      provider: 'google',
-      options: { redirectTo: finalRedirect, skipBrowserRedirect: true },
-    });
-    console.log('🔴 OAUTH ERROR:', error);
-    console.log('🔴 OAUTH URL:', data?.url);
-    if (error) throw new Error(error.message);
-    if (!data.url) throw new Error('לא התקבל URL לאימות');
-
-    const result = await WebBrowser.openAuthSessionAsync(
-      data.url,
-      finalRedirect,
-      {
-        showInRecents: true,
-        createTask: false,
-      }
-    );
-    if (result.type !== 'success') return;
-
-    // Parse tokens from the redirect URL fragment
-    const url    = result.url;
-    const hash   = url.includes('#') ? url.split('#')[1] : url.split('?')[1] ?? '';
-    const params = Object.fromEntries(new URLSearchParams(hash));
-
-    if (params.access_token && params.refresh_token) {
-      await supabase.auth.setSession({
-        access_token:  params.access_token,
-        refresh_token: params.refresh_token,
-      });
-      // Store BOTH tokens for session restoration on restart
-      await Promise.all([
-        SecureStore.setItemAsync(ACCESS_TOKEN_KEY,  params.access_token),
-        SecureStore.setItemAsync(REFRESH_TOKEN_KEY, params.refresh_token),
-      ]);
-    }
-  } finally {
-    // Clean up the browser
-    await WebBrowser.coolDownAsync();
+  if (error || !data?.url) {
+    console.log('OAuth error:', error);
+    return;
   }
+
+  // Open in system browser (not Chrome Custom Tabs)
+  // This ensures Android handles the deep link redirect natively
+  await Linking.openURL(data.url);
 }
 
 export async function logout(): Promise<void> {

@@ -1,7 +1,6 @@
 import 'react-native-gesture-handler';
 import { useEffect } from 'react';
 import { View, ActivityIndicator, StyleSheet, I18nManager, Platform, StatusBar as RNStatusBar } from 'react-native';
-import * as WebBrowser from 'expo-web-browser';
 import * as Linking from 'expo-linking';
 import { NavigationContainer } from '@react-navigation/native';
 import { StatusBar } from 'expo-status-bar';
@@ -12,9 +11,6 @@ import { AuthProvider, useAuth } from './src/context/AuthContext';
 import { AppNavigator } from './src/navigation/AppNavigator';
 import { LoginScreen } from './src/screens/LoginScreen';
 import { supabase } from './src/services/auth';
-
-// Complete the auth session on all platforms
-WebBrowser.maybeCompleteAuthSession();
 
 // Force RTL for Hebrew-first layout
 I18nManager.allowRTL(true);
@@ -38,22 +34,6 @@ function AppContent() {
     }
   }, [isAuthed]);
 
-  // Deep link listener for OAuth fallback (in case WebBrowser doesn't catch it)
-  useEffect(() => {
-    const subscription = Linking.addEventListener('url', ({ url }) => {
-      if (url.includes('ginahaya://auth')) {
-        const hash = url.includes('#') ? url.split('#')[1] : url.split('?')[1] ?? '';
-        const params = Object.fromEntries(new URLSearchParams(hash));
-        if (params.access_token && params.refresh_token) {
-          supabase.auth.setSession({
-            access_token: params.access_token,
-            refresh_token: params.refresh_token,
-          });
-        }
-      }
-    });
-    return () => subscription.remove();
-  }, []);
 
   // Show a splash/loading screen while restoring the session from SecureStore
   if (isLoading) {
@@ -80,6 +60,45 @@ function AppContent() {
 
 // ─── Root — AuthProvider must wrap everything ─────────────────────────────────
 export default function App() {
+  // Handle deep link when app is already open
+  useEffect(() => {
+    const subscription = Linking.addEventListener('url', async ({ url }) => {
+      console.log('🔴 Deep link received:', url);
+      if (!url.includes('ginahaya://auth')) return;
+
+      const parts = url.includes('#') ? url.split('#')[1] : url.split('?')[1] ?? '';
+      const params = Object.fromEntries(new URLSearchParams(parts));
+
+      if (params.access_token && params.refresh_token) {
+        console.log('🔴 Setting session from deep link');
+        await supabase.auth.setSession({
+          access_token: params.access_token,
+          refresh_token: params.refresh_token,
+        });
+      }
+    });
+
+    // Handle deep link when app was closed and opened via deep link
+    Linking.getInitialURL().then(async (url) => {
+      if (!url) return;
+      console.log('🔴 Initial URL:', url);
+      if (!url.includes('ginahaya://auth')) return;
+
+      const parts = url.includes('#') ? url.split('#')[1] : url.split('?')[1] ?? '';
+      const params = Object.fromEntries(new URLSearchParams(parts));
+
+      if (params.access_token && params.refresh_token) {
+        console.log('🔴 Setting session from initial URL');
+        await supabase.auth.setSession({
+          access_token: params.access_token,
+          refresh_token: params.refresh_token,
+        });
+      }
+    });
+
+    return () => subscription.remove();
+  }, []);
+
   return (
     <GestureHandlerRootView style={{ flex: 1 }}>
       <AuthProvider>
