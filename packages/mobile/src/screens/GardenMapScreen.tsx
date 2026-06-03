@@ -10,6 +10,8 @@ import {
   Modal,
 } from 'react-native';
 import Svg, { Rect, Circle, Polygon, Text as SvgText, Line } from 'react-native-svg';
+import { GestureDetector, Gesture } from 'react-native-gesture-handler';
+import Animated, { useSharedValue, useAnimatedStyle, withSpring } from 'react-native-reanimated';
 import { getToken } from '../services/auth';
 
 // ── Types ─────────────────────────────────────────────────────────────────────
@@ -120,6 +122,30 @@ export function GardenMapScreen() {
     setSelectedPlant(plant);
   };
 
+  // Pinch-to-zoom gesture
+  const scale = useSharedValue(1);
+  const savedScale = useSharedValue(1);
+
+  const pinchGesture = Gesture.Pinch()
+    .onUpdate((e) => {
+      scale.value = savedScale.value * e.scale;
+    })
+    .onEnd(() => {
+      savedScale.value = scale.value;
+      if (scale.value < 0.3) {
+        scale.value = withSpring(0.3);
+        savedScale.value = 0.3;
+      }
+      if (scale.value > 4) {
+        scale.value = withSpring(4);
+        savedScale.value = 4;
+      }
+    });
+
+  const animatedStyle = useAnimatedStyle(() => ({
+    transform: [{ scale: scale.value }],
+  }));
+
   return (
     <SafeAreaView style={styles.safe}>
       {/* Header */}
@@ -158,10 +184,6 @@ export function GardenMapScreen() {
       {!loading && !error && mapData && mapData.objects.length > 0 && (
         <ScrollView
           style={{ flex: 1 }}
-          maximumZoomScale={4}
-          minimumZoomScale={0.3}
-          bouncesZoom={true}
-          centerContent={true}
           showsHorizontalScrollIndicator={false}
           showsVerticalScrollIndicator={false}
         >
@@ -171,12 +193,14 @@ export function GardenMapScreen() {
             showsHorizontalScrollIndicator={false}
             showsVerticalScrollIndicator={false}
           >
-            <Svg
-              width={CANVAS_W}
-              height={CANVAS_H}
-              viewBox={`0 0 ${CANVAS_W} ${CANVAS_H}`}
-              style={styles.svg}
-            >
+            <GestureDetector gesture={pinchGesture}>
+              <Animated.View style={[animatedStyle, { width: CANVAS_W, height: CANVAS_H }]}>
+                <Svg
+                  width={CANVAS_W}
+                  height={CANVAS_H}
+                  viewBox={`0 0 ${CANVAS_W} ${CANVAS_H}`}
+                  style={styles.svg}
+                >
                 {/* Background */}
                 <Rect
                   x={0}
@@ -233,7 +257,9 @@ export function GardenMapScreen() {
                     </SvgText>
                   </TouchableOpacity>
                 ))}
-            </Svg>
+                </Svg>
+              </Animated.View>
+            </GestureDetector>
           </ScrollView>
         </ScrollView>
       )}
