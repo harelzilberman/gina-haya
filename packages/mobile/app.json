@@ -51,6 +51,7 @@
       "color": "#c4860a"
     },
     "plugins": [
+      "react-native-reanimated",
       "react-native-edge-to-edge",
       "expo-secure-store",
       [
