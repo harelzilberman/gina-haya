@@ -3,7 +3,7 @@ import * as WebBrowser from 'expo-web-browser';
 import * as AuthSession from 'expo-auth-session';
 import { createClient } from '@supabase/supabase-js';
 
-// maybeCompleteAuthSession() moved to App.tsx with a Platform guard (Android doesn't need it).
+// maybeCompleteAuthSession() is called in App.tsx on all platforms for OAuth deep link handling.
 
 const SUPABASE_URL      = process.env.EXPO_PUBLIC_SUPABASE_URL!;
 const SUPABASE_ANON_KEY = process.env.EXPO_PUBLIC_SUPABASE_ANON_KEY!;
@@ -39,42 +39,57 @@ export async function login(email: string, password: string): Promise<void> {
 }
 
 export async function signInWithGoogle(): Promise<void> {
-  __DEV__
-    ? AuthSession.makeRedirectUri({ scheme: 'ginahaya', path: 'auth' })
-    : AuthSession.makeRedirectUri({ scheme: 'ginahaya', path: 'auth' });
+  // Warm up the browser for faster OAuth
+  await WebBrowser.warmUpAsync();
 
-  // Force native scheme always
-  const finalRedirect = 'ginahaya://auth';
-  console.log('🔴 DEV BUILD REDIRECT URI:', finalRedirect);
-  console.log('🔴 OAUTH URL will be:', `${process.env.EXPO_PUBLIC_SUPABASE_URL}/auth/v1/authorize`);
+  try {
+    __DEV__
+      ? AuthSession.makeRedirectUri({ scheme: 'ginahaya', path: 'auth' })
+      : AuthSession.makeRedirectUri({ scheme: 'ginahaya', path: 'auth' });
 
-  const { data, error } = await supabase.auth.signInWithOAuth({
-    provider: 'google',
-    options: { redirectTo: finalRedirect, skipBrowserRedirect: true },
-  });
-  console.log('🔴 OAUTH ERROR:', error);
-  console.log('🔴 OAUTH URL:', data?.url);
-  if (error) throw new Error(error.message);
-  if (!data.url) throw new Error('לא התקבל URL לאימות');
+    // Force native scheme always
+    const finalRedirect = 'ginahaya://auth';
+    console.log('🔴 DEV BUILD REDIRECT URI:', finalRedirect);
+    console.log('🔴 OAUTH URL will be:', `${process.env.EXPO_PUBLIC_SUPABASE_URL}/auth/v1/authorize`);
 
-  const result = await WebBrowser.openAuthSessionAsync(data.url, finalRedirect);
-  if (result.type !== 'success') return;
-
-  // Parse tokens from the redirect URL fragment
-  const url    = result.url;
-  const hash   = url.includes('#') ? url.split('#')[1] : url.split('?')[1] ?? '';
-  const params = Object.fromEntries(new URLSearchParams(hash));
-
-  if (params.access_token && params.refresh_token) {
-    await supabase.auth.setSession({
-      access_token:  params.access_token,
-      refresh_token: params.refresh_token,
+    const { data, error } = await supabase.auth.signInWithOAuth({
+      provider: 'google',
+      options: { redirectTo: finalRedirect, skipBrowserRedirect: true },
     });
-    // Store BOTH tokens for session restoration on restart
-    await Promise.all([
-      SecureStore.setItemAsync(ACCESS_TOKEN_KEY,  params.access_token),
-      SecureStore.setItemAsync(REFRESH_TOKEN_KEY, params.refresh_token),
-    ]);
+    console.log('🔴 OAUTH ERROR:', error);
+    console.log('🔴 OAUTH URL:', data?.url);
+    if (error) throw new Error(error.message);
+    if (!data.url) throw new Error('לא התקבל URL לאימות');
+
+    const result = await WebBrowser.openAuthSessionAsync(
+      data.url,
+      finalRedirect,
+      {
+        showInRecents: true,
+        createTask: false,
+      }
+    );
+    if (result.type !== 'success') return;
+
+    // Parse tokens from the redirect URL fragment
+    const url    = result.url;
+    const hash   = url.includes('#') ? url.split('#')[1] : url.split('?')[1] ?? '';
+    const params = Object.fromEntries(new URLSearchParams(hash));
+
+    if (params.access_token && params.refresh_token) {
+      await supabase.auth.setSession({
+        access_token:  params.access_token,
+        refresh_token: params.refresh_token,
+      });
+      // Store BOTH tokens for session restoration on restart
+      await Promise.all([
+        SecureStore.setItemAsync(ACCESS_TOKEN_KEY,  params.access_token),
+        SecureStore.setItemAsync(REFRESH_TOKEN_KEY, params.refresh_token),
+      ]);
+    }
+  } finally {
+    // Clean up the browser
+    await WebBrowser.coolDownAsync();
   }
 }
 
