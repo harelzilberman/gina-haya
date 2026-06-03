@@ -6,12 +6,14 @@ import { CalendarScreen } from '../screens/CalendarScreen';
 import { TasksScreen }    from '../screens/TasksScreen';
 import { SettingsScreen } from '../screens/SettingsScreen';
 import { ChupChuScreen }  from '../screens/ChupChuScreen';
+import { GardenMapScreen } from '../screens/GardenMapScreen';
 
 export type TabParamList = {
-  Chupchu:  undefined;
-  Calendar: undefined;
-  Tasks:    undefined;
-  Settings: undefined;
+  Chupchu:   undefined;
+  Calendar:  undefined;
+  Tasks:     undefined;
+  Settings:  undefined;
+  GardenMap: undefined;
 };
 
 const Tab = createBottomTabNavigator<TabParamList>();
@@ -79,6 +81,11 @@ export function AppNavigator() {
       <Tab.Screen name="Calendar" component={CalendarScreen} />
       <Tab.Screen name="Tasks"    component={TasksScreen}    />
       <Tab.Screen name="Settings" component={SettingsScreen} />
+      <Tab.Screen
+        name="GardenMap"
+        component={GardenMapScreen}
+        options={{ tabBarButton: () => null }}
+      />
     </Tab.Navigator>
   );
 }

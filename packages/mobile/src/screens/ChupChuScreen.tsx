@@ -990,7 +990,7 @@ export function ChupChuScreen() {
 
           {/* Nav items scattered on web */}
           {[
-            { label: 'מפת הגינה', emoji: '🗺️', screen: null,       left: '45%', top: '45%', isCenter: true },
+            { label: 'מפת הגינה', emoji: '🗺️', screen: 'GardenMap', left: '45%', top: '45%', isCenter: true },
             { label: 'לוח ביודינמי', emoji: '📅', screen: 'Calendar', left: '45%', top: '72%' },
             { label: 'מדריכים',    emoji: '📖', screen: null,       left: '55%', top: '15%', isGuides: true },
             { label: 'הגדרות',     emoji: '⚙️', screen: 'Settings', left: '72%', top: '62%' },
@@ -1026,9 +1026,7 @@ export function ChupChuScreen() {
                 }}
                 onPress={() => {
                   handleCloseWebMenu();
-                  if (item.isCenter) {
-                    openAuthenticatedWebView('https://gina-haya.com/map');
-                  } else if (item.isGuides) {
+                  if (item.isGuides) {
                     openAuthenticatedWebView('https://gina-haya.com/articles');
                   } else if (item.screen) {
                     navigation.navigate(item.screen);
