@@ -4,8 +4,15 @@
     "skipLibCheck": true
   },
   "references": [
-    { "path": "./packages/mobile" },
-    { "path": "./packages/web" },
-    { "path": "./packages/api" }
-  ]
+    {
+      "path": "./packages/mobile"
+    },
+    {
+      "path": "./packages/web"
+    },
+    {
+      "path": "./packages/api"
+    }
+  ],
+  "extends": "expo/tsconfig.base"
 }
