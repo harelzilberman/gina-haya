@@ -64,7 +64,7 @@ export default function App() {
   useEffect(() => {
     const subscription = Linking.addEventListener('url', async ({ url }) => {
       console.log('🔴 Deep link received:', url);
-      if (!url.includes('ginahaya://auth')) return;
+      if (!url.includes('ginahaya://auth') && !url.includes('/--/auth')) return;
 
       const parts = url.includes('#') ? url.split('#')[1] : url.split('?')[1] ?? '';
       const params = Object.fromEntries(new URLSearchParams(parts));
@@ -82,7 +82,7 @@ export default function App() {
     Linking.getInitialURL().then(async (url) => {
       if (!url) return;
       console.log('🔴 Initial URL:', url);
-      if (!url.includes('ginahaya://auth')) return;
+      if (!url.includes('ginahaya://auth') && !url.includes('/--/auth')) return;
 
       const parts = url.includes('#') ? url.split('#')[1] : url.split('?')[1] ?? '';
       const params = Object.fromEntries(new URLSearchParams(parts));

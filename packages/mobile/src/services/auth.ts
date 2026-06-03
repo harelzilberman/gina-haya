@@ -1,5 +1,6 @@
 import * as SecureStore from 'expo-secure-store';
 import * as Linking from 'expo-linking';
+import Constants from 'expo-constants';
 import { createClient } from '@supabase/supabase-js';
 
 // OAuth redirect is handled via Linking listener in App.tsx
@@ -38,7 +39,13 @@ export async function login(email: string, password: string): Promise<void> {
 }
 
 export async function signInWithGoogle(): Promise<void> {
-  const redirectUri = 'ginahaya://auth';
+  // In dev builds, use the Metro URL as redirect base
+  // In production, use the native scheme
+  const redirectUri = __DEV__
+    ? Linking.createURL('auth')   // creates exp://192.168.0.123:8081/--/auth in dev
+    : 'ginahaya://auth';          // uses native scheme in production APK
+
+  console.log('🔴 Redirect URI:', redirectUri);
 
   const { data, error } = await supabase.auth.signInWithOAuth({
     provider: 'google',
@@ -49,12 +56,10 @@ export async function signInWithGoogle(): Promise<void> {
   });
 
   if (error || !data?.url) {
-    console.log('OAuth error:', error);
+    console.log('🔴 OAuth error:', error);
     return;
   }
 
-  // Open in system browser (not Chrome Custom Tabs)
-  // This ensures Android handles the deep link redirect natively
   await Linking.openURL(data.url);
 }
 
