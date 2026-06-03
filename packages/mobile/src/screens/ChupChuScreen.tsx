@@ -1019,7 +1019,9 @@ export function ChupChuScreen() {
                 }}
                 onPress={() => {
                   handleCloseWebMenu();
-                  if (item.isGuides) {
+                  if (item.isCenter) {
+                    setWebViewUrl('https://gina-haya.com/map');
+                  } else if (item.isGuides) {
                     setWebViewUrl('https://gina-haya.com/articles');
                   } else if (item.screen) {
                     navigation.navigate(item.screen);
