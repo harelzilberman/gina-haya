@@ -10,8 +10,7 @@ import {
   Modal,
 } from 'react-native';
 import Svg, { Rect, Circle, Polygon, Text as SvgText, Line } from 'react-native-svg';
-import { GestureDetector, Gesture } from 'react-native-gesture-handler';
-import Animated, { useSharedValue, useAnimatedStyle, withSpring } from 'react-native-reanimated';
+import { PinchGestureHandler, PinchGestureHandlerGestureEvent } from 'react-native-gesture-handler';
 import { getToken } from '../services/auth';
 
 // ── Types ─────────────────────────────────────────────────────────────────────
@@ -122,29 +121,20 @@ export function GardenMapScreen() {
     setSelectedPlant(plant);
   };
 
-  // Pinch-to-zoom gesture
-  const scale = useSharedValue(1);
-  const savedScale = useSharedValue(1);
+  // Pinch-to-zoom state
+  const [scale, setScale] = useState(1);
+  const [lastScale, setLastScale] = useState(1);
 
-  const pinchGesture = Gesture.Pinch()
-    .onUpdate((e) => {
-      scale.value = savedScale.value * e.scale;
-    })
-    .onEnd(() => {
-      savedScale.value = scale.value;
-      if (scale.value < 0.3) {
-        scale.value = withSpring(0.3);
-        savedScale.value = 0.3;
-      }
-      if (scale.value > 4) {
-        scale.value = withSpring(4);
-        savedScale.value = 4;
-      }
-    });
+  const onPinchEvent = (event: PinchGestureHandlerGestureEvent) => {
+    const newScale = Math.min(Math.max(lastScale * event.nativeEvent.scale, 0.3), 4);
+    setScale(newScale);
+  };
 
-  const animatedStyle = useAnimatedStyle(() => ({
-    transform: [{ scale: scale.value }],
-  }));
+  const onPinchEnd = (event: PinchGestureHandlerGestureEvent) => {
+    const newScale = Math.min(Math.max(lastScale * event.nativeEvent.scale, 0.3), 4);
+    setLastScale(newScale);
+    setScale(newScale);
+  };
 
   return (
     <SafeAreaView style={styles.safe}>
@@ -193,8 +183,8 @@ export function GardenMapScreen() {
             showsHorizontalScrollIndicator={false}
             showsVerticalScrollIndicator={false}
           >
-            <GestureDetector gesture={pinchGesture}>
-              <Animated.View style={[animatedStyle, { width: CANVAS_W, height: CANVAS_H }]}>
+            <PinchGestureHandler onGestureEvent={onPinchEvent} onEnded={onPinchEnd}>
+              <View style={{ transform: [{ scale }], width: CANVAS_W, height: CANVAS_H }}>
                 <Svg
                   width={CANVAS_W}
                   height={CANVAS_H}
@@ -258,8 +248,8 @@ export function GardenMapScreen() {
                   </TouchableOpacity>
                 ))}
                 </Svg>
-              </Animated.View>
-            </GestureDetector>
+              </View>
+            </PinchGestureHandler>
           </ScrollView>
         </ScrollView>
       )}
