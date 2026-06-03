@@ -1,9 +1,10 @@
 import * as SecureStore from 'expo-secure-store';
+import * as WebBrowser from 'expo-web-browser';
 import * as Linking from 'expo-linking';
 import Constants from 'expo-constants';
 import { createClient } from '@supabase/supabase-js';
 
-// OAuth redirect is handled via Linking listener in App.tsx
+// OAuth redirect is handled by WebBrowser.openAuthSessionAsync in signInWithGoogle()
 
 const SUPABASE_URL      = process.env.EXPO_PUBLIC_SUPABASE_URL!;
 const SUPABASE_ANON_KEY = process.env.EXPO_PUBLIC_SUPABASE_ANON_KEY!;
@@ -39,11 +40,9 @@ export async function login(email: string, password: string): Promise<void> {
 }
 
 export async function signInWithGoogle(): Promise<void> {
-  // In dev builds, use the Metro URL as redirect base
-  // In production, use the native scheme
   const redirectUri = __DEV__
-    ? Linking.createURL('auth')   // creates exp://192.168.0.123:8081/--/auth in dev
-    : 'ginahaya://auth';          // uses native scheme in production APK
+    ? Linking.createURL('auth')
+    : 'ginahaya://auth';
 
   console.log('🔴 Redirect URI:', redirectUri);
 
@@ -60,7 +59,36 @@ export async function signInWithGoogle(): Promise<void> {
     return;
   }
 
-  await Linking.openURL(data.url);
+  console.log('🔴 Opening URL:', data.url);
+
+  const result = await WebBrowser.openAuthSessionAsync(
+    data.url,
+    redirectUri,
+    { showInRecents: false, createTask: false }
+  );
+
+  console.log('🔴 WebBrowser result:', JSON.stringify(result));
+
+  if (result.type !== 'success') {
+    console.log('🔴 WebBrowser failed, type:', result.type);
+    return;
+  }
+
+  const url = result.url;
+  console.log('🔴 Got URL back:', url);
+
+  const parts = url.includes('#') ? url.split('#')[1] : url.split('?')[1] ?? '';
+  const params = Object.fromEntries(new URLSearchParams(parts));
+
+  if (params.access_token && params.refresh_token) {
+    console.log('🔴 Setting session');
+    await supabase.auth.setSession({
+      access_token: params.access_token,
+      refresh_token: params.refresh_token,
+    });
+  } else {
+    console.log('🔴 No tokens in URL params:', Object.keys(params));
+  }
 }
 
 export async function logout(): Promise<void> {
