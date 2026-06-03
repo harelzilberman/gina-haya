@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect } from 'react';
 import {
   SafeAreaView,
   View,
@@ -9,7 +9,6 @@ import {
   TouchableOpacity,
   Modal,
 } from 'react-native';
-import { PinchGestureHandler } from 'react-native-gesture-handler';
 import Svg, { Rect, Circle, Polygon, Text as SvgText } from 'react-native-svg';
 import { getToken } from '../services/auth';
 
@@ -85,8 +84,6 @@ export function GardenMapScreen() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [selectedPlant, setSelectedPlant] = useState<PlantMarker | null>(null);
-  const [scale, setScale] = useState(1);
-  const scrollViewRef = useRef<ScrollView>(null);
 
   useEffect(() => {
     loadMap();
@@ -121,11 +118,6 @@ export function GardenMapScreen() {
 
   const handlePlantPress = (plant: PlantMarker) => {
     setSelectedPlant(plant);
-  };
-
-  const handlePinch = (event: any) => {
-    const newScale = Math.max(0.3, Math.min(4, scale * event.nativeEvent.scale));
-    setScale(newScale);
   };
 
   return (
@@ -164,24 +156,26 @@ export function GardenMapScreen() {
 
       {/* Map canvas */}
       {!loading && !error && mapData && mapData.objects.length > 0 && (
-        <PinchGestureHandler onGestureEvent={handlePinch}>
+        <ScrollView
+          style={{ flex: 1 }}
+          maximumZoomScale={4}
+          minimumZoomScale={0.2}
+          bouncesZoom={true}
+          centerContent={true}
+          showsHorizontalScrollIndicator={false}
+          showsVerticalScrollIndicator={false}
+        >
           <ScrollView
-            ref={scrollViewRef}
             horizontal
-            scrollEnabled
+            showsHorizontalScrollIndicator={false}
             contentContainerStyle={{ flexGrow: 1 }}
-            style={styles.mapContainer}
           >
-            <ScrollView
-              scrollEnabled
-              contentContainerStyle={{ flexGrow: 1, alignItems: 'flex-start' }}
+            <Svg
+              width={CANVAS_W}
+              height={CANVAS_H}
+              viewBox={`0 0 ${CANVAS_W} ${CANVAS_H}`}
+              style={styles.svg}
             >
-              <Svg
-                width={CANVAS_W * scale}
-                height={CANVAS_H * scale}
-                viewBox={`0 0 ${CANVAS_W} ${CANVAS_H}`}
-                style={styles.svg}
-              >
                 {/* Background */}
                 <Rect
                   x={0}
@@ -238,10 +232,9 @@ export function GardenMapScreen() {
                     </SvgText>
                   </TouchableOpacity>
                 ))}
-              </Svg>
-            </ScrollView>
+            </Svg>
           </ScrollView>
-        </PinchGestureHandler>
+        </ScrollView>
       )}
 
       {/* Plant detail modal */}
