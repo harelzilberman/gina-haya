@@ -1,6 +1,8 @@
 import * as SecureStore from 'expo-secure-store';
 import * as AuthSession from 'expo-auth-session';
+import * as QueryParams from 'expo-auth-session/build/QueryParams';
 import * as WebBrowser from 'expo-web-browser';
+import * as Linking from 'expo-linking';
 import { createClient } from '@supabase/supabase-js';
 
 WebBrowser.maybeCompleteAuthSession();
@@ -51,10 +53,6 @@ export async function signInWithGoogle(): Promise<void> {
     options: {
       redirectTo: redirectUri,
       skipBrowserRedirect: true,
-      queryParams: {
-        access_type: 'offline',
-        prompt: 'consent',
-      },
     },
   });
 
@@ -63,42 +61,31 @@ export async function signInWithGoogle(): Promise<void> {
     return;
   }
 
-  console.log('🔴 Opening browser...');
+  const result = await WebBrowser.openAuthSessionAsync(
+    data.url,
+    redirectUri,
+  );
 
-  const result = await AuthSession.startAsync({
-    authUrl: data.url,
-    returnUrl: redirectUri,
-  });
+  console.log('🔴 Result type:', result.type);
 
-  console.log('🔴 AuthSession result:', JSON.stringify(result));
+  if (result.type !== 'success') return;
 
-  if (result.type !== 'success') {
-    console.log('🔴 Auth failed:', result.type);
-    return;
-  }
+  console.log('🔴 Result URL:', result.url);
 
-  const url = result.url;
-  console.log('🔴 Result URL:', url);
+  const { params, errorCode } = QueryParams.getQueryParams(result.url);
 
-  const parts = url.includes('#')
-    ? url.split('#')[1]
-    : url.split('?')[1] ?? '';
-  const params = Object.fromEntries(new URLSearchParams(parts));
-
-  console.log('🔴 Params keys:', Object.keys(params));
+  console.log('🔴 Params:', JSON.stringify(params));
+  console.log('🔴 Error code:', errorCode);
 
   if (params.access_token && params.refresh_token) {
     await supabase.auth.setSession({
-      access_token: params.access_token,
-      refresh_token: params.refresh_token,
+      access_token: params.access_token as string,
+      refresh_token: params.refresh_token as string,
     });
-    console.log('🔴 Session set successfully');
+    console.log('🔴 Session set!');
   } else if (params.code) {
-    // PKCE code exchange
-    const { error: exchangeError } = await supabase.auth.exchangeCodeForSession(params.code);
-    console.log('🔴 Code exchange result:', exchangeError);
-  } else {
-    console.log('🔴 No tokens or code in params');
+    const { error: exchangeError } = await supabase.auth.exchangeCodeForSession(params.code as string);
+    console.log('🔴 Code exchange:', exchangeError);
   }
 }
 
