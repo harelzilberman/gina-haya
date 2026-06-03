@@ -1,10 +1,9 @@
 import * as SecureStore from 'expo-secure-store';
+import * as AuthSession from 'expo-auth-session';
 import * as WebBrowser from 'expo-web-browser';
-import * as Linking from 'expo-linking';
-import Constants from 'expo-constants';
 import { createClient } from '@supabase/supabase-js';
 
-// OAuth redirect is handled by WebBrowser.openAuthSessionAsync in signInWithGoogle()
+WebBrowser.maybeCompleteAuthSession();
 
 const SUPABASE_URL      = process.env.EXPO_PUBLIC_SUPABASE_URL!;
 const SUPABASE_ANON_KEY = process.env.EXPO_PUBLIC_SUPABASE_ANON_KEY!;
@@ -40,9 +39,10 @@ export async function login(email: string, password: string): Promise<void> {
 }
 
 export async function signInWithGoogle(): Promise<void> {
-  const redirectUri = __DEV__
-    ? Linking.createURL('auth')
-    : 'ginahaya://auth';
+  const redirectUri = AuthSession.makeRedirectUri({
+    scheme: 'ginahaya',
+    path: 'auth',
+  });
 
   console.log('🔴 Redirect URI:', redirectUri);
 
@@ -51,6 +51,10 @@ export async function signInWithGoogle(): Promise<void> {
     options: {
       redirectTo: redirectUri,
       skipBrowserRedirect: true,
+      queryParams: {
+        access_type: 'offline',
+        prompt: 'consent',
+      },
     },
   });
 
@@ -59,35 +63,42 @@ export async function signInWithGoogle(): Promise<void> {
     return;
   }
 
-  console.log('🔴 Opening URL:', data.url);
+  console.log('🔴 Opening browser...');
 
-  const result = await WebBrowser.openAuthSessionAsync(
-    data.url,
-    redirectUri,
-    { showInRecents: false, createTask: false }
-  );
+  const result = await AuthSession.startAsync({
+    authUrl: data.url,
+    returnUrl: redirectUri,
+  });
 
-  console.log('🔴 WebBrowser result:', JSON.stringify(result));
+  console.log('🔴 AuthSession result:', JSON.stringify(result));
 
   if (result.type !== 'success') {
-    console.log('🔴 WebBrowser failed, type:', result.type);
+    console.log('🔴 Auth failed:', result.type);
     return;
   }
 
   const url = result.url;
-  console.log('🔴 Got URL back:', url);
+  console.log('🔴 Result URL:', url);
 
-  const parts = url.includes('#') ? url.split('#')[1] : url.split('?')[1] ?? '';
+  const parts = url.includes('#')
+    ? url.split('#')[1]
+    : url.split('?')[1] ?? '';
   const params = Object.fromEntries(new URLSearchParams(parts));
 
+  console.log('🔴 Params keys:', Object.keys(params));
+
   if (params.access_token && params.refresh_token) {
-    console.log('🔴 Setting session');
     await supabase.auth.setSession({
       access_token: params.access_token,
       refresh_token: params.refresh_token,
     });
+    console.log('🔴 Session set successfully');
+  } else if (params.code) {
+    // PKCE code exchange
+    const { error: exchangeError } = await supabase.auth.exchangeCodeForSession(params.code);
+    console.log('🔴 Code exchange result:', exchangeError);
   } else {
-    console.log('🔴 No tokens in URL params:', Object.keys(params));
+    console.log('🔴 No tokens or code in params');
   }
 }
 
