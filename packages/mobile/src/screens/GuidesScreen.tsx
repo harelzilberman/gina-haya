@@ -1,5 +1,7 @@
-import { ScrollView, Text, View, StyleSheet, TouchableOpacity, Linking } from 'react-native';
+import { useState } from 'react';
+import { ScrollView, Text, View, StyleSheet, TouchableOpacity, Modal } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { WebView } from 'react-native-webview';
 
 const GUIDES = [
   { emoji: '🌿', title: 'תה קומפוסט', subtitle: 'המדריך המלא לאדמה חיה', url: 'https://gina-haya.com/articles/compost-tea' },
@@ -18,8 +20,10 @@ const PREPS = [
 ];
 
 export function GuidesScreen() {
+  const [webViewUrl, setWebViewUrl] = useState<string | null>(null);
+
   const openArticle = (url: string) => {
-    Linking.openURL(url);
+    setWebViewUrl(url);
   };
 
   return (
@@ -61,6 +65,45 @@ export function GuidesScreen() {
           </TouchableOpacity>
         ))}
       </ScrollView>
+
+      {/* WebView Modal for Articles */}
+      <Modal
+        visible={webViewUrl !== null}
+        animationType="slide"
+        onRequestClose={() => setWebViewUrl(null)}
+      >
+        <SafeAreaView style={{ flex: 1, backgroundColor: '#1a1a0e' }}>
+          <View style={{
+            flexDirection: 'row-reverse',
+            alignItems: 'center',
+            padding: 12,
+            borderBottomWidth: 1,
+            borderBottomColor: 'rgba(196,134,10,0.2)',
+            backgroundColor: '#1a1a0e',
+          }}>
+            <TouchableOpacity
+              onPress={() => setWebViewUrl(null)}
+              style={{
+                backgroundColor: 'rgba(196,134,10,0.15)',
+                borderRadius: 8,
+                paddingHorizontal: 12,
+                paddingVertical: 6,
+                borderWidth: 1,
+                borderColor: 'rgba(196,134,10,0.3)',
+              }}
+            >
+              <Text style={{ color: '#c4860a', fontSize: 14, fontWeight: '600' }}>✕ סגור</Text>
+            </TouchableOpacity>
+          </View>
+          {webViewUrl && (
+            <WebView
+              source={{ uri: webViewUrl }}
+              style={{ flex: 1 }}
+              startInLoadingState
+            />
+          )}
+        </SafeAreaView>
+      </Modal>
     </SafeAreaView>
   );
 }

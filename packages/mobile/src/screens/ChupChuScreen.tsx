@@ -23,6 +23,7 @@ const IMG_W    = SCREEN_W - 32;
 const IMG_H    = IMG_W * (1024 / 1536);
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useNavigation } from '@react-navigation/native';
+import { WebView } from 'react-native-webview';
 import NetInfo from '@react-native-community/netinfo';
 
 import { MicButton }        from '../components/MicButton';
@@ -398,6 +399,7 @@ export function ChupChuScreen() {
   const [activeCard,  setActiveCard]  = useState<'day' | 'moon' | 'score' | null>(null);
   const [analyzing,   setAnalyzing]   = useState(false);
   const [webMenuOpen, setWebMenuOpen] = useState(false);
+  const [webViewUrl,  setWebViewUrl]  = useState<string | null>(null);
   const [pendingPhotoAction, setPendingPhotoAction] = useState<{
     base64: string;
     analysis: string;
@@ -1018,7 +1020,7 @@ export function ChupChuScreen() {
                 onPress={() => {
                   handleCloseWebMenu();
                   if (item.isGuides) {
-                    Linking.openURL('https://gina-haya.com/articles');
+                    setWebViewUrl('https://gina-haya.com/articles');
                   } else if (item.screen) {
                     navigation.navigate(item.screen);
                   }
@@ -1071,6 +1073,45 @@ export function ChupChuScreen() {
           </TouchableOpacity>
           </Animated.View>
         </View>
+      </Modal>
+
+      {/* WebView Modal for Articles */}
+      <Modal
+        visible={webViewUrl !== null}
+        animationType="slide"
+        onRequestClose={() => setWebViewUrl(null)}
+      >
+        <SafeAreaView style={{ flex: 1, backgroundColor: '#1a1a0e' }}>
+          <View style={{
+            flexDirection: 'row-reverse',
+            alignItems: 'center',
+            padding: 12,
+            borderBottomWidth: 1,
+            borderBottomColor: 'rgba(196,134,10,0.2)',
+            backgroundColor: '#1a1a0e',
+          }}>
+            <TouchableOpacity
+              onPress={() => setWebViewUrl(null)}
+              style={{
+                backgroundColor: 'rgba(196,134,10,0.15)',
+                borderRadius: 8,
+                paddingHorizontal: 12,
+                paddingVertical: 6,
+                borderWidth: 1,
+                borderColor: 'rgba(196,134,10,0.3)',
+              }}
+            >
+              <Text style={{ color: '#c4860a', fontSize: 14, fontWeight: '600' }}>✕ סגור</Text>
+            </TouchableOpacity>
+          </View>
+          {webViewUrl && (
+            <WebView
+              source={{ uri: webViewUrl }}
+              style={{ flex: 1 }}
+              startInLoadingState
+            />
+          )}
+        </SafeAreaView>
       </Modal>
     </SafeAreaView>
   );
