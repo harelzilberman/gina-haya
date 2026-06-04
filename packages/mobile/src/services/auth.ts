@@ -25,7 +25,9 @@ export const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
 });
 
 export async function signInWithGoogle(): Promise<void> {
-  const redirectTo = Linking.createURL('auth-callback');
+  const redirectTo = __DEV__
+    ? 'ginahaya://auth-callback'
+    : 'ginahaya://auth-callback';
 
   const { data, error } = await supabase.auth.signInWithOAuth({
     provider: 'google',
@@ -37,27 +39,19 @@ export async function signInWithGoogle(): Promise<void> {
 
   if (error || !data?.url) throw new Error(error?.message ?? 'OAuth error');
 
-  // Open browser for Google login
-  await WebBrowser.openBrowserAsync(data.url);
+  const result = await WebBrowser.openAuthSessionAsync(
+    data.url,
+    redirectTo,
+  );
 
-  // Browser closed - try to get session that was created
-  // The session cookie may be shared if using same Supabase project
-  const { data: { session } } =
-    await supabase.auth.getSession();
+  if (result.type !== 'success') {
+    throw new Error('התחברות בוטלה');
+  }
 
-  if (session) return; // Already got session
+  const { error: sessionError } =
+    await supabase.auth.exchangeCodeForSession(result.url);
 
-  // Try refreshing - sometimes session needs a nudge
-  const { data: refreshData } =
-    await supabase.auth.refreshSession();
-
-  if (refreshData?.session) return;
-
-  // Last resort - check server state
-  const { data: userData } = await supabase.auth.getUser();
-  if (userData?.user) return;
-
-  throw new Error('לא הצלחנו להתחבר - נסה שנית');
+  if (sessionError) throw sessionError;
 }
 
 export async function logout(): Promise<void> {

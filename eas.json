@@ -10,6 +10,17 @@
         "buildType": "apk"
       }
     },
+    "standalone": {
+      "distribution": "internal",
+      "android": {
+        "buildType": "apk"
+      },
+      "env": {
+        "EXPO_PUBLIC_API_URL": "https://powerful-embrace-production-95ea.up.railway.app",
+        "EXPO_PUBLIC_SUPABASE_URL": "https://qlcaweebrouzfwkumffc.supabase.co",
+        "EXPO_PUBLIC_SUPABASE_ANON_KEY": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InFsY2F3ZWVicm91emZ3a3VtZmZjIiwicm9sZSI6ImFub24iLCJpYXQiOjE3MDk0MDMwMjcsImV4cCI6MjAyNDk3OTAyN30.yWWFT2v6hMgJzJpEZkhzpStrW_8JRyNlIgGazQLQGu0"
+      }
+    },
     "preview": {
       "distribution": "internal"
     },
