@@ -4,7 +4,7 @@
     "name": "גינה חיה",
     "slug": "gina-haya",
     "owner": "harel_zilberman",
-    "version": "1.2.0",
+    "version": "1.2.1",
     "orientation": "portrait",
     "platforms": [
       "android"
@@ -57,7 +57,6 @@
       "newArchEnabled": true
     },
     "plugins": [
-      "expo-secure-store",
       [
         "expo-location",
         {
