@@ -1,6 +1,7 @@
 {
   "name": "gina-haya",
   "private": true,
+  "main": "packages/mobile/index.js",
   "scripts": {
     "mobile": "pnpm --filter mobile start",
     "mobile:reset": "pnpm --filter mobile start:reset",
