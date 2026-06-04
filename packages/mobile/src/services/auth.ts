@@ -38,7 +38,8 @@ export async function login(email: string, password: string): Promise<void> {
 export function configureGoogleSignIn() {
   GoogleSignin.configure({
     webClientId: '417815147012-h4a52rrmeleq0kfgops6pg0ugu4u9s1a.apps.googleusercontent.com',
-    iosClientId: undefined,
+    offlineAccess: true,
+    forceCodeForRefreshToken: true,
   });
 }
 
