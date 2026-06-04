@@ -5,21 +5,22 @@ import { NavigationContainer } from '@react-navigation/native';
 import { StatusBar } from 'expo-status-bar';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
-
+import * as WebBrowser from 'expo-web-browser';
+import * as Linking from 'expo-linking';
 import { AuthProvider, useAuth } from './src/context/AuthContext';
 import { AppNavigator } from './src/navigation/AppNavigator';
 import { LoginScreen } from './src/screens/LoginScreen';
+import { supabase } from './src/services/auth';
 
+// Required for WebBrowser.openAuthSessionAsync to work on Android
+WebBrowser.maybeCompleteAuthSession();
 
 // Force RTL for Hebrew-first layout
 I18nManager.allowRTL(true);
 I18nManager.forceRTL(true);
 
-// ─── Inner component — consumes the AuthContext ───────────────────────────────
 function AppContent() {
-  const { isAuthed, isLoading } = useAuth();
-
-  // Push notifications disabled for Expo Go — re-enable with a development build.
+  const { session, isLoading } = useAuth();
 
   useEffect(() => {
     if (Platform.OS === 'android') {
@@ -27,13 +28,27 @@ function AppContent() {
     }
   }, []);
 
+  // Handle deep link when app is in background/foreground
+  // This catches the OAuth callback when Chrome Custom Tabs redirects back
   useEffect(() => {
-    if (isAuthed) {
-      // notifications disabled for now
-    }
-  }, [isAuthed]);
+    const handleUrl = async ({ url }: { url: string }) => {
+      console.log('🔴 [DEEPLINK] Received URL:', url);
+      if (url.includes('auth-callback')) {
+        console.log('🔴 [DEEPLINK] Processing auth callback...');
+        try {
+          const { error } = await supabase.auth.exchangeCodeForSession(url);
+          if (error) console.log('🔴 [DEEPLINK] Exchange error:', error.message);
+          else console.log('🔴 [DEEPLINK] ✅ Session established from deep link');
+        } catch (e) {
+          console.log('🔴 [DEEPLINK] Exception:', e);
+        }
+      }
+    };
 
-  // Show a splash/loading screen while restoring the session from SecureStore
+    const subscription = Linking.addEventListener('url', handleUrl);
+    return () => subscription.remove();
+  }, []);
+
   if (isLoading) {
     return (
       <View style={styles.loading}>
@@ -43,27 +58,20 @@ function AppContent() {
   }
 
   return (
-    <SafeAreaProvider>
-      <NavigationContainer>
-        <StatusBar style="light" />
-        {isAuthed ? (
-          <AppNavigator />
-        ) : (
-          <LoginScreen onLogin={() => {}} />
-        )}
-      </NavigationContainer>
-    </SafeAreaProvider>
+    <NavigationContainer>
+      {session ? <AppNavigator /> : <LoginScreen onLogin={() => {}} />}
+    </NavigationContainer>
   );
 }
 
-// ─── Root — AuthProvider must wrap everything ─────────────────────────────────
 export default function App() {
-
   return (
     <GestureHandlerRootView style={{ flex: 1 }}>
-      <AuthProvider>
-        <AppContent />
-      </AuthProvider>
+      <SafeAreaProvider>
+        <AuthProvider>
+          <AppContent />
+        </AuthProvider>
+      </SafeAreaProvider>
     </GestureHandlerRootView>
   );
 }
@@ -71,7 +79,7 @@ export default function App() {
 const styles = StyleSheet.create({
   loading: {
     flex: 1,
-    backgroundColor: '#1a1a0e',
+    backgroundColor: '#060e08',
     alignItems: 'center',
     justifyContent: 'center',
   },

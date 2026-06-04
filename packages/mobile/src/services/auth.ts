@@ -1,15 +1,15 @@
 import * as SecureStore from 'expo-secure-store';
 import * as WebBrowser from 'expo-web-browser';
+import * as Linking from 'expo-linking';
 import { createClient } from '@supabase/supabase-js';
 
 const SUPABASE_URL      = process.env.EXPO_PUBLIC_SUPABASE_URL!;
 const SUPABASE_ANON_KEY = process.env.EXPO_PUBLIC_SUPABASE_ANON_KEY!;
 
-// Exported so AuthContext and callers can use the same keys
 export const ACCESS_TOKEN_KEY  = 'gina_haya_access_token';
 export const REFRESH_TOKEN_KEY = 'gina_haya_refresh_token';
 
-// Supabase client using SecureStore for session persistence
+// PKCE flow is required for mobile OAuth
 export const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
   auth: {
     storage: {
@@ -20,62 +20,72 @@ export const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
     autoRefreshToken:   true,
     persistSession:     true,
     detectSessionInUrl: false,
+    flowType: 'pkce',
   },
 });
 
-export async function login(email: string, password: string): Promise<void> {
-  const { data, error } = await supabase.auth.signInWithPassword({ email, password });
-  if (error) throw new Error(error.message);
-  if (data.session) {
-    // Store BOTH tokens — refresh_token is required to restore the session after restart
-    await Promise.all([
-      SecureStore.setItemAsync(ACCESS_TOKEN_KEY,  data.session.access_token),
-      SecureStore.setItemAsync(REFRESH_TOKEN_KEY, data.session.refresh_token),
-    ]);
-  }
-}
-
 export async function signInWithGoogle(): Promise<void> {
+  // The redirect URI must match exactly what's in Supabase allowed list
+  // In dev: exp://192.168.0.123:8081/--/auth-callback
+  // In prod: ginahaya://auth-callback
+  const redirectTo = Linking.createURL('auth-callback');
+
+  console.log('🔴 [AUTH] redirectTo:', redirectTo);
+
   const { data, error } = await supabase.auth.signInWithOAuth({
     provider: 'google',
     options: {
-      redirectTo: 'https://qlcaweebrouzfwkumffc.supabase.co/auth/v1/callback',
+      redirectTo,
       skipBrowserRedirect: true,
-      queryParams: {
-        access_type: 'offline',
-        prompt: 'consent',
-      },
     },
   });
 
-  if (error || !data?.url) throw new Error(error?.message ?? 'OAuth failed');
+  if (error) {
+    console.log('🔴 [AUTH] OAuth URL error:', error.message);
+    throw error;
+  }
+  if (!data?.url) throw new Error('No OAuth URL returned');
 
-  // Open in browser - after auth Supabase will redirect to gina-haya.com
-  // We then poll for the session
-  await WebBrowser.openBrowserAsync(data.url);
+  console.log('🔴 [AUTH] Opening browser with URL:', data.url.substring(0, 80) + '...');
 
-  // Poll for session after browser closes (user may have logged in)
-  await new Promise(resolve => setTimeout(resolve, 1000));
+  // openAuthSessionAsync uses Chrome Custom Tabs on Android
+  // It intercepts redirects to our scheme and returns them
+  const result = await WebBrowser.openAuthSessionAsync(
+    data.url,
+    redirectTo,
+  );
 
-  const { data: sessionData } = await supabase.auth.getSession();
-  if (!sessionData.session) throw new Error('לא נוצרה סשן - נסה שנית');
+  console.log('🔴 [AUTH] Browser result type:', result.type);
+
+  if (result.type !== 'success') {
+    throw new Error('Google sign-in was cancelled or failed');
+  }
+
+  const callbackUrl = result.url;
+  console.log('🔴 [AUTH] Callback URL received:', callbackUrl);
+
+  // PKCE flow: Supabase returns a code, not tokens directly
+  // exchangeCodeForSession handles the code → token exchange
+  const { data: sessionData, error: sessionError } =
+    await supabase.auth.exchangeCodeForSession(callbackUrl);
+
+  console.log('🔴 [AUTH] Session exchange result:', !!sessionData?.session, sessionError?.message);
+
+  if (sessionError) throw sessionError;
+  if (!sessionData?.session) throw new Error('Session exchange failed');
+
+  console.log('🔴 [AUTH] ✅ Login successful!');
 }
 
 export async function logout(): Promise<void> {
   await supabase.auth.signOut();
-  await Promise.all([
-    SecureStore.deleteItemAsync(ACCESS_TOKEN_KEY),
-    SecureStore.deleteItemAsync(REFRESH_TOKEN_KEY),
-    SecureStore.deleteItemAsync('gina_haya_token').catch(() => {}), // remove legacy key
-  ]);
+  await SecureStore.deleteItemAsync(ACCESS_TOKEN_KEY);
+  await SecureStore.deleteItemAsync(REFRESH_TOKEN_KEY);
 }
 
 export async function getToken(): Promise<string | null> {
-  // Prefer live session token (auto-refreshed by Supabase)
   const { data } = await supabase.auth.getSession();
-  if (data.session?.access_token) return data.session.access_token;
-  // Fall back to stored access token (used when Supabase session not yet restored)
-  return SecureStore.getItemAsync(ACCESS_TOKEN_KEY);
+  return data.session?.access_token ?? null;
 }
 
 export async function isLoggedIn(): Promise<boolean> {

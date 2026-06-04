@@ -4,7 +4,7 @@
     "name": "גינה חיה",
     "slug": "gina-haya",
     "owner": "harel_zilberman",
-    "version": "1.0.3",
+    "version": "1.1.0",
     "orientation": "portrait",
     "platforms": [
       "android"
@@ -27,15 +27,17 @@
           "action": "VIEW",
           "autoVerify": true,
           "data": [
-            {
-              "scheme": "ginahaya",
-              "host": "auth"
-            }
+            { "scheme": "ginahaya", "host": "auth" }
           ],
-          "category": [
-            "BROWSABLE",
-            "DEFAULT"
-          ]
+          "category": ["BROWSABLE", "DEFAULT"]
+        },
+        {
+          "action": "VIEW",
+          "autoVerify": true,
+          "data": [
+            { "scheme": "ginahaya", "host": "auth-callback" }
+          ],
+          "category": ["BROWSABLE", "DEFAULT"]
         }
       ],
       "permissions": [
