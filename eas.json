@@ -8,13 +8,15 @@
       "distribution": "internal",
       "android": {
         "buildType": "apk"
-      }
+      },
+      "projectRoot": "packages/mobile"
     },
     "standalone": {
       "distribution": "internal",
       "android": {
         "buildType": "apk"
       },
+      "projectRoot": "packages/mobile",
       "env": {
         "EXPO_PUBLIC_API_URL": "https://powerful-embrace-production-95ea.up.railway.app",
         "EXPO_PUBLIC_SUPABASE_URL": "https://qlcaweebrouzfwkumffc.supabase.co",
