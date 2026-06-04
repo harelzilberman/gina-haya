@@ -46,11 +46,14 @@ export async function signInWithGoogle(): Promise<void> {
   // Poll every 2 seconds for up to 2 minutes
   for (let i = 0; i < 60; i++) {
     await new Promise(r => setTimeout(r, 2000));
-    const { data: sessionData } = await supabase.auth.getSession();
-    console.log('🔴 [AUTH] Poll', i + 1, '- session:', !!sessionData?.session);
+    // Check server directly, not just local storage
+    const { data: userData, error: userError } = await supabase.auth.getUser();
+    console.log('🔴 [AUTH] Poll', i + 1, '- user:', !!userData?.user, userError?.message);
 
-    if (sessionData?.session) {
-      console.log('🔴 [AUTH] ✅ Session found! Closing browser.');
+    if (userData?.user && !userError) {
+      console.log('🔴 [AUTH] ✅ User found! Closing browser.');
+      // Refresh session to write to local storage
+      await supabase.auth.refreshSession();
       WebBrowser.dismissBrowser();
       return;
     }
