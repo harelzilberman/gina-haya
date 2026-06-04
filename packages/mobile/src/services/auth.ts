@@ -37,7 +37,27 @@ export async function signInWithGoogle(): Promise<void> {
 
   if (error || !data?.url) throw new Error(error?.message ?? 'OAuth error');
 
+  // Open browser for Google login
   await WebBrowser.openBrowserAsync(data.url);
+
+  // Browser closed - try to get session that was created
+  // The session cookie may be shared if using same Supabase project
+  const { data: { session } } =
+    await supabase.auth.getSession();
+
+  if (session) return; // Already got session
+
+  // Try refreshing - sometimes session needs a nudge
+  const { data: refreshData } =
+    await supabase.auth.refreshSession();
+
+  if (refreshData?.session) return;
+
+  // Last resort - check server state
+  const { data: userData } = await supabase.auth.getUser();
+  if (userData?.user) return;
+
+  throw new Error('לא הצלחנו להתחבר - נסה שנית');
 }
 
 export async function logout(): Promise<void> {

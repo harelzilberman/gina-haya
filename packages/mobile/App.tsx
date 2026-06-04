@@ -49,10 +49,14 @@ function AppContent() {
   useEffect(() => {
     const handleAppStateChange = async (nextState: AppStateStatus) => {
       if (nextState === 'active') {
-        const { data } = await supabase.auth.getUser();
-        if (data?.user) {
-          await supabase.auth.refreshSession();
-          WebBrowser.dismissBrowser();
+        // Force refresh session from server
+        const { data: { session } } = await supabase.auth.getSession();
+        if (!session) {
+          // Try to get from server
+          const { data: { user } } = await supabase.auth.getUser();
+          if (user) {
+            await supabase.auth.refreshSession();
+          }
         }
       }
     };
