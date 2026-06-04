@@ -32,15 +32,11 @@ function AppContent() {
   // This catches the OAuth callback when Chrome Custom Tabs redirects back
   useEffect(() => {
     const handleUrl = async ({ url }: { url: string }) => {
-      console.log('🔴 [DEEPLINK] Received URL:', url);
       if (url.includes('auth-callback')) {
-        console.log('🔴 [DEEPLINK] Processing auth callback...');
         try {
-          const { error } = await supabase.auth.exchangeCodeForSession(url);
-          if (error) console.log('🔴 [DEEPLINK] Exchange error:', error.message);
-          else console.log('🔴 [DEEPLINK] ✅ Session established from deep link');
-        } catch (e) {
-          console.log('🔴 [DEEPLINK] Exception:', e);
+          await supabase.auth.exchangeCodeForSession(url);
+        } catch {
+          // silent
         }
       }
     };
@@ -52,13 +48,9 @@ function AppContent() {
   // Check for session when app comes to foreground (after OAuth browser flow)
   useEffect(() => {
     const handleAppStateChange = async (nextState: AppStateStatus) => {
-      console.log('🔴 [APPSTATE]', nextState);
       if (nextState === 'active') {
-        console.log('🔴 [APPSTATE] App active - checking session...');
-        const { data, error } = await supabase.auth.getUser();
-        console.log('🔴 [APPSTATE] User:', !!data?.user, error?.message);
+        const { data } = await supabase.auth.getUser();
         if (data?.user) {
-          console.log('🔴 [APPSTATE] ✅ User found - refreshing session');
           await supabase.auth.refreshSession();
           WebBrowser.dismissBrowser();
         }

@@ -26,7 +26,6 @@ export const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
 
 export async function signInWithGoogle(): Promise<void> {
   const redirectTo = Linking.createURL('auth-callback');
-  console.log('🔴 [AUTH] redirectTo:', redirectTo);
 
   const { data, error } = await supabase.auth.signInWithOAuth({
     provider: 'google',
@@ -38,9 +37,7 @@ export async function signInWithGoogle(): Promise<void> {
 
   if (error || !data?.url) throw new Error(error?.message ?? 'OAuth error');
 
-  console.log('🔴 [AUTH] Opening browser...');
   await WebBrowser.openBrowserAsync(data.url);
-  console.log('🔴 [AUTH] Browser closed/dismissed');
 }
 
 export async function logout(): Promise<void> {
