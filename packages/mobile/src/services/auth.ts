@@ -1,5 +1,5 @@
 import * as SecureStore from 'expo-secure-store';
-import { GoogleSignin, statusCodes } from '@react-native-google-signin/google-signin';
+import * as WebBrowser from 'expo-web-browser';
 import { createClient } from '@supabase/supabase-js';
 
 const SUPABASE_URL      = process.env.EXPO_PUBLIC_SUPABASE_URL!;
@@ -35,35 +35,30 @@ export async function login(email: string, password: string): Promise<void> {
   }
 }
 
-export function configureGoogleSignIn() {
-  GoogleSignin.configure({
-    webClientId: '417815147012-h4a52rrmeleq0kfgops6pg0ugu4u9s1a.apps.googleusercontent.com',
-    offlineAccess: true,
-    forceCodeForRefreshToken: true,
-  });
-}
-
 export async function signInWithGoogle(): Promise<void> {
-  await GoogleSignin.hasPlayServices({ showPlayServicesUpdateDialog: true });
-
-  const userInfo = await GoogleSignin.signIn();
-  const idToken = userInfo.data?.idToken ?? (userInfo as any).idToken;
-
-  console.log('🔴 Got idToken:', !!idToken);
-
-  if (!idToken) {
-    throw new Error('לא התקבל טוקן מ-Google');
-  }
-
-  const { data, error } = await supabase.auth.signInWithIdToken({
+  const { data, error } = await supabase.auth.signInWithOAuth({
     provider: 'google',
-    token: idToken,
+    options: {
+      redirectTo: 'https://qlcaweebrouzfwkumffc.supabase.co/auth/v1/callback',
+      skipBrowserRedirect: true,
+      queryParams: {
+        access_type: 'offline',
+        prompt: 'consent',
+      },
+    },
   });
 
-  console.log('🔴 Supabase session:', !!data?.session, 'error:', error?.message);
+  if (error || !data?.url) throw new Error(error?.message ?? 'OAuth failed');
 
-  if (error) throw error;
-  if (!data?.session) throw new Error('לא נוצרה סשן');
+  // Open in browser - after auth Supabase will redirect to gina-haya.com
+  // We then poll for the session
+  await WebBrowser.openBrowserAsync(data.url);
+
+  // Poll for session after browser closes (user may have logged in)
+  await new Promise(resolve => setTimeout(resolve, 1000));
+
+  const { data: sessionData } = await supabase.auth.getSession();
+  if (!sessionData.session) throw new Error('לא נוצרה סשן - נסה שנית');
 }
 
 export async function logout(): Promise<void> {

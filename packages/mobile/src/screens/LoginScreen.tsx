@@ -5,7 +5,6 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { signInWithGoogle } from '../services/auth';
-import { statusCodes } from '@react-native-google-signin/google-signin';
 
 interface Props {
   onLogin: () => void;
@@ -20,9 +19,7 @@ export function LoginScreen({ onLogin }: Props) {
       await signInWithGoogle();
       onLogin();  // only reached if no error thrown
     } catch (err: any) {
-      if (err.code !== statusCodes.SIGN_IN_CANCELLED) {
-        Alert.alert('שגיאה בכניסה', err.message ?? 'נסה שוב מאוחר יותר');
-      }
+      Alert.alert('שגיאה בכניסה', err.message ?? 'נסה שוב מאוחר יותר');
     } finally {
       setLoading(false);
     }

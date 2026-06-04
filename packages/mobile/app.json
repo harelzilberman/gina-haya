@@ -4,7 +4,7 @@
     "name": "גינה חיה",
     "slug": "gina-haya",
     "owner": "harel_zilberman",
-    "version": "1.0.2",
+    "version": "1.0.3",
     "orientation": "portrait",
     "platforms": [
       "android"
@@ -75,8 +75,7 @@
           "photosPermission": "גינה חיה צריכה גישה לגלריה כדי להוסיף תמונות ליומן",
           "cameraPermission": "גינה חיה צריכה גישה למצלמה כדי לצלם תמונות ליומן"
         }
-      ],
-      "@react-native-google-signin/google-signin"
+      ]
     ],
     "scheme": "ginahaya",
     "extra": {

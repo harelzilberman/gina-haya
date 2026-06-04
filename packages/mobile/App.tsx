@@ -9,7 +9,7 @@ import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { AuthProvider, useAuth } from './src/context/AuthContext';
 import { AppNavigator } from './src/navigation/AppNavigator';
 import { LoginScreen } from './src/screens/LoginScreen';
-import { configureGoogleSignIn } from './src/services/auth';
+
 
 // Force RTL for Hebrew-first layout
 I18nManager.allowRTL(true);
@@ -58,7 +58,6 @@ function AppContent() {
 
 // ─── Root — AuthProvider must wrap everything ─────────────────────────────────
 export default function App() {
-  useEffect(() => { configureGoogleSignIn(); }, []);
 
   return (
     <GestureHandlerRootView style={{ flex: 1 }}>
