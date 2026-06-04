@@ -25,11 +25,7 @@ export const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
 });
 
 export async function signInWithGoogle(): Promise<void> {
-  // The redirect URI must match exactly what's in Supabase allowed list
-  // In dev: exp://192.168.0.123:8081/--/auth-callback
-  // In prod: ginahaya://auth-callback
   const redirectTo = Linking.createURL('auth-callback');
-
   console.log('🔴 [AUTH] redirectTo:', redirectTo);
 
   const { data, error } = await supabase.auth.signInWithOAuth({
@@ -40,41 +36,27 @@ export async function signInWithGoogle(): Promise<void> {
     },
   });
 
-  if (error) {
-    console.log('🔴 [AUTH] OAuth URL error:', error.message);
-    throw error;
+  if (error || !data?.url) throw new Error(error?.message ?? 'OAuth error');
+
+  // Open browser without waiting
+  WebBrowser.openBrowserAsync(data.url).catch(() => {});
+
+  console.log('🔴 [AUTH] Polling for session...');
+
+  // Poll every 2 seconds for up to 2 minutes
+  for (let i = 0; i < 60; i++) {
+    await new Promise(r => setTimeout(r, 2000));
+    const { data: sessionData } = await supabase.auth.getSession();
+    console.log('🔴 [AUTH] Poll', i + 1, '- session:', !!sessionData?.session);
+
+    if (sessionData?.session) {
+      console.log('🔴 [AUTH] ✅ Session found! Closing browser.');
+      WebBrowser.dismissBrowser();
+      return;
+    }
   }
-  if (!data?.url) throw new Error('No OAuth URL returned');
 
-  console.log('🔴 [AUTH] Opening browser with URL:', data.url.substring(0, 80) + '...');
-
-  // openAuthSessionAsync uses Chrome Custom Tabs on Android
-  // It intercepts redirects to our scheme and returns them
-  const result = await WebBrowser.openAuthSessionAsync(
-    data.url,
-    redirectTo,
-  );
-
-  console.log('🔴 [AUTH] Browser result type:', result.type);
-
-  if (result.type !== 'success') {
-    throw new Error('Google sign-in was cancelled or failed');
-  }
-
-  const callbackUrl = result.url;
-  console.log('🔴 [AUTH] Callback URL received:', callbackUrl);
-
-  // PKCE flow: Supabase returns a code, not tokens directly
-  // exchangeCodeForSession handles the code → token exchange
-  const { data: sessionData, error: sessionError } =
-    await supabase.auth.exchangeCodeForSession(callbackUrl);
-
-  console.log('🔴 [AUTH] Session exchange result:', !!sessionData?.session, sessionError?.message);
-
-  if (sessionError) throw sessionError;
-  if (!sessionData?.session) throw new Error('Session exchange failed');
-
-  console.log('🔴 [AUTH] ✅ Login successful!');
+  throw new Error('התחברות נכשלה - נסה שנית');
 }
 
 export async function logout(): Promise<void> {
