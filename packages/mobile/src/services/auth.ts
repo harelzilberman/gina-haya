@@ -38,28 +38,9 @@ export async function signInWithGoogle(): Promise<void> {
 
   if (error || !data?.url) throw new Error(error?.message ?? 'OAuth error');
 
-  // Open browser without waiting
-  WebBrowser.openBrowserAsync(data.url).catch(() => {});
-
-  console.log('🔴 [AUTH] Polling for session...');
-
-  // Poll every 2 seconds for up to 2 minutes
-  for (let i = 0; i < 60; i++) {
-    await new Promise(r => setTimeout(r, 2000));
-    // Check server directly, not just local storage
-    const { data: userData, error: userError } = await supabase.auth.getUser();
-    console.log('🔴 [AUTH] Poll', i + 1, '- user:', !!userData?.user, userError?.message);
-
-    if (userData?.user && !userError) {
-      console.log('🔴 [AUTH] ✅ User found! Closing browser.');
-      // Refresh session to write to local storage
-      await supabase.auth.refreshSession();
-      WebBrowser.dismissBrowser();
-      return;
-    }
-  }
-
-  throw new Error('התחברות נכשלה - נסה שנית');
+  console.log('🔴 [AUTH] Opening browser...');
+  await WebBrowser.openBrowserAsync(data.url);
+  console.log('🔴 [AUTH] Browser closed/dismissed');
 }
 
 export async function logout(): Promise<void> {

@@ -1,6 +1,6 @@
 import 'react-native-gesture-handler';
 import { useEffect } from 'react';
-import { View, ActivityIndicator, StyleSheet, I18nManager, Platform, StatusBar as RNStatusBar } from 'react-native';
+import { View, ActivityIndicator, StyleSheet, I18nManager, Platform, StatusBar as RNStatusBar, AppState, AppStateStatus } from 'react-native';
 import { NavigationContainer } from '@react-navigation/native';
 import { StatusBar } from 'expo-status-bar';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
@@ -46,6 +46,26 @@ function AppContent() {
     };
 
     const subscription = Linking.addEventListener('url', handleUrl);
+    return () => subscription.remove();
+  }, []);
+
+  // Check for session when app comes to foreground (after OAuth browser flow)
+  useEffect(() => {
+    const handleAppStateChange = async (nextState: AppStateStatus) => {
+      console.log('🔴 [APPSTATE]', nextState);
+      if (nextState === 'active') {
+        console.log('🔴 [APPSTATE] App active - checking session...');
+        const { data, error } = await supabase.auth.getUser();
+        console.log('🔴 [APPSTATE] User:', !!data?.user, error?.message);
+        if (data?.user) {
+          console.log('🔴 [APPSTATE] ✅ User found - refreshing session');
+          await supabase.auth.refreshSession();
+          WebBrowser.dismissBrowser();
+        }
+      }
+    };
+
+    const subscription = AppState.addEventListener('change', handleAppStateChange);
     return () => subscription.remove();
   }, []);
 
