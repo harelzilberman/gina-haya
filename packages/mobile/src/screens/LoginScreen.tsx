@@ -1,128 +1,120 @@
-import { useState } from 'react';
 import {
-  View, Text, TouchableOpacity,
-  StyleSheet, Image, ActivityIndicator, Alert,
+  View, Text, TouchableOpacity, StyleSheet,
+  Image, ActivityIndicator, Alert, I18nManager
 } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
+import { useState } from 'react';
+import { theme } from '../theme';
 import { signInWithGoogle } from '../services/auth';
 
-interface Props {
-  onLogin: () => void;
-}
+I18nManager.allowRTL(true);
+I18nManager.forceRTL(true);
 
-export function LoginScreen({ onLogin }: Props) {
+export function LoginScreen() {
   const [loading, setLoading] = useState(false);
 
-  const handleGoogle = async () => {
+  const handleLogin = async () => {
     setLoading(true);
     try {
       await signInWithGoogle();
-      onLogin();  // only reached if no error thrown
     } catch (err: any) {
-      Alert.alert('שגיאה בכניסה', err.message ?? 'נסה שוב מאוחר יותר');
+      Alert.alert('שגיאה בכניסה', err.message ?? 'נסה שנית מאוחר יותר');
     } finally {
       setLoading(false);
     }
   };
 
   return (
-    <SafeAreaView style={styles.safe}>
-      <View style={styles.container}>
-        {/* Chupchu character */}
-        <Image
-          source={{ uri: 'https://gina-haya.vercel.app/chupchu_final.png' }}
-          style={styles.chupchu}
-          resizeMode="contain"
-        />
+    <View style={styles.container}>
+      <Image
+        source={require('../../assets/chupchu_web_in_hole.png')}
+        style={styles.image}
+        resizeMode="cover"
+      />
+      <Text style={styles.title}>שלום, אני צ'ופצ'ו</Text>
+      <Text style={styles.subtitle}>המומחה הביודינמי שלך – גינה חיה</Text>
 
-        {/* Welcome text */}
-        <Text style={styles.welcome}>שלום, אני צ'ופצ'ו</Text>
-        <Text style={styles.subtitle}>המומחה הביודינמי שלך — גינה חיה</Text>
+      <TouchableOpacity
+        style={[styles.button, loading && styles.buttonDisabled]}
+        onPress={handleLogin}
+        disabled={loading}
+        activeOpacity={0.8}
+      >
+        {loading
+          ? <ActivityIndicator color={theme.colors.background} />
+          : <Text style={styles.buttonText}>G  כניסה עם Google</Text>
+        }
+      </TouchableOpacity>
 
-        {/* Google sign-in */}
-        <TouchableOpacity
-          style={[styles.googleBtn, loading && styles.btnDisabled]}
-          onPress={handleGoogle}
-          disabled={loading}
-          activeOpacity={0.85}
-        >
-          {loading ? (
-            <ActivityIndicator color="#1a1a0e" />
-          ) : (
-            <>
-              <Text style={styles.googleIcon}>G</Text>
-              <Text style={styles.googleText}>כניסה עם Google</Text>
-            </>
-          )}
-        </TouchableOpacity>
-
-        <Text style={styles.disclaimer}>
-          בכניסה אתה מסכים לתנאי השימוש של גינה חיה
+      {loading && (
+        <Text style={styles.hint}>
+          לאחר הכניסה ב-Google,{'\n'}חזור לאפליקציה
         </Text>
-      </View>
-    </SafeAreaView>
+      )}
+
+      <Text style={styles.legal}>
+        בכניסה אתה מסכים לתנאי השימוש של גינה חיה
+      </Text>
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
-  safe: {
-    flex: 1,
-    backgroundColor: '#1a1a0e',
-  },
   container: {
     flex: 1,
+    backgroundColor: theme.colors.background,
     alignItems: 'center',
     justifyContent: 'center',
-    padding: 32,
-    gap: 16,
+    padding: theme.spacing.lg,
   },
-  chupchu: {
-    width: 160,
-    height: 160,
-    marginBottom: 8,
+  image: {
+    width: '100%',
+    height: 280,
+    borderRadius: theme.radius.lg,
+    marginBottom: theme.spacing.lg,
   },
-  welcome: {
-    fontSize: 28,
-    fontWeight: '700',
-    color: '#f5f0e8',
+  title: {
+    fontSize: theme.fontSize.xxl,
+    color: theme.colors.textPrimary,
+    fontWeight: 'bold',
+    marginBottom: theme.spacing.sm,
     textAlign: 'center',
+    writingDirection: 'rtl',
   },
   subtitle: {
-    fontSize: 15,
-    color: 'rgba(245,240,232,0.55)',
+    fontSize: theme.fontSize.md,
+    color: theme.colors.textSecondary,
+    marginBottom: theme.spacing.xl,
     textAlign: 'center',
-    marginBottom: 24,
+    writingDirection: 'rtl',
   },
-  googleBtn: {
-    flexDirection: 'row-reverse',
-    alignItems: 'center',
-    justifyContent: 'center',
-    gap: 12,
-    backgroundColor: '#f5f0e8',
-    borderRadius: 14,
-    height: 56,
+  button: {
+    backgroundColor: theme.colors.accent,
+    paddingHorizontal: theme.spacing.xl,
+    paddingVertical: theme.spacing.md,
+    borderRadius: theme.radius.full,
     width: '100%',
-    elevation: 4,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.25,
-    shadowRadius: 4,
+    alignItems: 'center',
+    marginBottom: theme.spacing.md,
   },
-  btnDisabled: { opacity: 0.6 },
-  googleIcon: {
-    fontSize: 20,
-    fontWeight: '800',
-    color: '#c4860a',
+  buttonDisabled: { opacity: 0.7 },
+  buttonText: {
+    color: theme.colors.background,
+    fontSize: theme.fontSize.lg,
+    fontWeight: 'bold',
   },
-  googleText: {
-    fontSize: 17,
-    fontWeight: '600',
-    color: '#1a1a0e',
-  },
-  disclaimer: {
-    fontSize: 11,
-    color: 'rgba(245,240,232,0.3)',
+  hint: {
+    color: theme.colors.textSecondary,
     textAlign: 'center',
-    marginTop: 8,
+    fontSize: theme.fontSize.sm,
+    marginTop: theme.spacing.sm,
+    writingDirection: 'rtl',
+  },
+  legal: {
+    position: 'absolute',
+    bottom: theme.spacing.lg,
+    color: theme.colors.textMuted,
+    fontSize: theme.fontSize.xs,
+    textAlign: 'center',
+    writingDirection: 'rtl',
   },
 });

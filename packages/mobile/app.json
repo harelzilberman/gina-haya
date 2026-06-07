@@ -1,83 +1,56 @@
 {
   "expo": {
-    "entryPoint": "./index.js",
     "name": "גינה חיה",
     "slug": "gina-haya",
     "owner": "harel_zilberman",
-    "version": "1.2.1",
+    "version": "1.0.0",
     "orientation": "portrait",
-    "platforms": [
-      "android"
-    ],
+    "platforms": ["android"],
     "icon": "./assets/icon.png",
     "userInterfaceStyle": "dark",
+    "scheme": "ginahaya",
+    "android": {
+      "package": "com.ginahaya.app",
+      "adaptiveIcon": {
+        "foregroundImage": "./assets/adaptive-icon.png",
+        "backgroundColor": "#1a1a0e"
+      },
+      "permissions": [
+        "android.permission.RECORD_AUDIO",
+        "android.permission.MODIFY_AUDIO_SETTINGS",
+        "android.permission.READ_EXTERNAL_STORAGE",
+        "android.permission.WRITE_EXTERNAL_STORAGE",
+        "android.permission.ACCESS_COARSE_LOCATION",
+        "android.permission.ACCESS_FINE_LOCATION"
+      ],
+      "intentFilters": [
+        {
+          "action": "VIEW",
+          "autoVerify": true,
+          "data": [{ "scheme": "ginahaya", "host": "auth-callback" }],
+          "category": ["BROWSABLE", "DEFAULT"]
+        }
+      ]
+    },
     "splash": {
       "image": "./assets/splash.png",
       "resizeMode": "contain",
       "backgroundColor": "#1a1a0e"
     },
-    "android": {
-      "package": "com.harel_zilberman.ginahaya",
-      "adaptiveIcon": {
-        "foregroundImage": "./assets/adaptive-icon.png",
-        "backgroundColor": "#1a1a0e"
-      },
-      "intentFilters": [
-        {
-          "action": "VIEW",
-          "autoVerify": true,
-          "data": [
-            { "scheme": "ginahaya", "host": "auth" }
-          ],
-          "category": ["BROWSABLE", "DEFAULT"]
-        },
-        {
-          "action": "VIEW",
-          "autoVerify": true,
-          "data": [
-            { "scheme": "ginahaya", "host": "auth-callback" }
-          ],
-          "category": ["BROWSABLE", "DEFAULT"]
-        }
-      ],
-      "permissions": [
-        "android.permission.ACCESS_COARSE_LOCATION",
-        "android.permission.ACCESS_FINE_LOCATION",
-        "android.permission.RECORD_AUDIO",
-        "android.permission.MODIFY_AUDIO_SETTINGS",
-        "android.permission.READ_EXTERNAL_STORAGE",
-        "android.permission.WRITE_EXTERNAL_STORAGE"
-      ]
-    },
-    "notification": {
-      "icon": "./assets/notification-icon.png",
-      "color": "#c4860a"
-    },
+    "plugins": [
+      "expo-secure-store",
+      "expo-audio",
+      ["expo-location", {
+        "locationAlwaysAndWhenInUsePermission": "מאפשר לאפליקציה לקבוע המלצות לפי אזורך"
+      }],
+      ["expo-image-picker", {
+        "photosPermission": "גינה חיה צריכה גישה לגלריה כדי להוסיף תמונות ליומן",
+        "cameraPermission": "גינה חיה צריכה גישה למצלמה כדי לצלם תמונות ליומן"
+      }]
+    ],
     "experiments": {
       "newArchEnabled": true
     },
-    "plugins": [
-      [
-        "expo-location",
-        {
-          "locationAlwaysAndWhenInUsePermission": "מאפשר לאפליקציה לקבוע המלצות לפי אזורך"
-        }
-      ],
-      [
-        "expo-audio",
-        {
-          "microphonePermission": "גינה חיה צריכה גישה למיקרופון כדי שתוכל לדבר עם צ'ופצ'ו"
-        }
-      ],
-      [
-        "expo-image-picker",
-        {
-          "photosPermission": "גינה חיה צריכה גישה לגלריה כדי להוסיף תמונות ליומן",
-          "cameraPermission": "גינה חיה צריכה גישה למצלמה כדי לצלם תמונות ליומן"
-        }
-      ]
-    ],
-    "scheme": "ginahaya",
     "extra": {
       "eas": {
         "projectId": "4c0ca0ce-90d4-4c12-b58f-11ffbdcc6410"

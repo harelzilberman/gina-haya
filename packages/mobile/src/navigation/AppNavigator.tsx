@@ -1,91 +1,65 @@
+import { Text } from 'react-native';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
-import { Image, Text } from 'react-native';
-import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { PlaceholderScreen } from '../screens/PlaceholderScreen';
+import { theme } from '../theme';
 
-import { CalendarScreen } from '../screens/CalendarScreen';
-import { TasksScreen }    from '../screens/TasksScreen';
-import { SettingsScreen } from '../screens/SettingsScreen';
-import { ChupChuScreen }  from '../screens/ChupChuScreen';
-import { GardenMapScreen } from '../screens/GardenMapScreen';
-
-export type TabParamList = {
-  Chupchu:   undefined;
-  Calendar:  undefined;
-  Tasks:     undefined;
-  Settings:  undefined;
-  GardenMap: undefined;
-};
-
-const Tab = createBottomTabNavigator<TabParamList>();
-
-const ICON: Record<string, string> = {
-  Chupchu:  '🤖',
-  Calendar: '📅',
-  Tasks:    '✅',
-  Settings: '⚙️',
-};
-
-const LABEL: Record<string, string> = {
-  Chupchu:  "צ'ופצ'ו",
-  Calendar: 'לוח',
-  Tasks:    'משימות',
-  Settings: 'הגדרות',
-};
+const Tab = createBottomTabNavigator();
 
 export function AppNavigator() {
-  const insets = useSafeAreaInsets();
-
   return (
     <Tab.Navigator
-      initialRouteName="Chupchu"
-      screenOptions={({ route }) => ({
+      screenOptions={{
         headerShown: false,
         tabBarStyle: {
-          backgroundColor: '#0e0e08',
-          borderTopColor:  'rgba(196,134,10,0.2)',
-          height:          56 + insets.bottom,
-          paddingBottom:   insets.bottom + 6,
-          paddingTop:      6,
+          backgroundColor: theme.colors.tabBar,
+          borderTopColor: theme.colors.border,
+          height: 60,
+          paddingBottom: 8,
         },
-        tabBarActiveTintColor:   '#c4860a',
-        tabBarInactiveTintColor: 'rgba(245,240,232,0.4)',
-        tabBarIcon: ({ focused }) => (
-          route.name === 'Chupchu' ? (
-            <Image
-              source={require('../assets/chupchu_web_in_hole.png')}
-              style={{
-                width: 28,
-                height: 28,
-                borderRadius: 14,
-                opacity: focused ? 1 : 0.45,
-                borderWidth: focused ? 1.5 : 0,
-                borderColor: '#c4860a',
-              }}
-              resizeMode="cover"
-            />
-          ) : (
-            <Text style={{ fontSize: 24, opacity: focused ? 1 : 0.5 }}>
-              {ICON[route.name]}
-            </Text>
-          )
-        ),
-        tabBarLabel: LABEL[route.name] ?? route.name,
+        tabBarActiveTintColor: theme.colors.accent,
+        tabBarInactiveTintColor: theme.colors.textMuted,
         tabBarLabelStyle: {
-          fontFamily: 'System',
-          fontSize:   12,
-          marginTop:  2,
+          fontSize: theme.fontSize.xs,
+          writingDirection: 'rtl',
         },
-      })}
+      }}
     >
-      <Tab.Screen name="Chupchu"  component={ChupChuScreen}  />
-      <Tab.Screen name="Calendar" component={CalendarScreen} />
-      <Tab.Screen name="Tasks"    component={TasksScreen}    />
-      <Tab.Screen name="Settings" component={SettingsScreen} />
       <Tab.Screen
-        name="GardenMap"
-        component={GardenMapScreen}
-        options={{ tabBarButton: () => null }}
-      />
+        name="Chupchu"
+        options={{
+          tabBarLabel: "צ'ופצ'ו",
+          tabBarIcon: ({ color }) => <Text style={{ color, fontSize: 20 }}>🌿</Text>,
+        }}
+      >
+        {() => <PlaceholderScreen name="צ'ופצ'ו" />}
+      </Tab.Screen>
+      <Tab.Screen
+        name="Tasks"
+        options={{
+          tabBarLabel: 'משימות',
+          tabBarIcon: ({ color }) => <Text style={{ color, fontSize: 20 }}>✅</Text>,
+        }}
+      >
+        {() => <PlaceholderScreen name="משימות" />}
+      </Tab.Screen>
+      <Tab.Screen
+        name="Calendar"
+        options={{
+          tabBarLabel: 'לוח',
+          tabBarIcon: ({ color }) => <Text style={{ color, fontSize: 20 }}>🌙</Text>,
+        }}
+      >
+        {() => <PlaceholderScreen name="לוח ביודינמי" />}
+      </Tab.Screen>
+      <Tab.Screen
+        name="Settings"
+        options={{
+          tabBarLabel: 'הגדרות',
+          tabBarIcon: ({ color }) => <Text style={{ color, fontSize: 20 }}>⚙️</Text>,
+        }}
+      >
+        {() => <PlaceholderScreen name="הגדרות" />}
+      </Tab.Screen>
     </Tab.Navigator>
   );
 }

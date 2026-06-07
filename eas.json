@@ -17,10 +17,10 @@
         "gradleCommand": ":app:assembleDebug"
       }
     },
-    "preview": {
-      "distribution": "internal"
-    },
     "production": {
+      "android": {
+        "buildType": "apk"
+      },
       "autoIncrement": true
     }
   },

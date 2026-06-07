@@ -1,9 +1,8 @@
 node_modules
-packages/web/node_modules
-packages/api/node_modules
-packages/mobile/node_modules
 .git
 packages/web/.next
 packages/web/out
 packages/api/dist
 *.log
+.DS_Store
+.expo
