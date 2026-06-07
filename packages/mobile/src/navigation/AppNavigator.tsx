@@ -1,5 +1,6 @@
 import { Text } from 'react-native';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
+import { ChupChuScreen } from '../screens/ChupChuScreen';
 import { PlaceholderScreen } from '../screens/PlaceholderScreen';
 import { theme } from '../theme';
 
@@ -26,13 +27,12 @@ export function AppNavigator() {
     >
       <Tab.Screen
         name="Chupchu"
+        component={ChupChuScreen}
         options={{
           tabBarLabel: "צ'ופצ'ו",
           tabBarIcon: ({ color }) => <Text style={{ color, fontSize: 20 }}>🌿</Text>,
         }}
-      >
-        {() => <PlaceholderScreen name="צ'ופצ'ו" />}
-      </Tab.Screen>
+      />
       <Tab.Screen
         name="Tasks"
         options={{
