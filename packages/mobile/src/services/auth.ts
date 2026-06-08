@@ -1,9 +1,8 @@
 import * as WebBrowser from 'expo-web-browser';
-import * as Linking from 'expo-linking';
 import { supabase } from './supabase';
 
 export async function signInWithGoogle(): Promise<void> {
-  const redirectTo = Linking.createURL('auth-callback');
+  const redirectTo = 'ginahaya://auth-callback';
 
   const { data, error } = await supabase.auth.signInWithOAuth({
     provider: 'google',
@@ -14,6 +13,7 @@ export async function signInWithGoogle(): Promise<void> {
   });
 
   if (error || !data?.url) throw new Error(error?.message ?? 'OAuth error');
+
   await WebBrowser.openBrowserAsync(data.url);
 }
 

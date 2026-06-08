@@ -9,6 +9,10 @@ import { NavigationContainer } from '@react-navigation/native';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { StatusBar } from 'expo-status-bar';
+import * as Linking from 'expo-linking';
+import * as WebBrowser from 'expo-web-browser';
+import * as SecureStore from 'expo-secure-store';
+import { supabase } from './src/services/supabase';
 import { AuthProvider, useAuth } from './src/context/AuthContext';
 import { AppNavigator } from './src/navigation/AppNavigator';
 import { LoginScreen } from './src/screens/LoginScreen';
@@ -25,6 +29,36 @@ function AppContent() {
       RNStatusBar.setTranslucent(false);
       RNStatusBar.setBackgroundColor(theme.colors.background);
     }
+  }, []);
+
+  useEffect(() => {
+    const handleUrl = async ({ url }: { url: string }) => {
+      if (!url.includes('auth-callback') && !url.includes('ginahaya://')) return;
+
+      WebBrowser.dismissBrowser();
+      const parts = url.includes('#') ? url.split('#')[1] : url.split('?')[1] ?? '';
+      const params = Object.fromEntries(new URLSearchParams(parts));
+
+      if (params.access_token && params.refresh_token) {
+        const sessionData = {
+          access_token: params.access_token,
+          refresh_token: params.refresh_token,
+          expires_at: parseInt(params.expires_at),
+          expires_in: parseInt(params.expires_in),
+          token_type: 'bearer',
+        };
+        const storageKey = 'sb-qlcaweebrouzfwkumffc-auth-token';
+        await SecureStore.setItemAsync(storageKey, JSON.stringify({
+          currentSession: sessionData,
+          expiresAt: parseInt(params.expires_at),
+        }));
+        await supabase.auth.refreshSession({ refresh_token: params.refresh_token });
+      }
+    };
+
+    const sub = Linking.addEventListener('url', handleUrl);
+    Linking.getInitialURL().then(url => { if (url) handleUrl({ url }); });
+    return () => sub.remove();
   }, []);
 
   if (isLoading) {

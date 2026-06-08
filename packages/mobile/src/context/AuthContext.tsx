@@ -38,7 +38,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         const { data } = await supabase.auth.getSession();
         if (!data.session) {
           const { data: userData } = await supabase.auth.getUser();
-          if (userData?.user) await supabase.auth.refreshSession();
+          if (userData?.user) {
+            await supabase.auth.refreshSession();
+          }
         }
       }
     });
