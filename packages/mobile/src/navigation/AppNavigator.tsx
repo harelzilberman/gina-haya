@@ -1,4 +1,5 @@
 import { Text } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { ChupChuScreen } from '../screens/ChupChuScreen';
 import { TasksScreen } from '../screens/TasksScreen';
@@ -9,6 +10,8 @@ import { theme } from '../theme';
 const Tab = createBottomTabNavigator();
 
 export function AppNavigator() {
+  const insets = useSafeAreaInsets();
+
   return (
     <Tab.Navigator
       screenOptions={{
@@ -16,8 +19,9 @@ export function AppNavigator() {
         tabBarStyle: {
           backgroundColor: theme.colors.tabBar,
           borderTopColor: theme.colors.border,
-          height: 60,
-          paddingBottom: 8,
+          height: 60 + insets.bottom,
+          paddingBottom: insets.bottom + 4,
+          paddingTop: 4,
         },
         tabBarActiveTintColor: theme.colors.accent,
         tabBarInactiveTintColor: theme.colors.textMuted,

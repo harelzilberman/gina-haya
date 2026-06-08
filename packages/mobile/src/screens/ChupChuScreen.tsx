@@ -1,7 +1,7 @@
 import {
   View, Text, StyleSheet, ScrollView, Image,
   TouchableOpacity, TextInput, FlatList, KeyboardAvoidingView,
-  Platform, ActivityIndicator, Alert, Dimensions,
+  Platform, ActivityIndicator, Alert, Dimensions, Modal,
 } from 'react-native';
 import { useState, useRef, useEffect } from 'react';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -25,6 +25,38 @@ interface DashboardCard {
   color: string;
 }
 
+const CARD_INFO: Record<string, { title: string; description: string; tips: string[] }> = {
+  'ציון נטיעה': {
+    title: 'ציון נטיעה',
+    description: 'ציון ביודינמי לאיכות היום לנטיעה, השתלה ועבודת אדמה. הציון מחושב לפי מיקום הירח במזל, שלב הירח ועוד גורמים.',
+    tips: [
+      '8-10: יום מצוין לנטיעה',
+      '5-7: יום טוב, אפשר לעבוד',
+      '1-4: עדיף להמנע מנטיעה',
+    ],
+  },
+  'מזל הירח': {
+    title: 'מזל הירח',
+    description: 'המזל שבו שוהה הירח היום. לכל מזל השפעה שונה על הגינה.',
+    tips: [
+      'טלה, אריה, קשת: ימי פרי',
+      'שור, בתולה, גדי: ימי שורש',
+      'תאומים, מאזניים, דלי: ימי פרח',
+      'סרטן, עקרב, דגים: ימי עלה',
+    ],
+  },
+  'סוג היום': {
+    title: 'סוג היום הביודינמי',
+    description: 'בחקלאות ביודינמית, כל יום מסווג לפי מיקום הירח: ימי פרי, עלה, שורש או פרח. לכל סוג יום מומלצת עבודה שונה.',
+    tips: [
+      'פרי 🍎: קטיף, שתיית מיצים, ייבוש פירות',
+      'פרח 🌸: קטיף פרחים, ייבוש עשבי תיבול',
+      'עלה 🌿: השקיה, דישון, עבודה עם עלים',
+      'שורש 🥕: חפירה, קטיף ירקות שורש',
+    ],
+  },
+};
+
 export function ChupChuScreen() {
   const [messages, setMessages] = useState<Message[]>([
     {
@@ -37,6 +69,7 @@ export function ChupChuScreen() {
   const [loading, setLoading] = useState(false);
   const [cards, setCards] = useState<DashboardCard[]>([]);
   const [cardsLoading, setCardsLoading] = useState(true);
+  const [selectedCard, setSelectedCard] = useState<DashboardCard | null>(null);
   const flatListRef = useRef<FlatList>(null);
 
   useEffect(() => {
@@ -149,11 +182,16 @@ export function ChupChuScreen() {
   };
 
   const renderCard = ({ item }: { item: DashboardCard }) => (
-    <View style={[styles.card, { borderColor: item.color }]}>
+    <TouchableOpacity
+      key={item.id}
+      style={[styles.card, { borderColor: item.color }]}
+      onPress={() => setSelectedCard(item)}
+      activeOpacity={0.8}
+    >
       <Text style={styles.cardIcon}>{item.icon}</Text>
-      <Text style={styles.cardValue}>{item.value}</Text>
+      <Text style={[styles.cardValue, { color: item.color }]}>{item.value}</Text>
       <Text style={styles.cardTitle}>{item.title}</Text>
-    </View>
+    </TouchableOpacity>
   );
 
   return (
@@ -177,15 +215,9 @@ export function ChupChuScreen() {
             style={{ marginVertical: theme.spacing.sm }}
           />
         ) : (
-          <FlatList
-            data={cards}
-            renderItem={renderCard}
-            keyExtractor={item => item.id}
-            horizontal
-            showsHorizontalScrollIndicator={false}
-            contentContainerStyle={styles.cardsContainer}
-            style={styles.cardsList}
-          />
+          <View style={styles.cardsRow}>
+            {cards.map(item => renderCard({ item }))}
+          </View>
         )}
 
         {/* Chat */}
@@ -230,6 +262,48 @@ export function ChupChuScreen() {
           />
         </View>
       </KeyboardAvoidingView>
+
+      <Modal
+        visible={!!selectedCard}
+        transparent
+        animationType="fade"
+        onRequestClose={() => setSelectedCard(null)}
+      >
+        <TouchableOpacity
+          style={styles.modalOverlay}
+          activeOpacity={1}
+          onPress={() => setSelectedCard(null)}
+        >
+          <TouchableOpacity
+            style={styles.modalContent}
+            activeOpacity={1}
+            onPress={() => {}}
+          >
+            {selectedCard && (() => {
+              const info = CARD_INFO[selectedCard.title];
+              return (
+                <>
+                  <View style={styles.modalHeader}>
+                    <TouchableOpacity onPress={() => setSelectedCard(null)}>
+                      <Text style={styles.modalClose}>✕</Text>
+                    </TouchableOpacity>
+                    <Text style={styles.modalTitle}>{selectedCard.icon} {selectedCard.value}</Text>
+                  </View>
+                  <Text style={styles.modalSubtitle}>{info?.title ?? selectedCard.title}</Text>
+                  <Text style={styles.modalDesc}>{info?.description ?? ''}</Text>
+                  {info?.tips && (
+                    <View style={styles.modalTips}>
+                      {info.tips.map((tip, i) => (
+                        <Text key={i} style={styles.modalTip}>• {tip}</Text>
+                      ))}
+                    </View>
+                  )}
+                </>
+              );
+            })()}
+          </TouchableOpacity>
+        </TouchableOpacity>
+      </Modal>
     </SafeAreaView>
   );
 }
@@ -243,21 +317,19 @@ const styles = StyleSheet.create({
     width: SCREEN_WIDTH,
     height: 200,
   },
-  cardsContainer: {
+  cardsRow: {
+    flexDirection: 'row',
     paddingHorizontal: theme.spacing.md,
+    paddingVertical: theme.spacing.sm,
     gap: theme.spacing.sm,
   },
-  cardsList: {
-    flexGrow: 0,
-    paddingVertical: theme.spacing.sm,
-  },
   card: {
+    flex: 1,
     backgroundColor: theme.colors.card,
     borderRadius: theme.radius.md,
     borderWidth: 1,
     padding: theme.spacing.md,
     alignItems: 'center',
-    minWidth: 100,
   },
   cardIcon: { fontSize: 24, marginBottom: 4 },
   cardValue: {
@@ -353,5 +425,65 @@ const styles = StyleSheet.create({
     color: theme.colors.background,
     fontSize: 18,
     fontWeight: 'bold',
+  },
+  modalOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0,0,0,0.7)',
+    alignItems: 'center',
+    justifyContent: 'center',
+    padding: theme.spacing.lg,
+  },
+  modalContent: {
+    backgroundColor: theme.colors.backgroundAlt,
+    borderRadius: theme.radius.lg,
+    borderWidth: 1,
+    borderColor: theme.colors.border,
+    padding: theme.spacing.lg,
+    width: '100%',
+  },
+  modalHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: theme.spacing.md,
+  },
+  modalTitle: {
+    color: theme.colors.accent,
+    fontSize: theme.fontSize.xl,
+    fontWeight: 'bold',
+  },
+  modalClose: {
+    color: theme.colors.textMuted,
+    fontSize: theme.fontSize.lg,
+    padding: theme.spacing.sm,
+  },
+  modalSubtitle: {
+    color: theme.colors.textPrimary,
+    fontSize: theme.fontSize.lg,
+    fontWeight: 'bold',
+    textAlign: 'right',
+    marginBottom: theme.spacing.sm,
+    writingDirection: 'rtl',
+  },
+  modalDesc: {
+    color: theme.colors.textSecondary,
+    fontSize: theme.fontSize.md,
+    textAlign: 'right',
+    lineHeight: 24,
+    marginBottom: theme.spacing.md,
+    writingDirection: 'rtl',
+  },
+  modalTips: {
+    backgroundColor: theme.colors.card,
+    borderRadius: theme.radius.md,
+    padding: theme.spacing.md,
+    gap: theme.spacing.sm,
+  },
+  modalTip: {
+    color: theme.colors.textSecondary,
+    fontSize: theme.fontSize.sm,
+    textAlign: 'right',
+    writingDirection: 'rtl',
+    lineHeight: 22,
   },
 });
