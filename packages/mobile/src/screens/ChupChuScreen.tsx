@@ -57,6 +57,19 @@ const CARD_INFO: Record<string, { title: string; description: string; tips: stri
   },
 };
 
+const TRANSLATIONS: Record<string, string> = {
+  // Moon signs
+  'Aries': 'טלה', 'Taurus': 'שור', 'Gemini': 'תאומים',
+  'Cancer': 'סרטן', 'Leo': 'אריה', 'Virgo': 'בתולה',
+  'Libra': 'מאזניים', 'Scorpio': 'עקרב', 'Sagittarius': 'קשת',
+  'Capricorn': 'גדי', 'Aquarius': 'דלי', 'Pisces': 'דגים',
+  // Day types
+  'fruit': 'פרי', 'flower': 'פרח', 'leaf': 'עלה',
+  'root': 'שורש', 'unfavorable': 'לא מומלץ',
+};
+
+const translate = (value: string) => TRANSLATIONS[value] ?? value;
+
 export function ChupChuScreen() {
   const [messages, setMessages] = useState<Message[]>([
     {
@@ -91,14 +104,14 @@ export function ChupChuScreen() {
         {
           id: '1',
           title: 'סוג היום',
-          value: data.dayType ?? '—',
+          value: translate(data.dayType ?? '—'),
           icon: '🌱',
           color: theme.colors.success,
         },
         {
           id: '2',
           title: 'מזל הירח',
-          value: data.moonSign ?? '—',
+          value: translate(data.moonSign ?? '—'),
           icon: '🌙',
           color: theme.colors.accent,
         },
@@ -478,6 +491,7 @@ const styles = StyleSheet.create({
     borderRadius: theme.radius.md,
     padding: theme.spacing.md,
     gap: theme.spacing.sm,
+    width: '100%',
   },
   modalTip: {
     color: theme.colors.textSecondary,
@@ -485,5 +499,6 @@ const styles = StyleSheet.create({
     textAlign: 'right',
     writingDirection: 'rtl',
     lineHeight: 22,
+    width: '100%',
   },
 });
