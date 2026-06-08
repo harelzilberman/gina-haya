@@ -1,11 +1,13 @@
 import './src/cryptoPolyfill';
 
 // FormData polyfill for Hermes
-if (typeof global.FormData === 'undefined') {
+if (typeof FormData === 'undefined') {
   global.FormData = class FormData {
-    constructor() { this._data = []; }
-    append(key, value) { this._data.push([key, value]); }
-    get(key) { return this._data.find(([k]) => k === key)?.[1]; }
+    constructor() {
+      this.data = {};
+    }
+    append(key, value) { this.data[key] = value; }
+    get(key) { return this.data[key]; }
   };
 }
 
