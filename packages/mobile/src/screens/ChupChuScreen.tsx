@@ -308,8 +308,8 @@ export function ChupChuScreen() {
                     <View style={styles.modalTips}>
                       {info.tips.map((tip, i) => (
                         <View key={i} style={styles.modalTipRow}>
-                          <Text style={styles.modalTipText}>{tip}</Text>
                           <Text style={styles.modalTipBullet}>•</Text>
+                          <Text style={styles.modalTipText}>{tip}</Text>
                         </View>
                       ))}
                     </View>
@@ -456,6 +456,7 @@ const styles = StyleSheet.create({
     borderColor: theme.colors.border,
     padding: theme.spacing.lg,
     width: '100%',
+    direction: 'rtl',
   },
   modalHeader: {
     flexDirection: 'row',
@@ -499,7 +500,6 @@ const styles = StyleSheet.create({
   },
   modalTipRow: {
     flexDirection: 'row',
-    justifyContent: 'flex-end',
     alignItems: 'flex-start',
     gap: 6,
     marginBottom: 4,
