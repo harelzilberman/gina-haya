@@ -1,7 +1,9 @@
 import { Text } from 'react-native';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { ChupChuScreen } from '../screens/ChupChuScreen';
-import { PlaceholderScreen } from '../screens/PlaceholderScreen';
+import { TasksScreen } from '../screens/TasksScreen';
+import { CalendarScreen } from '../screens/CalendarScreen';
+import { SettingsScreen } from '../screens/SettingsScreen';
 import { theme } from '../theme';
 
 const Tab = createBottomTabNavigator();
@@ -21,7 +23,6 @@ export function AppNavigator() {
         tabBarInactiveTintColor: theme.colors.textMuted,
         tabBarLabelStyle: {
           fontSize: theme.fontSize.xs,
-          writingDirection: 'rtl',
         },
       }}
     >
@@ -35,31 +36,28 @@ export function AppNavigator() {
       />
       <Tab.Screen
         name="Tasks"
+        component={TasksScreen}
         options={{
           tabBarLabel: 'משימות',
           tabBarIcon: ({ color }) => <Text style={{ color, fontSize: 20 }}>✅</Text>,
         }}
-      >
-        {() => <PlaceholderScreen name="משימות" />}
-      </Tab.Screen>
+      />
       <Tab.Screen
         name="Calendar"
+        component={CalendarScreen}
         options={{
           tabBarLabel: 'לוח',
           tabBarIcon: ({ color }) => <Text style={{ color, fontSize: 20 }}>🌙</Text>,
         }}
-      >
-        {() => <PlaceholderScreen name="לוח ביודינמי" />}
-      </Tab.Screen>
+      />
       <Tab.Screen
         name="Settings"
+        component={SettingsScreen}
         options={{
           tabBarLabel: 'הגדרות',
           tabBarIcon: ({ color }) => <Text style={{ color, fontSize: 20 }}>⚙️</Text>,
         }}
-      >
-        {() => <PlaceholderScreen name="הגדרות" />}
-      </Tab.Screen>
+      />
     </Tab.Navigator>
   );
 }
