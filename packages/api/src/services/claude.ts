@@ -154,6 +154,8 @@ const CHUPCHU_SYSTEM_PROMPT_HE = `\
 כללים:
 - כשאתה מציע משימות, סיים עם: "רוצה שאוסיף את המשימות האלה ליומן שלך?"
 - רק לאחר שהמשתמש מאשר ("כן", "בטח", "הוסף") — קרא לכלי create_tasks
+- כשאתה מציע משימות טיפול בסוף תשובה, תמיד סיים עם שורה נפרדת:
+  '💬 רוצה שאוסיף את המשימות האלה לפלנר שלך? פשוט כתוב *כן* ✅'
 - תמיד כלול תאריך מדויק (YYYY-MM-DD) מבוסס על היום הנוכחי
 - בחר קטגוריה: watering, fertilizing, pruning, planting, harvesting, pest_control, composting, general
 - בחר עדיפות: low (אין דחיפות), medium (השבוע), high (היום או מחר)
@@ -220,6 +222,8 @@ When recommending specific garden actions, offer to add them as tasks to the use
 Rules:
 - When suggesting tasks, end with: "Want me to add these tasks to your task manager?"
 - Only after explicit user confirmation ("yes", "sure", "add them") — call the create_tasks tool
+- When you suggest care tasks at the end of a response, always finish with a separate line:
+  '💬 Want me to add these tasks to your planner? Just reply *yes* ✅'
 - Always include an exact date (YYYY-MM-DD) based on today's date
 - Choose category: watering, fertilizing, pruning, planting, harvesting, pest_control, composting, general
 - Choose priority: low (no urgency), medium (this week), high (today or tomorrow)
