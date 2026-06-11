@@ -184,18 +184,28 @@ tasksRouter.post('/bulk', async (req, res) => {
     }
 
     const userId = req.user!.id;
-    const rows = tasks.map(t => ({
-      user_id:       userId,
-      plan_id:       null,
-      date:          t.date,
-      title:         t.title,
-      type:          'custom' as const,
-      status:        'pending' as const,
-      notes:         t.notes || null,
-      category:      t.category || 'general',
-      priority:      t.priority || 'medium',
-      source_action: 'chupchu',
-    }));
+
+    const tomorrow = new Date();
+    tomorrow.setDate(tomorrow.getDate() + 1);
+    const tomorrowStr = tomorrow.toISOString().split('T')[0];
+
+    const rows = tasks.map(t => {
+      // Strip time part; fall back to tomorrow if date is missing or invalid
+      let date = (t.date ?? '').toString().split('T')[0].split(' ')[0];
+      if (!/^\d{4}-\d{2}-\d{2}$/.test(date)) date = tomorrowStr;
+      return {
+        user_id:       userId,
+        plan_id:       null,
+        date,
+        title:         t.title,
+        type:          'custom' as const,
+        status:        'pending' as const,
+        notes:         t.notes || null,
+        category:      t.category || 'general',
+        priority:      t.priority || 'medium',
+        source_action: 'chupchu',
+      };
+    });
 
     const { data, error } = await db
       .from('garden_tasks')
