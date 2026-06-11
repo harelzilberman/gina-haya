@@ -456,6 +456,7 @@ chupChuRouter.post('/chat', async (req: any, res) => {
     // Use last 20 messages as context for Claude — enough for long conversations.
     // The full history is still stored in the DB and shown to the user via /history.
     const historyForClaude = existingMessages.slice(-20);
+    console.log(`[CHAT] user=${userId?.slice(0,8)} rows=${convRows?.length ?? 0} msgs=${existingMessages?.length ?? 0} sending=${historyForClaude?.length ?? 0}`);
 
     // ── 7b. Load user memory ─────────────────────────────────────────────
     let memorySection = '';
