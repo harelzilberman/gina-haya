@@ -24,18 +24,29 @@ const inFlight = new Set<string>();
 // ── GET /api/chupchu/history ────────────────────────────────────────────────
 chupChuRouter.get('/history', async (req: any, res) => {
   try {
-    const { data, error } = await db
+    const { data: convRows } = await db
       .from('chupchu_conversations')
-      .select('messages, updated_at')
+      .select('id, messages')
       .eq('user_id', req.user.id)
-      .order('updated_at', { ascending: false })
-      .limit(1)
-      .single();
+      .order('updated_at', { ascending: false });
 
-    if (error && error.code !== 'PGRST116') throw error;
+    let messages: ChupChuMessage[] = [];
+    if (convRows && convRows.length > 0) {
+      if (convRows.length === 1) {
+        messages = convRows[0].messages || [];
+      } else {
+        // Multiple rows — merge and deduplicate
+        const allMessages = convRows.flatMap((r: any) => r.messages || []);
+        const seen = new Set<string>();
+        messages = allMessages.filter((m: any) => {
+          const key = `${m.role}:${typeof m.content === 'string' ? m.content.slice(0, 50) : JSON.stringify(m.content).slice(0, 50)}`;
+          if (seen.has(key)) return false;
+          seen.add(key);
+          return true;
+        });
+      }
+    }
 
-    // messages is a JSONB array of { role, content, timestamp }
-    const messages: ChupChuMessage[] = data?.messages || [];
     // Return last 20
     res.json(messages.slice(-20));
   } catch (err: any) {
@@ -409,18 +420,42 @@ chupChuRouter.post('/chat', async (req: any, res) => {
     };
 
     // ── 7. Load conversation history ─────────────────────────────────────
-    const { data: convRecord } = await db
+    const { data: convRows } = await db
       .from('chupchu_conversations')
       .select('id, messages')
       .eq('user_id', userId)
-      .order('updated_at', { ascending: false })
-      .limit(1)
-      .single();
+      .order('updated_at', { ascending: false });
 
-    const existingMessages: ChupChuMessage[] = convRecord?.messages || [];
-    // Use last 10 messages as context for Claude (keeps token cost low and focus sharp).
+    // Merge duplicate rows if they exist (caused by concurrent INSERTs or transient .single() failures)
+    let existingMessages: ChupChuMessage[] = [];
+    let primaryRowId: string | null = null;
+
+    if (convRows && convRows.length > 0) {
+      primaryRowId = convRows[0].id;
+      if (convRows.length === 1) {
+        existingMessages = convRows[0].messages || [];
+      } else {
+        console.log('[CHAT] WARNING: duplicate rows found:', convRows.length, '— merging');
+        const allMessages = convRows.flatMap((r: any) => r.messages || []);
+        const seen = new Set<string>();
+        existingMessages = allMessages.filter((m: any) => {
+          const key = `${m.role}:${typeof m.content === 'string' ? m.content.slice(0, 50) : JSON.stringify(m.content).slice(0, 50)}`;
+          if (seen.has(key)) return false;
+          seen.add(key);
+          return true;
+        });
+        // Delete all duplicate rows — keep only the most-recently-updated one
+        const duplicateIds = convRows.slice(1).map((r: any) => r.id);
+        await db
+          .from('chupchu_conversations')
+          .delete()
+          .in('id', duplicateIds);
+      }
+    }
+
+    // Use last 20 messages as context for Claude — enough for long conversations.
     // The full history is still stored in the DB and shown to the user via /history.
-    const historyForClaude = existingMessages.slice(-10);
+    const historyForClaude = existingMessages.slice(-20);
 
     // ── 7b. Load user memory ─────────────────────────────────────────────
     let memorySection = '';
@@ -521,15 +556,16 @@ chupChuRouter.post('/chat', async (req: any, res) => {
     // ── 10. Save to DB ────────────────────────────────────────────────────
     const updatedMessages = [...existingMessages, newUserMessage, chupChuMessage];
 
-    if (convRecord?.id) {
+    if (primaryRowId) {
       await db
         .from('chupchu_conversations')
         .update({
           messages: updatedMessages,
           updated_at: new Date().toISOString(),
         })
-        .eq('id', convRecord.id);
+        .eq('id', primaryRowId);
     } else {
+      // First message ever for this user — insert once
       await db
         .from('chupchu_conversations')
         .insert({
