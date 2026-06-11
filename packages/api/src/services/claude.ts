@@ -644,8 +644,13 @@ export async function askChupChu(
 
     if (response.stop_reason === 'end_turn') {
       const textBlock = response.content.find(b => b.type === 'text');
-      if (!textBlock || textBlock.type !== 'text') throw new Error('No text response from Claude');
-      return { response: textBlock.text, proposedTasks: capturedTasks, mobileTool: capturedMobileTool };
+      const responseText = textBlock?.type === 'text'
+        ? textBlock.text
+        : capturedTasks && capturedTasks.length > 0
+          ? '💡 רוצה שאוסיף את התוכנית הזו למשימות שלך? לחץ על הכפתור למטה 🗓️'
+          : null;
+      if (!responseText) throw new Error('No text response from Claude');
+      return { response: responseText, proposedTasks: capturedTasks, mobileTool: capturedMobileTool };
     }
 
     if (response.stop_reason === 'tool_use') {
