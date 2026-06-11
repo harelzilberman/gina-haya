@@ -219,6 +219,26 @@ Create an updated summary and structured facts. Return JSON only:
   }
 });
 
+// ── Role-alternation safety helper ──────────────────────────────────────────
+// Ensures the messages array sent to Claude starts with a user message and has
+// no consecutive same-role messages (which the Anthropic API rejects).
+function ensureRoleAlternation(messages: ChupChuMessage[]): ChupChuMessage[] {
+  const result: ChupChuMessage[] = [];
+  for (const msg of messages) {
+    if (result.length === 0 && msg.role !== 'user') continue; // skip leading assistant
+    if (result.length > 0 && result[result.length - 1].role === msg.role) {
+      result[result.length - 1] = msg; // keep newer of two consecutive same-role messages
+    } else {
+      result.push(msg);
+    }
+  }
+  // History must end with an assistant message so the new user message can follow
+  while (result.length > 0 && result[result.length - 1].role === 'user') {
+    result.pop();
+  }
+  return result;
+}
+
 // ── POST /api/chupchu/chat ──────────────────────────────────────────────────
 chupChuRouter.post('/chat', async (req: any, res) => {
   try {
@@ -398,8 +418,9 @@ chupChuRouter.post('/chat', async (req: any, res) => {
       .single();
 
     const existingMessages: ChupChuMessage[] = convRecord?.messages || [];
-    // Must match frontend display limit in chupChuStore history endpoint
-    const last20Messages = existingMessages.slice(-20);
+    // Use last 10 messages as context for Claude (keeps token cost low and focus sharp).
+    // The full history is still stored in the DB and shown to the user via /history.
+    const historyForClaude = existingMessages.slice(-10);
 
     // ── 7b. Load user memory ─────────────────────────────────────────────
     let memorySection = '';
@@ -482,8 +503,10 @@ chupChuRouter.post('/chat', async (req: any, res) => {
       : `## Today's Date\nToday is ${todayFormatted}. Use this to calculate "tomorrow", "this week" etc.`;
 
     const extraContext = [memorySection, dateSection, weatherSection, taskContext].filter(Boolean).join('\n\n');
+    // Always prepend history (with role-alternation safety) before the current user message,
+    // even when the current message includes an image.
     const { response: chupChuText, proposedTasks, mobileTool } = await askChupChu(
-      [...last20Messages, newUserMessage],
+      [...ensureRoleAlternation(historyForClaude), newUserMessage],
       context,
       extraContext || undefined,
       compressedImage,
