@@ -9,6 +9,8 @@ export interface GardenTask {
   type: 'biodynamic' | 'maintenance' | 'custom';
   status: 'pending' | 'done' | 'skipped';
   notes: string | null;
+  category: string;
+  priority: 'low' | 'medium' | 'high';
   source_action: string | null;
   created_at: string;
   updated_at: string;

@@ -175,6 +175,7 @@ tasksRouter.post('/bulk', async (req, res) => {
         notes: string;
         date: string;
         category: string;
+        priority: string;
       }>;
     };
 
@@ -191,7 +192,9 @@ tasksRouter.post('/bulk', async (req, res) => {
       type:          'custom' as const,
       status:        'pending' as const,
       notes:         t.notes || null,
-      source_action: t.category || null,
+      category:      t.category || 'general',
+      priority:      t.priority || 'medium',
+      source_action: 'chupchu',
     }));
 
     const { data, error } = await db
