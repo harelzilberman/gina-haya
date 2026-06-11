@@ -670,8 +670,9 @@ chupChuRouter.post('/chat', async (req: any, res) => {
     }
 
   } catch (err: any) {
-    console.error('[CHAT ERROR]', err?.message, err?.stack?.slice(0, 500));
-    res.status(500).json({ error: 'אירעה שגיאה. נסה שוב מאוחר יותר.' });
+    console.error('[CHAT ERROR]', err?.message);
+    console.error('[CHAT ERROR STACK]', err?.stack?.slice(0, 800));
+    res.status(500).json({ error: err?.message ?? 'unknown error' });
   }
 });
 
