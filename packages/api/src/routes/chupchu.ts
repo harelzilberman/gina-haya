@@ -488,6 +488,69 @@ chupChuRouter.post('/chat', async (req: any, res) => {
       ? `\n\nפעולות שהמשתמש ביצע לאחרונה בגינה:\n${completedTasks.map(t => `- ${t.title} (${t.date})`).join('\n')}`
       : '';
 
+    // ── 7d. Fetch pending tasks ───────────────────────────────────────────
+    const { data: pendingTasksData } = await db
+      .from('garden_tasks')
+      .select('id, title, date, priority, category, status')
+      .eq('user_id', userId)
+      .eq('status', 'pending')
+      .order('date', { ascending: true })
+      .limit(15);
+    const pendingTasks = pendingTasksData ?? [];
+
+    // ── 7e. Build garden section (inject plants directly, no tool call needed)
+    let gardenSection = '';
+    if (garden) {
+      const plantList = (garden.garden_plants ?? [])
+        .map((p: any) => (lang === 'he' ? p.common_name_he : p.common_name_en))
+        .filter(Boolean) as string[];
+
+      const lines: string[] = [];
+      if (lang === 'he') {
+        lines.push(`## הגינה של המשתמש`);
+        if (garden.name)      lines.push(`שם הגינה: ${garden.name}`);
+        if (garden.soil_type) lines.push(`סוג קרקע: ${garden.soil_type}`);
+        if (garden.size_sqm)  lines.push(`גודל: ${garden.size_sqm} מ"ר`);
+        if (plantList.length) lines.push(`צמחים בגינה: ${plantList.join(', ')}`);
+        else                  lines.push('אין צמחים רשומים בגינה עדיין.');
+      } else {
+        lines.push(`## User's Garden`);
+        if (garden.name)      lines.push(`Garden name: ${garden.name}`);
+        if (garden.soil_type) lines.push(`Soil type: ${garden.soil_type}`);
+        if (garden.size_sqm)  lines.push(`Size: ${garden.size_sqm} sqm`);
+        if (plantList.length) lines.push(`Plants in garden: ${plantList.join(', ')}`);
+        else                  lines.push('No plants registered yet.');
+      }
+      gardenSection = lines.join('\n');
+    }
+
+    // ── 7f. Build pending tasks section ──────────────────────────────────
+    let pendingTasksSection = '';
+    if (pendingTasks.length > 0) {
+      const header = lang === 'he' ? '## משימות ממתינות בגינה' : '## Pending Garden Tasks';
+      const taskLines = pendingTasks.map((t: any) => {
+        const priority = lang === 'he'
+          ? (t.priority === 'high' ? 'גבוהה' : t.priority === 'medium' ? 'בינונית' : 'נמוכה')
+          : t.priority;
+        return `- ${t.title} | תאריך: ${t.date} | עדיפות: ${priority} | קטגוריה: ${t.category}`;
+      });
+      pendingTasksSection = header + '\n' + taskLines.join('\n');
+    } else {
+      pendingTasksSection = lang === 'he'
+        ? '## משימות ממתינות\nאין משימות ממתינות כרגע.'
+        : '## Pending Tasks\nNo pending tasks at the moment.';
+    }
+
+    // ── 7g. Build harvests section (inject directly, no tool call needed) ─
+    let harvestsSection = '';
+    if (context.recentHarvests && context.recentHarvests.length > 0) {
+      const header = lang === 'he' ? '## קציר אחרון' : '## Recent Harvests';
+      const harvestLines = context.recentHarvests.slice(0, 5).map((h: any) =>
+        `- ${h.plantNameHe ?? ''} (${h.harvestDate})`
+      );
+      harvestsSection = header + '\n' + harvestLines.join('\n');
+    }
+
     // ── 8. Fetch IP-based weather forecast (non-blocking) ────────────────
     let weatherSection = '';
     if (location?.lat && location?.lon) {
@@ -538,7 +601,15 @@ chupChuRouter.post('/chat', async (req: any, res) => {
       ? `## תאריך היום\nהיום הוא ${todayFormatted}. השתמש בתאריך זה לחישוב "מחר", "השבוע" וכו'.`
       : `## Today's Date\nToday is ${todayFormatted}. Use this to calculate "tomorrow", "this week" etc.`;
 
-    const extraContext = [memorySection, dateSection, weatherSection, taskContext].filter(Boolean).join('\n\n');
+    const extraContext = [
+      memorySection,
+      gardenSection,
+      pendingTasksSection,
+      harvestsSection,
+      dateSection,
+      weatherSection,
+      taskContext,
+    ].filter(Boolean).join('\n\n');
     // Always prepend history (with role-alternation safety) before the current user message,
     // even when the current message includes an image.
     const { response: chupChuText, proposedTasks, mobileTool } = await askChupChu(
@@ -599,7 +670,7 @@ chupChuRouter.post('/chat', async (req: any, res) => {
     }
 
   } catch (err: any) {
-    console.error('[POST /api/chupchu/chat]', err.message);
+    console.error('[CHAT ERROR]', err?.message, err?.stack?.slice(0, 500));
     res.status(500).json({ error: 'אירעה שגיאה. נסה שוב מאוחר יותר.' });
   }
 });
