@@ -66,9 +66,7 @@ trackersRouter.post('/', async (req: any, res) => {
     const userId = req.user.id;
     const { plantNameHe, plantNameEn, plantId, gardenId, locationType, locationDescription } = req.body;
 
-    if (!plantNameHe || !plantNameEn) {
-      return res.status(400).json({ error: 'plantNameHe and plantNameEn are required' });
-    }
+    // plantNameHe/En may be empty for auto-identification via Claude vision
     if (!locationType) {
       return res.status(400).json({ error: 'locationType is required' });
     }
@@ -119,8 +117,8 @@ trackersRouter.post('/', async (req: any, res) => {
         user_id:              userId,
         garden_id:            gardenId ?? null,
         plant_id:             plantId ?? null,
-        plant_name_he:        plantNameHe,
-        plant_name_en:        plantNameEn,
+        plant_name_he:        plantNameHe ?? '',
+        plant_name_en:        plantNameEn ?? '',
         location_type:        locationType,
         location_description: locationDescription ?? null,
       })
