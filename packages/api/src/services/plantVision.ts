@@ -23,6 +23,7 @@ export async function compressImageForClaude(base64: string): Promise<{ data: st
 export interface PlantAnalysis {
   plantIdentified: string;
   plantIdentifiedEn: string;
+  identificationConfidence: number;
   confidence: 'high' | 'medium' | 'low';
   growthStage: 'seedling' | 'vegetative' | 'flowering' | 'fruiting' | 'dormant';
   growthStageHe: string;
@@ -93,7 +94,7 @@ function buildVisionSystemPrompt(context: AnalysisContext): string {
   };
   const locationHe = locationTypeMap[context.locationType] ?? context.locationType;
 
-  let prompt = `אתה מון לבנה — סבא הירח. מומחה גידול ביודינמי ישראלי עם ניסיון של עשרים שנה בחוות ביודינמיות בגליל ובפרובנס.
+  let prompt = `אתה צ'ופצ'ו — מומחה גידול ביודינמי ישראלי עם ניסיון של עשרים שנה בחוות ביודינמיות בגליל ובפרובנס.
 אתה מנתח תמונות צמחים ומספק אבחון מקצועי ותכנית גידול ביודינמית מותאמת אישית.
 לעולם לא ממליץ על כימיקלים סינתטיים — רק פתרונות טבעיים וביודינמיים.
 תמיד כולל הצהרת אחריות שהניתוח אינו מחליף יועץ מקצועי.
@@ -204,7 +205,29 @@ export async function analyzePlantImage(
     ? ''
     : ` (רמז: ייתכן שזה ${context.plantNameHint})`;
   const identifyInstruction = isUnknownHint
-    ? '\nשם הצמח אינו ידוע — זהה את הצמח בעצמך לפי התמונה בלבד.'
+    ? `\nזיהוי צמח — בצע את השלבים הבאים בסדר:
+
+1. תאר את המאפיינים הויזואליים שאתה רואה בתמונה:
+   - צורת העלים (עגול, ארוך, בשרני, מחוטי, מורכב)
+   - מרקם (חלק, שעיר, שעוותי, עבה)
+   - צבע (ירוק כהה, בהיר, אפרפר, כחלחל)
+   - גבעול / ענפים (זוחל, זקוף, תלוי, עסיסי)
+   - פרחים / פירות אם קיימים
+   - גודל כללי וצורת הצמח
+
+2. על בסיס המאפיינים — מה הצמח הזה? שקול:
+   - ירקות נפוצים
+   - עשבי תיבול
+   - סוקולנטים צמחי בית (חשוב מאוד!)
+   - פרחים ועציצים
+   - עצי פרי
+
+3. ציין את רמת הביטחון שלך (0-100%) ואת שתי האפשרויות הסבירות ביותר.
+
+4. בחר את הזיהוי הסופי ורשום אותו בשדה plantIdentified.
+
+חשוב: סוקולנטים כמו String of Pearls, Echeveria, Haworthia נפוצים מאוד בבתים ישראליים.
+אל תניח שכל צמח הוא ירק — הסתכל על צורת העלים לפני שאתה מחליט.`
     : '';
 
   const userMessage = `נתח את הצמח בתמונה${hint}.${identifyInstruction}
@@ -221,6 +244,7 @@ export async function analyzePlantImage(
   "analysis": {
     "plantIdentified": "שם עברי של הצמח",
     "plantIdentifiedEn": "English plant name",
+    "identificationConfidence": 85,
     "confidence": "high",
     "growthStage": "vegetative",
     "growthStageHe": "צמיחה וגטטיבית",
