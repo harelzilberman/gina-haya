@@ -469,6 +469,64 @@ trackersRouter.post('/:id/approve-tasks', async (req: any, res) => {
   }
 });
 
+// ── POST /api/trackers/:id/id-feedback ───────────────────────────────────
+trackersRouter.post('/:id/id-feedback', async (req: any, res) => {
+  try {
+    const userId = req.user.id;
+    const { id: trackerId } = req.params;
+    const { confirmed, correctedNameHe, correctedNameEn, checkinId } = req.body;
+
+    // Verify tracker ownership
+    const { data: tracker, error: trackerError } = await db
+      .from('plant_trackers')
+      .select('id, plant_name_he')
+      .eq('id', trackerId)
+      .eq('user_id', userId)
+      .single();
+
+    if (trackerError || !tracker) {
+      return res.status(404).json({ error: 'Tracker not found' });
+    }
+
+    // Update tracker name/confirmation status
+    const updatePayload: Record<string, any> = {
+      identification_confirmed: confirmed,
+      updated_at: new Date().toISOString(),
+    };
+    if (correctedNameHe) updatePayload.plant_name_he = correctedNameHe;
+    if (correctedNameEn) updatePayload.plant_name_en = correctedNameEn;
+
+    await db
+      .from('plant_trackers')
+      .update(updatePayload)
+      .eq('id', trackerId)
+      .eq('user_id', userId);
+
+    // Store feedback row for learning (table may not exist — non-blocking)
+    try {
+      await db.from('tracker_id_feedback').upsert(
+        {
+          tracker_id:         trackerId,
+          checkin_id:         checkinId ?? null,
+          confirmed,
+          ai_name_he:         tracker.plant_name_he ?? null,
+          corrected_name_he:  correctedNameHe ?? null,
+          corrected_name_en:  correctedNameEn ?? null,
+          created_at:         new Date().toISOString(),
+        },
+        { onConflict: 'tracker_id,checkin_id' }
+      );
+    } catch (feedbackErr: any) {
+      console.warn('[id-feedback] feedback table upsert skipped:', feedbackErr.message);
+    }
+
+    res.json({ ok: true });
+  } catch (err: any) {
+    console.error('[POST /api/trackers/:id/id-feedback]', err.message, err.stack);
+    res.status(500).json({ error: err.message });
+  }
+});
+
 // ── GET /api/trackers/:id/plan ────────────────────────────────────────────
 trackersRouter.get('/:id/plan', async (req: any, res) => {
   try {
