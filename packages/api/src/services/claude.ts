@@ -9,6 +9,7 @@ const anthropic = new Anthropic({
 });
 
 const MODEL = process.env.CLAUDE_MODEL ?? 'claude-sonnet-4-20250514';
+const VISION_MODEL = 'claude-opus-4-5';
 
 const MAX_TOOL_ITERATIONS = 8;
 
@@ -116,13 +117,34 @@ const CHUPCHU_SYSTEM_PROMPT_HE = `\
 כאשר המשתמש שואל על משימות, תמיד בדוק את רשימת המשימות הממתינות שקיבלת. כאשר הוא שואל מה לגדל, השתמש ברשימת הצמחים שלו.
 
 ## זיהוי צמחים מתמונות
-כאשר מגיעה תמונה של צמח:
-1. **זהה את הצמח** — שם עברי, שם אנגלי, שם לטיני (כולל האיות הלטיני המדויק)
-2. **מידע כללי** — מקור הצמח, שימושים, טעם/ריח אם רלוונטי
-3. **גידול בישראל** — עונת גידול, מזג אוויר מתאים, השקיה, קרקע
-4. **טיפים ביודינמיים** — עצות ספציפיות לגידול ביודינמי
-5. **צמחים מלווים** — אילו צמחים טוב לשתול לידו
-6. **הצהרת אחריות** — ציין שהזיהוי מבוסס על התמונה בלבד ואינו מחליף ייעוץ מקצועי
+כאשר מגיעה תמונה של צמח, בצע את השלבים הבאים בסדר — אל תדלג:
+
+⚠️ אזהרה: אל תזהה לפי "מה נפוץ בגינות" — זהה לפי מה שאתה רואה בתמונה בפועל.
+
+**שלב 1 — תאר את המאפיינים הויזואליים (לפני כל זיהוי):**
+- צורת העלים/גרגרים: עגול? שטוח? ארוך? בשרני? מחוטי?
+- האם הצמח זוחל/תלוי, זקוף, או שכוב על האדמה?
+- גודל הגרגרים/עלים: קטנים (<1 ס"מ), בינוניים, גדולים?
+- צבע: ירוק בהיר? כהה? כחלחל? אפרפר?
+- סוג המיכל: עציץ בית? אדנית? שדה פתוח?
+
+**שלב 2 — השווה לאפשרויות (חשוב מאוד):**
+- גרגרים עגולים קטנים על ענפים דקים תלויים בעציץ → כנראה מחרוזת פנינים (String of Pearls) — סוקולנט, לא ירק!
+- עציץ בבית/מרפסת → סביר יותר: סוקולנט, צמח בית, עשב תיבול
+- שדה/גינה פתוחה → סביר יותר: ירק, עץ פרי
+- אל תניח שכל צמח עם גרגרים ירוקים הוא אפונה — אפונה גדלה על שיחים זקופים עם קנוקנות, לא בעציץ תלוי
+
+**שלב 3 — קבע זיהוי סופי עם רמת ביטחון (0-100%):**
+- אם רמת הביטחון < 70% — ציין שני מועמדים וציין שאתה לא בטוח
+
+**שלב 4 — לאחר הזיהוי, ספק:**
+1. **זיהוי הצמח** — שם עברי, שם אנגלי, שם לטיני
+2. **מה אני רואה בתמונה** — תאר את הממצאים הויזואליים שהובילו לזיהוי
+3. **מידע כללי** — מקור, שימושים, טעם/ריח אם רלוונטי
+4. **גידול בישראל** — עונת גידול, צרכי אקלים, השקיה, עפרה
+5. **טיפים ביודינמיים** — עצות ספציפיות לגידול ביודינמי
+6. **צמחים מלווים** — אילו צמחים טוב לשתול לצדו
+7. **הצהרת אחריות** — ציין שהזיהוי מבוסס על התמונה בלבד
 
 ## ידע ביודינמי מקצועי שלמדת בקורס
 
@@ -183,13 +205,34 @@ You never recommend synthetic chemicals.
 For any plant diagnosis, always include a disclaimer that you are not a substitute for a professional advisor.
 
 ## Plant Identification from Images
-When a plant image is provided:
-1. **Identify the plant** — Hebrew name, English name, Latin name (exact Latin spelling)
-2. **General info** — origin, uses, taste/scent if relevant
-3. **Growing in Israel** — season, climate needs, watering, soil
-4. **Biodynamic tips** — specific biodynamic growing advice
-5. **Companion plants** — what grows well alongside it
-6. **Disclaimer** — note that identification is based on the image alone and is not a substitute for professional advice
+When a plant image is provided, follow these steps IN ORDER — do not skip:
+
+⚠️ Warning: Identify based on what you ACTUALLY SEE, not what is common in gardens.
+
+**Step 1 — Describe visual features BEFORE naming:**
+- Leaf/bead shape: round? flat? long? fleshy? needle-like?
+- Growth habit: trailing/hanging, upright, or lying on soil?
+- Size of leaves/beads: small (<1cm), medium, large?
+- Color: bright green? dark? bluish? grayish?
+- Container type: indoor pot? garden bed? open field?
+
+**Step 2 — Compare to possibilities (important):**
+- Small round beads on thin trailing stems in a pot → likely String of Pearls (Curio rowleyanus) — a succulent, NOT a vegetable!
+- Indoor pot / balcony → more likely: succulent, houseplant, herb
+- Open garden / field → more likely: vegetable, fruit tree
+- Don't assume round green things = peas — peas grow on upright vines with tendrils, not trailing in pots
+
+**Step 3 — State final identification with confidence (0-100%):**
+- If confidence < 70%, name two candidates and say you're unsure
+
+**Step 4 — After identification, provide:**
+1. **Plant identification** — Hebrew name, English name, Latin name
+2. **What I see in the image** — describe the visual findings that led to the ID
+3. **General info** — origin, uses, taste/scent if relevant
+4. **Growing in Israel** — season, climate, watering, soil
+5. **Biodynamic tips** — specific biodynamic growing advice
+6. **Companion plants** — what grows well alongside it
+7. **Disclaimer** — note identification is based on image alone
 
 ## Biodynamic professional knowledge
 
@@ -617,7 +660,9 @@ export async function askChupChu(
       // If content is a placeholder (no user text typed), give Claude a natural instruction
       const isPlaceholder = PLANT_IMAGE_PLACEHOLDERS.includes(m.content.trim());
       const textContent = isPlaceholder
-        ? (context.userLanguage === 'he' ? 'זהה את הצמח בתמונה וספר לי עליו.' : 'Please identify the plant in this image and tell me about it.')
+        ? (context.userLanguage === 'he'
+            ? 'זהה את הצמח בתמונה. התחל בתיאור המאפיינים הויזואליים שאתה רואה, ואז קבע זיהוי עם רמת ביטחון.'
+            : 'Please identify the plant in this image. Start by describing the visual features you observe, then provide your identification with a confidence level.')
         : m.content;
       return {
         role: 'user',
@@ -633,9 +678,11 @@ export async function askChupChu(
     return { role: m.role, content: m.content };
   });
 
+  const modelToUse = image ? VISION_MODEL : MODEL;
+
   for (let i = 0; i < MAX_TOOL_ITERATIONS; i++) {
     const response = await anthropic.messages.create({
-      model: MODEL,
+      model: modelToUse,
       max_tokens: 2048,
       system: systemPrompt,
       tools: CHUPCHU_TOOLS,
