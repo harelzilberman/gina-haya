@@ -303,7 +303,7 @@ due_in_days: מתי לבצע את המשימה (1-14 ימים). priority: high=�
 
   const response = await anthropic.messages.create({
     model: 'claude-opus-4-5',
-    max_tokens: 4000,
+    max_tokens: 4096,
     system: systemPrompt,
     messages: [
       {
