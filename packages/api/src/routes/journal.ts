@@ -47,7 +47,7 @@ journalRouter.post('/entries', async (req: any, res) => {
 // Get current user's journal entries (most recent first)
 journalRouter.get('/entries', async (req: any, res) => {
   try {
-    const { data, error } = await db
+    const { data: entries, error } = await db
       .from('journal_entries')
       .select('*, journal_photos(*)')
       .eq('user_id', req.user.id)
@@ -55,7 +55,20 @@ journalRouter.get('/entries', async (req: any, res) => {
       .limit(50);
 
     if (error) throw error;
-    res.json(data || []);
+
+    // Generate signed URLs for all photos (bucket is private)
+    await Promise.all(
+      (entries || []).flatMap((entry: any) =>
+        (entry.journal_photos || []).map(async (photo: any) => {
+          const { data: signedData } = await db.storage
+            .from('journal-photos')
+            .createSignedUrl(photo.storage_path, 3600);
+          photo.signed_url = signedData?.signedUrl ?? null;
+        })
+      )
+    );
+
+    res.json(entries || []);
   } catch (err: any) {
     console.error('[GET /api/journal/entries]', err.message);
     res.status(500).json({ error: err.message });
