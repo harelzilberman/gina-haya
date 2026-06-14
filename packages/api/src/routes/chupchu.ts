@@ -103,6 +103,107 @@ chupChuRouter.post('/analyze-image', async (req: any, res) => {
   }
 });
 
+// ── POST /api/chupchu/full-diagnosis ───────────────────────────────────────
+chupChuRouter.post('/full-diagnosis', async (req: any, res) => {
+  try {
+    const { image, mimeType = 'image/jpeg', language = 'he' } = req.body;
+    if (!image) return res.status(400).json({ success: false, error: 'No image provided' });
+
+    const systemPrompt = language === 'he'
+      ? `אתה צ'ופצ'ו, מומחה גינה ביודינמי. קיבלת תמונה של צמח. עליך לנתח אותה לעומק ולהחזיר תשובה בפורמט JSON בלבד — ללא טקסט נוסף, ללא markdown, רק JSON תקין. נתח: זיהוי הצמח, מצב בריאותו, בעיות שנראות, צעדי טיפול מפורטים, משימות דחופות, וטיפ ביודינמי. אם הצמח בריא, מלא את השדות בהתאם עם tasks ריק או עם משימות תחזוקה שגרתיות.`
+      : `You are Chupchu, a biodynamic garden expert. You received a plant photo. Analyze it deeply and return a response in JSON format only — no extra text, no markdown, just valid JSON. Analyze: plant identification, health status, visible issues, detailed treatment steps, urgent tasks, and a biodynamic tip. If the plant is healthy, fill fields accordingly with empty tasks or routine maintenance tasks.`;
+
+    const userPrompt = language === 'he'
+      ? `נתח את הצמח בתמונה והחזר JSON תקין בלבד עם המבנה הבא בדיוק:
+{
+  "plant_name": "שם הצמח בעברית",
+  "plant_name_latin": "Latin name",
+  "confidence": "high",
+  "health_status": "healthy",
+  "health_status_label": "תיאור קצר של המצב",
+  "summary": "תיאור קצר 2-3 משפטים של מה שנראה בתמונה",
+  "issues": [
+    {
+      "name": "שם הבעיה",
+      "severity": "low",
+      "description": "תיאור הבעיה"
+    }
+  ],
+  "treatment_steps": [
+    {
+      "step": 1,
+      "title": "כותרת הצעד",
+      "description": "תיאור מפורט"
+    }
+  ],
+  "biodynamic_tip": "טיפ ביודינמי אחד ספציפי לטיפול בבעיה זו",
+  "tasks": [
+    {
+      "title": "שם המשימה",
+      "description": "תיאור",
+      "urgency": "this_week",
+      "urgency_label": "השבוע הזה"
+    }
+  ],
+  "prevention_tips": ["טיפ 1", "טיפ 2", "טיפ 3"]
+}
+ערכים חוקיים: confidence = high|medium|low, health_status = healthy|stressed|diseased|pest_damage, severity = low|medium|high, urgency = today|this_week|this_month.`
+      : `Analyze the plant in the image and return ONLY valid JSON with this exact structure: {"plant_name":"...","plant_name_latin":"...","confidence":"high","health_status":"healthy","health_status_label":"...","summary":"...","issues":[{"name":"...","severity":"low","description":"..."}],"treatment_steps":[{"step":1,"title":"...","description":"..."}],"biodynamic_tip":"...","tasks":[{"title":"...","description":"...","urgency":"this_week","urgency_label":"This week"}],"prevention_tips":["...","..."]}. Valid values: confidence=high|medium|low, health_status=healthy|stressed|diseased|pest_damage, severity=low|medium|high, urgency=today|this_week|this_month.`;
+
+    const response = await anthropicClient.messages.create({
+      model: 'claude-opus-4-5',
+      max_tokens: 2048,
+      system: systemPrompt,
+      messages: [{
+        role: 'user',
+        content: [
+          {
+            type: 'image',
+            source: {
+              type: 'base64',
+              media_type: mimeType as any,
+              data: image,
+            },
+          },
+          {
+            type: 'text',
+            text: userPrompt,
+          },
+        ],
+      }],
+    });
+
+    const raw = response.content
+      .filter((b: any) => b.type === 'text')
+      .map((b: any) => (b as any).text)
+      .join('');
+
+    let diagnosis: any;
+    try {
+      diagnosis = JSON.parse(raw);
+    } catch {
+      // Try to extract JSON object from the response
+      const match = raw.match(/\{[\s\S]*\}/);
+      if (match) {
+        try {
+          diagnosis = JSON.parse(match[0]);
+        } catch {
+          console.error('[POST /api/chupchu/full-diagnosis] JSON parse failed, raw:', raw.slice(0, 200));
+          return res.json({ success: false, error: 'parse_error', raw });
+        }
+      } else {
+        console.error('[POST /api/chupchu/full-diagnosis] No JSON found, raw:', raw.slice(0, 200));
+        return res.json({ success: false, error: 'parse_error', raw });
+      }
+    }
+
+    res.json({ success: true, diagnosis });
+  } catch (err: any) {
+    console.error('[POST /api/chupchu/full-diagnosis]', err.message);
+    res.status(500).json({ success: false, error: err.message });
+  }
+});
+
 // ── DELETE /api/chupchu/history ─────────────────────────────────────────────
 chupChuRouter.delete('/history', async (req: any, res) => {
   try {
