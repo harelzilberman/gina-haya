@@ -211,7 +211,7 @@ ${JSON.stringify(daysJson, null, 2)}
     : "אתה צ'ופצ'ו — המומחה הביודינמי שלך. מומחה גידול ביודינמי ישראלי. אתה מכין תכנית שבועית מותאמת אישית. כתוב בעברית. החזר JSON גולמי בלבד — ללא markdown, ללא code fences, ללא backticks, ללא טקסט לפני או אחרי. התו הראשון חייב להיות { והאחרון }.";
 
   const response = await anthropic.messages.create({
-    model:      'claude-sonnet-4-20250514',
+    model:      'claude-sonnet-4-5',
     max_tokens: 4096,
     system:     systemPrompt,
     messages:   [{ role: 'user', content: userPrompt }],
