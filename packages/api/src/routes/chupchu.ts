@@ -332,62 +332,66 @@ Create an updated summary and structured facts. Return JSON only:
 });
 
 // ── Past conversation context builder ───────────────────────────────────────
-// Splits the full message history into sessions (4-hour gap = new session),
-// takes the 5 most recent past sessions (excluding the current one), and
-// builds a compact Hebrew summary for injection into the system prompt.
-// Zero extra DB queries — reuses already-loaded messages.
+// Takes everything BEFORE the last-20-message context window (the same boundary
+// historyForClaude uses), picks up to 5 evenly-spaced user+reply pairs, and
+// returns a compact Hebrew summary for injection into the system prompt.
+// Zero extra DB queries — reuses already-loaded existingMessages.
 function buildPastContextSummary(allMessages: ChupChuMessage[]): string {
-  if (!allMessages || allMessages.length < 4) return '';
+  console.log('[ChupChu Memory] buildPastContextSummary: total msgs=', allMessages?.length ?? 0);
 
-  // Split into sessions by time gap (>4 hours = new session)
-  const SESSION_GAP_MS = 4 * 60 * 60 * 1000;
-  const sessions: ChupChuMessage[][] = [];
-  let current: ChupChuMessage[] = [];
-
-  for (const msg of allMessages) {
-    if (current.length === 0) {
-      current.push(msg);
-      continue;
-    }
-    const lastTs  = new Date(current[current.length - 1].timestamp).getTime();
-    const thisTs  = new Date(msg.timestamp).getTime();
-    if (thisTs - lastTs > SESSION_GAP_MS) {
-      sessions.push(current);
-      current = [msg];
-    } else {
-      current.push(msg);
-    }
+  if (!allMessages || allMessages.length <= 20) {
+    console.log('[ChupChu Memory] skip — not enough history (need >20, got', allMessages?.length ?? 0, ')');
+    return '';
   }
-  if (current.length > 0) sessions.push(current);
 
-  // Exclude the current (last) session — it's the one being updated now
-  const pastSessions = sessions.slice(0, -1);
-  if (pastSessions.length === 0) return '';
+  // "Past" = everything before the current context window (last 20 messages)
+  const pastMessages = allMessages.slice(0, -20);
+  console.log('[ChupChu Memory] past messages available:', pastMessages.length);
 
-  // Take up to 5 most recent past sessions
-  const recentPast = pastSessions.slice(-5).reverse(); // most recent first
+  if (pastMessages.length === 0) return '';
+
+  // Collect all user messages from the past, with their index into pastMessages
+  const userMsgs = pastMessages
+    .map((m, i) => ({ msg: m, idx: i }))
+    .filter(({ msg }) => msg.role === 'user');
+
+  console.log('[ChupChu Memory] user messages in past:', userMsgs.length);
+  if (userMsgs.length === 0) return '';
+
+  // Pick up to 5 evenly spaced across the past to cover the full history
+  const step    = Math.max(1, Math.floor(userMsgs.length / 5));
+  const picked  = userMsgs.filter((_, i) => i % step === 0).slice(0, 5);
 
   const lines: string[] = ['## היסטוריית שיחות קודמות'];
-  for (const session of recentPast) {
-    const firstUser      = session.find(m => m.role === 'user');
-    const firstAssistant = session.find(m => m.role === 'assistant');
-    if (!firstUser) continue;
 
-    const date = new Date(session[0].timestamp).toLocaleDateString('he-IL', {
-      day: 'numeric', month: 'numeric', year: 'numeric',
-    });
+  for (const { msg: userMsg, idx } of picked) {
+    // Find the next assistant reply after this user message
+    const reply = pastMessages.slice(idx + 1).find(m => m.role === 'assistant');
 
-    const topic = firstUser.content.replace(/🌿 \[.*?\]/g, '[תמונה]').slice(0, 120);
-    const reply = firstAssistant?.content?.slice(0, 150) ?? '';
+    // Format date safely — guard against missing/invalid timestamps
+    let date: string;
+    try {
+      const d = new Date(userMsg.timestamp);
+      date = isNaN(d.getTime())
+        ? 'בעבר'
+        : d.toLocaleDateString('he-IL', { day: 'numeric', month: 'numeric', year: 'numeric' });
+    } catch { date = 'בעבר'; }
+
+    const topic     = String(userMsg.content ?? '').replace(/🌿 \[.*?\]/g, '[תמונה]').slice(0, 120);
+    const replyText = String(reply?.content ?? '').slice(0, 150);
 
     lines.push(
       `שיחה מ-${date}: המשתמש שאל: "${topic}".` +
-      (reply ? ` עניתי: "${reply}..."` : ''),
+      (replyText ? ` עניתי: "${replyText}..."` : ''),
     );
   }
 
   if (lines.length <= 1) return '';
-  return lines.join('\n');
+
+  const summary = lines.join('\n');
+  console.log('[ChupChu Memory] summary length:', summary.length);
+  console.log('[ChupChu Memory] summary preview:', summary.substring(0, 200));
+  return summary;
 }
 
 // ── Role-alternation safety helper ──────────────────────────────────────────
@@ -773,8 +777,9 @@ chupChuRouter.post('/chat', async (req: any, res) => {
       ? `## תאריך היום\nהיום הוא ${todayFormatted}. השתמש בתאריך זה לחישוב "מחר", "השבוע" וכו'.`
       : `## Today's Date\nToday is ${todayFormatted}. Use this to calculate "tomorrow", "this week" etc.`;
 
-    // ── 8b. Build past conversation context (sessions older than current window)
+    // ── 8b. Build past conversation context (messages older than the current window)
     const pastContextSection = buildPastContextSummary(existingMessages);
+    console.log('[ChupChu Memory] injecting past context:', pastContextSection.length > 0 ? `YES (${pastContextSection.length} chars)` : 'NO — empty');
 
     const extraContext = [
       memorySection,
