@@ -285,15 +285,37 @@ function DraggableTaskCard({
           <span style={{ width: '6px', height: '6px', borderRadius: '50%', background: priorityColor, flexShrink: 0 }} />
         )}
 
-        {task.type === 'custom' && (
-          <button
-            onPointerDown={e => e.stopPropagation()}
-            onClick={e => { e.stopPropagation(); onDelete(task.id); }}
-            style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: '10px', opacity: 0.4, padding: '0', flexShrink: 0 }}
-          >
-            ×
-          </button>
-        )}
+        <button
+          onPointerDown={e => e.stopPropagation()}
+          onClick={e => { e.stopPropagation(); onDelete(task.id); }}
+          title="מחק משימה"
+          aria-label="מחק משימה"
+          style={{
+            flexShrink: 0,
+            width: '28px',
+            height: '28px',
+            borderRadius: '6px',
+            background: 'transparent',
+            border: 'none',
+            cursor: 'pointer',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            color: 'rgba(255,255,255,0.3)',
+            fontSize: '14px',
+            transition: 'all 0.15s',
+          }}
+          onMouseEnter={e => {
+            (e.currentTarget as HTMLButtonElement).style.background = 'rgba(200,60,60,0.15)';
+            (e.currentTarget as HTMLButtonElement).style.color = '#e05555';
+          }}
+          onMouseLeave={e => {
+            (e.currentTarget as HTMLButtonElement).style.background = 'transparent';
+            (e.currentTarget as HTMLButtonElement).style.color = 'rgba(255,255,255,0.3)';
+          }}
+        >
+          🗑
+        </button>
       </div>
     </div>
   );
