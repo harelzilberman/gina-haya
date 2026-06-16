@@ -133,21 +133,21 @@ tasksRouter.post('/from-plan', async (req, res) => {
 // POST /api/tasks — create custom task
 tasksRouter.post('/', async (req, res) => {
   try {
-    const { date, title, notes, source_action } = req.body;
+    const { date, title, notes, source_action, plant_name } = req.body;
     if (!date || !title) return res.status(400).json({ error: 'date and title required' });
-    const task = await createCustomTask(req.user!.id, date, title, notes, source_action);
+    const task = await createCustomTask(req.user!.id, date, title, notes, source_action, plant_name);
     res.json(task);
   } catch (err: any) {
     res.status(500).json({ error: err.message });
   }
 });
 
-// PATCH /api/tasks/:id — update task (status, notes, date, title)
+// PATCH /api/tasks/:id — update task (status, notes, date, title, plant_name)
 tasksRouter.patch('/:id', async (req, res) => {
   try {
-    const { status, notes, date, title } = req.body;
-    if (status || date || title !== undefined) {
-      const task = await updateTask(req.params.id, req.user!.id, { status, notes: notes ?? undefined, date, title });
+    const { status, notes, date, title, plant_name } = req.body;
+    if (status || date || title !== undefined || plant_name !== undefined) {
+      const task = await updateTask(req.params.id, req.user!.id, { status, notes: notes ?? undefined, date, title, plant_name });
       return res.json(task);
     }
     return res.status(400).json({ error: 'at least one field required' });
@@ -201,6 +201,7 @@ tasksRouter.post('/bulk', async (req, res) => {
         type:          'custom' as const,
         status:        'pending' as const,
         notes:         t.notes || null,
+        plant_name:    (t as any).plant_name || null,
         category:      t.category || 'general',
         priority:      t.priority || 'medium',
         source_action: 'chupchu',

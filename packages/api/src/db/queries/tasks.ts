@@ -9,6 +9,7 @@ export interface GardenTask {
   type: 'biodynamic' | 'maintenance' | 'custom';
   status: 'pending' | 'done' | 'skipped';
   notes: string | null;
+  plant_name: string | null;
   category: string;
   priority: 'low' | 'medium' | 'high';
   source_action: string | null;
@@ -99,10 +100,11 @@ export async function createCustomTask(
   title: string,
   notes?: string,
   source_action?: string,
+  plant_name?: string,
 ): Promise<GardenTask> {
   const { data, error } = await db
     .from('garden_tasks')
-    .insert({ user_id: userId, date, title, type: 'custom', status: 'pending', notes: notes ?? null, source_action: source_action ?? null })
+    .insert({ user_id: userId, date, title, type: 'custom', status: 'pending', notes: notes ?? null, source_action: source_action ?? null, plant_name: plant_name ?? null })
     .select()
     .single();
   if (error) throw error;
@@ -116,7 +118,7 @@ export async function getTasksForRange(userId: string, from: string, to: string)
 export async function updateTask(
   taskId: string,
   userId: string,
-  updates: { status?: 'pending' | 'done' | 'skipped'; notes?: string | null; date?: string; title?: string },
+  updates: { status?: 'pending' | 'done' | 'skipped'; notes?: string | null; date?: string; title?: string; plant_name?: string | null },
 ): Promise<GardenTask | null> {
   const { data, error } = await db
     .from('garden_tasks')
