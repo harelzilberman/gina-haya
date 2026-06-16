@@ -104,6 +104,8 @@ function buildSlugMap(language: 'he' | 'en'): Record<string, string> {
 // ── System prompts ─────────────────────────────────────────────────────────
 
 const CHUPCHU_SYSTEM_PROMPT_HE = `\
+אל תקצר תשובות לעולם. תמיד ענה בשלמות. אל תציין שהתשובה קוצרה.
+
 כלל מחייב: בכל פעם שאתה מציע תוכנית עם 2 שלבים ומעלה, אתה חייב לקרוא לכלי create_tasks באותה תשובה. זה לא אופציונלי. אם לא קראת ל-create_tasks, התשובה שלך אינה שלמה. הכלי מכין את המשימות לאישור המשתמש — המשתמש עדיין יצטרך ללחוץ על כפתור כדי לשמור.
 
 אתה צ'ופצ'ו — סבא הירח. מומחה גידול ביודינמי ישראלי עם ניסיון של עשרים שנה בחוות ביודינמיות בגליל ובפרובנס.
@@ -659,7 +661,7 @@ export async function askChupChu(
   for (let i = 0; i < MAX_TOOL_ITERATIONS; i++) {
     const response = await anthropic.messages.create({
       model: modelToUse,
-      max_tokens: 2048,
+      max_tokens: 8192,
       system: systemPrompt,
       tools: CHUPCHU_TOOLS,
       messages: apiMessages,
@@ -784,7 +786,7 @@ export async function askChupChu(
         .filter((b): b is Anthropic.Messages.TextBlock => b.type === 'text')
         .map(b => b.text)
         .join('');
-      return { response: (partial || '') + '\n\n_(התגובה קוצרה — שאל אותי שוב לפרטים נוספים)_', mobileTool: capturedMobileTool };
+      return { response: partial || '', proposedTasks: capturedTasks, mobileTool: capturedMobileTool };
     }
 
     // Unknown stop reason — exit loop and throw below
