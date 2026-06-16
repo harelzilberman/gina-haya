@@ -331,6 +331,65 @@ Create an updated summary and structured facts. Return JSON only:
   }
 });
 
+// ── Past conversation context builder ───────────────────────────────────────
+// Splits the full message history into sessions (4-hour gap = new session),
+// takes the 5 most recent past sessions (excluding the current one), and
+// builds a compact Hebrew summary for injection into the system prompt.
+// Zero extra DB queries — reuses already-loaded messages.
+function buildPastContextSummary(allMessages: ChupChuMessage[]): string {
+  if (!allMessages || allMessages.length < 4) return '';
+
+  // Split into sessions by time gap (>4 hours = new session)
+  const SESSION_GAP_MS = 4 * 60 * 60 * 1000;
+  const sessions: ChupChuMessage[][] = [];
+  let current: ChupChuMessage[] = [];
+
+  for (const msg of allMessages) {
+    if (current.length === 0) {
+      current.push(msg);
+      continue;
+    }
+    const lastTs  = new Date(current[current.length - 1].timestamp).getTime();
+    const thisTs  = new Date(msg.timestamp).getTime();
+    if (thisTs - lastTs > SESSION_GAP_MS) {
+      sessions.push(current);
+      current = [msg];
+    } else {
+      current.push(msg);
+    }
+  }
+  if (current.length > 0) sessions.push(current);
+
+  // Exclude the current (last) session — it's the one being updated now
+  const pastSessions = sessions.slice(0, -1);
+  if (pastSessions.length === 0) return '';
+
+  // Take up to 5 most recent past sessions
+  const recentPast = pastSessions.slice(-5).reverse(); // most recent first
+
+  const lines: string[] = ['## היסטוריית שיחות קודמות'];
+  for (const session of recentPast) {
+    const firstUser      = session.find(m => m.role === 'user');
+    const firstAssistant = session.find(m => m.role === 'assistant');
+    if (!firstUser) continue;
+
+    const date = new Date(session[0].timestamp).toLocaleDateString('he-IL', {
+      day: 'numeric', month: 'numeric', year: 'numeric',
+    });
+
+    const topic = firstUser.content.replace(/🌿 \[.*?\]/g, '[תמונה]').slice(0, 120);
+    const reply = firstAssistant?.content?.slice(0, 150) ?? '';
+
+    lines.push(
+      `שיחה מ-${date}: המשתמש שאל: "${topic}".` +
+      (reply ? ` עניתי: "${reply}..."` : ''),
+    );
+  }
+
+  if (lines.length <= 1) return '';
+  return lines.join('\n');
+}
+
 // ── Role-alternation safety helper ──────────────────────────────────────────
 // Ensures the messages array sent to Claude starts with a user message and has
 // no consecutive same-role messages (which the Anthropic API rejects).
@@ -714,8 +773,12 @@ chupChuRouter.post('/chat', async (req: any, res) => {
       ? `## תאריך היום\nהיום הוא ${todayFormatted}. השתמש בתאריך זה לחישוב "מחר", "השבוע" וכו'.`
       : `## Today's Date\nToday is ${todayFormatted}. Use this to calculate "tomorrow", "this week" etc.`;
 
+    // ── 8b. Build past conversation context (sessions older than current window)
+    const pastContextSection = buildPastContextSummary(existingMessages);
+
     const extraContext = [
       memorySection,
+      pastContextSection,
       gardenSection,
       pendingTasksSection,
       harvestsSection,
