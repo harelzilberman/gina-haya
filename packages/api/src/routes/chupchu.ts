@@ -354,7 +354,7 @@ function ensureRoleAlternation(messages: ChupChuMessage[]): ChupChuMessage[] {
 // ── POST /api/chupchu/chat ──────────────────────────────────────────────────
 chupChuRouter.post('/chat', async (req: any, res) => {
   try {
-    const { message, gardenId, location, imageBase64 } = req.body;
+    const { message, gardenId, location, imageBase64, conversationHistory: clientHistory } = req.body;
 
     const hasImage = typeof imageBase64 === 'string' && imageBase64.length > 0;
     const hasText  = typeof message === 'string' && message.trim().length > 0;
@@ -554,10 +554,22 @@ chupChuRouter.post('/chat', async (req: any, res) => {
       }
     }
 
-    // Use last 20 messages as context for Claude — enough for long conversations.
-    // The full history is still stored in the DB and shown to the user via /history.
-    const historyForClaude = existingMessages.slice(-20);
-    console.log(`[CHAT] user=${userId?.slice(0,8)} rows=${convRows?.length ?? 0} msgs=${existingMessages?.length ?? 0} sending=${historyForClaude?.length ?? 0}`);
+    // Use client-provided history when available — it is always up-to-date and bypasses
+    // any silent DB save/load failures that cause context loss between messages.
+    // Fall back to DB history (for older clients or first-ever messages).
+    let historyForClaude: ChupChuMessage[];
+    if (Array.isArray(clientHistory) && clientHistory.length > 0) {
+      historyForClaude = (clientHistory as Array<{ role: string; content: string }>)
+        .slice(-20)
+        .map(m => ({
+          role: m.role as 'user' | 'assistant',
+          content: String(m.content ?? ''),
+          timestamp: new Date().toISOString(),
+        }));
+    } else {
+      historyForClaude = existingMessages.slice(-20);
+    }
+    console.log(`[CHAT] user=${userId?.slice(0,8)} rows=${convRows?.length ?? 0} msgs=${existingMessages?.length ?? 0} sending=${historyForClaude?.length ?? 0} source=${Array.isArray(clientHistory) && clientHistory.length > 0 ? 'client' : 'db'}`);
 
     // ── 7b. Load user memory ─────────────────────────────────────────────
     let memorySection = '';
