@@ -438,7 +438,7 @@ trackersRouter.post('/:id/approve-tasks', async (req: any, res) => {
     // Verify tracker ownership
     const { data: tracker, error: trackerError } = await db
       .from('plant_trackers')
-      .select('id')
+      .select('id, plant_name_he')
       .eq('id', trackerId)
       .eq('user_id', userId)
       .single();
@@ -459,6 +459,7 @@ trackersRouter.post('/:id/approve-tasks', async (req: any, res) => {
         user_id:          userId,
         plan_id:          null,
         plant_tracker_id: trackerId,
+        plant_name:       tracker.plant_name_he || null,
         date:             dueDate,
         title,
         type:             'maintenance' as const,

@@ -230,6 +230,7 @@ const CHUPCHU_SYSTEM_PROMPT_HE = `\
 - לאחר שהכלי רץ, המשך לכתוב את שאר התשובה
 - אם המשתמש כבר אמר "כן" — קרא לכלי מיד ואשר שהמשימות נוספו
 - אם הצעת רק עצה כללית ללא פעולות ספציפיות — אין צורך בכלי
+- אם המשימה קשורה לצמח או עץ ספציפי שהוזכר בשיחה, מלא את שדה plant_name בשם הצמח בעברית
 
 ## שימון בכלים
 כשאתה זקוק למידע ספציפי — נתוני לוח היום, פרטי הגינה, מזג אוויר, מידע על צמח, הוראות פרפרט, או קציר אחרון — השתמש בכלים המתאימים לפני שאתה עונה.
@@ -306,6 +307,7 @@ Rules:
 - After the tool runs, continue writing the rest of the response
 - If the user already said "yes" — call the tool immediately and confirm tasks were added
 - If you only gave general advice with no specific actions — no tool call needed
+- If the task relates to a specific plant or tree mentioned in the conversation, fill plant_name with the plant's name in Hebrew
 
 ## Tool use
 When you need specific information — today's calendar, the user's garden, weather, plant details, prep instructions, or recent harvests — call the appropriate tool before answering.
@@ -323,6 +325,7 @@ export interface ProposedTask {
   date: string;
   category: 'watering' | 'fertilizing' | 'pruning' | 'planting' | 'harvesting' | 'pest_control' | 'composting' | 'general';
   priority: 'low' | 'medium' | 'high';
+  plant_name?: string;
 }
 
 // Mobile tool call — returned to client for user confirmation before execution
@@ -525,6 +528,10 @@ const CHUPCHU_TOOLS: Anthropic.Messages.Tool[] = [
                 enum: ['watering', 'fertilizing', 'pruning', 'planting', 'harvesting', 'pest_control', 'composting', 'general'],
               },
               priority: { type: 'string', enum: ['low', 'medium', 'high'] },
+              plant_name: {
+                type: 'string',
+                description: 'שם הצמח או העץ שהמשימה קשורה אליו (אם רלוונטי)',
+              },
             },
             required: ['title', 'description', 'date', 'category', 'priority'],
           },
