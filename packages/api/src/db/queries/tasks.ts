@@ -4,6 +4,7 @@ export interface GardenTask {
   id: string;
   user_id: string;
   plan_id: string | null;
+  plant_tracker_id: string | null;
   date: string;
   title: string;
   type: 'biodynamic' | 'maintenance' | 'custom';

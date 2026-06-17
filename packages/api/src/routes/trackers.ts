@@ -194,6 +194,21 @@ trackersRouter.delete('/:id', async (req: any, res) => {
     const userId = req.user.id;
     const { id } = req.params;
 
+    // Delete tasks linked to this tracker
+    await db
+      .from('garden_tasks')
+      .delete()
+      .eq('user_id', userId)
+      .eq('plant_tracker_id', id);
+
+    // Delete checkins linked to this tracker
+    await db
+      .from('plant_tracker_checkins')
+      .delete()
+      .eq('tracker_id', id)
+      .eq('user_id', userId);
+
+    // Delete the tracker itself
     const { error } = await db
       .from('plant_trackers')
       .delete()
@@ -441,14 +456,15 @@ trackersRouter.post('/:id/approve-tasks', async (req: any, res) => {
       const daysOut = Math.max(0, Math.min(Number(t.due_in_days) || 1, 30));
       const dueDate = new Date(Date.UTC(y, m - 1, d + daysOut)).toISOString().slice(0, 10);
       return {
-        user_id:       userId,
-        plan_id:       null,
-        date:          dueDate,
+        user_id:          userId,
+        plan_id:          null,
+        plant_tracker_id: trackerId,
+        date:             dueDate,
         title,
-        type:          'maintenance' as const,
-        status:        'pending' as const,
-        notes:         t.description ? String(t.description) : null,
-        source_action: 'growing_tracker',
+        type:             'maintenance' as const,
+        status:           'pending' as const,
+        notes:            t.description ? String(t.description) : null,
+        source_action:    'growing_tracker',
       };
     });
 
