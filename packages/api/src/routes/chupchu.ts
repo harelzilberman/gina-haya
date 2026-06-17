@@ -336,8 +336,9 @@ Create an updated summary and structured facts. Return JSON only:
 // historyForClaude uses), picks up to 5 evenly-spaced user+reply pairs, and
 // returns a compact Hebrew summary for injection into the system prompt.
 // Zero extra DB queries — reuses already-loaded existingMessages.
-function buildPastContextSummary(allMessages: ChupChuMessage[]): string {
-  console.log('[ChupChu Memory] buildPastContextSummary: total msgs=', allMessages?.length ?? 0);
+function buildPastContextSummary(allMessages: ChupChuMessage[], userId?: string): string {
+  console.log('[Memory] called for userId:', userId ?? 'unknown');
+  console.log('[Memory] rows found:', allMessages?.length ?? 0);
 
   if (!allMessages || allMessages.length <= 20) {
     console.log('[ChupChu Memory] skip — not enough history (need >20, got', allMessages?.length ?? 0, ')');
@@ -389,8 +390,8 @@ function buildPastContextSummary(allMessages: ChupChuMessage[]): string {
   if (lines.length <= 1) return '';
 
   const summary = lines.join('\n');
-  console.log('[ChupChu Memory] summary length:', summary.length);
-  console.log('[ChupChu Memory] summary preview:', summary.substring(0, 200));
+  console.log('[Memory] summary built (chars):', summary.length);
+  console.log('[Memory] summary preview:', summary.substring(0, 300));
   return summary;
 }
 
@@ -633,6 +634,7 @@ chupChuRouter.post('/chat', async (req: any, res) => {
       historyForClaude = existingMessages.slice(-20);
     }
     console.log(`[CHAT] user=${userId?.slice(0,8)} rows=${convRows?.length ?? 0} msgs=${existingMessages?.length ?? 0} sending=${historyForClaude?.length ?? 0} source=${Array.isArray(clientHistory) && clientHistory.length > 0 ? 'client' : 'db'}`);
+    console.log('[Memory] query result (first 2 msgs):', JSON.stringify(existingMessages?.slice(0, 2), null, 2));
 
     // ── 7b. Load user memory ─────────────────────────────────────────────
     let memorySection = '';
@@ -778,8 +780,21 @@ chupChuRouter.post('/chat', async (req: any, res) => {
       : `## Today's Date\nToday is ${todayFormatted}. Use this to calculate "tomorrow", "this week" etc.`;
 
     // ── 8b. Build past conversation context (messages older than the current window)
-    const pastContextSection = buildPastContextSummary(existingMessages);
-    console.log('[ChupChu Memory] injecting past context:', pastContextSection.length > 0 ? `YES (${pastContextSection.length} chars)` : 'NO — empty');
+    // Prefer client history when it is longer than what's in DB — this survives silent
+    // DB save failures that would otherwise freeze existingMessages at a stale length.
+    const clientHistoryFull: ChupChuMessage[] = Array.isArray(clientHistory) && clientHistory.length > 0
+      ? (clientHistory as Array<{ role: string; content: string }>).map(m => ({
+          role:      m.role as 'user' | 'assistant',
+          content:   String(m.content ?? ''),
+          timestamp: new Date().toISOString(),
+        }))
+      : [];
+    const bestHistory = clientHistoryFull.length > existingMessages.length
+      ? clientHistoryFull
+      : existingMessages;
+    console.log('[Memory] bestHistory length:', bestHistory.length, '(client:', clientHistoryFull.length, 'db:', existingMessages.length, ')');
+    const pastContextSection = buildPastContextSummary(bestHistory, userId);
+    console.log('[Memory] injecting context:', pastContextSection.length > 0 ? `YES (${pastContextSection.length} chars)` : 'NO - empty');
 
     const extraContext = [
       memorySection,
@@ -810,22 +825,26 @@ chupChuRouter.post('/chat', async (req: any, res) => {
     const updatedMessages = [...existingMessages, newUserMessage, chupChuMessage];
 
     if (primaryRowId) {
-      await db
+      const { error: saveError } = await db
         .from('chupchu_conversations')
         .update({
           messages: updatedMessages,
           updated_at: new Date().toISOString(),
         })
         .eq('id', primaryRowId);
+      if (saveError) console.error('[Memory] DB save (update) failed:', saveError.message);
+      else console.log('[Memory] DB save (update) ok — total msgs now:', updatedMessages.length);
     } else {
       // First message ever for this user — insert once
-      await db
+      const { error: insertError } = await db
         .from('chupchu_conversations')
         .insert({
           user_id: userId,
           garden_id: garden?.id || null,
           messages: updatedMessages,
         });
+      if (insertError) console.error('[Memory] DB save (insert) failed:', insertError.message);
+      else console.log('[Memory] DB save (insert) ok — total msgs now:', updatedMessages.length);
     }
 
     // ── 11. Count usage ───────────────────────────────────────────────────
