@@ -37,7 +37,7 @@ trackersRouter.get('/', async (req: any, res) => {
     const trackerIds = trackers.map((t: any) => t.id);
     const { data: checkins } = await db
       .from('plant_tracker_checkins')
-      .select('id, tracker_id, checkin_date, growth_stage, ai_analysis, created_at')
+      .select('id, tracker_id, checkin_date, growth_stage, ai_analysis, suggested_tasks, created_at')
       .in('tracker_id', trackerIds)
       .order('created_at', { ascending: false });
 
@@ -403,14 +403,15 @@ trackersRouter.post('/:id/checkin', async (req: any, res) => {
     const { data: checkin, error: checkinError } = await db
       .from('plant_tracker_checkins')
       .insert({
-        tracker_id:   trackerId,
-        user_id:      userId,
-        checkin_date: today,
-        growth_stage: analysis.growthStage,
-        ai_analysis:  analysis,
-        growing_plan: growingPlan,
-        notes:        notes ?? null,
-        photo_path:   photoPath,
+        tracker_id:      trackerId,
+        user_id:         userId,
+        checkin_date:    today,
+        growth_stage:    analysis.growthStage,
+        ai_analysis:     analysis,
+        growing_plan:    growingPlan,
+        notes:           notes ?? null,
+        photo_path:      photoPath,
+        suggested_tasks: tasks.length > 0 ? tasks : null,
       })
       .select()
       .single();
@@ -477,6 +478,22 @@ trackersRouter.post('/:id/approve-tasks', async (req: any, res) => {
     if (insertError) {
       console.error('[approve-tasks] Insert failed:', insertError.message);
       return res.status(500).json({ tasks_added: 0, tasks_error: insertError.message });
+    }
+
+    // Clear pending suggested tasks from the latest checkin now that they've been approved
+    const { data: latestCheckin } = await db
+      .from('plant_tracker_checkins')
+      .select('id')
+      .eq('tracker_id', trackerId)
+      .order('created_at', { ascending: false })
+      .limit(1)
+      .single();
+
+    if (latestCheckin) {
+      await db
+        .from('plant_tracker_checkins')
+        .update({ suggested_tasks: null })
+        .eq('id', latestCheckin.id);
     }
 
     res.json({ tasks_added: inserted?.length ?? 0, tasks_error: null });
