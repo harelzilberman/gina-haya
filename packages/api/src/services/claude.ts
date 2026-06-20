@@ -719,13 +719,13 @@ export async function askChupChu(
   const modelToUse = image ? VISION_MODEL : MODEL;
 
   for (let i = 0; i < MAX_TOOL_ITERATIONS; i++) {
-    const response = await anthropic.messages.create({
+    const response = await anthropic.messages.stream({
       model: modelToUse,
       max_tokens: 8192,
       system: systemPrompt,
       tools: CHUPCHU_TOOLS,
       messages: apiMessages,
-    });
+    }).finalMessage();
 
     if (response.stop_reason === 'end_turn') {
       const textBlock = response.content.find(b => b.type === 'text');
