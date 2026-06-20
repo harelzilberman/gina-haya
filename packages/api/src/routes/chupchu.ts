@@ -240,7 +240,7 @@ chupChuRouter.post('/memory/summarize', async (req: any, res) => {
     const { conversationHistory, lang, existingMemory } = req.body;
     const userId = req.user.id;
 
-    if (!Array.isArray(conversationHistory) || conversationHistory.length < 6) {
+    if (!Array.isArray(conversationHistory) || conversationHistory.length < 4) {
       return res.json({ ok: true, skipped: true });
     }
 
@@ -340,13 +340,13 @@ function buildPastContextSummary(allMessages: ChupChuMessage[], userId?: string)
   console.log('[Memory] called for userId:', userId ?? 'unknown');
   console.log('[Memory] rows found:', allMessages?.length ?? 0);
 
-  if (!allMessages || allMessages.length <= 20) {
-    console.log('[ChupChu Memory] skip — not enough history (need >20, got', allMessages?.length ?? 0, ')');
+  if (!allMessages || allMessages.length <= 5) {
+    console.log('[ChupChu Memory] skip — not enough history (need >5, got', allMessages?.length ?? 0, ')');
     return '';
   }
 
-  // "Past" = everything before the current context window (last 20 messages)
-  const pastMessages = allMessages.slice(0, -20);
+  // "Past" = everything before the current context window (last 5 messages)
+  const pastMessages = allMessages.slice(0, -5);
   console.log('[ChupChu Memory] past messages available:', pastMessages.length);
 
   if (pastMessages.length === 0) return '';
