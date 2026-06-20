@@ -417,6 +417,8 @@ function ensureRoleAlternation(messages: ChupChuMessage[]): ChupChuMessage[] {
 
 // ── POST /api/chupchu/chat ──────────────────────────────────────────────────
 chupChuRouter.post('/chat', async (req: any, res) => {
+  req.setTimeout(120000);
+  res.setTimeout(120000);
   try {
     const { message, gardenId, location, imageBase64, conversationHistory: clientHistory } = req.body;
 
@@ -821,31 +823,37 @@ chupChuRouter.post('/chat', async (req: any, res) => {
       timestamp: new Date().toISOString(),
     };
 
-    // ── 10. Save to DB ────────────────────────────────────────────────────
+    // ── 10. Save to DB (fire-and-forget — never blocks the response) ─────────
     const updatedMessages = [...existingMessages, newUserMessage, chupChuMessage];
 
-    if (primaryRowId) {
-      const { error: saveError } = await db
-        .from('chupchu_conversations')
-        .update({
-          messages: updatedMessages,
-          updated_at: new Date().toISOString(),
-        })
-        .eq('id', primaryRowId);
-      if (saveError) console.error('[Memory] DB save (update) failed:', saveError.message);
-      else console.log('[Memory] DB save (update) ok — total msgs now:', updatedMessages.length);
-    } else {
-      // First message ever for this user — insert once
-      const { error: insertError } = await db
-        .from('chupchu_conversations')
-        .insert({
-          user_id: userId,
-          garden_id: garden?.id || null,
-          messages: updatedMessages,
-        });
-      if (insertError) console.error('[Memory] DB save (insert) failed:', insertError.message);
-      else console.log('[Memory] DB save (insert) ok — total msgs now:', updatedMessages.length);
-    }
+    (async () => {
+      try {
+        if (primaryRowId) {
+          const { error: saveError } = await db
+            .from('chupchu_conversations')
+            .update({
+              messages: updatedMessages,
+              updated_at: new Date().toISOString(),
+            })
+            .eq('id', primaryRowId);
+          if (saveError) console.error('[Memory] DB save (update) failed:', saveError.message);
+          else console.log('[Memory] DB save (update) ok — total msgs now:', updatedMessages.length);
+        } else {
+          // First message ever for this user — insert once
+          const { error: insertError } = await db
+            .from('chupchu_conversations')
+            .insert({
+              user_id: userId,
+              garden_id: garden?.id || null,
+              messages: updatedMessages,
+            });
+          if (insertError) console.error('[Memory] DB save (insert) failed:', insertError.message);
+          else console.log('[Memory] DB save (insert) ok — total msgs now:', updatedMessages.length);
+        }
+      } catch (e: any) {
+        console.error('[Memory] Save threw unexpectedly:', e?.message);
+      }
+    })();
 
     // ── 11. Count usage ───────────────────────────────────────────────────
     const startOfMonth = new Date();

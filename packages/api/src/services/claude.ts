@@ -6,6 +6,7 @@ import { db } from '../db/client';
 
 const anthropic = new Anthropic({
   apiKey: process.env.ANTHROPIC_API_KEY!,
+  timeout: 90000,
 });
 
 const MODEL = process.env.CLAUDE_MODEL ?? 'claude-sonnet-4-5';
