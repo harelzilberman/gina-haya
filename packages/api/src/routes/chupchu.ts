@@ -1,6 +1,6 @@
 import 'dotenv/config';
 import { Router, type IRouter } from 'express';
-import Anthropic from '@anthropic-ai/sdk';
+import axios from 'axios';
 import { db } from '../db/client';
 import { verifyToken } from '../middleware/auth';
 import { askChupChu, type ProposedTask, type MobileToolCall } from '../services/claude';
@@ -11,7 +11,12 @@ import { todayInIsrael } from '@gina-haya/shared';
 import { getRecentCompletedTasks } from '../db/queries/tasks';
 import { getLimits } from '../config/tiers';
 
-const anthropicClient = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY! });
+const ANTHROPIC_URL = 'https://api.anthropic.com/v1/messages';
+const ANTHROPIC_HEADERS = {
+  'x-api-key': process.env.ANTHROPIC_API_KEY!,
+  'anthropic-version': '2023-06-01',
+  'content-type': 'application/json',
+};
 
 export const chupChuRouter: IRouter = Router();
 
@@ -65,7 +70,7 @@ chupChuRouter.post('/analyze-image', async (req: any, res) => {
       ? 'ענה בעברית בלבד.'
       : 'Reply in English only.';
 
-    const response = await anthropicClient.messages.create({
+    const response = (await axios.post(ANTHROPIC_URL, {
       model: 'claude-opus-4-5',
       max_tokens: 1024,
       messages: [{
@@ -89,7 +94,7 @@ chupChuRouter.post('/analyze-image', async (req: any, res) => {
           },
         ],
       }],
-    });
+    }, { headers: ANTHROPIC_HEADERS, timeout: 90000 })).data;
 
     const text = response.content
       .filter((b: any) => b.type === 'text')
@@ -150,7 +155,7 @@ chupChuRouter.post('/full-diagnosis', async (req: any, res) => {
 ערכים חוקיים: confidence = high|medium|low, health_status = healthy|stressed|diseased|pest_damage, severity = low|medium|high, urgency = today|this_week|this_month.`
       : `Analyze the plant in the image and return ONLY valid JSON with this exact structure: {"plant_name":"...","plant_name_latin":"...","confidence":"high","health_status":"healthy","health_status_label":"...","summary":"...","issues":[{"name":"...","severity":"low","description":"..."}],"treatment_steps":[{"step":1,"title":"...","description":"..."}],"biodynamic_tip":"...","tasks":[{"title":"...","description":"...","urgency":"this_week","urgency_label":"This week"}],"prevention_tips":["...","..."]}. Valid values: confidence=high|medium|low, health_status=healthy|stressed|diseased|pest_damage, severity=low|medium|high, urgency=today|this_week|this_month.`;
 
-    const response = await anthropicClient.messages.create({
+    const response = (await axios.post(ANTHROPIC_URL, {
       model: 'claude-opus-4-5',
       max_tokens: 2048,
       system: systemPrompt,
@@ -171,7 +176,7 @@ chupChuRouter.post('/full-diagnosis', async (req: any, res) => {
           },
         ],
       }],
-    });
+    }, { headers: ANTHROPIC_HEADERS, timeout: 90000 })).data;
 
     const raw = response.content
       .filter((b: any) => b.type === 'text')
@@ -303,11 +308,11 @@ Create an updated summary and structured facts. Return JSON only:
   }
 }`;
 
-    const aiRes = await anthropicClient.messages.create({
+    const aiRes = (await axios.post(ANTHROPIC_URL, {
       model: 'claude-haiku-4-5-20251001',
       max_tokens: 1000,
       messages: [{ role: 'user', content: summaryPrompt }],
-    });
+    }, { headers: ANTHROPIC_HEADERS, timeout: 60000 })).data;
 
     const text = aiRes.content[0].type === 'text' ? aiRes.content[0].text : '';
     const cleaned = text.replace(/```json|```/g, '').trim();

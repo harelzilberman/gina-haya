@@ -1,13 +1,16 @@
 import fs from 'fs';
 import path from 'path';
-import Anthropic from '@anthropic-ai/sdk';
+import axios from 'axios';
+import Anthropic from '@anthropic-ai/sdk'; // kept for TypeScript types only — no client instantiated
 import type { ChupChuContext, ChupChuMessage } from '@gina-haya/shared';
 import { db } from '../db/client';
 
-const anthropic = new Anthropic({
-  apiKey: process.env.ANTHROPIC_API_KEY!,
-  timeout: 90000,
-});
+const ANTHROPIC_URL = 'https://api.anthropic.com/v1/messages';
+const ANTHROPIC_HEADERS = {
+  'x-api-key': process.env.ANTHROPIC_API_KEY!,
+  'anthropic-version': '2023-06-01',
+  'content-type': 'application/json',
+};
 
 const MODEL = process.env.CLAUDE_MODEL ?? 'claude-sonnet-4-5';
 const VISION_MODEL = 'claude-opus-4-5';
@@ -719,13 +722,13 @@ export async function askChupChu(
   const modelToUse = image ? VISION_MODEL : MODEL;
 
   for (let i = 0; i < MAX_TOOL_ITERATIONS; i++) {
-    const response = await anthropic.messages.create({
+    const response = (await axios.post(ANTHROPIC_URL, {
       model: modelToUse,
       max_tokens: 8192,
       system: systemPrompt,
       tools: CHUPCHU_TOOLS,
       messages: apiMessages,
-    });
+    }, { headers: ANTHROPIC_HEADERS, timeout: 90000 })).data;
 
     if (response.stop_reason === 'end_turn') {
       const textBlock = response.content.find(b => b.type === 'text');

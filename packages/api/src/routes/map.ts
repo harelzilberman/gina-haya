@@ -1,6 +1,6 @@
 import 'dotenv/config';
 import { Router, type IRouter } from 'express';
-import Anthropic from '@anthropic-ai/sdk';
+import axios from 'axios';
 import { db } from '../db/client';
 import { verifyToken } from '../middleware/auth';
 import { fetchWeatherForRegion } from '../services/weather';
@@ -10,7 +10,12 @@ import { extractJson } from '../services/jsonUtils';
 export const mapRouter: IRouter = Router();
 mapRouter.use(verifyToken);
 
-const anthropic = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY! });
+const ANTHROPIC_URL = 'https://api.anthropic.com/v1/messages';
+const ANTHROPIC_HEADERS = {
+  'x-api-key': process.env.ANTHROPIC_API_KEY!,
+  'anthropic-version': '2023-06-01',
+  'content-type': 'application/json',
+};
 
 // ── Wizard limits per tier ────────────────────────────────────────────────────
 const WIZARD_MONTHLY_LIMITS: Record<string, number | null> = {
@@ -350,14 +355,14 @@ ${bedDimensionsLine}
 5. spacingCm חייב להיות מספר שלם חיובי (כגון 30, 50) — לעולם לא null, לא undefined, לא מחרוזת.`;
 
     // ── 7. Call Claude ───────────────────────────────────────────────────────
-    const aiResponse = await anthropic.messages.create({
+    const aiResponse = (await axios.post(ANTHROPIC_URL, {
       model: 'claude-sonnet-4-6',
       max_tokens: 16000,
       system: systemPrompt,
       messages: [{ role: 'user', content: userPrompt }],
-    });
+    }, { headers: ANTHROPIC_HEADERS, timeout: 90000 })).data;
 
-    const rawText = (aiResponse.content.find(b => b.type === 'text') as any)?.text ?? '{}';
+    const rawText = (aiResponse.content.find((b: any) => b.type === 'text') as any)?.text ?? '{}';
     console.log('Wizard response length:', rawText.length, 'tokens approx:', Math.round(rawText.length / 4));
     let plan: any;
     try {

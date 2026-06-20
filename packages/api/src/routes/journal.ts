@@ -1,10 +1,15 @@
 import { Router, type IRouter } from 'express';
-import Anthropic from '@anthropic-ai/sdk';
+import axios from 'axios';
 import { db } from '../db/client';
 import { verifyToken } from '../middleware/auth';
 import { attachTier } from '../middleware/tierMiddleware';
 
-const anthropicClient = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY! });
+const ANTHROPIC_URL = 'https://api.anthropic.com/v1/messages';
+const ANTHROPIC_HEADERS = {
+  'x-api-key': process.env.ANTHROPIC_API_KEY!,
+  'anthropic-version': '2023-06-01',
+  'content-type': 'application/json',
+};
 
 export const journalRouter: IRouter = Router();
 
@@ -183,7 +188,7 @@ journalRouter.post('/photos/:id/identify', async (req: any, res) => {
                     'image/jpeg' | 'image/png' | 'image/gif' | 'image/webp';
 
     // 4. Call Claude Vision — one call returns everything we need
-    const aiRes = await anthropicClient.messages.create({
+    const aiRes = (await axios.post(ANTHROPIC_URL, {
       model:      'claude-haiku-4-5-20251001',   // Haiku is fast + cheap for vision tasks
       max_tokens: 256,
       messages: [{
@@ -218,7 +223,7 @@ journalRouter.post('/photos/:id/identify', async (req: any, res) => {
           },
         ],
       }],
-    });
+    }, { headers: ANTHROPIC_HEADERS, timeout: 30000 })).data;
 
     // 5. Parse the JSON response
     const raw     = aiRes.content[0].type === 'text' ? aiRes.content[0].text : '';

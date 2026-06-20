@@ -1,10 +1,13 @@
-import Anthropic from '@anthropic-ai/sdk';
+import axios from 'axios';
 import sharp from 'sharp';
 import { extractAndParseJson } from './jsonUtils';
 
-const anthropic = new Anthropic({
-  apiKey: process.env.ANTHROPIC_API_KEY!,
-});
+const ANTHROPIC_URL = 'https://api.anthropic.com/v1/messages';
+const ANTHROPIC_HEADERS = {
+  'x-api-key': process.env.ANTHROPIC_API_KEY!,
+  'anthropic-version': '2023-06-01',
+  'content-type': 'application/json',
+};
 
 export async function compressImageForClaude(base64: string): Promise<{ data: string; mimeType: 'image/jpeg'; buffer: Buffer }> {
   const buffer = Buffer.from(base64, 'base64');
@@ -301,7 +304,7 @@ export async function analyzePlantImage(
 כל משימה צריכה להיות פעולה ספציפית (השקיה, דישון, גיזום, טיפול במזיקים, כוונון שמש/צל, העתקה לעציץ גדול יותר וכו').
 due_in_days: מתי לבצע את המשימה (1-14 ימים). priority: high=דחוף/נדרש עכשיו, medium=השבוע, low=בשבועיים הקרובים.`;
 
-  const response = await anthropic.messages.create({
+  const response = (await axios.post(ANTHROPIC_URL, {
     model: 'claude-opus-4-5',
     max_tokens: 4096,
     system: systemPrompt,
@@ -321,7 +324,7 @@ due_in_days: מתי לבצע את המשימה (1-14 ימים). priority: high=�
         ],
       },
     ],
-  });
+  }, { headers: ANTHROPIC_HEADERS, timeout: 90000 })).data;
 
   const textBlock = response.content.find(b => b.type === 'text');
   if (!textBlock || textBlock.type !== 'text') {

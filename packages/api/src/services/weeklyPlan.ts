@@ -1,11 +1,14 @@
-import Anthropic from '@anthropic-ai/sdk';
+import axios from 'axios';
 import type { BiodynamicDay } from '@gina-haya/shared';
 import type { WeatherData } from './weather';
 import { extractJson } from './jsonUtils';
 
-const anthropic = new Anthropic({
-  apiKey: process.env.ANTHROPIC_API_KEY!,
-});
+const ANTHROPIC_URL = 'https://api.anthropic.com/v1/messages';
+const ANTHROPIC_HEADERS = {
+  'x-api-key': process.env.ANTHROPIC_API_KEY!,
+  'anthropic-version': '2023-06-01',
+  'content-type': 'application/json',
+};
 
 export interface DayPlan {
   date: string;
@@ -210,14 +213,14 @@ ${JSON.stringify(daysJson, null, 2)}
     ? "You are Chupchu — a biodynamic gardening expert. You prepare personalized weekly garden plans. Respond entirely in English. Return raw JSON only — no markdown, no code fences, no backticks, no explanation before or after. The first character of your response must be { and the last must be }."
     : "אתה צ'ופצ'ו — המומחה הביודינמי שלך. מומחה גידול ביודינמי ישראלי. אתה מכין תכנית שבועית מותאמת אישית. כתוב בעברית. החזר JSON גולמי בלבד — ללא markdown, ללא code fences, ללא backticks, ללא טקסט לפני או אחרי. התו הראשון חייב להיות { והאחרון }.";
 
-  const response = await anthropic.messages.create({
+  const response = (await axios.post(ANTHROPIC_URL, {
     model:      'claude-sonnet-4-5',
     max_tokens: 4096,
     system:     systemPrompt,
     messages:   [{ role: 'user', content: userPrompt }],
-  });
+  }, { headers: ANTHROPIC_HEADERS, timeout: 90000 })).data;
 
-  const textBlock = response.content.find(b => b.type === 'text');
+  const textBlock = response.content.find((b: any) => b.type === 'text');
   if (!textBlock || textBlock.type !== 'text') throw new Error('No response from Claude');
 
   const jsonStr = extractJson(textBlock.text);
