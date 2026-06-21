@@ -138,20 +138,40 @@ trackersRouter.patch('/:id', async (req: any, res) => {
   try {
     const userId = req.user.id;
     const { id } = req.params;
-    const { plantNameHe, plantNameEn } = req.body;
+    const {
+      plantNameHe,
+      plantNameEn,
+      variety,
+      sun_exposure,
+      companions,
+      soil,
+      location_description,
+      location_type,
+    } = req.body;
 
-    if (!plantNameHe || !plantNameEn) {
-      return res.status(400).json({ error: 'plantNameHe and plantNameEn are required' });
-    }
+    // Only update fields that were provided
+    const updates: Record<string, any> = {
+      updated_at: new Date().toISOString(),
+    };
+    if (plantNameHe !== undefined) updates.plant_name_he = plantNameHe;
+    if (plantNameEn !== undefined) updates.plant_name_en = plantNameEn;
+    if (variety !== undefined) updates.variety = variety;
+    if (sun_exposure !== undefined) updates.sun_exposure = sun_exposure;
+    if (companions !== undefined) updates.companions = companions;
+    if (soil !== undefined) updates.soil = soil;
+    if (location_description !== undefined) updates.location_description = location_description;
+    if (location_type !== undefined) updates.location_type = location_type;
 
-    const { error } = await db
+    const { data, error } = await db
       .from('plant_trackers')
-      .update({ plant_name_he: plantNameHe, plant_name_en: plantNameEn, updated_at: new Date().toISOString() })
+      .update(updates)
       .eq('id', id)
-      .eq('user_id', userId);
+      .eq('user_id', userId)
+      .select()
+      .single();
 
     if (error) throw error;
-    res.json({ ok: true });
+    res.json({ success: true, tracker: data });
   } catch (err: any) {
     console.error('[PATCH /api/trackers/:id]', err.message);
     res.status(500).json({ error: err.message });
