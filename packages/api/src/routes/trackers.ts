@@ -561,6 +561,149 @@ trackersRouter.post('/:id/id-feedback', async (req: any, res) => {
   }
 });
 
+// ── PATCH /api/trackers/:id/water ────────────────────────────────────────
+trackersRouter.patch('/:id/water', async (req: any, res) => {
+  try {
+    const userId = req.user.id;
+    const { id } = req.params;
+    const { time_of_day, watered_at } = req.body;
+
+    // Get current watering count
+    const { data: current } = await db
+      .from('plant_trackers')
+      .select('watering_count')
+      .eq('id', id)
+      .eq('user_id', userId)
+      .single();
+
+    const newCount = (current?.watering_count ?? 0) + 1;
+
+    const { data, error } = await db
+      .from('plant_trackers')
+      .update({
+        last_watered_at: watered_at || new Date().toISOString(),
+        watering_count: newCount,
+        updated_at: new Date().toISOString(),
+      })
+      .eq('id', id)
+      .eq('user_id', userId)
+      .select()
+      .single();
+
+    if (error) throw error;
+
+    // Log to plant_timeline — non-critical
+    try {
+      await db.from('plant_timeline').insert({
+        tracker_id: id,
+        user_id: userId,
+        entry_type: 'watering',
+        time_of_day: time_of_day ?? null,
+        created_at: watered_at || new Date().toISOString(),
+        note: `השקיה · ${time_of_day ?? ''}`,
+      }).select();
+    } catch (timelineErr: any) {
+      console.warn('[Tracker] timeline insert skipped (water):', timelineErr.message);
+    }
+
+    res.json({ success: true, tracker: data });
+  } catch (err: any) {
+    console.error('[Tracker] water error:', err.message);
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// ── PATCH /api/trackers/:id/fertilize ────────────────────────────────────
+trackersRouter.patch('/:id/fertilize', async (req: any, res) => {
+  try {
+    const userId = req.user.id;
+    const { id } = req.params;
+    const { time_of_day, fertilized_at } = req.body;
+
+    const { data, error } = await db
+      .from('plant_trackers')
+      .update({ updated_at: new Date().toISOString() })
+      .eq('id', id)
+      .eq('user_id', userId)
+      .select()
+      .single();
+
+    if (error) throw error;
+
+    // Log to plant_timeline — non-critical
+    try {
+      await db.from('plant_timeline').insert({
+        tracker_id: id,
+        user_id: userId,
+        entry_type: 'fertilizing',
+        time_of_day: time_of_day ?? null,
+        created_at: fertilized_at || new Date().toISOString(),
+        note: `דישון · ${time_of_day ?? ''}`,
+      }).select();
+    } catch (timelineErr: any) {
+      console.warn('[Tracker] timeline insert skipped (fertilize):', timelineErr.message);
+    }
+
+    res.json({ success: true, tracker: data });
+  } catch (err: any) {
+    console.error('[Tracker] fertilize error:', err.message);
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// ── POST /api/trackers/:id/note ───────────────────────────────────────────
+trackersRouter.post('/:id/note', async (req: any, res) => {
+  try {
+    const userId = req.user.id;
+    const { id } = req.params;
+    const { note } = req.body;
+
+    if (!note?.trim()) return res.status(400).json({ error: 'Note required' });
+
+    const { data, error } = await db
+      .from('plant_timeline')
+      .insert({
+        tracker_id: id,
+        user_id: userId,
+        entry_type: 'note',
+        note: note.trim(),
+        created_at: new Date().toISOString(),
+      })
+      .select()
+      .single();
+
+    if (error) throw error;
+
+    res.json({ success: true, entry: data });
+  } catch (err: any) {
+    console.error('[Tracker] note error:', err.message);
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// ── GET /api/trackers/:id/timeline ────────────────────────────────────────
+trackersRouter.get('/:id/timeline', async (req: any, res) => {
+  try {
+    const userId = req.user.id;
+    const { id } = req.params;
+
+    const { data, error } = await db
+      .from('plant_timeline')
+      .select('*')
+      .eq('tracker_id', id)
+      .eq('user_id', userId)
+      .order('created_at', { ascending: false })
+      .limit(50);
+
+    if (error) throw error;
+
+    res.json({ entries: data ?? [] });
+  } catch (err: any) {
+    console.error('[Tracker] timeline error:', err.message);
+    res.status(500).json({ error: err.message });
+  }
+});
+
 // ── GET /api/trackers/:id/plan ────────────────────────────────────────────
 trackersRouter.get('/:id/plan', async (req: any, res) => {
   try {
