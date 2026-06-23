@@ -612,9 +612,10 @@ trackersRouter.patch('/:id/water', async (req: any, res) => {
 
     if (error) throw error;
 
-    // Log to plant_timeline — non-critical
+    // Log to plant_timeline
+    let timelineError: string | null = null;
     try {
-      await db.from('plant_timeline').insert({
+      const { data: tlData, error: tlErr } = await db.from('plant_timeline').insert({
         tracker_id: id,
         user_id: userId,
         entry_type: 'watering',
@@ -622,11 +623,16 @@ trackersRouter.patch('/:id/water', async (req: any, res) => {
         created_at: watered_at || new Date().toISOString(),
         note: `השקיה · ${time_of_day ?? ''}`,
       }).select();
+      if (tlErr) {
+        console.error('[Tracker] plant_timeline insert failed (water):', tlErr.message, tlErr.details, tlErr.hint);
+        timelineError = tlErr.message;
+      }
     } catch (timelineErr: any) {
-      console.warn('[Tracker] timeline insert skipped (water):', timelineErr.message);
+      console.error('[Tracker] plant_timeline insert threw (water):', timelineErr.message);
+      timelineError = timelineErr.message;
     }
 
-    res.json({ success: true, tracker: data });
+    res.json({ success: true, tracker: data, timeline_error: timelineError });
   } catch (err: any) {
     console.error('[Tracker] water error:', err.message);
     res.status(500).json({ error: err.message });
@@ -650,9 +656,10 @@ trackersRouter.patch('/:id/fertilize', async (req: any, res) => {
 
     if (error) throw error;
 
-    // Log to plant_timeline — non-critical
+    // Log to plant_timeline
+    let timelineError: string | null = null;
     try {
-      await db.from('plant_timeline').insert({
+      const { data: tlData, error: tlErr } = await db.from('plant_timeline').insert({
         tracker_id: id,
         user_id: userId,
         entry_type: 'fertilizing',
@@ -660,11 +667,16 @@ trackersRouter.patch('/:id/fertilize', async (req: any, res) => {
         created_at: fertilized_at || new Date().toISOString(),
         note: `דישון · ${time_of_day ?? ''}`,
       }).select();
+      if (tlErr) {
+        console.error('[Tracker] plant_timeline insert failed (fertilize):', tlErr.message, tlErr.details, tlErr.hint);
+        timelineError = tlErr.message;
+      }
     } catch (timelineErr: any) {
-      console.warn('[Tracker] timeline insert skipped (fertilize):', timelineErr.message);
+      console.error('[Tracker] plant_timeline insert threw (fertilize):', timelineErr.message);
+      timelineError = timelineErr.message;
     }
 
-    res.json({ success: true, tracker: data });
+    res.json({ success: true, tracker: data, timeline_error: timelineError });
   } catch (err: any) {
     console.error('[Tracker] fertilize error:', err.message);
     res.status(500).json({ error: err.message });
