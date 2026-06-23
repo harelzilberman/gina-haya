@@ -724,6 +724,52 @@ trackersRouter.get('/:id/timeline', async (req: any, res) => {
   }
 });
 
+// ── POST /api/trackers/:id/timeline-photo ────────────────────────────────
+trackersRouter.post('/:id/timeline-photo', async (req: any, res) => {
+  try {
+    const userId = req.user.id;
+    const { id: trackerId } = req.params;
+    const { file_path, note, taken_at } = req.body;
+
+    if (!file_path) {
+      return res.status(400).json({ error: 'file_path required' });
+    }
+
+    // Verify tracker ownership
+    const { data: tracker, error: trackerError } = await db
+      .from('plant_trackers')
+      .select('id')
+      .eq('id', trackerId)
+      .eq('user_id', userId)
+      .single();
+
+    if (trackerError || !tracker) {
+      return res.status(404).json({ error: 'Tracker not found' });
+    }
+
+    // Store ONLY the local file path — no upload, no Supabase Storage
+    const { data: entry, error: insertError } = await db
+      .from('plant_timeline')
+      .insert({
+        tracker_id: trackerId,
+        user_id: userId,
+        entry_type: 'photo',
+        photo_path: file_path,
+        note: note ?? null,
+        created_at: taken_at ?? new Date().toISOString(),
+      })
+      .select()
+      .single();
+
+    if (insertError) throw insertError;
+
+    res.json({ success: true, entry });
+  } catch (err: any) {
+    console.error('[POST /api/trackers/:id/timeline-photo]', err.message, err.stack);
+    res.status(500).json({ error: err.message });
+  }
+});
+
 // ── GET /api/trackers/:id/plan ────────────────────────────────────────────
 trackersRouter.get('/:id/plan', async (req: any, res) => {
   try {
