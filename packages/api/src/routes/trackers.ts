@@ -876,11 +876,31 @@ trackersRouter.post('/:id/timeline-photo', async (req: any, res) => {
       return res.status(404).json({ error: 'Tracker not found' });
     }
 
+    // Look up plant_id from garden_plants via this tracker
+    let gardenPlantId: string | null = null;
+    try {
+      const { data: trackerData } = await db
+        .from('plant_trackers')
+        .select('plant_id, garden_id')
+        .eq('id', trackerId)
+        .single();
+      if (trackerData) {
+        const { data: gpData } = await db
+          .from('garden_plants')
+          .select('id')
+          .eq('plant_id', trackerData.plant_id)
+          .eq('garden_id', trackerData.garden_id)
+          .single();
+        gardenPlantId = gpData?.id ?? null;
+      }
+    } catch (_) {}
+
     // Store ONLY the local file path — no upload, no Supabase Storage
     const { data: entry, error: insertError } = await db
       .from('plant_timeline')
       .insert({
         tracker_id: trackerId,
+        plant_id: gardenPlantId,
         user_id: userId,
         entry_type: 'photo',
         photo_path: file_path,
@@ -897,6 +917,36 @@ trackersRouter.post('/:id/timeline-photo', async (req: any, res) => {
     console.error('[POST /api/trackers/:id/timeline-photo]', err.message, err.stack);
     res.status(500).json({ error: err.message });
   }
+});
+
+// ── POST /api/trackers/plant/:plantId/timeline-photo ─────────────────────
+// Saves a photo timeline entry for a plant without a tracker
+trackersRouter.post('/plant/:plantId/timeline-photo', async (req: any, res) => {
+  const userId = req.user?.id;
+  if (!userId) return res.status(401).json({ error: 'Unauthorized' });
+  const { plantId } = req.params;
+  const { file_path, note, taken_at } = req.body;
+
+  const { data: entry, error: insertError } = await db
+    .from('plant_timeline')
+    .insert({
+      plant_id: plantId,
+      tracker_id: null,
+      user_id: userId,
+      entry_type: 'photo',
+      photo_path: file_path,
+      note: note ?? null,
+      created_at: taken_at ?? new Date().toISOString(),
+    })
+    .select()
+    .single();
+
+  if (insertError) {
+    console.error('[Tracker] plant photo insert failed:', insertError.message);
+    return res.status(500).json({ error: insertError.message });
+  }
+
+  return res.json({ success: true, entry });
 });
 
 // ── GET /api/trackers/:id/plan ────────────────────────────────────────────
