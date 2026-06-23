@@ -210,7 +210,7 @@ gardenRouter.delete('/:id', async (req: any, res) => {
 // POST /api/garden/:id/plants — add a plant to a garden
 gardenRouter.post('/:id/plants', async (req: any, res) => {
   try {
-    const { plantId, commonNameHe, commonNameEn, notes } = req.body;
+    const { plantId, commonNameHe, commonNameEn, notes, locationType, locationDescription } = req.body;
 
     // Enforce per-tier plant-per-garden limit
     const maxPlants = req.limits?.maxPlantsPerGarden ?? null;
@@ -239,6 +239,8 @@ gardenRouter.post('/:id/plants', async (req: any, res) => {
         common_name_he: commonNameHe,
         common_name_en: commonNameEn,
         notes: notes || '',
+        location_type: locationType ?? 'pot',
+        location_description: locationDescription ?? null,
       })
       .select()
       .single();
