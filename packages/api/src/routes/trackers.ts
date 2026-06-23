@@ -612,11 +612,31 @@ trackersRouter.patch('/:id/water', async (req: any, res) => {
 
     if (error) throw error;
 
+    // Look up plant_id from garden_plants via this tracker
+    let gardenPlantId: string | null = null;
+    try {
+      const { data: trackerData } = await db
+        .from('plant_trackers')
+        .select('plant_id, garden_id')
+        .eq('id', id)
+        .single();
+      if (trackerData) {
+        const { data: gpData } = await db
+          .from('garden_plants')
+          .select('id')
+          .eq('plant_id', trackerData.plant_id)
+          .eq('garden_id', trackerData.garden_id)
+          .single();
+        gardenPlantId = gpData?.id ?? null;
+      }
+    } catch (_) {}
+
     // Log to plant_timeline
     let timelineError: string | null = null;
     try {
       const { data: tlData, error: tlErr } = await db.from('plant_timeline').insert({
         tracker_id: id,
+        plant_id: gardenPlantId,
         user_id: userId,
         entry_type: 'watering',
         time_of_day: time_of_day ?? null,
@@ -656,11 +676,31 @@ trackersRouter.patch('/:id/fertilize', async (req: any, res) => {
 
     if (error) throw error;
 
+    // Look up plant_id from garden_plants via this tracker
+    let gardenPlantId: string | null = null;
+    try {
+      const { data: trackerData } = await db
+        .from('plant_trackers')
+        .select('plant_id, garden_id')
+        .eq('id', id)
+        .single();
+      if (trackerData) {
+        const { data: gpData } = await db
+          .from('garden_plants')
+          .select('id')
+          .eq('plant_id', trackerData.plant_id)
+          .eq('garden_id', trackerData.garden_id)
+          .single();
+        gardenPlantId = gpData?.id ?? null;
+      }
+    } catch (_) {}
+
     // Log to plant_timeline
     let timelineError: string | null = null;
     try {
       const { data: tlData, error: tlErr } = await db.from('plant_timeline').insert({
         tracker_id: id,
+        plant_id: gardenPlantId,
         user_id: userId,
         entry_type: 'fertilizing',
         time_of_day: time_of_day ?? null,
@@ -711,6 +751,83 @@ trackersRouter.post('/:id/note', async (req: any, res) => {
     console.error('[Tracker] note error:', err.message);
     res.status(500).json({ error: err.message });
   }
+});
+
+// ── GET /api/trackers/plant/:plantId/timeline ────────────────────────────
+// Returns timeline for a plant by garden_plants UUID — works with or without a tracker
+trackersRouter.get('/plant/:plantId/timeline', async (req: any, res) => {
+  const userId = req.user?.id;
+  if (!userId) return res.status(401).json({ error: 'Unauthorized' });
+  const { plantId } = req.params;
+  const { data, error } = await db
+    .from('plant_timeline')
+    .select('*')
+    .eq('plant_id', plantId)
+    .eq('user_id', userId)
+    .order('created_at', { ascending: false })
+    .limit(50);
+  if (error) return res.status(500).json({ error: error.message });
+  return res.json(data ?? []);
+});
+
+// ── POST /api/trackers/plant/:plantId/water ───────────────────────────────
+// Logs a watering entry for a plant that has no tracker
+trackersRouter.post('/plant/:plantId/water', async (req: any, res) => {
+  const userId = req.user?.id;
+  if (!userId) return res.status(401).json({ error: 'Unauthorized' });
+  const { plantId } = req.params;
+  const { time_of_day, watered_at } = req.body;
+
+  let timelineError: string | null = null;
+  try {
+    const { error: tlErr } = await db.from('plant_timeline').insert({
+      plant_id: plantId,
+      tracker_id: null,
+      user_id: userId,
+      entry_type: 'watering',
+      time_of_day: time_of_day ?? null,
+      created_at: watered_at || new Date().toISOString(),
+      note: `השקיה · ${time_of_day ?? ''}`,
+    });
+    if (tlErr) {
+      console.error('[Tracker] plant timeline insert failed (plant water):', tlErr.message);
+      timelineError = tlErr.message;
+    }
+  } catch (err: any) {
+    console.error('[Tracker] plant timeline insert threw (plant water):', err.message);
+    timelineError = err.message;
+  }
+
+  return res.json({ success: true, timeline_error: timelineError });
+});
+
+// ── POST /api/trackers/plant/:plantId/fertilize ───────────────────────────
+trackersRouter.post('/plant/:plantId/fertilize', async (req: any, res) => {
+  const userId = req.user?.id;
+  if (!userId) return res.status(401).json({ error: 'Unauthorized' });
+  const { plantId } = req.params;
+  const { time_of_day, fertilized_at } = req.body;
+
+  let timelineError: string | null = null;
+  try {
+    const { error: tlErr } = await db.from('plant_timeline').insert({
+      plant_id: plantId,
+      tracker_id: null,
+      user_id: userId,
+      entry_type: 'fertilizing',
+      time_of_day: time_of_day ?? null,
+      created_at: fertilized_at || new Date().toISOString(),
+      note: `דישון · ${time_of_day ?? ''}`,
+    });
+    if (tlErr) {
+      console.error('[Tracker] plant timeline insert failed (plant fertilize):', tlErr.message);
+      timelineError = tlErr.message;
+    }
+  } catch (err: any) {
+    timelineError = err.message;
+  }
+
+  return res.json({ success: true, timeline_error: timelineError });
 });
 
 // ── GET /api/trackers/:id/timeline ────────────────────────────────────────

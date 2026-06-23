@@ -83,7 +83,12 @@
       "Bash(pnpm dev *)",
       "Bash(pnpm --filter @gina-haya/web type-check)",
       "Bash(pnpm build *)",
-      "Bash(py *)"
+      "Bash(py *)",
+      "Bash(npx supabase *)",
+      "Bash(cat packages/api/.env)",
+      "Bash(cat packages/api/.env.local)",
+      "Bash(ls packages/api/src/db/scripts/)",
+      "Bash(ls packages/api/scripts/)"
     ]
   }
 }
