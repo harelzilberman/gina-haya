@@ -142,13 +142,13 @@ trackersRouter.get('/photos/all', async (req: any, res) => {
     .from('plant_timeline')
     .select(`
       id,
-      file_path,
+      photo_path,
       taken_at,
       time_of_day,
       plant_id,
       garden_plants!inner(
         id,
-        plant_name,
+        common_name_he,
         garden_id,
         gardens!inner(
           id,
@@ -159,7 +159,7 @@ trackersRouter.get('/photos/all', async (req: any, res) => {
     `)
     .eq('entry_type', 'photo')
     .eq('garden_plants.gardens.user_id', userId)
-    .not('file_path', 'is', null)
+    .not('photo_path', 'is', null)
     .order('taken_at', { ascending: false });
 
   if (error) {
@@ -169,11 +169,11 @@ trackersRouter.get('/photos/all', async (req: any, res) => {
 
   const photos = (data || []).map((row: any) => ({
     timeline_id: row.id,
-    file_path: row.file_path,
+    photo_path: row.photo_path,
     taken_at: row.taken_at,
     time_of_day: row.time_of_day,
     plant_id: row.plant_id,
-    plant_name: row.garden_plants?.plant_name ?? '',
+    plant_name: row.garden_plants?.common_name_he ?? '',
     garden_id: row.garden_plants?.garden_id ?? '',
     garden_name: row.garden_plants?.gardens?.name ?? '',
   }));

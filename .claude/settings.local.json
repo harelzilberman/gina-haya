@@ -88,7 +88,11 @@
       "Bash(cat packages/api/.env)",
       "Bash(cat packages/api/.env.local)",
       "Bash(ls packages/api/src/db/scripts/)",
-      "Bash(ls packages/api/scripts/)"
+      "Bash(ls packages/api/scripts/)",
+      "Read(//d/gw/**)",
+      "Read(//c/Users/**)",
+      "Read(//d/gina_haya/**)",
+      "Bash(flutter analyze *)"
     ]
   }
 }
