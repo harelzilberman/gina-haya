@@ -1,6 +1,7 @@
 import 'dotenv/config';
 import express, { Express } from 'express';
 import cors from 'cors';
+import path from 'path';
 import { rateLimit } from 'express-rate-limit';
 
 // Fail fast on missing critical env vars
@@ -36,6 +37,9 @@ app.use(rateLimit({
   standardHeaders: true,
   legacyHeaders: false,
 }));
+
+// Serve article images from the web package's public directory
+app.use('/images', express.static(path.join(__dirname, '../../../packages/web/public/images')));
 
 app.get('/health', (_req, res) => {
   res.json({ status: 'ok', timestamp: new Date().toISOString() });
