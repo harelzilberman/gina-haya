@@ -1,6 +1,5 @@
-import fs from 'fs';
-import path from 'path';
 import axios from 'axios';
+import articlesData from '../../../shared/data/articles.json';
 import Anthropic from '@anthropic-ai/sdk'; // kept for TypeScript types only — no client instantiated
 import type { ChupChuContext, ChupChuMessage } from '@gina-haya/shared';
 import { db } from '../db/client';
@@ -47,63 +46,38 @@ const BD_PREP_KNOWLEDGE: Record<string, string> = {
 const ARTICLE_INDEX = `
 # מאמרים זמינים — השתמש בכלי get_article לקבלת תוכן מלא
 
-## עברית (language: "he")
-- compost-tea → תה קומפוסט — המדריך המלא לאדמה חיה
-- seaweed-spray → ריסוס אצות ים לצמחים — כוח הים בגינה
-- green-manure → דשן ירוק — להאכיל את הקרקע לפני הצמח
-- neem-oil → שמן נים — נשק סודי נגד מזיקים
-- watering-pots → השקיית עציצים — המדריך המקצועי
-- plant-stress-signs → סימני סטרס בצמחים — מה הגינה מנסה לספר לך
-- ground-mulching → חיפוי קרקע — חיסכון במים והפחתת עשביה
+## דשנים טבעיים / Natural Fertilizers
+- compost-tea → תה קומפוסט / Compost Tea
+- seaweed-spray → ריסוס אצות ים / Seaweed Spray
+- green-manure → דשן ירוק / Green Manure
+- diluted-urine → שתן מדולל / Diluted Urine
+- neem-oil → שמן נים / Neem Oil
 
-## English (language: "en")
-- compost-tea → Compost Tea — The Complete Guide to Living Soil
-- seaweed-spray → Seaweed Spray — Ocean Power in Your Garden
-- green-manure → Green Manure — Feed the Soil Before the Plants
-- neem-oil → Neem Oil — Secret Weapon Against Pests
-- watering-pots → Watering Potted Plants — The Professional Guide
-- mulching → Mulching — Save Water and Reduce Weeds
-- plant-stress-signs → Plant Stress Signs — What Your Garden Is Trying to Tell You
+## הדברה / Pest Control
+- beneficial-beetles → חיפושיות טובות / Beneficial Beetles
+- yellow-traps → מלכודות צהובות / Yellow Sticky Traps
+- companion-plants → צמחי מלווים להדברה / Companion Plants
+
+## קומפוסט / Compost
+- compost-pile → ערימת קומפוסט / Compost Pile
+- vermicompost → ורמיקומפוסט / Vermicompost
+- compost-dont → מה לא לשים בקומפוסט / What Not to Compost
+
+## פרפרטים BD / BD Preps
+- bd500 → פרפרט 500 / Horn Manure
+- bd501 → פרפרט 501 / Horn Silica
+- cpp → CPP / Cow Pat Pit
+- biodynamic-calendar → הלוח הביודינמי / Biodynamic Calendar
+
+## שיתופי פעולה / Companion Planting
+- tomato-basil → עגבנייה + בזיליקום / Tomato & Basil
+- three-sisters → שלוש האחיות / The Three Sisters
+- flowers-vegetables → פרחים בין ירקות / Flowers Among Vegetables
+
+## השקיה וטכניקות / Irrigation & Techniques
+- watering-pots → השקיית עציצים / Watering Potted Plants
+- ground-mulching → חיפוי קרקע / Ground Mulching
 `;
-
-// Hardcoded slug → filename map (covers Hebrew filenames that can't be auto-derived)
-const SLUG_TO_FILE: Record<string, Record<string, string>> = {
-  he: {
-    'compost-tea':        '01_תה_קומפוסט.md',
-    'seaweed-spray':      '02_ריסוס_אצות_ים.md',
-    'green-manure':       '03_דשן_ירוק.md',
-    'neem-oil':           '04_שמן_נים.md',
-    'watering-pots':      '21_השקיה_עציצים.md',
-    'plant-stress-signs': '23_סימני_סטרס_בצמחים.md',
-    'ground-mulching':    'חיפוי_קרקע.md',
-  },
-  en: {
-    'compost-tea':        '01_compost_tea.md',
-    'seaweed-spray':      '02_seaweed_spray.md',
-    'green-manure':       '03_green_manure.md',
-    'neem-oil':           '04_neem_oil.md',
-    'watering-pots':      '21_watering_pots.md',
-    'mulching':           '22_mulching.md',
-    'plant-stress-signs': '23_plant_stress_signs.md',
-  },
-};
-
-function buildSlugMap(language: 'he' | 'en'): Record<string, string> {
-  const articlesDir = path.join(__dirname, '../../../web/public/articles', language);
-  if (!fs.existsSync(articlesDir)) return {};
-  const map: Record<string, string> = {};
-  fs.readdirSync(articlesDir)
-    .filter(f => f.endsWith('.md') && f !== 'README.md')
-    .forEach(filename => {
-      const slug = filename
-        .replace(/^\d+_/, '')
-        .replace(/\.md$/, '')
-        .replace(/_/g, '-')
-        .toLowerCase();
-      map[slug] = filename;
-    });
-  return map;
-}
 
 // ── System prompts ─────────────────────────────────────────────────────────
 
@@ -646,31 +620,30 @@ function handleToolCall(
     }
 
     case 'get_article': {
-      const slug = String(input.slug ?? '').trim();
+      const slug     = String(input.slug ?? '').trim();
       const language = (input.language === 'en' ? 'en' : 'he') as 'he' | 'en';
       if (!slug) return 'לא סופק slug למאמר.';
 
-      const hardcoded = SLUG_TO_FILE[language] ?? {};
-      const dynamic   = buildSlugMap(language);
-      const filename  = hardcoded[slug] ?? dynamic[slug];
-
-      if (!filename) {
-        const available = Object.keys(hardcoded).join(', ');
-        return `לא נמצא מאמר עם slug "${slug}" בשפה "${language}". האפשרויות: ${available}`;
+      const article = (articlesData as any[]).find((a: any) => a.id === slug);
+      if (!article) {
+        const available = (articlesData as any[]).map((a: any) => a.id).join(', ');
+        return `לא נמצא מאמר עם slug "${slug}". האפשרויות: ${available}`;
       }
 
-      const articlePath = path.join(__dirname, '../../../web/public/articles', language, filename);
-      if (!fs.existsSync(articlePath)) return `קובץ המאמר לא נמצא: ${filename}`;
+      if (article.comingSoon) return 'המאמר הזה עדיין בהכנה.';
 
-      const raw = fs.readFileSync(articlePath, 'utf-8');
-      const cleaned = raw
-        .replace(/<!--[\s\S]*?-->/g, '')
-        .replace(/^##\s+\d+\.\s+מדריך חזותי[\s\S]*?(?=^##|\s*$)/gm, '')
-        .replace(/^##\s+\d+\.\s+Visual Guide[\s\S]*?(?=^##|\s*$)/gm, '')
+      const raw: string | null = language === 'en' ? article.htmlContentEn : article.htmlContent;
+      if (!raw) return 'המאמר הזה עדיין בהכנה.';
+
+      const text = raw
+        .replace(/<style[^>]*>[\s\S]*?<\/style>/gi, '')
+        .replace(/<[^>]+>/g, '')
+        .replace(/\s+/g, ' ')
         .trim();
-      return cleaned.length > 4000
-        ? cleaned.substring(0, 4000) + '\n\n[המאמר קוצר לשמירת מקום]'
-        : cleaned;
+
+      return text.length > 4000
+        ? text.substring(0, 4000) + '\n\n[המאמר קוצר לשמירת מקום]'
+        : text;
     }
 
     default:
