@@ -2,7 +2,6 @@ import 'dotenv/config';
 import express, { Express } from 'express';
 import cors from 'cors';
 import path from 'path';
-import fs from 'fs';
 import { rateLimit } from 'express-rate-limit';
 
 // Fail fast on missing critical env vars
@@ -40,25 +39,10 @@ app.use(rateLimit({
 }));
 
 // Serve article images from the web package's public directory
-app.use('/images', express.static(path.join(__dirname, '../../public/images')));
+app.use('/images', express.static(path.join(__dirname, '../public/images')));
 
 app.get('/health', (_req, res) => {
   res.json({ status: 'ok', timestamp: new Date().toISOString() });
-});
-
-// TEMPORARY DEBUG — remove after fixing images
-app.get('/debug/paths', (_req, res) => {
-  const p1 = path.join(__dirname, '../../public/images/articles');
-  const p2 = path.join(__dirname, '../../../packages/web/public/images/articles');
-  const p3 = path.join(__dirname, '../public/images/articles');
-  res.json({
-    __dirname,
-    paths: {
-      '../../public/images/articles': { path: p1, exists: fs.existsSync(p1) },
-      '../../../packages/web/public/images/articles': { path: p2, exists: fs.existsSync(p2) },
-      '../public/images/articles': { path: p3, exists: fs.existsSync(p3) },
-    }
-  });
 });
 
 import { authRouter }    from './routes/auth';
