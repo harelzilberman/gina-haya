@@ -167,16 +167,43 @@ trackersRouter.get('/photos/all', async (req: any, res) => {
     return res.status(500).json({ error: error.message });
   }
 
-  const photos = (data || []).map((row: any) => ({
-    timeline_id: row.id,
-    photo_path: row.photo_path,
-    taken_at: row.created_at,
-    time_of_day: row.time_of_day,
-    plant_id: row.plant_id,
-    plant_name: row.garden_plants?.common_name_he ?? '',
-    garden_id: row.garden_plants?.garden_id ?? '',
-    garden_name: row.garden_plants?.gardens?.name ?? '',
-  }));
+  // Fetch biodynamic data for all unique dates in the results
+  const uniqueDates = [...new Set((data || []).map((row: any) => {
+    const d = new Date(row.created_at);
+    return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+  }))];
+
+  const { data: bioData } = await db
+    .from('biodynamic_calendar')
+    .select('date, day_type_he, day_type_emoji, moon_phase_name_he')
+    .in('date', uniqueDates);
+
+  const bioMap: Record<string, any> = {};
+  (bioData || []).forEach((b: any) => { bioMap[b.date] = b; });
+
+  const hebrewMonths = ['ינואר','פברואר','מרץ','אפריל','מאי','יוני','יולי','אוגוסט','ספטמבר','אוקטובר','נובמבר','דצמבר'];
+
+  const photos = (data || []).map((row: any) => {
+    const createdAt = new Date(row.created_at);
+    const photoDate = `${createdAt.getFullYear()}-${String(createdAt.getMonth() + 1).padStart(2, '0')}-${String(createdAt.getDate()).padStart(2, '0')}`;
+    const bio = bioMap[photoDate] || {};
+    const formattedDate = `${createdAt.getDate()} ב${hebrewMonths[createdAt.getMonth()]} ${createdAt.getFullYear()}`;
+
+    return {
+      timeline_id: row.id,
+      photo_path: row.photo_path,
+      taken_at: row.created_at,
+      time_of_day: row.time_of_day,
+      plant_id: row.plant_id,
+      plant_name: row.garden_plants?.common_name_he ?? '',
+      garden_id: row.garden_plants?.garden_id ?? '',
+      garden_name: row.garden_plants?.gardens?.name ?? '',
+      day_type_he: bio.day_type_he ?? '',
+      day_type_emoji: bio.day_type_emoji ?? '',
+      moon_phase_he: bio.moon_phase_name_he ?? '',
+      formatted_date: formattedDate,
+    };
+  });
 
   res.json(photos);
 });
