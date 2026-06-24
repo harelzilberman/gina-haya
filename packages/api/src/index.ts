@@ -2,7 +2,6 @@ import 'dotenv/config';
 import express, { Express } from 'express';
 import cors from 'cors';
 import path from 'path';
-import fs from 'fs';
 import { rateLimit } from 'express-rate-limit';
 
 // Fail fast on missing critical env vars
@@ -44,14 +43,6 @@ app.use('/images', express.static(path.join(__dirname, '../public/images')));
 
 app.get('/health', (_req, res) => {
   res.json({ status: 'ok', timestamp: new Date().toISOString() });
-});
-
-// TEMPORARY DEBUG — remove after fixing images
-app.get('/debug/files', (_req, res) => {
-  const base = path.join(__dirname, '../public/images/articles');
-  let files: string[] = [];
-  try { files = fs.readdirSync(base); } catch (e) { files = [`ERROR: ${e}`]; }
-  res.json({ base, files });
 });
 
 import { authRouter }    from './routes/auth';
