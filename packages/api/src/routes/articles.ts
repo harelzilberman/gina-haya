@@ -16,6 +16,16 @@ const SLUG_CATEGORY: Record<string, string> = {
   '01_תה_קומפוסט':              'Natural Fertilizers',
 };
 
+const WEB_SLUG: Record<string, string> = {
+  '01_תה_קומפוסט':           'compost-tea',
+  '02_ריסוס_אצות_ים':        'seaweed-spray',
+  '03_דשן_ירוק':             'green-manure',
+  '04_שמן_נים':              'neem-oil',
+  '21_השקיה_עציצים':         'watering-pots',
+  '23_סימני_סטרס_בצמחים':   'plant-stress-signs',
+  'חיפוי_קרקע':             'ground-mulching',
+};
+
 function getLangDir(raw: unknown): 'he' | 'en' {
   return raw === 'en' ? 'en' : 'he';
 }
@@ -69,7 +79,7 @@ articlesRouter.get('/', async (req, res) => {
         try {
           const raw = await fetchArticle(lang, f.name);
           const { title, description, readTimeMinutes } = parseArticle(raw, slug, lang);
-          return { slug, title, description, readTimeMinutes, category: SLUG_CATEGORY[slug] ?? null };
+          return { slug, title, description, readTimeMinutes, category: SLUG_CATEGORY[slug] ?? null, webSlug: WEB_SLUG[slug] ?? null };
         } catch {
           return null;
         }
