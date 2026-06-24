@@ -133,6 +133,54 @@ trackersRouter.post('/', async (req: any, res) => {
   }
 });
 
+// ── GET /api/trackers/photos/all ──────────────────────────────────────────
+// Returns all photo timeline entries for all gardens belonging to the current user
+trackersRouter.get('/photos/all', async (req: any, res) => {
+  const userId = req.user.id;
+
+  const { data, error } = await db
+    .from('plant_timeline')
+    .select(`
+      id,
+      file_path,
+      taken_at,
+      time_of_day,
+      plant_id,
+      garden_plants!inner(
+        id,
+        plant_name,
+        garden_id,
+        gardens!inner(
+          id,
+          name,
+          user_id
+        )
+      )
+    `)
+    .eq('entry_type', 'photo')
+    .eq('garden_plants.gardens.user_id', userId)
+    .not('file_path', 'is', null)
+    .order('taken_at', { ascending: false });
+
+  if (error) {
+    console.error('GET /photos/all error:', error);
+    return res.status(500).json({ error: error.message });
+  }
+
+  const photos = (data || []).map((row: any) => ({
+    timeline_id: row.id,
+    file_path: row.file_path,
+    taken_at: row.taken_at,
+    time_of_day: row.time_of_day,
+    plant_id: row.plant_id,
+    plant_name: row.garden_plants?.plant_name ?? '',
+    garden_id: row.garden_plants?.garden_id ?? '',
+    garden_name: row.garden_plants?.gardens?.name ?? '',
+  }));
+
+  res.json(photos);
+});
+
 // ── PATCH /api/trackers/:id ───────────────────────────────────────────────
 trackersRouter.patch('/:id', async (req: any, res) => {
   try {
