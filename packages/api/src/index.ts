@@ -39,7 +39,7 @@ app.use(rateLimit({
 }));
 
 // Serve article images from the web package's public directory
-app.use('/images', express.static(path.join(__dirname, '../../../packages/web/public/images')));
+app.use('/images', express.static(path.join(__dirname, '../../public/images')));
 
 app.get('/health', (_req, res) => {
   res.json({ status: 'ok', timestamp: new Date().toISOString() });
