@@ -1,10 +1,7 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { ARTICLES, type ArticleEntry } from '../data/articlesIndex';
-
-const API_BASE = (import.meta.env.VITE_API_URL as string | undefined)?.replace(/\/$/, '')
-  || 'https://powerful-embrace-production-95ea.up.railway.app';
 
 const GOLD   = '#c8a84b';
 const PARCH  = '#d4c9a8';
@@ -54,42 +51,19 @@ export function ArticlesPage() {
 
   const [activeFilter, setActiveFilter] = useState<string>('all');
   const [searchQuery,  setSearchQuery]  = useState('');
-  const [extraArticles, setExtraArticles] = useState<ArticleEntry[]>([]);
 
-  useEffect(() => {
-    fetch(`${API_BASE}/api/articles?lang=he`)
-      .then(r => r.ok ? r.json() : [])
-      .then((results: Array<{ slug: string; title: string; description: string; category: string | null }>) => {
-        const extras = results
-          .filter(r => !ARTICLES.some(a => a.filenameHe === `${r.slug}.md`))
-          .map(r => ({
-            id: r.slug,
-            titleHe: r.title,
-            titleEn: r.title,
-            metaDescriptionHe: r.description,
-            metaDescriptionEn: r.description,
-            categoryHe: r.category ?? '',
-            categoryEn: r.category ?? '',
-            filenameHe: `${r.slug}.md`,
-            filenameEn: `${r.slug}.md`,
-            publishedAt: new Date().toISOString().split('T')[0],
-            images: null,
-          } as ArticleEntry));
-        setExtraArticles(extras);
-      })
-      .catch(() => {});
-  }, []);
+  // Only show articles that have content (exclude comingSoon placeholders)
+  const availableArticles = ARTICLES.filter(a => !a.comingSoon);
 
-  const allArticles = [...ARTICLES, ...extraArticles];
   const searched = searchQuery
-    ? allArticles.filter(a => {
+    ? availableArticles.filter(a => {
         const q = searchQuery.toLowerCase();
         const title = (lang === 'he' ? a.titleHe : a.titleEn).toLowerCase();
         const desc  = (lang === 'he' ? a.metaDescriptionHe : a.metaDescriptionEn)?.toLowerCase() ?? '';
         const cat   = (lang === 'he' ? a.categoryHe : a.categoryEn).toLowerCase();
         return title.includes(q) || desc.includes(q) || cat.includes(q);
       })
-    : allArticles;
+    : availableArticles;
   const filtered = activeFilter === 'all'
     ? searched
     : searched.filter(a => a.categoryEn === activeFilter);

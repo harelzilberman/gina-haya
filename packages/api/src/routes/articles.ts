@@ -1,7 +1,26 @@
 import { Router, type IRouter } from 'express';
-import { ARTICLES } from '../../../web/src/data/articles';
+import articlesData from '../../../shared/data/articles.json';
 
 export const articlesRouter: IRouter = Router();
+
+type ArticleRecord = {
+  id: string;
+  titleHe: string;
+  titleEn: string;
+  metaDescriptionHe: string;
+  metaDescriptionEn: string;
+  categoryHe: string;
+  categoryEn: string;
+  filenameHe: string;
+  filenameEn: string;
+  publishedAt: string;
+  images: { hero: string; steps?: string; results?: string } | null;
+  htmlContent: string | null;
+  htmlContentEn: string | null;
+  comingSoon: boolean;
+};
+
+const ARTICLES = articlesData as ArticleRecord[];
 
 function getLang(raw: unknown): 'he' | 'en' {
   return raw === 'en' ? 'en' : 'he';
@@ -12,7 +31,7 @@ articlesRouter.get('/', (req, res) => {
   const lang = getLang(req.query.lang);
 
   const list = ARTICLES
-    .filter(a => lang === 'en' ? !!a.htmlContentEn : !!a.htmlContent)
+    .filter(a => !a.comingSoon && (lang === 'en' ? !!a.htmlContentEn : !!a.htmlContent))
     .map(a => ({
       id:          a.id,
       slug:        a.id,
@@ -20,7 +39,6 @@ articlesRouter.get('/', (req, res) => {
       titleEn:     a.titleEn,
       category:    lang === 'en' ? a.categoryEn : a.categoryHe,
       publishedAt: a.publishedAt,
-      webSlug:     a.id,
     }));
 
   res.json(list);
@@ -39,18 +57,18 @@ articlesRouter.get('/:slug', (req, res) => {
   const htmlContent = lang === 'en' ? article.htmlContentEn : article.htmlContent;
 
   res.json({
-    id:                  article.id,
-    slug:                article.id,
-    titleHe:             article.titleHe,
-    titleEn:             article.titleEn,
-    metaDescriptionHe:   article.metaDescriptionHe,
-    metaDescriptionEn:   article.metaDescriptionEn,
-    category:            lang === 'en' ? article.categoryEn : article.categoryHe,
-    categoryHe:          article.categoryHe,
-    categoryEn:          article.categoryEn,
-    publishedAt:         article.publishedAt,
-    images:              article.images,
-    webSlug:             article.id,
-    htmlContent:         htmlContent ?? null,
+    id:                article.id,
+    slug:              article.id,
+    titleHe:           article.titleHe,
+    titleEn:           article.titleEn,
+    metaDescriptionHe: article.metaDescriptionHe,
+    metaDescriptionEn: article.metaDescriptionEn,
+    category:          lang === 'en' ? article.categoryEn : article.categoryHe,
+    categoryHe:        article.categoryHe,
+    categoryEn:        article.categoryEn,
+    publishedAt:       article.publishedAt,
+    images:            article.images,
+    comingSoon:        article.comingSoon,
+    htmlContent:       htmlContent ?? null,
   });
 });

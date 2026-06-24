@@ -92,7 +92,8 @@
       "Read(//d/gw/**)",
       "Read(//c/Users/**)",
       "Read(//d/gina_haya/**)",
-      "Bash(flutter analyze *)"
+      "Bash(flutter analyze *)",
+      "Bash(npx tsx *)"
     ]
   }
 }
