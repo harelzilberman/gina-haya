@@ -39,6 +39,7 @@ articlesRouter.get('/', (req, res) => {
       titleEn:     a.titleEn,
       category:    lang === 'en' ? a.categoryEn : a.categoryHe,
       publishedAt: a.publishedAt,
+      images:      a.images ?? null,
     }));
 
   res.json(list);
