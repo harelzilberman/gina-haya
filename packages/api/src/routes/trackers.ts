@@ -143,7 +143,7 @@ trackersRouter.get('/photos/all', async (req: any, res) => {
     .select(`
       id,
       photo_path,
-      taken_at,
+      created_at,
       time_of_day,
       plant_id,
       garden_plants!inner(
@@ -160,7 +160,7 @@ trackersRouter.get('/photos/all', async (req: any, res) => {
     .eq('entry_type', 'photo')
     .eq('garden_plants.gardens.user_id', userId)
     .not('photo_path', 'is', null)
-    .order('taken_at', { ascending: false });
+    .order('created_at', { ascending: false });
 
   if (error) {
     console.error('GET /photos/all error:', error);
@@ -170,7 +170,7 @@ trackersRouter.get('/photos/all', async (req: any, res) => {
   const photos = (data || []).map((row: any) => ({
     timeline_id: row.id,
     photo_path: row.photo_path,
-    taken_at: row.taken_at,
+    taken_at: row.created_at,
     time_of_day: row.time_of_day,
     plant_id: row.plant_id,
     plant_name: row.garden_plants?.common_name_he ?? '',
