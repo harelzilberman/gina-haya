@@ -657,7 +657,7 @@ chupChuRouter.post('/chat', async (req: any, res) => {
         .slice(-20)
         .map(m => ({
           role: m.role as 'user' | 'assistant',
-          content: String(m.content ?? ''),
+          content: String(m.content ?? '').slice(0, 500),
           timestamp: new Date().toISOString(),
         }));
     } else {

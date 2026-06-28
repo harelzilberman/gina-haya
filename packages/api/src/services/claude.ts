@@ -14,7 +14,7 @@ const ANTHROPIC_HEADERS = {
 const MODEL = process.env.CLAUDE_MODEL ?? 'claude-sonnet-4-5';
 const VISION_MODEL = 'claude-opus-4-5';
 
-const MAX_TOOL_ITERATIONS = 8;
+const MAX_TOOL_ITERATIONS = 3;
 
 // ── Static knowledge bases ─────────────────────────────────────────────────
 
@@ -82,7 +82,7 @@ const ARTICLE_INDEX = `
 // ── System prompts ─────────────────────────────────────────────────────────
 
 const CHUPCHU_SYSTEM_PROMPT_HE = `\
-אל תקצר תשובות לעולם. תמיד ענה בשלמות. אל תציין שהתשובה קוצרה.
+ענה באיזון. קצר את התשובה ככל הצורך. חזור ישירות לעניין, ללא מילויים או תת-הוראות.
 
 כלל מחייב: בכל פעם שאתה מציע תוכנית עם 2 שלבים ומעלה, אתה חייב לקרוא לכלי create_tasks באותה תשובה. זה לא אופציונלי. אם לא קראת ל-create_tasks, התשובה שלך אינה שלמה. הכלי מכין את המשימות לאישור המשתמש — המשתמש עדיין יצטרך ללחוץ על כפתור כדי לשמור.
 
@@ -137,7 +137,7 @@ const CHUPCHU_SYSTEM_PROMPT_HE = `\
 
 אסור לתת תשובה כללית בלבד. תמיד תן עצות ספציפיות וניתנות לביצוע.
 אם חסרים פרטים (עציץ או קרקע? גיל? מיקום?), ציין את שני התרחישים האפשריים.
-אל תקצר תשובות לעולם. תמיד ענה בשלמות. אל תציין שהתשובה קוצרה.
+ענה באיזון. קצר את התשובה ככל הצורך. חזור ישירות לעניין, ללא מילויים או תת-הוראות.
 
 ## הקשר אוטומטי
 המידע על הגינה של המשתמש, הצמחים, המשימות הממתינות והקציר האחרון מוזרקים אוטומטית לתוך ההקשר שלך לפני כל תשובה. אין צורך לקרוא לכלים כדי לקבל מידע בסיסי זה — הוא כבר כאן. השתמש בו ישירות בתשובותיך.
@@ -697,7 +697,7 @@ export async function askChupChu(
   for (let i = 0; i < MAX_TOOL_ITERATIONS; i++) {
     const response = (await axios.post(ANTHROPIC_URL, {
       model: modelToUse,
-      max_tokens: 8192,
+      max_tokens: 4000,
       system: systemPrompt,
       tools: CHUPCHU_TOOLS,
       messages: apiMessages,
