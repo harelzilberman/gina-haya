@@ -254,6 +254,7 @@ chupChuRouter.post('/memory/summarize', async (req: any, res) => {
     const existingFacts     = existingMemory?.garden_facts ?? {};
 
     const convText = conversationHistory
+      .slice(-30)
       .filter((m: any) => typeof m.content === 'string')
       .map((m: any) => `${m.role === 'user' ? (lang === 'he' ? 'משתמש' : 'User') : (lang === 'he' ? "צ'ופצ'ו" : 'Chupchu')}: ${m.content}`)
       .join('\n');
@@ -310,13 +311,31 @@ Create an updated summary and structured facts. Return JSON only:
 
     const aiRes = (await axios.post(ANTHROPIC_URL, {
       model: 'claude-haiku-4-5-20251001',
-      max_tokens: 1000,
+      max_tokens: 2500,
       messages: [{ role: 'user', content: summaryPrompt }],
     }, { headers: ANTHROPIC_HEADERS, timeout: 60000 })).data;
 
     const text = aiRes.content[0].type === 'text' ? aiRes.content[0].text : '';
     const cleaned = text.replace(/```json|```/g, '').trim();
-    const parsed = JSON.parse(cleaned);
+
+    let parsed: any;
+    try {
+      parsed = JSON.parse(cleaned);
+    } catch (parseErr) {
+      // Fallback: attempt to extract a JSON object via regex
+      const match = cleaned.match(/\{[\s\S]*\}/);
+      if (match) {
+        try {
+          parsed = JSON.parse(match[0]);
+        } catch {
+          console.error('[POST /api/chupchu/memory/summarize] JSON parse fallback also failed:', cleaned.slice(0, 200));
+          return res.json({ ok: true, skipped: true, reason: 'parse_failed' });
+        }
+      } else {
+        console.error('[POST /api/chupchu/memory/summarize] No JSON object found in response:', cleaned.slice(0, 200));
+        return res.json({ ok: true, skipped: true, reason: 'no_json' });
+      }
+    }
 
     const { error } = await db
       .from('chupchu_memory')
