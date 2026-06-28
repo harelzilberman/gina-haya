@@ -275,7 +275,7 @@ gardenRouter.patch('/garden-plants/:id', async (req: any, res) => {
   const userId = req.user?.id;
   if (!userId) return res.status(401).json({ error: 'Unauthorized' });
   const { id } = req.params;
-  const { location_type, location_description, notes, sun_exposure, companions, soil, variety } = req.body;
+  const { location_type, location_description, notes, sun_exposure, companions, soil, variety, plant_type } = req.body;
 
   const updateObj: any = {};
   if (location_type !== undefined) updateObj.location_type = location_type;
@@ -285,6 +285,7 @@ gardenRouter.patch('/garden-plants/:id', async (req: any, res) => {
   if (companions !== undefined) updateObj.companions = companions;
   if (soil !== undefined) updateObj.soil = soil;
   if (variety !== undefined) updateObj.variety = variety;
+  if (plant_type !== undefined) updateObj.plant_type = plant_type;
 
   const { data, error } = await db
     .from('garden_plants')
