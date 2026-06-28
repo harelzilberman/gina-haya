@@ -254,9 +254,13 @@ chupChuRouter.post('/memory/summarize', async (req: any, res) => {
     const existingFacts     = existingMemory?.garden_facts ?? {};
 
     const convText = conversationHistory
-      .slice(-30)
+      .slice(-20)
       .filter((m: any) => typeof m.content === 'string')
-      .map((m: any) => `${m.role === 'user' ? (lang === 'he' ? 'משתמש' : 'User') : (lang === 'he' ? "צ'ופצ'ו" : 'Chupchu')}: ${m.content}`)
+      .map((m: any) => {
+        const label = m.role === 'user' ? (lang === 'he' ? 'משתמש' : 'User') : (lang === 'he' ? "צ'ופצ'ו" : 'Chupchu');
+        const body  = String(m.content).slice(0, 200);
+        return `${label}: ${body}`;
+      })
       .join('\n');
 
     const summaryPrompt = lang === 'he' ? `
@@ -313,7 +317,7 @@ Create an updated summary and structured facts. Return JSON only:
       model: 'claude-haiku-4-5-20251001',
       max_tokens: 2500,
       messages: [{ role: 'user', content: summaryPrompt }],
-    }, { headers: ANTHROPIC_HEADERS, timeout: 60000 })).data;
+    }, { headers: ANTHROPIC_HEADERS, timeout: 90000 })).data;
 
     const text = aiRes.content[0].type === 'text' ? aiRes.content[0].text : '';
     const cleaned = text.replace(/```json|```/g, '').trim();
