@@ -697,7 +697,7 @@ export async function askChupChu(
   for (let i = 0; i < MAX_TOOL_ITERATIONS; i++) {
     const response = (await axios.post(ANTHROPIC_URL, {
       model: modelToUse,
-      max_tokens: 4000,
+      max_tokens: 6000,
       system: systemPrompt,
       tools: CHUPCHU_TOOLS,
       messages: apiMessages,
