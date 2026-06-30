@@ -272,29 +272,51 @@ gardenRouter.delete('/:id/plants/:plantId', async (req: any, res) => {
 
 // PATCH /api/garden/garden-plants/:id — update a garden_plants row
 gardenRouter.patch('/garden-plants/:id', async (req: any, res) => {
-  const userId = req.user?.id;
-  if (!userId) return res.status(401).json({ error: 'Unauthorized' });
-  const { id } = req.params;
-  const { location_type, location_description, notes, sun_exposure, companions, soil, variety, plant_type } = req.body;
+  try {
+    const userId = req.user?.id;
+    if (!userId) return res.status(401).json({ error: 'Unauthorized' });
+    const { id } = req.params;
+    const { location_type, location_description, notes, sun_exposure, companions, soil, variety, plant_type } = req.body;
 
-  const updateObj: any = {};
-  if (location_type !== undefined) updateObj.location_type = location_type;
-  if (location_description !== undefined) updateObj.location_description = location_description;
-  if (notes !== undefined) updateObj.notes = notes;
-  if (sun_exposure !== undefined) updateObj.sun_exposure = sun_exposure;
-  if (companions !== undefined) updateObj.companions = companions;
-  if (soil !== undefined) updateObj.soil = soil;
-  if (variety !== undefined) updateObj.variety = variety;
-  if (plant_type !== undefined) updateObj.plant_type = plant_type;
+    // Verify ownership: garden_plants has no user_id, ownership flows through garden_id -> gardens.user_id
+    const { data: gp, error: gpError } = await db
+      .from('garden_plants')
+      .select('garden_id')
+      .eq('id', id)
+      .single();
 
-  const { data, error } = await db
-    .from('garden_plants')
-    .update(updateObj)
-    .eq('id', id)
-    .eq('user_id', userId)
-    .select()
-    .single();
+    if (gpError || !gp) return res.status(404).json({ error: 'not_found' });
 
-  if (error) return res.status(500).json({ error: error.message });
-  return res.json({ success: true, plant: data });
+    const { data: garden, error: gardenError } = await db
+      .from('gardens')
+      .select('id')
+      .eq('id', gp.garden_id)
+      .eq('user_id', userId)
+      .single();
+
+    if (gardenError || !garden) return res.status(403).json({ error: 'Forbidden' });
+
+    const updateObj: any = {};
+    if (location_type !== undefined) updateObj.location_type = location_type;
+    if (location_description !== undefined) updateObj.location_description = location_description;
+    if (notes !== undefined) updateObj.notes = notes;
+    if (sun_exposure !== undefined) updateObj.sun_exposure = sun_exposure;
+    if (companions !== undefined) updateObj.companions = companions;
+    if (soil !== undefined) updateObj.soil = soil;
+    if (variety !== undefined) updateObj.variety = variety;
+    if (plant_type !== undefined) updateObj.plant_type = plant_type;
+
+    const { data, error } = await db
+      .from('garden_plants')
+      .update(updateObj)
+      .eq('id', id)
+      .select()
+      .single();
+
+    if (error) throw error;
+    return res.json({ success: true, plant: data });
+  } catch (err: any) {
+    console.error('[PATCH /api/garden/garden-plants/:id]', err);
+    res.status(500).json({ error: err.message });
+  }
 });
