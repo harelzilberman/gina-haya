@@ -64,7 +64,7 @@ trackersRouter.get('/', async (req: any, res) => {
 trackersRouter.post('/', async (req: any, res) => {
   try {
     const userId = req.user.id;
-    const { plantNameHe, plantNameEn, plantId, gardenId, locationType, locationDescription } = req.body;
+    const { plantNameHe, plantNameEn, plantId, gardenId, gardenPlantId, locationType, locationDescription } = req.body;
 
     // plantNameHe/En may be empty for auto-identification via Claude vision
     if (!locationType) {
@@ -117,6 +117,7 @@ trackersRouter.post('/', async (req: any, res) => {
         user_id:              userId,
         garden_id:            gardenId ?? null,
         plant_id:             plantId ?? null,
+        garden_plants_id:     gardenPlantId ?? null,
         plant_name_he:        plantNameHe ?? '',
         plant_name_en:        plantNameEn ?? '',
         location_type:        locationType,
@@ -687,24 +688,26 @@ trackersRouter.patch('/:id/water', async (req: any, res) => {
 
     if (error) throw error;
 
-    // Look up plant_id from garden_plants via this tracker
-    let gardenPlantId: string | null = null;
-    try {
-      const { data: trackerData } = await db
-        .from('plant_trackers')
-        .select('plant_id, garden_id')
-        .eq('id', id)
-        .single();
-      if (trackerData) {
-        const { data: gpData } = await db
-          .from('garden_plants')
-          .select('id')
-          .eq('plant_id', trackerData.plant_id)
-          .eq('garden_id', trackerData.garden_id)
+    // Resolve garden_plants_id: use stored FK directly, fall back to join for legacy rows
+    let gardenPlantId: string | null = (data as any)?.garden_plants_id ?? null;
+    if (!gardenPlantId) {
+      try {
+        const { data: trackerData } = await db
+          .from('plant_trackers')
+          .select('plant_id, garden_id')
+          .eq('id', id)
           .single();
-        gardenPlantId = gpData?.id ?? null;
-      }
-    } catch (_) {}
+        if (trackerData) {
+          const { data: gpData } = await db
+            .from('garden_plants')
+            .select('id')
+            .eq('plant_id', trackerData.plant_id)
+            .eq('garden_id', trackerData.garden_id)
+            .single();
+          gardenPlantId = gpData?.id ?? null;
+        }
+      } catch (_) {}
+    }
 
     // Log to plant_timeline
     let timelineError: string | null = null;
@@ -751,24 +754,26 @@ trackersRouter.patch('/:id/fertilize', async (req: any, res) => {
 
     if (error) throw error;
 
-    // Look up plant_id from garden_plants via this tracker
-    let gardenPlantId: string | null = null;
-    try {
-      const { data: trackerData } = await db
-        .from('plant_trackers')
-        .select('plant_id, garden_id')
-        .eq('id', id)
-        .single();
-      if (trackerData) {
-        const { data: gpData } = await db
-          .from('garden_plants')
-          .select('id')
-          .eq('plant_id', trackerData.plant_id)
-          .eq('garden_id', trackerData.garden_id)
+    // Resolve garden_plants_id: use stored FK directly, fall back to join for legacy rows
+    let gardenPlantId: string | null = (data as any)?.garden_plants_id ?? null;
+    if (!gardenPlantId) {
+      try {
+        const { data: trackerData } = await db
+          .from('plant_trackers')
+          .select('plant_id, garden_id')
+          .eq('id', id)
           .single();
-        gardenPlantId = gpData?.id ?? null;
-      }
-    } catch (_) {}
+        if (trackerData) {
+          const { data: gpData } = await db
+            .from('garden_plants')
+            .select('id')
+            .eq('plant_id', trackerData.plant_id)
+            .eq('garden_id', trackerData.garden_id)
+            .single();
+          gardenPlantId = gpData?.id ?? null;
+        }
+      } catch (_) {}
+    }
 
     // Log to plant_timeline
     let timelineError: string | null = null;
@@ -939,10 +944,10 @@ trackersRouter.post('/:id/timeline-photo', async (req: any, res) => {
       return res.status(400).json({ error: 'file_path required' });
     }
 
-    // Verify tracker ownership
+    // Verify tracker ownership (also fetch FK columns needed for timeline insert)
     const { data: tracker, error: trackerError } = await db
       .from('plant_trackers')
-      .select('id')
+      .select('id, garden_plants_id, plant_id, garden_id')
       .eq('id', trackerId)
       .eq('user_id', userId)
       .single();
@@ -951,24 +956,19 @@ trackersRouter.post('/:id/timeline-photo', async (req: any, res) => {
       return res.status(404).json({ error: 'Tracker not found' });
     }
 
-    // Look up plant_id from garden_plants via this tracker
-    let gardenPlantId: string | null = null;
-    try {
-      const { data: trackerData } = await db
-        .from('plant_trackers')
-        .select('plant_id, garden_id')
-        .eq('id', trackerId)
-        .single();
-      if (trackerData) {
+    // Resolve garden_plants_id: use stored FK directly, fall back to join for legacy rows
+    let gardenPlantId: string | null = (tracker as any).garden_plants_id ?? null;
+    if (!gardenPlantId) {
+      try {
         const { data: gpData } = await db
           .from('garden_plants')
           .select('id')
-          .eq('plant_id', trackerData.plant_id)
-          .eq('garden_id', trackerData.garden_id)
+          .eq('plant_id', (tracker as any).plant_id)
+          .eq('garden_id', (tracker as any).garden_id)
           .single();
         gardenPlantId = gpData?.id ?? null;
-      }
-    } catch (_) {}
+      } catch (_) {}
+    }
 
     // Store ONLY the local file path — no upload, no Supabase Storage
     const { data: entry, error: insertError } = await db
