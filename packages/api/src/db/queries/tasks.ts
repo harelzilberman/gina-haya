@@ -5,6 +5,7 @@ export interface GardenTask {
   user_id: string;
   plan_id: string | null;
   plant_tracker_id: string | null;
+  garden_plants_id: string | null;
   date: string;
   title: string;
   type: 'biodynamic' | 'maintenance' | 'custom';
@@ -102,10 +103,11 @@ export async function createCustomTask(
   notes?: string,
   source_action?: string,
   plant_name?: string,
+  garden_plants_id?: string,
 ): Promise<GardenTask> {
   const { data, error } = await db
     .from('garden_tasks')
-    .insert({ user_id: userId, date, title, type: 'custom', status: 'pending', notes: notes ?? null, source_action: source_action ?? null, plant_name: plant_name ?? null })
+    .insert({ user_id: userId, date, title, type: 'custom', status: 'pending', notes: notes ?? null, source_action: source_action ?? null, plant_name: plant_name ?? null, garden_plants_id: garden_plants_id ?? null })
     .select()
     .single();
   if (error) throw error;

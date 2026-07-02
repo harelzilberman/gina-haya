@@ -532,10 +532,10 @@ trackersRouter.post('/:id/approve-tasks', async (req: any, res) => {
       return res.json({ tasks_added: 0, tasks_error: null });
     }
 
-    // Verify tracker ownership
+    // Verify tracker ownership — also fetch garden_plants_id so we can link tasks
     const { data: tracker, error: trackerError } = await db
       .from('plant_trackers')
-      .select('id, plant_name_he')
+      .select('id, plant_name_he, garden_plants_id')
       .eq('id', trackerId)
       .eq('user_id', userId)
       .single();
@@ -556,6 +556,7 @@ trackersRouter.post('/:id/approve-tasks', async (req: any, res) => {
         user_id:          userId,
         plan_id:          null,
         plant_tracker_id: trackerId,
+        garden_plants_id: (tracker as any).garden_plants_id || null,
         plant_name:       tracker.plant_name_he || null,
         date:             dueDate,
         title,

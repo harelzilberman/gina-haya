@@ -133,9 +133,9 @@ tasksRouter.post('/from-plan', async (req, res) => {
 // POST /api/tasks — create custom task
 tasksRouter.post('/', async (req, res) => {
   try {
-    const { date, title, notes, source_action, plant_name } = req.body;
+    const { date, title, notes, source_action, plant_name, garden_plants_id } = req.body;
     if (!date || !title) return res.status(400).json({ error: 'date and title required' });
-    const task = await createCustomTask(req.user!.id, date, title, notes, source_action, plant_name);
+    const task = await createCustomTask(req.user!.id, date, title, notes, source_action, plant_name, garden_plants_id);
     res.json(task);
   } catch (err: any) {
     res.status(500).json({ error: err.message });
@@ -194,17 +194,18 @@ tasksRouter.post('/bulk', async (req, res) => {
       let date = (t.date ?? '').toString().split('T')[0].split(' ')[0];
       if (!/^\d{4}-\d{2}-\d{2}$/.test(date)) date = tomorrowStr;
       return {
-        user_id:       userId,
-        plan_id:       null,
+        user_id:          userId,
+        plan_id:          null,
         date,
-        title:         t.title,
-        type:          'custom' as const,
-        status:        'pending' as const,
-        notes:         t.notes || null,
-        plant_name:    (t as any).plant_name || null,
-        category:      t.category || 'general',
-        priority:      t.priority || 'medium',
-        source_action: 'chupchu',
+        title:            t.title,
+        type:             'custom' as const,
+        status:           'pending' as const,
+        notes:            t.notes || null,
+        plant_name:       (t as any).plant_name || null,
+        garden_plants_id: (t as any).garden_plants_id || null,
+        category:         t.category || 'general',
+        priority:         t.priority || 'medium',
+        source_action:    'chupchu',
       };
     });
 
