@@ -359,6 +359,127 @@ Create an updated summary and structured facts. Return JSON only:
   }
 });
 
+// ── POST /api/chupchu/starter-tasks ────────────────────────────────────────
+// Generates 2–3 AI starter task PROPOSALS for a newly added plant.
+// The Flutter app renders these as a "Chupchu prepared tasks" card on the Plant
+// Passport. Accepted tasks are written to the DB by the client via the existing
+// POST /api/tasks/bulk (which already supports garden_plants_id).
+// This endpoint only GENERATES proposals — it does NOT write to garden_tasks.
+//
+// QUOTA NOTE: this endpoint is intentionally NOT counted against the user's
+// monthly Chupchu message quota (maxChupChuPerMonth in getLimits()). It is
+// triggered automatically by the app on plant creation, not by a user chat
+// message. When monetizing this feature, introduce a separate counter
+// (e.g. maxStarterTasksPerMonth) rather than folding it into the chat quota.
+chupChuRouter.post('/starter-tasks', async (req: any, res) => {
+  try {
+    const { plant_name, variety, plant_type, location_type, garden_plants_id } = req.body;
+
+    if (!plant_name || !String(plant_name).trim()) {
+      return res.status(400).json({ error: 'plant_name is required' });
+    }
+
+    const today = todayInIsrael();
+
+    // Build a concise context string for the user turn
+    const plantLabel = variety
+      ? `${String(plant_name).trim()} (זן: ${String(variety).trim()})`
+      : String(plant_name).trim();
+
+    const locationMap: Record<string, string> = {
+      pot:          'עציץ',
+      garden:       'גינה פתוחה',
+      bed:          'ערוגה',
+      hydroponic:   'הידרופוניקה',
+      greenhouse:   'חממה',
+    };
+    const typeMap: Record<string, string> = {
+      annual:     'חד-שנתי',
+      perennial:  'רב-שנתי',
+      tree:       'עץ',
+      shrub:      'שיח',
+    };
+
+    const contextParts: string[] = [`צמח: ${plantLabel}`];
+    if (plant_type)    contextParts.push(`סוג: ${typeMap[String(plant_type)]    ?? String(plant_type)}`);
+    if (location_type) contextParts.push(`מיקום גידול: ${locationMap[String(location_type)] ?? String(location_type)}`);
+    contextParts.push(`תאריך היום: ${today}`);
+
+    const systemPrompt = `אתה צ'ופצ'ו — מומחה גינון ביודינמי חמים ומעשי. המשתמש זה עתה הוסיף צמח חדש לגינה שלו ואתה מכין עבורו 2–3 משימות התחלתיות מעשיות לטיפוח הצמח בשבועות הקרובים.
+
+החזר מערך JSON בלבד — ללא markdown, ללא גרשיים מסביב, ללא הקדמה, ללא סיומת. רק מערך JSON תקין.
+
+כל משימה במבנה הבא:
+{"title":"כותרת קצרה ופעילה בעברית עד 8 מילים","notes":"הנחיה מעשית של 1–2 משפטים בעברית בסגנון חמים וישיר","date":"YYYY-MM-DD","category":"ערך מהרשימה המותרת","priority":"medium"}
+
+ערכי category מותרים בלבד: watering | fertilizing | pruning | planting | harvesting | pest_control | composting | general
+
+כללים:
+- 2–3 משימות בלבד
+- תאריכים בטווח 14 הימים הקרובים החל מהיום (${today})
+- משימה ראשונה: השקיה ראשונית — היום או מחר, category: watering
+- משימה שנייה: הזנה, מולץ, או הכנת הקרקע — 7–14 ימים מהיום, category: fertilizing או general
+- משימה שלישית (אופציונלית): תצפית או בדיקה מותאמת לסוג הצמח — category: general
+- priority תמיד "medium" אלא אם יש סיבה ברורה אחרת`;
+
+    const aiRes = (await axios.post(ANTHROPIC_URL, {
+      model:      'claude-haiku-4-5-20251001',
+      max_tokens: 1500,
+      system:     systemPrompt,
+      messages:   [{ role: 'user', content: contextParts.join('\n') }],
+    }, { headers: ANTHROPIC_HEADERS, timeout: 60000 })).data;
+
+    const raw: string = (aiRes.content as any[])
+      .filter((b: any) => b.type === 'text')
+      .map((b: any) => b.text as string)
+      .join('');
+
+    // Safe parse: strip any accidental markdown fences, then try JSON.parse,
+    // then fall back to regex extraction of the first JSON array in the response.
+    const cleaned = raw.replace(/```json|```/g, '').trim();
+
+    let tasks: any[];
+    try {
+      tasks = JSON.parse(cleaned);
+    } catch {
+      const match = cleaned.match(/\[[\s\S]*\]/);
+      if (match) {
+        try {
+          tasks = JSON.parse(match[0]);
+        } catch {
+          console.error('[POST /api/chupchu/starter-tasks] JSON parse fallback failed:', cleaned.slice(0, 200));
+          return res.status(502).json({ error: 'parse_error' });
+        }
+      } else {
+        console.error('[POST /api/chupchu/starter-tasks] No JSON array found in response:', cleaned.slice(0, 200));
+        return res.status(502).json({ error: 'parse_error' });
+      }
+    }
+
+    if (!Array.isArray(tasks)) {
+      console.error('[POST /api/chupchu/starter-tasks] Parsed value is not an array');
+      return res.status(502).json({ error: 'parse_error' });
+    }
+
+    // Echo garden_plants_id back on each task so the client can pass it straight
+    // to POST /api/tasks/bulk without any additional mapping.
+    const gpId = garden_plants_id ?? null;
+    const enriched = tasks.map((t: any) => ({
+      title:            String(t.title ?? ''),
+      notes:            t.notes ? String(t.notes) : null,
+      date:             String(t.date ?? today),
+      category:         String(t.category ?? 'general'),
+      priority:         String(t.priority ?? 'medium'),
+      garden_plants_id: gpId,
+    }));
+
+    res.json({ tasks: enriched });
+  } catch (err: any) {
+    console.error('[POST /api/chupchu/starter-tasks]', err.message);
+    res.status(500).json({ error: err.message });
+  }
+});
+
 // ── Past conversation context builder ───────────────────────────────────────
 // Takes everything BEFORE the last-20-message context window (the same boundary
 // historyForClaude uses), picks up to 5 evenly-spaced user+reply pairs, and
