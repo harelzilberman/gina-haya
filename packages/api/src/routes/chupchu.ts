@@ -258,11 +258,13 @@ chupChuRouter.post('/memory/summarize', async (req: any, res) => {
       .filter((m: any) => typeof m.content === 'string')
       .map((m: any) => {
         const label = m.role === 'user' ? (lang === 'he' ? 'משתמש' : 'User') : (lang === 'he' ? "צ'ופצ'ו" : 'Chupchu');
-        const body  = String(m.content).slice(0, 200);
+        // Fix E: codepoint-safe truncation — .slice on UTF-16 code units can split surrogate pairs
+        const body  = Array.from(String(m.content)).slice(0, 200).join('');
         return `${label}: ${body}`;
       })
       .join('\n');
 
+    // Fix B: tightened to 2-3 sentences (down from 3-5) to reduce token budget pressure
     const summaryPrompt = lang === 'he' ? `
 אתה עוזר שמסכם שיחות עם גנן.
 הזיכרון הקיים:
@@ -276,8 +278,8 @@ ${convText}
 
 צור סיכום מעודכן ועובדות מובנות. החזר JSON בלבד:
 {
-  "summary_he": "סיכום בעברית 3-5 משפטים על המשתמש, גינתו, אתגרים, העדפות",
-  "summary_en": "3-5 sentence English summary about the user, their garden, challenges, preferences",
+  "summary_he": "סיכום בעברית 2-3 משפטים על המשתמש, גינתו, אתגרים, העדפות",
+  "summary_en": "2-3 sentence English summary about the user, their garden, challenges, preferences",
   "garden_facts": {
     "gardenType": "...",
     "location": "...",
@@ -300,8 +302,8 @@ ${convText}
 
 Create an updated summary and structured facts. Return JSON only:
 {
-  "summary_he": "3-5 sentence Hebrew summary about the user, their garden, challenges, preferences",
-  "summary_en": "3-5 sentence English summary about the user, their garden, challenges, preferences",
+  "summary_he": "2-3 sentence Hebrew summary about the user, their garden, challenges, preferences",
+  "summary_en": "2-3 sentence English summary about the user, their garden, challenges, preferences",
   "garden_facts": {
     "gardenType": "...",
     "location": "...",
@@ -313,11 +315,19 @@ Create an updated summary and structured facts. Return JSON only:
   }
 }`;
 
+    // Fix B: raised from 2500 → 4096 to give headroom above the tighter schema
     const aiRes = (await axios.post(ANTHROPIC_URL, {
       model: 'claude-haiku-4-5-20251001',
-      max_tokens: 2500,
+      max_tokens: 4096,
       messages: [{ role: 'user', content: summaryPrompt }],
     }, { headers: ANTHROPIC_HEADERS, timeout: 90000 })).data;
+
+    // Fix A: short-circuit before any parse attempt if the model hit the token limit.
+    // Mirrors the stop_reason handling in services/claude.ts:820.
+    if (aiRes.stop_reason === 'max_tokens') {
+      console.error('[memory/summarize] response truncated at max_tokens — skipping upsert');
+      return res.json({ ok: true, skipped: true, reason: 'max_tokens' });
+    }
 
     const text = aiRes.content[0].type === 'text' ? aiRes.content[0].text : '';
     const cleaned = text.replace(/```json|```/g, '').trim();
@@ -326,19 +336,35 @@ Create an updated summary and structured facts. Return JSON only:
     try {
       parsed = JSON.parse(cleaned);
     } catch (parseErr) {
-      // Fallback: attempt to extract a JSON object via regex
+      // Fallback: attempt to extract a JSON object via greedy regex.
+      // NOTE: kept greedy (\{[\s\S]*\}) deliberately — non-greedy would break on
+      // nested garden_facts. Fix C's validation gate below makes it safe.
       const match = cleaned.match(/\{[\s\S]*\}/);
       if (match) {
         try {
           parsed = JSON.parse(match[0]);
         } catch {
-          console.error('[POST /api/chupchu/memory/summarize] JSON parse fallback also failed:', cleaned.slice(0, 200));
+          // Fix D: log full raw response so Railway shows the actual failure, not a 200-char slice
+          console.error('[memory/summarize] JSON parse fallback also failed. raw response (full):', text);
           return res.json({ ok: true, skipped: true, reason: 'parse_failed' });
         }
       } else {
-        console.error('[POST /api/chupchu/memory/summarize] No JSON object found in response:', cleaned.slice(0, 200));
+        // Fix D: log full raw response
+        console.error('[memory/summarize] no JSON object found in response. raw response (full):', text);
         return res.json({ ok: true, skipped: true, reason: 'no_json' });
       }
+    }
+
+    // Fix C: validate before upsert — the greedy regex can extract a partial object
+    // (e.g. truncated mid-value but containing a } in a string) that parses successfully
+    // but is missing fields. Never overwrite existing memory with nulls.
+    if (
+      typeof parsed.summary_he !== 'string' || !parsed.summary_he.trim() ||
+      typeof parsed.summary_en !== 'string' || !parsed.summary_en.trim() ||
+      typeof parsed.garden_facts !== 'object' || parsed.garden_facts === null
+    ) {
+      console.error('[memory/summarize] incomplete response — upsert skipped. raw response (full):', text);
+      return res.json({ ok: true, skipped: true, reason: 'incomplete_response' });
     }
 
     const { error } = await db
@@ -527,8 +553,9 @@ function buildPastContextSummary(allMessages: ChupChuMessage[], userId?: string)
         : d.toLocaleDateString('he-IL', { day: 'numeric', month: 'numeric', year: 'numeric' });
     } catch { date = 'בעבר'; }
 
-    const topic     = String(userMsg.content ?? '').replace(/🌿 \[.*?\]/g, '[תמונה]').slice(0, 120);
-    const replyText = String(reply?.content ?? '').slice(0, 150);
+    // Fix E: codepoint-safe truncation to avoid splitting surrogate pairs on emoji
+    const topic     = Array.from(String(userMsg.content ?? '').replace(/🌿 \[.*?\]/g, '[תמונה]')).slice(0, 120).join('');
+    const replyText = Array.from(String(reply?.content ?? '')).slice(0, 150).join('');
 
     lines.push(
       `שיחה מ-${date}: המשתמש שאל: "${topic}".` +
@@ -778,7 +805,8 @@ chupChuRouter.post('/chat', async (req: any, res) => {
         .slice(-20)
         .map(m => ({
           role: m.role as 'user' | 'assistant',
-          content: String(m.content ?? '').slice(0, 500),
+          // Fix E: codepoint-safe truncation to avoid splitting surrogate pairs on emoji
+          content: Array.from(String(m.content ?? '')).slice(0, 500).join(''),
           timestamp: new Date().toISOString(),
         }));
     } else {

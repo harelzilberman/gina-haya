@@ -96,6 +96,18 @@ app.use((_req, res) => {
   res.status(404).json({ error: 'Not found' });
 });
 
+// Fix F: global error handler — must be registered AFTER all routes and the 404 handler.
+// Intercepts errors passed via next(err), primarily body-parser (express.json) failures
+// that would otherwise reach Node's finalhandler and appear in Railway as raw stack traces.
+// Route handlers manage their own errors internally (try/catch → res.status(5xx).json())
+// and never call next(err), so this handler does not interfere with normal request flow.
+// err.status is set by body-parser on JSON parse failure (400); default to 400 for
+// other middleware errors since they typically indicate a bad request.
+app.use((err: any, req: express.Request, res: express.Response, _next: express.NextFunction) => {
+  console.error('[express error]', req.method, req.path, err.message);
+  res.status(err.status ?? 400).json({ error: 'invalid_request' });
+});
+
 app.listen(PORT, () => {
   console.log(`Gina Haya API running on http://localhost:${PORT}`);
   startCronJobs();
