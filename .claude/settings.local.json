@@ -93,7 +93,10 @@
       "Read(//c/Users/**)",
       "Read(//d/gina_haya/**)",
       "Bash(flutter analyze *)",
-      "Bash(npx tsx *)"
+      "Bash(npx tsx *)",
+      "Bash(mkdir -p /d/gw/gina-haya-website/packages/api/public/images/articles)",
+      "Bash(cp /d/gw/gina-haya-website/packages/web/public/images/articles/* /d/gw/gina-haya-website/packages/api/public/images/articles/)",
+      "Bash(grep *)"
     ]
   }
 }
