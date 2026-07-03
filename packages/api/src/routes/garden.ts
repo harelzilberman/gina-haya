@@ -212,13 +212,18 @@ gardenRouter.post('/:id/plants', async (req: any, res) => {
   try {
     const { plantId, commonNameHe, commonNameEn, notes, locationType, locationDescription } = req.body;
 
-    // Enforce per-tier plant-per-garden limit
+    // Enforce per-tier plant-per-garden limit.
+    // Only count active (non-archived) plants — archived plants do not consume
+    // a slot and must not block new additions.
     const maxPlants = req.limits?.maxPlantsPerGarden ?? null;
     if (maxPlants !== null) {
-      const { count } = await db
+      const { count, error: countError } = await db
         .from('garden_plants')
         .select('id', { count: 'exact', head: true })
-        .eq('garden_id', req.params.id);
+        .eq('garden_id', req.params.id)
+        .is('archived_at', null);
+
+      if (countError) throw countError;
 
       if ((count ?? 0) >= maxPlants) {
         return res.status(403).json({
@@ -276,7 +281,7 @@ gardenRouter.patch('/garden-plants/:id', async (req: any, res) => {
     const userId = req.user?.id;
     if (!userId) return res.status(401).json({ error: 'Unauthorized' });
     const { id } = req.params;
-    const { location_type, location_description, notes, sun_exposure, companions, soil, variety, plant_type } = req.body;
+    const { location_type, location_description, notes, sun_exposure, companions, soil, variety, plant_type, archived_at } = req.body;
 
     // Verify ownership: garden_plants has no user_id, ownership flows through garden_id -> gardens.user_id
     const { data: gp, error: gpError } = await db
@@ -305,6 +310,9 @@ gardenRouter.patch('/garden-plants/:id', async (req: any, res) => {
     if (soil !== undefined) updateObj.soil = soil;
     if (variety !== undefined) updateObj.variety = variety;
     if (plant_type !== undefined) updateObj.plant_type = plant_type;
+    // archived_at: ISO timestamp string to archive, null to un-archive.
+    // Explicit undefined check so the client can send { archived_at: null } to unarchive.
+    if ('archived_at' in req.body) updateObj.archived_at = archived_at ?? null;
 
     const { data, error } = await db
       .from('garden_plants')

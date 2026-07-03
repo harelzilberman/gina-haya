@@ -89,11 +89,21 @@ usersRouter.get('/usage', async (req: any, res) => {
       .select('id', { count: 'exact', head: true })
       .eq('user_id', userId);
 
-    // Count plants across all gardens
-    const { count: plantsCount } = await db
-      .from('garden_plants')
-      .select('id', { count: 'exact', head: true })
+    // Count active (non-archived) plants across all user gardens.
+    // garden_plants has no user_id column; ownership is through garden_id → gardens.user_id.
+    // Fix: join via the gardens we already have in gardensCount query, resolved by garden_id IN (...).
+    const { data: userGardensForPlants } = await db
+      .from('gardens')
+      .select('id')
       .eq('user_id', userId);
+    const userGardenIds = (userGardensForPlants ?? []).map((g: any) => g.id);
+    const { count: plantsCount } = userGardenIds.length > 0
+      ? await db
+          .from('garden_plants')
+          .select('id', { count: 'exact', head: true })
+          .in('garden_id', userGardenIds)
+          .is('archived_at', null)
+      : { count: 0 };
 
     // Count gardens
     const { count: gardensCount } = await db

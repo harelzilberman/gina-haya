@@ -16,12 +16,14 @@ function todayISO(): string {
 }
 
 // GET /api/tasks/week — get this week's tasks
+// ?include_archived=true — include tasks linked to archived plants (for Passport view)
 tasksRouter.get('/week', async (req, res) => {
   try {
     const today = todayISO();
     const end = new Date(today + 'T00:00:00');
     end.setDate(end.getDate() + 6);
-    const tasks = await getTasksForWeek(req.user!.id, today, end.toISOString().slice(0, 10));
+    const includeArchived = req.query.include_archived === 'true';
+    const tasks = await getTasksForWeek(req.user!.id, today, end.toISOString().slice(0, 10), includeArchived);
     res.json(tasks);
   } catch (err: any) {
     res.status(500).json({ error: err.message });
@@ -29,11 +31,13 @@ tasksRouter.get('/week', async (req, res) => {
 });
 
 // GET /api/tasks/range — get tasks for a date range
+// ?include_archived=true — include tasks linked to archived plants (for Passport view)
 tasksRouter.get('/range', async (req, res) => {
   try {
-    const { from, to } = req.query as { from?: string; to?: string };
+    const { from, to, include_archived } = req.query as { from?: string; to?: string; include_archived?: string };
     if (!from || !to) return res.status(400).json({ error: 'from and to required' });
-    const tasks = await getTasksForRange(req.user!.id, from, to);
+    const includeArchived = include_archived === 'true';
+    const tasks = await getTasksForRange(req.user!.id, from, to, includeArchived);
     res.json(tasks);
   } catch (err: any) {
     res.status(500).json({ error: err.message });

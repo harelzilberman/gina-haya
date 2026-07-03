@@ -19,14 +19,63 @@ export interface GardenTask {
   updated_at: string;
 }
 
-export async function getTasksForWeek(userId: string, from: string, to: string): Promise<GardenTask[]> {
-  const { data, error } = await db
+export async function getTasksForWeek(
+  userId: string,
+  from: string,
+  to: string,
+  includeArchived = false,
+): Promise<GardenTask[]> {
+  // When includeArchived is false (default), exclude tasks linked to archived plants.
+  // Tasks with garden_plants_id NULL (general tasks + legacy name-only tasks) are
+  // never filtered — they have no plant FK to check.
+  //
+  // Known gap: tasks with plant_name set but garden_plants_id NULL (pre-018 legacy
+  // rows) are NOT filtered even if the named plant has since been archived. This is
+  // intentional — we cannot reliably match by name after a potential rename.
+
+  let archivedPlantIds: string[] = [];
+
+  if (!includeArchived) {
+    // garden_plants has no user_id; resolve via the user's garden IDs.
+    const { data: userGardens, error: gardensError } = await db
+      .from('gardens')
+      .select('id')
+      .eq('user_id', userId);
+
+    if (gardensError) throw gardensError;
+
+    const gardenIds = (userGardens ?? []).map((g: any) => g.id);
+
+    if (gardenIds.length > 0) {
+      const { data: archivedPlants, error: archivedError } = await db
+        .from('garden_plants')
+        .select('id')
+        .in('garden_id', gardenIds)
+        .not('archived_at', 'is', null);
+
+      if (archivedError) throw archivedError;
+      archivedPlantIds = (archivedPlants ?? []).map((p: any) => p.id);
+    }
+  }
+
+  let query = db
     .from('garden_tasks')
     .select('*')
     .eq('user_id', userId)
     .gte('date', from)
     .lte('date', to)
     .order('date', { ascending: true });
+
+  if (archivedPlantIds.length > 0) {
+    // Exclude tasks linked to archived plants while keeping tasks with no plant
+    // link (garden_plants_id IS NULL). Using .or() because SQL NOT IN excludes
+    // NULL rows (NULL NOT IN (...) evaluates to NULL/unknown, not TRUE).
+    query = query.or(
+      `garden_plants_id.is.null,garden_plants_id.not.in.(${archivedPlantIds.join(',')})`
+    );
+  }
+
+  const { data, error } = await query;
   if (error) throw error;
   return data ?? [];
 }
@@ -114,8 +163,13 @@ export async function createCustomTask(
   return data;
 }
 
-export async function getTasksForRange(userId: string, from: string, to: string): Promise<GardenTask[]> {
-  return getTasksForWeek(userId, from, to);
+export async function getTasksForRange(
+  userId: string,
+  from: string,
+  to: string,
+  includeArchived = false,
+): Promise<GardenTask[]> {
+  return getTasksForWeek(userId, from, to, includeArchived);
 }
 
 export async function updateTask(
