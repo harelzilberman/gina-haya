@@ -10,6 +10,7 @@ import type { ChupChuMessage, ChupChuContext } from '@gina-haya/shared';
 import { todayInIsrael } from '@gina-haya/shared';
 import { getRecentCompletedTasks } from '../db/queries/tasks';
 import { getLimits } from '../config/tiers';
+import { checkAndRecordVisionUse } from '../services/visionQuota';
 
 const ANTHROPIC_URL = 'https://api.anthropic.com/v1/messages';
 const ANTHROPIC_HEADERS = {
@@ -113,6 +114,21 @@ chupChuRouter.post('/full-diagnosis', async (req: any, res) => {
   try {
     const { image, mimeType = 'image/jpeg', language = 'he' } = req.body;
     if (!image) return res.status(400).json({ success: false, error: 'No image provided' });
+
+    // ── Vision quota gate ────────────────────────────────────────────────────
+    // Checked BEFORE any Anthropic spend.
+    // Tier not pre-loaded on this route — helper will resolve it from the DB.
+    // Refusal shape: { ok: false, reason: 'vision_quota_exceeded', used, limit }
+    // HTTP 200 so the app can render an upsell rather than a generic error.
+    {
+      const userId = req.user?.id;
+      if (userId) {
+        const quota = await checkAndRecordVisionUse(userId, 'full_diagnosis');
+        if (!quota.allowed) {
+          return res.json({ ok: false, reason: 'vision_quota_exceeded', used: quota.used, limit: quota.limit });
+        }
+      }
+    }
 
     const systemPrompt = language === 'he'
       ? `אתה צ'ופצ'ו, מומחה גינה ביודינמי. קיבלת תמונה של צמח. עליך לנתח אותה לעומק ולהחזיר תשובה בפורמט JSON בלבד — ללא טקסט נוסף, ללא markdown, רק JSON תקין. נתח: זיהוי הצמח, מצב בריאותו, בעיות שנראות, צעדי טיפול מפורטים, משימות דחופות, וטיפ ביודינמי. אם הצמח בריא, מלא את השדות בהתאם עם tasks ריק או עם משימות תחזוקה שגרתיות.`
@@ -624,38 +640,52 @@ chupChuRouter.post('/chat', async (req: any, res) => {
     const tier = userProfile?.subscription_tier || 'free';
     const lang = userProfile?.language_preference || 'he';
 
-    // ── 2. Check monthly message limit ────────────────────────────────────
+    // ── 2. Check monthly limits ───────────────────────────────────────────
+    // Fix 4: use 'professional' (the real top-tier key in TIER_LIMITS) so
+    // LAUNCH_FREE_MODE users get genuine unlimited limits, not the free fallback
+    // that 'pro' (a non-existent key) would produce via getLimits().
     const LAUNCH_FREE_MODE = process.env.LAUNCH_FREE_MODE === 'true';
-    const effectiveTier = LAUNCH_FREE_MODE ? 'pro' : tier;
+    const effectiveTier = LAUNCH_FREE_MODE ? 'professional' : tier;
+
+    // Image turns consume a vision look, not a text-message credit.
+    // Check the vision quota instead and skip the chat-message counter entirely
+    // — this prevents double-charging an image turn against both quotas.
+    // monthlyLimit is declared here so it is in scope for the final res.json().
     const monthlyLimit = getLimits(effectiveTier).maxChupChuPerMonth;
+    if (hasImage) {
+      const quota = await checkAndRecordVisionUse(userId, 'chat_image', null, effectiveTier);
+      if (!quota.allowed) {
+        return res.json({ ok: false, reason: 'vision_quota_exceeded', used: quota.used, limit: quota.limit });
+      }
+    } else {
+      // Text-only turn: check the chat message quota as before.
+      if (!LAUNCH_FREE_MODE && monthlyLimit !== null) {
+        const startOfMonth = new Date();
+        startOfMonth.setDate(1);
+        startOfMonth.setHours(0, 0, 0, 0);
 
-    if (!LAUNCH_FREE_MODE && monthlyLimit !== null) {
-      // Count messages sent this month
-      const startOfMonth = new Date();
-      startOfMonth.setDate(1);
-      startOfMonth.setHours(0, 0, 0, 0);
+        const { data: convData } = await db
+          .from('chupchu_conversations')
+          .select('messages')
+          .eq('user_id', userId)
+          .gte('updated_at', startOfMonth.toISOString())
+          .limit(1)
+          .single();
 
-      const { data: convData } = await db
-        .from('chupchu_conversations')
-        .select('messages')
-        .eq('user_id', userId)
-        .gte('updated_at', startOfMonth.toISOString())
-        .limit(1)
-        .single();
+        const existingMessages: ChupChuMessage[] = convData?.messages || [];
+        const userMessagesThisMonth = existingMessages.filter(
+          m => m.role === 'user' &&
+          new Date(m.timestamp) >= startOfMonth
+        ).length;
 
-      const existingMessages: ChupChuMessage[] = convData?.messages || [];
-      const userMessagesThisMonth = existingMessages.filter(
-        m => m.role === 'user' &&
-        new Date(m.timestamp) >= startOfMonth
-      ).length;
-
-      if (userMessagesThisMonth >= monthlyLimit) {
-        return res.status(429).json({
-          error: 'rate_limit_exceeded',
-          tier,
-          messagesUsedThisMonth: userMessagesThisMonth,
-          monthlyLimit,
-        });
+        if (userMessagesThisMonth >= monthlyLimit) {
+          return res.status(429).json({
+            error: 'rate_limit_exceeded',
+            tier,
+            messagesUsedThisMonth: userMessagesThisMonth,
+            monthlyLimit,
+          });
+        }
       }
     }
 

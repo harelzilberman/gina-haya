@@ -6,6 +6,7 @@ import { attachTier } from '../middleware/tierMiddleware';
 import { analyzePlantImage, compressImageForClaude } from '../services/plantVision';
 import { fetchWeatherForRegion } from '../services/weather';
 import { todayInIsrael } from '@gina-haya/shared';
+import { checkAndRecordVisionUse } from '../services/visionQuota';
 
 export const trackersRouter: IRouter = Router();
 
@@ -403,6 +404,20 @@ trackersRouter.post('/:id/checkin', async (req: any, res) => {
           console.log(`[limit] user ${userId} hit maxCheckinsPerTrackerPerMonth (tier=${tier})`);
           return res.status(403).json(errPayload);
         }
+      }
+    }
+
+    // ── Vision quota gate ─────────────────────────────────────────────────────
+    // Checked BEFORE any Anthropic spend.
+    // tier is already resolved via attachTier middleware (req.tier).
+    // garden_plants_id from the tracker row is recorded for billing context.
+    // Refusal shape: { ok: false, reason: 'vision_quota_exceeded', used, limit }
+    // HTTP 200 so the app can render an upsell rather than a generic error.
+    {
+      const gardenPlantsId: string | null = (tracker as any).garden_plants_id ?? null;
+      const quota = await checkAndRecordVisionUse(userId, 'tracker_checkin', gardenPlantsId, req.tier);
+      if (!quota.allowed) {
+        return res.json({ ok: false, reason: 'vision_quota_exceeded', used: quota.used, limit: quota.limit });
       }
     }
 

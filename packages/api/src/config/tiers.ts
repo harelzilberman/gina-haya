@@ -5,6 +5,7 @@ export interface TierLimits {
   maxCheckinsPerTrackerPerMonth: number | null;
   maxTotalCheckinsEver: number | null;
   maxChupChuPerMonth: number | null;
+  maxVisionLooksPerMonth: number | null;  // null = unlimited
   encyclopediaAccess: boolean;
 }
 
@@ -16,6 +17,7 @@ export const TIER_LIMITS: Record<string, TierLimits> = {
     maxCheckinsPerTrackerPerMonth: null,
     maxTotalCheckinsEver:          1,
     maxChupChuPerMonth:            20,
+    maxVisionLooksPerMonth:        3,
     encyclopediaAccess:            false,
   },
   grower: {
@@ -25,6 +27,7 @@ export const TIER_LIMITS: Record<string, TierLimits> = {
     maxCheckinsPerTrackerPerMonth: 3,
     maxTotalCheckinsEver:          null,
     maxChupChuPerMonth:            50,
+    maxVisionLooksPerMonth:        10,
     encyclopediaAccess:            true,
   },
   gardener_pro: {
@@ -34,6 +37,7 @@ export const TIER_LIMITS: Record<string, TierLimits> = {
     maxCheckinsPerTrackerPerMonth: 10,
     maxTotalCheckinsEver:          null,
     maxChupChuPerMonth:            null,
+    maxVisionLooksPerMonth:        null,
     encyclopediaAccess:            true,
   },
   professional: {
@@ -43,6 +47,7 @@ export const TIER_LIMITS: Record<string, TierLimits> = {
     maxCheckinsPerTrackerPerMonth: null,
     maxTotalCheckinsEver:          null,
     maxChupChuPerMonth:            null,
+    maxVisionLooksPerMonth:        null,
     encyclopediaAccess:            true,
   },
 };

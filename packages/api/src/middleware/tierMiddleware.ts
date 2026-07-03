@@ -23,10 +23,12 @@ export async function attachTier(req: Request, res: Response, next: NextFunction
       .single();
 
     // LAUNCH MODE — everyone gets Pro access
-    // Remove this when payments are ready
+    // Remove this when payments are ready.
+    // Fix 4: use 'professional' (the real top-tier key in TIER_LIMITS) — 'pro'
+    // has no entry and falls back to free limits via getLimits().
     const LAUNCH_FREE_MODE = process.env.LAUNCH_FREE_MODE === 'true';
     const tier = LAUNCH_FREE_MODE
-      ? 'pro'
+      ? 'professional'
       : (data?.subscription_tier ?? 'free');
     req.tier = tier;
     req.limits = getLimits(tier);
