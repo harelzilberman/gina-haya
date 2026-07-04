@@ -281,7 +281,11 @@ gardenRouter.patch('/garden-plants/:id', async (req: any, res) => {
     const userId = req.user?.id;
     if (!userId) return res.status(401).json({ error: 'Unauthorized' });
     const { id } = req.params;
-    const { location_type, location_description, notes, sun_exposure, companions, soil, variety, plant_type, archived_at } = req.body;
+    const {
+      location_type, location_description, notes, sun_exposure, companions, soil,
+      variety, plant_type, archived_at,
+      auto_irrigation, irrigation_days, irrigation_times,
+    } = req.body;
 
     // Verify ownership: garden_plants has no user_id, ownership flows through garden_id -> gardens.user_id
     const { data: gp, error: gpError } = await db
@@ -313,6 +317,45 @@ gardenRouter.patch('/garden-plants/:id', async (req: any, res) => {
     // archived_at: ISO timestamp string to archive, null to un-archive.
     // Explicit undefined check so the client can send { archived_at: null } to unarchive.
     if ('archived_at' in req.body) updateObj.archived_at = archived_at ?? null;
+
+    // ── Auto-irrigation fields ───────────────────────────────────────────────
+    if (auto_irrigation !== undefined) {
+      updateObj.auto_irrigation = Boolean(auto_irrigation);
+      if (!updateObj.auto_irrigation) {
+        // Turning off — clear schedule
+        updateObj.irrigation_days = null;
+        updateObj.irrigation_times = null;
+      }
+    }
+
+    if (irrigation_days !== undefined) {
+      if (
+        !Array.isArray(irrigation_days) ||
+        irrigation_days.length < 1 || irrigation_days.length > 7 ||
+        !irrigation_days.every((d: any) => Number.isInteger(Number(d)) && Number(d) >= 0 && Number(d) <= 6) ||
+        new Set(irrigation_days.map(Number)).size !== irrigation_days.length
+      ) {
+        return res.status(400).json({
+          error: 'invalid_irrigation_days',
+          message: 'irrigation_days must be 1–7 unique integers in range 0–6 (0=Sun … 6=Sat)',
+        });
+      }
+      updateObj.irrigation_days = irrigation_days.map(Number);
+    }
+
+    if (irrigation_times !== undefined) {
+      if (
+        !Array.isArray(irrigation_times) ||
+        irrigation_times.length < 1 || irrigation_times.length > 3 ||
+        !irrigation_times.every((t: any) => /^\d{2}:\d{2}$/.test(String(t)))
+      ) {
+        return res.status(400).json({
+          error: 'invalid_irrigation_times',
+          message: 'irrigation_times must be 1–3 strings in HH:MM format',
+        });
+      }
+      updateObj.irrigation_times = irrigation_times.map(String);
+    }
 
     const { data, error } = await db
       .from('garden_plants')

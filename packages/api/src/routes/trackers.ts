@@ -510,6 +510,23 @@ trackersRouter.post('/:id/checkin', async (req: any, res) => {
     }
     const { analysis, growingPlan, tasks } = analysisResult;
 
+    // Suppress watering tasks for auto-irrigated plants
+    // (tracker tasks have no category field — filter by Hebrew title keyword)
+    let filteredTasks = tasks;
+    const gardenPlantId = (tracker as any).garden_plants_id ?? null;
+    if (gardenPlantId) {
+      const { data: gpRow } = await db
+        .from('garden_plants')
+        .select('auto_irrigation')
+        .eq('id', gardenPlantId)
+        .single();
+      if (gpRow?.auto_irrigation === true) {
+        filteredTasks = tasks.filter(
+          (t: any) => !/השק/u.test(String(t.title ?? ''))
+        );
+      }
+    }
+
     // Save checkin with photo path
     const { data: checkin, error: checkinError } = await db
       .from('plant_tracker_checkins')
@@ -522,14 +539,14 @@ trackersRouter.post('/:id/checkin', async (req: any, res) => {
         growing_plan:    growingPlan,
         notes:           notes ?? null,
         photo_path:      photoPath,
-        suggested_tasks: tasks.length > 0 ? tasks : null,
+        suggested_tasks: filteredTasks.length > 0 ? filteredTasks : null,
       })
       .select()
       .single();
 
     if (checkinError) throw checkinError;
 
-    res.status(201).json({ checkin, analysis, growingPlan, suggested_tasks: tasks, used_credit: usedAnalysisCredit });
+    res.status(201).json({ checkin, analysis, growingPlan, suggested_tasks: filteredTasks, used_credit: usedAnalysisCredit });
   } catch (err: any) {
     console.error('[POST /api/trackers/:id/checkin]', err.message, err.stack);
     res.status(500).json({ error: err.message, message: err.message, error_code: 'unknown' });

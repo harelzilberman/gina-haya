@@ -224,9 +224,24 @@ chupChuRouter.post('/full-diagnosis', async (req: any, res) => {
       }
     }
 
-    // ── Persist to plant_timeline (only when plant_id was provided) ──────────
+    // ── Fetch plant context, suppress watering tasks, persist timeline ────────
+    // All three steps share a single garden_plants fetch — only runs when plant_id is set.
     let timelineEntryId: string | null = null;
     if (plant_id) {
+      const { data: gpRow } = await db
+        .from('garden_plants')
+        .select('auto_irrigation')
+        .eq('id', plant_id)
+        .single();
+
+      // Suppress watering tasks for auto-irrigated plants (belt-and-braces;
+      // the full-diagnosis prompt has no per-plant context, so filtering is the primary guard)
+      if (gpRow?.auto_irrigation === true && Array.isArray(diagnosis.tasks)) {
+        diagnosis.tasks = diagnosis.tasks.filter(
+          (t: any) => !/השק/u.test(String(t.title ?? ''))
+        );
+      }
+
       const { data: tlData, error: tlError } = await db
         .from('plant_timeline')
         .insert({
@@ -450,6 +465,17 @@ chupChuRouter.post('/starter-tasks', async (req: any, res) => {
 
     const today = todayInIsrael();
 
+    // Check auto_irrigation so we can suppress watering tasks for drip plants
+    let autoIrrigation = false;
+    if (garden_plants_id) {
+      const { data: gpRow } = await db
+        .from('garden_plants')
+        .select('auto_irrigation')
+        .eq('id', String(garden_plants_id))
+        .single();
+      autoIrrigation = gpRow?.auto_irrigation === true;
+    }
+
     // Build a concise context string for the user turn
     const plantLabel = variety
       ? `${String(plant_name).trim()} (זן: ${String(variety).trim()})`
@@ -474,6 +500,10 @@ chupChuRouter.post('/starter-tasks', async (req: any, res) => {
     if (location_type) contextParts.push(`מיקום גידול: ${locationMap[String(location_type)] ?? String(location_type)}`);
     contextParts.push(`תאריך היום: ${today}`);
 
+    const irrigationRule = autoIrrigation
+      ? '\n- הצמח מושקה אוטומטית — אל תציע משימות השקיה'
+      : '\n- משימה ראשונה: השקיה ראשונית — היום או מחר, category: watering';
+
     const systemPrompt = `אתה צ'ופצ'ו — מומחה גינון ביודינמי חמים ומעשי. המשתמש זה עתה הוסיף צמח חדש לגינה שלו ואתה מכין עבורו 2–3 משימות התחלתיות מעשיות לטיפוח הצמח בשבועות הקרובים.
 
 החזר מערך JSON בלבד — ללא markdown, ללא גרשיים מסביב, ללא הקדמה, ללא סיומת. רק מערך JSON תקין.
@@ -485,8 +515,7 @@ chupChuRouter.post('/starter-tasks', async (req: any, res) => {
 
 כללים:
 - 2–3 משימות בלבד
-- תאריכים בטווח 14 הימים הקרובים החל מהיום (${today})
-- משימה ראשונה: השקיה ראשונית — היום או מחר, category: watering
+- תאריכים בטווח 14 הימים הקרובים החל מהיום (${today})${irrigationRule}
 - משימה שנייה: הזנה, מולץ, או הכנת הקרקע — 7–14 ימים מהיום, category: fertilizing או general
 - משימה שלישית (אופציונלית): תצפית או בדיקה מותאמת לסוג הצמח — category: general
 - priority תמיד "medium" אלא אם יש סיבה ברורה אחרת`;
@@ -530,10 +559,16 @@ chupChuRouter.post('/starter-tasks', async (req: any, res) => {
       return res.status(502).json({ error: 'parse_error' });
     }
 
+    // Belt-and-braces: post-filter watering tasks for auto-irrigated plants
+    // (Haiku may ignore the prompt instruction)
+    const filteredTasks = autoIrrigation
+      ? tasks.filter((t: any) => String(t.category ?? '') !== 'watering')
+      : tasks;
+
     // Echo garden_plants_id back on each task so the client can pass it straight
     // to POST /api/tasks/bulk without any additional mapping.
     const gpId = garden_plants_id ?? null;
-    const enriched = tasks.map((t: any) => ({
+    const enriched = filteredTasks.map((t: any) => ({
       title:            String(t.title ?? ''),
       notes:            t.notes ? String(t.notes) : null,
       date:             String(t.date ?? today),
@@ -913,10 +948,24 @@ chupChuRouter.post('/chat', async (req: any, res) => {
     const pendingTasks = pendingTasksData ?? [];
 
     // ── 7e. Build garden section (inject plants directly, no tool call needed)
+    // Day-of-week number → Hebrew letter (0=Sunday … 6=Saturday, Israel convention)
+    const DAY_HE = ['א','ב','ג','ד','ה','ו','ש'];
+
     let gardenSection = '';
     if (garden) {
+      // Build plant list with inline irrigation note for auto-irrigated plants
       const plantList = (garden.garden_plants ?? [])
-        .map((p: any) => (lang === 'he' ? p.common_name_he : p.common_name_en))
+        .map((p: any) => {
+          const name = lang === 'he' ? p.common_name_he : p.common_name_en;
+          if (!name) return null;
+          if (p.auto_irrigation && p.irrigation_days?.length && p.irrigation_times?.length) {
+            const days = (p.irrigation_days as number[]).map(d => DAY_HE[d] ?? d).join(',');
+            const times = (p.irrigation_times as string[]).join(', ');
+            // One concise line: plant name + drip schedule
+            return `${name} (מושקה אוטומטית — ימים ${days}; ${times})`;
+          }
+          return name;
+        })
         .filter(Boolean) as string[];
 
       const lines: string[] = [];
