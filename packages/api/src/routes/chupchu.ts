@@ -112,7 +112,7 @@ chupChuRouter.post('/analyze-image', async (req: any, res) => {
 // ── POST /api/chupchu/full-diagnosis ───────────────────────────────────────
 chupChuRouter.post('/full-diagnosis', async (req: any, res) => {
   try {
-    const { image, mimeType = 'image/jpeg', language = 'he' } = req.body;
+    const { image, mimeType = 'image/jpeg', language = 'he', plant_id, tracker_id, source } = req.body;
     if (!image) return res.status(400).json({ success: false, error: 'No image provided' });
 
     // ── Vision quota gate ────────────────────────────────────────────────────
@@ -123,7 +123,13 @@ chupChuRouter.post('/full-diagnosis', async (req: any, res) => {
     {
       const userId = req.user?.id;
       if (userId) {
-        const quota = await checkAndRecordVisionUse(userId, 'full_diagnosis');
+        // Validate source against the allowed VisionSource values; fall back to 'full_diagnosis'.
+        const VALID_SOURCES: import('../services/visionQuota').VisionSource[] = [
+          'full_diagnosis', 'chat_image', 'tracker_checkin', 'passport_chip',
+        ];
+        const resolvedSource: import('../services/visionQuota').VisionSource =
+          VALID_SOURCES.includes(source) ? source : 'full_diagnosis';
+        const quota = await checkAndRecordVisionUse(userId, resolvedSource, plant_id ?? null);
         if (!quota.allowed) {
           return res.json({ ok: false, reason: 'vision_quota_exceeded', used: quota.used, limit: quota.limit });
         }
@@ -218,7 +224,28 @@ chupChuRouter.post('/full-diagnosis', async (req: any, res) => {
       }
     }
 
-    res.json({ success: true, diagnosis });
+    // ── Persist to plant_timeline (only when plant_id was provided) ──────────
+    let timelineEntryId: string | null = null;
+    if (plant_id) {
+      const { data: tlData, error: tlError } = await db
+        .from('plant_timeline')
+        .insert({
+          plant_id,
+          tracker_id: tracker_id ?? null,
+          user_id: req.user.id,
+          entry_type: 'chupchu_analysis',
+          content: diagnosis,
+          note: `צ'ופצ'ו הסתכל · ${diagnosis.plant_name ?? ''}`,
+        })
+        .select('id');
+      if (tlError) {
+        console.error('[diagnosis/persist]', tlError.message, tlError.details);
+      } else {
+        timelineEntryId = tlData?.[0]?.id ?? null;
+      }
+    }
+
+    res.json({ success: true, diagnosis, timeline_entry_id: timelineEntryId });
   } catch (err: any) {
     console.error('[POST /api/chupchu/full-diagnosis]', err.message);
     res.status(500).json({ success: false, error: err.message });

@@ -40,7 +40,8 @@ homeRouter.get('/summary', verifyToken, async (req: any, res) => {
       const { count: pCount } = await db
         .from('garden_plants')
         .select('id', { count: 'exact', head: true })
-        .in('garden_id', gardenIds);
+        .in('garden_id', gardenIds)
+        .is('archived_at', null);
       plantCount = pCount ?? 0;
 
       const { count: tCount } = await db
