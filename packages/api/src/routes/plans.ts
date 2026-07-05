@@ -11,6 +11,16 @@ export const plansRouter: IRouter = Router();
 
 plansRouter.use(verifyToken);
 
+// ── In-memory daily regenerate cap ────────────────────────────────────────────
+// The planting_plans table always has at most 1 row per user per day (delete +
+// insert on each generation), so we cannot count DB rows to detect extra calls.
+// An in-memory counter is acceptable here: it resets on deploy, and the cost
+// class (Sonnet, ~1 call/day per user in normal use) makes this safe.
+// Key = userId, value = { date: YYYY-MM-DD, count: number }
+const regenerateDailyCounts = new Map<string, { date: string; count: number }>();
+// Allow 1 forced regeneration per day in addition to the automatic daily generation.
+const REGENERATE_DAILY_LIMIT = 1;
+
 function todayISO(): string {
   return new Date().toLocaleDateString('en-CA', { timeZone: ISRAEL_TIMEZONE });
 }
@@ -98,8 +108,25 @@ plansRouter.get('/weekly', async (req, res) => {
 // POST /api/plans/weekly/regenerate
 plansRouter.post('/weekly/regenerate', async (req, res) => {
   try {
+    const userId = req.user!.id;
+    const todayStr = new Date().toISOString().slice(0, 10); // YYYY-MM-DD UTC
+
+    // Once-per-day guard: allow at most REGENERATE_DAILY_LIMIT forced regenerations.
+    const entry = regenerateDailyCounts.get(userId);
+    if (entry && entry.date === todayStr) {
+      if (entry.count >= REGENERATE_DAILY_LIMIT) {
+        return res.status(429).json({
+          error: 'regenerate_limit',
+          message: 'התוכנית כבר רועננה היום, נסה שוב מחר',
+        });
+      }
+      entry.count += 1;
+    } else {
+      regenerateDailyCounts.set(userId, { date: todayStr, count: 1 });
+    }
+
     const lang = (req.body?.lang as string) === 'en' ? 'en' : 'he';
-    const plan = await getOrGeneratePlan(req.user!.id, true, lang);
+    const plan = await getOrGeneratePlan(userId, true, lang);
     res.json(plan);
   } catch (err: any) {
     console.error('[POST /api/plans/weekly/regenerate]', err);

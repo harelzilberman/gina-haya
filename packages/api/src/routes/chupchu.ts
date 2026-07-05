@@ -27,6 +27,12 @@ chupChuRouter.use(verifyToken);
 // In-memory lock: one in-flight request per user at a time
 const inFlight = new Set<string>();
 
+// In-memory daily cap for memory/summarize (resets on deploy — acceptable for
+// this cost class; Haiku is cheap and 10/day is far above legitimate use).
+// Key = userId, value = { date: YYYY-MM-DD, count: number }
+const summarizeDailyCap = new Map<string, { date: string; count: number }>();
+const SUMMARIZE_DAILY_LIMIT = 10;
+
 // ── GET /api/chupchu/history ────────────────────────────────────────────────
 chupChuRouter.get('/history', async (req: any, res) => {
   try {
@@ -62,10 +68,23 @@ chupChuRouter.get('/history', async (req: any, res) => {
 });
 
 // ── POST /api/chupchu/analyze-image ────────────────────────────────────────
+// LEGACY route — may be removed once Flutter call sites are confirmed gone.
+// Gated behind vision quota to match full-diagnosis and chat image turns.
 chupChuRouter.post('/analyze-image', async (req: any, res) => {
   try {
+    const userId = req.user?.id;
+    console.warn('[analyze-image] legacy route called by user', userId);
+
     const { image, mimeType = 'image/jpeg', language = 'he' } = req.body;
     if (!image) return res.status(400).json({ error: 'No image provided' });
+
+    // ── Vision quota gate (same shape as full-diagnosis) ─────────────────────
+    if (userId) {
+      const quota = await checkAndRecordVisionUse(userId, 'chat_image', null);
+      if (!quota.allowed) {
+        return res.json({ ok: false, reason: 'vision_quota_exceeded', used: quota.used, limit: quota.limit });
+      }
+    }
 
     const langInstruction = language === 'he'
       ? 'ענה בעברית בלבד.'
@@ -302,6 +321,18 @@ chupChuRouter.post('/memory/summarize', async (req: any, res) => {
   try {
     const { conversationHistory, lang, existingMemory } = req.body;
     const userId = req.user.id;
+
+    // ── Daily cap (in-memory, resets on deploy) ───────────────────────────────
+    const todayStr = new Date().toISOString().slice(0, 10); // YYYY-MM-DD UTC
+    const capEntry = summarizeDailyCap.get(userId);
+    if (capEntry && capEntry.date === todayStr) {
+      if (capEntry.count >= SUMMARIZE_DAILY_LIMIT) {
+        return res.status(429).json({ error: 'summarize_limit' });
+      }
+      capEntry.count += 1;
+    } else {
+      summarizeDailyCap.set(userId, { date: todayStr, count: 1 });
+    }
 
     if (!Array.isArray(conversationHistory) || conversationHistory.length < 4) {
       return res.json({ ok: true, skipped: true });

@@ -25,7 +25,9 @@ const allowedOrigins = process.env.NODE_ENV === 'development'
 
 console.log(`[CORS] NODE_ENV=${process.env.NODE_ENV ?? 'unset'}, allowed origins:`, allowedOrigins);
 
-app.use(express.json({ limit: '20mb' }));
+// 2 MB ceiling: post-compression images peak at ~600 KB base64; anything
+// larger than 2 MB is suspicious and benefits from early rejection.
+app.use(express.json({ limit: '2mb' }));
 app.use(cors({
   origin: allowedOrigins,
   credentials: true,
