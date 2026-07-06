@@ -2,7 +2,9 @@ import { Router, type IRouter } from 'express';
 import { z } from 'zod';
 import { db } from '../db/client';
 import { verifyToken } from '../middleware/auth';
+import { attachTier } from '../middleware/tierMiddleware';
 import { getLimits } from '../config/tiers';
+import { countVisionUsesThisMonth } from '../services/visionQuota';
 
 export const usersRouter: IRouter = Router();
 
@@ -151,6 +153,85 @@ usersRouter.get('/usage', async (req: any, res) => {
     });
   } catch (err: any) {
     console.error('[GET /api/users/usage]', err.message);
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// ── GET /api/users/me/usage ─────────────────────────────────────────────────
+// Returns the authenticated user's current-month usage against their effective
+// tier limits.  Uses attachTier so LAUNCH_FREE_MODE is honoured the same way
+// the quota gates honour it.  Count queries are extracted from / identical to
+// the gate implementations — no parallel logic that can drift.
+const TIER_LABELS_HE: Record<string, string> = {
+  free:          'חינם',
+  grower:        'מגדל',
+  gardener_pro:  'גנן מקצועי',
+  professional:  'מקצוען',
+};
+
+usersRouter.get('/me/usage', attachTier, async (req: any, res) => {
+  try {
+    const userId: string = req.user.id;
+    const tier: string   = req.tier ?? 'free';
+    const limits         = req.limits ?? getLimits(tier);
+    const LAUNCH_FREE_MODE = process.env.LAUNCH_FREE_MODE === 'true';
+
+    // Period boundary — first of current month at midnight, same as quota gates.
+    const startOfMonth = new Date();
+    startOfMonth.setDate(1);
+    startOfMonth.setHours(0, 0, 0, 0);
+    const resetsAt = new Date(
+      startOfMonth.getFullYear(),
+      startOfMonth.getMonth() + 1,
+      1,
+    ).toISOString();
+
+    // ── ChupChu text messages this month ──────────────────────────────────
+    // Identical query to the chat gate (chupchu.ts POST /chat, text-only path).
+    let chupChuUsed: number | null = 0;
+    {
+      const { data: convData, error: convError } = await db
+        .from('chupchu_conversations')
+        .select('messages')
+        .eq('user_id', userId)
+        .gte('updated_at', startOfMonth.toISOString())
+        .limit(1)
+        .single();
+
+      if (convError && convError.code !== 'PGRST116') {
+        // PGRST116 = no rows — that's 0 messages, not an error.
+        console.error('[GET /api/users/me/usage] chupchu count error:', convError.message);
+        chupChuUsed = null;
+      } else {
+        chupChuUsed = (convData?.messages ?? []).filter(
+          (m: any) => m.role === 'user' && new Date(m.timestamp) >= startOfMonth,
+        ).length;
+      }
+    }
+
+    // ── Vision uses this month ────────────────────────────────────────────
+    // Delegates to countVisionUsesThisMonth which shares the count query with
+    // checkAndRecordVisionUse in visionQuota.ts.
+    const visionUsed = await countVisionUsesThisMonth(userId);
+
+    res.json({
+      tier,
+      tier_label_he:    TIER_LABELS_HE[tier] ?? tier,
+      launch_free_mode: LAUNCH_FREE_MODE,
+      chupchu: {
+        used:  chupChuUsed,
+        limit: limits.maxChupChuPerMonth,
+      },
+      vision: {
+        used:  visionUsed,
+        limit: limits.maxVisionLooksPerMonth,
+      },
+      period: {
+        resets_at: resetsAt,
+      },
+    });
+  } catch (err: any) {
+    console.error('[GET /api/users/me/usage]', err.message);
     res.status(500).json({ error: err.message });
   }
 });

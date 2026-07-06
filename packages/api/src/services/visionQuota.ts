@@ -12,6 +12,29 @@ export interface VisionQuotaResult {
 }
 
 /**
+ * Returns the number of vision uses for the user this calendar month, or null
+ * on a DB error.  Uses the same count query as checkAndRecordVisionUse so the
+ * two can never drift.
+ */
+export async function countVisionUsesThisMonth(userId: string): Promise<number | null> {
+  const startOfMonth = new Date();
+  startOfMonth.setDate(1);
+  startOfMonth.setHours(0, 0, 0, 0);
+
+  const { count, error } = await db
+    .from('vision_uses')
+    .select('id', { count: 'exact', head: true })
+    .eq('user_id', userId)
+    .gte('created_at', startOfMonth.toISOString());
+
+  if (error) {
+    console.error('[visionQuota] countVisionUsesThisMonth error:', error.message);
+    return null;
+  }
+  return count ?? 0;
+}
+
+/**
  * Checks whether the user is within their monthly vision-use quota, and if so,
  * inserts a vision_uses row to record the call.
  *
