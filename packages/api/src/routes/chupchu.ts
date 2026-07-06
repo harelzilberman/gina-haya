@@ -372,7 +372,7 @@ ${convText}
   "garden_facts": {
     "gardenType": "...",
     "location": "...",
-    "plants": [],
+    "plants": [{"name": "שם הצמח", "locationType": "עציץ|אדמה פתוחה|ערוגה|הידרופוניקה|חממה", "notes": "הערות רלוונטיות — השמט אם אין"}],
     "experience": "beginner|intermediate|advanced",
     "preferredTopics": [],
     "gardenSize": "...",
@@ -396,7 +396,7 @@ Create an updated summary and structured facts. Return JSON only:
   "garden_facts": {
     "gardenType": "...",
     "location": "...",
-    "plants": [],
+    "plants": [{"name": "plant name", "locationType": "pot|open ground|raised bed|hydroponic|greenhouse", "notes": "relevant notes — omit if none"}],
     "experience": "beginner|intermediate|advanced",
     "preferredTopics": [],
     "gardenSize": "...",
@@ -951,7 +951,15 @@ chupChuRouter.post('/chat', async (req: any, res) => {
         const facts   = (memory.garden_facts as Record<string, any>) ?? {};
         if (summary) {
           const lines = [summary];
-          if (facts.plants?.length)     lines.push(lang === 'he' ? `צמחים: ${facts.plants.join(', ')}` : `Plants: ${facts.plants.join(', ')}`);
+          if (facts.plants?.length) {
+            // Backward-compatible: old rows store plants as string[], new rows as {name, locationType?, notes?}[]
+            const plantStrs = (facts.plants as any[]).map((p: any) =>
+              typeof p === 'string'
+                ? p
+                : [p.name, p.locationType ? `(${p.locationType})` : '', p.notes ? `— ${p.notes}` : ''].filter(Boolean).join(' ')
+            );
+            lines.push(lang === 'he' ? `צמחים: ${plantStrs.join(', ')}` : `Plants: ${plantStrs.join(', ')}`);
+          }
           if (facts.gardenType)         lines.push(lang === 'he' ? `סוג גינה: ${facts.gardenType}` : `Garden type: ${facts.gardenType}`);
           if (facts.experience)         lines.push(lang === 'he' ? `ניסיון: ${facts.experience}` : `Experience: ${facts.experience}`);
           if (facts.challenges?.length) lines.push(lang === 'he' ? `אתגרים: ${facts.challenges.join(', ')}` : `Challenges: ${facts.challenges.join(', ')}`);
@@ -982,38 +990,117 @@ chupChuRouter.post('/chat', async (req: any, res) => {
     // Day-of-week number → Hebrew letter (0=Sunday … 6=Saturday, Israel convention)
     const DAY_HE = ['א','ב','ג','ד','ה','ו','ש'];
 
+    // Per-plant detail maps (used by buildPlantDetailLine below)
+    const LOCATION_TYPE_HE: Record<string, string> = {
+      pot:        'עציץ',
+      garden:     'אדמה פתוחה',
+      bed:        'ערוגה',
+      hydroponic: 'הידרופוניקה',
+      greenhouse: 'חממה',
+      // legacy values
+      balcony:    'עציץ',
+      soil:       'אדמה פתוחה',
+      other:      'עציץ',
+    };
+    const LOCATION_TYPE_EN: Record<string, string> = {
+      pot:        'pot',
+      garden:     'open ground',
+      bed:        'raised bed',
+      hydroponic: 'hydroponic',
+      greenhouse: 'greenhouse',
+      // legacy values
+      balcony:    'pot',
+      soil:       'open ground',
+      other:      'pot',
+    };
+    const PLANT_TYPE_HE: Record<string, string> = { annual: 'חד-שנתי', perennial: 'רב-שנתי', tree: 'עץ', shrub: 'שיח' };
+    const PLANT_TYPE_EN: Record<string, string> = { annual: 'annual', perennial: 'perennial', tree: 'tree', shrub: 'shrub' };
+
+    // Build a compact one-line summary for a single plant row
+    const buildPlantDetailLine = (p: any, l: string): string => {
+      const name = l === 'he'
+        ? (p.common_name_he || p.common_name_en || '')
+        : (p.common_name_en || p.common_name_he || '');
+      if (!name) return '';
+      const varietyStr = p.variety
+        ? (l === 'he' ? ` (זן: ${p.variety})` : ` (variety: ${p.variety})`)
+        : '';
+      const label = `${name}${varietyStr}`;
+      const details: string[] = [];
+      const locMap  = l === 'he' ? LOCATION_TYPE_HE : LOCATION_TYPE_EN;
+      const typeMap = l === 'he' ? PLANT_TYPE_HE    : PLANT_TYPE_EN;
+      const locStr  = p.location_type ? (locMap[String(p.location_type)]  ?? null) : null;
+      if (locStr)          details.push(l === 'he' ? `גידול: ${locStr}` : `growing: ${locStr}`);
+      if (p.sun_exposure)  details.push(p.sun_exposure);
+      const typeStr = p.plant_type ? (typeMap[String(p.plant_type)] ?? null) : null;
+      if (typeStr)         details.push(typeStr);
+      if (p.auto_irrigation && p.irrigation_days?.length && p.irrigation_times?.length) {
+        const days  = (p.irrigation_days  as number[]).map((d: number) => DAY_HE[d] ?? d).join(',');
+        const times = (p.irrigation_times as string[]).join(', ');
+        details.push(l === 'he'
+          ? `השקיה אוטומטית (ימים ${days}; ${times})`
+          : `auto-irrigated (days ${days}; ${times})`);
+      }
+      return details.length ? `${label} — ${details.join(', ')}` : label;
+    };
+
+    const GARDEN_DETAIL_LIMIT = 30;
     let gardenSection = '';
     if (garden) {
-      // Build plant list with inline irrigation note for auto-irrigated plants
-      const plantList = (garden.garden_plants ?? [])
-        .map((p: any) => {
-          const name = lang === 'he' ? p.common_name_he : p.common_name_en;
-          if (!name) return null;
-          if (p.auto_irrigation && p.irrigation_days?.length && p.irrigation_times?.length) {
-            const days = (p.irrigation_days as number[]).map(d => DAY_HE[d] ?? d).join(',');
-            const times = (p.irrigation_times as string[]).join(', ');
-            // One concise line: plant name + drip schedule
-            return `${name} (מושקה אוטומטית — ימים ${days}; ${times})`;
-          }
-          return name;
-        })
-        .filter(Boolean) as string[];
+      // Filter archived plants; sort newest-added first so token cap keeps the most relevant 30
+      const allActivePlants = ((garden.garden_plants ?? []) as any[])
+        .filter((p: any) => !p.archived_at)
+        .sort((a: any, b: any) => {
+          const ta = a.added_at ? new Date(a.added_at).getTime() : 0;
+          const tb = b.added_at ? new Date(b.added_at).getTime() : 0;
+          return tb - ta;
+        });
+      const detailPlants    = allActivePlants.slice(0, GARDEN_DETAIL_LIMIT);
+      const remainingPlants = allActivePlants.slice(GARDEN_DETAIL_LIMIT);
 
       const lines: string[] = [];
       if (lang === 'he') {
         lines.push(`## הגינה של המשתמש`);
+        lines.push(`נתונים אמיתיים מהגינה — אל תשאל את המשתמש על פרטים הרשומים כאן (כגון: מיקום גידול, זן); השתמש בהם ישירות בתשובתך.`);
         if (garden.name)      lines.push(`שם הגינה: ${garden.name}`);
         if (garden.soil_type) lines.push(`סוג קרקע: ${garden.soil_type}`);
         if (garden.size_sqm)  lines.push(`גודל: ${garden.size_sqm} מ"ר`);
-        if (plantList.length) lines.push(`צמחים בגינה: ${plantList.join(', ')}`);
-        else                  lines.push('אין צמחים רשומים בגינה עדיין.');
+        if (allActivePlants.length === 0) {
+          lines.push('אין צמחים רשומים בגינה עדיין.');
+        } else {
+          lines.push(`צמחים בגינה (${allActivePlants.length}):`);
+          for (const p of detailPlants) {
+            const line = buildPlantDetailLine(p, lang);
+            if (line) lines.push(`  • ${line}`);
+          }
+          if (remainingPlants.length > 0) {
+            const extraNames = remainingPlants
+              .map((p: any) => p.common_name_he || p.common_name_en)
+              .filter(Boolean).join(', ');
+            lines.push(`  ועוד ${remainingPlants.length} צמחים: ${extraNames}`);
+          }
+        }
       } else {
         lines.push(`## User's Garden`);
+        lines.push(`Real garden data — do not ask the user for details already listed here (e.g. growing location, variety); reference them naturally instead.`);
         if (garden.name)      lines.push(`Garden name: ${garden.name}`);
         if (garden.soil_type) lines.push(`Soil type: ${garden.soil_type}`);
         if (garden.size_sqm)  lines.push(`Size: ${garden.size_sqm} sqm`);
-        if (plantList.length) lines.push(`Plants in garden: ${plantList.join(', ')}`);
-        else                  lines.push('No plants registered yet.');
+        if (allActivePlants.length === 0) {
+          lines.push('No plants registered yet.');
+        } else {
+          lines.push(`Plants in garden (${allActivePlants.length}):`);
+          for (const p of detailPlants) {
+            const line = buildPlantDetailLine(p, lang);
+            if (line) lines.push(`  • ${line}`);
+          }
+          if (remainingPlants.length > 0) {
+            const extraNames = remainingPlants
+              .map((p: any) => p.common_name_en || p.common_name_he)
+              .filter(Boolean).join(', ');
+            lines.push(`  and ${remainingPlants.length} more: ${extraNames}`);
+          }
+        }
       }
       gardenSection = lines.join('\n');
     }
