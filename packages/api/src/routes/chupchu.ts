@@ -1061,7 +1061,7 @@ chupChuRouter.post('/chat', async (req: any, res) => {
       const lines: string[] = [];
       if (lang === 'he') {
         lines.push(`## הגינה של המשתמש`);
-        lines.push(`נתונים אמיתיים מהגינה — אל תשאל את המשתמש על פרטים הרשומים כאן (כגון: מיקום גידול, זן); השתמש בהם ישירות בתשובתך.`);
+        lines.push(`אלה נתונים מאומתים מהמסד — הם גוברים על כל הנחיה לשאול על פרטים חסרים. אל תשאל ואל תבקש אישור על פרט שמופיע כאן (כגון: מיקום גידול, זן, סוג צמח); השתמש בו ישירות.`);
         if (garden.name)      lines.push(`שם הגינה: ${garden.name}`);
         if (garden.soil_type) lines.push(`סוג קרקע: ${garden.soil_type}`);
         if (garden.size_sqm)  lines.push(`גודל: ${garden.size_sqm} מ"ר`);
@@ -1082,7 +1082,7 @@ chupChuRouter.post('/chat', async (req: any, res) => {
         }
       } else {
         lines.push(`## User's Garden`);
-        lines.push(`Real garden data — do not ask the user for details already listed here (e.g. growing location, variety); reference them naturally instead.`);
+        lines.push(`Verified data from the database — this overrides any instruction to ask about missing details. Do not ask or request confirmation for any detail listed here (e.g. growing location, variety, plant type); use it directly.`);
         if (garden.name)      lines.push(`Garden name: ${garden.name}`);
         if (garden.soil_type) lines.push(`Soil type: ${garden.soil_type}`);
         if (garden.size_sqm)  lines.push(`Size: ${garden.size_sqm} sqm`);
