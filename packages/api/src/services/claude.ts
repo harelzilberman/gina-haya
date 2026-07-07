@@ -656,13 +656,28 @@ function handleToolCall(
 export async function askChupChu(
   messages: ChupChuMessage[],
   context: ChupChuContext,
-  extraSystemContext?: string,
+  stableContext?: string,
+  volatileContext?: string,
   image?: { data: string; mimeType: 'image/jpeg' | 'image/png' | 'image/gif' | 'image/webp' },
 ): Promise<{ response: string; proposedTasks?: ProposedTask[]; mobileTool?: MobileToolCall }> {
   const basePrompt = context.userLanguage === 'he'
     ? CHUPCHU_SYSTEM_PROMPT_HE
     : CHUPCHU_SYSTEM_PROMPT_EN;
-  const systemPrompt = extraSystemContext ? basePrompt + extraSystemContext : basePrompt;
+
+  // Build system as cached content blocks for prompt caching.
+  // Block 1: static base prompt — identical for all users per language (always cached).
+  // Block 2: per-session stable context (garden, memory, tasks) — cached per user session.
+  // Block 3: volatile context (past summary, date, weather) — NOT cached; changes every request.
+  type TextBlock = { type: 'text'; text: string; cache_control?: { type: 'ephemeral' } };
+  const systemBlocks: TextBlock[] = [
+    { type: 'text', text: basePrompt, cache_control: { type: 'ephemeral' } },
+  ];
+  if (stableContext) {
+    systemBlocks.push({ type: 'text', text: stableContext, cache_control: { type: 'ephemeral' } });
+  }
+  if (volatileContext) {
+    systemBlocks.push({ type: 'text', text: volatileContext });
+  }
 
   let capturedTasks: ProposedTask[] | undefined;
   let capturedMobileTool: MobileToolCall | undefined;
@@ -698,10 +713,16 @@ export async function askChupChu(
     const response = (await axios.post(ANTHROPIC_URL, {
       model: modelToUse,
       max_tokens: 6000,
-      system: systemPrompt,
+      system: systemBlocks,
       tools: CHUPCHU_TOOLS,
       messages: apiMessages,
     }, { headers: ANTHROPIC_HEADERS, timeout: 90000 })).data;
+    console.log('[Chupchu] tokens:', {
+      input:          response.usage?.input_tokens,
+      output:         response.usage?.output_tokens,
+      cache_creation: response.usage?.cache_creation_input_tokens,
+      cache_read:     response.usage?.cache_read_input_tokens,
+    });
 
     if (response.stop_reason === 'end_turn') {
       const textBlock = response.content.find(b => b.type === 'text');

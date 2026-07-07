@@ -743,19 +743,24 @@ chupChuRouter.post('/chat', async (req: any, res) => {
     // Image turns consume a vision look, not a text-message credit.
     // Check the vision quota instead and skip the chat-message counter entirely
     // — this prevents double-charging an image turn against both quotas.
-    // monthlyLimit is declared here so it is in scope for the final res.json().
-    const monthlyLimit = getLimits(effectiveTier).maxChupChuPerMonth;
+    // monthlyLimit and dailyLimit declared here so they are in scope for the final res.json().
+    const tierLimits = getLimits(effectiveTier);
+    const monthlyLimit = tierLimits.maxChupChuPerMonth;
+    const dailyLimit   = tierLimits.maxChupChuPerDay;
     if (hasImage) {
       const quota = await checkAndRecordVisionUse(userId, 'chat_image', null, effectiveTier);
       if (!quota.allowed) {
         return res.json({ ok: false, reason: 'vision_quota_exceeded', used: quota.used, limit: quota.limit });
       }
     } else {
-      // Text-only turn: check the chat message quota as before.
-      if (!LAUNCH_FREE_MODE && monthlyLimit !== null) {
+      // Text-only turn: check daily quota first, then monthly.
+      // Both checks are skipped entirely when LAUNCH_FREE_MODE is active (alpha testing bypass).
+      if (!LAUNCH_FREE_MODE && (monthlyLimit !== null || dailyLimit !== null)) {
         const startOfMonth = new Date();
         startOfMonth.setDate(1);
         startOfMonth.setHours(0, 0, 0, 0);
+        const startOfDay = new Date();
+        startOfDay.setHours(0, 0, 0, 0);
 
         const { data: convData } = await db
           .from('chupchu_conversations')
@@ -765,18 +770,40 @@ chupChuRouter.post('/chat', async (req: any, res) => {
           .limit(1)
           .single();
 
-        const existingMessages: ChupChuMessage[] = convData?.messages || [];
-        const userMessagesThisMonth = existingMessages.filter(
-          m => m.role === 'user' &&
-          new Date(m.timestamp) >= startOfMonth
-        ).length;
+        // Single pass over JSONB messages array — compute both counters at once.
+        const existingMessages: ChupChuMessage[] = (convData?.messages as ChupChuMessage[]) || [];
+        let messagesUsedThisMonth = 0;
+        let messagesUsedToday = 0;
+        for (const m of existingMessages) {
+          if (m.role !== 'user') continue;
+          const ts = new Date(m.timestamp);
+          if (ts >= startOfMonth) messagesUsedThisMonth++;
+          if (ts >= startOfDay)   messagesUsedToday++;
+        }
 
-        if (userMessagesThisMonth >= monthlyLimit) {
+        // Daily limit check runs first.
+        if (dailyLimit !== null && messagesUsedToday >= dailyLimit) {
           return res.status(429).json({
-            error: 'rate_limit_exceeded',
+            error:                'rate_limit_exceeded',
+            limitType:            'daily',
             tier,
-            messagesUsedThisMonth: userMessagesThisMonth,
+            messagesUsedThisMonth,
             monthlyLimit,
+            messagesUsedToday,
+            dailyLimit,
+          });
+        }
+
+        // Monthly limit check.
+        if (monthlyLimit !== null && messagesUsedThisMonth >= monthlyLimit) {
+          return res.status(429).json({
+            error:                'rate_limit_exceeded',
+            limitType:            'monthly',
+            tier,
+            messagesUsedThisMonth,
+            monthlyLimit,
+            messagesUsedToday,
+            dailyLimit,
           });
         }
       }
@@ -1199,22 +1226,31 @@ chupChuRouter.post('/chat', async (req: any, res) => {
     const pastContextSection = buildPastContextSummary(bestHistory, userId);
     console.log('[Memory] injecting context:', pastContextSection.length > 0 ? `YES (${pastContextSection.length} chars)` : 'NO - empty');
 
-    const extraContext = [
+    // Stable context: per-user data that does NOT change within a session.
+    // This block is sent with cache_control so Claude can reuse cached tokens.
+    const stableContext = [
       memorySection,
-      pastContextSection,
       gardenSection,
       pendingTasksSection,
       harvestsSection,
-      dateSection,
-      weatherSection,
       taskContext,
     ].filter(Boolean).join('\n\n');
+
+    // Volatile context: changes on every request — must NOT be cached.
+    // pastContextSection shifts every exchange; date/weather change constantly.
+    const volatileContext = [
+      pastContextSection,
+      dateSection,
+      weatherSection,
+    ].filter(Boolean).join('\n\n');
+
     // Always prepend history (with role-alternation safety) before the current user message,
     // even when the current message includes an image.
     const { response: chupChuText, proposedTasks, mobileTool } = await askChupChu(
       [...ensureRoleAlternation(historyForClaude), newUserMessage],
       context,
-      extraContext || undefined,
+      stableContext || undefined,
+      volatileContext || undefined,
       compressedImage,
     );
 
@@ -1260,16 +1296,24 @@ chupChuRouter.post('/chat', async (req: any, res) => {
     const startOfMonth = new Date();
     startOfMonth.setDate(1);
     startOfMonth.setHours(0, 0, 0, 0);
+    const startOfDay = new Date();
+    startOfDay.setHours(0, 0, 0, 0);
 
-    const messagesUsedThisMonth = updatedMessages.filter(
-      m => m.role === 'user' &&
-      new Date(m.timestamp) >= startOfMonth
-    ).length;
+    let messagesUsedThisMonth = 0;
+    let messagesUsedToday = 0;
+    for (const m of updatedMessages) {
+      if (m.role !== 'user') continue;
+      const ts = new Date(m.timestamp);
+      if (ts >= startOfMonth) messagesUsedThisMonth++;
+      if (ts >= startOfDay)   messagesUsedToday++;
+    }
 
     res.json({
       response: chupChuText,
       messagesUsedThisMonth,
       monthlyLimit,
+      messagesUsedToday,
+      dailyLimit,
       ...(proposedTasks && proposedTasks.length > 0 ? { proposedTasks } : {}),
       ...(mobileTool ? { mobileTool } : {}),
     });
