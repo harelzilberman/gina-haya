@@ -67,7 +67,7 @@ export function ChupChuPage() {
   const { t, i18n } = useTranslation('chupchu');
   const { dir } = useDirection();
   const isHe = i18n.language === 'he';
-  const { loadHistory, usageThisMonth, monthlyLimit } = useChupChu();
+  const { loadHistory, usageThisMonth, monthlyLimit, usageToday, dailyLimit } = useChupChu();
   const { user, profile } = useAuthStore();
 
   const [chipQuestion, setChipQuestion] = useState('');
@@ -78,7 +78,16 @@ export function ChupChuPage() {
 
   const tier        = profile?.subscription_tier ?? 'free';
   const isUnlimited = tier === 'gardener_pro' || tier === 'professional';
-  const isAtLimit   = !isUnlimited && monthlyLimit !== null && usageThisMonth >= monthlyLimit;
+  const isFree      = tier === 'free';
+
+  // isAtLimit: true when either daily OR monthly cap is reached.
+  const isAtDailyLimit   = dailyLimit   !== null && usageToday      >= dailyLimit;
+  const isAtMonthlyLimit = monthlyLimit !== null && usageThisMonth  >= monthlyLimit;
+  const isAtLimit        = !isUnlimited && (isAtDailyLimit || isAtMonthlyLimit);
+
+  // Counter display values: free users see daily progress; grower sees monthly.
+  const counterUsed  = isFree ? usageToday      : usageThisMonth;
+  const counterLimit = isFree ? (dailyLimit ?? monthlyLimit) : monthlyLimit;
 
   return (
     <>
@@ -189,7 +198,7 @@ export function ChupChuPage() {
           </div>
 
           {/* Usage counter — authenticated users only */}
-          {user && !isUnlimited && monthlyLimit !== null && (
+          {user && !isUnlimited && counterLimit !== null && (
             <div style={{
               width:           '100%',
               padding:         '5px 14px',
@@ -198,7 +207,7 @@ export function ChupChuPage() {
               border:          `1px solid ${isAtLimit ? 'rgba(255,92,138,0.3)' : 'rgba(0,229,195,0.2)'}`,
             }}>
               <span style={{ fontFamily: DM_SANS, fontSize: '12px', fontWeight: 300, color: isAtLimit ? '#ff5c8a' : BIO_CYAN }}>
-                {t('usageCounter', { used: usageThisMonth, limit: monthlyLimit })}
+                {t('usageCounter', { used: counterUsed, limit: counterLimit })}
               </span>
             </div>
           )}

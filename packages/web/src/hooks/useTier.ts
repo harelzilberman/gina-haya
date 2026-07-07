@@ -20,10 +20,17 @@ const TIER_PRICES: Record<string, number | null> = {
 const TIER_ORDER: SubscriptionTier[] = ['free', 'grower', 'gardener_pro', 'professional'];
 
 const CHUPCHU_MONTHLY_LIMITS: Record<SubscriptionTier, number | null> = {
-  free:           20,
+  free:           54,
   grower:         50,
   gardener_pro:   null,
   professional:   null,
+};
+
+const CHUPCHU_DAILY_LIMITS: Record<SubscriptionTier, number | null> = {
+  free:           3,
+  grower:         18,
+  gardener_pro:   18,
+  professional:   54,
 };
 
 export function useTier() {
@@ -46,6 +53,7 @@ export function useTier() {
     canUseDiagnosis: features.diagnosesPerMonth > 0,
     diagnosesLeft,
     monthlyLimit:    CHUPCHU_MONTHLY_LIMITS[tier],
+    dailyLimit:      CHUPCHU_DAILY_LIMITS[tier],
     canUpgradeTo,
     monthlyPrice:    TIER_PRICES[tier],
   };

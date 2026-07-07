@@ -79,8 +79,11 @@ interface ChupChuState {
   error: string | null;
   rateLimited: boolean;
   rateLimitTier: string | null;
+  rateLimitType: 'daily' | 'monthly' | null;
   usageThisMonth: number;
   monthlyLimit: number | null;
+  usageToday: number;
+  dailyLimit: number | null;
   expression: ChupChuExpression;
   proposedTasks: ProposedTask[] | null;
   memory: ChupChuMemory | null;
@@ -103,8 +106,11 @@ export const useChupChuStore = create<ChupChuState>((set, get) => ({
   error:               null,
   rateLimited:         false,
   rateLimitTier:       null,
+  rateLimitType:       null,
   usageThisMonth:      0,
-  monthlyLimit:        20,
+  monthlyLimit:        null,
+  usageToday:          0,
+  dailyLimit:          null,
   expression:          'default',
   proposedTasks:       null,
   memory:              null,
@@ -196,8 +202,11 @@ export const useChupChuStore = create<ChupChuState>((set, get) => ({
           isLoading:           false,
           rateLimited:         true,
           rateLimitTier:       data.tier ?? null,
+          rateLimitType:       data.limitType ?? null,
           usageThisMonth:      data.messagesUsedThisMonth ?? get().usageThisMonth,
           monthlyLimit:        data.monthlyLimit ?? get().monthlyLimit,
+          usageToday:          data.messagesUsedToday ?? get().usageToday,
+          dailyLimit:          data.dailyLimit ?? get().dailyLimit,
           expression:          'surprised',
         });
         scheduleExpressionReset(set);
@@ -228,6 +237,8 @@ export const useChupChuStore = create<ChupChuState>((set, get) => ({
         rateLimited:         false,
         usageThisMonth:      data.messagesUsedThisMonth ?? s.usageThisMonth,
         monthlyLimit:        data.monthlyLimit           ?? s.monthlyLimit,
+        usageToday:          data.messagesUsedToday      ?? s.usageToday,
+        dailyLimit:          data.dailyLimit              ?? s.dailyLimit,
         expression:          isWise ? 'wise' : 'happy',
         proposedTasks:       data.proposedTasks && data.proposedTasks.length > 0 ? data.proposedTasks : null,
       }));

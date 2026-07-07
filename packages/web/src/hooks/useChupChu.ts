@@ -26,6 +26,8 @@ export function useChupChu() {
     rateLimitTier:      store.rateLimitTier,
     usageThisMonth:     store.usageThisMonth,
     monthlyLimit:       store.monthlyLimit,
+    usageToday:         store.usageToday,
+    dailyLimit:         store.dailyLimit,
     expression:         store.expression,
     proposedTasks:      store.proposedTasks,
     memory:             store.memory,
