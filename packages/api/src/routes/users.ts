@@ -162,12 +162,6 @@ usersRouter.get('/usage', async (req: any, res) => {
 // tier limits.  Uses attachTier so LAUNCH_FREE_MODE is honoured the same way
 // the quota gates honour it.  Count queries are extracted from / identical to
 // the gate implementations — no parallel logic that can drift.
-const TIER_LABELS_HE: Record<string, string> = {
-  free:          'חינם',
-  grower:        'מגדל',
-  gardener_pro:  'גנן מקצועי',
-  professional:  'מקצוען',
-};
 
 usersRouter.get('/me/usage', attachTier, async (req: any, res) => {
   try {
@@ -216,7 +210,7 @@ usersRouter.get('/me/usage', attachTier, async (req: any, res) => {
 
     res.json({
       tier,
-      tier_label_he:    TIER_LABELS_HE[tier] ?? tier,
+      tier_label_he:    limits.displayNameHe,
       launch_free_mode: LAUNCH_FREE_MODE,
       chupchu: {
         used:  chupChuUsed,
