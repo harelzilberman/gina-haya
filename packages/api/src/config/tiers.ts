@@ -5,9 +5,11 @@ export interface TierLimits {
   maxCheckinsPerTrackerPerMonth: number | null;
   maxTotalCheckinsEver: number | null;
   maxChupChuPerMonth: number | null;
-  maxChupChuPerDay: number | null;        // null = unlimited; fair-use ceiling for paid tiers
-  maxVisionLooksPerMonth: number | null;  // null = unlimited
+  maxChupChuPerDay: number | null;              // null = unlimited; fair-use ceiling for paid tiers
+  maxVisionLooksPerMonth: number | null;         // null = unlimited
+  maxPlantsInChupchuContext: number;             // plants shown to Claude per request (cached block 2)
   encyclopediaAccess: boolean;
+  displayNameHe: string;                         // customer-facing Hebrew tier name
 }
 
 export const TIER_LIMITS: Record<string, TierLimits> = {
@@ -20,40 +22,49 @@ export const TIER_LIMITS: Record<string, TierLimits> = {
     maxChupChuPerMonth:            54,
     maxChupChuPerDay:              3,
     maxVisionLooksPerMonth:        3,
+    maxPlantsInChupchuContext:     30,
     encyclopediaAccess:            false,
+    displayNameHe:                 'גנן מתחיל',
   },
   grower: {
-    maxGardens:                    3,
-    maxPlantsPerGarden:            25,
+    // grower is retired dead config — kept for backward compat, uses free-tier values
+    maxGardens:                    1,
+    maxPlantsPerGarden:            15,
     maxTrackers:                   3,
     maxCheckinsPerTrackerPerMonth: 3,
     maxTotalCheckinsEver:          null,
     maxChupChuPerMonth:            50,
     maxChupChuPerDay:              18,
-    maxVisionLooksPerMonth:        10,
+    maxVisionLooksPerMonth:        3,
+    maxPlantsInChupchuContext:     30,
     encyclopediaAccess:            true,
+    displayNameHe:                 'גנן מתחיל',
   },
   gardener_pro: {
-    maxGardens:                    10,
-    maxPlantsPerGarden:            null,
+    maxGardens:                    3,
+    maxPlantsPerGarden:            30,
     maxTrackers:                   10,
     maxCheckinsPerTrackerPerMonth: 10,
     maxTotalCheckinsEver:          null,
     maxChupChuPerMonth:            null,
     maxChupChuPerDay:              18,
-    maxVisionLooksPerMonth:        null,
+    maxVisionLooksPerMonth:        18,
+    maxPlantsInChupchuContext:     90,
     encyclopediaAccess:            true,
+    displayNameHe:                 'גנן ביתי',
   },
   professional: {
-    maxGardens:                    null,
-    maxPlantsPerGarden:            null,
+    maxGardens:                    10,
+    maxPlantsPerGarden:            60,
     maxTrackers:                   null,
     maxCheckinsPerTrackerPerMonth: null,
     maxTotalCheckinsEver:          null,
     maxChupChuPerMonth:            null,
     maxChupChuPerDay:              54,
-    maxVisionLooksPerMonth:        null,
+    maxVisionLooksPerMonth:        54,
+    maxPlantsInChupchuContext:     180,
     encyclopediaAccess:            true,
+    displayNameHe:                 'גנן מקצועי',
   },
 };
 
