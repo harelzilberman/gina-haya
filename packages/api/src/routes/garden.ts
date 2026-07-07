@@ -104,9 +104,12 @@ gardenRouter.post('/', async (req: any, res) => {
   try {
     const { name, locationRegion, soilType, location, description, plantIds = [] } = req.body;
 
-    // Enforce per-tier garden limit
+    // Enforce per-tier garden limit.
+    // Explicit LAUNCH_FREE_MODE guard: when true, alpha testers bypass the cap entirely
+    // (professional now has a finite limit of 10, so we can't rely on null-check alone).
+    const LAUNCH_FREE_MODE = process.env.LAUNCH_FREE_MODE === 'true';
     const maxGardens = req.limits?.maxGardens ?? null;
-    if (maxGardens !== null) {
+    if (!LAUNCH_FREE_MODE && maxGardens !== null) {
       const { count } = await db
         .from('gardens')
         .select('id', { count: 'exact', head: true })
@@ -118,7 +121,7 @@ gardenRouter.post('/', async (req: any, res) => {
           message: 'הגעת למגבלת הגינות בתכנית שלך.',
           tier: req.tier,
           limit: maxGardens,
-          current: count,
+          used: count,
         });
       }
     }
@@ -265,8 +268,11 @@ gardenRouter.post('/:id/plants', async (req: any, res) => {
     // Enforce per-tier plant-per-garden limit.
     // Only count active (non-archived) plants — archived plants do not consume
     // a slot and must not block new additions.
+    // Explicit LAUNCH_FREE_MODE guard: professional now has finite limit (60),
+    // so we can't rely on null-check alone to bypass for alpha testers.
+    const LAUNCH_FREE_MODE_PLANT = process.env.LAUNCH_FREE_MODE === 'true';
     const maxPlants = req.limits?.maxPlantsPerGarden ?? null;
-    if (maxPlants !== null) {
+    if (!LAUNCH_FREE_MODE_PLANT && maxPlants !== null) {
       const { count, error: countError } = await db
         .from('garden_plants')
         .select('id', { count: 'exact', head: true })
@@ -281,7 +287,7 @@ gardenRouter.post('/:id/plants', async (req: any, res) => {
           message: 'הגעת למגבלת הצמחים לגינה זו בתכנית שלך.',
           tier: req.tier,
           limit: maxPlants,
-          current: count,
+          used: count,
         });
       }
     }
