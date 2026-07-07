@@ -840,6 +840,24 @@ chupChuRouter.post('/chat', async (req: any, res) => {
       garden = data;
     }
 
+    // ── 4b. Fetch active tracker garden_plant_ids (for plant prioritization) ──
+    // Used in the gardenSection builder to put tracked plants first in the
+    // context cap, so Claude always has data on the plants the user cares about.
+    let trackedGardenPlantIds = new Set<string>();
+    if (garden?.id) {
+      const { data: trackerRows } = await db
+        .from('plant_trackers')
+        .select('garden_plants_id')
+        .eq('user_id', userId)
+        .eq('garden_id', garden.id)
+        .not('garden_plants_id', 'is', null);
+      if (trackerRows) {
+        for (const t of trackerRows) {
+          if (t.garden_plants_id) trackedGardenPlantIds.add(t.garden_plants_id);
+        }
+      }
+    }
+
     // ── 5. Fetch weather ──────────────────────────────────────────────────
     const weather = await fetchWeatherForRegion(garden?.location_region ?? null);
 
@@ -1071,19 +1089,27 @@ chupChuRouter.post('/chat', async (req: any, res) => {
       return details.length ? `${label} — ${details.join(', ')}` : label;
     };
 
-    const GARDEN_DETAIL_LIMIT = 30;
+    // Per-tier plant context cap: how many plants Claude sees in each request.
+    // LAUNCH_FREE_MODE uses professional's cap (180) — same effectiveTier used elsewhere.
+    const contextCap = getLimits(effectiveTier).maxPlantsInChupchuContext;
+
     let gardenSection = '';
     if (garden) {
-      // Filter archived plants; sort newest-added first so token cap keeps the most relevant 30
+      // 1. Exclude archived plants.
+      // 2. Prioritize: plants with an active tracker first, then most recently added.
+      //    This ensures Claude always has full detail on the plants the user monitors closely.
       const allActivePlants = ((garden.garden_plants ?? []) as any[])
         .filter((p: any) => !p.archived_at)
         .sort((a: any, b: any) => {
+          const aTracked = trackedGardenPlantIds.has(a.id) ? 1 : 0;
+          const bTracked = trackedGardenPlantIds.has(b.id) ? 1 : 0;
+          if (bTracked !== aTracked) return bTracked - aTracked; // tracked first
           const ta = a.added_at ? new Date(a.added_at).getTime() : 0;
           const tb = b.added_at ? new Date(b.added_at).getTime() : 0;
-          return tb - ta;
+          return tb - ta; // then most recently added
         });
-      const detailPlants    = allActivePlants.slice(0, GARDEN_DETAIL_LIMIT);
-      const remainingPlants = allActivePlants.slice(GARDEN_DETAIL_LIMIT);
+      const detailPlants    = allActivePlants.slice(0, contextCap);
+      const remainingPlants = allActivePlants.slice(contextCap);
 
       const lines: string[] = [];
       if (lang === 'he') {
@@ -1101,10 +1127,7 @@ chupChuRouter.post('/chat', async (req: any, res) => {
             if (line) lines.push(`  • ${line}`);
           }
           if (remainingPlants.length > 0) {
-            const extraNames = remainingPlants
-              .map((p: any) => p.common_name_he || p.common_name_en)
-              .filter(Boolean).join(', ');
-            lines.push(`  ועוד ${remainingPlants.length} צמחים: ${extraNames}`);
+            lines.push(`  (ועוד ${remainingPlants.length} צמחים בגינה — שאלו אותי על צמח ספציפי בשמו)`);
           }
         }
       } else {
@@ -1122,10 +1145,7 @@ chupChuRouter.post('/chat', async (req: any, res) => {
             if (line) lines.push(`  • ${line}`);
           }
           if (remainingPlants.length > 0) {
-            const extraNames = remainingPlants
-              .map((p: any) => p.common_name_en || p.common_name_he)
-              .filter(Boolean).join(', ');
-            lines.push(`  and ${remainingPlants.length} more: ${extraNames}`);
+            lines.push(`  (and ${remainingPlants.length} more plants in the garden — ask me about a specific plant by name)`);
           }
         }
       }
