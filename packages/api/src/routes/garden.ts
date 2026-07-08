@@ -263,7 +263,12 @@ gardenRouter.delete('/:id', async (req: any, res) => {
 // POST /api/garden/:id/plants — add a plant to a garden
 gardenRouter.post('/:id/plants', async (req: any, res) => {
   try {
-    const { plantId, commonNameHe, commonNameEn, notes, locationType, locationDescription } = req.body;
+    const { plantId, commonNameHe, commonNameEn, notes, locationType, locationDescription, plantType, variety } = req.body;
+
+    // commonNameHe is required — it is used as the display name throughout the app
+    if (!commonNameHe) {
+      return res.status(400).json({ error: 'missing_field', message: 'commonNameHe is required' });
+    }
 
     // Enforce per-tier plant-per-garden limit.
     // Only count active (non-archived) plants — archived plants do not consume
@@ -302,16 +307,18 @@ gardenRouter.post('/:id/plants', async (req: any, res) => {
     const { data, error } = await db
       .from('garden_plants')
       .insert({
-        garden_id:           req.params.id,
-        plant_id:            plantId,
-        common_name_he:      commonNameHe,
-        common_name_en:      commonNameEn,
-        notes:               notes || '',
-        location_type:       locationType ?? 'pot',
+        garden_id:            req.params.id,
+        plant_id:             plantId ?? null,
+        common_name_he:       commonNameHe,
+        common_name_en:       commonNameEn ?? null,
+        notes:                notes || '',
+        location_type:        locationType ?? 'pot',
         location_description: locationDescription ?? null,
         auto_irrigation,
         irrigation_days,
         irrigation_times,
+        ...(plantType !== undefined && { plant_type: plantType }),
+        ...(variety  !== undefined && { variety }),
       })
       .select()
       .single();
@@ -354,9 +361,10 @@ gardenRouter.patch('/garden-plants/:id', async (req: any, res) => {
     } = req.body;
 
     // Verify ownership: garden_plants has no user_id, ownership flows through garden_id -> gardens.user_id
+    // Also fetch archived_at so we can detect a restore (non-null → null) below.
     const { data: gp, error: gpError } = await db
       .from('garden_plants')
-      .select('garden_id')
+      .select('garden_id, archived_at')
       .eq('id', id)
       .single();
 
@@ -382,7 +390,36 @@ gardenRouter.patch('/garden-plants/:id', async (req: any, res) => {
     if (plant_type !== undefined) updateObj.plant_type = plant_type;
     // archived_at: ISO timestamp string to archive, null to un-archive.
     // Explicit undefined check so the client can send { archived_at: null } to unarchive.
-    if ('archived_at' in req.body) updateObj.archived_at = archived_at ?? null;
+    if ('archived_at' in req.body) {
+      const isRestoring = (archived_at === null || archived_at === undefined) && gp.archived_at !== null;
+
+      // Enforce per-tier limit when restoring an archived plant (same logic as creation).
+      if (isRestoring) {
+        const LAUNCH_FREE_MODE_RESTORE = process.env.LAUNCH_FREE_MODE === 'true';
+        const maxPlants = req.limits?.maxPlantsPerGarden ?? null;
+        if (!LAUNCH_FREE_MODE_RESTORE && maxPlants !== null) {
+          const { count, error: countError } = await db
+            .from('garden_plants')
+            .select('id', { count: 'exact', head: true })
+            .eq('garden_id', gp.garden_id)
+            .is('archived_at', null);
+
+          if (countError) throw countError;
+
+          if ((count ?? 0) >= maxPlants) {
+            return res.status(403).json({
+              error: 'plant_limit_reached',
+              message: 'הגעת למגבלת הצמחים לגינה זו בתכנית שלך.',
+              tier: req.tier,
+              limit: maxPlants,
+              used: count,
+            });
+          }
+        }
+      }
+
+      updateObj.archived_at = archived_at ?? null;
+    }
 
     // ── Auto-irrigation fields (only applied when any of the three are present) ──
     if (auto_irrigation !== undefined || irrigation_days !== undefined || irrigation_times !== undefined) {
