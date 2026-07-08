@@ -85,7 +85,6 @@ const TRACKER_PRODUCTS: ProductDef[] = [
 const COMING_SOON = [
   { emoji: '📦', title: 'ערכת פרפרטים ביודינמיים', desc: 'מדריך מקיף לעבודה עם BD 500, BD 501 ו-CPP' },
   { emoji: '📅', title: 'מנוי לוח שנה שנתי',        desc: 'לוח ביודינמי מודפס לשנת 2027' },
-  { emoji: '🌿', title: 'ייעוץ גינון אישי',           desc: 'שעת ייעוץ עם גנן ביודינמי מוסמך' },
 ];
 
 const WOOD_PRODUCTS = [
