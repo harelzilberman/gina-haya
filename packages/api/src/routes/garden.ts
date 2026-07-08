@@ -208,6 +208,34 @@ gardenRouter.patch('/:id', async (req: any, res) => {
   }
 });
 
+// PATCH /api/garden/:id/rename — rename a garden (dedicated Flutter endpoint)
+// name is required and must be non-empty; returns 404 when not found/not owned.
+gardenRouter.patch('/:id/rename', async (req: any, res) => {
+  try {
+    const userId = req.user.id;
+    const { id } = req.params;
+    const { name } = req.body;
+
+    if (!name || !String(name).trim()) {
+      return res.status(400).json({ error: 'missing_field', message: 'name is required and must be non-empty' });
+    }
+
+    const { data, error } = await db
+      .from('gardens')
+      .update({ name: String(name).trim(), updated_at: new Date().toISOString() })
+      .eq('id', id)
+      .eq('user_id', userId)
+      .select()
+      .single();
+
+    if (error || !data) return res.status(404).json({ error: 'garden_not_found' });
+    res.json(data);
+  } catch (err: any) {
+    console.error('[PATCH /api/garden/:id/rename]', err);
+    res.status(500).json({ error: err.message });
+  }
+});
+
 // PATCH /api/garden/:id/set-default — make a garden the default
 gardenRouter.patch('/:id/set-default', async (req: any, res) => {
   try {
@@ -232,13 +260,13 @@ gardenRouter.patch('/:id/set-default', async (req: any, res) => {
   }
 });
 
-// DELETE /api/garden/:id — delete a garden (not the default)
+// DELETE /api/garden/:id — delete a garden, with safety guards
 gardenRouter.delete('/:id', async (req: any, res) => {
   try {
     const userId = req.user.id;
     const { id } = req.params;
 
-    // Verify ownership + check not default
+    // 1. Ownership check
     const { data: garden, error: findError } = await db
       .from('gardens')
       .select('id, is_default')
@@ -247,12 +275,66 @@ gardenRouter.delete('/:id', async (req: any, res) => {
       .single();
 
     if (findError || !garden) return res.status(404).json({ error: 'garden_not_found' });
-    if (garden.is_default) {
-      return res.status(403).json({ error: 'cannot_delete_default', message: 'לא ניתן למחוק את הגינה הראשית.' });
+
+    // 2. Block if the garden has active (non-archived) plants — caller must remove them first
+    const { count: activePlantCount, error: plantCountError } = await db
+      .from('garden_plants')
+      .select('id', { count: 'exact', head: true })
+      .eq('garden_id', id)
+      .is('archived_at', null);
+
+    if (plantCountError) throw plantCountError;
+
+    if ((activePlantCount ?? 0) > 0) {
+      return res.status(409).json({
+        error: 'garden_not_empty',
+        message: `הגינה מכילה ${activePlantCount} צמחים — יש להעביר או להסיר אותם קודם`,
+        plantCount: activePlantCount,
+      });
     }
 
-    const { error } = await db.from('gardens').delete().eq('id', id).eq('user_id', userId);
-    if (error) throw error;
+    // 3. Block if this is the user's last garden — must always have at least one
+    const { count: gardenCount, error: gardenCountError } = await db
+      .from('gardens')
+      .select('id', { count: 'exact', head: true })
+      .eq('user_id', userId);
+
+    if (gardenCountError) throw gardenCountError;
+
+    if ((gardenCount ?? 0) <= 1) {
+      return res.status(400).json({
+        error: 'cannot_delete_last_garden',
+        message: 'לא ניתן למחוק את הגינה היחידה שלך',
+      });
+    }
+
+    // 4. Delete the garden (garden_plants cascade via FK ON DELETE CASCADE)
+    const { error: deleteError } = await db
+      .from('gardens')
+      .delete()
+      .eq('id', id)
+      .eq('user_id', userId);
+
+    if (deleteError) throw deleteError;
+
+    // 5. If the deleted garden was the default, promote the next most-recently-created garden
+    if (garden.is_default) {
+      const { data: next } = await db
+        .from('gardens')
+        .select('id')
+        .eq('user_id', userId)
+        .order('created_at', { ascending: false })
+        .limit(1)
+        .single();
+
+      if (next) {
+        await db
+          .from('gardens')
+          .update({ is_default: true, updated_at: new Date().toISOString() })
+          .eq('id', next.id);
+      }
+    }
+
     res.json({ success: true });
   } catch (err: any) {
     console.error('[DELETE /api/garden/:id]', err);
