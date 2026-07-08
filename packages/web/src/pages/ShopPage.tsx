@@ -13,11 +13,12 @@ export type ProductId =
   | 'tracker_pack_10'
   | 'garden_pack';
 
-const EARTH  = '#050d0a';
-const HEADER = '#111f18';
-const GOLD   = '#00e5c3';
-const PARCH  = '#b0cfbf';
-const SAGE   = '#4A9C68';
+const EARTH  = '#0A2A12';
+const HEADER = '#0F3319';
+const GOLD   = '#C8A951';
+const PARCH  = '#F5F0E8';
+const SAGE   = '#8FBF7F';
+const MUTED  = '#B8C4B0';
 const FRANK  = '"Frank Ruhl Libre", Georgia, serif';
 const ASST   = "'DM Sans', 'Assistant', 'Heebo', sans-serif";
 
@@ -43,9 +44,9 @@ const PAGE_CSS = `
 .shop-remove-btn {
   width: 100%; padding: 11px;
   font-family: ${ASST}; font-size: 13px; font-weight: 600;
-  color: rgba(176,207,191,0.5);
+  color: rgba(245,240,232,0.5);
   background: rgba(255,255,255,0.04);
-  border: 1px solid rgba(0,229,195,0.2); border-radius: 10px; cursor: pointer;
+  border: 1px solid rgba(200,169,81,0.2); border-radius: 10px; cursor: pointer;
   transition: color 0.2s, border-color 0.2s;
 }
 .shop-remove-btn:hover { color: #E06060; border-color: rgba(224,96,96,0.4); }
@@ -53,10 +54,10 @@ const PAGE_CSS = `
   width: 100%; padding: 11px;
   font-family: ${FRANK}; font-size: 14px; font-weight: 700;
   color: ${GOLD}; background: transparent;
-  border: 1.5px solid rgba(0,229,195,0.4); border-radius: 10px; cursor: pointer;
+  border: 1.5px solid rgba(200,169,81,0.4); border-radius: 10px; cursor: pointer;
   transition: background 0.2s, border-color 0.2s;
 }
-.shop-wood-btn:hover { background: rgba(0,229,195,0.08); border-color: ${GOLD}; }
+.shop-wood-btn:hover { background: rgba(200,169,81,0.08); border-color: ${GOLD}; }
 `;
 
 interface ProductDef {
@@ -183,6 +184,7 @@ function CartDrawer({
   onClose: () => void;
 }) {
   const total = cart.reduce((s, i) => s + i.price, 0);
+  const showNudge = total >= 18;
 
   return (
     <>
@@ -200,8 +202,8 @@ function CartDrawer({
         style={{
           position: 'fixed', top: 0, bottom: 0, right: 0, zIndex: 301,
           width: 'min(340px, 90vw)',
-          backgroundColor: '#1a3a1c',
-          borderInlineStart: '1px solid rgba(0,229,195,0.15)',
+          backgroundColor: '#1B3D22',
+          borderInlineStart: `1px solid rgba(200,169,81,0.15)`,
           display: 'flex', flexDirection: 'column',
           animation: 'drawerIn 0.25s ease both',
           boxShadow: '-20px 0 60px rgba(0,0,0,0.5)',
@@ -210,7 +212,7 @@ function CartDrawer({
         {/* Header */}
         <div style={{
           padding: '20px 20px 16px',
-          borderBottom: '1px solid rgba(0,229,195,0.1)',
+          borderBottom: `1px solid rgba(200,169,81,0.1)`,
           display: 'flex', alignItems: 'center', justifyContent: 'space-between',
           flexShrink: 0,
         }}>
@@ -238,7 +240,7 @@ function CartDrawer({
                 style={{
                   display: 'flex', alignItems: 'center', justifyContent: 'space-between',
                   padding: '12px 0',
-                  borderBottom: '1px solid rgba(0,229,195,0.07)',
+                  borderBottom: `1px solid rgba(200,169,81,0.07)`,
                   gap: '12px',
                 }}
               >
@@ -270,9 +272,31 @@ function CartDrawer({
         {/* Footer */}
         <div style={{
           padding: '16px 20px',
-          borderTop: '1px solid rgba(0,229,195,0.1)',
+          borderTop: `1px solid rgba(200,169,81,0.1)`,
           flexShrink: 0,
         }}>
+          {/* Cart nudge: shown when total >= 18 */}
+          {showNudge && (
+            <div style={{
+              marginBottom: '12px',
+              padding: '10px 12px',
+              border: `1px dashed rgba(200,169,81,0.35)`,
+              borderRadius: '8px',
+              fontFamily: ASST, fontSize: '12px', color: MUTED,
+              lineHeight: 1.55,
+            }}>
+              בעגלה: ₪{total % 1 === 0 ? total : total.toFixed(1)} · בסכום הזה, חודש{' '}
+              <span style={{ color: GOLD }}>גנן ביתי</span> כבר כולל הכל —{' '}
+              <Link
+                to="/pricing"
+                onClick={onClose}
+                style={{ color: GOLD, textDecoration: 'underline', textUnderlineOffset: '2px' }}
+              >
+                להחליף למנוי? →
+              </Link>
+            </div>
+          )}
+
           <div style={{
             display: 'flex', justifyContent: 'space-between', alignItems: 'center',
             marginBottom: '14px',
@@ -287,7 +311,7 @@ function CartDrawer({
             disabled={cart.length === 0}
             style={{
               width: '100%', padding: '13px',
-              backgroundColor: cart.length > 0 ? GOLD : 'rgba(0,229,195,0.3)',
+              backgroundColor: cart.length > 0 ? GOLD : `rgba(200,169,81,0.3)`,
               color: EARTH, border: 'none', borderRadius: '10px',
               fontFamily: FRANK, fontSize: '16px', fontWeight: 700,
               cursor: cart.length > 0 ? 'pointer' : 'not-allowed',
@@ -317,25 +341,31 @@ function ProductCard({
   onAdd: () => void;
   onRemove: () => void;
 }) {
+  const isBadge = !!product.badge;
   return (
     <div
       className="shop-product-card"
       style={{
         position: 'relative',
-        background: product.badge
-          ? 'linear-gradient(145deg, rgba(9,20,16,0.95) 0%, rgba(9,20,16,0.98) 100%)'
-          : 'rgba(9,20,16,0.6)',
+        background: isBadge
+          ? 'linear-gradient(145deg, rgba(10,42,18,0.98) 0%, rgba(15,51,25,0.95) 100%)'
+          : 'rgba(10,42,18,0.6)',
         border: inCart
           ? `2px solid ${GOLD}`
-          : product.badge
+          : isBadge
             ? `2px solid ${GOLD}`
-            : '1px solid rgba(0,229,195,0.15)',
-        borderRadius: '14px', padding: '22px 20px',
+            : `1px solid rgba(200,169,81,0.15)`,
+        borderRadius: '14px',
+        padding: isBadge ? '26px 20px' : '22px 20px',
         display: 'flex', flexDirection: 'column', gap: '14px',
-        boxShadow: product.badge ? `0 4px 24px rgba(0,229,195,0.12)` : '0 2px 12px rgba(0,0,0,0.15)',
+        boxShadow: isBadge
+          ? `0 8px 32px rgba(200,169,81,0.18)`
+          : '0 2px 12px rgba(0,0,0,0.15)',
+        transform: isBadge && !inCart ? 'scale(1.03)' : undefined,
+        transformOrigin: 'center top',
       }}
     >
-      {product.badge && !inCart && (
+      {isBadge && !inCart && (
         <div style={{
           position: 'absolute', top: -11, left: '50%', transform: 'translateX(-50%)',
           background: GOLD, color: EARTH,
@@ -356,14 +386,14 @@ function ProductCard({
         </div>
       )}
       <div>
-        <div style={{ fontFamily: FRANK, fontSize: '17px', color: PARCH, fontWeight: 700, marginBottom: '2px' }}>
+        <div style={{ fontFamily: FRANK, fontSize: isBadge ? '18px' : '17px', color: PARCH, fontWeight: 700, marginBottom: '2px' }}>
           {product.label}
         </div>
-        <div style={{ fontFamily: ASST, fontSize: '12px', color: `${PARCH}60` }}>
+        <div style={{ fontFamily: ASST, fontSize: '12px', color: MUTED }}>
           {product.note}
         </div>
       </div>
-      <div style={{ fontFamily: FRANK, fontSize: '32px', color: GOLD, fontWeight: 700 }}>
+      <div style={{ fontFamily: FRANK, fontSize: isBadge ? '36px' : '32px', color: GOLD, fontWeight: 700 }}>
         {product.priceStr}
       </div>
       {inCart ? (
@@ -453,6 +483,7 @@ export function ShopPage() {
         />
       )}
 
+      {/* Wood order modal */}
       {woodOrderProduct && (
         <>
           <div
@@ -469,8 +500,8 @@ export function ShopPage() {
               transform: 'translate(-50%, -50%)',
               zIndex: 401,
               width: 'min(480px, 92vw)',
-              backgroundColor: '#1a3a1c',
-              border: '1px solid rgba(0,229,195,0.2)',
+              backgroundColor: '#1B3D22',
+              border: `1px solid rgba(200,169,81,0.25)`,
               borderRadius: '18px',
               padding: '28px 28px 24px',
               boxShadow: '0 24px 80px rgba(0,0,0,0.6)',
@@ -488,7 +519,7 @@ export function ShopPage() {
                 ✕
               </button>
             </div>
-            <p style={{ fontFamily: ASST, fontSize: '13px', color: `${PARCH}60`, margin: '0 0 20px' }}>
+            <p style={{ fontFamily: ASST, fontSize: '13px', color: MUTED, margin: '0 0 20px' }}>
               {woodOrderProduct.price} · זמן ייצור 1–3 שבועות
             </p>
 
@@ -504,7 +535,7 @@ export function ShopPage() {
                       width: '100%', boxSizing: 'border-box',
                       padding: '10px 12px', borderRadius: '8px',
                       background: 'rgba(255,255,255,0.06)',
-                      border: '1px solid rgba(0,229,195,0.15)',
+                      border: `1px solid rgba(200,169,81,0.15)`,
                       color: PARCH, fontFamily: ASST, fontSize: '14px',
                       outline: 'none',
                     }}
@@ -520,7 +551,7 @@ export function ShopPage() {
                       width: '100%', boxSizing: 'border-box',
                       padding: '10px 12px', borderRadius: '8px',
                       background: 'rgba(255,255,255,0.06)',
-                      border: '1px solid rgba(0,229,195,0.15)',
+                      border: `1px solid rgba(200,169,81,0.15)`,
                       color: PARCH, fontFamily: ASST, fontSize: '14px',
                       outline: 'none',
                     }}
@@ -536,7 +567,7 @@ export function ShopPage() {
                       width: '100%', boxSizing: 'border-box',
                       padding: '10px 12px', borderRadius: '8px',
                       background: 'rgba(255,255,255,0.06)',
-                      border: '1px solid rgba(0,229,195,0.15)',
+                      border: `1px solid rgba(200,169,81,0.15)`,
                       color: PARCH, fontFamily: ASST, fontSize: '14px',
                       outline: 'none', resize: 'vertical',
                     }}
@@ -569,7 +600,7 @@ export function ShopPage() {
                   style={{
                     padding: '10px 28px',
                     background: 'transparent',
-                    border: `1.5px solid rgba(0,229,195,0.4)`,
+                    border: `1.5px solid rgba(200,169,81,0.4)`,
                     borderRadius: '10px',
                     color: GOLD, fontFamily: FRANK, fontSize: '14px', fontWeight: 700,
                     cursor: 'pointer',
@@ -585,25 +616,67 @@ export function ShopPage() {
 
       <div dir="rtl" style={{ minHeight: '100vh', background: EARTH, fontFamily: ASST }}>
 
-        {/* ── Header ── */}
+        {/* ── Hero ── */}
         <div style={{
           background: `linear-gradient(180deg, ${HEADER} 0%, ${EARTH} 100%)`,
-          padding: '60px 24px 48px',
+          padding: '72px 24px 56px',
           textAlign: 'center',
           animation: 'shopFadeIn 0.5s ease both',
         }}>
-          <h1 style={{
-            fontFamily: FRANK, fontSize: 'clamp(26px, 5vw, 42px)',
-            color: GOLD, margin: '0 0 12px', fontWeight: 700, lineHeight: 1.2,
+          {/* Workshop label */}
+          <div style={{
+            display: 'inline-block',
+            fontFamily: ASST, fontSize: '12px', fontWeight: 700,
+            color: SAGE, letterSpacing: '0.08em',
+            background: 'rgba(143,191,127,0.1)',
+            border: '1px solid rgba(143,191,127,0.25)',
+            padding: '4px 14px', borderRadius: '99px',
+            marginBottom: '20px',
           }}>
-            חנות גינה חיה
+            בית המלאכה של צ'ופצ'ו
+          </div>
+
+          {/* Headline */}
+          <h1 style={{
+            fontFamily: FRANK, fontSize: 'clamp(28px, 5.5vw, 48px)',
+            color: PARCH, margin: '0 0 16px', fontWeight: 700, lineHeight: 1.25,
+          }}>
+            הצמח נראה רע?<br />צ'ופצ'ו יגיד לך למה.
           </h1>
-          <p style={{ fontFamily: ASST, fontSize: '16px', color: 'rgba(176,207,191,0.65)', margin: '0 0 8px' }}>
-            רכוש כלים בודדים — ללא מנוי
+
+          {/* Subheadline */}
+          <p style={{
+            fontFamily: ASST, fontSize: 'clamp(15px, 2.5vw, 17px)',
+            color: MUTED, margin: '0 auto 28px',
+            maxWidth: '480px', lineHeight: 1.6,
+          }}>
+            מעלים תמונה, מקבלים דוח בריאות מלא עם תכנית טיפול.
           </p>
-          <p style={{ fontFamily: ASST, fontSize: '12px', color: `${SAGE}90`, margin: 0, letterSpacing: '0.02em' }}>
-            ✦ כל הרכישות תקפות לצמיתות ואינן פגות
-          </p>
+
+          {/* CTA */}
+          <a
+            href="#analysis-section"
+            style={{
+              display: 'inline-block',
+              fontFamily: FRANK, fontSize: '16px', fontWeight: 700,
+              color: EARTH, background: GOLD,
+              padding: '13px 28px', borderRadius: '12px',
+              textDecoration: 'none', marginBottom: '18px',
+              transition: 'filter 0.2s',
+            }}
+            onMouseEnter={e => { (e.currentTarget as HTMLElement).style.filter = 'brightness(1.1)'; }}
+            onMouseLeave={e => { (e.currentTarget as HTMLElement).style.filter = 'none'; }}
+          >
+            בדוק את הצמח שלי
+          </a>
+
+          {/* Permanence badge */}
+          <div style={{
+            fontFamily: ASST, fontSize: '12px',
+            color: `${SAGE}90`, letterSpacing: '0.02em',
+          }}>
+            ∞ כל רכישה תקפה לצמיתות — בלי מנוי, בלי תוקף
+          </div>
         </div>
 
         {/* ── Credit balance (if any) ── */}
@@ -614,8 +687,8 @@ export function ShopPage() {
             animation: 'shopFadeIn 0.4s ease both',
           }}>
             <div style={{
-              backgroundColor: 'rgba(0,229,195,0.08)',
-              border: '1px solid rgba(0,229,195,0.2)',
+              backgroundColor: `rgba(200,169,81,0.08)`,
+              border: `1px solid rgba(200,169,81,0.2)`,
               borderRadius: '12px',
               padding: '14px 20px',
               display: 'flex', flexWrap: 'wrap', gap: '16px',
@@ -651,16 +724,73 @@ export function ShopPage() {
         }}>
 
           {/* Analysis */}
-          <div style={{ marginBottom: '48px' }}>
-            <div style={{ marginBottom: '20px' }}>
-              <h2 style={{ fontFamily: FRANK, fontSize: '22px', color: GOLD, fontWeight: 700, margin: '0 0 8px' }}>
-                🔬 ניתוח צמחים + דוח מלא
-              </h2>
-              <p style={{ fontFamily: ASST, fontSize: '14px', color: `${PARCH}70`, margin: 0, lineHeight: 1.6 }}>
+          <div id="analysis-section" style={{ marginBottom: '48px' }}>
+            <div style={{ marginBottom: '24px' }}>
+              <div style={{ display: 'flex', alignItems: 'baseline', flexWrap: 'wrap', gap: '10px', marginBottom: '8px' }}>
+                <h2 style={{ fontFamily: FRANK, fontSize: '22px', color: GOLD, fontWeight: 700, margin: 0 }}>
+                  🔬 ניתוח צמחים + דוח מלא
+                </h2>
+                <span style={{
+                  fontFamily: ASST, fontSize: '11px', color: SAGE,
+                  background: 'rgba(143,191,127,0.1)',
+                  border: '1px solid rgba(143,191,127,0.25)',
+                  padding: '2px 10px', borderRadius: '99px',
+                }}>
+                  תקף לצמיתות
+                </span>
+              </div>
+              <p style={{ fontFamily: ASST, fontSize: '14px', color: MUTED, margin: 0, lineHeight: 1.6 }}>
                 העלה תמונה של הצמח שלך וקבל ניתוח AI מפורט: דוח בריאות, זיהוי בעיות, משימות ותכנית טיפול.
               </p>
             </div>
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: '16px' }}>
+
+            {/* Sample report card */}
+            <div style={{
+              background: 'rgba(10,42,18,0.8)',
+              border: `1px solid rgba(200,169,81,0.2)`,
+              borderRadius: '14px',
+              padding: '18px 20px',
+              marginBottom: '24px',
+            }}>
+              <div style={{ fontFamily: FRANK, fontSize: '13px', color: MUTED, fontWeight: 700, marginBottom: '14px', letterSpacing: '0.03em' }}>
+                כך נראה הדוח שתקבלו
+              </div>
+              {/* Plant header */}
+              <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '14px' }}>
+                <span style={{ fontSize: '24px' }}>🍅</span>
+                <div style={{ flex: 1 }}>
+                  <div style={{ fontFamily: FRANK, fontSize: '16px', color: PARCH, fontWeight: 700, marginBottom: '2px' }}>עגבנייה · מרפסת</div>
+                  <div style={{ fontFamily: ASST, fontSize: '12px', color: MUTED }}>ניתוח 14.7.2026</div>
+                </div>
+                <div style={{
+                  background: `rgba(200,169,81,0.15)`,
+                  border: `1px solid rgba(200,169,81,0.3)`,
+                  borderRadius: '10px', padding: '6px 14px',
+                  textAlign: 'center',
+                }}>
+                  <div style={{ fontFamily: FRANK, fontSize: '22px', color: GOLD, fontWeight: 700, lineHeight: 1 }}>72</div>
+                  <div style={{ fontFamily: ASST, fontSize: '10px', color: MUTED }}>מתוך 100</div>
+                </div>
+              </div>
+              {/* Findings */}
+              <div style={{ borderTop: `1px solid rgba(200,169,81,0.1)`, paddingTop: '12px', display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                <div style={{ display: 'flex', alignItems: 'flex-start', gap: '8px' }}>
+                  <span style={{ fontSize: '14px', flexShrink: 0, marginTop: '1px' }}>⚠️</span>
+                  <span style={{ fontFamily: ASST, fontSize: '13px', color: MUTED, lineHeight: 1.5 }}>מחסור באשלגן — עלים צהובים בשולי הצמח. מומלץ דישון אשלגן פוספט.</span>
+                </div>
+                <div style={{ display: 'flex', alignItems: 'flex-start', gap: '8px' }}>
+                  <span style={{ fontSize: '14px', flexShrink: 0, marginTop: '1px' }}>💧</span>
+                  <span style={{ fontFamily: ASST, fontSize: '13px', color: MUTED, lineHeight: 1.5 }}>השקיה: מומלץ להפחית תדירות — אדמה לחה מדי בין השקיות.</span>
+                </div>
+                <div style={{ display: 'flex', alignItems: 'flex-start', gap: '8px' }}>
+                  <span style={{ fontSize: '14px', flexShrink: 0, marginTop: '1px', color: SAGE }}>✓</span>
+                  <span style={{ fontFamily: ASST, fontSize: '13px', color: SAGE, lineHeight: 1.5 }}>3 משימות טיפול נוספו ללוח השנה שלך.</span>
+                </div>
+              </div>
+            </div>
+
+            {/* Pricing grid */}
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: '20px', alignItems: 'start' }}>
               {ANALYSIS_PRODUCTS.map(p => (
                 <ProductCard
                   key={p.id}
@@ -673,17 +803,81 @@ export function ShopPage() {
             </div>
           </div>
 
+          {/* Subscription comparison band */}
+          <div style={{
+            border: `2px solid ${GOLD}`,
+            borderRadius: '16px',
+            padding: '24px 28px',
+            marginBottom: '48px',
+            background: `linear-gradient(135deg, rgba(15,51,25,0.9) 0%, rgba(10,42,18,0.95) 100%)`,
+            boxShadow: `0 4px 24px rgba(200,169,81,0.12)`,
+          }}>
+            <div style={{
+              fontFamily: FRANK, fontSize: 'clamp(15px, 2.5vw, 18px)',
+              color: PARCH, fontWeight: 700, marginBottom: '20px', lineHeight: 1.45,
+            }}>
+              10 בדיקות עולות ₪21.{' '}
+              <span style={{ color: GOLD }}>חודש שלם של הכל — ₪18.</span>
+            </div>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(190px, 1fr))', gap: '24px' }}>
+              {/* Pay-as-you-go column */}
+              <div>
+                <div style={{ fontFamily: FRANK, fontSize: '15px', color: PARCH, fontWeight: 700, marginBottom: '10px' }}>
+                  קונים לפי צורך
+                </div>
+                <ul style={{ margin: 0, padding: 0, listStyle: 'none', display: 'flex', flexDirection: 'column', gap: '7px' }}>
+                  {['בלי התחייבות', 'תקף לצמיתות', 'משלמים רק על מה שצריך'].map(item => (
+                    <li key={item} style={{ fontFamily: ASST, fontSize: '13px', color: MUTED, display: 'flex', alignItems: 'center', gap: '7px' }}>
+                      <span style={{ color: SAGE, fontSize: '12px' }}>·</span> {item}
+                    </li>
+                  ))}
+                </ul>
+              </div>
+              {/* Subscription column */}
+              <div>
+                <div style={{ fontFamily: FRANK, fontSize: '15px', color: GOLD, fontWeight: 700, marginBottom: '10px' }}>
+                  מפתח לבית המלאכה — גנן ביתי
+                </div>
+                <ul style={{ margin: 0, padding: 0, listStyle: 'none', display: 'flex', flexDirection: 'column', gap: '7px', marginBottom: '16px' }}>
+                  {["צ'ופצ'ו בלי הגבלה", 'כל הבדיקות כלולות', 'מעקבים ללא הגבלה'].map(item => (
+                    <li key={item} style={{ fontFamily: ASST, fontSize: '13px', color: MUTED, display: 'flex', alignItems: 'center', gap: '7px' }}>
+                      <span style={{ color: GOLD, fontSize: '12px' }}>✓</span> {item}
+                    </li>
+                  ))}
+                </ul>
+                <Link
+                  to="/pricing"
+                  style={{
+                    display: 'inline-block',
+                    fontFamily: FRANK, fontSize: '15px', fontWeight: 700,
+                    color: EARTH, background: GOLD,
+                    padding: '10px 22px', borderRadius: '10px',
+                    textDecoration: 'none', marginBottom: '7px',
+                    transition: 'filter 0.2s',
+                  }}
+                  onMouseEnter={e => { (e.currentTarget as HTMLElement).style.filter = 'brightness(1.1)'; }}
+                  onMouseLeave={e => { (e.currentTarget as HTMLElement).style.filter = 'none'; }}
+                >
+                  ₪18 לחודש
+                </Link>
+                <div style={{ fontFamily: ASST, fontSize: '12px', color: MUTED }}>
+                  או ₪180 לשנה — חודשיים מתנה
+                </div>
+              </div>
+            </div>
+          </div>
+
           {/* Trackers */}
           <div style={{ marginBottom: '48px' }}>
             <div style={{ marginBottom: '20px' }}>
               <h2 style={{ fontFamily: FRANK, fontSize: '22px', color: GOLD, fontWeight: 700, margin: '0 0 8px' }}>
                 📈 מעקבי גידול
               </h2>
-              <p style={{ fontFamily: ASST, fontSize: '14px', color: `${PARCH}70`, margin: 0, lineHeight: 1.6 }}>
+              <p style={{ fontFamily: ASST, fontSize: '14px', color: MUTED, margin: 0, lineHeight: 1.6 }}>
                 עקוב אחר הצמחים שלך לאורך זמן עם תמונות, הערות וניתוח התקדמות. כל מעקב תקף לצמיתות.
               </p>
             </div>
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: '16px' }}>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: '20px', alignItems: 'start' }}>
               {TRACKER_PRODUCTS.map(p => (
                 <ProductCard
                   key={p.id}
@@ -698,22 +892,22 @@ export function ShopPage() {
 
           {/* Coming soon */}
           <div style={{ marginBottom: '48px' }}>
-            <h2 style={{ fontFamily: FRANK, fontSize: '20px', color: `${PARCH}50`, fontWeight: 700, margin: '0 0 16px' }}>
+            <h2 style={{ fontFamily: FRANK, fontSize: '20px', color: MUTED, fontWeight: 700, margin: '0 0 16px' }}>
               🔜 בקרוב בחנות
             </h2>
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: '16px' }}>
               {COMING_SOON.map((item, i) => (
                 <div key={i} style={{
                   position: 'relative',
-                  background: 'rgba(9,20,16,0.3)',
-                  border: '1px solid rgba(0,229,195,0.07)',
+                  background: 'rgba(10,42,18,0.3)',
+                  border: `1px solid rgba(200,169,81,0.07)`,
                   borderRadius: '14px', padding: '22px 20px',
                   opacity: 0.5,
                   display: 'flex', flexDirection: 'column', gap: '10px',
                 }}>
                   <div style={{
                     position: 'absolute', top: -10, insetInlineEnd: 16,
-                    background: 'rgba(0,229,195,0.15)', color: `${GOLD}AA`,
+                    background: `rgba(200,169,81,0.15)`, color: `${GOLD}AA`,
                     fontFamily: ASST, fontSize: '10px', fontWeight: 700,
                     padding: '2px 10px', borderRadius: '99px', letterSpacing: '0.05em',
                   }}>
@@ -721,70 +915,55 @@ export function ShopPage() {
                   </div>
                   <div style={{ fontSize: '28px' }}>{item.emoji}</div>
                   <div style={{ fontFamily: FRANK, fontSize: '16px', color: PARCH, fontWeight: 700 }}>{item.title}</div>
-                  <div style={{ fontFamily: ASST, fontSize: '13px', color: `${PARCH}70`, lineHeight: 1.5 }}>{item.desc}</div>
+                  <div style={{ fontFamily: ASST, fontSize: '13px', color: MUTED, lineHeight: 1.5 }}>{item.desc}</div>
                 </div>
               ))}
             </div>
           </div>
         </div>
 
-        {/* ── Physical products: Wood & Garden ── */}
+        {/* ── Physical products: הנגרייה ── */}
         <div style={{
           maxWidth: '900px', margin: '0 auto',
           padding: '0 20px',
           animation: 'shopFadeIn 0.5s ease 0.15s both',
         }}>
-          <hr style={{ border: 'none', borderTop: '1px solid rgba(0,229,195,0.12)', margin: '0 0 40px' }} />
+          <hr style={{ border: 'none', borderTop: `1px solid rgba(200,169,81,0.12)`, margin: '0 0 40px' }} />
 
           {/* Section header */}
           <div style={{ marginBottom: '24px' }}>
-            <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: '12px', marginBottom: '8px' }}>
-              <h2 style={{ fontFamily: FRANK, fontSize: '22px', color: GOLD, fontWeight: 700, margin: 0 }}>
-                עץ וגינה
-              </h2>
-              <span style={{ fontFamily: ASST, fontSize: '14px', color: `${PARCH}60` }}>
-                מוצרים בעבודת יד
-              </span>
-              <span style={{
-                fontFamily: ASST, fontSize: '11px', fontWeight: 700,
-                color: `${PARCH}60`,
-                background: 'rgba(255,255,255,0.06)',
-                border: '1px solid rgba(255,255,255,0.12)',
-                padding: '3px 10px', borderRadius: '99px',
-              }}>
-                🪵 בקרוב — בעבודה
-              </span>
-            </div>
+            <h2 style={{ fontFamily: FRANK, fontSize: '22px', color: GOLD, fontWeight: 700, margin: '0 0 8px' }}>
+              הנגרייה — בקרוב על שולחן העבודה
+            </h2>
+            <p style={{ fontFamily: ASST, fontSize: '14px', color: MUTED, margin: '0 0 14px', lineHeight: 1.6 }}>
+              עץ ממוחזר, עבודת יד, כל פריט יחיד במינו.
+            </p>
 
             {/* Chupchu quote */}
             <div style={{
               display: 'flex', alignItems: 'flex-start', gap: '10px',
-              background: 'rgba(0,229,195,0.07)',
-              border: '1px solid rgba(0,229,195,0.15)',
+              background: `rgba(200,169,81,0.07)`,
+              border: `1px solid rgba(200,169,81,0.15)`,
               borderRadius: '12px', padding: '12px 16px',
-              marginTop: '14px',
             }}>
               <img
                 src="https://gina-haya.vercel.app/chupchu_final.png"
                 alt="צ'ופצ'ו"
                 style={{ width: '32px', height: '32px', borderRadius: '50%', flexShrink: 0, objectFit: 'cover' }}
               />
-              <p style={{ fontFamily: ASST, fontSize: '13px', color: `${PARCH}80`, margin: 0, lineHeight: 1.6 }}>
+              <p style={{ fontFamily: ASST, fontSize: '13px', color: MUTED, margin: 0, lineHeight: 1.6 }}>
                 כל פריט נעשה ביד מעץ ממוחזר — פלטות ושאריות סדנה שקיבלו חיים חדשים. זמן ייצור 1–3 שבועות.
               </p>
             </div>
           </div>
 
-          {/* Products grid */}
-          <div style={{ position: 'relative', marginBottom: '48px' }}>
-            <div style={{
-              display: 'grid',
-              gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))',
-              gap: '16px',
-              opacity: 0.35,
-              pointerEvents: 'none',
-              userSelect: 'none',
-            }}>
+          {/* Products grid — now functional */}
+          <div style={{
+            display: 'grid',
+            gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))',
+            gap: '16px',
+            marginBottom: '48px',
+          }}>
             {WOOD_PRODUCTS.map(product => (
               <div
                 key={product.id}
@@ -792,28 +971,28 @@ export function ShopPage() {
                 style={{
                   position: 'relative',
                   background: product.badge
-                    ? 'linear-gradient(145deg, rgba(9,20,16,0.95) 0%, rgba(9,20,16,0.98) 100%)'
-                    : 'rgba(9,20,16,0.6)',
+                    ? 'linear-gradient(145deg, rgba(10,42,18,0.95) 0%, rgba(15,51,25,0.98) 100%)'
+                    : 'rgba(10,42,18,0.6)',
                   border: product.badge
-                    ? '2px solid rgba(0,229,195,0.3)'
-                    : '1px solid rgba(0,229,195,0.15)',
+                    ? `2px solid rgba(200,169,81,0.3)`
+                    : `1px solid rgba(200,169,81,0.15)`,
                   borderRadius: '14px',
                   overflow: 'hidden',
                   display: 'flex', flexDirection: 'column',
-                  boxShadow: product.badge ? '0 4px 24px rgba(0,229,195,0.08)' : '0 2px 12px rgba(0,0,0,0.15)',
+                  boxShadow: product.badge ? `0 4px 24px rgba(200,169,81,0.08)` : '0 2px 12px rgba(0,0,0,0.15)',
                 }}
               >
                 {/* Icon area */}
                 <div style={{
                   position: 'relative',
-                  background: 'rgba(0,229,195,0.06)',
+                  background: `rgba(200,169,81,0.06)`,
                   padding: '24px 20px 18px',
                   textAlign: 'center',
                 }}>
                   {product.badge && (
                     <div style={{
                       position: 'absolute', top: 10, insetInlineStart: 12,
-                      background: 'rgba(0,229,195,0.18)',
+                      background: `rgba(200,169,81,0.18)`,
                       color: '#8B6914',
                       fontFamily: ASST, fontSize: '10px', fontWeight: 700,
                       padding: '2px 8px', borderRadius: '99px',
@@ -829,11 +1008,11 @@ export function ShopPage() {
                   <div style={{ fontFamily: FRANK, fontSize: '17px', color: PARCH, fontWeight: 700 }}>
                     {product.nameHe}
                   </div>
-                  <div style={{ fontFamily: ASST, fontSize: '12px', color: `${PARCH}50` }}>
+                  <div style={{ fontFamily: ASST, fontSize: '12px', color: MUTED }}>
                     {product.nameEn}
                   </div>
                   <p style={{
-                    fontFamily: ASST, fontSize: '13px', color: `${PARCH}70`,
+                    fontFamily: ASST, fontSize: '13px', color: MUTED,
                     margin: '6px 0 8px', lineHeight: 1.6, flex: 1,
                   }}>
                     {product.descHe}
@@ -845,40 +1024,20 @@ export function ShopPage() {
 
                 {/* Footer button */}
                 <div style={{ padding: '0 20px 20px' }}>
-                  <button className="shop-wood-btn" onClick={() => {}}>
-                    לפרטים / הזמנה
+                  <button className="shop-wood-btn" onClick={() => handleWoodOrder(product)}>
+                    ספרו לי כשמוכן
                   </button>
                 </div>
               </div>
             ))}
-            </div>
-
-            {/* Coming soon overlay */}
-            <div style={{
-              position: 'absolute', inset: 0,
-              display: 'flex', flexDirection: 'column',
-              alignItems: 'center', justifyContent: 'center', gap: '10px',
-              background: 'rgba(9,20,16,0.55)',
-              backdropFilter: 'blur(3px)',
-              borderRadius: '14px',
-              pointerEvents: 'none',
-            }}>
-              <span style={{ fontSize: '36px' }}>🪵</span>
-              <div style={{ fontFamily: FRANK, fontSize: '20px', color: GOLD, fontWeight: 700 }}>
-                בקרוב
-              </div>
-              <div style={{ fontFamily: ASST, fontSize: '13px', color: `${PARCH}80`, textAlign: 'center', maxWidth: '260px', lineHeight: 1.6 }}>
-                מוצרי עץ בעבודת יד מעץ ממוחזר.<br />בהכנה — בקרוב בחנות.
-              </div>
-            </div>
           </div>
         </div>
 
         {/* ── Bottom banner ── */}
         <div style={{ maxWidth: '900px', margin: '0 auto', padding: '0 20px 80px', animation: 'shopFadeIn 0.5s ease 0.2s both' }}>
           <div style={{
-            background: 'linear-gradient(135deg, rgba(9,20,16,0.7) 0%, rgba(9,20,16,0.8) 100%)',
-            border: '1px solid rgba(0,229,195,0.18)',
+            background: `linear-gradient(135deg, rgba(10,42,18,0.7) 0%, rgba(15,51,25,0.8) 100%)`,
+            border: `1px solid rgba(200,169,81,0.18)`,
             borderRadius: '16px', padding: '24px 28px',
             display: 'flex', flexWrap: 'wrap', gap: '12px',
             alignItems: 'center', justifyContent: 'space-between',
@@ -887,7 +1046,7 @@ export function ShopPage() {
               <div style={{ fontFamily: FRANK, fontSize: '18px', color: PARCH, fontWeight: 700, marginBottom: '4px' }}>
                 גנן רציני? המנוי שלנו כולל הכל ועוד.
               </div>
-              <div style={{ fontFamily: ASST, fontSize: '13px', color: `${PARCH}60` }}>
+              <div style={{ fontFamily: ASST, fontSize: '13px', color: MUTED }}>
                 חסוך על כלים בודדים עם מנוי שנתי.
               </div>
             </div>
@@ -920,7 +1079,7 @@ export function ShopPage() {
             border: 'none', cursor: 'pointer',
             display: 'flex', alignItems: 'center', justifyContent: 'center',
             fontSize: '22px',
-            boxShadow: '0 8px 24px rgba(0,229,195,0.4)',
+            boxShadow: `0 8px 24px rgba(200,169,81,0.4)`,
             transition: 'filter 0.2s, transform 0.2s',
           }}
           onMouseEnter={e => { (e.currentTarget as HTMLElement).style.transform = 'scale(1.08)'; }}
