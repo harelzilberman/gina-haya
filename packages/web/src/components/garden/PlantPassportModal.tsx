@@ -13,10 +13,10 @@ import { NewTrackerModal } from '../tracker/NewTrackerModal';
 import { PhotoUpload } from '../tracker/PhotoUpload';
 import { AnalysisResult } from '../tracker/AnalysisResult';
 
-const NIGHT      = '#050d0a';
-const NIGHT_CARD = '#111f18';
+const NIGHT      = '#0a1712';
+const NIGHT_CARD = '#1a3226';
 const BIO_CYAN   = '#00e5c3';
-const TEXT_MID   = '#b0cfbf';
+const TEXT_MID   = '#c8e2d4';
 const FRANK      = '"Frank Ruhl Libre", Georgia, serif';
 const DM_SANS    = "'DM Sans', 'Assistant', 'Heebo', sans-serif";
 
@@ -222,10 +222,10 @@ export function PlantPassportModal({ plant, tracker, gardenName, gardenId, onClo
   const chip = (label: string, value: React.ReactNode, icon?: string) => (
     <div style={{
       display: 'flex', flexDirection: 'column', gap: '2px',
-      background: 'rgba(0,229,195,0.05)', border: '1px solid rgba(0,229,195,0.12)',
+      background: 'rgba(0,229,195,0.09)', border: '1px solid rgba(0,229,195,0.2)',
       borderRadius: '10px', padding: '10px 12px',
     }}>
-      <span style={{ fontFamily: DM_SANS, fontSize: '10px', color: `${TEXT_MID}60` }}>{icon ? `${icon} ` : ''}{label}</span>
+      <span style={{ fontFamily: DM_SANS, fontSize: '10px', color: `${TEXT_MID}82` }}>{icon ? `${icon} ` : ''}{label}</span>
       <span style={{ fontFamily: DM_SANS, fontSize: '13px', color: TEXT_MID, fontWeight: 600 }}>{value}</span>
     </div>
   );
@@ -250,7 +250,7 @@ export function PlantPassportModal({ plant, tracker, gardenName, gardenId, onClo
         {/* Top bar */}
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '6px' }}>
           <button onClick={onClose} style={iconBtnStyle} aria-label="סגור">✕</button>
-          <span style={{ fontFamily: DM_SANS, fontSize: '12px', color: `${TEXT_MID}60` }}>{gardenName}</span>
+          <span style={{ fontFamily: DM_SANS, fontSize: '12px', color: `${TEXT_MID}82` }}>{gardenName}</span>
           {isArchived ? (
             <button onClick={handleRestore} style={iconBtnStyle} aria-label="שחזר" disabled={busyAction === 'restore'}>↺</button>
           ) : (
@@ -265,9 +265,9 @@ export function PlantPassportModal({ plant, tracker, gardenName, gardenId, onClo
             {plant.common_name_he}
           </h1>
           {plant.variety && (
-            <p style={{ fontFamily: DM_SANS, fontSize: '13px', color: `${TEXT_MID}70`, margin: '0 0 4px' }}>{plant.variety}</p>
+            <p style={{ fontFamily: DM_SANS, fontSize: '13px', color: `${TEXT_MID}88`, margin: '0 0 4px' }}>{plant.variety}</p>
           )}
-          <p style={{ fontFamily: DM_SANS, fontSize: '12px', color: `${TEXT_MID}55`, margin: '0 0 10px' }}>
+          <p style={{ fontFamily: DM_SANS, fontSize: '12px', color: `${TEXT_MID}78`, margin: '0 0 10px' }}>
             {locationLabel(plant.location_type)}{plant.location_description ? ` · ${plant.location_description}` : ''}
           </p>
           <div style={{ display: 'flex', justifyContent: 'center', gap: '8px', flexWrap: 'wrap' }}>
@@ -366,7 +366,7 @@ export function PlantPassportModal({ plant, tracker, gardenName, gardenId, onClo
         </div>
 
         {/* Stats row */}
-        <div style={{ display: 'flex', justifyContent: 'space-around', marginBottom: '22px', padding: '14px 0', borderTop: '1px solid rgba(0,229,195,0.1)', borderBottom: '1px solid rgba(0,229,195,0.1)' }}>
+        <div style={{ display: 'flex', justifyContent: 'space-around', marginBottom: '22px', padding: '14px 0', borderTop: '1px solid rgba(0,229,195,0.16)', borderBottom: '1px solid rgba(0,229,195,0.16)' }}>
           <Stat value={daysInGarden} label="ימים בגינה" />
           <Stat value={wateringCount} label="השקיות" />
           <Stat value={photoCount} label="תמונות" />
@@ -376,19 +376,19 @@ export function PlantPassportModal({ plant, tracker, gardenName, gardenId, onClo
         <SectionHeader title="מעקב גידול" />
         {tracker ? (
           health ? (
-            <div style={{ padding: '12px 14px', marginBottom: '20px', borderRadius: '12px', background: NIGHT_CARD, border: '1px solid rgba(0,229,195,0.15)' }}>
+            <div style={{ padding: '12px 14px', marginBottom: '20px', borderRadius: '12px', background: NIGHT_CARD, border: '1px solid rgba(0,229,195,0.24)' }}>
               <p style={{ fontFamily: DM_SANS, fontSize: '13px', color: TEXT_MID, margin: '0 0 4px', fontWeight: 600 }}>
                 {health.growthStageHe} · {health.healthHe}
               </p>
               <p style={{
-                fontFamily: DM_SANS, fontSize: '12.5px', color: `${TEXT_MID}80`, margin: 0, lineHeight: 1.6,
+                fontFamily: DM_SANS, fontSize: '12.5px', color: `${TEXT_MID}93`, margin: 0, lineHeight: 1.6,
                 display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden',
               } as React.CSSProperties}>
                 {health.observations}
               </p>
             </div>
           ) : (
-            <p style={{ fontFamily: DM_SANS, fontSize: '13px', color: `${TEXT_MID}60`, marginBottom: '20px' }}>
+            <p style={{ fontFamily: DM_SANS, fontSize: '13px', color: `${TEXT_MID}82`, marginBottom: '20px' }}>
               עדיין לא בוצע ניתוח. צלם תמונה לניתוח ראשון!
             </p>
           )
@@ -398,7 +398,7 @@ export function PlantPassportModal({ plant, tracker, gardenName, gardenId, onClo
             background: 'rgba(74,156,104,0.1)', border: '1px solid rgba(74,156,104,0.3)',
           }}>
             <p style={{ fontFamily: FRANK, fontSize: '15px', color: '#4A9C68', margin: '0 0 4px' }}>התחל מעקב חכם</p>
-            <p style={{ fontFamily: DM_SANS, fontSize: '12.5px', color: `${TEXT_MID}70`, margin: '0 0 12px' }}>
+            <p style={{ fontFamily: DM_SANS, fontSize: '12.5px', color: `${TEXT_MID}88`, margin: '0 0 12px' }}>
               קבל ניתוח AI, המלצות ביודינמיות ותזכורות מותאמות
             </p>
             <button
@@ -414,9 +414,9 @@ export function PlantPassportModal({ plant, tracker, gardenName, gardenId, onClo
         <SectionHeader title={isArchived ? 'משימות העונה' : 'משימות קרובות'} />
         <div style={{ marginBottom: '20px' }}>
           {loadingTasks ? (
-            <p style={{ fontFamily: DM_SANS, fontSize: '12px', color: `${TEXT_MID}50` }}>טוען...</p>
+            <p style={{ fontFamily: DM_SANS, fontSize: '12px', color: `${TEXT_MID}74` }}>טוען...</p>
           ) : tasks.length === 0 ? (
-            <p style={{ fontFamily: DM_SANS, fontSize: '12px', color: `${TEXT_MID}50` }}>אין משימות</p>
+            <p style={{ fontFamily: DM_SANS, fontSize: '12px', color: `${TEXT_MID}74` }}>אין משימות</p>
           ) : (
             tasks.slice(0, 5).map(task => (
               <div key={task.id} style={{ display: 'flex', alignItems: 'center', gap: '10px', padding: '8px 4px' }}>
@@ -428,20 +428,20 @@ export function PlantPassportModal({ plant, tracker, gardenName, gardenId, onClo
                 />
                 <span style={{
                   flex: 1, fontFamily: DM_SANS, fontSize: '13px',
-                  color: task.status === 'completed' ? `${TEXT_MID}40` : TEXT_MID,
+                  color: task.status === 'completed' ? `${TEXT_MID}66` : TEXT_MID,
                   textDecoration: task.status === 'completed' ? 'line-through' : 'none',
                 }}>
                   {task.title}
                 </span>
-                <span style={{ fontFamily: DM_SANS, fontSize: '11px', color: `${TEXT_MID}50` }}>{task.date}</span>
+                <span style={{ fontFamily: DM_SANS, fontSize: '11px', color: `${TEXT_MID}74` }}>{task.date}</span>
                 {!isArchived && (
-                  <button onClick={() => deleteTask(task.id)} style={{ background: 'none', border: 'none', color: `${TEXT_MID}40`, cursor: 'pointer' }}>✕</button>
+                  <button onClick={() => deleteTask(task.id)} style={{ background: 'none', border: 'none', color: `${TEXT_MID}66`, cursor: 'pointer' }}>✕</button>
                 )}
               </div>
             ))
           )}
           {tasks.length > 5 && (
-            <p style={{ fontFamily: DM_SANS, fontSize: '11px', color: `${TEXT_MID}50`, marginTop: '4px' }}>
+            <p style={{ fontFamily: DM_SANS, fontSize: '11px', color: `${TEXT_MID}74`, marginTop: '4px' }}>
               ועוד {tasks.length - 5} משימות...
             </p>
           )}
@@ -451,9 +451,9 @@ export function PlantPassportModal({ plant, tracker, gardenName, gardenId, onClo
         <SectionHeader title="כל ההיסטוריה" />
         <div>
           {loadingTimeline ? (
-            <p style={{ fontFamily: DM_SANS, fontSize: '12px', color: `${TEXT_MID}50` }}>טוען...</p>
+            <p style={{ fontFamily: DM_SANS, fontSize: '12px', color: `${TEXT_MID}74` }}>טוען...</p>
           ) : timeline.length === 0 ? (
-            <p style={{ fontFamily: DM_SANS, fontSize: '12px', color: `${TEXT_MID}50` }}>אין עדיין היסטוריה</p>
+            <p style={{ fontFamily: DM_SANS, fontSize: '12px', color: `${TEXT_MID}74` }}>אין עדיין היסטוריה</p>
           ) : (
             timeline.map((entry, i) => {
               const meta = ENTRY_META[entry.entry_type] ?? ENTRY_META.note;
@@ -461,7 +461,7 @@ export function PlantPassportModal({ plant, tracker, gardenName, gardenId, onClo
                 <div key={entry.id} style={{ display: 'flex', gap: '10px', paddingBottom: i === timeline.length - 1 ? 0 : '14px' }}>
                   <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', width: '10px' }}>
                     <div style={{ width: '10px', height: '10px', borderRadius: '50%', background: meta.color, flexShrink: 0 }} />
-                    {i !== timeline.length - 1 && <div style={{ flex: 1, width: '2px', background: 'rgba(176,207,191,0.15)', marginTop: '2px' }} />}
+                    {i !== timeline.length - 1 && <div style={{ flex: 1, width: '2px', background: 'rgba(176,207,191,0.25)', marginTop: '2px' }} />}
                   </div>
                   <div style={{ flex: 1, paddingBottom: '4px' }}>
                     <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '2px' }}>
@@ -471,12 +471,12 @@ export function PlantPassportModal({ plant, tracker, gardenName, gardenId, onClo
                       }}>
                         {meta.emoji} {meta.label}
                       </span>
-                      <span style={{ fontFamily: DM_SANS, fontSize: '10.5px', color: `${TEXT_MID}50` }}>
+                      <span style={{ fontFamily: DM_SANS, fontSize: '10.5px', color: `${TEXT_MID}74` }}>
                         {formatHebrewDate(entry.created_at)}
                       </span>
                     </div>
                     {entry.note && (
-                      <p style={{ fontFamily: DM_SANS, fontSize: '12.5px', color: `${TEXT_MID}90`, margin: 0 }}>{entry.note}</p>
+                      <p style={{ fontFamily: DM_SANS, fontSize: '12.5px', color: `${TEXT_MID}97`, margin: 0 }}>{entry.note}</p>
                     )}
                     {entry.entry_type === 'photo' && (
                       <div style={{ width: '80px', height: '80px', borderRadius: '8px', background: 'rgba(55,138,221,0.12)', border: '1px solid rgba(55,138,221,0.3)', display: 'flex', alignItems: 'center', justifyContent: 'center', marginTop: '4px' }}>
@@ -580,7 +580,7 @@ function QuickAction({ emoji, label, onClick, busy, disabled, title }: {
       title={title}
       style={{
         flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '4px',
-        padding: '10px 4px', borderRadius: '10px', border: '1px solid rgba(0,229,195,0.15)',
+        padding: '10px 4px', borderRadius: '10px', border: '1px solid rgba(0,229,195,0.24)',
         background: NIGHT_CARD, color: TEXT_MID, cursor: disabled ? 'not-allowed' : 'pointer',
         opacity: disabled ? 0.4 : 1,
       }}
@@ -608,7 +608,7 @@ function Stat({ value, label }: { value: number; label: string }) {
   return (
     <div style={{ textAlign: 'center' }}>
       <div style={{ fontFamily: FRANK, fontSize: '20px', fontWeight: 700, color: BIO_CYAN }}>{value}</div>
-      <div style={{ fontFamily: DM_SANS, fontSize: '10.5px', color: `${TEXT_MID}60` }}>{label}</div>
+      <div style={{ fontFamily: DM_SANS, fontSize: '10.5px', color: `${TEXT_MID}82` }}>{label}</div>
     </div>
   );
 }
@@ -623,9 +623,9 @@ function ConfirmDialog({ title, message, confirmLabel, onConfirm, onCancel, busy
     >
       <div style={{ background: NIGHT_CARD, border: '1px solid rgba(0,229,195,0.2)', borderRadius: '12px', padding: '22px', width: '100%', maxWidth: '340px', textAlign: 'center', direction: 'rtl' }}>
         <p style={{ fontFamily: FRANK, fontSize: '16px', color: danger ? '#e06060' : BIO_CYAN, margin: '0 0 8px' }}>{title}</p>
-        <p style={{ fontFamily: DM_SANS, fontSize: '13px', color: `${TEXT_MID}80`, margin: '0 0 18px', lineHeight: 1.6 }}>{message}</p>
+        <p style={{ fontFamily: DM_SANS, fontSize: '13px', color: `${TEXT_MID}93`, margin: '0 0 18px', lineHeight: 1.6 }}>{message}</p>
         <div style={{ display: 'flex', gap: '10px' }}>
-          <button onClick={onCancel} disabled={busy} style={{ flex: 1, padding: '10px', borderRadius: '8px', border: '1px solid rgba(0,229,195,0.25)', background: 'transparent', color: `${TEXT_MID}80`, fontFamily: DM_SANS, fontSize: '13px', cursor: 'pointer' }}>
+          <button onClick={onCancel} disabled={busy} style={{ flex: 1, padding: '10px', borderRadius: '8px', border: '1px solid rgba(0,229,195,0.25)', background: 'transparent', color: `${TEXT_MID}93`, fontFamily: DM_SANS, fontSize: '13px', cursor: 'pointer' }}>
             ביטול
           </button>
           <button onClick={onConfirm} disabled={busy} style={{ flex: 1, padding: '10px', borderRadius: '8px', border: 'none', background: danger ? '#e06060' : BIO_CYAN, color: danger ? '#fff' : '#050d0a', fontFamily: FRANK, fontWeight: 700, fontSize: '13px', cursor: 'pointer' }}>
