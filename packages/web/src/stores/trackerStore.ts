@@ -97,6 +97,20 @@ export interface LimitError {
   limitType: string;
 }
 
+export interface TimelineEntry {
+  id: string;
+  tracker_id: string | null;
+  plant_id: string | null;
+  user_id: string;
+  entry_type: 'watering' | 'fertilizing' | 'note' | 'photo' | 'task' | 'chupchu' | 'tracker_report';
+  time_of_day: string | null;
+  note: string | null;
+  photo_path: string | null;
+  task_id: string | null;
+  tracker_checkin_id: string | null;
+  created_at: string;
+}
+
 interface TrackerState {
   trackers: Tracker[];
   activeTrackerId: string | null;
@@ -130,6 +144,15 @@ interface TrackerState {
   ) => Promise<{ tasks_added: number; tasks_error: string | null }>;
   setActiveTrackerId: (id: string | null) => void;
   reset: () => void;
+
+  // Passport actions — take the garden_plants id (works for any plant) plus an
+  // optional trackerId. When a tracker exists we hit the tracker-scoped endpoint
+  // (updates last_watered_at/watering_count too); otherwise we fall back to the
+  // plant-scoped endpoint, which only touches plant_timeline.
+  getPlantTimeline: (gardenPlantId: string) => Promise<TimelineEntry[]>;
+  logWater: (gardenPlantId: string, trackerId?: string | null) => Promise<void>;
+  logFertilize: (gardenPlantId: string, trackerId?: string | null) => Promise<void>;
+  addNote: (gardenPlantId: string, note: string, trackerId?: string | null) => Promise<void>;
 }
 
 function getToken() {
@@ -264,5 +287,43 @@ export const useTrackerStore = create<TrackerState>((set, get) => ({
       { tasks },
       token
     );
+  },
+
+  getPlantTimeline: async (gardenPlantId) => {
+    const token = getToken();
+    if (!token) throw new Error('Not authenticated');
+    return api.get<TimelineEntry[]>(`/api/trackers/plant/${gardenPlantId}/timeline`, token);
+  },
+
+  logWater: async (gardenPlantId, trackerId) => {
+    const token = getToken();
+    if (!token) throw new Error('Not authenticated');
+    if (trackerId) {
+      const { tracker } = await api.patch<{ tracker: Tracker }>(`/api/trackers/${trackerId}/water`, {}, token);
+      set(state => ({ trackers: state.trackers.map(t => t.id === trackerId ? { ...t, ...tracker } : t) }));
+    } else {
+      await api.post(`/api/trackers/plant/${gardenPlantId}/water`, {}, token);
+    }
+  },
+
+  logFertilize: async (gardenPlantId, trackerId) => {
+    const token = getToken();
+    if (!token) throw new Error('Not authenticated');
+    if (trackerId) {
+      const { tracker } = await api.patch<{ tracker: Tracker }>(`/api/trackers/${trackerId}/fertilize`, {}, token);
+      set(state => ({ trackers: state.trackers.map(t => t.id === trackerId ? { ...t, ...tracker } : t) }));
+    } else {
+      await api.post(`/api/trackers/plant/${gardenPlantId}/fertilize`, {}, token);
+    }
+  },
+
+  addNote: async (gardenPlantId, note, trackerId) => {
+    const token = getToken();
+    if (!token) throw new Error('Not authenticated');
+    if (trackerId) {
+      await api.post(`/api/trackers/${trackerId}/note`, { note }, token);
+    } else {
+      await api.post(`/api/trackers/plant/${gardenPlantId}/note`, { note }, token);
+    }
   },
 }));

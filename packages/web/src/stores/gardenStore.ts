@@ -21,6 +21,9 @@ export interface GardenPlant {
   companions?: string | null;
   soil?: string | null;
   archived_at?: string | null;
+  auto_irrigation?: boolean;
+  irrigation_days?: number[] | null;
+  irrigation_times?: string[] | null;
 }
 
 export interface AddPlantData {
@@ -38,9 +41,18 @@ export interface AddPlantData {
 }
 
 export interface PatchGardenPlantData {
-  sunExposure?: string;
-  companions?: string;
-  soil?: string;
+  locationType?: string;
+  locationDescription?: string | null;
+  notes?: string;
+  sunExposure?: string | null;
+  companions?: string | null;
+  soil?: string | null;
+  variety?: string | null;
+  plantType?: string | null;
+  archivedAt?: string | null;
+  autoIrrigation?: boolean;
+  irrigationDays?: number[];
+  irrigationTimes?: string[];
 }
 
 export interface Garden {
@@ -164,14 +176,30 @@ export const useGardenStore = create<GardenState>((set, get) => ({
     return newPlant;
   },
 
-  // Sets fields the creation endpoint doesn't accept (sun_exposure/companions/soil
-  // live on garden_plants but only via PATCH /api/garden/garden-plants/:id).
+  // Full editor for an existing garden_plants row (passport edit sheet, archive,
+  // restore) — covers everything PATCH /api/garden/garden-plants/:id accepts.
+  // Only send fields that were actually provided so partial updates don't clobber
+  // sibling fields with undefined.
   patchGardenPlant: async (gardenPlantId, gardenId, data) => {
     const token = getToken();
     if (!token) throw new Error('Not authenticated');
+    const body: Record<string, unknown> = {};
+    if (data.locationType !== undefined) body.location_type = data.locationType;
+    if (data.locationDescription !== undefined) body.location_description = data.locationDescription;
+    if (data.notes !== undefined) body.notes = data.notes;
+    if (data.sunExposure !== undefined) body.sun_exposure = data.sunExposure;
+    if (data.companions !== undefined) body.companions = data.companions;
+    if (data.soil !== undefined) body.soil = data.soil;
+    if (data.variety !== undefined) body.variety = data.variety;
+    if (data.plantType !== undefined) body.plant_type = data.plantType;
+    if (data.archivedAt !== undefined) body.archived_at = data.archivedAt;
+    if (data.autoIrrigation !== undefined) body.auto_irrigation = data.autoIrrigation;
+    if (data.irrigationDays !== undefined) body.irrigation_days = data.irrigationDays;
+    if (data.irrigationTimes !== undefined) body.irrigation_times = data.irrigationTimes;
+
     const { plant } = await api.patch<{ success: boolean; plant: GardenPlant }>(
       `/api/garden/garden-plants/${gardenPlantId}`,
-      { sun_exposure: data.sunExposure, companions: data.companions, soil: data.soil },
+      body,
       token
     );
     set(state => {

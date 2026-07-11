@@ -6,6 +6,7 @@ import { GardenSwitcher } from '../components/garden/GardenSwitcher';
 import { CreateGardenModal } from '../components/garden/CreateGardenModal';
 import { GardenPlantCard, AddPlantCard } from '../components/garden/GardenPlantCard';
 import { AddPlantModal } from '../components/garden/AddPlantModal';
+import { PlantPassportModal } from '../components/garden/PlantPassportModal';
 import { NewTrackerModal } from '../components/tracker/NewTrackerModal';
 
 const NIGHT      = '#050d0a';
@@ -30,6 +31,7 @@ export function GardenGridPage() {
   const [showArchived,    setShowArchived]    = useState(false);
   const [trackDialogFor,  setTrackDialogFor]  = useState<string | null>(null); // garden_plants id
   const [showTrackerModal, setShowTrackerModal] = useState(false);
+  const [openPlantId,     setOpenPlantId]      = useState<string | null>(null);
 
   useEffect(() => {
     if (activeGarden) loadTrackers(activeGarden.id);
@@ -54,6 +56,11 @@ export function GardenGridPage() {
   const allPlants   = activeGarden.garden_plants ?? [];
   const activePlants = allPlants.filter(p => !p.archived_at);
   const archivedPlants = allPlants.filter(p => p.archived_at);
+
+  // Looked up fresh from allPlants every render (rather than captured at click
+  // time) so edits/archiving made inside the passport modal show up immediately
+  // without needing to close and reopen it.
+  const openPlant = openPlantId ? allPlants.find(p => p.id === openPlantId) ?? null : null;
 
   function trackerFor(plant: (typeof activePlants)[number]) {
     // Prefer the direct FK link; fall back to species+garden match for
@@ -90,7 +97,7 @@ export function GardenGridPage() {
                 key={plant.id}
                 plant={plant}
                 tracker={trackerFor(plant)}
-                onClick={() => { /* passport view — not built yet in this preview */ }}
+                onClick={() => setOpenPlantId(plant.id)}
               />
             ))}
             <AddPlantCard onClick={() => setShowAddPlant(true)} />
@@ -111,7 +118,7 @@ export function GardenGridPage() {
               {showArchived && (
                 <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '12px', marginTop: '10px', opacity: 0.55 }}>
                   {archivedPlants.map(plant => (
-                    <GardenPlantCard key={plant.id} plant={plant} tracker={null} onClick={() => {}} />
+                    <GardenPlantCard key={plant.id} plant={plant} tracker={null} onClick={() => setOpenPlantId(plant.id)} />
                   ))}
                 </div>
               )}
@@ -186,6 +193,16 @@ export function GardenGridPage() {
       )}
 
       <CreateGardenModal isOpen={showCreateGarden} onClose={() => setShowCreateGarden(false)} />
+
+      {openPlant && (
+        <PlantPassportModal
+          plant={openPlant}
+          tracker={trackerFor(openPlant)}
+          gardenName={activeGarden.name}
+          gardenId={activeGarden.id}
+          onClose={() => setOpenPlantId(null)}
+        />
+      )}
     </>
   );
 }

@@ -943,6 +943,34 @@ trackersRouter.post('/plant/:plantId/fertilize', async (req: any, res) => {
   return res.json({ success: true, timeline_error: timelineError });
 });
 
+// ── POST /api/trackers/plant/:plantId/note ────────────────────────────────
+// Adds a note entry for a plant that has no tracker (mirrors water/fertilize above).
+trackersRouter.post('/plant/:plantId/note', async (req: any, res) => {
+  const userId = req.user?.id;
+  if (!userId) return res.status(401).json({ error: 'Unauthorized' });
+  const { plantId } = req.params;
+  const { note } = req.body;
+
+  if (!note?.trim()) return res.status(400).json({ error: 'Note required' });
+
+  const { data, error } = await db
+    .from('plant_timeline')
+    .insert({
+      plant_id: plantId,
+      tracker_id: null,
+      user_id: userId,
+      entry_type: 'note',
+      note: note.trim(),
+      created_at: new Date().toISOString(),
+    })
+    .select()
+    .single();
+
+  if (error) return res.status(500).json({ error: error.message });
+
+  res.json({ success: true, entry: data });
+});
+
 // ── GET /api/trackers/:id/timeline ────────────────────────────────────────
 trackersRouter.get('/:id/timeline', async (req: any, res) => {
   try {
