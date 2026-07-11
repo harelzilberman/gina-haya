@@ -13,6 +13,9 @@
     "db:migrate": "pnpm --filter @gina-haya/api db:migrate"
   },
   "packageManager": "pnpm@8.15.9",
+  "engines": {
+    "node": ">=22.0.0"
+  },
   "devDependencies": {
     "@supabase/supabase-js": "^2.39.0",
     "@typescript-eslint/eslint-plugin": "^7.3.0",

@@ -96,7 +96,8 @@
       "Bash(npx tsx *)",
       "Bash(mkdir -p /d/gw/gina-haya-website/packages/api/public/images/articles)",
       "Bash(cp /d/gw/gina-haya-website/packages/web/public/images/articles/* /d/gw/gina-haya-website/packages/api/public/images/articles/)",
-      "Bash(grep *)"
+      "Bash(grep *)",
+      "Bash(pnpm --filter @gina-haya/api type-check)"
     ]
   }
 }

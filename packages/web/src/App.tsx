@@ -8,7 +8,7 @@ import { LandingPage } from './pages/LandingPage';
 import { CalendarPage } from './pages/CalendarPage';
 import { ChupChuPage } from './pages/ChupChuPage';
 import { PlantsPage } from './pages/PlantsPage';
-import { GardenPage } from './pages/GardenPage';
+import { GardenGridPage } from './pages/GardenGridPage';
 import { BillingPage } from './pages/BillingPage';
 import { SettingsPage } from './pages/SettingsPage';
 import { TrackerPage } from './pages/TrackerPage';
@@ -181,7 +181,7 @@ export default function App() {
             path="/garden"
             element={
               <ProtectedRoute>
-                <GardenPage />
+                <GardenGridPage />
               </ProtectedRoute>
             }
           />

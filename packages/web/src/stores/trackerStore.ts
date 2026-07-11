@@ -62,10 +62,13 @@ export interface Tracker {
   user_id: string;
   garden_id: string | null;
   plant_id: string | null;
+  garden_plants_id?: string | null;
   plant_name_he: string;
   plant_name_en: string;
-  location_type: 'garden' | 'pot' | 'balcony' | 'greenhouse' | 'other';
+  location_type: 'garden' | 'pot' | 'bed' | 'hydroponic' | 'greenhouse' | 'balcony' | 'other';
   location_description: string | null;
+  last_watered_at?: string | null;
+  watering_count?: number;
   created_at: string;
   updated_at: string;
   latest_checkin?: TrackerCheckin | null;
@@ -105,6 +108,7 @@ interface TrackerState {
     plantNameEn: string;
     plantId?: string;
     gardenId?: string;
+    gardenPlantId?: string;
     locationType: string;
     locationDescription?: string;
   }) => Promise<Tracker>;
