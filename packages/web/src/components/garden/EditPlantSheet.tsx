@@ -19,6 +19,11 @@ const PLANT_TYPES = [
 
 const SUN_EXPOSURES = ['שמש מלאה', 'חצי צל', 'צל'];
 
+// Index = stored irrigation_days integer — matches the Flutter app's
+// _dayLetters constant exactly (verified via Claude Code investigation of
+// irrigation_schedule_field.dart).
+const IRRIGATION_DAY_LETTERS = ['ש', 'ו', 'ה', 'ד', 'ג', 'ב', 'א'];
+
 const inputStyle: React.CSSProperties = {
   width: '100%', boxSizing: 'border-box',
   backgroundColor: 'rgba(9,20,16,0.85)', border: '1px solid rgba(0,229,195,0.2)',
@@ -76,13 +81,56 @@ export function EditPlantSheet({ plant, gardenId, onClose }: Props) {
   const [sunExposure,         setSunExposure]         = useState(plant.sun_exposure ?? '');
   const [soil,                setSoil]                = useState(plant.soil ?? '');
   const [companions,          setCompanions]          = useState(plant.companions ?? '');
+  const [autoIrrigation,      setAutoIrrigation]      = useState(plant.auto_irrigation ?? false);
+  const [irrigationDays,      setIrrigationDays]      = useState<number[]>(plant.irrigation_days ?? []);
+  const [irrigationTimes,     setIrrigationTimes]     = useState<string[]>(
+    plant.irrigation_times && plant.irrigation_times.length > 0 ? plant.irrigation_times : ['06:00']
+  );
   const [isSaving,            setIsSaving]            = useState(false);
   const [error,               setError]               = useState('');
 
+  function toggleIrrigationDay(day: number) {
+    setIrrigationDays(prev =>
+      prev.includes(day) ? prev.filter(d => d !== day) : [...prev, day].sort((a, b) => a - b)
+    );
+  }
+
+  function updateIrrigationTime(index: number, value: string) {
+    setIrrigationTimes(prev => {
+      const next = [...prev];
+      next[index] = value;
+      return next;
+    });
+  }
+
+  function addIrrigationTime() {
+    if (irrigationTimes.length >= 3) return;
+    setIrrigationTimes(prev => [...prev, '06:00'].sort());
+  }
+
+  function removeIrrigationTime(index: number) {
+    if (irrigationTimes.length <= 1) return;
+    setIrrigationTimes(prev => prev.filter((_, i) => i !== index));
+  }
+
   async function handleSave(e: React.FormEvent) {
     e.preventDefault();
-    setIsSaving(true);
     setError('');
+
+    // Mirrors the app's IrrigationScheduleField.validate() — same two checks,
+    // same messages (only enforced when the toggle is on).
+    if (autoIrrigation) {
+      if (irrigationDays.length === 0) {
+        setError('יש לבחור לפחות יום אחד להשקיה');
+        return;
+      }
+      if (irrigationTimes.length === 0 || irrigationTimes.length > 3) {
+        setError('יש להגדיר 1–3 זמני השקיה');
+        return;
+      }
+    }
+
+    setIsSaving(true);
     try {
       await patchGardenPlant(plant.id, gardenId, {
         variety:             variety.trim() || undefined,
@@ -92,6 +140,9 @@ export function EditPlantSheet({ plant, gardenId, onClose }: Props) {
         sunExposure:         sunExposure || undefined,
         soil:                soil.trim() || undefined,
         companions:          companions.trim() || undefined,
+        autoIrrigation,
+        irrigationDays:      autoIrrigation ? irrigationDays  : [],
+        irrigationTimes:     autoIrrigation ? irrigationTimes.sort() : [],
       });
       showToast('הפרטים עודכנו 🌱', 'info');
       onClose();
@@ -170,6 +221,93 @@ export function EditPlantSheet({ plant, gardenId, onClose }: Props) {
           <div style={{ marginBottom: '20px' }}>
             <label style={labelStyle}>צמחים שכנים</label>
             <input type="text" value={companions} onChange={e => setCompanions(e.target.value)} style={inputStyle} />
+          </div>
+
+          {/* Automatic irrigation — mirrors IrrigationScheduleField in the app */}
+          <div style={{ marginBottom: '20px' }}>
+            <div style={{
+              display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+              marginBottom: autoIrrigation ? '14px' : 0,
+            }}>
+              <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                <span style={{ fontFamily: DM_SANS, fontWeight: 700, fontSize: '15px', color: TEXT_MID }}>
+                  מערכת השקיה אוטומטית
+                </span>
+                <span style={{ fontSize: '18px' }}>💧</span>
+              </span>
+              <button
+                type="button"
+                onClick={() => setAutoIrrigation(v => !v)}
+                aria-pressed={autoIrrigation}
+                style={{
+                  width: '44px', height: '24px', borderRadius: '12px', border: 'none', cursor: 'pointer',
+                  background: autoIrrigation ? '#1565C0' : 'rgba(176,207,191,0.25)', position: 'relative', padding: 0,
+                }}
+              >
+                <span style={{
+                  position: 'absolute', top: '2px',
+                  [autoIrrigation ? 'left' : 'right']: '2px',
+                  width: '20px', height: '20px', borderRadius: '50%', background: '#fff',
+                } as React.CSSProperties} />
+              </button>
+            </div>
+
+            {autoIrrigation && (
+              <>
+                <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px', marginBottom: '14px', justifyContent: 'flex-end' }}>
+                  {IRRIGATION_DAY_LETTERS.map((letter, i) => {
+                    const selected = irrigationDays.includes(i);
+                    return (
+                      <button
+                        key={i}
+                        type="button"
+                        onClick={() => toggleIrrigationDay(i)}
+                        style={{
+                          width: '38px', height: '38px', borderRadius: '50%', cursor: 'pointer',
+                          border: `1px solid ${selected ? '#C8A951' : 'rgba(0,229,195,0.2)'}`,
+                          background: selected ? '#C8A951' : 'rgba(9,20,16,0.85)',
+                          color: selected ? '#fff' : TEXT_MID,
+                          fontFamily: DM_SANS, fontWeight: 700, fontSize: '14px',
+                        }}
+                      >
+                        {letter}
+                      </button>
+                    );
+                  })}
+                </div>
+
+                {irrigationTimes.map((t, i) => (
+                  <div key={i} style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '8px' }}>
+                    {irrigationTimes.length > 1 && (
+                      <button
+                        type="button"
+                        onClick={() => removeIrrigationTime(i)}
+                        aria-label="הסר זמן השקיה"
+                        style={{ background: 'none', border: 'none', color: '#e06060', cursor: 'pointer', fontSize: '18px', lineHeight: 1, padding: '4px' }}
+                      >
+                        ✕
+                      </button>
+                    )}
+                    <input
+                      type="time"
+                      value={t}
+                      onChange={e => updateIrrigationTime(i, e.target.value)}
+                      style={{ ...inputStyle, flex: 1, textAlign: 'center' }}
+                    />
+                  </div>
+                ))}
+
+                {irrigationTimes.length < 3 && (
+                  <button
+                    type="button"
+                    onClick={addIrrigationTime}
+                    style={{ background: 'none', border: 'none', color: '#1D9E75', fontFamily: DM_SANS, fontSize: '13px', cursor: 'pointer', padding: 0 }}
+                  >
+                    + הוסף זמן השקיה
+                  </button>
+                )}
+              </>
+            )}
           </div>
 
           {error && (

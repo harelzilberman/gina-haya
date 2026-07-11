@@ -42,6 +42,21 @@ const ENTRY_META: Record<string, { color: string; emoji: string; label: string }
 
 const HEBREW_MONTHS = ['ינואר','פברואר','מרץ','אפריל','מאי','יוני','יולי','אוגוסט','ספטמבר','אוקטובר','נובמבר','דצמבר'];
 
+// Index = stored irrigation_days integer — matches the Flutter app's
+// _dayLetters constant exactly (verified via Claude Code investigation of
+// plant_passport_screen.dart / irrigation_schedule_field.dart).
+const IRRIGATION_DAY_LETTERS = ['ש', 'ו', 'ה', 'ד', 'ג', 'ב', 'א'];
+
+function irrigationBadgeText(plant: GardenPlant): string {
+  const days = (plant.irrigation_days ?? [])
+    .filter(d => d >= 0 && d <= 6)
+    .map(d => IRRIGATION_DAY_LETTERS[d])
+    .join(',');
+  const times = (plant.irrigation_times ?? []).join(', ');
+  const subtitle = [days, times].filter(Boolean).join(' · ');
+  return `💧⏱️ השקיה אוטומטית${subtitle ? ` · ${subtitle}` : ''}`;
+}
+
 function formatHebrewDate(iso: string): string {
   const d = new Date(iso);
   return `${d.getDate()} ב${HEBREW_MONTHS[d.getMonth()]} ${d.getFullYear()}`;
@@ -280,13 +295,19 @@ export function PlantPassportModal({ plant, tracker, gardenName, gardenId, onClo
                 {health!.healthHe}
               </span>
             )}
-            {plant.auto_irrigation && plant.irrigation_times && plant.irrigation_times.length > 0 && (
-              <span style={{
-                fontFamily: DM_SANS, fontSize: '11px', fontWeight: 600, padding: '4px 10px', borderRadius: '50px',
-                background: '#DCEEFB', color: '#1565C0',
-              }}>
-                💦 השקיה אוטומטית · {plant.irrigation_times.join(', ')}
-              </span>
+            {plant.auto_irrigation && (
+              <button
+                type="button"
+                onClick={() => { if (!isArchived) setShowEdit(true); }}
+                style={{
+                  fontFamily: DM_SANS, fontSize: '11px', fontWeight: 600, padding: '4px 10px', borderRadius: '50px',
+                  background: '#DCEEFB', color: '#1565C0', border: 'none',
+                  cursor: isArchived ? 'default' : 'pointer',
+                  maxWidth: '260px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
+                }}
+              >
+                {irrigationBadgeText(plant)}
+              </button>
             )}
           </div>
         </div>
