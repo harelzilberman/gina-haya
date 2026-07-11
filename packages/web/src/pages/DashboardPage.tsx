@@ -31,7 +31,7 @@ function WelcomeChecklist({ onOpenChupchu }: { onOpenChupchu: () => void }) {
 
   const items = [
     { key: null,             label: 'צור חשבון',        done: true,                  action: null },
-    { key: 'addedPlant',     label: 'הוסף צמח לגינה',   done: !!done.addedPlant,     action: () => { mark('addedPlant');    navigate('/map');     } },
+    { key: 'addedPlant',     label: 'הוסף צמח לגינה',   done: !!done.addedPlant,     action: () => { mark('addedPlant');    navigate('/garden');  } },
     { key: 'openedTracker',  label: 'פתח מעקב גידול',   done: !!done.openedTracker,  action: () => { mark('openedTracker'); navigate('/tracker'); } },
     { key: 'talkedToChupchu', label: "דבר עם צ'ופצ'ו",  done: !!done.talkedToChupchu, action: () => { mark('talkedToChupchu'); onOpenChupchu(); } },
   ] as const;
@@ -142,7 +142,7 @@ const REST_DAY_TITLES: Record<string, string> = {
 const NAV_BUTTONS = [
   { emoji: '📅', tKey: 'nav.calendar', to: '/calendar' },
   { emoji: '✅', tKey: 'nav.tasks',    to: '/tasks'    },
-  { emoji: '🗺️', tKey: 'nav.map',     to: '/map'      },
+  { emoji: '🌱', tKey: 'nav.garden',  to: '/garden'   },
   { emoji: '🌱', tKey: 'nav.tracker', to: '/tracker'  },
   { emoji: '📖', tKey: 'nav.plants',  to: '/plants'   },
   { emoji: '🎬', tKey: 'nav.guides',  to: '/guides'   },
@@ -335,17 +335,17 @@ function DayActionCard({
           borderRadius: '12px', padding: '14px 18px',
           display: 'flex', gap: '12px', alignItems: 'center',
         }}>
-          <span style={{ fontSize: '20px' }}>🗺️</span>
+          <span style={{ fontSize: '20px' }}>🌱</span>
           <div style={{ fontFamily: ASST, fontSize: '13px', color: `${TEXT_MID}70`, flex: 1 }}>
             {isHe
-              ? 'הוסף צמחים למפת הגינה שלך כדי לקבל המלצות מותאמות אישית להיום.'
-              : 'Add plants to your garden map to get personalized recommendations for today.'}
+              ? 'הוסף צמחים לגינה שלך כדי לקבל המלצות מותאמות אישית להיום.'
+              : 'Add plants to your garden to get personalized recommendations for today.'}
           </div>
-          <a href="/map" style={{
+          <a href="/garden" style={{
             fontFamily: FRANK, fontSize: '12px', fontWeight: 700,
             color: BIO_CYAN, textDecoration: 'none', flexShrink: 0,
           }}>
-            {isHe ? 'למפה ›' : 'Map ›'}
+            {isHe ? 'לגינה ›' : 'Garden ›'}
           </a>
         </div>
       )}

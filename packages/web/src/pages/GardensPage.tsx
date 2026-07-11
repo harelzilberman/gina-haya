@@ -323,7 +323,7 @@ export function GardensPage() {
                         <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
                           {!isActive && (
                             <button
-                              onClick={() => { switchGarden(garden.id); navigate('/map'); }}
+                              onClick={() => { switchGarden(garden.id); navigate('/garden'); }}
                               style={{
                                 padding: '7px 14px',
                                 backgroundColor: GOLD, color: EARTH,
@@ -339,7 +339,7 @@ export function GardensPage() {
                           )}
                           {isActive && (
                             <button
-                              onClick={() => navigate('/map')}
+                              onClick={() => navigate('/garden')}
                               style={{
                                 padding: '7px 14px',
                                 backgroundColor: 'rgba(0,229,195,0.12)', color: GOLD,
@@ -348,7 +348,7 @@ export function GardensPage() {
                                 cursor: 'pointer',
                               }}
                             >
-                              פתח מפה
+                              פתח גינה
                             </button>
                           )}
                           <button
