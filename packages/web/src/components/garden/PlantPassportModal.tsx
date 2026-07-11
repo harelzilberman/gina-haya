@@ -7,6 +7,7 @@ import { useAuthStore } from '../../stores/authStore';
 import { useToastStore } from '../../stores/toastStore';
 import { useChupChuPanelStore } from '../../stores/chupChuPanelStore';
 import { api } from '../../api/client';
+import { supabase } from '../../lib/supabase';
 import { locationLabel } from './PlantingBase';
 import { EditPlantSheet } from './EditPlantSheet';
 import { NewTrackerModal } from '../tracker/NewTrackerModal';
@@ -478,10 +479,8 @@ export function PlantPassportModal({ plant, tracker, gardenName, gardenId, onClo
                     {entry.note && (
                       <p style={{ fontFamily: DM_SANS, fontSize: '12.5px', color: `${TEXT_MID}97`, margin: 0 }}>{entry.note}</p>
                     )}
-                    {entry.entry_type === 'photo' && (
-                      <div style={{ width: '80px', height: '80px', borderRadius: '8px', background: 'rgba(55,138,221,0.12)', border: '1px solid rgba(55,138,221,0.3)', display: 'flex', alignItems: 'center', justifyContent: 'center', marginTop: '4px' }}>
-                        <span style={{ fontSize: '22px' }}>📸</span>
-                      </div>
+                    {entry.entry_type === 'photo' && entry.photo_path && (
+                      <TimelinePhoto photoPath={entry.photo_path} />
                     )}
                   </div>
                 </div>
@@ -555,6 +554,46 @@ export function PlantPassportModal({ plant, tracker, gardenName, gardenId, onClo
           onCancel={() => setConfirmDelete(false)}
         />
       )}
+    </div>
+  );
+}
+
+// Resolves a Supabase Storage path (from the 'tracker-photos' bucket) into a
+// signed URL, mirroring CheckinPhoto in tracker/CheckinHistory.tsx. Falls back
+// to a placeholder icon while loading, or if the path is legacy/unresolvable
+// (e.g. the old mobile-only local-file-path timeline entries).
+function TimelinePhoto({ photoPath }: { photoPath: string }) {
+  const [url, setUrl] = useState<string | null>(null);
+  const [failed, setFailed] = useState(false);
+
+  useEffect(() => {
+    let cancelled = false;
+    setUrl(null);
+    setFailed(false);
+    supabase.storage
+      .from('tracker-photos')
+      .createSignedUrl(photoPath, 3600)
+      .then(({ data, error }) => {
+        if (cancelled) return;
+        if (error || !data?.signedUrl) setFailed(true);
+        else setUrl(data.signedUrl);
+      });
+    return () => { cancelled = true; };
+  }, [photoPath]);
+
+  if (url) {
+    return (
+      <img
+        src={url}
+        alt=""
+        style={{ width: '80px', height: '80px', borderRadius: '8px', objectFit: 'cover', marginTop: '4px', display: 'block' }}
+      />
+    );
+  }
+
+  return (
+    <div style={{ width: '80px', height: '80px', borderRadius: '8px', background: 'rgba(55,138,221,0.12)', border: '1px solid rgba(55,138,221,0.3)', display: 'flex', alignItems: 'center', justifyContent: 'center', marginTop: '4px' }}>
+      <span style={{ fontSize: '22px' }}>{failed ? '📸' : '…'}</span>
     </div>
   );
 }

@@ -546,6 +546,41 @@ trackersRouter.post('/:id/checkin', async (req: any, res) => {
 
     if (checkinError) throw checkinError;
 
+    // Log the photo + AI report to plant_timeline so it shows up in the plant
+    // passport's history (mirrors the water/fertilize logging elsewhere in this
+    // file). Non-blocking / best-effort — a failure here shouldn't fail the
+    // checkin itself. Requires a linked garden_plants_id; legacy trackers
+    // created before that FK existed simply skip this.
+    if (gardenPlantId) {
+      try {
+        const timelineRows: any[] = [];
+        if (photoPath) {
+          timelineRows.push({
+            tracker_id:         trackerId,
+            plant_id:           gardenPlantId,
+            user_id:            userId,
+            entry_type:         'photo',
+            photo_path:         photoPath,
+            tracker_checkin_id: checkin.id,
+            created_at:         checkin.created_at,
+          });
+        }
+        timelineRows.push({
+          tracker_id:         trackerId,
+          plant_id:           gardenPlantId,
+          user_id:            userId,
+          entry_type:         'tracker_report',
+          note:                `${analysis.healthHe} · ${analysis.growthStageHe}`,
+          tracker_checkin_id: checkin.id,
+          created_at:         checkin.created_at,
+        });
+        const { error: tlErr } = await db.from('plant_timeline').insert(timelineRows);
+        if (tlErr) console.error('[checkin] plant_timeline insert failed:', tlErr.message, tlErr.details, tlErr.hint);
+      } catch (tlErr: any) {
+        console.error('[checkin] plant_timeline insert threw:', tlErr.message);
+      }
+    }
+
     res.status(201).json({ checkin, analysis, growingPlan, suggested_tasks: filteredTasks, used_credit: usedAnalysisCredit });
   } catch (err: any) {
     console.error('[POST /api/trackers/:id/checkin]', err.message, err.stack);
