@@ -39,6 +39,7 @@ async function insertChupChuTimelineEntry(
   plantId: string,
   diagnosis: any,
   trackerId?: string | null,
+  photoPath?: string | null,
 ): Promise<string | null> {
   const { data, error } = await db
     .from('plant_timeline')
@@ -49,6 +50,7 @@ async function insertChupChuTimelineEntry(
       entry_type: 'chupchu_analysis',
       content:    diagnosis,
       note:       `צ'ופצ'ו הסתכל · ${diagnosis.plant_name ?? ''}`,
+      ...(photoPath ? { photo_path: photoPath } : {}),
     })
     .select('id');
   if (error) {
@@ -56,6 +58,32 @@ async function insertChupChuTimelineEntry(
     return null;
   }
   return data?.[0]?.id ?? null;
+}
+
+// ── Shared helper: upload a Chupchu diagnosis photo to Supabase Storage ───────
+// Reuses the tracker-photos bucket (path: {userId}/chupchu/{timestamp}.jpg),
+// so the website's TimelinePhoto component (which already reads from that
+// bucket via signed URL) requires no changes.
+// Non-blocking: on failure, logs and returns null — callers continue normally.
+async function uploadChupChuPhoto(
+  userId: string,
+  imageBase64: string,
+): Promise<string | null> {
+  try {
+    const compressed = await compressImageForClaude(imageBase64);
+    const storagePath = `${userId}/chupchu/${Date.now()}.jpg`;
+    const { error: uploadError } = await db.storage
+      .from('tracker-photos')
+      .upload(storagePath, compressed.buffer, { contentType: 'image/jpeg', upsert: false });
+    if (uploadError) {
+      console.error('[uploadChupChuPhoto] Upload failed:', uploadError.message, uploadError);
+      return null;
+    }
+    return storagePath;
+  } catch (err: any) {
+    console.error('[uploadChupChuPhoto] Exception:', err.message, err.stack);
+    return null;
+  }
 }
 
 // ── GET /api/chupchu/history ────────────────────────────────────────────────
@@ -268,6 +296,13 @@ chupChuRouter.post('/full-diagnosis', async (req: any, res) => {
       }
     }
 
+    // ── Upload photo to tracker-photos bucket ────────────────────────────────
+    // Non-blocking: failure returns null and does not affect the diagnosis response.
+    // Path: {userId}/chupchu/{timestamp}.jpg — distinct from tracker check-in paths
+    // ({userId}/{trackerId}/{timestamp}.jpg) but same bucket, so TimelinePhoto on
+    // the website works via the existing createSignedUrl call without any changes.
+    const photoPath = await uploadChupChuPhoto(req.user.id, image);
+
     // ── Fetch plant context, suppress watering tasks, persist timeline ────────
     // All three steps share a single garden_plants fetch — only runs when plant_id is set.
     let timelineEntryId: string | null = null;
@@ -291,10 +326,13 @@ chupChuRouter.post('/full-diagnosis', async (req: any, res) => {
         plant_id,
         diagnosis,
         tracker_id ?? null,
+        photoPath,
       );
     }
 
-    res.json({ success: true, diagnosis, timeline_entry_id: timelineEntryId });
+    // When no plant_id was supplied (chat "add to garden" flow), return photo_path
+    // so the client can forward it to attach-diagnosis once a plant is created.
+    res.json({ success: true, diagnosis, timeline_entry_id: timelineEntryId, photo_path: photoPath });
   } catch (err: any) {
     console.error('[POST /api/chupchu/full-diagnosis]', err.message);
     res.status(500).json({ success: false, error: err.message });
@@ -311,7 +349,7 @@ chupChuRouter.post('/full-diagnosis', async (req: any, res) => {
 // Response: { success: true, timeline_entry_id: string }
 chupChuRouter.post('/attach-diagnosis', async (req: any, res) => {
   try {
-    const { garden_plants_id, diagnosis } = req.body;
+    const { garden_plants_id, diagnosis, photo_path } = req.body;
 
     if (!garden_plants_id || typeof garden_plants_id !== 'string') {
       return res.status(400).json({ success: false, error: 'garden_plants_id is required' });
@@ -345,7 +383,13 @@ chupChuRouter.post('/attach-diagnosis', async (req: any, res) => {
       return res.status(403).json({ success: false, error: 'Forbidden' });
     }
 
-    const timelineEntryId = await insertChupChuTimelineEntry(userId, garden_plants_id, diagnosis);
+    const timelineEntryId = await insertChupChuTimelineEntry(
+      userId,
+      garden_plants_id,
+      diagnosis,
+      null,
+      typeof photo_path === 'string' && photo_path.length > 0 ? photo_path : null,
+    );
 
     if (!timelineEntryId) {
       return res.status(500).json({ success: false, error: 'Failed to persist diagnosis' });
