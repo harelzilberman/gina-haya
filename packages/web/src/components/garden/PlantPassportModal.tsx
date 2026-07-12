@@ -35,8 +35,9 @@ const ENTRY_META: Record<string, { color: string; emoji: string; label: string }
   fertilizing:    { color: '#4A9A50', emoji: '🌿', label: 'דישון' },
   note:           { color: '#C8A951', emoji: '📝', label: 'הערה' },
   photo:          { color: '#378ADD', emoji: '📸', label: 'תמונה' },
-  chupchu:        { color: '#7F77DD', emoji: '🤖', label: "צ'ופצ'ו" },
-  tracker_report: { color: '#C8A951', emoji: '📋', label: 'דוח מעקב' },
+  chupchu:          { color: '#7F77DD', emoji: '🤖', label: "צ'ופצ'ו" },
+  chupchu_analysis: { color: '#7F77DD', emoji: '🤖', label: "צ'ופצ'ו" },
+  tracker_report:   { color: '#C8A951', emoji: '📋', label: 'דוח מעקב' },
   task:           { color: '#C8A951', emoji: '✅', label: 'משימה' },
 };
 
@@ -500,7 +501,7 @@ export function PlantPassportModal({ plant, tracker, gardenName, gardenId, onClo
                     {entry.note && (
                       <p style={{ fontFamily: DM_SANS, fontSize: '12.5px', color: `${TEXT_MID}97`, margin: 0 }}>{entry.note}</p>
                     )}
-                    {entry.entry_type === 'photo' && entry.photo_path && (
+                    {entry.photo_path && (
                       <TimelinePhoto photoPath={entry.photo_path} />
                     )}
                   </div>
