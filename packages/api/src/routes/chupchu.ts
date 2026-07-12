@@ -33,6 +33,31 @@ const inFlight = new Set<string>();
 const summarizeDailyCap = new Map<string, { date: string; count: number }>();
 const SUMMARIZE_DAILY_LIMIT = 10;
 
+// ── Shared helper: persist a chupchu analysis to plant_timeline ──────────────
+async function insertChupChuTimelineEntry(
+  userId: string,
+  plantId: string,
+  diagnosis: any,
+  trackerId?: string | null,
+): Promise<string | null> {
+  const { data, error } = await db
+    .from('plant_timeline')
+    .insert({
+      plant_id:   plantId,
+      tracker_id: trackerId ?? null,
+      user_id:    userId,
+      entry_type: 'chupchu_analysis',
+      content:    diagnosis,
+      note:       `צ'ופצ'ו הסתכל · ${diagnosis.plant_name ?? ''}`,
+    })
+    .select('id');
+  if (error) {
+    console.error('[insertChupChuTimelineEntry]', error.message, error.details);
+    return null;
+  }
+  return data?.[0]?.id ?? null;
+}
+
 // ── GET /api/chupchu/history ────────────────────────────────────────────────
 chupChuRouter.get('/history', async (req: any, res) => {
   try {
@@ -261,27 +286,74 @@ chupChuRouter.post('/full-diagnosis', async (req: any, res) => {
         );
       }
 
-      const { data: tlData, error: tlError } = await db
-        .from('plant_timeline')
-        .insert({
-          plant_id,
-          tracker_id: tracker_id ?? null,
-          user_id: req.user.id,
-          entry_type: 'chupchu_analysis',
-          content: diagnosis,
-          note: `צ'ופצ'ו הסתכל · ${diagnosis.plant_name ?? ''}`,
-        })
-        .select('id');
-      if (tlError) {
-        console.error('[diagnosis/persist]', tlError.message, tlError.details);
-      } else {
-        timelineEntryId = tlData?.[0]?.id ?? null;
-      }
+      timelineEntryId = await insertChupChuTimelineEntry(
+        req.user.id,
+        plant_id,
+        diagnosis,
+        tracker_id ?? null,
+      );
     }
 
     res.json({ success: true, diagnosis, timeline_entry_id: timelineEntryId });
   } catch (err: any) {
     console.error('[POST /api/chupchu/full-diagnosis]', err.message);
+    res.status(500).json({ success: false, error: err.message });
+  }
+});
+
+// ── POST /api/chupchu/attach-diagnosis ─────────────────────────────────────
+// Persists a previously-returned full-diagnosis JSON to plant_timeline for a
+// plant that was created after the analysis ran.  No Anthropic call — pure DB
+// write.  Used when the user adds a plant to their garden after viewing the
+// report, so the timeline entry is created retroactively.
+//
+// Request:  { garden_plants_id: string, diagnosis: <full-diagnosis payload> }
+// Response: { success: true, timeline_entry_id: string }
+chupChuRouter.post('/attach-diagnosis', async (req: any, res) => {
+  try {
+    const { garden_plants_id, diagnosis } = req.body;
+
+    if (!garden_plants_id || typeof garden_plants_id !== 'string') {
+      return res.status(400).json({ success: false, error: 'garden_plants_id is required' });
+    }
+    if (!diagnosis || typeof diagnosis !== 'object' || Array.isArray(diagnosis)) {
+      return res.status(400).json({ success: false, error: 'diagnosis object is required' });
+    }
+
+    const userId = req.user.id;
+
+    // Verify ownership: garden_plants has no direct user_id column; ownership
+    // flows through garden_id → gardens.user_id (same pattern as garden PATCH).
+    const { data: gp, error: gpError } = await db
+      .from('garden_plants')
+      .select('garden_id')
+      .eq('id', garden_plants_id)
+      .single();
+
+    if (gpError || !gp) {
+      return res.status(404).json({ success: false, error: 'plant_not_found' });
+    }
+
+    const { data: garden, error: gardenError } = await db
+      .from('gardens')
+      .select('id')
+      .eq('id', gp.garden_id)
+      .eq('user_id', userId)
+      .single();
+
+    if (gardenError || !garden) {
+      return res.status(403).json({ success: false, error: 'Forbidden' });
+    }
+
+    const timelineEntryId = await insertChupChuTimelineEntry(userId, garden_plants_id, diagnosis);
+
+    if (!timelineEntryId) {
+      return res.status(500).json({ success: false, error: 'Failed to persist diagnosis' });
+    }
+
+    res.json({ success: true, timeline_entry_id: timelineEntryId });
+  } catch (err: any) {
+    console.error('[POST /api/chupchu/attach-diagnosis]', err.message);
     res.status(500).json({ success: false, error: err.message });
   }
 });
