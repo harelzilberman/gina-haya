@@ -267,10 +267,9 @@ export function Navbar() {
               setOpen={setGardenOpen}
               nodeRef={gardenRef}
               items={[
-                { label: isHebrew ? 'הגינה שלי'   : 'My Garden',      to: '/garden'   },
+                { label: isHebrew ? 'הגינות שלי'  : 'My Gardens',     to: '/gardens'  },
                 { label: isHebrew ? 'יומן גינה'   : 'Garden Journal', to: '/journal'  },
                 { label: isHebrew ? 'עוקב צמחים'  : 'Plant Tracker',  to: '/tracker'  },
-                { label: isHebrew ? 'הגינות שלי'  : 'My Gardens',     to: '/gardens'  },
               ]}
             />
 
@@ -461,10 +460,9 @@ export function Navbar() {
             <>
               <Link to="/"         onClick={() => setMobileOpen(false)} style={mobileLink}>{isHebrew ? 'בית'           : 'Home'}</Link>
               <div style={mobileSection}>{isHebrew ? 'גינה' : 'Garden'}</div>
-              <Link to="/garden"   onClick={() => setMobileOpen(false)} style={mobileSub}>{isHebrew ? 'הגינה שלי'   : 'My Garden'}</Link>
+              <Link to="/gardens"  onClick={() => setMobileOpen(false)} style={mobileSub}>{isHebrew ? 'הגינות שלי'  : 'My Gardens'}</Link>
               <Link to="/journal"  onClick={() => setMobileOpen(false)} style={mobileSub}>{isHebrew ? 'יומן גינה'    : 'Garden Journal'}</Link>
               <Link to="/tracker"  onClick={() => setMobileOpen(false)} style={mobileSub}>{isHebrew ? 'עוקב צמחים'  : 'Plant Tracker'}</Link>
-              <Link to="/gardens"  onClick={() => setMobileOpen(false)} style={mobileSub}>{isHebrew ? 'הגינות שלי'  : 'My Gardens'}</Link>
               <Link to="/calendar" onClick={() => setMobileOpen(false)} style={mobileLink}>{isHebrew ? 'לוח ביודינמי' : 'Biodynamic Calendar'}</Link>
               <div style={mobileSection}>{isHebrew ? 'משימות' : 'Tasks'}</div>
               <Link to="/tasks"    onClick={() => setMobileOpen(false)} style={mobileSub}>{isHebrew ? 'משימות'       : 'Tasks'}</Link>
