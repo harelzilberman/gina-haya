@@ -45,7 +45,7 @@ export function CreateGardenModal({ isOpen, onClose, onCreated }: Props) {
       setName(''); setLocation(''); setDescription('');
       onCreated?.(garden.id);
       onClose();
-      navigate('/map');
+      navigate('/gardens');
     } catch (err: any) {
       setError(err.message || 'לא ניתן ליצור גינה. נסה שוב.');
     } finally {
