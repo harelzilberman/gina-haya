@@ -112,7 +112,7 @@ billingRouter.get('/status', verifyToken, async (req: any, res) => {
 
     const tier: string = data.subscription_tier ?? 'free';
     const TIER_PRICES: Record<string, number | null> = {
-      free: null, grower: 9, gardener_pro: 14, advanced: null, professional: 49,
+      free: null, grower: 9, gardener_pro: 14, advanced: 36, professional: 49,
     };
     const monthlyPrice = TIER_PRICES[tier] ?? null;
 
