@@ -25,7 +25,6 @@ import { HelpPage } from './pages/HelpPage';
 import { AboutPage } from './pages/AboutPage';
 import { AdminTemplatesPage } from './pages/AdminTemplatesPage';
 import { AdminKnowledgePage } from './pages/AdminKnowledgePage';
-import { JournalPage } from './pages/JournalPage';
 import { ProtectedRoute } from './components/auth/ProtectedRoute';
 import { OnboardingWizard } from './components/auth/OnboardingWizard';
 import { WelcomeScreen } from './components/auth/WelcomeScreen';
@@ -225,14 +224,6 @@ export default function App() {
           <Route path="/articles" element={<ArticlesPage />} />
           <Route path="/articles/:slug" element={<ArticlePage />} />
 
-          <Route
-            path="/journal"
-            element={
-              <ProtectedRoute>
-                <JournalPage />
-              </ProtectedRoute>
-            }
-          />
 
           <Route path="/admin/templates" element={<AdminTemplatesPage />} />
           <Route path="/admin/knowledge" element={<AdminKnowledgePage />} />

@@ -268,7 +268,6 @@ export function Navbar() {
               nodeRef={gardenRef}
               items={[
                 { label: isHebrew ? 'הגינות שלי'  : 'My Gardens',     to: '/gardens'  },
-                { label: isHebrew ? 'יומן גינה'   : 'Garden Journal', to: '/journal'  },
                 { label: isHebrew ? 'עוקב צמחים'  : 'Plant Tracker',  to: '/tracker'  },
               ]}
             />
@@ -461,7 +460,6 @@ export function Navbar() {
               <Link to="/"         onClick={() => setMobileOpen(false)} style={mobileLink}>{isHebrew ? 'בית'           : 'Home'}</Link>
               <div style={mobileSection}>{isHebrew ? 'גינה' : 'Garden'}</div>
               <Link to="/gardens"  onClick={() => setMobileOpen(false)} style={mobileSub}>{isHebrew ? 'הגינות שלי'  : 'My Gardens'}</Link>
-              <Link to="/journal"  onClick={() => setMobileOpen(false)} style={mobileSub}>{isHebrew ? 'יומן גינה'    : 'Garden Journal'}</Link>
               <Link to="/tracker"  onClick={() => setMobileOpen(false)} style={mobileSub}>{isHebrew ? 'עוקב צמחים'  : 'Plant Tracker'}</Link>
               <Link to="/calendar" onClick={() => setMobileOpen(false)} style={mobileLink}>{isHebrew ? 'לוח ביודינמי' : 'Biodynamic Calendar'}</Link>
               <div style={mobileSection}>{isHebrew ? 'משימות' : 'Tasks'}</div>

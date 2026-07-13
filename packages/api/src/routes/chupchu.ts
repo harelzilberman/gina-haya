@@ -1498,16 +1498,6 @@ chupChuRouter.post('/execute-tool', async (req: any, res) => {
 
   try {
     switch (tool_name) {
-      case 'create_journal_entry': {
-        await db.from('journal_entries').insert({
-          user_id:    userId,
-          text:       params.text,
-          date:       params.date,
-          photo_url:  params.photo_url ?? null,
-          created_at: new Date().toISOString(),
-        });
-        break;
-      }
       case 'create_task': {
         await db.from('garden_tasks').insert({
           user_id:       userId,

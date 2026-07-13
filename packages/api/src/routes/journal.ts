@@ -16,139 +16,9 @@ export const journalRouter: IRouter = Router();
 journalRouter.use(verifyToken);
 journalRouter.use(attachTier);
 
-// ── POST /api/journal/entries ─────────────────────────────────────────────────
-// Create a new journal entry
-journalRouter.post('/entries', async (req: any, res) => {
-  try {
-    const { gardenId, plantId, actionType, note, isPublic, entryDate } = req.body;
-
-    if (!actionType) {
-      return res.status(400).json({ error: 'actionType is required' });
-    }
-
-    const { data, error } = await db
-      .from('journal_entries')
-      .insert({
-        user_id:    req.user.id,
-        garden_id:  gardenId || null,
-        plant_id:   plantId  || null,
-        action_type: actionType,
-        note:       note     || null,
-        is_public:  isPublic ?? false,
-        entry_date: entryDate || new Date().toISOString(),
-      })
-      .select()
-      .single();
-
-    if (error) throw error;
-    res.status(201).json(data);
-  } catch (err: any) {
-    console.error('[POST /api/journal/entries]', err.message);
-    res.status(500).json({ error: err.message });
-  }
-});
-
-// ── GET /api/journal/entries ──────────────────────────────────────────────────
-// Get current user's journal entries (most recent first)
-journalRouter.get('/entries', async (req: any, res) => {
-  try {
-    const { data: entries, error } = await db
-      .from('journal_entries')
-      .select('*, journal_photos(*)')
-      .eq('user_id', req.user.id)
-      .order('entry_date', { ascending: false })
-      .limit(50);
-
-    if (error) throw error;
-
-    // Generate signed URLs for all photos (bucket is private)
-    await Promise.all(
-      (entries || []).flatMap((entry: any) =>
-        (entry.journal_photos || []).map(async (photo: any) => {
-          const { data: signedData } = await db.storage
-            .from('journal-photos')
-            .createSignedUrl(photo.storage_path, 3600);
-          photo.signed_url = signedData?.signedUrl ?? null;
-        })
-      )
-    );
-
-    res.json(entries || []);
-  } catch (err: any) {
-    console.error('[GET /api/journal/entries]', err.message);
-    res.status(500).json({ error: err.message });
-  }
-});
-
-// ── GET /api/journal/gallery ──────────────────────────────────────────────────
-// Get public entries for the community gallery
-journalRouter.get('/gallery', async (req: any, res) => {
-  try {
-    // Fetch public entries + their photos
-    const { data: entries, error } = await db
-      .from('journal_entries')
-      .select(`id, action_type, note, entry_date, user_id, journal_photos(id, storage_path, caption)`)
-      .eq('is_public', true)
-      .order('entry_date', { ascending: false })
-      .limit(40);
-
-    if (error) throw error;
-
-    // Fetch display names for the unique user_ids (public.users is separate from auth.users)
-    const userIds = [...new Set((entries || []).map((e: any) => e.user_id))];
-    let userMap: Record<string, string> = {};
-    if (userIds.length > 0) {
-      const { data: users } = await db
-        .from('users')
-        .select('id, display_name')
-        .in('id', userIds);
-      userMap = Object.fromEntries((users || []).map((u: any) => [u.id, u.display_name]));
-    }
-
-    const data = (entries || []).map((e: any) => ({
-      ...e,
-      display_name: userMap[e.user_id] || null,
-    }));
-
-    if (error) throw error;
-    res.json(data || []);
-  } catch (err: any) {
-    console.error('[GET /api/journal/gallery]', err.message);
-    res.status(500).json({ error: err.message });
-  }
-});
-
-// ── POST /api/journal/photos ──────────────────────────────────────────────────
-// Save a photo row after upload to Supabase Storage
-journalRouter.post('/photos', async (req: any, res) => {
-  try {
-    const { entryId, storagePath, caption, sortOrder } = req.body;
-
-    if (!entryId || !storagePath) {
-      return res.status(400).json({ error: 'entryId and storagePath are required' });
-    }
-
-    const { data, error } = await db
-      .from('journal_photos')
-      .insert({
-        entry_id:    entryId,
-        storage_path: storagePath,
-        caption:     caption    || null,
-        sort_order:  sortOrder  ?? 0,
-      })
-      .select()
-      .single();
-
-    if (error) throw error;
-    res.status(201).json(data);
-  } catch (err: any) {
-    console.error('[POST /api/journal/photos]', err.message);
-    res.status(500).json({ error: err.message });
-  }
-});
-
 // ── POST /api/journal/photos/:id/identify ────────────────────────────────────
-// Send photo to Claude Vision — identify plant, category, and target zone
+// Send photo to Claude Vision — identify plant, category, and target zone.
+// Called by ChupChu's photo upload → identify → confirm flow.
 journalRouter.post('/photos/:id/identify', async (req: any, res) => {
   try {
     const { id: photoId } = req.params;
@@ -258,7 +128,8 @@ journalRouter.post('/photos/:id/identify', async (req: any, res) => {
 });
 
 // ── POST /api/journal/photos/:id/confirm ─────────────────────────────────────
-// User confirmed (or corrected) the identification — place plant on map
+// User confirmed (or corrected) the identification — place plant on map.
+// Called by ChupChu's PlantConfirmBubble after the user approves the AI result.
 journalRouter.post('/photos/:id/confirm', async (req: any, res) => {
   try {
     const { id: photoId } = req.params;
@@ -410,48 +281,6 @@ journalRouter.post('/photos/:id/confirm', async (req: any, res) => {
     });
   } catch (err: any) {
     console.error('[POST /api/journal/photos/:id/confirm]', err.message);
-    res.status(500).json({ error: err.message });
-  }
-});
-
-// ── PATCH /api/journal/entries/:id ───────────────────────────────────────────
-// Update is_public or note on an entry
-journalRouter.patch('/entries/:id', async (req: any, res) => {
-  try {
-    const { isPublic, note } = req.body;
-
-    const { data, error } = await db
-      .from('journal_entries')
-      .update({
-        ...(isPublic !== undefined && { is_public: isPublic }),
-        ...(note     !== undefined && { note }),
-      })
-      .eq('id', req.params.id)
-      .eq('user_id', req.user.id)
-      .select()
-      .single();
-
-    if (error) throw error;
-    res.json(data);
-  } catch (err: any) {
-    console.error('[PATCH /api/journal/entries/:id]', err.message);
-    res.status(500).json({ error: err.message });
-  }
-});
-
-// ── DELETE /api/journal/entries/:id ──────────────────────────────────────────
-journalRouter.delete('/entries/:id', async (req: any, res) => {
-  try {
-    const { error } = await db
-      .from('journal_entries')
-      .delete()
-      .eq('id', req.params.id)
-      .eq('user_id', req.user.id);
-
-    if (error) throw error;
-    res.json({ success: true });
-  } catch (err: any) {
-    console.error('[DELETE /api/journal/entries/:id]', err.message);
     res.status(500).json({ error: err.message });
   }
 });

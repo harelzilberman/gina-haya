@@ -526,7 +526,7 @@ export function ChupChuChat({ compact, initialMessage, onInitialMessageConsumed,
   const [guestLoading,   setGuestLoading]   = useState(false);
   const [showGuestWall,  setShowGuestWall]  = useState(() => !user && getGuestCount() >= GUEST_LIMIT);
 
-  // Plant confirm queue — populated by journal photo identification
+  // Plant confirm queue — populated by ChupChu photo identification flow
   const [confirmQueue, setConfirmQueue] = useState<ConfirmItem[]>([]);
 
   const displayMessages = user ? messages : guestMessages;
@@ -551,7 +551,7 @@ export function ChupChuChat({ compact, initialMessage, onInitialMessageConsumed,
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  // Listen for plant-confirm events dispatched by JournalEntryForm after AI identification
+  // Listen for plant-confirm events dispatched after ChupChu photo AI identification
   useEffect(() => {
     function handlePlantConfirm(e: Event) {
       const detail = (e as CustomEvent).detail as ConfirmItem;

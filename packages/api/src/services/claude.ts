@@ -309,15 +309,13 @@ export interface ProposedTask {
 
 // Mobile tool call — returned to client for user confirmation before execution
 export interface MobileToolCall {
-  name: 'create_journal_entry' | 'create_task' | 'add_map_marker' | 'log_bd_prep';
+  name: 'create_task' | 'add_map_marker' | 'log_bd_prep';
   params: Record<string, unknown>;
   descriptionHe: string; // shown in confirmation card
 }
 
 function mobileToolDescription(name: string, params: Record<string, unknown>): string {
   switch (name) {
-    case 'create_journal_entry':
-      return `מוסיף רשומת יומן: ${String(params.text ?? '').substring(0, 60)}`;
     case 'create_task':
       return `מוסיף משימה: ${params.title}${params.due_date ? ` ל-${params.due_date}` : ''}`;
     case 'add_map_marker':
@@ -412,18 +410,6 @@ const CHUPCHU_TOOLS: Anthropic.Messages.Tool[] = [
     },
   },
   // ── Mobile voice tools — returned to client for confirmation ───────────
-  {
-    name: 'create_journal_entry',
-    description: 'Create a garden journal entry for the user. Call when the user describes something notable that happened in their garden and wants to remember it.',
-    input_schema: {
-      type: 'object' as const,
-      properties: {
-        text:  { type: 'string', description: 'Journal entry text in Hebrew, as the user described it' },
-        date:  { type: 'string', description: 'ISO date YYYY-MM-DD (today unless specified)' },
-      },
-      required: ['text', 'date'],
-    },
-  },
   {
     name: 'create_task',
     description: 'Create a single garden task from a mobile voice request. Use when user explicitly asks to remember or schedule one specific garden action. Different from create_tasks which proposes batches.',
@@ -747,7 +733,7 @@ export async function askChupChu(
           .filter((b): b is Anthropic.Messages.ToolUseBlock => b.type === 'tool_use')
           .map(async b => {
             // Mobile voice tools — capture for client confirmation, don't execute yet
-            const MOBILE_TOOLS = ['create_journal_entry', 'create_task', 'add_map_marker', 'log_bd_prep'] as const;
+            const MOBILE_TOOLS = ['create_task', 'add_map_marker', 'log_bd_prep'] as const;
             if ((MOBILE_TOOLS as readonly string[]).includes(b.name)) {
               const params = b.input as Record<string, unknown>;
               capturedMobileTool = {
