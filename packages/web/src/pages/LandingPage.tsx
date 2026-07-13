@@ -591,6 +591,162 @@ function SectionLabel({ children }: { children: React.ReactNode }) {
   );
 }
 
+// ── Mobile app "coming soon" waitlist section ─────────────────────────────
+const APP_FEATURE_PILLS_HE = ['דרכון צמח', 'לוח ירח', 'אבחון AI'];
+const APP_FEATURE_PILLS_EN = ['Plant Passport', 'Moon Calendar', 'AI Diagnosis'];
+
+function MobileAppComingSoon({ isHe }: { isHe: boolean }) {
+  const [email, setEmail] = useState('');
+  const [status, setStatus] = useState<'idle' | 'loading' | 'done' | 'error'>('idle');
+  const pills = isHe ? APP_FEATURE_PILLS_HE : APP_FEATURE_PILLS_EN;
+
+  async function handleSubmit(e: React.FormEvent) {
+    e.preventDefault();
+    if (status === 'loading' || status === 'done') return;
+    setStatus('loading');
+    try {
+      const res = await fetch('/api/waitlist', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email, source: 'landing_page', locale: isHe ? 'he' : 'en' }),
+      });
+      if (!res.ok) throw new Error('signup_failed');
+      setStatus('done');
+    } catch {
+      setStatus('error');
+    }
+  }
+
+  return (
+    <section
+      style={{
+        position: 'relative', zIndex: 1,
+        backgroundColor: NIGHT,
+        borderTop: '1px solid rgba(0,229,195,0.07)',
+        padding: '96px 0',
+        overflow: 'hidden',
+      }}
+    >
+      <div style={{ maxWidth: '1100px', margin: '0 auto', padding: '0 28px' }}>
+        <div style={{
+          display: 'flex',
+          flexDirection: isHe ? 'row-reverse' : 'row',
+          alignItems: 'center',
+          gap: '56px',
+          flexWrap: 'wrap',
+        }}>
+          {/* Image */}
+          <Reveal style={{ flex: '1 1 380px', maxWidth: '480px', width: '100%' }}>
+            <img
+              src="/marketing/chupchu-app-coming-soon.jpg"
+              alt={isHe ? "צ'ופצ'ו והירח — האפליקציה בדרך" : 'ChupChu and the moon — the app is on its way'}
+              style={{
+                width: '100%', height: 'auto', display: 'block',
+                borderRadius: '20px',
+                border: '1px solid rgba(0,229,195,0.15)',
+                boxShadow: '0 24px 80px rgba(0,0,0,0.5)',
+              }}
+            />
+          </Reveal>
+
+          {/* Text + form */}
+          <Reveal delay={150} style={{ flex: '1 1 360px', maxWidth: '480px', direction: isHe ? 'rtl' : 'ltr' }}>
+            <div style={{
+              display: 'inline-flex', alignItems: 'center', gap: '8px',
+              background: 'rgba(255,184,48,0.08)',
+              border: `1px solid rgba(255,184,48,0.3)`,
+              borderRadius: '100px', padding: '6px 16px', marginBottom: '22px',
+              fontFamily: DM_SANS, fontSize: '12px', fontWeight: 600, color: BIO_AMBER,
+            }}>
+              <span style={{ width: '6px', height: '6px', borderRadius: '50%', background: BIO_AMBER, boxShadow: `0 0 6px ${BIO_AMBER}`, display: 'inline-block' }} />
+              {isHe ? 'האפליקציה בדרך' : 'The App Is Coming'}
+            </div>
+
+            <h2 style={{
+              fontFamily: FRANK, fontWeight: 700,
+              fontSize: 'clamp(28px, 3.5vw, 46px)', color: TEXT,
+              lineHeight: 1.2, marginBottom: '16px',
+            }}>
+              {isHe ? 'הגינה שלך, חכמה יותר' : 'Your Garden, Smarter'}
+            </h2>
+
+            <p style={{
+              fontFamily: DM_SANS, fontWeight: 300, fontSize: '17px',
+              lineHeight: 1.75, color: TEXT_MID, marginBottom: '24px',
+            }}>
+              {isHe
+                ? 'עוזר AI אישי לכל גנן — מהזרע ועד הפריחה.'
+                : 'A personal AI assistant for every gardener — from seed to bloom.'}
+            </p>
+
+            <div style={{ display: 'flex', gap: '10px', flexWrap: 'wrap', marginBottom: '28px' }}>
+              {pills.map(p => (
+                <span key={p} style={{
+                  fontFamily: DM_SANS, fontSize: '13px', fontWeight: 600,
+                  color: BIO_CYAN, background: 'rgba(0,229,195,0.08)',
+                  border: '1px solid rgba(0,229,195,0.2)',
+                  borderRadius: '100px', padding: '6px 16px',
+                }}>
+                  {p}
+                </span>
+              ))}
+            </div>
+
+            {status === 'done' ? (
+              <p style={{
+                fontFamily: DM_SANS, fontSize: '15px', color: BIO_LIME,
+                border: '1px solid rgba(170,255,0,0.3)', background: 'rgba(170,255,0,0.06)',
+                borderRadius: '12px', padding: '14px 18px',
+              }}>
+                {isHe
+                  ? '🌱 נרשמתם בהצלחה! נעדכן אתכם כשהאפליקציה תושק.'
+                  : "🌱 You're on the list! We'll email you when the app launches."}
+              </p>
+            ) : (
+              <form onSubmit={handleSubmit} style={{ display: 'flex', gap: '10px', flexWrap: 'wrap' }}>
+                <input
+                  type="email"
+                  required
+                  value={email}
+                  onChange={e => setEmail(e.target.value)}
+                  placeholder={isHe ? 'האימייל שלך' : 'Your email'}
+                  dir={isHe ? 'rtl' : 'ltr'}
+                  style={{
+                    flex: '1 1 220px',
+                    fontFamily: DM_SANS, fontSize: '15px', color: TEXT,
+                    background: NIGHT_CARD, border: '1px solid rgba(0,229,195,0.2)',
+                    borderRadius: '100px', padding: '13px 22px', outline: 'none',
+                  }}
+                />
+                <button
+                  type="submit"
+                  disabled={status === 'loading'}
+                  className="lp-cta-primary"
+                  style={{
+                    fontFamily: SYNE, fontWeight: 700, fontSize: '15px',
+                    backgroundColor: BIO_AMBER, color: NIGHT, border: 'none',
+                    padding: '13px 30px', borderRadius: '100px', cursor: 'pointer',
+                    boxShadow: '0 4px 24px rgba(255,184,48,0.3)', letterSpacing: '0.02em',
+                    opacity: status === 'loading' ? 0.7 : 1,
+                  }}
+                >
+                  {isHe ? 'הצטרפו לרשימת ההמתנה' : 'Join the Waitlist'}
+                </button>
+              </form>
+            )}
+
+            {status === 'error' && (
+              <p style={{ fontFamily: DM_SANS, fontSize: '13px', color: BIO_ROSE, marginTop: '10px' }}>
+                {isHe ? 'משהו השתבש, נסו שוב.' : 'Something went wrong, please try again.'}
+              </p>
+            )}
+          </Reveal>
+        </div>
+      </div>
+    </section>
+  );
+}
+
 // ── Main component ─────────────────────────────────────────────────────────
 export function LandingPage() {
   const { i18n } = useTranslation();
@@ -781,6 +937,9 @@ export function LandingPage() {
         </div>
 
       </section>
+
+      {/* ══ MOBILE APP COMING SOON ═══════════════════════════════════════ */}
+      <MobileAppComingSoon isHe={isHe} />
 
       {/* ══ FEATURES ══════════════════════════════════════════════════════ */}
       <section
