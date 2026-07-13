@@ -11,6 +11,7 @@ import { todayInIsrael } from '@gina-haya/shared';
 import { getRecentCompletedTasks } from '../db/queries/tasks';
 import { getLimits } from '../config/tiers';
 import { checkAndRecordVisionUse } from '../services/visionQuota';
+import { logApiUsage } from '../services/apiUsage';
 
 const ANTHROPIC_URL = 'https://api.anthropic.com/v1/messages';
 const ANTHROPIC_HEADERS = {
@@ -174,6 +175,9 @@ chupChuRouter.post('/analyze-image', async (req: any, res) => {
       .map((b: any) => (b as any).text)
       .join('');
 
+    // Persist real token data — fire-and-forget
+    void logApiUsage({ userId, endpoint: 'vision_chat_image', model: 'claude-opus-4-5', usage: response.usage });
+
     res.json({ response: text });
   } catch (err: any) {
     console.error('[POST /api/chupchu/analyze-image]', err.message);
@@ -271,6 +275,9 @@ chupChuRouter.post('/full-diagnosis', async (req: any, res) => {
         ],
       }],
     }, { headers: ANTHROPIC_HEADERS, timeout: 90000 })).data;
+
+    // Persist real token data — fire-and-forget
+    void logApiUsage({ userId: req.user?.id, endpoint: 'vision_full_diagnosis', model: 'claude-opus-4-5', usage: response.usage });
 
     const raw = response.content
       .filter((b: any) => b.type === 'text')
@@ -1388,6 +1395,7 @@ chupChuRouter.post('/chat', async (req: any, res) => {
       stableContext || undefined,
       volatileContext || undefined,
       compressedImage,
+      userId,
     );
 
     const chupChuMessage: ChupChuMessage = {

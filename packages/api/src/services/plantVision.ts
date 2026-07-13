@@ -1,6 +1,7 @@
 import axios from 'axios';
 import sharp from 'sharp';
 import { extractAndParseJson } from './jsonUtils';
+import { logApiUsage } from './apiUsage';
 
 const ANTHROPIC_URL = 'https://api.anthropic.com/v1/messages';
 const ANTHROPIC_HEADERS = {
@@ -194,7 +195,8 @@ export async function analyzePlantImage(
   imageBase64: string,
   mimeType: string,
   context: AnalysisContext,
-  preCompressed?: { data: string; mimeType: 'image/jpeg' }
+  preCompressed?: { data: string; mimeType: 'image/jpeg' },
+  userId?: string,
 ): Promise<{ analysis: PlantAnalysis; growingPlan: GrowingPlan; tasks: TrackerTask[] }> {
   const systemPrompt = buildVisionSystemPrompt(context);
 
@@ -325,6 +327,9 @@ due_in_days: מתי לבצע את המשימה (1-14 ימים). priority: high=�
       },
     ],
   }, { headers: ANTHROPIC_HEADERS, timeout: 90000 })).data;
+
+  // Persist real token data — fire-and-forget, never blocks the response
+  void logApiUsage({ userId, endpoint: 'vision_tracker_checkin', model: 'claude-opus-4-5', usage: response.usage });
 
   const textBlock = response.content.find(b => b.type === 'text');
   if (!textBlock || textBlock.type !== 'text') {

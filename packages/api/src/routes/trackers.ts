@@ -497,7 +497,7 @@ trackersRouter.post('/:id/checkin', async (req: any, res) => {
         previousCheckinDate,
         todayCalendar,
         weather: weather ?? undefined,
-      }, { data: compressed.data, mimeType: 'image/jpeg' });
+      }, { data: compressed.data, mimeType: 'image/jpeg' }, req.user?.id);
     } catch (visionErr: any) {
       if (visionErr.code === 'image_too_large') {
         return res.status(422).json({ error: 'image_too_large', error_code: 'image_too_large', message: 'התמונה גדולה מדי לניתוח' });

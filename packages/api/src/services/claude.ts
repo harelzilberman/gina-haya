@@ -3,6 +3,7 @@ import articlesData from '../../../shared/data/articles.json';
 import Anthropic from '@anthropic-ai/sdk'; // kept for TypeScript types only — no client instantiated
 import type { ChupChuContext, ChupChuMessage } from '@gina-haya/shared';
 import { db } from '../db/client';
+import { logApiUsage } from './apiUsage';
 
 const ANTHROPIC_URL = 'https://api.anthropic.com/v1/messages';
 const ANTHROPIC_HEADERS = {
@@ -659,6 +660,7 @@ export async function askChupChu(
   stableContext?: string,
   volatileContext?: string,
   image?: { data: string; mimeType: 'image/jpeg' | 'image/png' | 'image/gif' | 'image/webp' },
+  userId?: string,
 ): Promise<{ response: string; proposedTasks?: ProposedTask[]; mobileTool?: MobileToolCall }> {
   const basePrompt = context.userLanguage === 'he'
     ? CHUPCHU_SYSTEM_PROMPT_HE
@@ -723,6 +725,8 @@ export async function askChupChu(
       cache_creation: response.usage?.cache_creation_input_tokens,
       cache_read:     response.usage?.cache_read_input_tokens,
     });
+    // Persist real token data — fire-and-forget, never blocks the chat response
+    void logApiUsage({ userId, endpoint: 'chupchu_chat', model: modelToUse, usage: response.usage });
 
     if (response.stop_reason === 'end_turn') {
       const textBlock = response.content.find(b => b.type === 'text');
