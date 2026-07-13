@@ -1,7 +1,6 @@
 import { create } from 'zustand';
 import { useAuthStore } from './authStore';
 import { useGardenStore, type Garden } from './gardenStore';
-import { useMapStore } from './mapStore';
 import { useTrackerStore } from './trackerStore';
 import { api } from '../api/client';
 
@@ -31,12 +30,8 @@ function getToken() {
 }
 
 async function resetAndReloadStores(gardenId: string) {
-  console.log('[switch] 3. calling mapStore.reset()');
-  useMapStore.getState().reset();
   useTrackerStore.getState().reset();
-  console.log('[switch] 4. calling mapStore.loadMap with:', gardenId);
   await Promise.all([
-    useMapStore.getState().loadMap(gardenId),
     useTrackerStore.getState().loadTrackers(gardenId),
     useGardenStore.getState().loadGardens(),
   ]);

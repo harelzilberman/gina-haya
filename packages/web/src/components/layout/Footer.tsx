@@ -61,7 +61,6 @@ export function Footer() {
               { label: isHebrew ? 'לוח ביודינמי' : 'Calendar',    to: '/calendar' },
               { label: isHebrew ? 'אנציקלופדיה'  : 'Encyclopedia', to: '/plants'   },
               { label: isHebrew ? "צ'ופצ'ו"      : 'ChupChu',      to: '/chupchu'  },
-              { label: isHebrew ? 'מפת גינה'     : 'Garden Map',   to: '/map'      },
               { label: isHebrew ? 'תמחור'        : 'Pricing',      to: '/pricing'  },
             ].map(item => (
               <Link key={item.to} to={item.to} style={linkStyle} onMouseEnter={hoverIn} onMouseLeave={hoverOut}>

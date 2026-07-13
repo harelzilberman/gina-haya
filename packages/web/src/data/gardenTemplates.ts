@@ -1,4 +1,25 @@
-import type { MapObject } from '../stores/mapStore';
+// Minimal MapObject definition — inlined here after mapStore.ts was removed.
+// GardenTemplate elements use only a subset of the original fields.
+interface MapObject {
+  id: string;
+  type: string;
+  shapeKind: 'polygon' | 'rect' | 'circle';
+  x?: number;
+  y?: number;
+  width?: number;
+  height?: number;
+  rotation?: number;
+  points?: [number, number][];
+  cx?: number;
+  cy?: number;
+  radius?: number;
+  label: string;
+  isFruitTree?: boolean;
+  fruitTreeName?: string;
+  wallHeightM?: number;
+  locked?: boolean;
+  z?: number;
+}
 
 export interface GardenTemplate {
   id: string;

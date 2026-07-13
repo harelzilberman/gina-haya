@@ -13,7 +13,6 @@ import { BillingPage } from './pages/BillingPage';
 import { SettingsPage } from './pages/SettingsPage';
 import { TrackerPage } from './pages/TrackerPage';
 import { PlanPage } from './pages/PlanPage';
-import { MapPage }  from './pages/MapPage';
 import { GuidesPage } from './pages/GuidesPage';
 import { ArticlesPage } from './pages/ArticlesPage';
 import { ArticlePage } from './pages/ArticlePage';
@@ -49,7 +48,6 @@ import { Analytics } from '@vercel/analytics/react';
 export default function App() {
   const { i18n } = useTranslation();
   const location = useLocation();
-  const isMapPage   = location.pathname === '/map';
   const isChupChuPage = location.pathname === '/chupchu';
   const { user, profile, isAuthReady, loadProfile, markOnboardingComplete } = useAuthStore();
   const { initFromAuth } = useGardenSwitcherStore();
@@ -144,8 +142,7 @@ export default function App() {
     <div className="min-h-screen font-heebo flex flex-col" style={{ backgroundColor: '#FDF6EC' }}>
       <Navbar />
 
-      {/* pt-[72px] offsets the fixed 64px navbar (skipped on map page — it manages its own layout) */}
-      <main className="flex-1" style={{ paddingTop: isMapPage ? 0 : '72px' }}>
+      <main className="flex-1" style={{ paddingTop: '72px' }}>
         <Routes>
           {/* Auth pages — no layout wrapper needed (they have their own) */}
           <Route path="/login" element={<LoginPage />} />
@@ -218,14 +215,6 @@ export default function App() {
             }
           />
           <Route
-            path="/map"
-            element={
-              <ProtectedRoute>
-                <MapPage />
-              </ProtectedRoute>
-            }
-          />
-          <Route
             path="/gardens"
             element={
               <ProtectedRoute>
@@ -261,7 +250,7 @@ export default function App() {
         </Routes>
       </main>
 
-      {!isMapPage && <Footer />}
+      <Footer />
 
       {showOnboarding && <OnboardingWizard />}
       {showWelcomeScreen && <WelcomeScreen />}
