@@ -1,6 +1,7 @@
 import 'dotenv/config';
 import { Router, type IRouter, type Request } from 'express';
 import Stripe from 'stripe';
+import { TIER_PRICING } from '@gina-haya/shared';
 import { db } from '../db/client';
 import { verifyToken } from '../middleware/auth';
 
@@ -111,10 +112,7 @@ billingRouter.get('/status', verifyToken, async (req: any, res) => {
     if (error || !data) throw new Error('User not found');
 
     const tier: string = data.subscription_tier ?? 'free';
-    const TIER_PRICES: Record<string, number | null> = {
-      free: null, grower: 9, gardener_pro: 14, advanced: 36, professional: 49,
-    };
-    const monthlyPrice = TIER_PRICES[tier] ?? null;
+    const monthlyPrice = TIER_PRICING[tier]?.monthly ?? null;
 
     // Check if there's an active subscription in Stripe
     let isActive = tier !== 'free';

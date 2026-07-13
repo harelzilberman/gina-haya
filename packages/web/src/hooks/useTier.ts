@@ -4,32 +4,31 @@ import type { SubscriptionTier } from '@gina-haya/shared';
 
 const TIER_FEATURES = {
   free:         { appAccess: false, diagnosesPerMonth: 0,        adFree: false, multiGarden: false },
-  grower:       { appAccess: true,  diagnosesPerMonth: 5,        adFree: false, multiGarden: false },
   gardener_pro: { appAccess: true,  diagnosesPerMonth: Infinity, adFree: true,  multiGarden: true  },
+  advanced:     { appAccess: true,  diagnosesPerMonth: Infinity, adFree: true,  multiGarden: true  },
   professional: { appAccess: true,  diagnosesPerMonth: Infinity, adFree: true,  multiGarden: true  },
 };
 
 const TIER_PRICES: Record<string, number | null> = {
   free:           null,
-  grower:         9,
-  gardener_pro:   14,
-  professional:   49,
+  gardener_pro:   18,
+  advanced:       36,
+  professional:   54,
 };
 
-
-const TIER_ORDER: SubscriptionTier[] = ['free', 'grower', 'gardener_pro', 'professional'];
+const TIER_ORDER: SubscriptionTier[] = ['free', 'gardener_pro', 'advanced', 'professional'];
 
 const CHUPCHU_MONTHLY_LIMITS: Record<SubscriptionTier, number | null> = {
   free:           54,
-  grower:         50,
-  gardener_pro:   null,
-  professional:   null,
+  gardener_pro:   250,
+  advanced:       500,
+  professional:   800,
 };
 
 const CHUPCHU_DAILY_LIMITS: Record<SubscriptionTier, number | null> = {
   free:           3,
-  grower:         18,
   gardener_pro:   18,
+  advanced:       36,
   professional:   54,
 };
 

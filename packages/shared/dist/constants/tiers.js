@@ -1,16 +1,74 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.TIER_FEATURES = exports.TIER_PRICES = void 0;
-exports.TIER_PRICES = {
-    free: null,
-    grower: 9,
-    gardener_pro: 14,
-    professional: 49,
+exports.TIER_PRICING = exports.TIER_LIMITS = void 0;
+exports.getLimits = getLimits;
+exports.TIER_LIMITS = {
+    free: {
+        maxGardens: 1,
+        maxPlantsPerGarden: 15,
+        maxTrackers: 1,
+        maxCheckinsPerTrackerPerMonth: null,
+        maxTotalCheckinsEver: 1,
+        maxChupChuPerMonth: 54,
+        maxChupChuPerDay: 3,
+        maxVisionLooksPerMonth: 3,
+        maxPlantsInChupchuContext: 30,
+        encyclopediaAccess: false,
+        displayNameHe: 'גנן מתחיל',
+    },
+    gardener_pro: {
+        maxGardens: 2,
+        maxPlantsPerGarden: 30,
+        maxTrackers: 10,
+        maxCheckinsPerTrackerPerMonth: 10,
+        maxTotalCheckinsEver: null,
+        maxChupChuPerMonth: 250,
+        maxChupChuPerDay: 18,
+        maxVisionLooksPerMonth: 18,
+        maxPlantsInChupchuContext: 30,
+        encyclopediaAccess: true,
+        displayNameHe: 'גנן ביתי',
+    },
+    advanced: {
+        maxGardens: 5,
+        maxPlantsPerGarden: 30,
+        maxTrackers: null,
+        maxCheckinsPerTrackerPerMonth: null,
+        maxTotalCheckinsEver: null,
+        maxChupChuPerMonth: 500,
+        maxChupChuPerDay: 36,
+        maxVisionLooksPerMonth: 36,
+        maxPlantsInChupchuContext: 30,
+        encyclopediaAccess: true,
+        displayNameHe: 'גנן מתקדם',
+    },
+    professional: {
+        maxGardens: 10,
+        maxPlantsPerGarden: 30,
+        maxTrackers: null,
+        maxCheckinsPerTrackerPerMonth: null,
+        maxTotalCheckinsEver: null,
+        maxChupChuPerMonth: 800,
+        maxChupChuPerDay: 54,
+        maxVisionLooksPerMonth: 54,
+        maxPlantsInChupchuContext: 30,
+        encyclopediaAccess: true,
+        displayNameHe: 'גנן מקצועי',
+    },
 };
-exports.TIER_FEATURES = {
-    free: { appAccess: false, diagnosesPerMonth: 0, adFree: false, multiGarden: false },
-    grower: { appAccess: true, diagnosesPerMonth: 5, adFree: false, multiGarden: false },
-    gardener_pro: { appAccess: true, diagnosesPerMonth: Infinity, adFree: true, multiGarden: true },
-    professional: { appAccess: true, diagnosesPerMonth: Infinity, adFree: true, multiGarden: true },
+function getLimits(tier) {
+    if (!exports.TIER_LIMITS[tier]) {
+        console.warn(`[getLimits] Unknown tier key: "${tier}" — falling back to free limits`);
+        return exports.TIER_LIMITS.free;
+    }
+    return exports.TIER_LIMITS[tier];
+}
+// Canonical ILS prices — single source of truth for website display and billing logic.
+// Annual = 10× monthly (2 months free, ~17% discount).
+exports.TIER_PRICING = {
+    free: { monthly: null, annual: null },
+    gardener_pro: { monthly: 18, annual: 180 },
+    advanced: { monthly: 36, annual: 360 },
+    professional: { monthly: 54, annual: 540 },
 };
 //# sourceMappingURL=tiers.js.map

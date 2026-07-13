@@ -1,6 +1,7 @@
 import { useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link } from 'react-router-dom';
 import { useAuthStore } from '../stores/authStore';
+import { getLimits, TIER_PRICING } from '@gina-haya/shared';
 
 const NIGHT      = '#050d0a';
 const NIGHT_MID  = '#091410';
@@ -31,48 +32,62 @@ const PAGE_CSS = `
 .faq-answer { font-family: ${ASST}; font-size: 14px; color: #b0cfbf; line-height: 1.7; padding: 0 0 16px; }
 `;
 
-type Tier = 'free' | 'grower' | 'pro';
+type ActiveTier = 'free' | 'gardener_pro' | 'advanced' | 'professional';
 
 interface Feature { icon: string; text: string; dim?: boolean }
+
+// ── Feature lists: marketing copy for the text, real limits for every number ──
+
+const FREE_L   = getLimits('free');
+const GP_L     = getLimits('gardener_pro');
+const ADV_L    = getLimits('advanced');
+const PRO_L    = getLimits('professional');
 
 const FREE_FEATURES: Feature[] = [
   { icon: '✓', text: 'לוח ביודינמי יומי' },
   { icon: '✓', text: 'שלב ירח + ציון שתילה' },
-  { icon: '✓', text: 'גינה אחת (עד 10 צמחים)' },
+  { icon: '✓', text: `גינה אחת — עד ${FREE_L.maxPlantsPerGarden} צמחים` },
   { icon: '✓', text: 'לוח משימות בסיסי' },
   { icon: '✓', text: 'כל המאמרים והמדריכים' },
-  { icon: '✓', text: "צ'ופצ'ו — 20 שיחות לחודש" },
+  { icon: '✓', text: `צ'ופצ'ו — ${FREE_L.maxChupChuPerMonth} שיחות לחודש` },
   { icon: '✦', text: 'מעקב גידול אחד — טעימה' },
-  { icon: '✦', text: 'ניתוח AI אחד לחודש' },
+  { icon: '✦', text: `${FREE_L.maxVisionLooksPerMonth} ניתוחי AI לחודש` },
   { icon: '✗', text: 'מעקבים נוספים', dim: true },
   { icon: '✗', text: 'תכנית שנתית', dim: true },
   { icon: '✗', text: 'אנציקלופדיה מלאה', dim: true },
 ];
 
-const GROWER_FEATURES: Feature[] = [
+const GP_FEATURES: Feature[] = [
   { icon: '✓', text: 'הכל בחינמי' },
-  { icon: '✓', text: 'גינה אחת — ללא הגבלת צמחים' },
-  { icon: '✓', text: 'מעקבי גידול ללא הגבלה' },
-  { icon: '✓', text: 'ניתוח AI ללא הגבלה' },
-  { icon: '✓', text: 'משימות מוצעות עם אישור ידני' },
-  { icon: '✓', text: "צ'ופצ'ו — 50 שיחות לחודש" },
+  { icon: '✓', text: `${GP_L.maxGardens} גינות — עד ${GP_L.maxPlantsPerGarden} צמחים כל אחת` },
+  { icon: '✓', text: `עד ${GP_L.maxTrackers} מעקבי גידול` },
+  { icon: '✓', text: `${GP_L.maxVisionLooksPerMonth} ניתוחי AI לחודש` },
+  { icon: '✓', text: `צ'ופצ'ו — ${GP_L.maxChupChuPerMonth} שיחות לחודש` },
   { icon: '✓', text: 'תכנית שנתית' },
   { icon: '✓', text: 'אנציקלופדיה מלאה' },
-  { icon: '✗', text: 'גינות מרובות', dim: true },
   { icon: '✗', text: 'ייצוא PDF', dim: true },
 ];
 
+const ADV_FEATURES: Feature[] = [
+  { icon: '✓', text: 'הכל בגנן ביתי' },
+  { icon: '✓', text: `${ADV_L.maxGardens} גינות — עד ${ADV_L.maxPlantsPerGarden} צמחים כל אחת` },
+  { icon: '✓', text: 'מעקבי גידול ללא הגבלה' },
+  { icon: '✓', text: `${ADV_L.maxVisionLooksPerMonth} ניתוחי AI לחודש` },
+  { icon: '✓', text: `צ'ופצ'ו — ${ADV_L.maxChupChuPerMonth} שיחות לחודש` },
+  { icon: '✓', text: 'ייצוא PDF לכל גינה' },
+  { icon: '✓', text: 'גישה מוקדמת לתכונות' },
+];
+
 const PRO_FEATURES: Feature[] = [
-  { icon: '✓', text: 'הכל בגנן' },
-  { icon: '✓', text: '13 גינות כלולות' },
-  { icon: '✓', text: 'מעבר מהיר בין גינות' },
-  { icon: '✓', text: 'לוח משימות לכל גינה' },
-  { icon: '✓', text: "צ'ופצ'ו ללא הגבלה" },
+  { icon: '✓', text: 'הכל בגנן מתקדם' },
+  { icon: '✓', text: `${PRO_L.maxGardens} גינות — עד ${PRO_L.maxPlantsPerGarden} צמחים כל אחת` },
+  { icon: '✓', text: 'מעקבי גידול ללא הגבלה' },
+  { icon: '✓', text: `${PRO_L.maxVisionLooksPerMonth} ניתוחי AI לחודש` },
+  { icon: '✓', text: `צ'ופצ'ו — ${PRO_L.maxChupChuPerMonth} שיחות לחודש` },
   { icon: '✓', text: 'ייצוא PDF לכל גינה' },
   { icon: '✓', text: 'גישה מוקדמת לתכונות' },
   { icon: '✓', text: 'תמיכה מועדפת' },
   { icon: '✓', text: 'סטטיסטיקות מתקדמות' },
-  { icon: '➕', text: 'חבילת 10 גינות נוספות — ₪19/חודש' },
 ];
 
 const FAQ_ITEMS = [
@@ -94,7 +109,7 @@ const FAQ_ITEMS = [
   },
   {
     q: 'האם המנוי השנתי כולל הנחה?',
-    a: 'כן — תשלום שנתי חוסך 20% לעומת תשלום חודשי.',
+    a: 'כן — תשלום שנתי חוסך כחודשיים לעומת תשלום חודשי.',
   },
 ];
 
@@ -136,19 +151,18 @@ function ComingSoonToast({ visible }: { visible: boolean }) {
 
 export function PricingPage() {
   const { profile } = useAuthStore();
-  const navigate = useNavigate();
   const [isAnnual, setIsAnnual] = useState(false);
   const [openFaq, setOpenFaq] = useState<number | null>(null);
   const [toastVisible, setToastVisible] = useState(false);
 
-  const currentTier = (profile?.subscription_tier ?? 'free') as Tier;
+  const currentTier = (profile?.subscription_tier ?? 'free') as ActiveTier;
 
   function showToast() {
     setToastVisible(true);
     setTimeout(() => setToastVisible(false), 2000);
   }
 
-  function TierBadge({ tier }: { tier: Tier }) {
+  function TierBadge({ tier }: { tier: ActiveTier }) {
     if (currentTier !== tier || !profile) return null;
     return (
       <div style={{
@@ -163,8 +177,32 @@ export function PricingPage() {
     );
   }
 
-  const growerMonthly = isAnnual ? 14 : 18;
-  const proMonthly    = isAnnual ? 43 : 54;
+  // Derive per-month display price and annual details from TIER_PRICING
+  function annualMonthly(tier: string): number {
+    return Math.round((TIER_PRICING[tier]?.annual ?? 0) / 12);
+  }
+  function annualSavings(tier: string): number {
+    const p = TIER_PRICING[tier];
+    if (!p?.monthly || !p?.annual) return 0;
+    return p.monthly * 12 - p.annual;
+  }
+
+  const upgradeBtn = (label: string) => (
+    <button
+      onClick={showToast}
+      style={{
+        display: 'block', width: '100%',
+        fontFamily: FRANK, fontSize: '15px', fontWeight: 700,
+        color: NIGHT, background: BIO_CYAN,
+        padding: '13px', borderRadius: '100px',
+        border: 'none', cursor: 'pointer', transition: 'filter 0.2s',
+      }}
+      onMouseEnter={e => { (e.currentTarget as HTMLElement).style.filter = 'brightness(1.1)'; }}
+      onMouseLeave={e => { (e.currentTarget as HTMLElement).style.filter = 'none'; }}
+    >
+      {label}
+    </button>
+  );
 
   return (
     <>
@@ -175,7 +213,7 @@ export function PricingPage() {
 
         {/* ── Launch free mode banner ── */}
         <div style={{
-          maxWidth: '1100px', margin: '0 auto',
+          maxWidth: '1160px', margin: '0 auto',
           padding: '24px 20px 0',
           animation: 'pricingFadeIn 0.5s ease both',
         }}>
@@ -247,7 +285,7 @@ export function PricingPage() {
                 fontSize: '10px', fontWeight: 700,
                 padding: '2px 7px', borderRadius: '99px',
               }}>
-                חסוך 20%
+                חסוך ~17%
               </span>
             </button>
           </div>
@@ -255,15 +293,15 @@ export function PricingPage() {
 
         {/* ── Tier cards ── */}
         <div style={{
-          maxWidth: '1100px', margin: '0 auto',
+          maxWidth: '1160px', margin: '0 auto',
           padding: '0 20px 20px',
           display: 'grid',
-          gridTemplateColumns: 'repeat(auto-fit, minmax(290px, 1fr))',
-          gap: '20px',
+          gridTemplateColumns: 'repeat(auto-fit, minmax(230px, 1fr))',
+          gap: '16px',
           animation: 'pricingFadeIn 0.5s ease 0.1s both',
         }}>
 
-          {/* Free */}
+          {/* ── Free ── */}
           <div
             className="pricing-card"
             style={{
@@ -277,7 +315,7 @@ export function PricingPage() {
           >
             <TierBadge tier="free" />
             <div style={{ fontFamily: FRANK, fontSize: '22px', color: TEXT, fontWeight: 700, marginBottom: '4px' }}>
-              חינמי
+              {FREE_L.displayNameHe}
             </div>
             <div style={{ fontFamily: ASST, fontSize: '13px', color: MUTED, marginBottom: '20px' }}>
               Free
@@ -305,20 +343,20 @@ export function PricingPage() {
             </Link>
           </div>
 
-          {/* Grower — featured */}
+          {/* ── Gardener Pro — featured ── */}
           <div
             className="pricing-card"
             style={{
               position: 'relative',
               background: `linear-gradient(145deg, ${NIGHT_LIFT} 0%, ${NIGHT_CARD} 100%)`,
-              border: currentTier === 'grower' && profile ? `2px solid ${BIO_CYAN}` : `2px solid ${BIO_CYAN}`,
+              border: `2px solid ${BIO_CYAN}`,
               borderRadius: '16px', padding: '28px 24px',
               display: 'flex', flexDirection: 'column',
               boxShadow: `0 8px 40px rgba(0,229,195,0.15)`,
             }}
           >
-            <TierBadge tier="grower" />
-            {(!profile || currentTier !== 'grower') && (
+            <TierBadge tier="gardener_pro" />
+            {currentTier !== 'gardener_pro' && (
               <div style={{
                 position: 'absolute', top: -12, left: '50%', transform: 'translateX(-50%)',
                 background: `linear-gradient(90deg, ${BIO_CYAN}, ${BIO_LIME})`,
@@ -331,89 +369,103 @@ export function PricingPage() {
               </div>
             )}
             <div style={{ fontFamily: FRANK, fontSize: '22px', color: BIO_CYAN, fontWeight: 700, marginBottom: '4px' }}>
-              גנן
+              {GP_L.displayNameHe}
             </div>
             <div style={{ fontFamily: ASST, fontSize: '13px', color: MUTED, marginBottom: '20px' }}>
-              Grower
+              Gardener
             </div>
             <div style={{ marginBottom: isAnnual ? '8px' : '24px' }}>
-              <span style={{ fontFamily: FRANK, fontSize: '38px', color: BIO_CYAN, fontWeight: 700 }}>₪{growerMonthly}</span>
+              <span style={{ fontFamily: FRANK, fontSize: '38px', color: BIO_CYAN, fontWeight: 700 }}>
+                ₪{isAnnual ? annualMonthly('gardener_pro') : TIER_PRICING.gardener_pro.monthly}
+              </span>
               <span style={{ fontFamily: ASST, fontSize: '13px', color: MUTED, marginRight: '6px' }}>/ חודש</span>
             </div>
             {isAnnual && (
               <div style={{ fontFamily: ASST, fontSize: '12px', color: MUTED, marginBottom: '16px' }}>
-                ₪{growerMonthly * 12} לשנה — חיסכון של ₪{(18 - growerMonthly) * 12}
+                ₪{TIER_PRICING.gardener_pro.annual} לשנה — חיסכון של ₪{annualSavings('gardener_pro')}
               </div>
             )}
             <div style={{ flex: 1, marginBottom: '24px' }}>
-              {GROWER_FEATURES.map((f, i) => <FeatureRow key={i} {...f} />)}
+              {GP_FEATURES.map((f, i) => <FeatureRow key={i} {...f} />)}
             </div>
-            <button
-              onClick={showToast}
-              style={{
-                display: 'block', width: '100%',
-                fontFamily: FRANK, fontSize: '15px', fontWeight: 700,
-                color: NIGHT, background: BIO_CYAN,
-                padding: '13px', borderRadius: '100px',
-                border: 'none', cursor: 'pointer', transition: 'filter 0.2s',
-              }}
-              onMouseEnter={e => { (e.currentTarget as HTMLElement).style.filter = 'brightness(1.1)'; }}
-              onMouseLeave={e => { (e.currentTarget as HTMLElement).style.filter = 'none'; }}
-            >
-              שדרג לגנן
-            </button>
+            {upgradeBtn(`שדרג ל${GP_L.displayNameHe}`)}
           </div>
 
-          {/* Pro */}
+          {/* ── Advanced ── */}
           <div
             className="pricing-card"
             style={{
               position: 'relative',
               background: NIGHT_CARD,
-              border: currentTier === 'pro' && profile ? `2px solid ${BIO_CYAN}` : '1px solid rgba(0,229,195,0.1)',
+              border: currentTier === 'advanced' && profile ? `2px solid ${BIO_CYAN}` : '1px solid rgba(0,229,195,0.15)',
               borderRadius: '16px', padding: '28px 24px',
               display: 'flex', flexDirection: 'column',
               boxShadow: '0 4px 24px rgba(0,0,0,0.3)',
             }}
           >
-            <TierBadge tier="pro" />
+            <TierBadge tier="advanced" />
             <div style={{ fontFamily: FRANK, fontSize: '22px', color: TEXT, fontWeight: 700, marginBottom: '4px' }}>
-              מקצועי
+              {ADV_L.displayNameHe}
             </div>
             <div style={{ fontFamily: ASST, fontSize: '13px', color: MUTED, marginBottom: '20px' }}>
-              Pro
+              Advanced
             </div>
             <div style={{ marginBottom: isAnnual ? '8px' : '24px' }}>
-              <span style={{ fontFamily: FRANK, fontSize: '38px', color: BIO_CYAN, fontWeight: 700 }}>₪{proMonthly}</span>
+              <span style={{ fontFamily: FRANK, fontSize: '38px', color: BIO_CYAN, fontWeight: 700 }}>
+                ₪{isAnnual ? annualMonthly('advanced') : TIER_PRICING.advanced.monthly}
+              </span>
               <span style={{ fontFamily: ASST, fontSize: '13px', color: MUTED, marginRight: '6px' }}>/ חודש</span>
             </div>
             {isAnnual && (
               <div style={{ fontFamily: ASST, fontSize: '12px', color: MUTED, marginBottom: '16px' }}>
-                ₪{proMonthly * 12} לשנה — חיסכון של ₪{(54 - proMonthly) * 12}
+                ₪{TIER_PRICING.advanced.annual} לשנה — חיסכון של ₪{annualSavings('advanced')}
+              </div>
+            )}
+            <div style={{ flex: 1, marginBottom: '24px' }}>
+              {ADV_FEATURES.map((f, i) => <FeatureRow key={i} {...f} />)}
+            </div>
+            {upgradeBtn(`שדרג ל${ADV_L.displayNameHe}`)}
+          </div>
+
+          {/* ── Professional ── */}
+          <div
+            className="pricing-card"
+            style={{
+              position: 'relative',
+              background: NIGHT_CARD,
+              border: currentTier === 'professional' && profile ? `2px solid ${BIO_CYAN}` : '1px solid rgba(0,229,195,0.1)',
+              borderRadius: '16px', padding: '28px 24px',
+              display: 'flex', flexDirection: 'column',
+              boxShadow: '0 4px 24px rgba(0,0,0,0.3)',
+            }}
+          >
+            <TierBadge tier="professional" />
+            <div style={{ fontFamily: FRANK, fontSize: '22px', color: TEXT, fontWeight: 700, marginBottom: '4px' }}>
+              {PRO_L.displayNameHe}
+            </div>
+            <div style={{ fontFamily: ASST, fontSize: '13px', color: MUTED, marginBottom: '20px' }}>
+              Professional
+            </div>
+            <div style={{ marginBottom: isAnnual ? '8px' : '24px' }}>
+              <span style={{ fontFamily: FRANK, fontSize: '38px', color: BIO_CYAN, fontWeight: 700 }}>
+                ₪{isAnnual ? annualMonthly('professional') : TIER_PRICING.professional.monthly}
+              </span>
+              <span style={{ fontFamily: ASST, fontSize: '13px', color: MUTED, marginRight: '6px' }}>/ חודש</span>
+            </div>
+            {isAnnual && (
+              <div style={{ fontFamily: ASST, fontSize: '12px', color: MUTED, marginBottom: '16px' }}>
+                ₪{TIER_PRICING.professional.annual} לשנה — חיסכון של ₪{annualSavings('professional')}
               </div>
             )}
             <div style={{ flex: 1, marginBottom: '24px' }}>
               {PRO_FEATURES.map((f, i) => <FeatureRow key={i} {...f} />)}
             </div>
-            <button
-              onClick={showToast}
-              style={{
-                display: 'block', width: '100%',
-                fontFamily: FRANK, fontSize: '15px', fontWeight: 700,
-                color: NIGHT, background: BIO_CYAN,
-                padding: '13px', borderRadius: '100px',
-                border: 'none', cursor: 'pointer', transition: 'filter 0.2s',
-              }}
-              onMouseEnter={e => { (e.currentTarget as HTMLElement).style.filter = 'brightness(1.1)'; }}
-              onMouseLeave={e => { (e.currentTarget as HTMLElement).style.filter = 'none'; }}
-            >
-              שדרג למקצועי
-            </button>
+            {upgradeBtn(`שדרג ל${PRO_L.displayNameHe}`)}
           </div>
         </div>
 
         {/* ── Garden pack addon ── */}
-        <div style={{ maxWidth: '1100px', margin: '0 auto', padding: '0 20px 16px', animation: 'pricingFadeIn 0.5s ease 0.2s both' }}>
+        <div style={{ maxWidth: '1160px', margin: '0 auto', padding: '0 20px 16px', animation: 'pricingFadeIn 0.5s ease 0.2s both' }}>
           <div style={{
             border: `1px dashed rgba(0,229,195,0.2)`,
             borderRadius: '14px', padding: '20px 24px',
@@ -429,7 +481,7 @@ export function PricingPage() {
                 10 גינות נוספות ב-₪19 לחודש. ניתן לרכוש מספר חבילות.
               </div>
               <div style={{ fontFamily: ASST, fontSize: '12px', color: MUTED, marginTop: '4px' }}>
-                דוגמה: 33 גינות = ₪54 + ₪19 + ₪19 = ₪92/חודש
+                דוגמה: {PRO_L.maxGardens! + 20} גינות = ₪{TIER_PRICING.professional.monthly!} + ₪19 + ₪19 = ₪{TIER_PRICING.professional.monthly! + 38}/חודש
               </div>
             </div>
             <button

@@ -1,4 +1,5 @@
-export type SubscriptionTier = 'free' | 'grower' | 'gardener_pro' | 'professional';
+// 'grower' was a retired legacy tier; confirmed zero DB rows as of 2026-07, dropped from the type.
+export type SubscriptionTier = 'free' | 'gardener_pro' | 'advanced' | 'professional';
 
 export interface User {
   id: string;

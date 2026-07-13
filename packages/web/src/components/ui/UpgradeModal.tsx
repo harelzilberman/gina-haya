@@ -27,53 +27,56 @@ const MODAL_CSS = `
 .upgrade-modal-scroll::-webkit-scrollbar-thumb { background: rgba(0,229,195,0.2); border-radius: 2px; }
 `;
 
-type TierKey = 'free' | 'grower' | 'gardener_pro' | 'professional';
+type TierKey = 'free' | 'gardener_pro' | 'advanced' | 'professional';
 
 const TIER_NAMES: Record<TierKey, string> = {
-  free:         'חינמי',
-  grower:       'גדל',
-  gardener_pro: 'גנן פרו',
-  professional: 'מקצועי',
+  free:         'גנן מתחיל',
+  gardener_pro: 'גנן ביתי',
+  advanced:     'גנן מתקדם',
+  professional: 'גנן מקצועי',
 };
 
 const TIER_PRICES_DISPLAY: Record<TierKey, string> = {
   free:         'חינם',
-  grower:       '₪9 / חודש',
-  gardener_pro: '₪14 / חודש',
-  professional: '₪49 / חודש',
+  gardener_pro: '₪18 / חודש',
+  advanced:     '₪36 / חודש',
+  professional: '₪54 / חודש',
 };
 
 const TIER_FEATURES_LIST: Record<TierKey, string[]> = {
   free: [
     'לוח ביודינמי יומי',
-    'אנציקלופדיית צמחים',
-    'גינה אחת',
-    'שיחה עם צ\'ופצ\'ו (20/חודש)',
-    'פרסומות',
-  ],
-  grower: [
-    'כל מה שבחינמי',
-    'גישה מלאה לאפליקציה',
-    '5 אבחנות צמחים / חודש',
-    'שיחה עם צ\'ופצ\'ו (50/חודש)',
-    'פרסומות',
+    'גינה אחת (עד 15 צמחים)',
+    'צ\'ופצ\'ו — 54 שיחות לחודש',
+    '3 ניתוחי AI לחודש',
+    'מעקב גידול אחד — טעימה',
   ],
   gardener_pro: [
-    'כל מה שבגדל',
-    'ללא פרסומות',
-    'אבחנות ללא הגבלה',
-    'שיחה עם צ\'ופצ\'ו ללא הגבלה',
-    'גינות מרובות',
+    'הכל בחינמי',
+    '2 גינות — עד 30 צמחים כל אחת',
+    'עד 10 מעקבי גידול',
+    '18 ניתוחי AI לחודש',
+    'צ\'ופצ\'ו — 250 שיחות לחודש',
+    'אנציקלופדיה מלאה',
+  ],
+  advanced: [
+    'הכל בגנן ביתי',
+    '5 גינות — עד 30 צמחים כל אחת',
+    'מעקבי גידול ללא הגבלה',
+    '36 ניתוחי AI לחודש',
+    'צ\'ופצ\'ו — 500 שיחות לחודש',
+    'ייצוא PDF',
   ],
   professional: [
-    'כל מה שבגנן פרו',
-    'לוח לקוחות',
-    'white-label',
+    'הכל בגנן מתקדם',
+    '10 גינות — עד 30 צמחים כל אחת',
+    '54 ניתוחי AI לחודש',
+    'צ\'ופצ\'ו — 800 שיחות לחודש',
     'תמיכה מועדפת',
   ],
 };
 
-const TIERS_ORDER: TierKey[] = ['free', 'grower', 'gardener_pro', 'professional'];
+const TIERS_ORDER: TierKey[] = ['free', 'gardener_pro', 'advanced', 'professional'];
 
 export function UpgradeModal() {
   if (import.meta.env.PROD && import.meta.env.VITE_LAUNCH_FREE_MODE === 'true') {

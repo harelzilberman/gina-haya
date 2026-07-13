@@ -1,29 +1,21 @@
-import type { SubscriptionTier } from '../types/user';
-export declare const TIER_PRICES: Record<SubscriptionTier, number | null>;
-export declare const TIER_FEATURES: {
-    free: {
-        appAccess: boolean;
-        diagnosesPerMonth: number;
-        adFree: boolean;
-        multiGarden: boolean;
-    };
-    grower: {
-        appAccess: boolean;
-        diagnosesPerMonth: number;
-        adFree: boolean;
-        multiGarden: boolean;
-    };
-    gardener_pro: {
-        appAccess: boolean;
-        diagnosesPerMonth: number;
-        adFree: boolean;
-        multiGarden: boolean;
-    };
-    professional: {
-        appAccess: boolean;
-        diagnosesPerMonth: number;
-        adFree: boolean;
-        multiGarden: boolean;
-    };
-};
+export interface TierLimits {
+    maxGardens: number | null;
+    maxPlantsPerGarden: number | null;
+    maxTrackers: number | null;
+    maxCheckinsPerTrackerPerMonth: number | null;
+    maxTotalCheckinsEver: number | null;
+    maxChupChuPerMonth: number | null;
+    maxChupChuPerDay: number | null;
+    maxVisionLooksPerMonth: number | null;
+    maxPlantsInChupchuContext: number;
+    encyclopediaAccess: boolean;
+    displayNameHe: string;
+}
+export declare const TIER_LIMITS: Record<string, TierLimits>;
+export declare function getLimits(tier: string): TierLimits;
+export interface TierPricing {
+    monthly: number | null;
+    annual: number | null;
+}
+export declare const TIER_PRICING: Record<string, TierPricing>;
 //# sourceMappingURL=tiers.d.ts.map

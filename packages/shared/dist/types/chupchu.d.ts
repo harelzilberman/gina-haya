@@ -19,7 +19,7 @@ export interface ChupChuContext {
         prep500Recommended: boolean;
         prep501Recommended: boolean;
         perigeeActive: boolean;
-    };
+    } | null;
     userLanguage: 'he' | 'en';
     gardenMap?: {
         hasMap: boolean;

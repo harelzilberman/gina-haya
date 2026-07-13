@@ -1,15 +1,90 @@
-import type { SubscriptionTier } from '../types/user';
+export interface TierLimits {
+  maxGardens: number | null;
+  maxPlantsPerGarden: number | null;
+  maxTrackers: number | null;
+  maxCheckinsPerTrackerPerMonth: number | null;
+  maxTotalCheckinsEver: number | null;
+  maxChupChuPerMonth: number | null;
+  maxChupChuPerDay: number | null;              // null = unlimited; fair-use ceiling for paid tiers
+  maxVisionLooksPerMonth: number | null;         // null = unlimited
+  maxPlantsInChupchuContext: number;             // plants shown to Claude per request (cached block 2)
+  encyclopediaAccess: boolean;
+  displayNameHe: string;                         // customer-facing Hebrew tier name
+}
 
-export const TIER_PRICES: Record<SubscriptionTier, number | null> = {
-  free:           null,
-  grower:         9,
-  gardener_pro:   14,
-  professional:   49,
+export const TIER_LIMITS: Record<string, TierLimits> = {
+  free: {
+    maxGardens:                    1,
+    maxPlantsPerGarden:            15,
+    maxTrackers:                   1,
+    maxCheckinsPerTrackerPerMonth: null,
+    maxTotalCheckinsEver:          1,
+    maxChupChuPerMonth:            54,
+    maxChupChuPerDay:              3,
+    maxVisionLooksPerMonth:        3,
+    maxPlantsInChupchuContext:     30,
+    encyclopediaAccess:            false,
+    displayNameHe:                 'גנן מתחיל',
+  },
+  gardener_pro: {
+    maxGardens:                    2,
+    maxPlantsPerGarden:            30,
+    maxTrackers:                   10,
+    maxCheckinsPerTrackerPerMonth: 10,
+    maxTotalCheckinsEver:          null,
+    maxChupChuPerMonth:            250,
+    maxChupChuPerDay:              18,
+    maxVisionLooksPerMonth:        18,
+    maxPlantsInChupchuContext:     30,
+    encyclopediaAccess:            true,
+    displayNameHe:                 'גנן ביתי',
+  },
+  advanced: {
+    maxGardens:                    5,
+    maxPlantsPerGarden:            30,
+    maxTrackers:                   null,
+    maxCheckinsPerTrackerPerMonth: null,
+    maxTotalCheckinsEver:          null,
+    maxChupChuPerMonth:            500,
+    maxChupChuPerDay:              36,
+    maxVisionLooksPerMonth:        36,
+    maxPlantsInChupchuContext:     30,
+    encyclopediaAccess:            true,
+    displayNameHe:                 'גנן מתקדם',
+  },
+  professional: {
+    maxGardens:                    10,
+    maxPlantsPerGarden:            30,
+    maxTrackers:                   null,
+    maxCheckinsPerTrackerPerMonth: null,
+    maxTotalCheckinsEver:          null,
+    maxChupChuPerMonth:            800,
+    maxChupChuPerDay:              54,
+    maxVisionLooksPerMonth:        54,
+    maxPlantsInChupchuContext:     30,
+    encyclopediaAccess:            true,
+    displayNameHe:                 'גנן מקצועי',
+  },
 };
 
-export const TIER_FEATURES = {
-  free:         { appAccess: false, diagnosesPerMonth: 0,        adFree: false, multiGarden: false },
-  grower:       { appAccess: true,  diagnosesPerMonth: 5,        adFree: false, multiGarden: false },
-  gardener_pro: { appAccess: true,  diagnosesPerMonth: Infinity, adFree: true,  multiGarden: true  },
-  professional: { appAccess: true,  diagnosesPerMonth: Infinity, adFree: true,  multiGarden: true  },
+export function getLimits(tier: string): TierLimits {
+  if (!TIER_LIMITS[tier]) {
+    console.warn(`[getLimits] Unknown tier key: "${tier}" — falling back to free limits`);
+    return TIER_LIMITS.free;
+  }
+  return TIER_LIMITS[tier];
+}
+
+export interface TierPricing {
+  monthly: number | null;  // ILS per month; null for the free tier
+  annual: number | null;   // ILS per year total; null for the free tier
+}
+
+// Canonical ILS prices — single source of truth for website display and billing logic.
+// Annual = 10× monthly (2 months free, ~17% discount).
+export const TIER_PRICING: Record<string, TierPricing> = {
+  free:           { monthly: null, annual: null },
+  gardener_pro:   { monthly: 18,   annual: 180  },
+  advanced:       { monthly: 36,   annual: 360  },
+  professional:   { monthly: 54,   annual: 540  },
 };

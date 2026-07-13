@@ -1,4 +1,4 @@
-export type SubscriptionTier = 'free' | 'grower' | 'gardener_pro' | 'professional';
+export type SubscriptionTier = 'free' | 'gardener_pro' | 'advanced' | 'professional';
 export interface User {
     id: string;
     email: string;
