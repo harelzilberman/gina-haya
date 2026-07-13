@@ -22,6 +22,7 @@ const WIZARD_MONTHLY_LIMITS: Record<string, number | null> = {
   free:           1,   // 1 ever (checked separately)
   grower:         2,
   gardener_pro:   5,
+  advanced:       10,
   professional:   null, // unlimited
 };
 

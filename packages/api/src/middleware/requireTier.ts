@@ -1,7 +1,7 @@
 import type { Request, Response, NextFunction } from 'express';
 import { db } from '../db/client';
 
-const TIER_ORDER = ['free', 'grower', 'gardener_pro', 'professional'] as const;
+const TIER_ORDER = ['free', 'grower', 'gardener_pro', 'advanced', 'professional'] as const;
 type Tier = typeof TIER_ORDER[number];
 
 function tierRank(tier: string): number {

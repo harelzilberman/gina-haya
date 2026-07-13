@@ -13,10 +13,11 @@ const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
 const PRICE_IDS: Record<string, string> = {
   grower:       process.env.STRIPE_PRICE_GROWER!,
   gardener_pro: process.env.STRIPE_PRICE_GARDENER_PRO!,
+  advanced:     process.env.STRIPE_PRICE_ADVANCED!,
   professional: process.env.STRIPE_PRICE_PROFESSIONAL!,
 };
 
-const TIER_ORDER = ['free', 'grower', 'gardener_pro', 'professional'];
+const TIER_ORDER = ['free', 'grower', 'gardener_pro', 'advanced', 'professional'];
 
 // ── POST /api/billing/create-checkout ────────────────────────────────────────
 billingRouter.post('/create-checkout', verifyToken, async (req: any, res) => {
@@ -111,7 +112,7 @@ billingRouter.get('/status', verifyToken, async (req: any, res) => {
 
     const tier: string = data.subscription_tier ?? 'free';
     const TIER_PRICES: Record<string, number | null> = {
-      free: null, grower: 9, gardener_pro: 14, professional: 49,
+      free: null, grower: 9, gardener_pro: 14, advanced: null, professional: 49,
     };
     const monthlyPrice = TIER_PRICES[tier] ?? null;
 
