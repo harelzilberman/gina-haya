@@ -529,3 +529,81 @@ gardenRouter.patch('/garden-plants/:id', async (req: any, res) => {
     res.status(500).json({ error: err.message });
   }
 });
+
+// PATCH /api/garden/:id/plants/bulk-archive — archive multiple plants in one call
+//
+// Body: { plant_ids: string[] }
+//
+// Each ID is verified to belong to both the specified garden and the requesting
+// user before archiving.  IDs that don't belong (wrong garden, already archived,
+// or non-existent) are skipped and reported — they do not abort the whole request.
+// Returns: { archived_count, archived_ids, skipped_ids }
+gardenRouter.patch('/:id/plants/bulk-archive', async (req: any, res) => {
+  try {
+    const userId   = req.user?.id;
+    const gardenId = req.params.id;
+
+    if (!userId) return res.status(401).json({ error: 'Unauthorized' });
+
+    const { plant_ids } = req.body;
+    if (!Array.isArray(plant_ids) || plant_ids.length === 0) {
+      return res.status(400).json({ error: 'plant_ids must be a non-empty array of strings' });
+    }
+    // Limit batch size to prevent accidental large requests
+    if (plant_ids.length > 200) {
+      return res.status(400).json({ error: 'plant_ids may contain at most 200 IDs per request' });
+    }
+
+    // 1. Verify garden ownership
+    const { data: garden, error: gardenErr } = await db
+      .from('gardens')
+      .select('id')
+      .eq('id', gardenId)
+      .eq('user_id', userId)
+      .single();
+
+    if (gardenErr || !garden) {
+      return res.status(403).json({ error: 'Forbidden' });
+    }
+
+    // 2. Find which of the requested IDs are active plants in this garden.
+    //    Any ID that fails this check (wrong garden, already archived, non-existent)
+    //    is collected into skipped_ids rather than failing the whole request.
+    const { data: eligible, error: eligibleErr } = await db
+      .from('garden_plants')
+      .select('id')
+      .in('id', plant_ids)
+      .eq('garden_id', gardenId)
+      .is('archived_at', null);
+
+    if (eligibleErr) throw eligibleErr;
+
+    const eligibleIds = (eligible ?? []).map((p: any) => p.id as string);
+    const eligibleSet  = new Set(eligibleIds);
+    const skippedIds   = plant_ids.filter((id: string) => !eligibleSet.has(id));
+
+    if (eligibleIds.length === 0) {
+      return res.json({ archived_count: 0, archived_ids: [], skipped_ids: skippedIds });
+    }
+
+    // 3. Batch-archive all eligible plants in a single update
+    const archivedAt = new Date().toISOString();
+    const { error: updateErr } = await db
+      .from('garden_plants')
+      .update({ archived_at: archivedAt })
+      .in('id', eligibleIds);
+
+    if (updateErr) throw updateErr;
+
+    console.log(`[PATCH /api/garden/${gardenId}/plants/bulk-archive] archived ${eligibleIds.length} plants for user ${userId}`);
+
+    return res.json({
+      archived_count: eligibleIds.length,
+      archived_ids:   eligibleIds,
+      skipped_ids:    skippedIds,
+    });
+  } catch (err: any) {
+    console.error('[PATCH /api/garden/:id/plants/bulk-archive]', err);
+    res.status(500).json({ error: err.message });
+  }
+});

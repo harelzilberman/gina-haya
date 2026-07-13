@@ -162,6 +162,10 @@ usersRouter.get('/usage', async (req: any, res) => {
 // tier limits.  Uses attachTier so LAUNCH_FREE_MODE is honoured the same way
 // the quota gates honour it.  Count queries are extracted from / identical to
 // the gate implementations — no parallel logic that can drift.
+//
+// Response includes per-garden plant counts (for overflow detection) and a
+// top-level has_plant_overflow convenience flag so the client can decide whether
+// to show the overflow resolution screen without looping through gardens itself.
 
 usersRouter.get('/me/usage', attachTier, async (req: any, res) => {
   try {
@@ -208,10 +212,55 @@ usersRouter.get('/me/usage', attachTier, async (req: any, res) => {
     // checkAndRecordVisionUse in visionQuota.ts.
     const visionUsed = await countVisionUsesThisMonth(userId);
 
+    // ── Per-garden plant counts (for overflow detection) ──────────────────
+    // plant_limit mirrors LAUNCH_FREE_MODE semantics used by the create/restore
+    // gates: in launch mode the limit is not enforced, so we report null here too
+    // rather than a misleading finite number.
+    const plantLimit: number | null = LAUNCH_FREE_MODE ? null : (limits.maxPlantsPerGarden ?? null);
+
+    const { data: gardensList, error: gardensErr } = await db
+      .from('gardens')
+      .select('id, name')
+      .eq('user_id', userId)
+      .order('created_at', { ascending: true });
+
+    if (gardensErr) throw gardensErr;
+
+    const gardenIds = (gardensList ?? []).map((g: any) => g.id as string);
+
+    // Fetch all active plants across all user gardens in one query, aggregate in JS.
+    // garden_plants has no user_id column; ownership flows through garden_id.
+    let countByGarden = new Map<string, number>();
+    if (gardenIds.length > 0) {
+      const { data: activePlants, error: plantsErr } = await db
+        .from('garden_plants')
+        .select('garden_id')
+        .in('garden_id', gardenIds)
+        .is('archived_at', null);
+
+      if (plantsErr) throw plantsErr;
+
+      for (const p of activePlants ?? []) {
+        countByGarden.set(p.garden_id, (countByGarden.get(p.garden_id) ?? 0) + 1);
+      }
+    }
+
+    const gardens = (gardensList ?? []).map((g: any) => ({
+      garden_id:          g.id,
+      garden_name:        g.name,
+      active_plant_count: countByGarden.get(g.id) ?? 0,
+      plant_limit:        plantLimit,
+    }));
+
+    const has_plant_overflow =
+      plantLimit !== null &&
+      gardens.some(g => g.active_plant_count > plantLimit);
+
     res.json({
       tier,
       tier_label_he:    limits.displayNameHe,
       launch_free_mode: LAUNCH_FREE_MODE,
+      has_plant_overflow,
       chupchu: {
         used:  chupChuUsed,
         limit: limits.maxChupChuPerMonth,
@@ -223,6 +272,7 @@ usersRouter.get('/me/usage', attachTier, async (req: any, res) => {
       period: {
         resets_at: resetsAt,
       },
+      gardens,
     });
   } catch (err: any) {
     console.error('[GET /api/users/me/usage]', err.message);
