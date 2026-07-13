@@ -58,7 +58,7 @@ async function sendDailySummary() {
       const payload = JSON.stringify({
         title: `🌱 גינה חיה — ${tasks.length} משימות להיום`,
         body: taskLines + more,
-        url: '/plan',
+        url: '/tasks',
       });
 
       await webpush.sendNotification(sub.subscription, payload);
@@ -96,7 +96,7 @@ export async function sendSmartReminder(userId: string, message: string) {
     await webpush.sendNotification(sub.subscription, JSON.stringify({
       title: '🌙 מון — תזכורת חכמה',
       body: message,
-      url: '/plan',
+      url: '/tasks',
     }));
   } catch (e) {
     console.error('[push] Smart reminder failed:', e);

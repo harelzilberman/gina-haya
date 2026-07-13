@@ -988,10 +988,10 @@ export function DashboardPage() {
                 {isHe ? 'אין משימות לשבוע זה' : 'No tasks this week'}
               </p>
               <Link
-                to="/plan"
+                to="/tracker"
                 style={{ fontFamily: FRANK, fontSize: '13px', color: BIO_CYAN, textDecoration: 'none' }}
               >
-                {isHe ? 'צור תכנית שבועית →' : 'Create weekly plan →'}
+                {isHe ? 'הוסף מעקב צמח →' : 'Add a plant tracker →'}
               </Link>
             </div>
           ) : (

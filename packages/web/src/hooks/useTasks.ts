@@ -45,18 +45,5 @@ export function useTasks() {
     await tasksApi.delete(id, token);
   }, [token]);
 
-  const createFromPlan = useCallback(async (planId: string | null, planTasks: Array<{ date: string; title: string; type: string; source_action?: string }>) => {
-    if (!token) return;
-    const created = await tasksApi.fromPlan(planId, planTasks, token);
-    setTasks(created);
-  }, [token]);
-
-  const autoCreateFromPlan = useCallback(async (): Promise<GardenTask[]> => {
-    if (!token) return [];
-    const created = await tasksApi.fromPlanAuto(token);
-    if (created.length > 0) setTasks(created);
-    return created;
-  }, [token]);
-
-  return { tasks, isLoading, loadTasks, updateStatus, addTask, deleteTask, createFromPlan, autoCreateFromPlan };
+  return { tasks, isLoading, loadTasks, updateStatus, addTask, deleteTask };
 }

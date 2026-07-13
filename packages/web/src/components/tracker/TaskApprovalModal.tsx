@@ -94,18 +94,15 @@ export function TaskApprovalModal({ trackerId, tasks, onClose }: Props) {
           <button onClick={onClose} style={{ background: 'none', border: 'none', color: `${TEXT_MID}50`, cursor: 'pointer', fontSize: '20px' }}>✕</button>
         </div>
         <p style={{ fontFamily: DM_SANS, fontSize: '13px', color: `${TEXT_MID}55`, margin: '0 0 20px', lineHeight: 1.5 }}>
-          קלוד הציע את המשימות הבאות בהתבסס על ניתוח הצמח. בחר את המשימות שברצונך להוסיף לתכנית השבועית.
+          קלוד הציע את המשימות הבאות בהתבסס על ניתוח הצמח. בחר את המשימות שברצונך להוסיף ללוח המשימות.
         </p>
 
         {status === 'done' ? (
           <div style={{ textAlign: 'center', padding: '24px 0' }}>
             <div style={{ fontSize: '48px', marginBottom: '12px' }}>✅</div>
             <p style={{ fontFamily: FRANK, fontSize: '18px', color: BIO_CYAN, marginBottom: '8px' }}>
-              {savedCount} משימות נוספו לתכנית!
+              {savedCount} משימות נוספו ללוח המשימות!
             </p>
-            <a href="/plan" style={{ fontFamily: DM_SANS, fontSize: '13px', color: BIO_CYAN, display: 'block', marginBottom: '20px' }}>
-              לתכנית השבועית ←
-            </a>
             <button onClick={onClose} style={{
               padding:         '10px 28px',
               backgroundColor: BIO_CYAN,

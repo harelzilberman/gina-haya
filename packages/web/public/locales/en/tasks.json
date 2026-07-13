@@ -28,11 +28,10 @@
     "flower": "Flower",
     "leaf": "Leaf"
   },
-  "bootstrapping": "Chupchu is preparing this week's tasks from the plan...",
   "noTasks": {
     "title": "No tasks for this period",
-    "desc": "Create a weekly plan first and tasks will be created automatically",
-    "cta": "Create weekly plan 🌕"
+    "desc": "Add a plant to the tracker and Chupchu will suggest tasks for you",
+    "cta": "Open plant tracker 🌿"
   },
   "loading": "Loading task board...",
   "modal": {

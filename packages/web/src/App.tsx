@@ -12,7 +12,6 @@ import { GardenGridPage } from './pages/GardenGridPage';
 import { BillingPage } from './pages/BillingPage';
 import { SettingsPage } from './pages/SettingsPage';
 import { TrackerPage } from './pages/TrackerPage';
-import { PlanPage } from './pages/PlanPage';
 import { GuidesPage } from './pages/GuidesPage';
 import { ArticlesPage } from './pages/ArticlesPage';
 import { ArticlePage } from './pages/ArticlePage';
@@ -203,14 +202,6 @@ export default function App() {
             element={
               <ProtectedRoute>
                 <TrackerPage />
-              </ProtectedRoute>
-            }
-          />
-          <Route
-            path="/plan"
-            element={
-              <ProtectedRoute>
-                <PlanPage />
               </ProtectedRoute>
             }
           />

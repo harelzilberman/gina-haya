@@ -95,34 +95,6 @@ export async function getRecentCompletedTasks(userId: string, days = 7): Promise
   return data ?? [];
 }
 
-export async function createTasksFromPlan(
-  userId: string,
-  planId: string | null,
-  tasks: Array<{ date: string; title: string; type: 'biodynamic' | 'maintenance' | 'custom'; source_action?: string }>
-): Promise<GardenTask[]> {
-  // Delete existing pending tasks for this week that came from a plan
-  if (planId) {
-    await db.from('garden_tasks').delete().eq('user_id', userId).eq('plan_id', planId).eq('status', 'pending');
-  }
-  const rows = tasks.map(t => ({
-    user_id: userId,
-    plan_id: planId,
-    date: t.date,
-    title: t.title,
-    type: t.type,
-    status: 'pending' as const,
-    source_action: t.source_action ?? null,
-  }));
-  console.log('[createTasksFromPlan] inserting', rows.length, 'rows into garden_tasks for user', userId);
-  const { data, error } = await db.from('garden_tasks').insert(rows).select();
-  if (error) {
-    console.error('[createTasksFromPlan] Supabase error:', error.message, error.code, error.details, error.hint);
-    throw error;
-  }
-  console.log('[createTasksFromPlan] inserted successfully, count:', data?.length);
-  return data ?? [];
-}
-
 export async function updateTaskStatus(
   taskId: string,
   userId: string,

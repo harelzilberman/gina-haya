@@ -124,13 +124,11 @@ export function Navbar() {
   const [dropdownOpen, setDropdownOpen] = useState(false);   // user avatar menu
   const [mobileOpen,   setMobileOpen]   = useState(false);   // mobile drawer
   const [gardenOpen,   setGardenOpen]   = useState(false);   // Garden dropdown
-  const [tasksOpen,    setTasksOpen]    = useState(false);   // Tasks dropdown
   const [readOpen,     setReadOpen]     = useState(false);   // Read/Watch dropdown
   const [moreOpen,     setMoreOpen]     = useState(false);   // More dropdown
 
   const dropdownRef = useRef<HTMLDivElement>(null);
   const gardenRef   = useRef<HTMLDivElement>(null);
-  const tasksRef    = useRef<HTMLDivElement>(null);
   const readRef     = useRef<HTMLDivElement>(null);
   const moreRef     = useRef<HTMLDivElement>(null);
 
@@ -148,7 +146,6 @@ export function Navbar() {
     function handleClick(e: MouseEvent) {
       if (dropdownRef.current && !dropdownRef.current.contains(e.target as Node)) setDropdownOpen(false);
       if (gardenRef.current  && !gardenRef.current.contains(e.target as Node))   setGardenOpen(false);
-      if (tasksRef.current   && !tasksRef.current.contains(e.target as Node))    setTasksOpen(false);
       if (readRef.current    && !readRef.current.contains(e.target as Node))     setReadOpen(false);
       if (moreRef.current    && !moreRef.current.contains(e.target as Node))     setMoreOpen(false);
     }
@@ -282,17 +279,10 @@ export function Navbar() {
               {isHebrew ? 'לוח ביודינמי' : 'Biodynamic Calendar'}
             </Link>
 
-            {/* 4. Tasks dropdown */}
-            <NavDropdown
-              label={isHebrew ? 'משימות' : 'Tasks'}
-              isOpen={tasksOpen}
-              setOpen={setTasksOpen}
-              nodeRef={tasksRef}
-              items={[
-                { label: isHebrew ? 'משימות'      : 'Tasks',       to: '/tasks' },
-                { label: isHebrew ? 'תכנון שבועי' : 'Weekly Plan', to: '/plan'  },
-              ]}
-            />
+            {/* 4. Tasks — plain link */}
+            <Link to="/tasks" className="gina-nav-link" style={navLinkStyle(isHebrew)}>
+              {isHebrew ? 'משימות' : 'Tasks'}
+            </Link>
 
             {/* 5. Chupchu — plain link */}
             <Link to="/chupchu" className="gina-nav-link" style={navLinkStyle(isHebrew)}>
@@ -478,7 +468,6 @@ export function Navbar() {
               <Link to="/calendar" onClick={() => setMobileOpen(false)} style={mobileLink}>{isHebrew ? 'לוח ביודינמי' : 'Biodynamic Calendar'}</Link>
               <div style={mobileSection}>{isHebrew ? 'משימות' : 'Tasks'}</div>
               <Link to="/tasks"    onClick={() => setMobileOpen(false)} style={mobileSub}>{isHebrew ? 'משימות'       : 'Tasks'}</Link>
-              <Link to="/plan"     onClick={() => setMobileOpen(false)} style={mobileSub}>{isHebrew ? 'תכנון שבועי'  : 'Weekly Plan'}</Link>
               <Link to="/chupchu"  onClick={() => setMobileOpen(false)} style={mobileLink}>{isHebrew ? "צ'ופצ'ו"      : 'Chupchu'}</Link>
               <div style={mobileSection}>{isHebrew ? 'קרא/צפה' : 'Read/Watch'}</div>
               <Link to="/plants"   onClick={() => setMobileOpen(false)} style={mobileSub}>{isHebrew ? 'אנציקלופדיה'  : 'Encyclopedia'}</Link>

@@ -3,9 +3,8 @@ import { verifyToken } from '../middleware/auth';
 import { ISRAEL_TIMEZONE } from '@gina-haya/shared';
 import {
   getTasksForWeek, getTasksForRange, updateTaskStatus, updateTask,
-  createCustomTask, deleteTask, createTasksFromPlan
+  createCustomTask, deleteTask,
 } from '../db/queries/tasks';
-import { sendSmartReminder } from '../services/cronJobs';
 import { db } from '../db/client';
 
 export const tasksRouter: IRouter = Router();
@@ -40,96 +39,6 @@ tasksRouter.get('/range', async (req, res) => {
     const tasks = await getTasksForRange(req.user!.id, from, to, includeArchived);
     res.json(tasks);
   } catch (err: any) {
-    res.status(500).json({ error: err.message });
-  }
-});
-
-// POST /api/tasks/from-plan — create tasks from weekly plan
-// Accepts { tasks: [...] } (client-built list) OR { planId: null } (server builds from stored plan)
-tasksRouter.post('/from-plan', async (req, res) => {
-  const userId = req.user!.id;
-  console.log('[POST /api/tasks/from-plan] HIT — userId:', userId, 'body keys:', Object.keys(req.body));
-  try {
-    const { planId, tasks } = req.body;
-    const today = todayISO();
-    const weekEnd = (() => {
-      const d = new Date(today + 'T00:00:00');
-      d.setDate(d.getDate() + 6);
-      return d.toISOString().slice(0, 10);
-    })();
-
-    let taskRows: Array<{ date: string; title: string; type: 'biodynamic' | 'maintenance' | 'custom'; source_action?: string }>;
-    let resolvedPlanId: string | null = planId ?? null;
-
-    if (Array.isArray(tasks) && tasks.length > 0) {
-      // Legacy path: client sent a pre-built tasks array
-      taskRows = tasks;
-    } else {
-      // Auto path: fetch the stored plan and synthesize tasks server-side
-      const { data: planRow } = await db
-        .from('planting_plans')
-        .select('*')
-        .eq('user_id', userId)
-        .eq('week_start', today)
-        .order('generated_at', { ascending: false })
-        .limit(1)
-        .single();
-
-      if (!planRow) {
-        console.log('[POST /api/tasks/from-plan] no plan found for today, returning empty');
-        return res.json([]);
-      }
-
-      resolvedPlanId = planRow.id;
-
-      // Avoid duplicates: if tasks already exist for this week, skip
-      const existing = await getTasksForRange(userId, today, weekEnd);
-      if (existing.length > 0) {
-        console.log('[POST /api/tasks/from-plan] tasks already exist for week, skipping');
-        return res.json(existing);
-      }
-
-      // Synthesize tasks from the stored plan_data
-      const plan = planRow.plan_data;
-      taskRows = [];
-
-      for (const task of (plan.gardenTasks ?? [])) {
-        taskRows.push({ date: plan.weekStart ?? today, title: String(task), type: 'maintenance', source_action: 'weekly_plan' });
-      }
-      for (const day of (plan.days ?? [])) {
-        if (day.prep500) {
-          taskRows.push({ date: day.date, title: 'הכנת פרפרט 500', type: 'biodynamic', source_action: 'prep500' });
-        }
-        if (day.prep501) {
-          taskRows.push({ date: day.date, title: 'הכנת פרפרט 501', type: 'biodynamic', source_action: 'prep501' });
-        }
-        for (const action of (day.recommendedActions ?? []).slice(0, 2)) {
-          taskRows.push({ date: day.date, title: String(action), type: 'maintenance', source_action: 'weekly_plan' });
-        }
-      }
-
-      console.log('[POST /api/tasks/from-plan] synthesized', taskRows.length, 'tasks from plan', resolvedPlanId);
-    }
-
-    if (taskRows.length === 0) {
-      console.log('[POST /api/tasks/from-plan] no tasks to create');
-      return res.json([]);
-    }
-
-    const created = await createTasksFromPlan(userId, resolvedPlanId, taskRows);
-    console.log('[POST /api/tasks/from-plan] inserted', created.length, 'rows');
-    res.json(created);
-
-    // Fire-and-forget smart reminder for biodynamic tasks today
-    const todayTasks = created.filter((t: any) => t.date === today && t.type === 'biodynamic');
-    if (todayTasks.length > 0) {
-      sendSmartReminder(
-        userId,
-        `יש לך ${todayTasks.length} משימות ביודינמיות היום: ${todayTasks[0].title}`
-      ).catch(() => {});
-    }
-  } catch (err: any) {
-    console.error('[POST /api/tasks/from-plan] ERROR:', err.message, err.code, err.details);
     res.status(500).json({ error: err.message });
   }
 });

@@ -917,8 +917,6 @@ export function TaskCalendarPage() {
   const [tasks,      setTasks]      = useState<GardenTask[]>([]);
   const [bdMap,      setBdMap]      = useState<Record<string, BiodynamicDay>>({});
   const [isLoading,       setIsLoading]       = useState(true);
-  const [isBootstrapping, setIsBootstrapping] = useState(false);
-  const [noPlan,           setNoPlan]          = useState(false);
   const [addDate,      setAddDate]      = useState<string | null>(null);
   const [editTask,     setEditTask]     = useState<GardenTask | null>(null);
   const [draggingId,   setDraggingId]   = useState<string | null>(null);
@@ -940,12 +938,10 @@ export function TaskCalendarPage() {
     }
   })();
 
-  const rangeIncludesToday = from <= today && today <= to;
 
   const loadData = useCallback(async () => {
     if (!token) return;
     setIsLoading(true);
-    setNoPlan(false);
     try {
       const [fetchedTasks, fetchedBd] = await Promise.all([
         tasksApi.getRange(from, to, token),
@@ -955,29 +951,13 @@ export function TaskCalendarPage() {
       const map: Record<string, BiodynamicDay> = {};
       for (const bd of fetchedBd) map[bd.date] = bd;
       setBdMap(map);
-
-      if (fetchedTasks.length === 0 && rangeIncludesToday) {
-        setIsLoading(false);
-        setIsBootstrapping(true);
-        try {
-          await tasksApi.fromPlanAuto(token);
-          const refetched = await tasksApi.getRange(from, to, token);
-          setTasks(refetched);
-          if (refetched.length === 0) setNoPlan(true);
-        } catch {
-          setNoPlan(true);
-        } finally {
-          setIsBootstrapping(false);
-        }
-      } else {
-        setTasks(fetchedTasks);
-      }
+      setTasks(fetchedTasks);
     } catch (err) {
       console.error('[TaskCalendarPage] load error', err);
     } finally {
       setIsLoading(false);
     }
-  }, [from, to, token, rangeIncludesToday]);
+  }, [from, to, token]);
 
   useEffect(() => { loadData(); }, [loadData]);
 
@@ -1240,55 +1220,13 @@ export function TaskCalendarPage() {
           </div>
         )}
 
-        {/* Bootstrapping banner */}
-        {isBootstrapping && (
-          <div style={{
-            display: 'flex', alignItems: 'center', gap: '10px',
-            background: 'rgba(0,229,195,0.07)', border: '1px solid rgba(0,229,195,0.2)',
-            borderRadius: '10px', padding: '12px 16px', marginBottom: '12px',
-          }}>
-            <span style={{ fontSize: '20px', animation: 'spin 2s linear infinite' }}>🌱</span>
-            <span style={{ fontFamily: ASST, fontSize: '13px', color: `${PARCH}80` }}>
-              {t('bootstrapping')}
-            </span>
-          </div>
-        )}
-
-        {/* No plan empty state */}
-        {noPlan && !isBootstrapping && tasks.length === 0 && (
-          <div style={{
-            textAlign: 'center', padding: '60px 24px',
-            border: '1px dashed rgba(0,229,195,0.2)', borderRadius: '16px',
-            background: 'rgba(9,20,16,0.3)',
-          }}>
-            <div style={{ fontSize: '56px', marginBottom: '16px' }}>📋</div>
-            <h2 style={{ fontFamily: FRANK, fontSize: '20px', color: GOLD, marginBottom: '10px' }}>
-              {t('noTasks.title')}
-            </h2>
-            <p style={{ fontFamily: ASST, fontSize: '14px', color: `${PARCH}70`, marginBottom: '24px', lineHeight: 1.6 }}>
-              {t('noTasks.desc')}
-            </p>
-            <Link
-              to="/plan"
-              style={{
-                fontFamily: FRANK, fontSize: '15px', fontWeight: 700,
-                color: '#050d0a', background: GOLD,
-                padding: '10px 24px', borderRadius: '8px',
-                textDecoration: 'none', display: 'inline-block',
-              }}
-            >
-              {t('noTasks.cta')}
-            </Link>
-          </div>
-        )}
-
         {/* Calendar grid */}
         {isLoading ? (
           <div style={{ textAlign: 'center', padding: '60px 0' }}>
             <div style={{ fontSize: '48px' }} className="animate-pulse">🌱</div>
             <p style={{ fontFamily: ASST, fontSize: '14px', color: `${PARCH}50`, marginTop: '12px' }}>{t('loading')}</p>
           </div>
-        ) : noPlan && tasks.length === 0 ? null : (
+        ) : (
           <DndContext sensors={sensors} onDragStart={handleDragStart} onDragEnd={handleDragEnd}>
             {view === 'week' ? (
               <div style={{
