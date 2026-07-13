@@ -18,4 +18,5 @@ export interface TierPricing {
     annual: number | null;
 }
 export declare const TIER_PRICING: Record<string, TierPricing>;
+export declare const TIER_ORDER: readonly ["free", "gardener_pro", "advanced", "professional"];
 //# sourceMappingURL=tiers.d.ts.map

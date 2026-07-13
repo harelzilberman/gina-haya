@@ -1,6 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.TIER_PRICING = exports.TIER_LIMITS = void 0;
+exports.TIER_ORDER = exports.TIER_PRICING = exports.TIER_LIMITS = void 0;
 exports.getLimits = getLimits;
 exports.TIER_LIMITS = {
     free: {
@@ -71,4 +71,7 @@ exports.TIER_PRICING = {
     advanced: { monthly: 36, annual: 360 },
     professional: { monthly: 54, annual: 540 },
 };
+// Canonical tier ordering from lowest to highest — used for rank comparisons and upgrade paths.
+// All code that needs to order tiers should import this rather than defining its own array.
+exports.TIER_ORDER = ['free', 'gardener_pro', 'advanced', 'professional'];
 //# sourceMappingURL=tiers.js.map

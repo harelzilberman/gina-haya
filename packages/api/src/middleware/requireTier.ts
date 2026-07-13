@@ -1,11 +1,9 @@
 import type { Request, Response, NextFunction } from 'express';
+import { TIER_ORDER } from '@gina-haya/shared';
 import { db } from '../db/client';
 
-const TIER_ORDER = ['free', 'grower', 'gardener_pro', 'advanced', 'professional'] as const;
-type Tier = typeof TIER_ORDER[number];
-
 function tierRank(tier: string): number {
-  const idx = TIER_ORDER.indexOf(tier as Tier);
+  const idx = (TIER_ORDER as ReadonlyArray<string>).indexOf(tier);
   return idx === -1 ? 0 : idx;
 }
 

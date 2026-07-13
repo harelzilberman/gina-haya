@@ -88,3 +88,7 @@ export const TIER_PRICING: Record<string, TierPricing> = {
   advanced:       { monthly: 36,   annual: 360  },
   professional:   { monthly: 54,   annual: 540  },
 };
+
+// Canonical tier ordering from lowest to highest — used for rank comparisons and upgrade paths.
+// All code that needs to order tiers should import this rather than defining its own array.
+export const TIER_ORDER = ['free', 'gardener_pro', 'advanced', 'professional'] as const;

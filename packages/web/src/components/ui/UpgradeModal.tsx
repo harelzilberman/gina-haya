@@ -3,6 +3,8 @@ import { useUpgradeModalStore } from '../../stores/upgradeModalStore';
 import { useAuthStore } from '../../stores/authStore';
 import { useTier } from '../../hooks/useTier';
 import { api } from '../../api/client';
+import { getLimits, TIER_PRICING, TIER_ORDER } from '@gina-haya/shared';
+import type { SubscriptionTier } from '@gina-haya/shared';
 
 const EARTH    = '#050d0a';
 const SOIL     = '#111f18';
@@ -27,56 +29,45 @@ const MODAL_CSS = `
 .upgrade-modal-scroll::-webkit-scrollbar-thumb { background: rgba(0,229,195,0.2); border-radius: 2px; }
 `;
 
-type TierKey = 'free' | 'gardener_pro' | 'advanced' | 'professional';
+// Feature lists: marketing copy with numbers interpolated from getLimits() so they
+// stay in sync with @gina-haya/shared whenever limits change.
+const _f = getLimits('free');
+const _g = getLimits('gardener_pro');
+const _a = getLimits('advanced');
+const _p = getLimits('professional');
 
-const TIER_NAMES: Record<TierKey, string> = {
-  free:         'גנן מתחיל',
-  gardener_pro: 'גנן ביתי',
-  advanced:     'גנן מתקדם',
-  professional: 'גנן מקצועי',
-};
-
-const TIER_PRICES_DISPLAY: Record<TierKey, string> = {
-  free:         'חינם',
-  gardener_pro: '₪18 / חודש',
-  advanced:     '₪36 / חודש',
-  professional: '₪54 / חודש',
-};
-
-const TIER_FEATURES_LIST: Record<TierKey, string[]> = {
+const TIER_FEATURES_LIST: Record<string, string[]> = {
   free: [
     'לוח ביודינמי יומי',
-    'גינה אחת (עד 15 צמחים)',
-    'צ\'ופצ\'ו — 54 שיחות לחודש',
-    '3 ניתוחי AI לחודש',
+    `גינה אחת (עד ${_f.maxPlantsPerGarden} צמחים)`,
+    `צ'ופצ'ו — ${_f.maxChupChuPerMonth} שיחות לחודש`,
+    `${_f.maxVisionLooksPerMonth} ניתוחי AI לחודש`,
     'מעקב גידול אחד — טעימה',
   ],
   gardener_pro: [
     'הכל בחינמי',
-    '2 גינות — עד 30 צמחים כל אחת',
-    'עד 10 מעקבי גידול',
-    '18 ניתוחי AI לחודש',
-    'צ\'ופצ\'ו — 250 שיחות לחודש',
+    `${_g.maxGardens} גינות — עד ${_g.maxPlantsPerGarden} צמחים כל אחת`,
+    `עד ${_g.maxTrackers} מעקבי גידול`,
+    `${_g.maxVisionLooksPerMonth} ניתוחי AI לחודש`,
+    `צ'ופצ'ו — ${_g.maxChupChuPerMonth} שיחות לחודש`,
     'אנציקלופדיה מלאה',
   ],
   advanced: [
     'הכל בגנן ביתי',
-    '5 גינות — עד 30 צמחים כל אחת',
+    `${_a.maxGardens} גינות — עד ${_a.maxPlantsPerGarden} צמחים כל אחת`,
     'מעקבי גידול ללא הגבלה',
-    '36 ניתוחי AI לחודש',
-    'צ\'ופצ\'ו — 500 שיחות לחודש',
+    `${_a.maxVisionLooksPerMonth} ניתוחי AI לחודש`,
+    `צ'ופצ'ו — ${_a.maxChupChuPerMonth} שיחות לחודש`,
     'ייצוא PDF',
   ],
   professional: [
     'הכל בגנן מתקדם',
-    '10 גינות — עד 30 צמחים כל אחת',
-    '54 ניתוחי AI לחודש',
-    'צ\'ופצ\'ו — 800 שיחות לחודש',
+    `${_p.maxGardens} גינות — עד ${_p.maxPlantsPerGarden} צמחים כל אחת`,
+    `${_p.maxVisionLooksPerMonth} ניתוחי AI לחודש`,
+    `צ'ופצ'ו — ${_p.maxChupChuPerMonth} שיחות לחודש`,
     'תמיכה מועדפת',
   ],
 };
-
-const TIERS_ORDER: TierKey[] = ['free', 'gardener_pro', 'advanced', 'professional'];
 
 export function UpgradeModal() {
   if (import.meta.env.PROD && import.meta.env.VITE_LAUNCH_FREE_MODE === 'true') {
@@ -88,7 +79,7 @@ export function UpgradeModal() {
   const { tier: currentTier } = useTier();
   const [loading, setLoading] = useState<string | null>(null);
 
-  const handleUpgrade = async (targetTier: TierKey) => {
+  const handleUpgrade = async (targetTier: SubscriptionTier) => {
     if (targetTier === 'free' || !session?.access_token) return;
     setLoading(targetTier);
     try {
@@ -198,10 +189,10 @@ export function UpgradeModal() {
             gap:                 '14px',
             padding:             '24px 28px',
           }}>
-            {TIERS_ORDER.map(tier => {
+            {TIER_ORDER.map(tier => {
               const isCurrent   = tier === currentTier;
               const isPro       = tier === 'gardener_pro';
-              const isDowngrade = TIERS_ORDER.indexOf(tier) < TIERS_ORDER.indexOf(currentTier);
+              const isDowngrade = TIER_ORDER.indexOf(tier) < TIER_ORDER.indexOf(currentTier);
 
               return (
                 <div
@@ -270,7 +261,7 @@ export function UpgradeModal() {
                       color:      isPro ? GOLD : PARCH,
                       margin:     '0 0 4px',
                     }}>
-                      {TIER_NAMES[tier]}
+                      {getLimits(tier).displayNameHe}
                     </p>
                     <p style={{
                       fontFamily: PLAYFAIR,
@@ -279,7 +270,7 @@ export function UpgradeModal() {
                       color:      isPro ? GOLD : `${PARCH}BB`,
                       margin:     0,
                     }}>
-                      {TIER_PRICES_DISPLAY[tier]}
+                      {TIER_PRICING[tier]?.monthly != null ? `₪${TIER_PRICING[tier].monthly} / חודש` : 'חינם'}
                     </p>
                   </div>
 
