@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { ChupChuChat } from '../components/chupchu/ChupChuChat';
+import { api } from '../api/client';
 
 // ── Design tokens ──────────────────────────────────────────────────────────
 const NIGHT      = '#050d0a';
@@ -605,12 +606,7 @@ function MobileAppComingSoon({ isHe }: { isHe: boolean }) {
     if (status === 'loading' || status === 'done') return;
     setStatus('loading');
     try {
-      const res = await fetch('/api/waitlist', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email, source: 'landing_page', locale: isHe ? 'he' : 'en' }),
-      });
-      if (!res.ok) throw new Error('signup_failed');
+      await api.post('/api/waitlist', { email, source: 'landing_page', locale: isHe ? 'he' : 'en' });
       setStatus('done');
     } catch {
       setStatus('error');
