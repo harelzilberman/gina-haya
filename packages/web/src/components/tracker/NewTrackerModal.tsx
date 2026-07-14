@@ -23,11 +23,12 @@ const LOCATION_TYPES = [
 const UNKNOWN_PLANT_RE = /^\s*(don'?t know|לא יודע|unknown|לא ידוע|אין מושג|לא זוהה|)\s*$/i;
 
 interface Props {
-  onClose:   () => void;
-  onCreated: (result: CheckinResult, wasAutoIdentified: boolean) => void;
+  onClose:        () => void;
+  onCreated:      (result: CheckinResult, wasAutoIdentified: boolean) => void;
+  gardenPlantId?: string;
 }
 
-export function NewTrackerModal({ onClose, onCreated }: Props) {
+export function NewTrackerModal({ onClose, onCreated, gardenPlantId }: Props) {
   const { createTracker, addCheckin } = useTrackerStore();
   const { activeGarden }              = useGardenStore();
   const { profile }                   = useAuthStore();
@@ -110,8 +111,9 @@ export function NewTrackerModal({ onClose, onCreated }: Props) {
       const tracker = await createTracker({
         plantNameHe: resolvedNameHe,
         plantNameEn: resolvedNameEn,
-        plantId:     selectedPlantId && selectedPlantId !== '__custom__' ? selectedPlantId : undefined,
-        gardenId:    activeGarden?.id,
+        plantId:       selectedPlantId && selectedPlantId !== '__custom__' ? selectedPlantId : undefined,
+        gardenId:      activeGarden?.id,
+        gardenPlantId: gardenPlantId,
         locationType,
         locationDescription: locationDescription.trim() || undefined,
       });

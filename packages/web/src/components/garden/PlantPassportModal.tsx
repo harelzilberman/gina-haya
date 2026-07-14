@@ -87,7 +87,7 @@ interface Props {
 
 export function PlantPassportModal({ plant, tracker, gardenName, gardenId, onClose }: Props) {
   const { patchGardenPlant, removePlant } = useGardenStore();
-  const { getPlantTimeline, logWater, logFertilize, addNote } = useTrackerStore();
+  const { getPlantTimeline, logWater, logFertilize, addNote, loadTrackers } = useTrackerStore();
   const { session } = useAuthStore();
   const { show: showToast } = useToastStore();
   const { open: openChupChu } = useChupChuPanelStore();
@@ -527,8 +527,9 @@ export function PlantPassportModal({ plant, tracker, gardenName, gardenId, onClo
 
       {showTrackerModal && (
         <NewTrackerModal
+          gardenPlantId={plant.id}
           onClose={() => setShowTrackerModal(false)}
-          onCreated={() => setShowTrackerModal(false)}
+          onCreated={() => { setShowTrackerModal(false); loadTrackers(gardenId); }}
         />
       )}
 

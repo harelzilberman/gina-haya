@@ -65,7 +65,7 @@ export function GardenGridPage() {
   function trackerFor(plant: (typeof activePlants)[number]) {
     // Prefer the direct FK link; fall back to species+garden match for
     // trackers created before garden_plants_id was wired up on this page
-    // (NewTrackerModal doesn't set it yet — see note below).
+    // Primary match uses the direct FK; fallback handles legacy rows without it.
     return (
       trackers.find(t => t.garden_plants_id === plant.id) ??
       trackers.find(t => !t.garden_plants_id && t.plant_id === plant.plant_id && t.garden_id === activeGarden?.id) ??
@@ -187,6 +187,7 @@ export function GardenGridPage() {
 
       {showTrackerModal && activeGarden && (
         <NewTrackerModal
+          gardenPlantId={trackDialogFor ?? undefined}
           onClose={() => { setShowTrackerModal(false); setTrackDialogFor(null); }}
           onCreated={() => { setShowTrackerModal(false); setTrackDialogFor(null); if (activeGarden) loadTrackers(activeGarden.id); }}
         />
