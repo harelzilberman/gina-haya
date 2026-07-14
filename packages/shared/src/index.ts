@@ -8,3 +8,4 @@ export * from './constants/calendar';
 export * from './utils/date';
 export * from './types/article';
 export * from './data/starterTasks';
+export * from './utils/photoPath';

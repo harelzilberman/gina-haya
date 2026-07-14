@@ -5,7 +5,7 @@ import { verifyToken } from '../middleware/auth';
 import { attachTier } from '../middleware/tierMiddleware';
 import { analyzePlantImage, compressImageForClaude } from '../services/plantVision';
 import { fetchWeatherForRegion } from '../services/weather';
-import { todayInIsrael } from '@gina-haya/shared';
+import { todayInIsrael, assertStorageKey } from '@gina-haya/shared';
 import { checkAndRecordVisionUse } from '../services/visionQuota';
 
 export const trackersRouter: IRouter = Router();
@@ -1210,6 +1210,10 @@ trackersRouter.get('/:id/timeline', async (req: any, res) => {
 });
 
 // ── POST /api/trackers/:id/timeline-photo ────────────────────────────────
+// Caller must upload the image bytes to Supabase storage first and pass the
+// returned storage key as file_path (e.g. "<user_id>/<trackerId>/<ts>.jpg").
+// Local device paths (file://, /data/, /storage/, etc.) are rejected with 400
+// so they can never reach the database and break the web signed-URL flow.
 trackersRouter.post('/:id/timeline-photo', async (req: any, res) => {
   try {
     const userId = req.user.id;
@@ -1218,6 +1222,14 @@ trackersRouter.post('/:id/timeline-photo', async (req: any, res) => {
 
     if (!file_path) {
       return res.status(400).json({ error: 'file_path required' });
+    }
+
+    // Guard: reject local device paths — only Supabase storage keys allowed.
+    try {
+      assertStorageKey(file_path);
+    } catch (guardErr: any) {
+      console.error('[POST /api/trackers/:id/timeline-photo] rejected local path:', file_path);
+      return res.status(400).json({ error: 'local_path_rejected', message: guardErr.message });
     }
 
     // Verify tracker ownership (also fetch FK columns needed for timeline insert)
@@ -1247,7 +1259,6 @@ trackersRouter.post('/:id/timeline-photo', async (req: any, res) => {
       } catch (_) {}
     }
 
-    // Store ONLY the local file path — no upload, no Supabase Storage
     const { data: entry, error: insertError } = await db
       .from('plant_timeline')
       .insert({
@@ -1272,12 +1283,26 @@ trackersRouter.post('/:id/timeline-photo', async (req: any, res) => {
 });
 
 // ── POST /api/trackers/plant/:plantId/timeline-photo ─────────────────────
-// Saves a photo timeline entry for a plant without a tracker
+// Saves a photo timeline entry for a plant without a tracker.
+// Same storage-key requirement as /:id/timeline-photo above — local device
+// paths are rejected with 400.
 trackersRouter.post('/plant/:plantId/timeline-photo', async (req: any, res) => {
   const userId = req.user?.id;
   if (!userId) return res.status(401).json({ error: 'Unauthorized' });
   const { plantId } = req.params;
   const { file_path, note, taken_at } = req.body;
+
+  if (!file_path) {
+    return res.status(400).json({ error: 'file_path required' });
+  }
+
+  // Guard: reject local device paths — only Supabase storage keys allowed.
+  try {
+    assertStorageKey(file_path);
+  } catch (guardErr: any) {
+    console.error('[POST /api/trackers/plant/:plantId/timeline-photo] rejected local path:', file_path);
+    return res.status(400).json({ error: 'local_path_rejected', message: (guardErr as Error).message });
+  }
 
   const { data: entry, error: insertError } = await db
     .from('plant_timeline')
