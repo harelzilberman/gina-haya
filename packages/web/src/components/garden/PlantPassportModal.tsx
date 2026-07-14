@@ -614,6 +614,9 @@ function TimelinePhoto({ photoPath }: { photoPath: string }) {
     return () => { cancelled = true; };
   }, [photoPath]);
 
+  // Suppress broken placeholders for local mobile paths that can't be resolved.
+  if (failed) return null;
+
   if (url) {
     return (
       <img
@@ -624,9 +627,10 @@ function TimelinePhoto({ photoPath }: { photoPath: string }) {
     );
   }
 
+  // Still loading — show a subtle spinner placeholder.
   return (
     <div style={{ width: '80px', height: '80px', borderRadius: '8px', background: 'rgba(55,138,221,0.12)', border: '1px solid rgba(55,138,221,0.3)', display: 'flex', alignItems: 'center', justifyContent: 'center', marginTop: '4px' }}>
-      <span style={{ fontSize: '22px' }}>{failed ? '📸' : '…'}</span>
+      <span style={{ fontSize: '22px' }}>…</span>
     </div>
   );
 }

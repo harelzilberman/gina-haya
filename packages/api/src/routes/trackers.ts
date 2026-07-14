@@ -35,17 +35,37 @@ trackersRouter.get('/', async (req: any, res) => {
       return res.json({ trackers: [] });
     }
 
-    // Fetch latest checkin for each tracker
+    // Fetch latest checkin for each tracker.
+    // IMPORTANT: `.is('deleted_at', null)` requires migration 026 to have been
+    // applied. If the column doesn't exist yet, PostgREST returns an error and
+    // `data` is null — silently making every tracker's latest_checkin null and
+    // the summary widget show "no analysis yet" even when analyses exist.
+    // Fix: check the error and fall back to an unfiltered query so the widget
+    // is still populated until the migration is applied.
     const trackerIds = trackers.map((t: any) => t.id);
-    const { data: checkins } = await db
+    const { data: checkins, error: checkinsError } = await db
       .from('plant_tracker_checkins')
       .select('id, tracker_id, checkin_date, growth_stage, ai_analysis, suggested_tasks, created_at')
       .in('tracker_id', trackerIds)
       .is('deleted_at', null)
       .order('created_at', { ascending: false });
 
+    let resolvedCheckins = checkins;
+    if (checkinsError) {
+      // Most likely cause: deleted_at column not yet added (migration 026 pending).
+      // Fall back to unfiltered query so the widget shows existing analyses.
+      console.error('[GET /api/trackers] checkins query failed (missing deleted_at column?):', checkinsError.message);
+      const { data: fallbackCheckins, error: fallbackError } = await db
+        .from('plant_tracker_checkins')
+        .select('id, tracker_id, checkin_date, growth_stage, ai_analysis, suggested_tasks, created_at')
+        .in('tracker_id', trackerIds)
+        .order('created_at', { ascending: false });
+      if (fallbackError) console.error('[GET /api/trackers] fallback checkins query also failed:', fallbackError.message);
+      resolvedCheckins = fallbackCheckins;
+    }
+
     const latestCheckin: Record<string, any> = {};
-    for (const c of checkins ?? []) {
+    for (const c of resolvedCheckins ?? []) {
       if (!latestCheckin[c.tracker_id]) {
         latestCheckin[c.tracker_id] = c;
       }
