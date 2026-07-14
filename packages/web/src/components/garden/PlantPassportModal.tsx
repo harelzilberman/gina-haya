@@ -313,6 +313,26 @@ export function PlantPassportModal({ plant, tracker, gardenName, gardenId, onClo
           </div>
         </div>
 
+        {/* Latest-report summary — shown at top when a report exists */}
+        {tracker && health && (
+          <div style={{ padding: '12px 14px', marginBottom: '14px', borderRadius: '12px', background: NIGHT_CARD, border: '1px solid rgba(0,229,195,0.24)' }}>
+            <p style={{ fontFamily: DM_SANS, fontSize: '13px', color: TEXT_MID, margin: '0 0 4px', fontWeight: 600 }}>
+              {health.growthStageHe} · {health.healthHe}
+            </p>
+            {tracker.latest_checkin?.checkin_date && (
+              <p style={{ fontFamily: DM_SANS, fontSize: '11px', color: `${TEXT_MID}74`, margin: '0 0 4px' }}>
+                {formatHebrewDate(tracker.latest_checkin.checkin_date)}
+              </p>
+            )}
+            <p style={{
+              fontFamily: DM_SANS, fontSize: '12.5px', color: `${TEXT_MID}93`, margin: 0, lineHeight: 1.6,
+              display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden',
+            } as React.CSSProperties}>
+              {health.observations}
+            </p>
+          </div>
+        )}
+
         {/* Archive badge */}
         {isArchived && plant.archived_at && (
           <div style={{
@@ -395,42 +415,32 @@ export function PlantPassportModal({ plant, tracker, gardenName, gardenId, onClo
           <Stat value={photoCount} label="תמונות" />
         </div>
 
-        {/* Tracker section */}
-        <SectionHeader title="מעקב גידול" />
-        {tracker ? (
-          health ? (
-            <div style={{ padding: '12px 14px', marginBottom: '20px', borderRadius: '12px', background: NIGHT_CARD, border: '1px solid rgba(0,229,195,0.24)' }}>
-              <p style={{ fontFamily: DM_SANS, fontSize: '13px', color: TEXT_MID, margin: '0 0 4px', fontWeight: 600 }}>
-                {health.growthStageHe} · {health.healthHe}
+        {/* Tracker section — only non-summary states (summary lives at top) */}
+        {(!tracker && !isArchived) || (tracker && !health) ? (
+          <>
+            <SectionHeader title="מעקב גידול" />
+            {tracker ? (
+              <p style={{ fontFamily: DM_SANS, fontSize: '13px', color: `${TEXT_MID}82`, marginBottom: '20px' }}>
+                עדיין לא בוצע ניתוח. צלם תמונה לניתוח ראשון!
               </p>
-              <p style={{
-                fontFamily: DM_SANS, fontSize: '12.5px', color: `${TEXT_MID}93`, margin: 0, lineHeight: 1.6,
-                display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden',
-              } as React.CSSProperties}>
-                {health.observations}
-              </p>
-            </div>
-          ) : (
-            <p style={{ fontFamily: DM_SANS, fontSize: '13px', color: `${TEXT_MID}82`, marginBottom: '20px' }}>
-              עדיין לא בוצע ניתוח. צלם תמונה לניתוח ראשון!
-            </p>
-          )
-        ) : !isArchived ? (
-          <div style={{
-            padding: '18px', marginBottom: '20px', borderRadius: '12px', textAlign: 'center',
-            background: 'rgba(74,156,104,0.1)', border: '1px solid rgba(74,156,104,0.3)',
-          }}>
-            <p style={{ fontFamily: FRANK, fontSize: '15px', color: '#4A9C68', margin: '0 0 4px' }}>התחל מעקב חכם</p>
-            <p style={{ fontFamily: DM_SANS, fontSize: '12.5px', color: `${TEXT_MID}88`, margin: '0 0 12px' }}>
-              קבל ניתוח AI, המלצות ביודינמיות ותזכורות מותאמות
-            </p>
-            <button
-              onClick={() => setShowTrackerModal(true)}
-              style={{ padding: '9px 22px', borderRadius: '8px', border: 'none', background: '#4A9C68', color: '#fff', fontFamily: FRANK, fontWeight: 700, cursor: 'pointer' }}
-            >
-              התחל
-            </button>
-          </div>
+            ) : (
+              <div style={{
+                padding: '18px', marginBottom: '20px', borderRadius: '12px', textAlign: 'center',
+                background: 'rgba(74,156,104,0.1)', border: '1px solid rgba(74,156,104,0.3)',
+              }}>
+                <p style={{ fontFamily: FRANK, fontSize: '15px', color: '#4A9C68', margin: '0 0 4px' }}>התחל מעקב חכם</p>
+                <p style={{ fontFamily: DM_SANS, fontSize: '12.5px', color: `${TEXT_MID}88`, margin: '0 0 12px' }}>
+                  קבל ניתוח AI, המלצות ביודינמיות ותזכורות מותאמות
+                </p>
+                <button
+                  onClick={() => setShowTrackerModal(true)}
+                  style={{ padding: '9px 22px', borderRadius: '8px', border: 'none', background: '#4A9C68', color: '#fff', fontFamily: FRANK, fontWeight: 700, cursor: 'pointer' }}
+                >
+                  התחל
+                </button>
+              </div>
+            )}
+          </>
         ) : null}
 
         {/* Tasks section */}
