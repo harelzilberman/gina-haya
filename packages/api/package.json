@@ -11,7 +11,8 @@
     "lint": "eslint src --ext .ts",
     "db:migrate": "tsx src/db/migrate.ts",
     "db:seed-calendar-placeholder": "tsx src/db/seed-calendar-placeholder.ts",
-    "db:seed-plants": "tsx src/db/seed-plants.ts"
+    "db:seed-plants": "tsx src/db/seed-plants.ts",
+    "test:tracker-delete": "tsx src/tests/tracker_delete.test.ts"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.39.0",

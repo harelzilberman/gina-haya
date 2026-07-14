@@ -420,20 +420,15 @@ trackersRouter.delete('/:id/checkins/:checkinId', async (req: any, res) => {
 // ── DELETE /api/trackers/:id ──────────────────────────────────────────────
 // Soft-deletes the tracker, all its live check-ins, and related timeline rows.
 // Linked garden_tasks are still hard-deleted (tasks are not soft-deleted).
+// All mutations run inside the delete_tracker() Postgres function so the
+// operation is atomic — a partial failure rolls back completely.
 trackersRouter.delete('/:id', async (req: any, res) => {
   try {
     const userId = req.user.id;
     const { id } = req.params;
-    const now = new Date().toISOString();
 
-    // Hard-delete tasks linked to this tracker (tasks are not soft-deleted)
-    await db
-      .from('garden_tasks')
-      .delete()
-      .eq('user_id', userId)
-      .eq('plant_tracker_id', id);
-
-    // Collect live checkin IDs for the audit log before soft-deleting them
+    // Collect live checkin IDs for the audit log BEFORE the mutation so that
+    // the read is always consistent with what was actually deleted.
     const { data: checkinRows } = await db
       .from('plant_tracker_checkins')
       .select('id')
@@ -444,7 +439,8 @@ trackersRouter.delete('/:id', async (req: any, res) => {
     const checkinIds = (checkinRows ?? []).map((c: any) => c.id);
 
     if (checkinIds.length > 0) {
-      // One audit log entry summarising all checkins in this batch
+      // One audit log entry summarising all checkins in this batch.
+      // Best-effort: written before the mutation so it survives a rollback.
       await db.from('deletion_audit_log').insert({
         table_name: 'plant_tracker_checkins',
         row_id:     id,
@@ -453,29 +449,14 @@ trackersRouter.delete('/:id', async (req: any, res) => {
         source:     'DELETE /api/trackers/:id',
         metadata:   { tracker_id: id, checkin_ids: checkinIds, count: checkinIds.length },
       });
-
-      // Soft-delete the checkins
-      await db
-        .from('plant_tracker_checkins')
-        .update({ deleted_at: now, deleted_by: userId })
-        .eq('tracker_id', id)
-        .eq('user_id', userId)
-        .is('deleted_at', null);
     }
 
-    // Soft-delete related plant_timeline rows
-    await db
-      .from('plant_timeline')
-      .update({ deleted_at: now })
-      .eq('tracker_id', id)
-      .eq('user_id', userId);
-
-    // Soft-delete the tracker itself
-    const { error } = await db
-      .from('plant_trackers')
-      .update({ deleted_at: now, deleted_by: userId })
-      .eq('id', id)
-      .eq('user_id', userId);
+    // Atomically soft-delete tracker + children via a single Postgres
+    // function (migration 027).  Tasks are hard-deleted inside the function.
+    const { error } = await (db as any).rpc('delete_tracker', {
+      p_tracker_id: id,
+      p_user_id:    userId,
+    });
 
     if (error) throw error;
 
