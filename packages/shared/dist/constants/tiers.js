@@ -55,6 +55,22 @@ exports.TIER_LIMITS = {
         encyclopediaAccess: true,
         displayNameHe: 'גנן מקצועי',
     },
+    // Internal owner tier — unlimited everything, never advertised or sold.
+    // Set via direct DB update only; excluded from TIER_PRICING and TIER_ORDER
+    // so it never appears in upgrade flows or billing endpoints.
+    owner: {
+        maxGardens: null,
+        maxPlantsPerGarden: null,
+        maxTrackers: null,
+        maxCheckinsPerTrackerPerMonth: null,
+        maxTotalCheckinsEver: null,
+        maxChupChuPerMonth: null,
+        maxChupChuPerDay: null,
+        maxVisionLooksPerMonth: null,
+        maxPlantsInChupchuContext: 30,
+        encyclopediaAccess: true,
+        displayNameHe: 'בעלים',
+    },
 };
 function getLimits(tier) {
     if (!exports.TIER_LIMITS[tier]) {
