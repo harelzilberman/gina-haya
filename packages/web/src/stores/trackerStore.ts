@@ -142,6 +142,11 @@ interface TrackerState {
     trackerId: string,
     tasks: TrackerTask[]
   ) => Promise<{ tasks_added: number; tasks_error: string | null }>;
+  deleteCheckin: (
+    trackerId: string,
+    checkinId: string,
+    deleteLinkedTasks?: boolean
+  ) => Promise<{ requiresConfirmation: true; linkedTaskCount: number } | { deleted: true }>;
   setActiveTrackerId: (id: string | null) => void;
   reset: () => void;
 
@@ -287,6 +292,30 @@ export const useTrackerStore = create<TrackerState>((set, get) => ({
       { tasks },
       token
     );
+  },
+
+  deleteCheckin: async (trackerId, checkinId, deleteLinkedTasks?) => {
+    const token = getToken();
+    if (!token) throw new Error('Not authenticated');
+    const body = deleteLinkedTasks !== undefined ? { deleteLinkedTasks } : undefined;
+    const result = await api.del<any>(
+      `/api/trackers/${trackerId}/checkins/${checkinId}`,
+      token,
+      body
+    );
+    if (result.requiresConfirmation) {
+      return result as { requiresConfirmation: true; linkedTaskCount: number };
+    }
+    // If the deleted check-in was the tracker's current latest_checkin, clear it
+    // so the card reflects the change until the next full reload.
+    set(state => ({
+      trackers: state.trackers.map(t => {
+        if (t.id !== trackerId) return t;
+        if (t.latest_checkin?.id === checkinId) return { ...t, latest_checkin: null };
+        return t;
+      }),
+    }));
+    return { deleted: true };
   },
 
   getPlantTimeline: async (gardenPlantId) => {

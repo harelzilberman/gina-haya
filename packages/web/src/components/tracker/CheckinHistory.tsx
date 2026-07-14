@@ -1,5 +1,7 @@
 import { useState, useEffect } from 'react';
-import type { TrackerCheckin, PlantAnalysis, GrowingPlan } from '../../stores/trackerStore';
+import type { TrackerCheckin } from '../../stores/trackerStore';
+import { useTrackerStore } from '../../stores/trackerStore';
+import { useToastStore } from '../../stores/toastStore';
 import { AnalysisResult } from './AnalysisResult';
 import { supabase } from '../../lib/supabase';
 
@@ -89,10 +91,55 @@ function CheckinPhoto({ photoPath }: { photoPath: string }) {
 
 interface Props {
   checkins: TrackerCheckin[];
+  trackerId: string;
+  onCheckinDeleted: (checkinId: string) => void;
 }
 
-export function CheckinHistory({ checkins }: Props) {
-  const [expandedId, setExpandedId] = useState<string | null>(null);
+export function CheckinHistory({ checkins, trackerId, onCheckinDeleted }: Props) {
+  const [expandedId, setExpandedId]     = useState<string | null>(null);
+  const [confirmDeleteId, setConfirmDeleteId] = useState<string | null>(null);
+  const [linkedTasksInfo, setLinkedTasksInfo] = useState<{
+    checkinId: string;
+    linkedTaskCount: number;
+  } | null>(null);
+  const [isDeleting, setIsDeleting]     = useState(false);
+
+  const { deleteCheckin } = useTrackerStore();
+  const showToast = useToastStore(s => s.show);
+
+  async function handleConfirmDelete(checkinId: string) {
+    setIsDeleting(true);
+    try {
+      const result = await deleteCheckin(trackerId, checkinId);
+      if ('requiresConfirmation' in result && result.requiresConfirmation) {
+        // Has linked tasks — ask the user what to do with them
+        setConfirmDeleteId(null);
+        setLinkedTasksInfo({ checkinId, linkedTaskCount: result.linkedTaskCount });
+      } else {
+        setConfirmDeleteId(null);
+        showToast('הבדיקה נמחקה', 'info');
+        onCheckinDeleted(checkinId);
+      }
+    } catch {
+      showToast('שגיאה במחיקת הבדיקה', 'error');
+    } finally {
+      setIsDeleting(false);
+    }
+  }
+
+  async function handleLinkedTasksDecision(checkinId: string, deleteTasks: boolean) {
+    setIsDeleting(true);
+    try {
+      await deleteCheckin(trackerId, checkinId, deleteTasks);
+      setLinkedTasksInfo(null);
+      showToast('הבדיקה נמחקה', 'info');
+      onCheckinDeleted(checkinId);
+    } catch {
+      showToast('שגיאה במחיקת הבדיקה', 'error');
+    } finally {
+      setIsDeleting(false);
+    }
+  }
 
   if (checkins.length === 0) {
     return (
@@ -113,6 +160,8 @@ export function CheckinHistory({ checkins }: Props) {
         const isExpanded  = expandedId === checkin.id;
         const previous    = checkins[index + 1] ?? null;
         const comparison  = previous ? getComparisonNote(checkin, previous) : null;
+        const isConfirmingDelete = confirmDeleteId === checkin.id;
+        const hasLinkedTasksDialog = linkedTasksInfo?.checkinId === checkin.id;
 
         return (
           <div
@@ -143,7 +192,10 @@ export function CheckinHistory({ checkins }: Props) {
                 cursor:          'pointer',
                 transition:      'border-color 0.2s',
               }}
-              onClick={() => setExpandedId(isExpanded ? null : checkin.id)}
+              onClick={() => {
+                if (isConfirmingDelete || hasLinkedTasksDialog) return;
+                setExpandedId(isExpanded ? null : checkin.id);
+              }}
             >
               {/* Timeline dot */}
               <div style={{
@@ -225,14 +277,155 @@ export function CheckinHistory({ checkins }: Props) {
                 {/* Photo thumbnail */}
                 {checkin.photo_path && <CheckinPhoto photoPath={checkin.photo_path} />}
 
-                {/* Expand hint */}
-                <div style={{ textAlign: 'left', marginTop: '6px' }}>
-                  <span style={{ fontFamily: DM_SANS, fontSize: '11px', color: `${BIO_CYAN}50` }}>
-                    {isExpanded ? '▲ סגור' : '▼ הצג ניתוח מלא'}
-                  </span>
-                </div>
+                {/* Bottom row — either inline delete confirm or trash + expand hint */}
+                {isConfirmingDelete ? (
+                  <div
+                    style={{ display: 'flex', gap: '8px', alignItems: 'center', marginTop: '8px', paddingTop: '6px', borderTop: '1px solid rgba(0,229,195,0.1)' }}
+                    onClick={e => e.stopPropagation()}
+                  >
+                    <span style={{ fontFamily: DM_SANS, fontSize: '12px', color: `${TEXT_MID}70`, flex: 1 }}>
+                      למחוק בדיקה זו?
+                    </span>
+                    <button
+                      disabled={isDeleting}
+                      onClick={() => setConfirmDeleteId(null)}
+                      style={{
+                        fontFamily:      DM_SANS,
+                        fontSize:        '11px',
+                        padding:         '3px 10px',
+                        borderRadius:    '6px',
+                        border:          '1px solid rgba(176,207,191,0.2)',
+                        backgroundColor: 'transparent',
+                        color:           `${TEXT_MID}80`,
+                        cursor:          'pointer',
+                      }}
+                    >
+                      ביטול
+                    </button>
+                    <button
+                      disabled={isDeleting}
+                      onClick={() => handleConfirmDelete(checkin.id)}
+                      style={{
+                        fontFamily:      DM_SANS,
+                        fontSize:        '11px',
+                        padding:         '3px 10px',
+                        borderRadius:    '6px',
+                        border:          '1px solid rgba(217,83,79,0.4)',
+                        backgroundColor: 'rgba(217,83,79,0.12)',
+                        color:           '#d9534f',
+                        cursor:          isDeleting ? 'wait' : 'pointer',
+                      }}
+                    >
+                      {isDeleting ? '...' : 'מחק'}
+                    </button>
+                  </div>
+                ) : (
+                  <div
+                    style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '6px' }}
+                  >
+                    {/* Trash icon — always visible */}
+                    <button
+                      onClick={e => { e.stopPropagation(); setConfirmDeleteId(checkin.id); }}
+                      title="מחק בדיקה"
+                      style={{
+                        background:  'none',
+                        border:      'none',
+                        padding:     '2px 4px',
+                        cursor:      'pointer',
+                        fontSize:    '13px',
+                        color:       `${TEXT_MID}40`,
+                        lineHeight:  1,
+                        transition:  'color 0.15s',
+                      }}
+                      onMouseEnter={e => { (e.currentTarget as HTMLButtonElement).style.color = '#d9534f'; }}
+                      onMouseLeave={e => { (e.currentTarget as HTMLButtonElement).style.color = `${TEXT_MID}40`; }}
+                    >
+                      🗑
+                    </button>
+                    {/* Expand hint */}
+                    <span style={{ fontFamily: DM_SANS, fontSize: '11px', color: `${BIO_CYAN}50` }}>
+                      {isExpanded ? '▲ סגור' : '▼ הצג ניתוח מלא'}
+                    </span>
+                  </div>
+                )}
               </div>
             </div>
+
+            {/* Linked-tasks confirmation panel */}
+            {hasLinkedTasksDialog && linkedTasksInfo && (
+              <div
+                style={{
+                  marginTop:       '6px',
+                  padding:         '12px 14px',
+                  backgroundColor: 'rgba(217,83,79,0.06)',
+                  border:          '1px solid rgba(217,83,79,0.25)',
+                  borderRadius:    '8px',
+                  zIndex:          1,
+                  position:        'relative',
+                }}
+                onClick={e => e.stopPropagation()}
+              >
+                <p style={{
+                  fontFamily: DM_SANS,
+                  fontSize:   '13px',
+                  color:      TEXT_MID,
+                  margin:     '0 0 10px',
+                  lineHeight: 1.5,
+                }}>
+                  לבדיקה זו יש <strong>{linkedTasksInfo.linkedTaskCount}</strong> משימ{linkedTasksInfo.linkedTaskCount === 1 ? 'ה' : 'ות'} מקושר{linkedTasksInfo.linkedTaskCount === 1 ? 'ת' : 'ות'}. מה לעשות איתן?
+                </p>
+                <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
+                  <button
+                    disabled={isDeleting}
+                    onClick={() => handleLinkedTasksDecision(linkedTasksInfo.checkinId, true)}
+                    style={{
+                      fontFamily:      DM_SANS,
+                      fontSize:        '12px',
+                      padding:         '5px 12px',
+                      borderRadius:    '6px',
+                      border:          '1px solid rgba(217,83,79,0.4)',
+                      backgroundColor: 'rgba(217,83,79,0.12)',
+                      color:           '#d9534f',
+                      cursor:          isDeleting ? 'wait' : 'pointer',
+                    }}
+                  >
+                    {isDeleting ? '...' : 'מחק בדיקה + משימות'}
+                  </button>
+                  <button
+                    disabled={isDeleting}
+                    onClick={() => handleLinkedTasksDecision(linkedTasksInfo.checkinId, false)}
+                    style={{
+                      fontFamily:      DM_SANS,
+                      fontSize:        '12px',
+                      padding:         '5px 12px',
+                      borderRadius:    '6px',
+                      border:          '1px solid rgba(176,207,191,0.25)',
+                      backgroundColor: 'rgba(176,207,191,0.06)',
+                      color:           TEXT_MID,
+                      cursor:          isDeleting ? 'wait' : 'pointer',
+                    }}
+                  >
+                    {isDeleting ? '...' : 'מחק בדיקה בלבד'}
+                  </button>
+                  <button
+                    disabled={isDeleting}
+                    onClick={() => setLinkedTasksInfo(null)}
+                    style={{
+                      fontFamily:      DM_SANS,
+                      fontSize:        '12px',
+                      padding:         '5px 12px',
+                      borderRadius:    '6px',
+                      border:          '1px solid rgba(176,207,191,0.15)',
+                      backgroundColor: 'transparent',
+                      color:           `${TEXT_MID}60`,
+                      cursor:          'pointer',
+                    }}
+                  >
+                    ביטול
+                  </button>
+                </div>
+              </div>
+            )}
 
             {/* Expanded full analysis */}
             {isExpanded && analysis && growingPlan && (

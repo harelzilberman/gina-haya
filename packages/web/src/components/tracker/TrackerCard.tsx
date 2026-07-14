@@ -34,7 +34,7 @@ interface Props {
 export function TrackerCard({ tracker, onAddCheckin, onDeleted }: Props) {
   const { t, i18n } = useTranslation('tracker');
   const isHe = i18n.language === 'he';
-  const { deleteTracker } = useTrackerStore();
+  const { deleteTracker, loadTrackers } = useTrackerStore();
   const { session } = useAuthStore();
 
   const [isExpanded, setIsExpanded] = useState(false);
@@ -69,6 +69,12 @@ export function TrackerCard({ tracker, onAddCheckin, onDeleted }: Props) {
   async function handleDelete() {
     await deleteTracker(tracker.id);
     onDeleted();
+  }
+
+  function handleCheckinDeleted(checkinId: string) {
+    setCheckins(prev => prev.filter(c => c.id !== checkinId));
+    // Refresh store so latest_checkin and dashboard stats reflect the deletion
+    loadTrackers();
   }
 
   return (
@@ -262,7 +268,11 @@ export function TrackerCard({ tracker, onAddCheckin, onDeleted }: Props) {
               <span style={{ fontSize: '24px' }} className="animate-pulse">🌱</span>
             </div>
           ) : (
-            <CheckinHistory checkins={checkins} />
+            <CheckinHistory
+              checkins={checkins}
+              trackerId={tracker.id}
+              onCheckinDeleted={handleCheckinDeleted}
+            />
           )}
         </div>
       )}

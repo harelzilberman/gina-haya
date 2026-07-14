@@ -285,6 +285,95 @@ trackersRouter.get('/:id', async (req: any, res) => {
   }
 });
 
+// ── DELETE /api/trackers/:id/checkins/:checkinId ─────────────────────────
+// Deletes a single check-in (photo, AI analysis, notes, and its plant_timeline
+// rows) as one unit.
+//
+// First call (no body):
+//   – If the check-in has linked garden_tasks (source_checkin_id match),
+//     returns { requiresConfirmation: true, linkedTaskCount: N } without
+//     deleting anything, so the client can ask the user what to do.
+//   – If no linked tasks, proceeds immediately.
+//
+// Second call (with body):
+//   { deleteLinkedTasks: true }  → delete linked tasks then delete check-in
+//   { deleteLinkedTasks: false } → leave tasks, delete check-in only
+trackersRouter.delete('/:id/checkins/:checkinId', async (req: any, res) => {
+  try {
+    const userId = req.user.id;
+    const { id: trackerId, checkinId } = req.params;
+    const { deleteLinkedTasks } = req.body ?? {};
+
+    // Verify ownership — checkin must belong to this user AND this tracker
+    const { data: checkin, error: fetchError } = await db
+      .from('plant_tracker_checkins')
+      .select('id, tracker_id, photo_path, user_id')
+      .eq('id', checkinId)
+      .eq('tracker_id', trackerId)
+      .eq('user_id', userId)
+      .single();
+
+    if (fetchError || !checkin) {
+      return res.status(404).json({ error: 'Check-in not found' });
+    }
+
+    // Check for linked garden_tasks
+    const { data: linkedTasks } = await db
+      .from('garden_tasks')
+      .select('id')
+      .eq('source_checkin_id', checkinId);
+
+    const linkedTaskCount = linkedTasks?.length ?? 0;
+
+    // If linked tasks exist and caller hasn't told us what to do, ask first
+    if (linkedTaskCount > 0 && deleteLinkedTasks === undefined) {
+      return res.json({ requiresConfirmation: true, linkedTaskCount });
+    }
+
+    // Delete linked tasks if requested
+    if (deleteLinkedTasks === true && linkedTaskCount > 0) {
+      await db
+        .from('garden_tasks')
+        .delete()
+        .eq('source_checkin_id', checkinId);
+    }
+
+    // Delete plant_timeline rows created for this check-in
+    await db
+      .from('plant_timeline')
+      .delete()
+      .eq('tracker_checkin_id', checkinId);
+
+    // Remove photo from storage bucket (best-effort — failure doesn't abort delete)
+    if (checkin.photo_path) {
+      try {
+        const { error: storageErr } = await db.storage
+          .from('tracker-photos')
+          .remove([checkin.photo_path]);
+        if (storageErr) {
+          console.warn('[delete-checkin] Photo storage delete failed:', storageErr.message);
+        }
+      } catch (storageEx: any) {
+        console.warn('[delete-checkin] Photo storage delete threw:', storageEx.message);
+      }
+    }
+
+    // Delete the check-in row itself
+    const { error: deleteError } = await db
+      .from('plant_tracker_checkins')
+      .delete()
+      .eq('id', checkinId)
+      .eq('user_id', userId);
+
+    if (deleteError) throw deleteError;
+
+    res.json({ deleted: true });
+  } catch (err: any) {
+    console.error('[DELETE /api/trackers/:id/checkins/:checkinId]', err.message, err.stack);
+    res.status(500).json({ error: err.message });
+  }
+});
+
 // ── DELETE /api/trackers/:id ──────────────────────────────────────────────
 trackersRouter.delete('/:id', async (req: any, res) => {
   try {
@@ -614,23 +703,34 @@ trackersRouter.post('/:id/approve-tasks', async (req: any, res) => {
     const today = todayInIsrael();
     const [y, m, d] = today.split('-').map(Number);
 
+    // Look up the latest checkin up-front — its id becomes source_checkin_id on
+    // each created task, and we also clear its suggested_tasks after insertion.
+    const { data: latestCheckin } = await db
+      .from('plant_tracker_checkins')
+      .select('id')
+      .eq('tracker_id', trackerId)
+      .order('created_at', { ascending: false })
+      .limit(1)
+      .single();
+
     const taskRows = tasks.map((t: any, i: number) => {
       const rawTitle = t.title ? String(t.title).trim() : '';
       const title = rawTitle && rawTitle !== 'undefined' ? rawTitle : `משימה ${i + 1}`;
       const daysOut = Math.max(0, Math.min(Number(t.due_in_days) || 1, 30));
       const dueDate = new Date(Date.UTC(y, m - 1, d + daysOut)).toISOString().slice(0, 10);
       return {
-        user_id:          userId,
-        plan_id:          null,
-        plant_tracker_id: trackerId,
-        garden_plants_id: (tracker as any).garden_plants_id || null,
-        plant_name:       tracker.plant_name_he || null,
-        date:             dueDate,
+        user_id:            userId,
+        plan_id:            null,
+        plant_tracker_id:   trackerId,
+        garden_plants_id:   (tracker as any).garden_plants_id || null,
+        plant_name:         tracker.plant_name_he || null,
+        date:               dueDate,
         title,
-        type:             'maintenance' as const,
-        status:           'pending' as const,
-        notes:            t.description ? String(t.description) : null,
-        source_action:    'growing_tracker',
+        type:               'maintenance' as const,
+        status:             'pending' as const,
+        notes:              t.description ? String(t.description) : null,
+        source_action:      'growing_tracker',
+        source_checkin_id:  latestCheckin?.id ?? null,
       };
     });
 
@@ -645,14 +745,6 @@ trackersRouter.post('/:id/approve-tasks', async (req: any, res) => {
     }
 
     // Clear pending suggested tasks from the latest checkin now that they've been approved
-    const { data: latestCheckin } = await db
-      .from('plant_tracker_checkins')
-      .select('id')
-      .eq('tracker_id', trackerId)
-      .order('created_at', { ascending: false })
-      .limit(1)
-      .single();
-
     if (latestCheckin) {
       await db
         .from('plant_tracker_checkins')
