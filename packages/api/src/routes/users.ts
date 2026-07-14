@@ -83,13 +83,15 @@ usersRouter.get('/usage', async (req: any, res) => {
       .from('plant_tracker_checkins')
       .select('id', { count: 'exact', head: true })
       .eq('user_id', userId)
+      .is('deleted_at', null)
       .gte('created_at', startOfMonth.toISOString());
 
     // Count active trackers
     const { count: trackersActive } = await db
       .from('plant_trackers')
       .select('id', { count: 'exact', head: true })
-      .eq('user_id', userId);
+      .eq('user_id', userId)
+      .is('deleted_at', null);
 
     // Count active (non-archived) plants across all user gardens.
     // garden_plants has no user_id column; ownership is through garden_id → gardens.user_id.

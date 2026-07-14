@@ -47,7 +47,8 @@ homeRouter.get('/summary', verifyToken, async (req: any, res) => {
       const { count: tCount } = await db
         .from('plant_trackers')
         .select('id', { count: 'exact', head: true })
-        .in('garden_id', gardenIds);
+        .in('garden_id', gardenIds)
+        .is('deleted_at', null);
       trackerCount = tCount ?? 0;
     }
 
@@ -60,6 +61,7 @@ homeRouter.get('/summary', verifyToken, async (req: any, res) => {
       `)
       .eq('garden_plants.gardens.user_id', userId)
       .in('entry_type', ['watering', 'photo', 'chupchu'])
+      .is('deleted_at', null)
       .order('created_at', { ascending: false })
       .limit(10);
 

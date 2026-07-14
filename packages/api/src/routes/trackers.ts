@@ -23,6 +23,7 @@ trackersRouter.get('/', async (req: any, res) => {
       .from('plant_trackers')
       .select('*')
       .eq('user_id', userId)
+      .is('deleted_at', null)
       .order('created_at', { ascending: false });
 
     if (gardenId) query = (query as any).eq('garden_id', gardenId);
@@ -40,6 +41,7 @@ trackersRouter.get('/', async (req: any, res) => {
       .from('plant_tracker_checkins')
       .select('id, tracker_id, checkin_date, growth_stage, ai_analysis, suggested_tasks, created_at')
       .in('tracker_id', trackerIds)
+      .is('deleted_at', null)
       .order('created_at', { ascending: false });
 
     const latestCheckin: Record<string, any> = {};
@@ -78,7 +80,8 @@ trackersRouter.post('/', async (req: any, res) => {
       const { count } = await db
         .from('plant_trackers')
         .select('id', { count: 'exact', head: true })
-        .eq('user_id', userId);
+        .eq('user_id', userId)
+        .is('deleted_at', null);
 
       if ((count ?? 0) >= maxTrackers) {
         // Check purchased tracker credits before blocking
@@ -162,6 +165,7 @@ trackersRouter.get('/photos/all', async (req: any, res) => {
     .eq('entry_type', 'photo')
     .eq('garden_plants.gardens.user_id', userId)
     .not('photo_path', 'is', null)
+    .is('deleted_at', null)
     .order('created_at', { ascending: false });
 
   if (error) {
@@ -266,6 +270,7 @@ trackersRouter.get('/:id', async (req: any, res) => {
       .select('*')
       .eq('id', id)
       .eq('user_id', userId)
+      .is('deleted_at', null)
       .single();
 
     if (trackerError || !tracker) {
@@ -276,6 +281,7 @@ trackersRouter.get('/:id', async (req: any, res) => {
       .from('plant_tracker_checkins')
       .select('*')
       .eq('tracker_id', id)
+      .is('deleted_at', null)
       .order('checkin_date', { ascending: false });
 
     res.json({ ...tracker, checkins: checkins ?? [] });
@@ -286,31 +292,33 @@ trackersRouter.get('/:id', async (req: any, res) => {
 });
 
 // ── DELETE /api/trackers/:id/checkins/:checkinId ─────────────────────────
-// Deletes a single check-in (photo, AI analysis, notes, and its plant_timeline
-// rows) as one unit.
+// Soft-deletes a single check-in (sets deleted_at/deleted_by) and its linked
+// plant_timeline rows. Photo is retained in storage — this is recoverable.
 //
 // First call (no body):
 //   – If the check-in has linked garden_tasks (source_checkin_id match),
 //     returns { requiresConfirmation: true, linkedTaskCount: N } without
-//     deleting anything, so the client can ask the user what to do.
+//     modifying anything, so the client can ask the user what to do.
 //   – If no linked tasks, proceeds immediately.
 //
 // Second call (with body):
-//   { deleteLinkedTasks: true }  → delete linked tasks then delete check-in
-//   { deleteLinkedTasks: false } → leave tasks, delete check-in only
+//   { deleteLinkedTasks: true }  → hard-delete linked tasks then soft-delete check-in
+//   { deleteLinkedTasks: false } → leave tasks, soft-delete check-in only
 trackersRouter.delete('/:id/checkins/:checkinId', async (req: any, res) => {
   try {
     const userId = req.user.id;
     const { id: trackerId, checkinId } = req.params;
     const { deleteLinkedTasks } = req.body ?? {};
 
-    // Verify ownership — checkin must belong to this user AND this tracker
+    // Verify ownership — checkin must belong to this user AND this tracker,
+    // and must not already be soft-deleted. Pre-fetch fields for audit snapshot.
     const { data: checkin, error: fetchError } = await db
       .from('plant_tracker_checkins')
-      .select('id, tracker_id, photo_path, user_id')
+      .select('id, tracker_id, photo_path, user_id, checkin_date, growth_stage, ai_analysis')
       .eq('id', checkinId)
       .eq('tracker_id', trackerId)
       .eq('user_id', userId)
+      .is('deleted_at', null)
       .single();
 
     if (fetchError || !checkin) {
@@ -330,7 +338,7 @@ trackersRouter.delete('/:id/checkins/:checkinId', async (req: any, res) => {
       return res.json({ requiresConfirmation: true, linkedTaskCount });
     }
 
-    // Delete linked tasks if requested
+    // Hard-delete linked tasks if requested (tasks are not part of soft-delete)
     if (deleteLinkedTasks === true && linkedTaskCount > 0) {
       await db
         .from('garden_tasks')
@@ -338,35 +346,37 @@ trackersRouter.delete('/:id/checkins/:checkinId', async (req: any, res) => {
         .eq('source_checkin_id', checkinId);
     }
 
-    // Delete plant_timeline rows created for this check-in
+    // Write audit log before modifying anything
+    await db.from('deletion_audit_log').insert({
+      table_name: 'plant_tracker_checkins',
+      row_id:     checkinId,
+      user_id:    userId,
+      action:     'soft_delete',
+      source:     'DELETE /api/trackers/:id/checkins/:checkinId',
+      metadata: {
+        tracker_id:   checkin.tracker_id,
+        checkin_date: checkin.checkin_date,
+        growth_stage: checkin.growth_stage,
+        ai_analysis:  checkin.ai_analysis,
+      },
+    });
+
+    // Soft-delete plant_timeline rows tied to this check-in
     await db
       .from('plant_timeline')
-      .delete()
+      .update({ deleted_at: new Date().toISOString() })
       .eq('tracker_checkin_id', checkinId);
 
-    // Remove photo from storage bucket (best-effort — failure doesn't abort delete)
-    if (checkin.photo_path) {
-      try {
-        const { error: storageErr } = await db.storage
-          .from('tracker-photos')
-          .remove([checkin.photo_path]);
-        if (storageErr) {
-          console.warn('[delete-checkin] Photo storage delete failed:', storageErr.message);
-        }
-      } catch (storageEx: any) {
-        console.warn('[delete-checkin] Photo storage delete threw:', storageEx.message);
-      }
-    }
-
-    // Delete the check-in row itself
+    // Soft-delete the check-in row itself (photo stays in storage — recoverable)
     const { error: deleteError } = await db
       .from('plant_tracker_checkins')
-      .delete()
+      .update({ deleted_at: new Date().toISOString(), deleted_by: userId })
       .eq('id', checkinId)
       .eq('user_id', userId);
 
     if (deleteError) throw deleteError;
 
+    console.log('[DELETE /api/trackers/:id/checkins/:checkinId] soft-deleted', { checkinId, trackerId, userId });
     res.json({ deleted: true });
   } catch (err: any) {
     console.error('[DELETE /api/trackers/:id/checkins/:checkinId]', err.message, err.stack);
@@ -375,33 +385,68 @@ trackersRouter.delete('/:id/checkins/:checkinId', async (req: any, res) => {
 });
 
 // ── DELETE /api/trackers/:id ──────────────────────────────────────────────
+// Soft-deletes the tracker, all its live check-ins, and related timeline rows.
+// Linked garden_tasks are still hard-deleted (tasks are not soft-deleted).
 trackersRouter.delete('/:id', async (req: any, res) => {
   try {
     const userId = req.user.id;
     const { id } = req.params;
+    const now = new Date().toISOString();
 
-    // Delete tasks linked to this tracker
+    // Hard-delete tasks linked to this tracker (tasks are not soft-deleted)
     await db
       .from('garden_tasks')
       .delete()
       .eq('user_id', userId)
       .eq('plant_tracker_id', id);
 
-    // Delete checkins linked to this tracker
-    await db
+    // Collect live checkin IDs for the audit log before soft-deleting them
+    const { data: checkinRows } = await db
       .from('plant_tracker_checkins')
-      .delete()
+      .select('id')
+      .eq('tracker_id', id)
+      .eq('user_id', userId)
+      .is('deleted_at', null);
+
+    const checkinIds = (checkinRows ?? []).map((c: any) => c.id);
+
+    if (checkinIds.length > 0) {
+      // One audit log entry summarising all checkins in this batch
+      await db.from('deletion_audit_log').insert({
+        table_name: 'plant_tracker_checkins',
+        row_id:     id,
+        user_id:    userId,
+        action:     'soft_delete',
+        source:     'DELETE /api/trackers/:id',
+        metadata:   { tracker_id: id, checkin_ids: checkinIds, count: checkinIds.length },
+      });
+
+      // Soft-delete the checkins
+      await db
+        .from('plant_tracker_checkins')
+        .update({ deleted_at: now, deleted_by: userId })
+        .eq('tracker_id', id)
+        .eq('user_id', userId)
+        .is('deleted_at', null);
+    }
+
+    // Soft-delete related plant_timeline rows
+    await db
+      .from('plant_timeline')
+      .update({ deleted_at: now })
       .eq('tracker_id', id)
       .eq('user_id', userId);
 
-    // Delete the tracker itself
+    // Soft-delete the tracker itself
     const { error } = await db
       .from('plant_trackers')
-      .delete()
+      .update({ deleted_at: now, deleted_by: userId })
       .eq('id', id)
       .eq('user_id', userId);
 
     if (error) throw error;
+
+    console.log('[DELETE /api/trackers/:id] soft-deleted', { trackerId: id, userId, checkinCount: checkinIds.length });
     res.json({ success: true });
   } catch (err: any) {
     console.error('[DELETE /api/trackers/:id]', err.message, err.stack);
@@ -426,6 +471,7 @@ trackersRouter.post('/:id/checkin', async (req: any, res) => {
       .select('*, gardens(*)')
       .eq('id', trackerId)
       .eq('user_id', userId)
+      .is('deleted_at', null)
       .single();
 
     if (trackerError || !tracker) {
@@ -463,7 +509,8 @@ trackersRouter.post('/:id/checkin', async (req: any, res) => {
       const { count } = await db
         .from('plant_tracker_checkins')
         .select('id', { count: 'exact', head: true })
-        .eq('user_id', userId);
+        .eq('user_id', userId)
+        .is('deleted_at', null);
 
       if ((count ?? 0) >= limits.maxTotalCheckinsEver) {
         const errPayload = { error: 'limit_exceeded', message: 'limit_exceeded', tier, limit: limits.maxTotalCheckinsEver, type: 'checkins' };
@@ -483,6 +530,7 @@ trackersRouter.post('/:id/checkin', async (req: any, res) => {
         .from('plant_tracker_checkins')
         .select('id', { count: 'exact', head: true })
         .eq('tracker_id', trackerId)
+        .is('deleted_at', null)
         .gte('created_at', startOfMonth.toISOString());
 
       if ((count ?? 0) >= limits.maxCheckinsPerTrackerPerMonth) {
@@ -539,6 +587,7 @@ trackersRouter.post('/:id/checkin', async (req: any, res) => {
       .from('plant_tracker_checkins')
       .select('ai_analysis, checkin_date')
       .eq('tracker_id', trackerId)
+      .is('deleted_at', null)
       .order('created_at', { ascending: false })
       .limit(1);
 
@@ -694,6 +743,7 @@ trackersRouter.post('/:id/approve-tasks', async (req: any, res) => {
       .select('id, plant_name_he, garden_plants_id')
       .eq('id', trackerId)
       .eq('user_id', userId)
+      .is('deleted_at', null)
       .single();
 
     if (trackerError || !tracker) {
@@ -709,6 +759,7 @@ trackersRouter.post('/:id/approve-tasks', async (req: any, res) => {
       .from('plant_tracker_checkins')
       .select('id')
       .eq('tracker_id', trackerId)
+      .is('deleted_at', null)
       .order('created_at', { ascending: false })
       .limit(1)
       .single();
@@ -772,6 +823,7 @@ trackersRouter.post('/:id/id-feedback', async (req: any, res) => {
       .select('id, plant_name_he')
       .eq('id', trackerId)
       .eq('user_id', userId)
+      .is('deleted_at', null)
       .single();
 
     if (trackerError || !tracker) {
@@ -830,6 +882,7 @@ trackersRouter.patch('/:id/water', async (req: any, res) => {
       .select('watering_count')
       .eq('id', id)
       .eq('user_id', userId)
+      .is('deleted_at', null)
       .single();
 
     const newCount = (current?.watering_count ?? 0) + 1;
@@ -1004,6 +1057,7 @@ trackersRouter.get('/plant/:plantId/timeline', async (req: any, res) => {
     .select('*')
     .eq('plant_id', plantId)
     .eq('user_id', userId)
+    .is('deleted_at', null)
     .order('created_at', { ascending: false })
     .limit(50);
   if (error) return res.status(500).json({ error: error.message });
@@ -1109,6 +1163,7 @@ trackersRouter.get('/:id/timeline', async (req: any, res) => {
       .select('*')
       .eq('tracker_id', id)
       .eq('user_id', userId)
+      .is('deleted_at', null)
       .order('created_at', { ascending: false })
       .limit(50);
 
@@ -1138,6 +1193,7 @@ trackersRouter.post('/:id/timeline-photo', async (req: any, res) => {
       .select('id, garden_plants_id, plant_id, garden_id')
       .eq('id', trackerId)
       .eq('user_id', userId)
+      .is('deleted_at', null)
       .single();
 
     if (trackerError || !tracker) {
@@ -1224,6 +1280,7 @@ trackersRouter.get('/:id/plan', async (req: any, res) => {
       .select('id')
       .eq('id', trackerId)
       .eq('user_id', userId)
+      .is('deleted_at', null)
       .single();
 
     if (trackerError || !tracker) {
@@ -1234,6 +1291,7 @@ trackersRouter.get('/:id/plan', async (req: any, res) => {
       .from('plant_tracker_checkins')
       .select('growing_plan, checkin_date, growth_stage')
       .eq('tracker_id', trackerId)
+      .is('deleted_at', null)
       .order('created_at', { ascending: false })
       .limit(1)
       .single();

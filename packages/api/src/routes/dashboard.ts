@@ -106,7 +106,8 @@ dashboardRouter.get('/today-actions', async (req: any, res) => {
     const { data: trackers } = await db
       .from('plant_trackers')
       .select('id, plant_name_he, plant_name_en')
-      .eq('user_id', userId);
+      .eq('user_id', userId)
+      .is('deleted_at', null);
 
     const trackerAlerts: Array<{
       plantNameHe: string;
@@ -120,6 +121,7 @@ dashboardRouter.get('/today-actions', async (req: any, res) => {
         .from('plant_tracker_checkins')
         .select('tracker_id, checkin_date')
         .in('tracker_id', trackerIds)
+        .is('deleted_at', null)
         .order('checkin_date', { ascending: false });
 
       const latestCheckin: Record<string, string> = {};

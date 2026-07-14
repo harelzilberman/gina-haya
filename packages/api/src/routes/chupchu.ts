@@ -973,6 +973,7 @@ chupChuRouter.post('/chat', async (req: any, res) => {
         .select('garden_plants_id')
         .eq('user_id', userId)
         .eq('garden_id', garden.id)
+        .is('deleted_at', null)
         .not('garden_plants_id', 'is', null);
       if (trackerRows) {
         for (const t of trackerRows) {
