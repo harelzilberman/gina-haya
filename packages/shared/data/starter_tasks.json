@@ -1,0 +1,5171 @@
+{
+  "meta": {
+    "version": 4,
+    "purpose": "Curated generic care tasks seeded for UNTRACKED plants only (the 'אחר כך' path). Tracked plants get individualized tasks from photo analysis and are never seeded from this file.",
+    "generated": "Species auto-generated from the encyclopedia `plants` table (id + category + day_type_affinity) via category/day-type archetype templates. Review before shipping.",
+    "keying": "Match by speciesId first; fall back to Hebrew name in `match`. If nothing matches, use `generic`.",
+    "seeding_rules": {
+      "source_tag": "Insert every task with source_action='starter_tasks'.",
+      "cap": "Seed at most 5 tasks per plant (first 5 by dayOffset).",
+      "idempotency": "Seed once per plant; guard on no existing source_action='starter_tasks' rows for that garden_plants_id.",
+      "delete_on_conversion": "On untracked->tracked, DELETE WHERE garden_plants_id = $1 AND source_action = 'starter_tasks'."
+    },
+    "scheduling": {
+      "lunar_agnostic": "lunarSensitive=false: schedule at seed_date + dayOffset. No calendar lookup.",
+      "lunar_sensitive": "lunarSensitive=true (pruning/cut-harvest/thinning/deadheading): from seed_date + dayOffset, snap forward to next FAVORABLE biodynamic day. See STARTER_TASKS_FINDINGS.md section 6 (nodeActive, planting_score, score_colour)."
+    },
+    "review_note": "Auto-templated by category+day_type with a few name overrides (basil/dill->leaf-herb, chamomile->flower, orange->citrus, plum/apple/pomegranate/fig->deciduous). Spot-check species deserving bespoke care."
+  },
+  "generic": {
+    "speciesId": null,
+    "tasks": [
+      {
+        "title": "השקיה ראשונית ובדיקת ניקוז",
+        "category": "watering",
+        "priority": "high",
+        "dayOffset": 0,
+        "lunarSensitive": false,
+        "notes": "ודא שהמים מתנקזים ולא נעמדים בשורשים."
+      },
+      {
+        "title": "בדיקת לחות ומצב הקרקע",
+        "category": "soil",
+        "priority": "medium",
+        "dayOffset": 3,
+        "lunarSensitive": false
+      },
+      {
+        "title": "תצפית על העלים – סימני מזיקים או מחלה",
+        "category": "observation",
+        "priority": "medium",
+        "dayOffset": 7,
+        "lunarSensitive": false
+      },
+      {
+        "title": "דישון קל בקומפוסט אורגני",
+        "category": "fertilizing",
+        "priority": "low",
+        "dayOffset": 14,
+        "lunarSensitive": false
+      }
+    ]
+  },
+  "species": [
+    {
+      "key": "אבוקדו",
+      "speciesId": "1538b52e-3770-489e-aac9-d423ea7397bf",
+      "category": "fruit_trees",
+      "dayType": "fruit",
+      "archetype": "fruit_tree",
+      "match": [
+        "אבוקדו"
+      ],
+      "tasks": [
+        {
+          "title": "השקיה עמוקה וסדירה",
+          "category": "watering",
+          "priority": "high",
+          "dayOffset": 0,
+          "lunarSensitive": false
+        },
+        {
+          "title": "בדיקת ביסוס ותמיכת העץ",
+          "category": "observation",
+          "priority": "medium",
+          "dayOffset": 3,
+          "lunarSensitive": false
+        },
+        {
+          "title": "דישון אורגני מאוזן",
+          "category": "fertilizing",
+          "priority": "medium",
+          "dayOffset": 12,
+          "lunarSensitive": false
+        },
+        {
+          "title": "תצפית על מזיקים ומחלות בעלווה",
+          "category": "pest",
+          "priority": "medium",
+          "dayOffset": 18,
+          "lunarSensitive": false
+        },
+        {
+          "title": "גיזום ענפים יבשים ומיותרים",
+          "category": "pruning",
+          "priority": "low",
+          "dayOffset": 30,
+          "lunarSensitive": true
+        }
+      ]
+    },
+    {
+      "key": "אבטיח",
+      "speciesId": "66d81a1d-217e-4176-a001-6cf6a5eb0afd",
+      "category": "vegetables",
+      "dayType": "fruit",
+      "archetype": "fruiting_veg",
+      "match": [
+        "אבטיח"
+      ],
+      "tasks": [
+        {
+          "title": "השקיה סדירה – עקביות מונעת בעיות בפרי",
+          "category": "watering",
+          "priority": "high",
+          "dayOffset": 0,
+          "lunarSensitive": false
+        },
+        {
+          "title": "סמך ותמיכה לצמח",
+          "category": "support",
+          "priority": "medium",
+          "dayOffset": 3,
+          "lunarSensitive": false
+        },
+        {
+          "title": "דישון לעידוד פריחה ופרי",
+          "category": "fertilizing",
+          "priority": "medium",
+          "dayOffset": 10,
+          "lunarSensitive": false
+        },
+        {
+          "title": "תצפית על כנימות וריקבון",
+          "category": "pest",
+          "priority": "medium",
+          "dayOffset": 14,
+          "lunarSensitive": false
+        },
+        {
+          "title": "דילול עלים תחתונים לאוורור",
+          "category": "pruning",
+          "priority": "low",
+          "dayOffset": 18,
+          "lunarSensitive": true
+        }
+      ]
+    },
+    {
+      "key": "אגבה",
+      "speciesId": "2b21c3c9-561d-4aea-9fa4-2e9aa4753e7a",
+      "category": "succulent",
+      "dayType": "leaf",
+      "archetype": "succulent",
+      "match": [
+        "אגבה"
+      ],
+      "tasks": [
+        {
+          "title": "השקיה מועטה – השקה רק כשהמצע יבש",
+          "category": "watering",
+          "priority": "medium",
+          "dayOffset": 0,
+          "lunarSensitive": false
+        },
+        {
+          "title": "מיקום באור בהיר",
+          "category": "observation",
+          "priority": "low",
+          "dayOffset": 5,
+          "lunarSensitive": false
+        },
+        {
+          "title": "בדיקת ניקוז המצע",
+          "category": "soil",
+          "priority": "low",
+          "dayOffset": 8,
+          "lunarSensitive": false
+        },
+        {
+          "title": "תצפית על ריקבון וכנימות מגן",
+          "category": "pest",
+          "priority": "low",
+          "dayOffset": 12,
+          "lunarSensitive": false
+        }
+      ]
+    },
+    {
+      "key": "אגס",
+      "speciesId": "e19aa70f-84e4-4ed4-85ae-286d40e25a04",
+      "category": "fruit_trees",
+      "dayType": "fruit",
+      "archetype": "deciduous_fruit_tree",
+      "match": [
+        "אגס"
+      ],
+      "tasks": [
+        {
+          "title": "השקיה עמוקה בעונה החמה",
+          "category": "watering",
+          "priority": "high",
+          "dayOffset": 0,
+          "lunarSensitive": false
+        },
+        {
+          "title": "תצפית על מזיקים ומחלות",
+          "category": "pest",
+          "priority": "medium",
+          "dayOffset": 7,
+          "lunarSensitive": false
+        },
+        {
+          "title": "דישון אורגני באביב",
+          "category": "fertilizing",
+          "priority": "medium",
+          "dayOffset": 15,
+          "lunarSensitive": false
+        },
+        {
+          "title": "גיזום חורף – דילול ואוורור",
+          "category": "pruning",
+          "priority": "low",
+          "dayOffset": 30,
+          "lunarSensitive": true,
+          "notes": "בצע בעונת השלכת, כשהעץ רדום."
+        }
+      ]
+    },
+    {
+      "key": "אורגנו",
+      "speciesId": "2bf2d812-2202-42a2-a1ea-35d44fc7bf85",
+      "category": "herbs",
+      "dayType": "flower",
+      "archetype": "woody_herb",
+      "match": [
+        "אורגנו"
+      ],
+      "tasks": [
+        {
+          "title": "השקיה מתונה – רגיש לעודף מים",
+          "category": "watering",
+          "priority": "medium",
+          "dayOffset": 0,
+          "lunarSensitive": false
+        },
+        {
+          "title": "בדיקת ניקוז הקרקע",
+          "category": "soil",
+          "priority": "low",
+          "dayOffset": 8,
+          "lunarSensitive": false
+        },
+        {
+          "title": "קטיף ענפים לשימוש ולעידוד צמיחה",
+          "category": "harvest",
+          "priority": "medium",
+          "dayOffset": 6,
+          "lunarSensitive": true
+        },
+        {
+          "title": "גיזום קל לאחר הפריחה",
+          "category": "pruning",
+          "priority": "low",
+          "dayOffset": 14,
+          "lunarSensitive": true
+        }
+      ]
+    },
+    {
+      "key": "אכוורייה",
+      "speciesId": "0402e9d5-acd7-4b8f-818d-5bebd1c09dd3",
+      "category": "succulent",
+      "dayType": "leaf",
+      "archetype": "succulent",
+      "match": [
+        "אכוורייה"
+      ],
+      "tasks": [
+        {
+          "title": "השקיה מועטה – השקה רק כשהמצע יבש",
+          "category": "watering",
+          "priority": "medium",
+          "dayOffset": 0,
+          "lunarSensitive": false
+        },
+        {
+          "title": "מיקום באור בהיר",
+          "category": "observation",
+          "priority": "low",
+          "dayOffset": 5,
+          "lunarSensitive": false
+        },
+        {
+          "title": "בדיקת ניקוז המצע",
+          "category": "soil",
+          "priority": "low",
+          "dayOffset": 8,
+          "lunarSensitive": false
+        },
+        {
+          "title": "תצפית על ריקבון וכנימות מגן",
+          "category": "pest",
+          "priority": "low",
+          "dayOffset": 12,
+          "lunarSensitive": false
+        }
+      ]
+    },
+    {
+      "key": "אכילאה",
+      "speciesId": "a38fcbf4-1a4b-4079-8bb2-7944c5a29bbf",
+      "category": "medicinal",
+      "dayType": "flower",
+      "archetype": "flower",
+      "match": [
+        "אכילאה"
+      ],
+      "tasks": [
+        {
+          "title": "השקיה סדירה",
+          "category": "watering",
+          "priority": "high",
+          "dayOffset": 0,
+          "lunarSensitive": false
+        },
+        {
+          "title": "דישון לעידוד פריחה",
+          "category": "fertilizing",
+          "priority": "medium",
+          "dayOffset": 12,
+          "lunarSensitive": false
+        },
+        {
+          "title": "תצפית על כנימות ומזיקים",
+          "category": "pest",
+          "priority": "low",
+          "dayOffset": 14,
+          "lunarSensitive": false
+        },
+        {
+          "title": "הסרת פרחים נבולים (דד-הדינג)",
+          "category": "pruning",
+          "priority": "medium",
+          "dayOffset": 7,
+          "lunarSensitive": true
+        }
+      ]
+    },
+    {
+      "key": "אכינצאה",
+      "speciesId": "9426e9d7-dddb-4611-9a9f-aa06b258d67e",
+      "category": "medicinal",
+      "dayType": "flower",
+      "archetype": "flower",
+      "match": [
+        "אכינצאה"
+      ],
+      "tasks": [
+        {
+          "title": "השקיה סדירה",
+          "category": "watering",
+          "priority": "high",
+          "dayOffset": 0,
+          "lunarSensitive": false
+        },
+        {
+          "title": "דישון לעידוד פריחה",
+          "category": "fertilizing",
+          "priority": "medium",
+          "dayOffset": 12,
+          "lunarSensitive": false
+        },
+        {
+          "title": "תצפית על כנימות ומזיקים",
+          "category": "pest",
+          "priority": "low",
+          "dayOffset": 14,
+          "lunarSensitive": false
+        },
+        {
+          "title": "הסרת פרחים נבולים (דד-הדינג)",
+          "category": "pruning",
+          "priority": "medium",
+          "dayOffset": 7,
+          "lunarSensitive": true
+        }
+      ]
+    },
+    {
+      "key": "אלוורה",
+      "speciesId": "dcbd73d0-52b0-4e82-a50f-67544794cff2",
+      "category": "medicinal",
+      "dayType": "leaf",
+      "archetype": "leafy_herb",
+      "match": [
+        "אלוורה"
+      ],
+      "tasks": [
+        {
+          "title": "השקיה – שמור על קרקע לחה",
+          "category": "watering",
+          "priority": "high",
+          "dayOffset": 0,
+          "lunarSensitive": false
+        },
+        {
+          "title": "קטיף ענפים עליונים לעידוד הסתעפות",
+          "category": "harvest",
+          "priority": "medium",
+          "dayOffset": 5,
+          "lunarSensitive": true
+        },
+        {
+          "title": "קמצוץ ראשי פריחה לשמירה על הטעם",
+          "category": "pruning",
+          "priority": "medium",
+          "dayOffset": 10,
+          "lunarSensitive": true
+        },
+        {
+          "title": "דישון קל",
+          "category": "fertilizing",
+          "priority": "low",
+          "dayOffset": 14,
+          "lunarSensitive": false
+        }
+      ]
+    },
+    {
+      "key": "אספרגוס",
+      "speciesId": "9d99011e-eedf-4c4f-b395-05852cc78c99",
+      "category": "vegetables",
+      "dayType": "leaf",
+      "archetype": "leafy_veg",
+      "match": [
+        "אספרגוס"
+      ],
+      "tasks": [
+        {
+          "title": "השקיה – שמור על קרקע לחה",
+          "category": "watering",
+          "priority": "high",
+          "dayOffset": 0,
+          "lunarSensitive": false
+        },
+        {
+          "title": "בדיקת חלזונות ומזיקי עלים",
+          "category": "pest",
+          "priority": "high",
+          "dayOffset": 3,
+          "lunarSensitive": false
+        },
+        {
+          "title": "דישון עשיר בחנקן לצמיחת עלווה",
+          "category": "fertilizing",
+          "priority": "medium",
+          "dayOffset": 10,
+          "lunarSensitive": false
+        },
+        {
+          "title": "בדיקת לחות הקרקע",
+          "category": "soil",
+          "priority": "low",
+          "dayOffset": 7,
+          "lunarSensitive": false
+        },
+        {
+          "title": "קטיף עלים חיצוניים",
+          "category": "harvest",
+          "priority": "medium",
+          "dayOffset": 14,
+          "lunarSensitive": true
+        }
+      ]
+    },
+    {
+      "key": "אפונה",
+      "speciesId": "768cac20-e7bf-41da-8fc8-e736e2fadaf7",
+      "category": "vegetables",
+      "dayType": "fruit",
+      "archetype": "fruiting_veg",
+      "match": [
+        "אפונה"
+      ],
+      "tasks": [
+        {
+          "title": "השקיה סדירה – עקביות מונעת בעיות בפרי",
+          "category": "watering",
+          "priority": "high",
+          "dayOffset": 0,
+          "lunarSensitive": false
+        },
+        {
+          "title": "סמך ותמיכה לצמח",
+          "category": "support",
+          "priority": "medium",
+          "dayOffset": 3,
+          "lunarSensitive": false
+        },
+        {
+          "title": "דישון לעידוד פריחה ופרי",
+          "category": "fertilizing",
+          "priority": "medium",
+          "dayOffset": 10,
+          "lunarSensitive": false
+        },
+        {
+          "title": "תצפית על כנימות וריקבון",
+          "category": "pest",
+          "priority": "medium",
+          "dayOffset": 14,
+          "lunarSensitive": false
+        },
+        {
+          "title": "דילול עלים תחתונים לאוורור",
+          "category": "pruning",
+          "priority": "low",
+          "dayOffset": 18,
+          "lunarSensitive": true
+        }
+      ]
+    },
+    {
+      "key": "אפונת ריח",
+      "speciesId": "2492db0e-d3fe-49f5-906a-4063af7af5d2",
+      "category": "flowers",
+      "dayType": "flower",
+      "archetype": "flower",
+      "match": [
+        "אפונת ריח"
+      ],
+      "tasks": [
+        {
+          "title": "השקיה סדירה",
+          "category": "watering",
+          "priority": "high",
+          "dayOffset": 0,
+          "lunarSensitive": false
+        },
+        {
+          "title": "דישון לעידוד פריחה",
+          "category": "fertilizing",
+          "priority": "medium",
+          "dayOffset": 12,
+          "lunarSensitive": false
+        },
+        {
+          "title": "תצפית על כנימות ומזיקים",
+          "category": "pest",
+          "priority": "low",
+          "dayOffset": 14,
+          "lunarSensitive": false
+        },
+        {
+          "title": "הסרת פרחים נבולים (דד-הדינג)",
+          "category": "pruning",
+          "priority": "medium",
+          "dayOffset": 7,
+          "lunarSensitive": true
+        }
+      ]
+    },
+    {
+      "key": "אפרסק",
+      "speciesId": "281b41dd-11d7-4d96-b062-95458b5a2782",
+      "category": "fruit_trees",
+      "dayType": "fruit",
+      "archetype": "deciduous_fruit_tree",
+      "match": [
+        "אפרסק"
+      ],
+      "tasks": [
+        {
+          "title": "השקיה עמוקה בעונה החמה",
+          "category": "watering",
+          "priority": "high",
+          "dayOffset": 0,
+          "lunarSensitive": false
+        },
+        {
+          "title": "תצפית על מזיקים ומחלות",
+          "category": "pest",
+          "priority": "medium",
+          "dayOffset": 7,
+          "lunarSensitive": false
+        },
+        {
+          "title": "דישון אורגני באביב",
+          "category": "fertilizing",
+          "priority": "medium",
+          "dayOffset": 15,
+          "lunarSensitive": false
+        },
+        {
+          "title": "גיזום חורף – דילול ואוורור",
+          "category": "pruning",
+          "priority": "low",
+          "dayOffset": 30,
+          "lunarSensitive": true,
+          "notes": "בצע בעונת השלכת, כשהעץ רדום."
+        }
+      ]
+    },
+    {
+      "key": "ארטישוק",
+      "speciesId": "b0b3f511-342b-4456-a249-430c347d8225",
+      "category": "vegetables",
+      "dayType": "flower",
+      "archetype": "flowering_veg",
+      "match": [
+        "ארטישוק"
+      ],
+      "tasks": [
+        {
+          "title": "השקיה עמוקה",
+          "category": "watering",
+          "priority": "high",
+          "dayOffset": 0,
+          "lunarSensitive": false
+        },
+        {
+          "title": "דישון לעידוד ראשי פריחה",
+          "category": "fertilizing",
+          "priority": "medium",
+          "dayOffset": 10,
+          "lunarSensitive": false
+        },
+        {
+          "title": "תצפית על כנימות",
+          "category": "pest",
+          "priority": "low",
+          "dayOffset": 14,
+          "lunarSensitive": false
+        },
+        {
+          "title": "קטיף ראשי הפרח בזמן",
+          "category": "harvest",
+          "priority": "medium",
+          "dayOffset": 20,
+          "lunarSensitive": true
+        }
+      ]
+    },
+    {
+      "key": "אשווגנדה",
+      "speciesId": "a0226354-4f4a-4fdf-8762-92211735f842",
+      "category": "medicinal",
+      "dayType": "root",
+      "archetype": "root_medicinal",
+      "match": [
+        "אשווגנדה"
+      ],
+      "tasks": [
+        {
+          "title": "השקיה סדירה",
+          "category": "watering",
+          "priority": "medium",
+          "dayOffset": 0,
+          "lunarSensitive": false
+        },
+        {
+          "title": "חיפוי (מולץ') לשמירת לחות",
+          "category": "soil",
+          "priority": "medium",
+          "dayOffset": 8,
+          "lunarSensitive": false
+        },
+        {
+          "title": "דישון אורגני קל",
+          "category": "fertilizing",
+          "priority": "low",
+          "dayOffset": 14,
+          "lunarSensitive": false
+        },
+        {
+          "title": "תצפית על בריאות הצמח",
+          "category": "observation",
+          "priority": "low",
+          "dayOffset": 20,
+          "lunarSensitive": false
+        }
+      ]
+    },
+    {
+      "key": "אשכולית",
+      "speciesId": "95118935-ce35-460f-ab1a-0d383cade668",
+      "category": "fruit_trees",
+      "dayType": "fruit",
+      "archetype": "citrus",
+      "match": [
+        "אשכולית"
+      ],
+      "tasks": [
+        {
+          "title": "השקיה עמוקה – הדרים רגישים ליובש",
+          "category": "watering",
+          "priority": "high",
+          "dayOffset": 0,
+          "lunarSensitive": false
+        },
+        {
+          "title": "בדיקת מזיקים (כנימות ומיני עש)",
+          "category": "pest",
+          "priority": "medium",
+          "dayOffset": 5,
+          "lunarSensitive": false
+        },
+        {
+          "title": "דישון הדרים (עשיר באשלגן וברזל)",
+          "category": "fertilizing",
+          "priority": "medium",
+          "dayOffset": 12,
+          "lunarSensitive": false
+        },
+        {
+          "title": "גיזום ענפי מים וסורים",
+          "category": "pruning",
+          "priority": "low",
+          "dayOffset": 25,
+          "lunarSensitive": true
+        }
+      ]
+    },
+    {
+      "key": "בוראג'",
+      "speciesId": "10e115d9-b351-47b6-85c0-cb6e99e2a2f7",
+      "category": "flowers",
+      "dayType": "flower",
+      "archetype": "flower",
+      "match": [
+        "בוראג'"
+      ],
+      "tasks": [
+        {
+          "title": "השקיה סדירה",
+          "category": "watering",
+          "priority": "high",
+          "dayOffset": 0,
+          "lunarSensitive": false
+        },
+        {
+          "title": "דישון לעידוד פריחה",
+          "category": "fertilizing",
+          "priority": "medium",
+          "dayOffset": 12,
+          "lunarSensitive": false
+        },
+        {
+          "title": "תצפית על כנימות ומזיקים",
+          "category": "pest",
+          "priority": "low",
+          "dayOffset": 14,
+          "lunarSensitive": false
+        },
+        {
+          "title": "הסרת פרחים נבולים (דד-הדינג)",
+          "category": "pruning",
+          "priority": "medium",
+          "dayOffset": 7,
+          "lunarSensitive": true
+        }
+      ]
+    },
+    {
+      "key": "בזיליקום קדוש",
+      "speciesId": "611b50b6-e272-455a-8458-d67995dd72af",
+      "category": "medicinal",
+      "dayType": "leaf",
+      "archetype": "leafy_herb",
+      "match": [
+        "בזיליקום קדוש"
+      ],
+      "tasks": [
+        {
+          "title": "השקיה – שמור על קרקע לחה",
+          "category": "watering",
+          "priority": "high",
+          "dayOffset": 0,
+          "lunarSensitive": false
+        },
+        {
+          "title": "קטיף ענפים עליונים לעידוד הסתעפות",
+          "category": "harvest",
+          "priority": "medium",
+          "dayOffset": 5,
+          "lunarSensitive": true
+        },
+        {
+          "title": "קמצוץ ראשי פריחה לשמירה על הטעם",
+          "category": "pruning",
+          "priority": "medium",
+          "dayOffset": 10,
+          "lunarSensitive": true
+        },
+        {
+          "title": "דישון קל",
+          "category": "fertilizing",
+          "priority": "low",
+          "dayOffset": 14,
+          "lunarSensitive": false
+        }
+      ]
+    },
+    {
+      "key": "בטטה",
+      "speciesId": "091648e0-4895-4a24-b813-c27852956537",
+      "category": "vegetables",
+      "dayType": "root",
+      "archetype": "root_veg",
+      "match": [
+        "בטטה"
+      ],
+      "tasks": [
+        {
+          "title": "השקיה סדירה ואחידה",
+          "category": "watering",
+          "priority": "high",
+          "dayOffset": 0,
+          "lunarSensitive": false
+        },
+        {
+          "title": "דילול שתילים לצפיפות נכונה",
+          "category": "maintenance",
+          "priority": "medium",
+          "dayOffset": 5,
+          "lunarSensitive": true
+        },
+        {
+          "title": "ניכוש ואוורור הקרקע סביב הצמח",
+          "category": "soil",
+          "priority": "medium",
+          "dayOffset": 10,
+          "lunarSensitive": false
+        },
+        {
+          "title": "תצפית על מזיקי קרקע",
+          "category": "pest",
+          "priority": "low",
+          "dayOffset": 14,
+          "lunarSensitive": false
+        }
+      ]
+    },
+    {
+      "key": "במיה",
+      "speciesId": "1ddee73c-fff1-4b83-9ba0-4610f9433098",
+      "category": "vegetables",
+      "dayType": "fruit",
+      "archetype": "fruiting_veg",
+      "match": [
+        "במיה"
+      ],
+      "tasks": [
+        {
+          "title": "השקיה סדירה – עקביות מונעת בעיות בפרי",
+          "category": "watering",
+          "priority": "high",
+          "dayOffset": 0,
+          "lunarSensitive": false
+        },
+        {
+          "title": "סמך ותמיכה לצמח",
+          "category": "support",
+          "priority": "medium",
+          "dayOffset": 3,
+          "lunarSensitive": false
+        },
+        {
+          "title": "דישון לעידוד פריחה ופרי",
+          "category": "fertilizing",
+          "priority": "medium",
+          "dayOffset": 10,
+          "lunarSensitive": false
+        },
+        {
+          "title": "תצפית על כנימות וריקבון",
+          "category": "pest",
+          "priority": "medium",
+          "dayOffset": 14,
+          "lunarSensitive": false
+        },
+        {
+          "title": "דילול עלים תחתונים לאוורור",
+          "category": "pruning",
+          "priority": "low",
+          "dayOffset": 18,
+          "lunarSensitive": true
+        }
+      ]
+    },
+    {
+      "key": "בננה",
+      "speciesId": "67f42bb9-caa1-4254-833f-b193796529b1",
+      "category": "fruit_trees",
+      "dayType": "fruit",
+      "archetype": "fruit_tree",
+      "match": [
+        "בננה"
+      ],
+      "tasks": [
+        {
+          "title": "השקיה עמוקה וסדירה",
+          "category": "watering",
+          "priority": "high",
+          "dayOffset": 0,
+          "lunarSensitive": false
+        },
+        {
+          "title": "בדיקת ביסוס ותמיכת העץ",
+          "category": "observation",
+          "priority": "medium",
+          "dayOffset": 3,
+          "lunarSensitive": false
+        },
+        {
+          "title": "דישון אורגני מאוזן",
+          "category": "fertilizing",
+          "priority": "medium",
+          "dayOffset": 12,
+          "lunarSensitive": false
+        },
+        {
+          "title": "תצפית על מזיקים ומחלות בעלווה",
+          "category": "pest",
+          "priority": "medium",
+          "dayOffset": 18,
+          "lunarSensitive": false
+        },
+        {
+          "title": "גיזום ענפים יבשים ומיותרים",
+          "category": "pruning",
+          "priority": "low",
+          "dayOffset": 30,
+          "lunarSensitive": true
+        }
+      ]
+    },
+    {
+      "key": "בצל",
+      "speciesId": "fe546327-61e5-4c8b-84a2-86a6e608ed4c",
+      "category": "vegetables",
+      "dayType": "root",
+      "archetype": "root_veg",
+      "match": [
+        "בצל"
+      ],
+      "tasks": [
+        {
+          "title": "השקיה סדירה ואחידה",
+          "category": "watering",
+          "priority": "high",
+          "dayOffset": 0,
+          "lunarSensitive": false
+        },
+        {
+          "title": "דילול שתילים לצפיפות נכונה",
+          "category": "maintenance",
+          "priority": "medium",
+          "dayOffset": 5,
+          "lunarSensitive": true
+        },
+        {
+          "title": "ניכוש ואוורור הקרקע סביב הצמח",
+          "category": "soil",
+          "priority": "medium",
+          "dayOffset": 10,
+          "lunarSensitive": false
+        },
+        {
+          "title": "תצפית על מזיקי קרקע",
+          "category": "pest",
+          "priority": "low",
+          "dayOffset": 14,
+          "lunarSensitive": false
+        }
+      ]
+    },
+    {
+      "key": "בצל ירוק",
+      "speciesId": "40d97bad-2a5c-4387-8f3d-316029d8c978",
+      "category": "vegetables",
+      "dayType": "root",
+      "archetype": "root_veg",
+      "match": [
+        "בצל ירוק"
+      ],
+      "tasks": [
+        {
+          "title": "השקיה סדירה ואחידה",
+          "category": "watering",
+          "priority": "high",
+          "dayOffset": 0,
+          "lunarSensitive": false
+        },
+        {
+          "title": "דילול שתילים לצפיפות נכונה",
+          "category": "maintenance",
+          "priority": "medium",
+          "dayOffset": 5,
+          "lunarSensitive": true
+        },
+        {
+          "title": "ניכוש ואוורור הקרקע סביב הצמח",
+          "category": "soil",
+          "priority": "medium",
+          "dayOffset": 10,
+          "lunarSensitive": false
+        },
+        {
+          "title": "תצפית על מזיקי קרקע",
+          "category": "pest",
+          "priority": "low",
+          "dayOffset": 14,
+          "lunarSensitive": false
+        }
+      ]
+    },
+    {
+      "key": "ברוקולי",
+      "speciesId": "159148a7-33a2-4c8e-b4ff-549b67f321a6",
+      "category": "vegetables",
+      "dayType": "leaf",
+      "archetype": "leafy_veg",
+      "match": [
+        "ברוקולי"
+      ],
+      "tasks": [
+        {
+          "title": "השקיה – שמור על קרקע לחה",
+          "category": "watering",
+          "priority": "high",
+          "dayOffset": 0,
+          "lunarSensitive": false
+        },
+        {
+          "title": "בדיקת חלזונות ומזיקי עלים",
+          "category": "pest",
+          "priority": "high",
+          "dayOffset": 3,
+          "lunarSensitive": false
+        },
+        {
+          "title": "דישון עשיר בחנקן לצמיחת עלווה",
+          "category": "fertilizing",
+          "priority": "medium",
+          "dayOffset": 10,
+          "lunarSensitive": false
+        },
+        {
+          "title": "בדיקת לחות הקרקע",
+          "category": "soil",
+          "priority": "low",
+          "dayOffset": 7,
+          "lunarSensitive": false
+        },
+        {
+          "title": "קטיף עלים חיצוניים",
+          "category": "harvest",
+          "priority": "medium",
+          "dayOffset": 14,
+          "lunarSensitive": true
+        }
+      ]
+    },
+    {
+      "key": "גדילן מצוי",
+      "speciesId": "419ec97b-278b-4d11-8b53-5953e7ec722f",
+      "category": "medicinal",
+      "dayType": "flower",
+      "archetype": "flower",
+      "match": [
+        "גדילן מצוי"
+      ],
+      "tasks": [
+        {
+          "title": "השקיה סדירה",
+          "category": "watering",
+          "priority": "high",
+          "dayOffset": 0,
+          "lunarSensitive": false
+        },
+        {
+          "title": "דישון לעידוד פריחה",
+          "category": "fertilizing",
+          "priority": "medium",
+          "dayOffset": 12,
+          "lunarSensitive": false
+        },
+        {
+          "title": "תצפית על כנימות ומזיקים",
+          "category": "pest",
+          "priority": "low",
+          "dayOffset": 14,
+          "lunarSensitive": false
+        },
+        {
+          "title": "הסרת פרחים נבולים (דד-הדינג)",
+          "category": "pruning",
+          "priority": "medium",
+          "dayOffset": 7,
+          "lunarSensitive": true
+        }
+      ]
+    },
+    {
+      "key": "גזר",
+      "speciesId": "0cefcd71-56db-465f-b0b3-8121cd90cfc5",
+      "category": "vegetables",
+      "dayType": "root",
+      "archetype": "root_veg",
+      "match": [
+        "גזר"
+      ],
+      "tasks": [
+        {
+          "title": "השקיה סדירה ואחידה",
+          "category": "watering",
+          "priority": "high",
+          "dayOffset": 0,
+          "lunarSensitive": false
+        },
+        {
+          "title": "דילול שתילים לצפיפות נכונה",
+          "category": "maintenance",
+          "priority": "medium",
+          "dayOffset": 5,
+          "lunarSensitive": true
+        },
+        {
+          "title": "ניכוש ואוורור הקרקע סביב הצמח",
+          "category": "soil",
+          "priority": "medium",
+          "dayOffset": 10,
+          "lunarSensitive": false
+        },
+        {
+          "title": "תצפית על מזיקי קרקע",
+          "category": "pest",
+          "priority": "low",
+          "dayOffset": 14,
+          "lunarSensitive": false
+        }
+      ]
+    },
+    {
+      "key": "גפן",
+      "speciesId": "f4cbd1ce-c8d7-4777-920a-3d0fb2128957",
+      "category": "fruit_trees",
+      "dayType": "fruit",
+      "archetype": "deciduous_fruit_tree",
+      "match": [
+        "גפן"
+      ],
+      "tasks": [
+        {
+          "title": "השקיה עמוקה בעונה החמה",
+          "category": "watering",
+          "priority": "high",
+          "dayOffset": 0,
+          "lunarSensitive": false
+        },
+        {
+          "title": "תצפית על מזיקים ומחלות",
+          "category": "pest",
+          "priority": "medium",
+          "dayOffset": 7,
+          "lunarSensitive": false
+        },
+        {
+          "title": "דישון אורגני באביב",
+          "category": "fertilizing",
+          "priority": "medium",
+          "dayOffset": 15,
+          "lunarSensitive": false
+        },
+        {
+          "title": "גיזום חורף – דילול ואוורור",
+          "category": "pruning",
+          "priority": "low",
+          "dayOffset": 30,
+          "lunarSensitive": true,
+          "notes": "בצע בעונת השלכת, כשהעץ רדום."
+        }
+      ]
+    },
+    {
+      "key": "גרניום",
+      "speciesId": "3d7a6f23-1ea9-4c8f-883c-43abecfe2aaf",
+      "category": "flowers",
+      "dayType": "flower",
+      "archetype": "flower",
+      "match": [
+        "גרניום"
+      ],
+      "tasks": [
+        {
+          "title": "השקיה סדירה",
+          "category": "watering",
+          "priority": "high",
+          "dayOffset": 0,
+          "lunarSensitive": false
+        },
+        {
+          "title": "דישון לעידוד פריחה",
+          "category": "fertilizing",
+          "priority": "medium",
+          "dayOffset": 12,
+          "lunarSensitive": false
+        },
+        {
+          "title": "תצפית על כנימות ומזיקים",
+          "category": "pest",
+          "priority": "low",
+          "dayOffset": 14,
+          "lunarSensitive": false
+        },
+        {
+          "title": "הסרת פרחים נבולים (דד-הדינג)",
+          "category": "pruning",
+          "priority": "medium",
+          "dayOffset": 7,
+          "lunarSensitive": true
+        }
+      ]
+    },
+    {
+      "key": "דגניות",
+      "speciesId": "fafd1427-6cb0-4349-b667-66a271e37aee",
+      "category": "flowers",
+      "dayType": "flower",
+      "archetype": "flower",
+      "match": [
+        "דגניות"
+      ],
+      "tasks": [
+        {
+          "title": "השקיה סדירה",
+          "category": "watering",
+          "priority": "high",
+          "dayOffset": 0,
+          "lunarSensitive": false
+        },
+        {
+          "title": "דישון לעידוד פריחה",
+          "category": "fertilizing",
+          "priority": "medium",
+          "dayOffset": 12,
+          "lunarSensitive": false
+        },
+        {
+          "title": "תצפית על כנימות ומזיקים",
+          "category": "pest",
+          "priority": "low",
+          "dayOffset": 14,
+          "lunarSensitive": false
+        },
+        {
+          "title": "הסרת פרחים נבולים (דד-הדינג)",
+          "category": "pruning",
+          "priority": "medium",
+          "dayOffset": 7,
+          "lunarSensitive": true
+        }
+      ]
+    },
+    {
+      "key": "דליה",
+      "speciesId": "f82bfa07-ef3d-4fbb-81b7-f6c02ae7046a",
+      "category": "flowers",
+      "dayType": "flower",
+      "archetype": "flower",
+      "match": [
+        "דליה"
+      ],
+      "tasks": [
+        {
+          "title": "השקיה סדירה",
+          "category": "watering",
+          "priority": "high",
+          "dayOffset": 0,
+          "lunarSensitive": false
+        },
+        {
+          "title": "דישון לעידוד פריחה",
+          "category": "fertilizing",
+          "priority": "medium",
+          "dayOffset": 12,
+          "lunarSensitive": false
+        },
+        {
+          "title": "תצפית על כנימות ומזיקים",
+          "category": "pest",
+          "priority": "low",
+          "dayOffset": 14,
+          "lunarSensitive": false
+        },
+        {
+          "title": "הסרת פרחים נבולים (דד-הדינג)",
+          "category": "pruning",
+          "priority": "medium",
+          "dayOffset": 7,
+          "lunarSensitive": true
+        }
+      ]
+    },
+    {
+      "key": "דלעת",
+      "speciesId": "7bc4c3aa-4265-434a-b11d-aef380c38f20",
+      "category": "vegetables",
+      "dayType": "fruit",
+      "archetype": "fruiting_veg",
+      "match": [
+        "דלעת"
+      ],
+      "tasks": [
+        {
+          "title": "השקיה סדירה – עקביות מונעת בעיות בפרי",
+          "category": "watering",
+          "priority": "high",
+          "dayOffset": 0,
+          "lunarSensitive": false
+        },
+        {
+          "title": "סמך ותמיכה לצמח",
+          "category": "support",
+          "priority": "medium",
+          "dayOffset": 3,
+          "lunarSensitive": false
+        },
+        {
+          "title": "דישון לעידוד פריחה ופרי",
+          "category": "fertilizing",
+          "priority": "medium",
+          "dayOffset": 10,
+          "lunarSensitive": false
+        },
+        {
+          "title": "תצפית על כנימות וריקבון",
+          "category": "pest",
+          "priority": "medium",
+          "dayOffset": 14,
+          "lunarSensitive": false
+        },
+        {
+          "title": "דילול עלים תחתונים לאוורור",
+          "category": "pruning",
+          "priority": "low",
+          "dayOffset": 18,
+          "lunarSensitive": true
+        }
+      ]
+    },
+    {
+      "key": "דפנה",
+      "speciesId": "9f689bac-df93-43b7-a9ea-701a43e8d642",
+      "category": "herbs",
+      "dayType": "leaf",
+      "archetype": "leafy_herb",
+      "match": [
+        "דפנה"
+      ],
+      "tasks": [
+        {
+          "title": "השקיה – שמור על קרקע לחה",
+          "category": "watering",
+          "priority": "high",
+          "dayOffset": 0,
+          "lunarSensitive": false
+        },
+        {
+          "title": "קטיף ענפים עליונים לעידוד הסתעפות",
+          "category": "harvest",
+          "priority": "medium",
+          "dayOffset": 5,
+          "lunarSensitive": true
+        },
+        {
+          "title": "קמצוץ ראשי פריחה לשמירה על הטעם",
+          "category": "pruning",
+          "priority": "medium",
+          "dayOffset": 10,
+          "lunarSensitive": true
+        },
+        {
+          "title": "דישון קל",
+          "category": "fertilizing",
+          "priority": "low",
+          "dayOffset": 14,
+          "lunarSensitive": false
+        }
+      ]
+    },
+    {
+      "key": "הוורתיה",
+      "speciesId": "283f3e4f-d5c0-4035-b1a8-27d7765c0e56",
+      "category": "succulent",
+      "dayType": "leaf",
+      "archetype": "succulent",
+      "match": [
+        "הוורתיה"
+      ],
+      "tasks": [
+        {
+          "title": "השקיה מועטה – השקה רק כשהמצע יבש",
+          "category": "watering",
+          "priority": "medium",
+          "dayOffset": 0,
+          "lunarSensitive": false
+        },
+        {
+          "title": "מיקום באור בהיר",
+          "category": "observation",
+          "priority": "low",
+          "dayOffset": 5,
+          "lunarSensitive": false
+        },
+        {
+          "title": "בדיקת ניקוז המצע",
+          "category": "soil",
+          "priority": "low",
+          "dayOffset": 8,
+          "lunarSensitive": false
+        },
+        {
+          "title": "תצפית על ריקבון וכנימות מגן",
+          "category": "pest",
+          "priority": "low",
+          "dayOffset": 12,
+          "lunarSensitive": false
+        }
+      ]
+    },
+    {
+      "key": "היפריקום",
+      "speciesId": "f0896dc0-57e8-4db9-aa4a-4b205fdd021b",
+      "category": "medicinal",
+      "dayType": "flower",
+      "archetype": "flower",
+      "match": [
+        "היפריקום"
+      ],
+      "tasks": [
+        {
+          "title": "השקיה סדירה",
+          "category": "watering",
+          "priority": "high",
+          "dayOffset": 0,
+          "lunarSensitive": false
+        },
+        {
+          "title": "דישון לעידוד פריחה",
+          "category": "fertilizing",
+          "priority": "medium",
+          "dayOffset": 12,
+          "lunarSensitive": false
+        },
+        {
+          "title": "תצפית על כנימות ומזיקים",
+          "category": "pest",
+          "priority": "low",
+          "dayOffset": 14,
+          "lunarSensitive": false
+        },
+        {
+          "title": "הסרת פרחים נבולים (דד-הדינג)",
+          "category": "pruning",
+          "priority": "medium",
+          "dayOffset": 7,
+          "lunarSensitive": true
+        }
+      ]
+    },
+    {
+      "key": "ולריאן",
+      "speciesId": "d98826da-3a86-41c2-b41e-0c22f20af79f",
+      "category": "medicinal",
+      "dayType": "root",
+      "archetype": "root_medicinal",
+      "match": [
+        "ולריאן"
+      ],
+      "tasks": [
+        {
+          "title": "השקיה סדירה",
+          "category": "watering",
+          "priority": "medium",
+          "dayOffset": 0,
+          "lunarSensitive": false
+        },
+        {
+          "title": "חיפוי (מולץ') לשמירת לחות",
+          "category": "soil",
+          "priority": "medium",
+          "dayOffset": 8,
+          "lunarSensitive": false
+        },
+        {
+          "title": "דישון אורגני קל",
+          "category": "fertilizing",
+          "priority": "low",
+          "dayOffset": 14,
+          "lunarSensitive": false
+        },
+        {
+          "title": "תצפית על בריאות הצמח",
+          "category": "observation",
+          "priority": "low",
+          "dayOffset": 20,
+          "lunarSensitive": false
+        }
+      ]
+    },
+    {
+      "key": "ורד",
+      "speciesId": "5ecf41ec-ab44-449b-931f-1b4b9d17f3ed",
+      "category": "flowers",
+      "dayType": "flower",
+      "archetype": "flower",
+      "match": [
+        "ורד"
+      ],
+      "tasks": [
+        {
+          "title": "השקיה סדירה",
+          "category": "watering",
+          "priority": "high",
+          "dayOffset": 0,
+          "lunarSensitive": false
+        },
+        {
+          "title": "דישון לעידוד פריחה",
+          "category": "fertilizing",
+          "priority": "medium",
+          "dayOffset": 12,
+          "lunarSensitive": false
+        },
+        {
+          "title": "תצפית על כנימות ומזיקים",
+          "category": "pest",
+          "priority": "low",
+          "dayOffset": 14,
+          "lunarSensitive": false
+        },
+        {
+          "title": "הסרת פרחים נבולים (דד-הדינג)",
+          "category": "pruning",
+          "priority": "medium",
+          "dayOffset": 7,
+          "lunarSensitive": true
+        }
+      ]
+    },
+    {
+      "key": "ורד הכלב",
+      "speciesId": "240a6bd8-f08c-4876-9768-35891f054d4d",
+      "category": "medicinal",
+      "dayType": "fruit",
+      "archetype": "berry_shrub",
+      "match": [
+        "ורד הכלב"
+      ],
+      "tasks": [
+        {
+          "title": "השקיה עמוקה",
+          "category": "watering",
+          "priority": "high",
+          "dayOffset": 0,
+          "lunarSensitive": false
+        },
+        {
+          "title": "דישון אורגני",
+          "category": "fertilizing",
+          "priority": "medium",
+          "dayOffset": 12,
+          "lunarSensitive": false
+        },
+        {
+          "title": "תצפית על מזיקים",
+          "category": "pest",
+          "priority": "medium",
+          "dayOffset": 16,
+          "lunarSensitive": false
+        },
+        {
+          "title": "גיזום לאחר עונת הפרי",
+          "category": "pruning",
+          "priority": "low",
+          "dayOffset": 30,
+          "lunarSensitive": true
+        }
+      ]
+    },
+    {
+      "key": "זיניה",
+      "speciesId": "fef69f6c-12cd-45bc-97ec-bec16e75b8d9",
+      "category": "flowers",
+      "dayType": "flower",
+      "archetype": "flower",
+      "match": [
+        "זיניה"
+      ],
+      "tasks": [
+        {
+          "title": "השקיה סדירה",
+          "category": "watering",
+          "priority": "high",
+          "dayOffset": 0,
+          "lunarSensitive": false
+        },
+        {
+          "title": "דישון לעידוד פריחה",
+          "category": "fertilizing",
+          "priority": "medium",
+          "dayOffset": 12,
+          "lunarSensitive": false
+        },
+        {
+          "title": "תצפית על כנימות ומזיקים",
+          "category": "pest",
+          "priority": "low",
+          "dayOffset": 14,
+          "lunarSensitive": false
+        },
+        {
+          "title": "הסרת פרחים נבולים (דד-הדינג)",
+          "category": "pruning",
+          "priority": "medium",
+          "dayOffset": 7,
+          "lunarSensitive": true
+        }
+      ]
+    },
+    {
+      "key": "זית",
+      "speciesId": "56b48e5e-1a75-4be0-9c8e-02b21ab91219",
+      "category": "fruit_trees",
+      "dayType": "fruit",
+      "archetype": "olive",
+      "match": [
+        "זית"
+      ],
+      "tasks": [
+        {
+          "title": "בדיקת מערכת השקיה",
+          "category": "watering",
+          "priority": "medium",
+          "dayOffset": 0,
+          "lunarSensitive": false
+        },
+        {
+          "title": "גיזום עיצוב ואוורור הנוף",
+          "category": "pruning",
+          "priority": "medium",
+          "dayOffset": 10,
+          "lunarSensitive": true
+        },
+        {
+          "title": "דישון אורגני",
+          "category": "fertilizing",
+          "priority": "low",
+          "dayOffset": 18,
+          "lunarSensitive": false
+        },
+        {
+          "title": "תצפית על זבוב הזית",
+          "category": "pest",
+          "priority": "medium",
+          "dayOffset": 25,
+          "lunarSensitive": false
+        }
+      ]
+    },
+    {
+      "key": "זנגביל",
+      "speciesId": "55e08d6f-c2a8-44ae-abeb-f83267fa8e3f",
+      "category": "medicinal",
+      "dayType": "root",
+      "archetype": "root_medicinal",
+      "match": [
+        "זנגביל"
+      ],
+      "tasks": [
+        {
+          "title": "השקיה סדירה",
+          "category": "watering",
+          "priority": "medium",
+          "dayOffset": 0,
+          "lunarSensitive": false
+        },
+        {
+          "title": "חיפוי (מולץ') לשמירת לחות",
+          "category": "soil",
+          "priority": "medium",
+          "dayOffset": 8,
+          "lunarSensitive": false
+        },
+        {
+          "title": "דישון אורגני קל",
+          "category": "fertilizing",
+          "priority": "low",
+          "dayOffset": 14,
+          "lunarSensitive": false
+        },
+        {
+          "title": "תצפית על בריאות הצמח",
+          "category": "observation",
+          "priority": "low",
+          "dayOffset": 20,
+          "lunarSensitive": false
+        }
+      ]
+    },
+    {
+      "key": "חמנייה",
+      "speciesId": "865493e9-b656-46cc-93ba-863509ba776e",
+      "category": "flowers",
+      "dayType": "flower",
+      "archetype": "flower",
+      "match": [
+        "חמנייה"
+      ],
+      "tasks": [
+        {
+          "title": "השקיה סדירה",
+          "category": "watering",
+          "priority": "high",
+          "dayOffset": 0,
+          "lunarSensitive": false
+        },
+        {
+          "title": "דישון לעידוד פריחה",
+          "category": "fertilizing",
+          "priority": "medium",
+          "dayOffset": 12,
+          "lunarSensitive": false
+        },
+        {
+          "title": "תצפית על כנימות ומזיקים",
+          "category": "pest",
+          "priority": "low",
+          "dayOffset": 14,
+          "lunarSensitive": false
+        },
+        {
+          "title": "הסרת פרחים נבולים (דד-הדינג)",
+          "category": "pruning",
+          "priority": "medium",
+          "dayOffset": 7,
+          "lunarSensitive": true
+        }
+      ]
+    },
+    {
+      "key": "חסה",
+      "speciesId": "89aa3479-b02a-4ff4-b9c8-e6a7bf8855de",
+      "category": "vegetables",
+      "dayType": "leaf",
+      "archetype": "leafy_veg",
+      "match": [
+        "חסה"
+      ],
+      "tasks": [
+        {
+          "title": "השקיה – שמור על קרקע לחה",
+          "category": "watering",
+          "priority": "high",
+          "dayOffset": 0,
+          "lunarSensitive": false
+        },
+        {
+          "title": "בדיקת חלזונות ומזיקי עלים",
+          "category": "pest",
+          "priority": "high",
+          "dayOffset": 3,
+          "lunarSensitive": false
+        },
+        {
+          "title": "דישון עשיר בחנקן לצמיחת עלווה",
+          "category": "fertilizing",
+          "priority": "medium",
+          "dayOffset": 10,
+          "lunarSensitive": false
+        },
+        {
+          "title": "בדיקת לחות הקרקע",
+          "category": "soil",
+          "priority": "low",
+          "dayOffset": 7,
+          "lunarSensitive": false
+        },
+        {
+          "title": "קטיף עלים חיצוניים",
+          "category": "harvest",
+          "priority": "medium",
+          "dayOffset": 14,
+          "lunarSensitive": true
+        }
+      ]
+    },
+    {
+      "key": "חציל",
+      "speciesId": "0729ce60-190c-4bc1-b5e9-86cc82f9aef9",
+      "category": "vegetables",
+      "dayType": "fruit",
+      "archetype": "fruiting_veg",
+      "match": [
+        "חציל"
+      ],
+      "tasks": [
+        {
+          "title": "השקיה סדירה – עקביות מונעת בעיות בפרי",
+          "category": "watering",
+          "priority": "high",
+          "dayOffset": 0,
+          "lunarSensitive": false
+        },
+        {
+          "title": "סמך ותמיכה לצמח",
+          "category": "support",
+          "priority": "medium",
+          "dayOffset": 3,
+          "lunarSensitive": false
+        },
+        {
+          "title": "דישון לעידוד פריחה ופרי",
+          "category": "fertilizing",
+          "priority": "medium",
+          "dayOffset": 10,
+          "lunarSensitive": false
+        },
+        {
+          "title": "תצפית על כנימות וריקבון",
+          "category": "pest",
+          "priority": "medium",
+          "dayOffset": 14,
+          "lunarSensitive": false
+        },
+        {
+          "title": "דילול עלים תחתונים לאוורור",
+          "category": "pruning",
+          "priority": "low",
+          "dayOffset": 18,
+          "lunarSensitive": true
+        }
+      ]
+    },
+    {
+      "key": "טגטס",
+      "speciesId": "cb32f18b-c1f6-44a9-9428-edb99e7dc485",
+      "category": "flowers",
+      "dayType": "flower",
+      "archetype": "flower",
+      "match": [
+        "טגטס"
+      ],
+      "tasks": [
+        {
+          "title": "השקיה סדירה",
+          "category": "watering",
+          "priority": "high",
+          "dayOffset": 0,
+          "lunarSensitive": false
+        },
+        {
+          "title": "דישון לעידוד פריחה",
+          "category": "fertilizing",
+          "priority": "medium",
+          "dayOffset": 12,
+          "lunarSensitive": false
+        },
+        {
+          "title": "תצפית על כנימות ומזיקים",
+          "category": "pest",
+          "priority": "low",
+          "dayOffset": 14,
+          "lunarSensitive": false
+        },
+        {
+          "title": "הסרת פרחים נבולים (דד-הדינג)",
+          "category": "pruning",
+          "priority": "medium",
+          "dayOffset": 7,
+          "lunarSensitive": true
+        }
+      ]
+    },
+    {
+      "key": "טימין",
+      "speciesId": "b1e3884c-8ebc-4738-a630-134f8241a2a5",
+      "category": "herbs",
+      "dayType": "flower",
+      "archetype": "woody_herb",
+      "match": [
+        "טימין"
+      ],
+      "tasks": [
+        {
+          "title": "השקיה מתונה – רגיש לעודף מים",
+          "category": "watering",
+          "priority": "medium",
+          "dayOffset": 0,
+          "lunarSensitive": false
+        },
+        {
+          "title": "בדיקת ניקוז הקרקע",
+          "category": "soil",
+          "priority": "low",
+          "dayOffset": 8,
+          "lunarSensitive": false
+        },
+        {
+          "title": "קטיף ענפים לשימוש ולעידוד צמיחה",
+          "category": "harvest",
+          "priority": "medium",
+          "dayOffset": 6,
+          "lunarSensitive": true
+        },
+        {
+          "title": "גיזום קל לאחר הפריחה",
+          "category": "pruning",
+          "priority": "low",
+          "dayOffset": 14,
+          "lunarSensitive": true
+        }
+      ]
+    },
+    {
+      "key": "טרגון",
+      "speciesId": "d1d9034f-5570-4873-b41c-e430dd631035",
+      "category": "herbs",
+      "dayType": "leaf",
+      "archetype": "leafy_herb",
+      "match": [
+        "טרגון"
+      ],
+      "tasks": [
+        {
+          "title": "השקיה – שמור על קרקע לחה",
+          "category": "watering",
+          "priority": "high",
+          "dayOffset": 0,
+          "lunarSensitive": false
+        },
+        {
+          "title": "קטיף ענפים עליונים לעידוד הסתעפות",
+          "category": "harvest",
+          "priority": "medium",
+          "dayOffset": 5,
+          "lunarSensitive": true
+        },
+        {
+          "title": "קמצוץ ראשי פריחה לשמירה על הטעם",
+          "category": "pruning",
+          "priority": "medium",
+          "dayOffset": 10,
+          "lunarSensitive": true
+        },
+        {
+          "title": "דישון קל",
+          "category": "fertilizing",
+          "priority": "low",
+          "dayOffset": 14,
+          "lunarSensitive": false
+        }
+      ]
+    },
+    {
+      "key": "כוסברה",
+      "speciesId": "28d651fd-2353-43f4-bbed-0c252cfe4c74",
+      "category": "herbs",
+      "dayType": "leaf",
+      "archetype": "leafy_herb",
+      "match": [
+        "כוסברה"
+      ],
+      "tasks": [
+        {
+          "title": "השקיה – שמור על קרקע לחה",
+          "category": "watering",
+          "priority": "high",
+          "dayOffset": 0,
+          "lunarSensitive": false
+        },
+        {
+          "title": "קטיף ענפים עליונים לעידוד הסתעפות",
+          "category": "harvest",
+          "priority": "medium",
+          "dayOffset": 5,
+          "lunarSensitive": true
+        },
+        {
+          "title": "קמצוץ ראשי פריחה לשמירה על הטעם",
+          "category": "pruning",
+          "priority": "medium",
+          "dayOffset": 10,
+          "lunarSensitive": true
+        },
+        {
+          "title": "דישון קל",
+          "category": "fertilizing",
+          "priority": "low",
+          "dayOffset": 14,
+          "lunarSensitive": false
+        }
+      ]
+    },
+    {
+      "key": "כורכום",
+      "speciesId": "a0b014b5-5a66-446c-99c3-42a77e8b5cef",
+      "category": "medicinal",
+      "dayType": "root",
+      "archetype": "root_medicinal",
+      "match": [
+        "כורכום"
+      ],
+      "tasks": [
+        {
+          "title": "השקיה סדירה",
+          "category": "watering",
+          "priority": "medium",
+          "dayOffset": 0,
+          "lunarSensitive": false
+        },
+        {
+          "title": "חיפוי (מולץ') לשמירת לחות",
+          "category": "soil",
+          "priority": "medium",
+          "dayOffset": 8,
+          "lunarSensitive": false
+        },
+        {
+          "title": "דישון אורגני קל",
+          "category": "fertilizing",
+          "priority": "low",
+          "dayOffset": 14,
+          "lunarSensitive": false
+        },
+        {
+          "title": "תצפית על בריאות הצמח",
+          "category": "observation",
+          "priority": "low",
+          "dayOffset": 20,
+          "lunarSensitive": false
+        }
+      ]
+    },
+    {
+      "key": "כרוב ירוק",
+      "speciesId": "2b6bd94c-4d09-4275-8d47-59212cb78921",
+      "category": "vegetables",
+      "dayType": "leaf",
+      "archetype": "leafy_veg",
+      "match": [
+        "כרוב ירוק"
+      ],
+      "tasks": [
+        {
+          "title": "השקיה – שמור על קרקע לחה",
+          "category": "watering",
+          "priority": "high",
+          "dayOffset": 0,
+          "lunarSensitive": false
+        },
+        {
+          "title": "בדיקת חלזונות ומזיקי עלים",
+          "category": "pest",
+          "priority": "high",
+          "dayOffset": 3,
+          "lunarSensitive": false
+        },
+        {
+          "title": "דישון עשיר בחנקן לצמיחת עלווה",
+          "category": "fertilizing",
+          "priority": "medium",
+          "dayOffset": 10,
+          "lunarSensitive": false
+        },
+        {
+          "title": "בדיקת לחות הקרקע",
+          "category": "soil",
+          "priority": "low",
+          "dayOffset": 7,
+          "lunarSensitive": false
+        },
+        {
+          "title": "קטיף עלים חיצוניים",
+          "category": "harvest",
+          "priority": "medium",
+          "dayOffset": 14,
+          "lunarSensitive": true
+        }
+      ]
+    },
+    {
+      "key": "כרוב לבן",
+      "speciesId": "ff82fdd7-83ef-47da-847d-53577ef0c5f2",
+      "category": "vegetables",
+      "dayType": "leaf",
+      "archetype": "leafy_veg",
+      "match": [
+        "כרוב לבן"
+      ],
+      "tasks": [
+        {
+          "title": "השקיה – שמור על קרקע לחה",
+          "category": "watering",
+          "priority": "high",
+          "dayOffset": 0,
+          "lunarSensitive": false
+        },
+        {
+          "title": "בדיקת חלזונות ומזיקי עלים",
+          "category": "pest",
+          "priority": "high",
+          "dayOffset": 3,
+          "lunarSensitive": false
+        },
+        {
+          "title": "דישון עשיר בחנקן לצמיחת עלווה",
+          "category": "fertilizing",
+          "priority": "medium",
+          "dayOffset": 10,
+          "lunarSensitive": false
+        },
+        {
+          "title": "בדיקת לחות הקרקע",
+          "category": "soil",
+          "priority": "low",
+          "dayOffset": 7,
+          "lunarSensitive": false
+        },
+        {
+          "title": "קטיף עלים חיצוניים",
+          "category": "harvest",
+          "priority": "medium",
+          "dayOffset": 14,
+          "lunarSensitive": true
+        }
+      ]
+    },
+    {
+      "key": "כרוב ניצנים",
+      "speciesId": "a5dc5509-8322-4b91-a2f2-6e8747eaf106",
+      "category": "vegetables",
+      "dayType": "leaf",
+      "archetype": "leafy_veg",
+      "match": [
+        "כרוב ניצנים"
+      ],
+      "tasks": [
+        {
+          "title": "השקיה – שמור על קרקע לחה",
+          "category": "watering",
+          "priority": "high",
+          "dayOffset": 0,
+          "lunarSensitive": false
+        },
+        {
+          "title": "בדיקת חלזונות ומזיקי עלים",
+          "category": "pest",
+          "priority": "high",
+          "dayOffset": 3,
+          "lunarSensitive": false
+        },
+        {
+          "title": "דישון עשיר בחנקן לצמיחת עלווה",
+          "category": "fertilizing",
+          "priority": "medium",
+          "dayOffset": 10,
+          "lunarSensitive": false
+        },
+        {
+          "title": "בדיקת לחות הקרקע",
+          "category": "soil",
+          "priority": "low",
+          "dayOffset": 7,
+          "lunarSensitive": false
+        },
+        {
+          "title": "קטיף עלים חיצוניים",
+          "category": "harvest",
+          "priority": "medium",
+          "dayOffset": 14,
+          "lunarSensitive": true
+        }
+      ]
+    },
+    {
+      "key": "כרובית",
+      "speciesId": "0729500e-fa33-4baa-ba71-d03f79870390",
+      "category": "vegetables",
+      "dayType": "leaf",
+      "archetype": "leafy_veg",
+      "match": [
+        "כרובית"
+      ],
+      "tasks": [
+        {
+          "title": "השקיה – שמור על קרקע לחה",
+          "category": "watering",
+          "priority": "high",
+          "dayOffset": 0,
+          "lunarSensitive": false
+        },
+        {
+          "title": "בדיקת חלזונות ומזיקי עלים",
+          "category": "pest",
+          "priority": "high",
+          "dayOffset": 3,
+          "lunarSensitive": false
+        },
+        {
+          "title": "דישון עשיר בחנקן לצמיחת עלווה",
+          "category": "fertilizing",
+          "priority": "medium",
+          "dayOffset": 10,
+          "lunarSensitive": false
+        },
+        {
+          "title": "בדיקת לחות הקרקע",
+          "category": "soil",
+          "priority": "low",
+          "dayOffset": 7,
+          "lunarSensitive": false
+        },
+        {
+          "title": "קטיף עלים חיצוניים",
+          "category": "harvest",
+          "priority": "medium",
+          "dayOffset": 14,
+          "lunarSensitive": true
+        }
+      ]
+    },
+    {
+      "key": "כרישה",
+      "speciesId": "84540658-723e-46db-9796-9467fb0e5317",
+      "category": "vegetables",
+      "dayType": "root",
+      "archetype": "root_veg",
+      "match": [
+        "כרישה"
+      ],
+      "tasks": [
+        {
+          "title": "השקיה סדירה ואחידה",
+          "category": "watering",
+          "priority": "high",
+          "dayOffset": 0,
+          "lunarSensitive": false
+        },
+        {
+          "title": "דילול שתילים לצפיפות נכונה",
+          "category": "maintenance",
+          "priority": "medium",
+          "dayOffset": 5,
+          "lunarSensitive": true
+        },
+        {
+          "title": "ניכוש ואוורור הקרקע סביב הצמח",
+          "category": "soil",
+          "priority": "medium",
+          "dayOffset": 10,
+          "lunarSensitive": false
+        },
+        {
+          "title": "תצפית על מזיקי קרקע",
+          "category": "pest",
+          "priority": "low",
+          "dayOffset": 14,
+          "lunarSensitive": false
+        }
+      ]
+    },
+    {
+      "key": "לבנדר",
+      "speciesId": "98f099ee-9725-4092-9cd6-2f75b905d176",
+      "category": "herbs",
+      "dayType": "flower",
+      "archetype": "woody_herb",
+      "match": [
+        "לבנדר"
+      ],
+      "tasks": [
+        {
+          "title": "השקיה מתונה – רגיש לעודף מים",
+          "category": "watering",
+          "priority": "medium",
+          "dayOffset": 0,
+          "lunarSensitive": false
+        },
+        {
+          "title": "בדיקת ניקוז הקרקע",
+          "category": "soil",
+          "priority": "low",
+          "dayOffset": 8,
+          "lunarSensitive": false
+        },
+        {
+          "title": "קטיף ענפים לשימוש ולעידוד צמיחה",
+          "category": "harvest",
+          "priority": "medium",
+          "dayOffset": 6,
+          "lunarSensitive": true
+        },
+        {
+          "title": "גיזום קל לאחר הפריחה",
+          "category": "pruning",
+          "priority": "low",
+          "dayOffset": 14,
+          "lunarSensitive": true
+        }
+      ]
+    },
+    {
+      "key": "לואיזה",
+      "speciesId": "c8cc070c-f84d-4334-86a6-ff40bbee76b5",
+      "category": "herbs",
+      "dayType": "leaf",
+      "archetype": "leafy_herb",
+      "match": [
+        "לואיזה"
+      ],
+      "tasks": [
+        {
+          "title": "השקיה – שמור על קרקע לחה",
+          "category": "watering",
+          "priority": "high",
+          "dayOffset": 0,
+          "lunarSensitive": false
+        },
+        {
+          "title": "קטיף ענפים עליונים לעידוד הסתעפות",
+          "category": "harvest",
+          "priority": "medium",
+          "dayOffset": 5,
+          "lunarSensitive": true
+        },
+        {
+          "title": "קמצוץ ראשי פריחה לשמירה על הטעם",
+          "category": "pruning",
+          "priority": "medium",
+          "dayOffset": 10,
+          "lunarSensitive": true
+        },
+        {
+          "title": "דישון קל",
+          "category": "fertilizing",
+          "priority": "low",
+          "dayOffset": 14,
+          "lunarSensitive": false
+        }
+      ]
+    },
+    {
+      "key": "לוע הארי",
+      "speciesId": "2e5771cf-ad3d-41a0-bd73-3dca872168d4",
+      "category": "flowers",
+      "dayType": "flower",
+      "archetype": "flower",
+      "match": [
+        "לוע הארי"
+      ],
+      "tasks": [
+        {
+          "title": "השקיה סדירה",
+          "category": "watering",
+          "priority": "high",
+          "dayOffset": 0,
+          "lunarSensitive": false
+        },
+        {
+          "title": "דישון לעידוד פריחה",
+          "category": "fertilizing",
+          "priority": "medium",
+          "dayOffset": 12,
+          "lunarSensitive": false
+        },
+        {
+          "title": "תצפית על כנימות ומזיקים",
+          "category": "pest",
+          "priority": "low",
+          "dayOffset": 14,
+          "lunarSensitive": false
+        },
+        {
+          "title": "הסרת פרחים נבולים (דד-הדינג)",
+          "category": "pruning",
+          "priority": "medium",
+          "dayOffset": 7,
+          "lunarSensitive": true
+        }
+      ]
+    },
+    {
+      "key": "ליים גראס",
+      "speciesId": "7b6dff7f-4424-46fd-befa-3d466cf1af1e",
+      "category": "herbs",
+      "dayType": "leaf",
+      "archetype": "leafy_herb",
+      "match": [
+        "ליים גראס"
+      ],
+      "tasks": [
+        {
+          "title": "השקיה – שמור על קרקע לחה",
+          "category": "watering",
+          "priority": "high",
+          "dayOffset": 0,
+          "lunarSensitive": false
+        },
+        {
+          "title": "קטיף ענפים עליונים לעידוד הסתעפות",
+          "category": "harvest",
+          "priority": "medium",
+          "dayOffset": 5,
+          "lunarSensitive": true
+        },
+        {
+          "title": "קמצוץ ראשי פריחה לשמירה על הטעם",
+          "category": "pruning",
+          "priority": "medium",
+          "dayOffset": 10,
+          "lunarSensitive": true
+        },
+        {
+          "title": "דישון קל",
+          "category": "fertilizing",
+          "priority": "low",
+          "dayOffset": 14,
+          "lunarSensitive": false
+        }
+      ]
+    },
+    {
+      "key": "לימון",
+      "speciesId": "1e3718d3-1469-4de0-aa3d-34123cf8da25",
+      "category": "fruit_trees",
+      "dayType": "fruit",
+      "archetype": "citrus",
+      "match": [
+        "לימון"
+      ],
+      "tasks": [
+        {
+          "title": "השקיה עמוקה – הדרים רגישים ליובש",
+          "category": "watering",
+          "priority": "high",
+          "dayOffset": 0,
+          "lunarSensitive": false
+        },
+        {
+          "title": "בדיקת מזיקים (כנימות ומיני עש)",
+          "category": "pest",
+          "priority": "medium",
+          "dayOffset": 5,
+          "lunarSensitive": false
+        },
+        {
+          "title": "דישון הדרים (עשיר באשלגן וברזל)",
+          "category": "fertilizing",
+          "priority": "medium",
+          "dayOffset": 12,
+          "lunarSensitive": false
+        },
+        {
+          "title": "גיזום ענפי מים וסורים",
+          "category": "pruning",
+          "priority": "low",
+          "dayOffset": 25,
+          "lunarSensitive": true
+        }
+      ]
+    },
+    {
+      "key": "לפת",
+      "speciesId": "d8b09a64-31ca-4427-99b3-68d0d9bac96f",
+      "category": "vegetables",
+      "dayType": "root",
+      "archetype": "root_veg",
+      "match": [
+        "לפת"
+      ],
+      "tasks": [
+        {
+          "title": "השקיה סדירה ואחידה",
+          "category": "watering",
+          "priority": "high",
+          "dayOffset": 0,
+          "lunarSensitive": false
+        },
+        {
+          "title": "דילול שתילים לצפיפות נכונה",
+          "category": "maintenance",
+          "priority": "medium",
+          "dayOffset": 5,
+          "lunarSensitive": true
+        },
+        {
+          "title": "ניכוש ואוורור הקרקע סביב הצמח",
+          "category": "soil",
+          "priority": "medium",
+          "dayOffset": 10,
+          "lunarSensitive": false
+        },
+        {
+          "title": "תצפית על מזיקי קרקע",
+          "category": "pest",
+          "priority": "low",
+          "dayOffset": 14,
+          "lunarSensitive": false
+        }
+      ]
+    },
+    {
+      "key": "מונסטרה",
+      "speciesId": "2712be4b-337f-4d29-bfd0-759147d6cebf",
+      "category": "house_plant",
+      "dayType": "leaf",
+      "archetype": "house_plant",
+      "match": [
+        "מונסטרה"
+      ],
+      "tasks": [
+        {
+          "title": "השקיה מתונה – בדוק לחות לפני השקיה",
+          "category": "watering",
+          "priority": "medium",
+          "dayOffset": 0,
+          "lunarSensitive": false
+        },
+        {
+          "title": "מיקום באור עקיף בהיר",
+          "category": "observation",
+          "priority": "low",
+          "dayOffset": 5,
+          "lunarSensitive": false
+        },
+        {
+          "title": "ניקוי אבק מהעלים",
+          "category": "maintenance",
+          "priority": "low",
+          "dayOffset": 7,
+          "lunarSensitive": false
+        },
+        {
+          "title": "תצפית על מזיקים (כנימות/אקריות)",
+          "category": "pest",
+          "priority": "low",
+          "dayOffset": 12,
+          "lunarSensitive": false
+        }
+      ]
+    },
+    {
+      "key": "מחרוזת פנינים",
+      "speciesId": "69e93300-fcc7-4220-b933-47c9b5aa6257",
+      "category": "succulent",
+      "dayType": "leaf",
+      "archetype": "succulent",
+      "match": [
+        "מחרוזת פנינים"
+      ],
+      "tasks": [
+        {
+          "title": "השקיה מועטה – השקה רק כשהמצע יבש",
+          "category": "watering",
+          "priority": "medium",
+          "dayOffset": 0,
+          "lunarSensitive": false
+        },
+        {
+          "title": "מיקום באור בהיר",
+          "category": "observation",
+          "priority": "low",
+          "dayOffset": 5,
+          "lunarSensitive": false
+        },
+        {
+          "title": "בדיקת ניקוז המצע",
+          "category": "soil",
+          "priority": "low",
+          "dayOffset": 8,
+          "lunarSensitive": false
+        },
+        {
+          "title": "תצפית על ריקבון וכנימות מגן",
+          "category": "pest",
+          "priority": "low",
+          "dayOffset": 12,
+          "lunarSensitive": false
+        }
+      ]
+    },
+    {
+      "key": "מלון",
+      "speciesId": "022aae7c-069a-4977-b695-becb90d24c6f",
+      "category": "vegetables",
+      "dayType": "fruit",
+      "archetype": "fruiting_veg",
+      "match": [
+        "מלון"
+      ],
+      "tasks": [
+        {
+          "title": "השקיה סדירה – עקביות מונעת בעיות בפרי",
+          "category": "watering",
+          "priority": "high",
+          "dayOffset": 0,
+          "lunarSensitive": false
+        },
+        {
+          "title": "סמך ותמיכה לצמח",
+          "category": "support",
+          "priority": "medium",
+          "dayOffset": 3,
+          "lunarSensitive": false
+        },
+        {
+          "title": "דישון לעידוד פריחה ופרי",
+          "category": "fertilizing",
+          "priority": "medium",
+          "dayOffset": 10,
+          "lunarSensitive": false
+        },
+        {
+          "title": "תצפית על כנימות וריקבון",
+          "category": "pest",
+          "priority": "medium",
+          "dayOffset": 14,
+          "lunarSensitive": false
+        },
+        {
+          "title": "דילול עלים תחתונים לאוורור",
+          "category": "pruning",
+          "priority": "low",
+          "dayOffset": 18,
+          "lunarSensitive": true
+        }
+      ]
+    },
+    {
+      "key": "מליסה",
+      "speciesId": "6dccdbc3-e637-4d1a-bdb8-8ae60f1c4788",
+      "category": "medicinal",
+      "dayType": "leaf",
+      "archetype": "leafy_herb",
+      "match": [
+        "מליסה"
+      ],
+      "tasks": [
+        {
+          "title": "השקיה – שמור על קרקע לחה",
+          "category": "watering",
+          "priority": "high",
+          "dayOffset": 0,
+          "lunarSensitive": false
+        },
+        {
+          "title": "קטיף ענפים עליונים לעידוד הסתעפות",
+          "category": "harvest",
+          "priority": "medium",
+          "dayOffset": 5,
+          "lunarSensitive": true
+        },
+        {
+          "title": "קמצוץ ראשי פריחה לשמירה על הטעם",
+          "category": "pruning",
+          "priority": "medium",
+          "dayOffset": 10,
+          "lunarSensitive": true
+        },
+        {
+          "title": "דישון קל",
+          "category": "fertilizing",
+          "priority": "low",
+          "dayOffset": 14,
+          "lunarSensitive": false
+        }
+      ]
+    },
+    {
+      "key": "מלפפון",
+      "speciesId": "0e643bc2-d371-47ef-8ff8-a6af67d251fc",
+      "category": "vegetables",
+      "dayType": "fruit",
+      "archetype": "fruiting_veg",
+      "match": [
+        "מלפפון"
+      ],
+      "tasks": [
+        {
+          "title": "השקיה סדירה – עקביות מונעת בעיות בפרי",
+          "category": "watering",
+          "priority": "high",
+          "dayOffset": 0,
+          "lunarSensitive": false
+        },
+        {
+          "title": "סמך ותמיכה לצמח",
+          "category": "support",
+          "priority": "medium",
+          "dayOffset": 3,
+          "lunarSensitive": false
+        },
+        {
+          "title": "דישון לעידוד פריחה ופרי",
+          "category": "fertilizing",
+          "priority": "medium",
+          "dayOffset": 10,
+          "lunarSensitive": false
+        },
+        {
+          "title": "תצפית על כנימות וריקבון",
+          "category": "pest",
+          "priority": "medium",
+          "dayOffset": 14,
+          "lunarSensitive": false
+        },
+        {
+          "title": "דילול עלים תחתונים לאוורור",
+          "category": "pruning",
+          "priority": "low",
+          "dayOffset": 18,
+          "lunarSensitive": true
+        }
+      ]
+    },
+    {
+      "key": "מנגולד",
+      "speciesId": "fa7bcb43-df7b-46db-8236-7085280f1083",
+      "category": "vegetables",
+      "dayType": "leaf",
+      "archetype": "leafy_veg",
+      "match": [
+        "מנגולד"
+      ],
+      "tasks": [
+        {
+          "title": "השקיה – שמור על קרקע לחה",
+          "category": "watering",
+          "priority": "high",
+          "dayOffset": 0,
+          "lunarSensitive": false
+        },
+        {
+          "title": "בדיקת חלזונות ומזיקי עלים",
+          "category": "pest",
+          "priority": "high",
+          "dayOffset": 3,
+          "lunarSensitive": false
+        },
+        {
+          "title": "דישון עשיר בחנקן לצמיחת עלווה",
+          "category": "fertilizing",
+          "priority": "medium",
+          "dayOffset": 10,
+          "lunarSensitive": false
+        },
+        {
+          "title": "בדיקת לחות הקרקע",
+          "category": "soil",
+          "priority": "low",
+          "dayOffset": 7,
+          "lunarSensitive": false
+        },
+        {
+          "title": "קטיף עלים חיצוניים",
+          "category": "harvest",
+          "priority": "medium",
+          "dayOffset": 14,
+          "lunarSensitive": true
+        }
+      ]
+    },
+    {
+      "key": "מרווה",
+      "speciesId": "8137c780-ed16-4c31-8afe-73b2e2e6daf4",
+      "category": "herbs",
+      "dayType": "flower",
+      "archetype": "woody_herb",
+      "match": [
+        "מרווה"
+      ],
+      "tasks": [
+        {
+          "title": "השקיה מתונה – רגיש לעודף מים",
+          "category": "watering",
+          "priority": "medium",
+          "dayOffset": 0,
+          "lunarSensitive": false
+        },
+        {
+          "title": "בדיקת ניקוז הקרקע",
+          "category": "soil",
+          "priority": "low",
+          "dayOffset": 8,
+          "lunarSensitive": false
+        },
+        {
+          "title": "קטיף ענפים לשימוש ולעידוד צמיחה",
+          "category": "harvest",
+          "priority": "medium",
+          "dayOffset": 6,
+          "lunarSensitive": true
+        },
+        {
+          "title": "גיזום קל לאחר הפריחה",
+          "category": "pruning",
+          "priority": "low",
+          "dayOffset": 14,
+          "lunarSensitive": true
+        }
+      ]
+    },
+    {
+      "key": "משמש",
+      "speciesId": "845f8a55-6e09-427f-9ba7-d3805bf950e1",
+      "category": "fruit_trees",
+      "dayType": "fruit",
+      "archetype": "deciduous_fruit_tree",
+      "match": [
+        "משמש"
+      ],
+      "tasks": [
+        {
+          "title": "השקיה עמוקה בעונה החמה",
+          "category": "watering",
+          "priority": "high",
+          "dayOffset": 0,
+          "lunarSensitive": false
+        },
+        {
+          "title": "תצפית על מזיקים ומחלות",
+          "category": "pest",
+          "priority": "medium",
+          "dayOffset": 7,
+          "lunarSensitive": false
+        },
+        {
+          "title": "דישון אורגני באביב",
+          "category": "fertilizing",
+          "priority": "medium",
+          "dayOffset": 15,
+          "lunarSensitive": false
+        },
+        {
+          "title": "גיזום חורף – דילול ואוורור",
+          "category": "pruning",
+          "priority": "low",
+          "dayOffset": 30,
+          "lunarSensitive": true,
+          "notes": "בצע בעונת השלכת, כשהעץ רדום."
+        }
+      ]
+    },
+    {
+      "key": "נסטורציום",
+      "speciesId": "22d89d5b-e349-41de-bde7-6cc8c92e161d",
+      "category": "flowers",
+      "dayType": "flower",
+      "archetype": "flower",
+      "match": [
+        "נסטורציום"
+      ],
+      "tasks": [
+        {
+          "title": "השקיה סדירה",
+          "category": "watering",
+          "priority": "high",
+          "dayOffset": 0,
+          "lunarSensitive": false
+        },
+        {
+          "title": "דישון לעידוד פריחה",
+          "category": "fertilizing",
+          "priority": "medium",
+          "dayOffset": 12,
+          "lunarSensitive": false
+        },
+        {
+          "title": "תצפית על כנימות ומזיקים",
+          "category": "pest",
+          "priority": "low",
+          "dayOffset": 14,
+          "lunarSensitive": false
+        },
+        {
+          "title": "הסרת פרחים נבולים (דד-הדינג)",
+          "category": "pruning",
+          "priority": "medium",
+          "dayOffset": 7,
+          "lunarSensitive": true
+        }
+      ]
+    },
+    {
+      "key": "נענע",
+      "speciesId": "2fd33e66-04d8-4d2e-b26c-a3b602e38f47",
+      "category": "herbs",
+      "dayType": "leaf",
+      "archetype": "leafy_herb",
+      "match": [
+        "נענע"
+      ],
+      "tasks": [
+        {
+          "title": "השקיה – שמור על קרקע לחה",
+          "category": "watering",
+          "priority": "high",
+          "dayOffset": 0,
+          "lunarSensitive": false
+        },
+        {
+          "title": "קטיף ענפים עליונים לעידוד הסתעפות",
+          "category": "harvest",
+          "priority": "medium",
+          "dayOffset": 5,
+          "lunarSensitive": true
+        },
+        {
+          "title": "קמצוץ ראשי פריחה לשמירה על הטעם",
+          "category": "pruning",
+          "priority": "medium",
+          "dayOffset": 10,
+          "lunarSensitive": true
+        },
+        {
+          "title": "דישון קל",
+          "category": "fertilizing",
+          "priority": "low",
+          "dayOffset": 14,
+          "lunarSensitive": false
+        }
+      ]
+    },
+    {
+      "key": "נענע פלפל",
+      "speciesId": "bf7d09bc-99fb-4473-b30b-0ea8e7207c0a",
+      "category": "medicinal",
+      "dayType": "leaf",
+      "archetype": "leafy_herb",
+      "match": [
+        "נענע פלפל"
+      ],
+      "tasks": [
+        {
+          "title": "השקיה – שמור על קרקע לחה",
+          "category": "watering",
+          "priority": "high",
+          "dayOffset": 0,
+          "lunarSensitive": false
+        },
+        {
+          "title": "קטיף ענפים עליונים לעידוד הסתעפות",
+          "category": "harvest",
+          "priority": "medium",
+          "dayOffset": 5,
+          "lunarSensitive": true
+        },
+        {
+          "title": "קמצוץ ראשי פריחה לשמירה על הטעם",
+          "category": "pruning",
+          "priority": "medium",
+          "dayOffset": 10,
+          "lunarSensitive": true
+        },
+        {
+          "title": "דישון קל",
+          "category": "fertilizing",
+          "priority": "low",
+          "dayOffset": 14,
+          "lunarSensitive": false
+        }
+      ]
+    },
+    {
+      "key": "סדום",
+      "speciesId": "b7be31c1-411b-43b5-bc14-95c62fab0d5d",
+      "category": "succulent",
+      "dayType": "flower",
+      "archetype": "succulent",
+      "match": [
+        "סדום"
+      ],
+      "tasks": [
+        {
+          "title": "השקיה מועטה – השקה רק כשהמצע יבש",
+          "category": "watering",
+          "priority": "medium",
+          "dayOffset": 0,
+          "lunarSensitive": false
+        },
+        {
+          "title": "מיקום באור בהיר",
+          "category": "observation",
+          "priority": "low",
+          "dayOffset": 5,
+          "lunarSensitive": false
+        },
+        {
+          "title": "בדיקת ניקוז המצע",
+          "category": "soil",
+          "priority": "low",
+          "dayOffset": 8,
+          "lunarSensitive": false
+        },
+        {
+          "title": "תצפית על ריקבון וכנימות מגן",
+          "category": "pest",
+          "priority": "low",
+          "dayOffset": 12,
+          "lunarSensitive": false
+        }
+      ]
+    },
+    {
+      "key": "סלק",
+      "speciesId": "4cdd1b22-89e5-48e6-850c-db38fe54f2e3",
+      "category": "vegetables",
+      "dayType": "root",
+      "archetype": "root_veg",
+      "match": [
+        "סלק"
+      ],
+      "tasks": [
+        {
+          "title": "השקיה סדירה ואחידה",
+          "category": "watering",
+          "priority": "high",
+          "dayOffset": 0,
+          "lunarSensitive": false
+        },
+        {
+          "title": "דילול שתילים לצפיפות נכונה",
+          "category": "maintenance",
+          "priority": "medium",
+          "dayOffset": 5,
+          "lunarSensitive": true
+        },
+        {
+          "title": "ניכוש ואוורור הקרקע סביב הצמח",
+          "category": "soil",
+          "priority": "medium",
+          "dayOffset": 10,
+          "lunarSensitive": false
+        },
+        {
+          "title": "תצפית על מזיקי קרקע",
+          "category": "pest",
+          "priority": "low",
+          "dayOffset": 14,
+          "lunarSensitive": false
+        }
+      ]
+    },
+    {
+      "key": "סלרי",
+      "speciesId": "7e445696-a7d3-4bff-8f02-370e5a1b2b98",
+      "category": "vegetables",
+      "dayType": "leaf",
+      "archetype": "leafy_veg",
+      "match": [
+        "סלרי"
+      ],
+      "tasks": [
+        {
+          "title": "השקיה – שמור על קרקע לחה",
+          "category": "watering",
+          "priority": "high",
+          "dayOffset": 0,
+          "lunarSensitive": false
+        },
+        {
+          "title": "בדיקת חלזונות ומזיקי עלים",
+          "category": "pest",
+          "priority": "high",
+          "dayOffset": 3,
+          "lunarSensitive": false
+        },
+        {
+          "title": "דישון עשיר בחנקן לצמיחת עלווה",
+          "category": "fertilizing",
+          "priority": "medium",
+          "dayOffset": 10,
+          "lunarSensitive": false
+        },
+        {
+          "title": "בדיקת לחות הקרקע",
+          "category": "soil",
+          "priority": "low",
+          "dayOffset": 7,
+          "lunarSensitive": false
+        },
+        {
+          "title": "קטיף עלים חיצוניים",
+          "category": "harvest",
+          "priority": "medium",
+          "dayOffset": 14,
+          "lunarSensitive": true
+        }
+      ]
+    },
+    {
+      "key": "סמבוק שחור",
+      "speciesId": "56c15670-7584-4c89-a095-5f81ea56ce88",
+      "category": "medicinal",
+      "dayType": "fruit",
+      "archetype": "berry_shrub",
+      "match": [
+        "סמבוק שחור"
+      ],
+      "tasks": [
+        {
+          "title": "השקיה עמוקה",
+          "category": "watering",
+          "priority": "high",
+          "dayOffset": 0,
+          "lunarSensitive": false
+        },
+        {
+          "title": "דישון אורגני",
+          "category": "fertilizing",
+          "priority": "medium",
+          "dayOffset": 12,
+          "lunarSensitive": false
+        },
+        {
+          "title": "תצפית על מזיקים",
+          "category": "pest",
+          "priority": "medium",
+          "dayOffset": 16,
+          "lunarSensitive": false
+        },
+        {
+          "title": "גיזום לאחר עונת הפרי",
+          "category": "pruning",
+          "priority": "low",
+          "dayOffset": 30,
+          "lunarSensitive": true
+        }
+      ]
+    },
+    {
+      "key": "סנסווירה",
+      "speciesId": "246e99b9-c2dd-426e-ac21-aab0eb561054",
+      "category": "house_plant",
+      "dayType": "leaf",
+      "archetype": "house_plant",
+      "match": [
+        "סנסווירה"
+      ],
+      "tasks": [
+        {
+          "title": "השקיה מתונה – בדוק לחות לפני השקיה",
+          "category": "watering",
+          "priority": "medium",
+          "dayOffset": 0,
+          "lunarSensitive": false
+        },
+        {
+          "title": "מיקום באור עקיף בהיר",
+          "category": "observation",
+          "priority": "low",
+          "dayOffset": 5,
+          "lunarSensitive": false
+        },
+        {
+          "title": "ניקוי אבק מהעלים",
+          "category": "maintenance",
+          "priority": "low",
+          "dayOffset": 7,
+          "lunarSensitive": false
+        },
+        {
+          "title": "תצפית על מזיקים (כנימות/אקריות)",
+          "category": "pest",
+          "priority": "low",
+          "dayOffset": 12,
+          "lunarSensitive": false
+        }
+      ]
+    },
+    {
+      "key": "סרפד",
+      "speciesId": "9c7eeb04-381a-4d5c-80d1-4ea0a64b937b",
+      "category": "medicinal",
+      "dayType": "leaf",
+      "archetype": "leafy_herb",
+      "match": [
+        "סרפד"
+      ],
+      "tasks": [
+        {
+          "title": "השקיה – שמור על קרקע לחה",
+          "category": "watering",
+          "priority": "high",
+          "dayOffset": 0,
+          "lunarSensitive": false
+        },
+        {
+          "title": "קטיף ענפים עליונים לעידוד הסתעפות",
+          "category": "harvest",
+          "priority": "medium",
+          "dayOffset": 5,
+          "lunarSensitive": true
+        },
+        {
+          "title": "קמצוץ ראשי פריחה לשמירה על הטעם",
+          "category": "pruning",
+          "priority": "medium",
+          "dayOffset": 10,
+          "lunarSensitive": true
+        },
+        {
+          "title": "דישון קל",
+          "category": "fertilizing",
+          "priority": "low",
+          "dayOffset": 14,
+          "lunarSensitive": false
+        }
+      ]
+    },
+    {
+      "key": "עגבנייה",
+      "speciesId": "e6ee758a-8764-4035-8199-501c887c9d66",
+      "category": "vegetables",
+      "dayType": "fruit",
+      "archetype": "fruiting_veg",
+      "match": [
+        "עגבנייה"
+      ],
+      "tasks": [
+        {
+          "title": "השקיה סדירה – עקביות מונעת בעיות בפרי",
+          "category": "watering",
+          "priority": "high",
+          "dayOffset": 0,
+          "lunarSensitive": false
+        },
+        {
+          "title": "סמך ותמיכה לצמח",
+          "category": "support",
+          "priority": "medium",
+          "dayOffset": 3,
+          "lunarSensitive": false
+        },
+        {
+          "title": "דישון לעידוד פריחה ופרי",
+          "category": "fertilizing",
+          "priority": "medium",
+          "dayOffset": 10,
+          "lunarSensitive": false
+        },
+        {
+          "title": "תצפית על כנימות וריקבון",
+          "category": "pest",
+          "priority": "medium",
+          "dayOffset": 14,
+          "lunarSensitive": false
+        },
+        {
+          "title": "דילול עלים תחתונים לאוורור",
+          "category": "pruning",
+          "priority": "low",
+          "dayOffset": 18,
+          "lunarSensitive": true
+        }
+      ]
+    },
+    {
+      "key": "עולש",
+      "speciesId": "e2e5615a-cec8-4836-8110-33d4c316c1ee",
+      "category": "vegetables",
+      "dayType": "leaf",
+      "archetype": "leafy_veg",
+      "match": [
+        "עולש"
+      ],
+      "tasks": [
+        {
+          "title": "השקיה – שמור על קרקע לחה",
+          "category": "watering",
+          "priority": "high",
+          "dayOffset": 0,
+          "lunarSensitive": false
+        },
+        {
+          "title": "בדיקת חלזונות ומזיקי עלים",
+          "category": "pest",
+          "priority": "high",
+          "dayOffset": 3,
+          "lunarSensitive": false
+        },
+        {
+          "title": "דישון עשיר בחנקן לצמיחת עלווה",
+          "category": "fertilizing",
+          "priority": "medium",
+          "dayOffset": 10,
+          "lunarSensitive": false
+        },
+        {
+          "title": "בדיקת לחות הקרקע",
+          "category": "soil",
+          "priority": "low",
+          "dayOffset": 7,
+          "lunarSensitive": false
+        },
+        {
+          "title": "קטיף עלים חיצוניים",
+          "category": "harvest",
+          "priority": "medium",
+          "dayOffset": 14,
+          "lunarSensitive": true
+        }
+      ]
+    },
+    {
+      "key": "עירית",
+      "speciesId": "63fb2e83-ea2d-41a7-8613-548742521a11",
+      "category": "herbs",
+      "dayType": "root",
+      "archetype": "leafy_herb",
+      "match": [
+        "עירית"
+      ],
+      "tasks": [
+        {
+          "title": "השקיה – שמור על קרקע לחה",
+          "category": "watering",
+          "priority": "high",
+          "dayOffset": 0,
+          "lunarSensitive": false
+        },
+        {
+          "title": "קטיף ענפים עליונים לעידוד הסתעפות",
+          "category": "harvest",
+          "priority": "medium",
+          "dayOffset": 5,
+          "lunarSensitive": true
+        },
+        {
+          "title": "קמצוץ ראשי פריחה לשמירה על הטעם",
+          "category": "pruning",
+          "priority": "medium",
+          "dayOffset": 10,
+          "lunarSensitive": true
+        },
+        {
+          "title": "דישון קל",
+          "category": "fertilizing",
+          "priority": "low",
+          "dayOffset": 14,
+          "lunarSensitive": false
+        }
+      ]
+    },
+    {
+      "key": "עץ ג'ייד",
+      "speciesId": "c0a2a1f8-3d96-47ed-9e2f-e6d660f9f95c",
+      "category": "succulent",
+      "dayType": "leaf",
+      "archetype": "succulent",
+      "match": [
+        "עץ ג'ייד"
+      ],
+      "tasks": [
+        {
+          "title": "השקיה מועטה – השקה רק כשהמצע יבש",
+          "category": "watering",
+          "priority": "medium",
+          "dayOffset": 0,
+          "lunarSensitive": false
+        },
+        {
+          "title": "מיקום באור בהיר",
+          "category": "observation",
+          "priority": "low",
+          "dayOffset": 5,
+          "lunarSensitive": false
+        },
+        {
+          "title": "בדיקת ניקוז המצע",
+          "category": "soil",
+          "priority": "low",
+          "dayOffset": 8,
+          "lunarSensitive": false
+        },
+        {
+          "title": "תצפית על ריקבון וכנימות מגן",
+          "category": "pest",
+          "priority": "low",
+          "dayOffset": 12,
+          "lunarSensitive": false
+        }
+      ]
+    },
+    {
+      "key": "פאק צ'וי",
+      "speciesId": "937a888a-ca1f-4f3c-81ed-31bff2cd5a0d",
+      "category": "vegetables",
+      "dayType": "leaf",
+      "archetype": "leafy_veg",
+      "match": [
+        "פאק צ'וי"
+      ],
+      "tasks": [
+        {
+          "title": "השקיה – שמור על קרקע לחה",
+          "category": "watering",
+          "priority": "high",
+          "dayOffset": 0,
+          "lunarSensitive": false
+        },
+        {
+          "title": "בדיקת חלזונות ומזיקי עלים",
+          "category": "pest",
+          "priority": "high",
+          "dayOffset": 3,
+          "lunarSensitive": false
+        },
+        {
+          "title": "דישון עשיר בחנקן לצמיחת עלווה",
+          "category": "fertilizing",
+          "priority": "medium",
+          "dayOffset": 10,
+          "lunarSensitive": false
+        },
+        {
+          "title": "בדיקת לחות הקרקע",
+          "category": "soil",
+          "priority": "low",
+          "dayOffset": 7,
+          "lunarSensitive": false
+        },
+        {
+          "title": "קטיף עלים חיצוניים",
+          "category": "harvest",
+          "priority": "medium",
+          "dayOffset": 14,
+          "lunarSensitive": true
+        }
+      ]
+    },
+    {
+      "key": "פוטוס",
+      "speciesId": "96250b80-263b-4afa-a72f-4ccc546c6c29",
+      "category": "house_plant",
+      "dayType": "leaf",
+      "archetype": "house_plant",
+      "match": [
+        "פוטוס"
+      ],
+      "tasks": [
+        {
+          "title": "השקיה מתונה – בדוק לחות לפני השקיה",
+          "category": "watering",
+          "priority": "medium",
+          "dayOffset": 0,
+          "lunarSensitive": false
+        },
+        {
+          "title": "מיקום באור עקיף בהיר",
+          "category": "observation",
+          "priority": "low",
+          "dayOffset": 5,
+          "lunarSensitive": false
+        },
+        {
+          "title": "ניקוי אבק מהעלים",
+          "category": "maintenance",
+          "priority": "low",
+          "dayOffset": 7,
+          "lunarSensitive": false
+        },
+        {
+          "title": "תצפית על מזיקים (כנימות/אקריות)",
+          "category": "pest",
+          "priority": "low",
+          "dayOffset": 12,
+          "lunarSensitive": false
+        }
+      ]
+    },
+    {
+      "key": "פול",
+      "speciesId": "6332e543-37ad-4920-9ee7-b3c489fcd7b6",
+      "category": "vegetables",
+      "dayType": "fruit",
+      "archetype": "fruiting_veg",
+      "match": [
+        "פול"
+      ],
+      "tasks": [
+        {
+          "title": "השקיה סדירה – עקביות מונעת בעיות בפרי",
+          "category": "watering",
+          "priority": "high",
+          "dayOffset": 0,
+          "lunarSensitive": false
+        },
+        {
+          "title": "סמך ותמיכה לצמח",
+          "category": "support",
+          "priority": "medium",
+          "dayOffset": 3,
+          "lunarSensitive": false
+        },
+        {
+          "title": "דישון לעידוד פריחה ופרי",
+          "category": "fertilizing",
+          "priority": "medium",
+          "dayOffset": 10,
+          "lunarSensitive": false
+        },
+        {
+          "title": "תצפית על כנימות וריקבון",
+          "category": "pest",
+          "priority": "medium",
+          "dayOffset": 14,
+          "lunarSensitive": false
+        },
+        {
+          "title": "דילול עלים תחתונים לאוורור",
+          "category": "pruning",
+          "priority": "low",
+          "dayOffset": 18,
+          "lunarSensitive": true
+        }
+      ]
+    },
+    {
+      "key": "פטוניה",
+      "speciesId": "e2e65eaa-fffa-4c2f-ba83-5d7aff3634ae",
+      "category": "flowers",
+      "dayType": "flower",
+      "archetype": "flower",
+      "match": [
+        "פטוניה"
+      ],
+      "tasks": [
+        {
+          "title": "השקיה סדירה",
+          "category": "watering",
+          "priority": "high",
+          "dayOffset": 0,
+          "lunarSensitive": false
+        },
+        {
+          "title": "דישון לעידוד פריחה",
+          "category": "fertilizing",
+          "priority": "medium",
+          "dayOffset": 12,
+          "lunarSensitive": false
+        },
+        {
+          "title": "תצפית על כנימות ומזיקים",
+          "category": "pest",
+          "priority": "low",
+          "dayOffset": 14,
+          "lunarSensitive": false
+        },
+        {
+          "title": "הסרת פרחים נבולים (דד-הדינג)",
+          "category": "pruning",
+          "priority": "medium",
+          "dayOffset": 7,
+          "lunarSensitive": true
+        }
+      ]
+    },
+    {
+      "key": "פטרוזיליה",
+      "speciesId": "01fc71c8-4b01-4797-9e32-d0f0afde23fb",
+      "category": "herbs",
+      "dayType": "leaf",
+      "archetype": "leafy_herb",
+      "match": [
+        "פטרוזיליה"
+      ],
+      "tasks": [
+        {
+          "title": "השקיה – שמור על קרקע לחה",
+          "category": "watering",
+          "priority": "high",
+          "dayOffset": 0,
+          "lunarSensitive": false
+        },
+        {
+          "title": "קטיף ענפים עליונים לעידוד הסתעפות",
+          "category": "harvest",
+          "priority": "medium",
+          "dayOffset": 5,
+          "lunarSensitive": true
+        },
+        {
+          "title": "קמצוץ ראשי פריחה לשמירה על הטעם",
+          "category": "pruning",
+          "priority": "medium",
+          "dayOffset": 10,
+          "lunarSensitive": true
+        },
+        {
+          "title": "דישון קל",
+          "category": "fertilizing",
+          "priority": "low",
+          "dayOffset": 14,
+          "lunarSensitive": false
+        }
+      ]
+    },
+    {
+      "key": "פיקוס גומי",
+      "speciesId": "bb3c5451-75a1-4301-9657-cf8facfb5ea4",
+      "category": "house_plant",
+      "dayType": "leaf",
+      "archetype": "house_plant",
+      "match": [
+        "פיקוס גומי"
+      ],
+      "tasks": [
+        {
+          "title": "השקיה מתונה – בדוק לחות לפני השקיה",
+          "category": "watering",
+          "priority": "medium",
+          "dayOffset": 0,
+          "lunarSensitive": false
+        },
+        {
+          "title": "מיקום באור עקיף בהיר",
+          "category": "observation",
+          "priority": "low",
+          "dayOffset": 5,
+          "lunarSensitive": false
+        },
+        {
+          "title": "ניקוי אבק מהעלים",
+          "category": "maintenance",
+          "priority": "low",
+          "dayOffset": 7,
+          "lunarSensitive": false
+        },
+        {
+          "title": "תצפית על מזיקים (כנימות/אקריות)",
+          "category": "pest",
+          "priority": "low",
+          "dayOffset": 12,
+          "lunarSensitive": false
+        }
+      ]
+    },
+    {
+      "key": "פיקוס כינור",
+      "speciesId": "386415a5-17ec-499f-8774-6747d8ea5a50",
+      "category": "house_plant",
+      "dayType": "leaf",
+      "archetype": "house_plant",
+      "match": [
+        "פיקוס כינור"
+      ],
+      "tasks": [
+        {
+          "title": "השקיה מתונה – בדוק לחות לפני השקיה",
+          "category": "watering",
+          "priority": "medium",
+          "dayOffset": 0,
+          "lunarSensitive": false
+        },
+        {
+          "title": "מיקום באור עקיף בהיר",
+          "category": "observation",
+          "priority": "low",
+          "dayOffset": 5,
+          "lunarSensitive": false
+        },
+        {
+          "title": "ניקוי אבק מהעלים",
+          "category": "maintenance",
+          "priority": "low",
+          "dayOffset": 7,
+          "lunarSensitive": false
+        },
+        {
+          "title": "תצפית על מזיקים (כנימות/אקריות)",
+          "category": "pest",
+          "priority": "low",
+          "dayOffset": 12,
+          "lunarSensitive": false
+        }
+      ]
+    },
+    {
+      "key": "פלפל",
+      "speciesId": "d3f4f2cb-1ce7-450d-ba23-aef7db6fdcbb",
+      "category": "vegetables",
+      "dayType": "fruit",
+      "archetype": "fruiting_veg",
+      "match": [
+        "פלפל"
+      ],
+      "tasks": [
+        {
+          "title": "השקיה סדירה – עקביות מונעת בעיות בפרי",
+          "category": "watering",
+          "priority": "high",
+          "dayOffset": 0,
+          "lunarSensitive": false
+        },
+        {
+          "title": "סמך ותמיכה לצמח",
+          "category": "support",
+          "priority": "medium",
+          "dayOffset": 3,
+          "lunarSensitive": false
+        },
+        {
+          "title": "דישון לעידוד פריחה ופרי",
+          "category": "fertilizing",
+          "priority": "medium",
+          "dayOffset": 10,
+          "lunarSensitive": false
+        },
+        {
+          "title": "תצפית על כנימות וריקבון",
+          "category": "pest",
+          "priority": "medium",
+          "dayOffset": 14,
+          "lunarSensitive": false
+        },
+        {
+          "title": "דילול עלים תחתונים לאוורור",
+          "category": "pruning",
+          "priority": "low",
+          "dayOffset": 18,
+          "lunarSensitive": true
+        }
+      ]
+    },
+    {
+      "key": "פסטרנק",
+      "speciesId": "08a1dc57-f711-4a7e-b9ad-957e08d38bf7",
+      "category": "vegetables",
+      "dayType": "root",
+      "archetype": "root_veg",
+      "match": [
+        "פסטרנק"
+      ],
+      "tasks": [
+        {
+          "title": "השקיה סדירה ואחידה",
+          "category": "watering",
+          "priority": "high",
+          "dayOffset": 0,
+          "lunarSensitive": false
+        },
+        {
+          "title": "דילול שתילים לצפיפות נכונה",
+          "category": "maintenance",
+          "priority": "medium",
+          "dayOffset": 5,
+          "lunarSensitive": true
+        },
+        {
+          "title": "ניכוש ואוורור הקרקע סביב הצמח",
+          "category": "soil",
+          "priority": "medium",
+          "dayOffset": 10,
+          "lunarSensitive": false
+        },
+        {
+          "title": "תצפית על מזיקי קרקע",
+          "category": "pest",
+          "priority": "low",
+          "dayOffset": 14,
+          "lunarSensitive": false
+        }
+      ]
+    },
+    {
+      "key": "פסיפלורה",
+      "speciesId": "84435f51-db0c-4ae5-8e94-fb07a80189ba",
+      "category": "medicinal",
+      "dayType": "flower",
+      "archetype": "flower",
+      "match": [
+        "פסיפלורה"
+      ],
+      "tasks": [
+        {
+          "title": "השקיה סדירה",
+          "category": "watering",
+          "priority": "high",
+          "dayOffset": 0,
+          "lunarSensitive": false
+        },
+        {
+          "title": "דישון לעידוד פריחה",
+          "category": "fertilizing",
+          "priority": "medium",
+          "dayOffset": 12,
+          "lunarSensitive": false
+        },
+        {
+          "title": "תצפית על כנימות ומזיקים",
+          "category": "pest",
+          "priority": "low",
+          "dayOffset": 14,
+          "lunarSensitive": false
+        },
+        {
+          "title": "הסרת פרחים נבולים (דד-הדינג)",
+          "category": "pruning",
+          "priority": "medium",
+          "dayOffset": 7,
+          "lunarSensitive": true
+        }
+      ]
+    },
+    {
+      "key": "צבר",
+      "speciesId": "2e3de961-ff18-458a-8e35-f7fb071b0877",
+      "category": "cactus",
+      "dayType": "fruit",
+      "archetype": "cactus",
+      "match": [
+        "צבר"
+      ],
+      "tasks": [
+        {
+          "title": "השקיה מועטה מאוד",
+          "category": "watering",
+          "priority": "low",
+          "dayOffset": 0,
+          "lunarSensitive": false
+        },
+        {
+          "title": "מיקום בשמש מלאה",
+          "category": "observation",
+          "priority": "low",
+          "dayOffset": 5,
+          "lunarSensitive": false
+        },
+        {
+          "title": "בדיקת ניקוז המצע",
+          "category": "soil",
+          "priority": "low",
+          "dayOffset": 10,
+          "lunarSensitive": false
+        },
+        {
+          "title": "תצפית על ריקבון",
+          "category": "pest",
+          "priority": "low",
+          "dayOffset": 12,
+          "lunarSensitive": false
+        }
+      ]
+    },
+    {
+      "key": "צבר אוזני ארנב",
+      "speciesId": "ad608cd3-32e1-4da3-ba0e-2aff49668022",
+      "category": "cactus",
+      "dayType": "leaf",
+      "archetype": "cactus",
+      "match": [
+        "צבר אוזני ארנב"
+      ],
+      "tasks": [
+        {
+          "title": "השקיה מועטה מאוד",
+          "category": "watering",
+          "priority": "low",
+          "dayOffset": 0,
+          "lunarSensitive": false
+        },
+        {
+          "title": "מיקום בשמש מלאה",
+          "category": "observation",
+          "priority": "low",
+          "dayOffset": 5,
+          "lunarSensitive": false
+        },
+        {
+          "title": "בדיקת ניקוז המצע",
+          "category": "soil",
+          "priority": "low",
+          "dayOffset": 10,
+          "lunarSensitive": false
+        },
+        {
+          "title": "תצפית על ריקבון",
+          "category": "pest",
+          "priority": "low",
+          "dayOffset": 12,
+          "lunarSensitive": false
+        }
+      ]
+    },
+    {
+      "key": "צבר חבית זהב",
+      "speciesId": "e14e1097-6763-4592-bd01-069a036d9565",
+      "category": "cactus",
+      "dayType": "root",
+      "archetype": "cactus",
+      "match": [
+        "צבר חבית זהב"
+      ],
+      "tasks": [
+        {
+          "title": "השקיה מועטה מאוד",
+          "category": "watering",
+          "priority": "low",
+          "dayOffset": 0,
+          "lunarSensitive": false
+        },
+        {
+          "title": "מיקום בשמש מלאה",
+          "category": "observation",
+          "priority": "low",
+          "dayOffset": 5,
+          "lunarSensitive": false
+        },
+        {
+          "title": "בדיקת ניקוז המצע",
+          "category": "soil",
+          "priority": "low",
+          "dayOffset": 10,
+          "lunarSensitive": false
+        },
+        {
+          "title": "תצפית על ריקבון",
+          "category": "pest",
+          "priority": "low",
+          "dayOffset": 12,
+          "lunarSensitive": false
+        }
+      ]
+    },
+    {
+      "key": "צבר חג המולד",
+      "speciesId": "8e463094-4b11-4c3b-8a8c-6785e827b62e",
+      "category": "cactus",
+      "dayType": "flower",
+      "archetype": "cactus",
+      "match": [
+        "צבר חג המולד"
+      ],
+      "tasks": [
+        {
+          "title": "השקיה מועטה מאוד",
+          "category": "watering",
+          "priority": "low",
+          "dayOffset": 0,
+          "lunarSensitive": false
+        },
+        {
+          "title": "מיקום בשמש מלאה",
+          "category": "observation",
+          "priority": "low",
+          "dayOffset": 5,
+          "lunarSensitive": false
+        },
+        {
+          "title": "בדיקת ניקוז המצע",
+          "category": "soil",
+          "priority": "low",
+          "dayOffset": 10,
+          "lunarSensitive": false
+        },
+        {
+          "title": "תצפית על ריקבון",
+          "category": "pest",
+          "priority": "low",
+          "dayOffset": 12,
+          "lunarSensitive": false
+        }
+      ]
+    },
+    {
+      "key": "צמח ZZ",
+      "speciesId": "7fc5bda9-55e5-4b94-acba-3d4525646bb0",
+      "category": "house_plant",
+      "dayType": "leaf",
+      "archetype": "house_plant",
+      "match": [
+        "צמח ZZ"
+      ],
+      "tasks": [
+        {
+          "title": "השקיה מתונה – בדוק לחות לפני השקיה",
+          "category": "watering",
+          "priority": "medium",
+          "dayOffset": 0,
+          "lunarSensitive": false
+        },
+        {
+          "title": "מיקום באור עקיף בהיר",
+          "category": "observation",
+          "priority": "low",
+          "dayOffset": 5,
+          "lunarSensitive": false
+        },
+        {
+          "title": "ניקוי אבק מהעלים",
+          "category": "maintenance",
+          "priority": "low",
+          "dayOffset": 7,
+          "lunarSensitive": false
+        },
+        {
+          "title": "תצפית על מזיקים (כנימות/אקריות)",
+          "category": "pest",
+          "priority": "low",
+          "dayOffset": 12,
+          "lunarSensitive": false
+        }
+      ]
+    },
+    {
+      "key": "צמח עכביש",
+      "speciesId": "f5309b12-1969-4634-a96d-85b185871f1e",
+      "category": "house_plant",
+      "dayType": "leaf",
+      "archetype": "house_plant",
+      "match": [
+        "צמח עכביש"
+      ],
+      "tasks": [
+        {
+          "title": "השקיה מתונה – בדוק לחות לפני השקיה",
+          "category": "watering",
+          "priority": "medium",
+          "dayOffset": 0,
+          "lunarSensitive": false
+        },
+        {
+          "title": "מיקום באור עקיף בהיר",
+          "category": "observation",
+          "priority": "low",
+          "dayOffset": 5,
+          "lunarSensitive": false
+        },
+        {
+          "title": "ניקוי אבק מהעלים",
+          "category": "maintenance",
+          "priority": "low",
+          "dayOffset": 7,
+          "lunarSensitive": false
+        },
+        {
+          "title": "תצפית על מזיקים (כנימות/אקריות)",
+          "category": "pest",
+          "priority": "low",
+          "dayOffset": 12,
+          "lunarSensitive": false
+        }
+      ]
+    },
+    {
+      "key": "צנונית",
+      "speciesId": "962453f8-cb43-4f54-a170-7ebf597762b5",
+      "category": "vegetables",
+      "dayType": "root",
+      "archetype": "root_veg",
+      "match": [
+        "צנונית"
+      ],
+      "tasks": [
+        {
+          "title": "השקיה סדירה ואחידה",
+          "category": "watering",
+          "priority": "high",
+          "dayOffset": 0,
+          "lunarSensitive": false
+        },
+        {
+          "title": "דילול שתילים לצפיפות נכונה",
+          "category": "maintenance",
+          "priority": "medium",
+          "dayOffset": 5,
+          "lunarSensitive": true
+        },
+        {
+          "title": "ניכוש ואוורור הקרקע סביב הצמח",
+          "category": "soil",
+          "priority": "medium",
+          "dayOffset": 10,
+          "lunarSensitive": false
+        },
+        {
+          "title": "תצפית על מזיקי קרקע",
+          "category": "pest",
+          "priority": "low",
+          "dayOffset": 14,
+          "lunarSensitive": false
+        }
+      ]
+    },
+    {
+      "key": "קוסמוס",
+      "speciesId": "fee41f4c-0f0b-42c3-b834-3388b5b4ac78",
+      "category": "flowers",
+      "dayType": "flower",
+      "archetype": "flower",
+      "match": [
+        "קוסמוס"
+      ],
+      "tasks": [
+        {
+          "title": "השקיה סדירה",
+          "category": "watering",
+          "priority": "high",
+          "dayOffset": 0,
+          "lunarSensitive": false
+        },
+        {
+          "title": "דישון לעידוד פריחה",
+          "category": "fertilizing",
+          "priority": "medium",
+          "dayOffset": 12,
+          "lunarSensitive": false
+        },
+        {
+          "title": "תצפית על כנימות ומזיקים",
+          "category": "pest",
+          "priority": "low",
+          "dayOffset": 14,
+          "lunarSensitive": false
+        },
+        {
+          "title": "הסרת פרחים נבולים (דד-הדינג)",
+          "category": "pruning",
+          "priority": "medium",
+          "dayOffset": 7,
+          "lunarSensitive": true
+        }
+      ]
+    },
+    {
+      "key": "קישוא",
+      "speciesId": "157110ee-63ff-4eaa-bab6-e9ad879f48b3",
+      "category": "vegetables",
+      "dayType": "fruit",
+      "archetype": "fruiting_veg",
+      "match": [
+        "קישוא"
+      ],
+      "tasks": [
+        {
+          "title": "השקיה סדירה – עקביות מונעת בעיות בפרי",
+          "category": "watering",
+          "priority": "high",
+          "dayOffset": 0,
+          "lunarSensitive": false
+        },
+        {
+          "title": "סמך ותמיכה לצמח",
+          "category": "support",
+          "priority": "medium",
+          "dayOffset": 3,
+          "lunarSensitive": false
+        },
+        {
+          "title": "דישון לעידוד פריחה ופרי",
+          "category": "fertilizing",
+          "priority": "medium",
+          "dayOffset": 10,
+          "lunarSensitive": false
+        },
+        {
+          "title": "תצפית על כנימות וריקבון",
+          "category": "pest",
+          "priority": "medium",
+          "dayOffset": 14,
+          "lunarSensitive": false
+        },
+        {
+          "title": "דילול עלים תחתונים לאוורור",
+          "category": "pruning",
+          "priority": "low",
+          "dayOffset": 18,
+          "lunarSensitive": true
+        }
+      ]
+    },
+    {
+      "key": "קלנדולה",
+      "speciesId": "663a34d7-b709-4d3b-8075-ac1b2ac879c5",
+      "category": "flowers",
+      "dayType": "flower",
+      "archetype": "flower",
+      "match": [
+        "קלנדולה"
+      ],
+      "tasks": [
+        {
+          "title": "השקיה סדירה",
+          "category": "watering",
+          "priority": "high",
+          "dayOffset": 0,
+          "lunarSensitive": false
+        },
+        {
+          "title": "דישון לעידוד פריחה",
+          "category": "fertilizing",
+          "priority": "medium",
+          "dayOffset": 12,
+          "lunarSensitive": false
+        },
+        {
+          "title": "תצפית על כנימות ומזיקים",
+          "category": "pest",
+          "priority": "low",
+          "dayOffset": 14,
+          "lunarSensitive": false
+        },
+        {
+          "title": "הסרת פרחים נבולים (דד-הדינג)",
+          "category": "pruning",
+          "priority": "medium",
+          "dayOffset": 7,
+          "lunarSensitive": true
+        }
+      ]
+    },
+    {
+      "key": "קמומיל",
+      "speciesId": "6c0225ba-0f38-4f78-a36c-47ed3faa4ee8",
+      "category": "herbs",
+      "dayType": "flower",
+      "archetype": "flower",
+      "match": [
+        "קמומיל"
+      ],
+      "tasks": [
+        {
+          "title": "השקיה סדירה",
+          "category": "watering",
+          "priority": "high",
+          "dayOffset": 0,
+          "lunarSensitive": false
+        },
+        {
+          "title": "דישון לעידוד פריחה",
+          "category": "fertilizing",
+          "priority": "medium",
+          "dayOffset": 12,
+          "lunarSensitive": false
+        },
+        {
+          "title": "תצפית על כנימות ומזיקים",
+          "category": "pest",
+          "priority": "low",
+          "dayOffset": 14,
+          "lunarSensitive": false
+        },
+        {
+          "title": "הסרת פרחים נבולים (דד-הדינג)",
+          "category": "pruning",
+          "priority": "medium",
+          "dayOffset": 7,
+          "lunarSensitive": true
+        }
+      ]
+    },
+    {
+      "key": "רוזמרין",
+      "speciesId": "a6e8d1a3-c434-437c-97e9-bdb834fdffe4",
+      "category": "herbs",
+      "dayType": "flower",
+      "archetype": "woody_herb",
+      "match": [
+        "רוזמרין"
+      ],
+      "tasks": [
+        {
+          "title": "השקיה מתונה – רגיש לעודף מים",
+          "category": "watering",
+          "priority": "medium",
+          "dayOffset": 0,
+          "lunarSensitive": false
+        },
+        {
+          "title": "בדיקת ניקוז הקרקע",
+          "category": "soil",
+          "priority": "low",
+          "dayOffset": 8,
+          "lunarSensitive": false
+        },
+        {
+          "title": "קטיף ענפים לשימוש ולעידוד צמיחה",
+          "category": "harvest",
+          "priority": "medium",
+          "dayOffset": 6,
+          "lunarSensitive": true
+        },
+        {
+          "title": "גיזום קל לאחר הפריחה",
+          "category": "pruning",
+          "priority": "low",
+          "dayOffset": 14,
+          "lunarSensitive": true
+        }
+      ]
+    },
+    {
+      "key": "רוקט",
+      "speciesId": "d4f81759-48c1-49fb-8071-ceb2879654cf",
+      "category": "vegetables",
+      "dayType": "leaf",
+      "archetype": "leafy_veg",
+      "match": [
+        "רוקט"
+      ],
+      "tasks": [
+        {
+          "title": "השקיה – שמור על קרקע לחה",
+          "category": "watering",
+          "priority": "high",
+          "dayOffset": 0,
+          "lunarSensitive": false
+        },
+        {
+          "title": "בדיקת חלזונות ומזיקי עלים",
+          "category": "pest",
+          "priority": "high",
+          "dayOffset": 3,
+          "lunarSensitive": false
+        },
+        {
+          "title": "דישון עשיר בחנקן לצמיחת עלווה",
+          "category": "fertilizing",
+          "priority": "medium",
+          "dayOffset": 10,
+          "lunarSensitive": false
+        },
+        {
+          "title": "בדיקת לחות הקרקע",
+          "category": "soil",
+          "priority": "low",
+          "dayOffset": 7,
+          "lunarSensitive": false
+        },
+        {
+          "title": "קטיף עלים חיצוניים",
+          "category": "harvest",
+          "priority": "medium",
+          "dayOffset": 14,
+          "lunarSensitive": true
+        }
+      ]
+    },
+    {
+      "key": "ריחן",
+      "speciesId": "78117ea8-1f00-4607-806f-91625d01859f",
+      "category": "herbs",
+      "dayType": "flower",
+      "archetype": "leafy_herb",
+      "match": [
+        "ריחן"
+      ],
+      "tasks": [
+        {
+          "title": "השקיה – שמור על קרקע לחה",
+          "category": "watering",
+          "priority": "high",
+          "dayOffset": 0,
+          "lunarSensitive": false
+        },
+        {
+          "title": "קטיף ענפים עליונים לעידוד הסתעפות",
+          "category": "harvest",
+          "priority": "medium",
+          "dayOffset": 5,
+          "lunarSensitive": true
+        },
+        {
+          "title": "קמצוץ ראשי פריחה לשמירה על הטעם",
+          "category": "pruning",
+          "priority": "medium",
+          "dayOffset": 10,
+          "lunarSensitive": true
+        },
+        {
+          "title": "דישון קל",
+          "category": "fertilizing",
+          "priority": "low",
+          "dayOffset": 14,
+          "lunarSensitive": false
+        }
+      ]
+    },
+    {
+      "key": "רימון",
+      "speciesId": "72a53d64-c099-438c-b22b-f888f9101370",
+      "category": "fruit_trees",
+      "dayType": "fruit",
+      "archetype": "deciduous_fruit_tree",
+      "match": [
+        "רימון"
+      ],
+      "tasks": [
+        {
+          "title": "השקיה עמוקה בעונה החמה",
+          "category": "watering",
+          "priority": "high",
+          "dayOffset": 0,
+          "lunarSensitive": false
+        },
+        {
+          "title": "תצפית על מזיקים ומחלות",
+          "category": "pest",
+          "priority": "medium",
+          "dayOffset": 7,
+          "lunarSensitive": false
+        },
+        {
+          "title": "דישון אורגני באביב",
+          "category": "fertilizing",
+          "priority": "medium",
+          "dayOffset": 15,
+          "lunarSensitive": false
+        },
+        {
+          "title": "גיזום חורף – דילול ואוורור",
+          "category": "pruning",
+          "priority": "low",
+          "dayOffset": 30,
+          "lunarSensitive": true,
+          "notes": "בצע בעונת השלכת, כשהעץ רדום."
+        }
+      ]
+    },
+    {
+      "key": "שום",
+      "speciesId": "4976dfea-d511-4422-a4b4-6aadae4c6bf1",
+      "category": "vegetables",
+      "dayType": "root",
+      "archetype": "root_veg",
+      "match": [
+        "שום"
+      ],
+      "tasks": [
+        {
+          "title": "השקיה סדירה ואחידה",
+          "category": "watering",
+          "priority": "high",
+          "dayOffset": 0,
+          "lunarSensitive": false
+        },
+        {
+          "title": "דילול שתילים לצפיפות נכונה",
+          "category": "maintenance",
+          "priority": "medium",
+          "dayOffset": 5,
+          "lunarSensitive": true
+        },
+        {
+          "title": "ניכוש ואוורור הקרקע סביב הצמח",
+          "category": "soil",
+          "priority": "medium",
+          "dayOffset": 10,
+          "lunarSensitive": false
+        },
+        {
+          "title": "תצפית על מזיקי קרקע",
+          "category": "pest",
+          "priority": "low",
+          "dayOffset": 14,
+          "lunarSensitive": false
+        }
+      ]
+    },
+    {
+      "key": "שומר",
+      "speciesId": "3e6850df-3747-4a8a-b5c3-26738aef6853",
+      "category": "vegetables",
+      "dayType": "leaf",
+      "archetype": "leafy_veg",
+      "match": [
+        "שומר"
+      ],
+      "tasks": [
+        {
+          "title": "השקיה – שמור על קרקע לחה",
+          "category": "watering",
+          "priority": "high",
+          "dayOffset": 0,
+          "lunarSensitive": false
+        },
+        {
+          "title": "בדיקת חלזונות ומזיקי עלים",
+          "category": "pest",
+          "priority": "high",
+          "dayOffset": 3,
+          "lunarSensitive": false
+        },
+        {
+          "title": "דישון עשיר בחנקן לצמיחת עלווה",
+          "category": "fertilizing",
+          "priority": "medium",
+          "dayOffset": 10,
+          "lunarSensitive": false
+        },
+        {
+          "title": "בדיקת לחות הקרקע",
+          "category": "soil",
+          "priority": "low",
+          "dayOffset": 7,
+          "lunarSensitive": false
+        },
+        {
+          "title": "קטיף עלים חיצוניים",
+          "category": "harvest",
+          "priority": "medium",
+          "dayOffset": 14,
+          "lunarSensitive": true
+        }
+      ]
+    },
+    {
+      "key": "שושן שלום",
+      "speciesId": "0d435417-21c8-40db-b068-d1b1e6adcd8e",
+      "category": "house_plant",
+      "dayType": "flower",
+      "archetype": "house_plant",
+      "match": [
+        "שושן שלום"
+      ],
+      "tasks": [
+        {
+          "title": "השקיה מתונה – בדוק לחות לפני השקיה",
+          "category": "watering",
+          "priority": "medium",
+          "dayOffset": 0,
+          "lunarSensitive": false
+        },
+        {
+          "title": "מיקום באור עקיף בהיר",
+          "category": "observation",
+          "priority": "low",
+          "dayOffset": 5,
+          "lunarSensitive": false
+        },
+        {
+          "title": "ניקוי אבק מהעלים",
+          "category": "maintenance",
+          "priority": "low",
+          "dayOffset": 7,
+          "lunarSensitive": false
+        },
+        {
+          "title": "תצפית על מזיקים (כנימות/אקריות)",
+          "category": "pest",
+          "priority": "low",
+          "dayOffset": 12,
+          "lunarSensitive": false
+        }
+      ]
+    },
+    {
+      "key": "שזיף",
+      "speciesId": "df350c7f-6676-49d1-b392-38b25eff213e",
+      "category": "fruit_trees",
+      "dayType": "fruit",
+      "archetype": "deciduous_fruit_tree",
+      "match": [
+        "שזיף"
+      ],
+      "tasks": [
+        {
+          "title": "השקיה עמוקה בעונה החמה",
+          "category": "watering",
+          "priority": "high",
+          "dayOffset": 0,
+          "lunarSensitive": false
+        },
+        {
+          "title": "תצפית על מזיקים ומחלות",
+          "category": "pest",
+          "priority": "medium",
+          "dayOffset": 7,
+          "lunarSensitive": false
+        },
+        {
+          "title": "דישון אורגני באביב",
+          "category": "fertilizing",
+          "priority": "medium",
+          "dayOffset": 15,
+          "lunarSensitive": false
+        },
+        {
+          "title": "גיזום חורף – דילול ואוורור",
+          "category": "pruning",
+          "priority": "low",
+          "dayOffset": 30,
+          "lunarSensitive": true,
+          "notes": "בצע בעונת השלכת, כשהעץ רדום."
+        }
+      ]
+    },
+    {
+      "key": "שמיר",
+      "speciesId": "930909dc-60cc-43c2-a05a-f94d10755a4b",
+      "category": "herbs",
+      "dayType": "flower",
+      "archetype": "leafy_herb",
+      "match": [
+        "שמיר"
+      ],
+      "tasks": [
+        {
+          "title": "השקיה – שמור על קרקע לחה",
+          "category": "watering",
+          "priority": "high",
+          "dayOffset": 0,
+          "lunarSensitive": false
+        },
+        {
+          "title": "קטיף ענפים עליונים לעידוד הסתעפות",
+          "category": "harvest",
+          "priority": "medium",
+          "dayOffset": 5,
+          "lunarSensitive": true
+        },
+        {
+          "title": "קמצוץ ראשי פריחה לשמירה על הטעם",
+          "category": "pruning",
+          "priority": "medium",
+          "dayOffset": 10,
+          "lunarSensitive": true
+        },
+        {
+          "title": "דישון קל",
+          "category": "fertilizing",
+          "priority": "low",
+          "dayOffset": 14,
+          "lunarSensitive": false
+        }
+      ]
+    },
+    {
+      "key": "שן הארי",
+      "speciesId": "da7f41d2-f93b-491d-ae06-b185c84d4f31",
+      "category": "medicinal",
+      "dayType": "leaf",
+      "archetype": "leafy_herb",
+      "match": [
+        "שן הארי"
+      ],
+      "tasks": [
+        {
+          "title": "השקיה – שמור על קרקע לחה",
+          "category": "watering",
+          "priority": "high",
+          "dayOffset": 0,
+          "lunarSensitive": false
+        },
+        {
+          "title": "קטיף ענפים עליונים לעידוד הסתעפות",
+          "category": "harvest",
+          "priority": "medium",
+          "dayOffset": 5,
+          "lunarSensitive": true
+        },
+        {
+          "title": "קמצוץ ראשי פריחה לשמירה על הטעם",
+          "category": "pruning",
+          "priority": "medium",
+          "dayOffset": 10,
+          "lunarSensitive": true
+        },
+        {
+          "title": "דישון קל",
+          "category": "fertilizing",
+          "priority": "low",
+          "dayOffset": 14,
+          "lunarSensitive": false
+        }
+      ]
+    },
+    {
+      "key": "שעועית",
+      "speciesId": "9268b07c-62dc-4755-aff1-4d93957fe8ce",
+      "category": "vegetables",
+      "dayType": "fruit",
+      "archetype": "fruiting_veg",
+      "match": [
+        "שעועית"
+      ],
+      "tasks": [
+        {
+          "title": "השקיה סדירה – עקביות מונעת בעיות בפרי",
+          "category": "watering",
+          "priority": "high",
+          "dayOffset": 0,
+          "lunarSensitive": false
+        },
+        {
+          "title": "סמך ותמיכה לצמח",
+          "category": "support",
+          "priority": "medium",
+          "dayOffset": 3,
+          "lunarSensitive": false
+        },
+        {
+          "title": "דישון לעידוד פריחה ופרי",
+          "category": "fertilizing",
+          "priority": "medium",
+          "dayOffset": 10,
+          "lunarSensitive": false
+        },
+        {
+          "title": "תצפית על כנימות וריקבון",
+          "category": "pest",
+          "priority": "medium",
+          "dayOffset": 14,
+          "lunarSensitive": false
+        },
+        {
+          "title": "דילול עלים תחתונים לאוורור",
+          "category": "pruning",
+          "priority": "low",
+          "dayOffset": 18,
+          "lunarSensitive": true
+        }
+      ]
+    },
+    {
+      "key": "תאנה",
+      "speciesId": "ac14af52-dc26-4f78-a551-0921c3d42bae",
+      "category": "fruit_trees",
+      "dayType": "fruit",
+      "archetype": "deciduous_fruit_tree",
+      "match": [
+        "תאנה"
+      ],
+      "tasks": [
+        {
+          "title": "השקיה עמוקה בעונה החמה",
+          "category": "watering",
+          "priority": "high",
+          "dayOffset": 0,
+          "lunarSensitive": false
+        },
+        {
+          "title": "תצפית על מזיקים ומחלות",
+          "category": "pest",
+          "priority": "medium",
+          "dayOffset": 7,
+          "lunarSensitive": false
+        },
+        {
+          "title": "דישון אורגני באביב",
+          "category": "fertilizing",
+          "priority": "medium",
+          "dayOffset": 15,
+          "lunarSensitive": false
+        },
+        {
+          "title": "גיזום חורף – דילול ואוורור",
+          "category": "pruning",
+          "priority": "low",
+          "dayOffset": 30,
+          "lunarSensitive": true,
+          "notes": "בצע בעונת השלכת, כשהעץ רדום."
+        }
+      ]
+    },
+    {
+      "key": "תות שדה",
+      "speciesId": "0e4ed534-c85e-4c5b-9dde-a0b145a893f4",
+      "category": "vegetables",
+      "dayType": "fruit",
+      "archetype": "fruiting_veg",
+      "match": [
+        "תות שדה"
+      ],
+      "tasks": [
+        {
+          "title": "השקיה סדירה – עקביות מונעת בעיות בפרי",
+          "category": "watering",
+          "priority": "high",
+          "dayOffset": 0,
+          "lunarSensitive": false
+        },
+        {
+          "title": "סמך ותמיכה לצמח",
+          "category": "support",
+          "priority": "medium",
+          "dayOffset": 3,
+          "lunarSensitive": false
+        },
+        {
+          "title": "דישון לעידוד פריחה ופרי",
+          "category": "fertilizing",
+          "priority": "medium",
+          "dayOffset": 10,
+          "lunarSensitive": false
+        },
+        {
+          "title": "תצפית על כנימות וריקבון",
+          "category": "pest",
+          "priority": "medium",
+          "dayOffset": 14,
+          "lunarSensitive": false
+        },
+        {
+          "title": "דילול עלים תחתונים לאוורור",
+          "category": "pruning",
+          "priority": "low",
+          "dayOffset": 18,
+          "lunarSensitive": true
+        }
+      ]
+    },
+    {
+      "key": "תירס",
+      "speciesId": "57ab3580-4ffb-4282-af95-1365fede3c1e",
+      "category": "vegetables",
+      "dayType": "fruit",
+      "archetype": "fruiting_veg",
+      "match": [
+        "תירס"
+      ],
+      "tasks": [
+        {
+          "title": "השקיה סדירה – עקביות מונעת בעיות בפרי",
+          "category": "watering",
+          "priority": "high",
+          "dayOffset": 0,
+          "lunarSensitive": false
+        },
+        {
+          "title": "סמך ותמיכה לצמח",
+          "category": "support",
+          "priority": "medium",
+          "dayOffset": 3,
+          "lunarSensitive": false
+        },
+        {
+          "title": "דישון לעידוד פריחה ופרי",
+          "category": "fertilizing",
+          "priority": "medium",
+          "dayOffset": 10,
+          "lunarSensitive": false
+        },
+        {
+          "title": "תצפית על כנימות וריקבון",
+          "category": "pest",
+          "priority": "medium",
+          "dayOffset": 14,
+          "lunarSensitive": false
+        },
+        {
+          "title": "דילול עלים תחתונים לאוורור",
+          "category": "pruning",
+          "priority": "low",
+          "dayOffset": 18,
+          "lunarSensitive": true
+        }
+      ]
+    },
+    {
+      "key": "תמר",
+      "speciesId": "5e0360b8-03e3-4bd9-89f1-089c7ea28c5e",
+      "category": "fruit_trees",
+      "dayType": "fruit",
+      "archetype": "fruit_tree",
+      "match": [
+        "תמר"
+      ],
+      "tasks": [
+        {
+          "title": "השקיה עמוקה וסדירה",
+          "category": "watering",
+          "priority": "high",
+          "dayOffset": 0,
+          "lunarSensitive": false
+        },
+        {
+          "title": "בדיקת ביסוס ותמיכת העץ",
+          "category": "observation",
+          "priority": "medium",
+          "dayOffset": 3,
+          "lunarSensitive": false
+        },
+        {
+          "title": "דישון אורגני מאוזן",
+          "category": "fertilizing",
+          "priority": "medium",
+          "dayOffset": 12,
+          "lunarSensitive": false
+        },
+        {
+          "title": "תצפית על מזיקים ומחלות בעלווה",
+          "category": "pest",
+          "priority": "medium",
+          "dayOffset": 18,
+          "lunarSensitive": false
+        },
+        {
+          "title": "גיזום ענפים יבשים ומיותרים",
+          "category": "pruning",
+          "priority": "low",
+          "dayOffset": 30,
+          "lunarSensitive": true
+        }
+      ]
+    },
+    {
+      "key": "תפוז",
+      "speciesId": "bba4ff97-5162-41fa-8b07-ec67424f3f4a",
+      "category": "fruit_trees",
+      "dayType": "fruit",
+      "archetype": "citrus",
+      "match": [
+        "תפוז"
+      ],
+      "tasks": [
+        {
+          "title": "השקיה עמוקה – הדרים רגישים ליובש",
+          "category": "watering",
+          "priority": "high",
+          "dayOffset": 0,
+          "lunarSensitive": false
+        },
+        {
+          "title": "בדיקת מזיקים (כנימות ומיני עש)",
+          "category": "pest",
+          "priority": "medium",
+          "dayOffset": 5,
+          "lunarSensitive": false
+        },
+        {
+          "title": "דישון הדרים (עשיר באשלגן וברזל)",
+          "category": "fertilizing",
+          "priority": "medium",
+          "dayOffset": 12,
+          "lunarSensitive": false
+        },
+        {
+          "title": "גיזום ענפי מים וסורים",
+          "category": "pruning",
+          "priority": "low",
+          "dayOffset": 25,
+          "lunarSensitive": true
+        }
+      ]
+    },
+    {
+      "key": "תפוח",
+      "speciesId": "fba00f2e-52dc-445e-950f-34abe26b066c",
+      "category": "fruit_trees",
+      "dayType": "fruit",
+      "archetype": "deciduous_fruit_tree",
+      "match": [
+        "תפוח"
+      ],
+      "tasks": [
+        {
+          "title": "השקיה עמוקה בעונה החמה",
+          "category": "watering",
+          "priority": "high",
+          "dayOffset": 0,
+          "lunarSensitive": false
+        },
+        {
+          "title": "תצפית על מזיקים ומחלות",
+          "category": "pest",
+          "priority": "medium",
+          "dayOffset": 7,
+          "lunarSensitive": false
+        },
+        {
+          "title": "דישון אורגני באביב",
+          "category": "fertilizing",
+          "priority": "medium",
+          "dayOffset": 15,
+          "lunarSensitive": false
+        },
+        {
+          "title": "גיזום חורף – דילול ואוורור",
+          "category": "pruning",
+          "priority": "low",
+          "dayOffset": 30,
+          "lunarSensitive": true,
+          "notes": "בצע בעונת השלכת, כשהעץ רדום."
+        }
+      ]
+    },
+    {
+      "key": "תפוח אדמה",
+      "speciesId": "7fc1f72c-9b5e-4657-97ac-c65be3ef331b",
+      "category": "vegetables",
+      "dayType": "root",
+      "archetype": "root_veg",
+      "match": [
+        "תפוח אדמה"
+      ],
+      "tasks": [
+        {
+          "title": "השקיה סדירה ואחידה",
+          "category": "watering",
+          "priority": "high",
+          "dayOffset": 0,
+          "lunarSensitive": false
+        },
+        {
+          "title": "דילול שתילים לצפיפות נכונה",
+          "category": "maintenance",
+          "priority": "medium",
+          "dayOffset": 5,
+          "lunarSensitive": true
+        },
+        {
+          "title": "ניכוש ואוורור הקרקע סביב הצמח",
+          "category": "soil",
+          "priority": "medium",
+          "dayOffset": 10,
+          "lunarSensitive": false
+        },
+        {
+          "title": "תצפית על מזיקי קרקע",
+          "category": "pest",
+          "priority": "low",
+          "dayOffset": 14,
+          "lunarSensitive": false
+        }
+      ]
+    },
+    {
+      "key": "תרד",
+      "speciesId": "bf98cb6b-9bb5-49e6-926e-823863978906",
+      "category": "vegetables",
+      "dayType": "leaf",
+      "archetype": "leafy_veg",
+      "match": [
+        "תרד"
+      ],
+      "tasks": [
+        {
+          "title": "השקיה – שמור על קרקע לחה",
+          "category": "watering",
+          "priority": "high",
+          "dayOffset": 0,
+          "lunarSensitive": false
+        },
+        {
+          "title": "בדיקת חלזונות ומזיקי עלים",
+          "category": "pest",
+          "priority": "high",
+          "dayOffset": 3,
+          "lunarSensitive": false
+        },
+        {
+          "title": "דישון עשיר בחנקן לצמיחת עלווה",
+          "category": "fertilizing",
+          "priority": "medium",
+          "dayOffset": 10,
+          "lunarSensitive": false
+        },
+        {
+          "title": "בדיקת לחות הקרקע",
+          "category": "soil",
+          "priority": "low",
+          "dayOffset": 7,
+          "lunarSensitive": false
+        },
+        {
+          "title": "קטיף עלים חיצוניים",
+          "category": "harvest",
+          "priority": "medium",
+          "dayOffset": 14,
+          "lunarSensitive": true
+        }
+      ]
+    },
+    {
+      "key": "persimmon",
+      "speciesId": null,
+      "category": "fruit_trees",
+      "dayType": "fruit",
+      "archetype": "deciduous_fruit_tree",
+      "match": [
+        "אפרסמון",
+        "פרסימון"
+      ],
+      "tasks": [
+        {
+          "title": "השקיה עמוקה בעונה החמה",
+          "category": "watering",
+          "priority": "high",
+          "dayOffset": 0,
+          "lunarSensitive": false
+        },
+        {
+          "title": "תצפית על מזיקים ומחלות",
+          "category": "pest",
+          "priority": "medium",
+          "dayOffset": 7,
+          "lunarSensitive": false
+        },
+        {
+          "title": "דישון אורגני באביב",
+          "category": "fertilizing",
+          "priority": "medium",
+          "dayOffset": 15,
+          "lunarSensitive": false
+        },
+        {
+          "title": "גיזום חורף – דילול ואוורור",
+          "category": "pruning",
+          "priority": "low",
+          "dayOffset": 30,
+          "lunarSensitive": true,
+          "notes": "בצע בעונת השלכת, כשהעץ רדום."
+        }
+      ]
+    },
+    {
+      "key": "oak_tabor",
+      "speciesId": null,
+      "category": "ornamental_tree",
+      "dayType": "leaf",
+      "archetype": "fruit_tree",
+      "match": [
+        "אלון",
+        "אלון התבור",
+        "אלון תבור"
+      ],
+      "tasks": [
+        {
+          "title": "השקיה עמוקה וסדירה",
+          "category": "watering",
+          "priority": "high",
+          "dayOffset": 0,
+          "lunarSensitive": false
+        },
+        {
+          "title": "בדיקת ביסוס ותמיכת העץ",
+          "category": "observation",
+          "priority": "medium",
+          "dayOffset": 3,
+          "lunarSensitive": false
+        },
+        {
+          "title": "דישון אורגני מאוזן",
+          "category": "fertilizing",
+          "priority": "medium",
+          "dayOffset": 12,
+          "lunarSensitive": false
+        },
+        {
+          "title": "תצפית על מזיקים ומחלות בעלווה",
+          "category": "pest",
+          "priority": "medium",
+          "dayOffset": 18,
+          "lunarSensitive": false
+        },
+        {
+          "title": "גיזום ענפים יבשים ומיותרים",
+          "category": "pruning",
+          "priority": "low",
+          "dayOffset": 30,
+          "lunarSensitive": true
+        }
+      ]
+    }
+  ]
+}

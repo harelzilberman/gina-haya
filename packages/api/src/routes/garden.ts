@@ -2,7 +2,91 @@ import { Router, type IRouter } from 'express';
 import { db } from '../db/client';
 import { verifyToken } from '../middleware/auth';
 import { attachTier } from '../middleware/tierMiddleware';
-import { getStarterTasks } from '@gina-haya/shared';
+import { getCalendarRange } from '../db/queries/calendar';
+import starterTasksData from '../../../shared/data/starter_tasks.json';
+
+// ── Types for starter_tasks.json ─────────────────────────────────────────────
+interface StarterTaskEntry {
+  title: string;
+  category: string;
+  priority: 'low' | 'medium' | 'high';
+  dayOffset: number;
+  lunarSensitive: boolean;
+  notes?: string;
+}
+interface StarterTasksSpecies {
+  speciesId: string | null;
+  match: string[];
+  tasks: StarterTaskEntry[];
+}
+interface StarterTasksJson {
+  generic: { tasks: StarterTaskEntry[] };
+  species: StarterTasksSpecies[];
+}
+
+const STARTER_TASKS_JSON = starterTasksData as unknown as StarterTasksJson;
+
+// ── Resolve tasks for a plant from starter_tasks.json ────────────────────────
+// Priority: speciesId match → Hebrew name match → generic.
+function resolveStarterTasks(
+  speciesId: string | null,
+  commonNameHe: string,
+): StarterTaskEntry[] {
+  const { species, generic } = STARTER_TASKS_JSON;
+
+  // 1. Match by encyclopedia speciesId (most precise)
+  if (speciesId) {
+    const byId = species.find(s => s.speciesId === speciesId);
+    if (byId) return byId.tasks;
+  }
+
+  // 2. Match by Hebrew name (case-insensitive partial check against match[])
+  const nameLower = commonNameHe.trim().toLowerCase();
+  if (nameLower) {
+    const byName = species.find(s =>
+      s.match.some(m => m.trim().toLowerCase() === nameLower)
+    );
+    if (byName) return byName.tasks;
+  }
+
+  // 3. Fall back to generic tasks
+  return generic.tasks;
+}
+
+// ── Biodynamic date scheduler ────────────────────────────────────────────────
+// For lunarSensitive tasks: find the first favorable biodynamic day starting at
+// baseDate, within a 14-day forward search window.
+// Favorable = nodeActive===false AND planting_score>=4 AND score_colour not 'red'/'black'.
+// Falls back to baseDate if no favorable day is found.
+//
+// TODO(phase2): Per-species day_type_affinity scheduling — schedule each task on
+// a day whose dayType (fruit/leaf/root/flower) matches the plant's affinity
+// from the `plants.day_type_affinity` column. Out of scope for Phase 1.
+async function scheduledDate(
+  baseDate: string,
+  lunarSensitive: boolean,
+): Promise<string> {
+  if (!lunarSensitive) return baseDate;
+
+  const SEARCH_DAYS = 14;
+  const from = baseDate;
+  const toDate = new Date(baseDate + 'T00:00:00Z');
+  toDate.setUTCDate(toDate.getUTCDate() + SEARCH_DAYS);
+  const to = toDate.toISOString().slice(0, 10);
+
+  let calendarDays: import('@gina-haya/shared').BiodynamicDay[];
+  try {
+    calendarDays = await getCalendarRange(from, to);
+  } catch {
+    // Calendar table unavailable (e.g. not yet populated) — fall back silently
+    return baseDate;
+  }
+
+  const favorable = calendarDays.find(
+    d => !d.nodeActive && d.plantingScore >= 4 && d.scoreColour !== 'red' && d.scoreColour !== 'black'
+  );
+  return favorable?.date ?? baseDate;
+}
 
 export const gardenRouter: IRouter = Router();
 
@@ -432,18 +516,20 @@ gardenRouter.delete('/:id/plants/:plantId', async (req: any, res) => {
 });
 
 // POST /api/garden/garden-plants/:id/starter-tasks
-// Creates a static set of starter garden_tasks for a newly added (untracked) plant.
+// Seeds curated care tasks for a newly added UNTRACKED plant from starter_tasks.json.
+// Match order: encyclopedia speciesId → Hebrew name → generic fallback.
 // Idempotent: a second call returns { skipped: 'already_generated' } without inserting.
+// Never 500s the caller — on any internal error, logs and returns empty result.
 gardenRouter.post('/garden-plants/:id/starter-tasks', async (req: any, res) => {
+  const gardenPlantId = req.params.id;
   try {
     const userId = req.user?.id;
     if (!userId) return res.status(401).json({ error: 'Unauthorized' });
-    const gardenPlantId = req.params.id;
 
-    // 1. Fetch the garden_plants row
+    // 1. Fetch the garden_plants row (include plant_id for speciesId match)
     const { data: gp, error: gpError } = await db
       .from('garden_plants')
-      .select('id, common_name_he, plant_type, garden_id')
+      .select('id, common_name_he, plant_type, garden_id, plant_id')
       .eq('id', gardenPlantId)
       .single();
 
@@ -459,7 +545,7 @@ gardenRouter.post('/garden-plants/:id/starter-tasks', async (req: any, res) => {
 
     if (gardenError || !garden) return res.status(403).json({ error: 'Forbidden' });
 
-    // 3. Idempotency guard — don't insert twice for the same plant
+    // 3. Idempotency guard — seed exactly once per plant
     const { count, error: countError } = await db
       .from('garden_tasks')
       .select('id', { count: 'exact', head: true })
@@ -471,48 +557,57 @@ gardenRouter.post('/garden-plants/:id/starter-tasks', async (req: any, res) => {
       return res.json({ ok: true, tasks: [], skipped: 'already_generated' });
     }
 
-    // 4. Resolve starter tasks from static table
-    const starterTasks = getStarterTasks(gp.plant_type);
+    // 4. Resolve tasks from JSON: speciesId → Hebrew name → generic; cap at 5 by dayOffset
+    const resolved = resolveStarterTasks(gp.plant_id ?? null, gp.common_name_he ?? '');
+    const capped = [...resolved].sort((a, b) => a.dayOffset - b.dayOffset).slice(0, 5);
 
-    // 5. Compute today (UTC date string) and stagger due dates
-    const todayStr = new Date().toISOString().slice(0, 10); // YYYY-MM-DD
+    // 5. Compute base dates and apply biodynamic scheduling for lunar-sensitive tasks
     function addDays(base: string, days: number): string {
       const d = new Date(base + 'T00:00:00Z');
       d.setUTCDate(d.getUTCDate() + days);
       return d.toISOString().slice(0, 10);
     }
+    const todayStr = new Date().toISOString().slice(0, 10);
 
-    // 6. Build rows
-    const rows = starterTasks.map(t => ({
-      user_id:           userId,
-      garden_plants_id:  gardenPlantId,
-      plant_tracker_id:  null,
-      source_checkin_id: null,
-      plan_id:           null,
-      plant_name:        gp.common_name_he,
-      title:             t.title,
-      notes:             t.notes,
-      category:          t.category,
-      priority:          t.priority,
-      type:              'custom' as const,
-      status:            'pending' as const,
-      source_action:     'starter_tasks',
-      date:              addDays(todayStr, t.dayOffset),
+    const rows = await Promise.all(capped.map(async t => {
+      const baseDate = addDays(todayStr, t.dayOffset);
+      const date = await scheduledDate(baseDate, t.lunarSensitive);
+      return {
+        user_id:           userId,
+        garden_plants_id:  gardenPlantId,
+        plant_tracker_id:  null,
+        source_checkin_id: null,
+        plan_id:           null,
+        plant_name:        gp.common_name_he ?? null,
+        title:             t.title,
+        notes:             t.notes ?? null,
+        category:          t.category,
+        priority:          t.priority,
+        type:              'custom' as const,
+        status:            'pending' as const,
+        source_action:     'starter_tasks',
+        date,
+      };
     }));
 
-    // 7. Insert
+    // 6. Insert — never throw on error; return empty result instead so the app
+    //    flow is never blocked by a seed failure.
     const { data: inserted, error: insertError } = await db
       .from('garden_tasks')
       .insert(rows)
       .select();
 
-    if (insertError) throw insertError;
+    if (insertError) {
+      console.error('[POST /api/garden/garden-plants/:id/starter-tasks] insert failed:', insertError.message);
+      return res.status(201).json({ ok: true, tasks: [], seed_error: insertError.message });
+    }
 
-    console.log('[POST /api/garden/garden-plants/:id/starter-tasks] inserted', inserted?.length, 'tasks for plant', gardenPlantId);
+    console.log('[POST /api/garden/garden-plants/:id/starter-tasks] seeded', inserted?.length, 'tasks for plant', gardenPlantId);
     return res.status(201).json({ ok: true, tasks: inserted });
   } catch (err: any) {
     console.error('[POST /api/garden/garden-plants/:id/starter-tasks]', err);
-    res.status(500).json({ error: err.message });
+    // Never block the caller — return empty result on unexpected error
+    return res.status(201).json({ ok: true, tasks: [], seed_error: err.message });
   }
 });
 

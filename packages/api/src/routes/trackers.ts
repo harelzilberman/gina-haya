@@ -151,6 +151,27 @@ trackersRouter.post('/', async (req: any, res) => {
       .single();
 
     if (error) throw error;
+
+    // ── Delete-on-conversion: clear starter tasks when an untracked plant
+    // becomes tracked.  Runs only when gardenPlantId is present (the tracker
+    // is linked to a specific garden_plants row).  Hard-delete is correct here
+    // because garden_tasks has no soft-delete convention (no deleted_at column).
+    if (gardenPlantId) {
+      const { error: clearErr } = await db
+        .from('garden_tasks')
+        .delete()
+        .eq('garden_plants_id', gardenPlantId)
+        .eq('source_action', 'starter_tasks')
+        .eq('user_id', userId);
+
+      if (clearErr) {
+        // Log but don't fail the tracker creation — the task clear is best-effort.
+        console.error('[POST /api/trackers] failed to clear starter tasks for plant', gardenPlantId, clearErr.message);
+      } else {
+        console.log('[POST /api/trackers] cleared starter_tasks for plant', gardenPlantId, '(untracked→tracked conversion)');
+      }
+    }
+
     res.status(201).json(data);
   } catch (err: any) {
     console.error('[POST /api/trackers]', err.message, err.stack);
