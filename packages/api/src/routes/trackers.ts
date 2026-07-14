@@ -297,14 +297,27 @@ trackersRouter.get('/:id', async (req: any, res) => {
       return res.status(404).json({ error: 'Tracker not found' });
     }
 
-    const { data: checkins } = await db
+    // Same deleted_at fallback as GET /api/trackers (list endpoint):
+    // if the column doesn't exist yet the filter errors out, returning no rows.
+    const { data: checkins, error: checkinsError } = await db
       .from('plant_tracker_checkins')
       .select('*')
       .eq('tracker_id', id)
       .is('deleted_at', null)
       .order('checkin_date', { ascending: false });
 
-    res.json({ ...tracker, checkins: checkins ?? [] });
+    let resolvedCheckins = checkins;
+    if (checkinsError) {
+      console.error('[GET /api/trackers/:id] checkins query failed (missing deleted_at column?):', checkinsError.message);
+      const { data: fallbackCheckins } = await db
+        .from('plant_tracker_checkins')
+        .select('*')
+        .eq('tracker_id', id)
+        .order('checkin_date', { ascending: false });
+      resolvedCheckins = fallbackCheckins;
+    }
+
+    res.json({ ...tracker, checkins: resolvedCheckins ?? [] });
   } catch (err: any) {
     console.error('[GET /api/trackers/:id]', err.message, err.stack);
     res.status(500).json({ error: err.message });

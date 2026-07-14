@@ -337,6 +337,62 @@ chupChuRouter.post('/full-diagnosis', async (req: any, res) => {
       );
     }
 
+    // ── Mirror the analysis into plant_tracker_checkins when called from a tracker ─
+    // full-diagnosis writes only to plant_timeline, so the tracker widget (which reads
+    // plant_tracker_checkins) always showed "no analysis yet" for analyses done via the
+    // mobile "track" flow.  When tracker_id is supplied we verify ownership then insert
+    // a translated check-in row so the widget resolves latest_checkin correctly.
+    // Non-blocking — failure does not affect the diagnosis response.
+    if (tracker_id && req.user?.id) {
+      try {
+        const { data: trackerRow } = await db
+          .from('plant_trackers')
+          .select('id')
+          .eq('id', tracker_id)
+          .eq('user_id', req.user.id)
+          .is('deleted_at', null)
+          .single();
+
+        if (trackerRow) {
+          const healthMap: Record<string, string> = {
+            healthy: 'good', stressed: 'fair', diseased: 'poor', pest_damage: 'poor',
+          };
+          const aiAnalysis = {
+            plantIdentified:   diagnosis.plant_name   ?? '',
+            plantIdentifiedEn: diagnosis.plant_name_latin ?? '',
+            confidence:        diagnosis.confidence   ?? 'medium',
+            growthStage:       'vegetative',
+            growthStageHe:     diagnosis.plant_name   ?? '',
+            health:            healthMap[diagnosis.health_status as string] ?? 'fair',
+            healthHe:          diagnosis.health_status_label ?? '',
+            issues: (diagnosis.issues ?? []).map((i: any) => ({
+              type:            i.name        ?? '',
+              severity:        i.severity    ?? 'low',
+              description:     i.description ?? '',
+              naturalSolution: '',
+            })),
+            observations:      diagnosis.summary ?? '',
+            immediateActions:  [] as string[],
+          };
+          const { error: checkinErr } = await db.from('plant_tracker_checkins').insert({
+            tracker_id:   tracker_id,
+            user_id:      req.user.id,
+            checkin_date: todayInIsrael(),
+            growth_stage: 'vegetative',
+            ai_analysis:  aiAnalysis,
+            photo_path:   photoPath ?? null,
+          });
+          if (checkinErr) {
+            console.error('[full-diagnosis] plant_tracker_checkins insert failed:', checkinErr.message);
+          } else {
+            console.log('[full-diagnosis] created check-in for tracker', tracker_id);
+          }
+        }
+      } catch (checkinInsertErr: any) {
+        console.error('[full-diagnosis] check-in insert threw:', checkinInsertErr.message);
+      }
+    }
+
     // When no plant_id was supplied (chat "add to garden" flow), return photo_path
     // so the client can forward it to attach-diagnosis once a plant is created.
     res.json({ success: true, diagnosis, timeline_entry_id: timelineEntryId, photo_path: photoPath });
