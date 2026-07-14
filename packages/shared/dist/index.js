@@ -23,4 +23,5 @@ __exportStar(require("./constants/media"), exports);
 __exportStar(require("./constants/calendar"), exports);
 __exportStar(require("./utils/date"), exports);
 __exportStar(require("./types/article"), exports);
+__exportStar(require("./data/starterTasks"), exports);
 //# sourceMappingURL=index.js.map

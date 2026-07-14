@@ -7,3 +7,4 @@ export * from './constants/media';
 export * from './constants/calendar';
 export * from './utils/date';
 export * from './types/article';
+export * from './data/starterTasks';

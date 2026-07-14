@@ -2,6 +2,7 @@ import { Router, type IRouter } from 'express';
 import { db } from '../db/client';
 import { verifyToken } from '../middleware/auth';
 import { attachTier } from '../middleware/tierMiddleware';
+import { getStarterTasks } from '@gina-haya/shared';
 
 export const gardenRouter: IRouter = Router();
 
@@ -426,6 +427,91 @@ gardenRouter.delete('/:id/plants/:plantId', async (req: any, res) => {
     res.json({ success: true });
   } catch (err: any) {
     console.error('[DELETE /api/garden/:id/plants/:plantId]', err);
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// POST /api/garden/garden-plants/:id/starter-tasks
+// Creates a static set of starter garden_tasks for a newly added (untracked) plant.
+// Idempotent: a second call returns { skipped: 'already_generated' } without inserting.
+gardenRouter.post('/garden-plants/:id/starter-tasks', async (req: any, res) => {
+  try {
+    const userId = req.user?.id;
+    if (!userId) return res.status(401).json({ error: 'Unauthorized' });
+    const gardenPlantId = req.params.id;
+
+    // 1. Fetch the garden_plants row
+    const { data: gp, error: gpError } = await db
+      .from('garden_plants')
+      .select('id, common_name_he, plant_type, garden_id')
+      .eq('id', gardenPlantId)
+      .single();
+
+    if (gpError || !gp) return res.status(404).json({ error: 'not_found' });
+
+    // 2. Verify ownership via gardens.user_id
+    const { data: garden, error: gardenError } = await db
+      .from('gardens')
+      .select('id')
+      .eq('id', gp.garden_id)
+      .eq('user_id', userId)
+      .single();
+
+    if (gardenError || !garden) return res.status(403).json({ error: 'Forbidden' });
+
+    // 3. Idempotency guard — don't insert twice for the same plant
+    const { count, error: countError } = await db
+      .from('garden_tasks')
+      .select('id', { count: 'exact', head: true })
+      .eq('garden_plants_id', gardenPlantId)
+      .eq('source_action', 'starter_tasks');
+
+    if (countError) throw countError;
+    if ((count ?? 0) > 0) {
+      return res.json({ ok: true, tasks: [], skipped: 'already_generated' });
+    }
+
+    // 4. Resolve starter tasks from static table
+    const starterTasks = getStarterTasks(gp.plant_type);
+
+    // 5. Compute today (UTC date string) and stagger due dates
+    const todayStr = new Date().toISOString().slice(0, 10); // YYYY-MM-DD
+    function addDays(base: string, days: number): string {
+      const d = new Date(base + 'T00:00:00Z');
+      d.setUTCDate(d.getUTCDate() + days);
+      return d.toISOString().slice(0, 10);
+    }
+
+    // 6. Build rows
+    const rows = starterTasks.map(t => ({
+      user_id:           userId,
+      garden_plants_id:  gardenPlantId,
+      plant_tracker_id:  null,
+      source_checkin_id: null,
+      plan_id:           null,
+      plant_name:        gp.common_name_he,
+      title:             t.title,
+      notes:             t.notes,
+      category:          t.category,
+      priority:          t.priority,
+      type:              'custom' as const,
+      status:            'pending' as const,
+      source_action:     'starter_tasks',
+      date:              addDays(todayStr, t.dayOffset),
+    }));
+
+    // 7. Insert
+    const { data: inserted, error: insertError } = await db
+      .from('garden_tasks')
+      .insert(rows)
+      .select();
+
+    if (insertError) throw insertError;
+
+    console.log('[POST /api/garden/garden-plants/:id/starter-tasks] inserted', inserted?.length, 'tasks for plant', gardenPlantId);
+    return res.status(201).json({ ok: true, tasks: inserted });
+  } catch (err: any) {
+    console.error('[POST /api/garden/garden-plants/:id/starter-tasks]', err);
     res.status(500).json({ error: err.message });
   }
 });

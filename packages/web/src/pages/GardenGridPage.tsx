@@ -2,6 +2,9 @@ import { useEffect, useState } from 'react';
 import { useGardenStore } from '../stores/gardenStore';
 import { useGardenSwitcherStore } from '../stores/gardenSwitcherStore';
 import { useTrackerStore } from '../stores/trackerStore';
+import { useAuthStore } from '../stores/authStore';
+import { useToastStore } from '../stores/toastStore';
+import { api } from '../api/client';
 import { GardenSwitcher } from '../components/garden/GardenSwitcher';
 import { CreateGardenModal } from '../components/garden/CreateGardenModal';
 import { GardenPlantCard, AddPlantCard } from '../components/garden/GardenPlantCard';
@@ -25,6 +28,8 @@ export function GardenGridPage() {
   const { activeGarden } = useGardenStore();
   const { isLoading } = useGardenSwitcherStore();
   const { trackers, loadTrackers } = useTrackerStore();
+  const { session } = useAuthStore();
+  const { show: showToast } = useToastStore();
 
   const [showAddPlant,    setShowAddPlant]    = useState(false);
   const [showCreateGarden, setShowCreateGarden] = useState(false);
@@ -163,7 +168,15 @@ export function GardenGridPage() {
             </p>
             <div style={{ display: 'flex', gap: '10px' }}>
               <button
-                onClick={() => setTrackDialogFor(null)}
+                onClick={() => {
+                  const plantId = trackDialogFor;
+                  setTrackDialogFor(null); // dismiss immediately — don't block UI
+                  if (plantId && session?.access_token) {
+                    api.post(`/api/garden/garden-plants/${plantId}/starter-tasks`, {}, session.access_token)
+                      .then(() => showToast('נוספו משימות התחלתיות לצמח 🌱', 'info'))
+                      .catch((err) => console.error('[starter-tasks]', err));
+                  }
+                }}
                 style={{
                   flex: 1, padding: '10px', borderRadius: '8px', border: '1px solid rgba(0,229,195,0.25)',
                   background: 'transparent', color: `${TEXT_MID}80`, fontFamily: DM_SANS, fontSize: '13px', cursor: 'pointer',
