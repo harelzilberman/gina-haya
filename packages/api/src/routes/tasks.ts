@@ -122,13 +122,76 @@ tasksRouter.post('/bulk', async (req, res) => {
       };
     });
 
+    // ── Pre-insert dedup guard ───────────────────────────────────────────────
+    // Mirrors the pattern in garden.ts starter-tasks endpoint (line ~549).
+    // Only status='pending' rows block re-add — completed/skipped tasks leave
+    // the pending set and can legitimately be re-added (e.g. recurring care).
+    // Match key:
+    //   • row has garden_plants_id set  → (user_id, garden_plants_id, title)
+    //   • row has null garden_plants_id → (user_id, title, date)  [fallback]
+    // On guard-query failure: log and fall through to insert (availability > dedup).
+    let existingRows: Array<{ title: string; garden_plants_id: string | null; date: string }> = [];
+    try {
+      const { data: existing, error: guardError } = await db
+        .from('garden_tasks')
+        .select('title, garden_plants_id, date')
+        .eq('user_id', userId)
+        .eq('status', 'pending');
+      if (guardError) {
+        console.error('[POST /api/tasks/bulk] dedup guard query failed, inserting without dedup:', guardError.message);
+      } else {
+        existingRows = existing ?? [];
+      }
+    } catch (guardErr: any) {
+      console.error('[POST /api/tasks/bulk] dedup guard threw, inserting without dedup:', guardErr.message);
+    }
+
+    // Build lookup sets for O(1) matching
+    const pendingWithPlant  = new Set(
+      existingRows
+        .filter(r => r.garden_plants_id != null)
+        .map(r => `${r.garden_plants_id}::${r.title}`)
+    );
+    const pendingWithoutPlant = new Set(
+      existingRows
+        .filter(r => r.garden_plants_id == null)
+        .map(r => `${r.title}::${r.date}`)
+    );
+
+    const existingMatched: typeof existingRows = [];
+    const newRows = rows.filter(r => {
+      if (r.garden_plants_id != null) {
+        const key = `${r.garden_plants_id}::${r.title}`;
+        if (pendingWithPlant.has(key)) { existingMatched.push(r); return false; }
+      } else {
+        const key = `${r.title}::${r.date}`;
+        if (pendingWithoutPlant.has(key)) { existingMatched.push(r); return false; }
+      }
+      return true;
+    });
+
+    // All-duplicates: valid — return 200 with zero inserts
+    if (newRows.length === 0) {
+      return res.json({
+        ok:               true,
+        count:            0,
+        tasks:            [],
+        skipped_existing: existingMatched.length,
+      });
+    }
+
     const { data, error } = await db
       .from('garden_tasks')
-      .insert(rows)
+      .insert(newRows)
       .select();
 
     if (error) throw error;
-    res.json({ ok: true, count: data?.length ?? 0, tasks: data });
+    res.json({
+      ok:               true,
+      count:            data?.length ?? 0,
+      tasks:            data,
+      skipped_existing: existingMatched.length,
+    });
   } catch (err: any) {
     console.error('[POST /api/tasks/bulk]', err.message);
     res.status(500).json({ error: err.message });
