@@ -246,8 +246,27 @@ chupChuRouter.post('/analyze-image', async (req: any, res) => {
 // ── POST /api/chupchu/full-diagnosis ───────────────────────────────────────
 chupChuRouter.post('/full-diagnosis', async (req: any, res) => {
   try {
-    const { image, mimeType = 'image/jpeg', language = 'he', plant_id, tracker_id, source } = req.body;
+    const { image, mimeType = 'image/jpeg', language = 'he', plant_id, tracker_id, source, photo_storage_key } = req.body;
     if (!image) return res.status(400).json({ success: false, error: 'No image provided' });
+
+    // ── Validate photo_storage_key if provided ───────────────────────────────
+    // The client may supply a key it already uploaded to tracker-photos, in which
+    // case we skip the server-side upload and use the key directly.
+    let clientPhotoKey: string | null = null;
+    if (photo_storage_key !== undefined && photo_storage_key !== null) {
+      const userId = req.user?.id;
+      if (
+        typeof photo_storage_key !== 'string' ||
+        photo_storage_key.trim().length === 0 ||
+        photo_storage_key.startsWith('/') ||
+        photo_storage_key.startsWith('file://') ||
+        !userId ||
+        !photo_storage_key.startsWith(`${userId}/`)
+      ) {
+        return res.status(400).json({ success: false, error: 'invalid_photo_storage_key' });
+      }
+      clientPhotoKey = photo_storage_key;
+    }
 
     // ── Vision quota gate ────────────────────────────────────────────────────
     // Checked BEFORE any Anthropic spend.
@@ -361,12 +380,15 @@ chupChuRouter.post('/full-diagnosis', async (req: any, res) => {
       }
     }
 
-    // ── Upload photo to tracker-photos bucket ────────────────────────────────
-    // Non-blocking: failure returns null and does not affect the diagnosis response.
-    // Path: {userId}/chupchu/{timestamp}.jpg — distinct from tracker check-in paths
-    // ({userId}/{trackerId}/{timestamp}.jpg) but same bucket, so TimelinePhoto on
-    // the website works via the existing createSignedUrl call without any changes.
-    const photoPath = await uploadChupChuPhoto(req.user.id, image);
+    // ── Upload photo to tracker-photos bucket (skipped when client pre-uploaded) ─
+    // When clientPhotoKey is set the client already owns a copy in the bucket, so
+    // we skip the server-side upload to avoid a second storage copy.
+    // Non-blocking when we do upload: failure returns null and does not affect the
+    // diagnosis response.
+    // Path (server upload): {userId}/chupchu/{timestamp}.jpg
+    const photoPath = clientPhotoKey !== null
+      ? null  // no server upload — client key used for checkin; timeline entry will have photo_path = null
+      : await uploadChupChuPhoto(req.user.id, image);
 
     // ── Fetch plant context, suppress watering tasks, persist timeline ────────
     // All three steps share a single garden_plants fetch — only runs when plant_id is set.
@@ -386,12 +408,14 @@ chupChuRouter.post('/full-diagnosis', async (req: any, res) => {
         );
       }
 
+      // When clientPhotoKey is set the client already created a photo timeline entry,
+      // so pass null here to avoid a visual double in the timeline.
       timelineEntryId = await insertChupChuTimelineEntry(
         req.user.id,
         plant_id,
         diagnosis,
         tracker_id ?? null,
-        photoPath,
+        clientPhotoKey !== null ? null : photoPath,
       );
     }
 
@@ -413,6 +437,10 @@ chupChuRouter.post('/full-diagnosis', async (req: any, res) => {
 
         if (trackerRow) {
           const { aiAnalysis, growingPlan } = buildCheckinAnalysis(diagnosis);
+          // Use clientPhotoKey when the client pre-uploaded the photo; otherwise use
+          // the server-uploaded path.  This keeps the tracker widget photo correct
+          // without creating a second storage copy.
+          const checkinPhotoPath = clientPhotoKey ?? photoPath ?? null;
           const { error: checkinErr } = await db.from('plant_tracker_checkins').insert({
             tracker_id:   tracker_id,
             user_id:      req.user.id,
@@ -420,7 +448,7 @@ chupChuRouter.post('/full-diagnosis', async (req: any, res) => {
             growth_stage: 'vegetative',
             ai_analysis:  aiAnalysis,
             growing_plan: growingPlan,
-            photo_path:   photoPath ?? null,
+            photo_path:   checkinPhotoPath,
           });
           if (checkinErr) {
             console.error('[full-diagnosis] plant_tracker_checkins insert failed:', checkinErr.message);
