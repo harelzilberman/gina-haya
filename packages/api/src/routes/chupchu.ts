@@ -468,10 +468,13 @@ chupChuRouter.post('/attach-diagnosis', async (req: any, res) => {
 // ── DELETE /api/chupchu/history ─────────────────────────────────────────────
 chupChuRouter.delete('/history', async (req: any, res) => {
   try {
-    await db
+    const { error } = await db
       .from('chupchu_conversations')
       .delete()
       .eq('user_id', req.user.id);
+    if (error) throw error;
+    // NOTE: chat_uses is intentionally NOT touched here — deleting conversation
+    // context must not reset the quota counter.
     res.json({ success: true });
   } catch (err: any) {
     console.error('[DELETE /api/chupchu/history]', err.message);
@@ -941,24 +944,25 @@ chupChuRouter.post('/chat', async (req: any, res) => {
         const startOfDay = new Date();
         startOfDay.setHours(0, 0, 0, 0);
 
-        const { data: convData } = await db
-          .from('chupchu_conversations')
-          .select('messages')
+        // Count from chat_uses — survives history deletion (see migration 029).
+        // Two separate queries: daily and monthly. Errors are logged and
+        // fail-open (count falls back to 0) so a DB hiccup never hard-blocks chat.
+        const { count: countToday, error: countTodayErr } = await db
+          .from('chat_uses')
+          .select('id', { count: 'exact', head: true })
           .eq('user_id', userId)
-          .gte('updated_at', startOfMonth.toISOString())
-          .limit(1)
-          .single();
+          .gte('created_at', startOfDay.toISOString());
+        if (countTodayErr) console.error('[chat limit] daily count query failed:', countTodayErr.message);
 
-        // Single pass over JSONB messages array — compute both counters at once.
-        const existingMessages: ChupChuMessage[] = (convData?.messages as ChupChuMessage[]) || [];
-        let messagesUsedThisMonth = 0;
-        let messagesUsedToday = 0;
-        for (const m of existingMessages) {
-          if (m.role !== 'user') continue;
-          const ts = new Date(m.timestamp);
-          if (ts >= startOfMonth) messagesUsedThisMonth++;
-          if (ts >= startOfDay)   messagesUsedToday++;
-        }
+        const { count: countMonth, error: countMonthErr } = await db
+          .from('chat_uses')
+          .select('id', { count: 'exact', head: true })
+          .eq('user_id', userId)
+          .gte('created_at', startOfMonth.toISOString());
+        if (countMonthErr) console.error('[chat limit] monthly count query failed:', countMonthErr.message);
+
+        const messagesUsedToday     = countToday  ?? 0;
+        const messagesUsedThisMonth = countMonth  ?? 0;
 
         // Daily limit check runs first.
         if (dailyLimit !== null && messagesUsedToday >= dailyLimit) {
@@ -1492,6 +1496,19 @@ chupChuRouter.post('/chat', async (req: any, res) => {
         console.error('[Memory] Save threw unexpectedly:', e?.message);
       }
     })();
+
+    // ── 10b. Record chat_uses row ─────────────────────────────────────────────
+    // Persists through history deletion — billing-adjacent quota counter.
+    // Awaited with explicit error check; do NOT fire-and-forget.
+    // Image turns are gated by vision_uses (checkAndRecordVisionUse) — skip here.
+    if (!hasImage) {
+      const { error: chatUsesErr } = await db
+        .from('chat_uses')
+        .insert({ user_id: userId });
+      if (chatUsesErr) {
+        console.error('[chat limit] CRITICAL: failed to insert chat_uses row:', chatUsesErr.message);
+      }
+    }
 
     // ── 11. Count usage ───────────────────────────────────────────────────
     const startOfMonth = new Date();
