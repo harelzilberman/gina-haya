@@ -87,6 +87,32 @@ async function uploadChupChuPhoto(
   }
 }
 
+// ── Shared helper: translate a full-diagnosis payload into the ai_analysis ───
+// shape expected by plant_tracker_checkins.  Used by both full-diagnosis and
+// attach-diagnosis so the mapping stays canonical in one place.
+function buildCheckinAnalysis(diagnosis: any): Record<string, any> {
+  const healthMap: Record<string, string> = {
+    healthy: 'good', stressed: 'fair', diseased: 'poor', pest_damage: 'poor',
+  };
+  return {
+    plantIdentified:   diagnosis.plant_name        ?? '',
+    plantIdentifiedEn: diagnosis.plant_name_latin  ?? '',
+    confidence:        diagnosis.confidence         ?? 'medium',
+    growthStage:       'vegetative',
+    growthStageHe:     diagnosis.plant_name         ?? '',
+    health:            healthMap[diagnosis.health_status as string] ?? 'fair',
+    healthHe:          diagnosis.health_status_label ?? '',
+    issues: (diagnosis.issues ?? []).map((i: any) => ({
+      type:            i.name        ?? '',
+      severity:        i.severity    ?? 'low',
+      description:     i.description ?? '',
+      naturalSolution: '',
+    })),
+    observations:     diagnosis.summary ?? '',
+    immediateActions: [] as string[],
+  };
+}
+
 // ── GET /api/chupchu/history ────────────────────────────────────────────────
 chupChuRouter.get('/history', async (req: any, res) => {
   try {
@@ -354,26 +380,7 @@ chupChuRouter.post('/full-diagnosis', async (req: any, res) => {
           .single();
 
         if (trackerRow) {
-          const healthMap: Record<string, string> = {
-            healthy: 'good', stressed: 'fair', diseased: 'poor', pest_damage: 'poor',
-          };
-          const aiAnalysis = {
-            plantIdentified:   diagnosis.plant_name   ?? '',
-            plantIdentifiedEn: diagnosis.plant_name_latin ?? '',
-            confidence:        diagnosis.confidence   ?? 'medium',
-            growthStage:       'vegetative',
-            growthStageHe:     diagnosis.plant_name   ?? '',
-            health:            healthMap[diagnosis.health_status as string] ?? 'fair',
-            healthHe:          diagnosis.health_status_label ?? '',
-            issues: (diagnosis.issues ?? []).map((i: any) => ({
-              type:            i.name        ?? '',
-              severity:        i.severity    ?? 'low',
-              description:     i.description ?? '',
-              naturalSolution: '',
-            })),
-            observations:      diagnosis.summary ?? '',
-            immediateActions:  [] as string[],
-          };
+          const aiAnalysis = buildCheckinAnalysis(diagnosis);
           const { error: checkinErr } = await db.from('plant_tracker_checkins').insert({
             tracker_id:   tracker_id,
             user_id:      req.user.id,
@@ -408,11 +415,12 @@ chupChuRouter.post('/full-diagnosis', async (req: any, res) => {
 // write.  Used when the user adds a plant to their garden after viewing the
 // report, so the timeline entry is created retroactively.
 //
-// Request:  { garden_plants_id: string, diagnosis: <full-diagnosis payload> }
+// Request:  { garden_plants_id: string, diagnosis: <full-diagnosis payload>,
+//             photo_path?: string, tracker_id?: string }
 // Response: { success: true, timeline_entry_id: string }
 chupChuRouter.post('/attach-diagnosis', async (req: any, res) => {
   try {
-    const { garden_plants_id, diagnosis, photo_path } = req.body;
+    const { garden_plants_id, diagnosis, photo_path, tracker_id } = req.body;
 
     if (!garden_plants_id || typeof garden_plants_id !== 'string') {
       return res.status(400).json({ success: false, error: 'garden_plants_id is required' });
@@ -422,6 +430,8 @@ chupChuRouter.post('/attach-diagnosis', async (req: any, res) => {
     }
 
     const userId = req.user.id;
+    const validatedPhotoPath = typeof photo_path === 'string' && photo_path.length > 0 ? photo_path : null;
+    const validatedTrackerId = typeof tracker_id === 'string' && tracker_id.length > 0 ? tracker_id : null;
 
     // Verify ownership: garden_plants has no direct user_id column; ownership
     // flows through garden_id → gardens.user_id (same pattern as garden PATCH).
@@ -450,12 +460,48 @@ chupChuRouter.post('/attach-diagnosis', async (req: any, res) => {
       userId,
       garden_plants_id,
       diagnosis,
-      null,
-      typeof photo_path === 'string' && photo_path.length > 0 ? photo_path : null,
+      validatedTrackerId,
+      validatedPhotoPath,
     );
 
     if (!timelineEntryId) {
       return res.status(500).json({ success: false, error: 'Failed to persist diagnosis' });
+    }
+
+    // ── Mirror analysis into plant_tracker_checkins ────────────────────────
+    // GET /api/trackers resolves latest_checkin from plant_tracker_checkins,
+    // not plant_timeline, so the tracker summary window shows "no analysis yet"
+    // unless we write here too.  Non-blocking — failure does not affect response.
+    if (validatedTrackerId) {
+      try {
+        const { data: trackerRow } = await db
+          .from('plant_trackers')
+          .select('id')
+          .eq('id', validatedTrackerId)
+          .eq('user_id', userId)
+          .is('deleted_at', null)
+          .single();
+
+        if (trackerRow) {
+          const { error: checkinErr } = await db.from('plant_tracker_checkins').insert({
+            tracker_id:   validatedTrackerId,
+            user_id:      userId,
+            checkin_date: todayInIsrael(),
+            growth_stage: 'vegetative',
+            ai_analysis:  buildCheckinAnalysis(diagnosis),
+            photo_path:   validatedPhotoPath,
+          });
+          if (checkinErr) {
+            console.error('[attach-diagnosis] plant_tracker_checkins insert failed:', checkinErr.message);
+          } else {
+            console.log('[attach-diagnosis] created check-in for tracker', validatedTrackerId);
+          }
+        } else {
+          console.log('[attach-diagnosis] tracker not found or not owned — skipping checkin', validatedTrackerId);
+        }
+      } catch (checkinInsertErr: any) {
+        console.error('[attach-diagnosis] check-in insert threw:', checkinInsertErr.message);
+      }
     }
 
     res.json({ success: true, timeline_entry_id: timelineEntryId });
