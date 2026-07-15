@@ -64,38 +64,45 @@ usersRouter.get('/usage', async (req: any, res) => {
   try {
     const userId = req.user.id;
 
+    // Mirror tierMiddleware: when LAUNCH_FREE_MODE is on, treat everyone as
+    // professional so display matches enforcement.  When off, use stored tier.
+    const LAUNCH_FREE_MODE = process.env.LAUNCH_FREE_MODE === 'true';
     const { data: userRow } = await db
       .from('users')
       .select('subscription_tier')
       .eq('id', userId)
       .single();
 
-    const tier = userRow?.subscription_tier ?? 'free';
+    const storedTier = userRow?.subscription_tier ?? 'free';
+    const tier   = LAUNCH_FREE_MODE ? 'professional' : storedTier;
     const limits = getLimits(tier);
 
     const startOfMonth = new Date();
     startOfMonth.setDate(1);
     startOfMonth.setHours(0, 0, 0, 0);
+    const startOfDay = new Date();
+    startOfDay.setHours(0, 0, 0, 0);
     const resetsAt = new Date(startOfMonth.getFullYear(), startOfMonth.getMonth() + 1, 1).toISOString();
 
     // Count analyses this month
-    const { count: analysesUsed } = await db
+    const { count: analysesUsed, error: analysesErr } = await db
       .from('plant_tracker_checkins')
       .select('id', { count: 'exact', head: true })
       .eq('user_id', userId)
       .is('deleted_at', null)
       .gte('created_at', startOfMonth.toISOString());
+    if (analysesErr) console.error('[GET /api/users/usage] analyses count error:', analysesErr.message);
 
     // Count active trackers
-    const { count: trackersActive } = await db
+    const { count: trackersActive, error: trackersErr } = await db
       .from('plant_trackers')
       .select('id', { count: 'exact', head: true })
       .eq('user_id', userId)
       .is('deleted_at', null);
+    if (trackersErr) console.error('[GET /api/users/usage] trackers count error:', trackersErr.message);
 
     // Count active (non-archived) plants across all user gardens.
     // garden_plants has no user_id column; ownership is through garden_id → gardens.user_id.
-    // Fix: join via the gardens we already have in gardensCount query, resolved by garden_id IN (...).
     const { data: userGardensForPlants } = await db
       .from('gardens')
       .select('id')
@@ -110,23 +117,27 @@ usersRouter.get('/usage', async (req: any, res) => {
       : { count: 0 };
 
     // Count gardens
-    const { count: gardensCount } = await db
+    const { count: gardensCount, error: gardensCountErr } = await db
       .from('gardens')
       .select('id', { count: 'exact', head: true })
       .eq('user_id', userId);
+    if (gardensCountErr) console.error('[GET /api/users/usage] gardens count error:', gardensCountErr.message);
 
-    // Count chupchu messages this month
-    const { data: convData } = await db
-      .from('chupchu_conversations')
-      .select('messages')
+    // Count chupchu messages from chat_uses — survives history deletion and
+    // matches exactly what the enforcement gate in chupchu.ts counts.
+    const { count: chupChuUsedMonth, error: chatMonthErr } = await db
+      .from('chat_uses')
+      .select('id', { count: 'exact', head: true })
       .eq('user_id', userId)
-      .gte('updated_at', startOfMonth.toISOString())
-      .limit(1)
-      .single();
+      .gte('created_at', startOfMonth.toISOString());
+    if (chatMonthErr) console.error('[GET /api/users/usage] chat monthly count error:', chatMonthErr.message);
 
-    const chupChuUsed = (convData?.messages ?? []).filter(
-      (m: any) => m.role === 'user' && new Date(m.timestamp) >= startOfMonth
-    ).length;
+    const { count: chupChuUsedToday, error: chatDayErr } = await db
+      .from('chat_uses')
+      .select('id', { count: 'exact', head: true })
+      .eq('user_id', userId)
+      .gte('created_at', startOfDay.toISOString());
+    if (chatDayErr) console.error('[GET /api/users/usage] chat daily count error:', chatDayErr.message);
 
     res.json({
       tier,
@@ -144,8 +155,10 @@ usersRouter.get('/usage', async (req: any, res) => {
         limit: limits.maxPlantsPerGarden,
       },
       chupchu: {
-        used:     chupChuUsed,
-        limit:    limits.maxChupChuPerMonth,
+        used:        chupChuUsedMonth ?? 0,   // monthly — existing field, same semantics
+        limit:       limits.maxChupChuPerMonth,
+        used_today:  chupChuUsedToday  ?? 0,  // new additive field
+        daily_limit: limits.maxChupChuPerDay,  // new additive field
         resetsAt,
       },
       gardens: {
@@ -186,28 +199,27 @@ usersRouter.get('/me/usage', attachTier, async (req: any, res) => {
       1,
     ).toISOString();
 
-    // ── ChupChu text messages this month ──────────────────────────────────
-    // Identical query to the chat gate (chupchu.ts POST /chat, text-only path).
-    let chupChuUsed: number | null = 0;
-    {
-      const { data: convData, error: convError } = await db
-        .from('chupchu_conversations')
-        .select('messages')
-        .eq('user_id', userId)
-        .gte('updated_at', startOfMonth.toISOString())
-        .limit(1)
-        .single();
+    // ── ChupChu text messages (daily + monthly) ───────────────────────────
+    // Counts from chat_uses — identical boundary logic to the chat gate in
+    // chupchu.ts.  Survives history deletion (chat_uses is immutable).
+    const startOfDay = new Date();
+    startOfDay.setHours(0, 0, 0, 0);
 
-      if (convError && convError.code !== 'PGRST116') {
-        // PGRST116 = no rows — that's 0 messages, not an error.
-        console.error('[GET /api/users/me/usage] chupchu count error:', convError.message);
-        chupChuUsed = null;
-      } else {
-        chupChuUsed = (convData?.messages ?? []).filter(
-          (m: any) => m.role === 'user' && new Date(m.timestamp) >= startOfMonth,
-        ).length;
-      }
-    }
+    const { count: chupChuUsedMonth, error: chatMonthErr } = await db
+      .from('chat_uses')
+      .select('id', { count: 'exact', head: true })
+      .eq('user_id', userId)
+      .gte('created_at', startOfMonth.toISOString());
+    if (chatMonthErr) console.error('[GET /api/users/me/usage] chat monthly count error:', chatMonthErr.message);
+
+    const { count: chupChuUsedToday, error: chatDayErr } = await db
+      .from('chat_uses')
+      .select('id', { count: 'exact', head: true })
+      .eq('user_id', userId)
+      .gte('created_at', startOfDay.toISOString());
+    if (chatDayErr) console.error('[GET /api/users/me/usage] chat daily count error:', chatDayErr.message);
+
+    const chupChuUsed = chupChuUsedMonth ?? 0;
 
     // ── Vision uses this month ────────────────────────────────────────────
     // Delegates to countVisionUsesThisMonth which shares the count query with
@@ -264,8 +276,10 @@ usersRouter.get('/me/usage', attachTier, async (req: any, res) => {
       launch_free_mode: LAUNCH_FREE_MODE,
       has_plant_overflow,
       chupchu: {
-        used:  chupChuUsed,
-        limit: limits.maxChupChuPerMonth,
+        used:        chupChuUsed,
+        limit:       limits.maxChupChuPerMonth,
+        used_today:  chupChuUsedToday  ?? 0,
+        daily_limit: limits.maxChupChuPerDay,
       },
       vision: {
         used:  visionUsed,

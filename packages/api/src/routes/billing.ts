@@ -12,13 +12,12 @@ const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
 });
 
 const PRICE_IDS: Record<string, string> = {
-  grower:       process.env.STRIPE_PRICE_GROWER!,
   gardener_pro: process.env.STRIPE_PRICE_GARDENER_PRO!,
   advanced:     process.env.STRIPE_PRICE_ADVANCED!,
   professional: process.env.STRIPE_PRICE_PROFESSIONAL!,
 };
 
-const TIER_ORDER = ['free', 'grower', 'gardener_pro', 'advanced', 'professional'];
+const TIER_ORDER = ['free', 'gardener_pro', 'advanced', 'professional'];
 
 // ── POST /api/billing/create-checkout ────────────────────────────────────────
 billingRouter.post('/create-checkout', verifyToken, async (req: any, res) => {
