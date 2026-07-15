@@ -94,6 +94,28 @@ trackersRouter.post('/', async (req: any, res) => {
       return res.status(400).json({ error: 'locationType is required' });
     }
 
+    // ── Idempotency guard (must run BEFORE tier/credit logic) ────────────────
+    // If the request is anchored to a specific garden plant that already has a
+    // live tracker, return that tracker instead of inserting a duplicate.
+    // No tier slot consumed, no credit burned.
+    if (gardenPlantId) {
+      const { data: existing, error: idempotencyErr } = await db
+        .from('plant_trackers')
+        .select('*')
+        .eq('garden_plants_id', gardenPlantId)
+        .eq('user_id', userId)
+        .is('deleted_at', null)
+        .maybeSingle();
+
+      if (idempotencyErr) {
+        // Supabase JS swallows errors — log explicitly and fall through to insert path.
+        console.error('[POST /api/trackers] idempotency check failed, falling through to insert:', idempotencyErr.message);
+      } else if (existing) {
+        console.log('[POST /api/trackers] returning existing tracker for garden_plants_id', gardenPlantId, '(idempotent)');
+        return res.status(200).json({ ...existing, existing: true });
+      }
+    }
+
     // Enforce per-tier tracker limit (with credit fallback)
     const maxTrackers = req.limits?.maxTrackers ?? null;
     if (maxTrackers !== null) {
