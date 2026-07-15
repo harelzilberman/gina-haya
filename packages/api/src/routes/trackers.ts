@@ -347,7 +347,7 @@ trackersRouter.get('/:id', async (req: any, res) => {
       .select('*')
       .eq('tracker_id', id)
       .is('deleted_at', null)
-      .order('checkin_date', { ascending: false });
+      .order('created_at', { ascending: false });
 
     let resolvedCheckins = checkins;
     if (checkinsError) {
@@ -356,11 +356,15 @@ trackersRouter.get('/:id', async (req: any, res) => {
         .from('plant_tracker_checkins')
         .select('*')
         .eq('tracker_id', id)
-        .order('checkin_date', { ascending: false });
+        .order('created_at', { ascending: false });
       resolvedCheckins = fallbackCheckins;
     }
 
-    res.json({ ...tracker, checkins: resolvedCheckins ?? [] });
+    // latest_checkin mirrors the list endpoint's shape so Flutter's passport
+    // refresh (which reads latest_checkin) finds it without an exit+re-enter.
+    // The full checkins array stays — the detail screen uses it for history.
+    const latestCheckin = (resolvedCheckins ?? [])[0] ?? null;
+    res.json({ ...tracker, checkins: resolvedCheckins ?? [], latest_checkin: latestCheckin });
   } catch (err: any) {
     console.error('[GET /api/trackers/:id]', err.message, err.stack);
     res.status(500).json({ error: err.message });
