@@ -87,19 +87,29 @@ async function uploadChupChuPhoto(
   }
 }
 
-// ── Shared helper: translate a full-diagnosis payload into the ai_analysis ───
-// shape expected by plant_tracker_checkins.  Used by both full-diagnosis and
-// attach-diagnosis so the mapping stays canonical in one place.
-function buildCheckinAnalysis(diagnosis: any): Record<string, any> {
+// ── Shared helper: translate a full-diagnosis payload into the shapes expected ─
+// by plant_tracker_checkins (ai_analysis + growing_plan columns).
+// Used by both full-diagnosis and attach-diagnosis so the mapping stays canonical.
+//
+// Returns { aiAnalysis, growingPlan } as separate objects so the two DB columns
+// are written independently — growing_plan must NOT be nested inside ai_analysis.
+//
+// GrowingPlan shape mirrors trackerStore.ts:GrowingPlan (website type source of truth).
+// Empty arrays/strings are used where the diagnosis payload has no equivalent —
+// AnalysisResult.tsx guards array sections with .length > 0 so they render as absent,
+// not as empty bullets.  wateringSchedule.frequencyDays is rendered unconditionally
+// ("כל X ימים") so 3 is used as a safe default rather than null/0.
+function buildCheckinAnalysis(diagnosis: any): { aiAnalysis: Record<string, any>; growingPlan: Record<string, any> } {
   const healthMap: Record<string, string> = {
     healthy: 'good', stressed: 'fair', diseased: 'poor', pest_damage: 'poor',
   };
-  return {
+
+  const aiAnalysis = {
     plantIdentified:   diagnosis.plant_name        ?? '',
     plantIdentifiedEn: diagnosis.plant_name_latin  ?? '',
     confidence:        diagnosis.confidence         ?? 'medium',
     growthStage:       'vegetative',
-    growthStageHe:     diagnosis.plant_name         ?? '',
+    growthStageHe:     '',   // Fixed: was diagnosis.plant_name (wrong field — website has its own stage map)
     health:            healthMap[diagnosis.health_status as string] ?? 'fair',
     healthHe:          diagnosis.health_status_label ?? '',
     issues: (diagnosis.issues ?? []).map((i: any) => ({
@@ -109,8 +119,30 @@ function buildCheckinAnalysis(diagnosis: any): Record<string, any> {
       naturalSolution: '',
     })),
     observations:     diagnosis.summary ?? '',
-    immediateActions: [] as string[],
+    immediateActions: (diagnosis.tasks ?? [])  // Fixed: was hardcoded []
+      .filter((t: any) => t.urgency === 'today')
+      .map((t: any) => t.title ?? ''),
   };
+
+  const growingPlan = {
+    summary:               diagnosis.summary           ?? '',
+    estimatedHarvestWeeks: null as number | null,
+    steps:                 [] as any[],
+    wateringSchedule: {
+      frequencyDays:     3,   // rendered unconditionally ("כל X ימים") — 3 is a safe default
+      amountDescription: '',
+      specialNotes:      '',
+    },
+    fertilising: {
+      compostAmount: '',
+      timing:        '',
+      preparations:  [] as string[],
+    },
+    pestPrevention:     (diagnosis.prevention_tips ?? []) as string[],
+    naturalFertilizers: [] as string[],
+  };
+
+  return { aiAnalysis, growingPlan };
 }
 
 // ── GET /api/chupchu/history ────────────────────────────────────────────────
@@ -380,13 +412,14 @@ chupChuRouter.post('/full-diagnosis', async (req: any, res) => {
           .single();
 
         if (trackerRow) {
-          const aiAnalysis = buildCheckinAnalysis(diagnosis);
+          const { aiAnalysis, growingPlan } = buildCheckinAnalysis(diagnosis);
           const { error: checkinErr } = await db.from('plant_tracker_checkins').insert({
             tracker_id:   tracker_id,
             user_id:      req.user.id,
             checkin_date: todayInIsrael(),
             growth_stage: 'vegetative',
             ai_analysis:  aiAnalysis,
+            growing_plan: growingPlan,
             photo_path:   photoPath ?? null,
           });
           if (checkinErr) {
@@ -483,12 +516,14 @@ chupChuRouter.post('/attach-diagnosis', async (req: any, res) => {
           .single();
 
         if (trackerRow) {
+          const { aiAnalysis, growingPlan } = buildCheckinAnalysis(diagnosis);
           const { error: checkinErr } = await db.from('plant_tracker_checkins').insert({
             tracker_id:   validatedTrackerId,
             user_id:      userId,
             checkin_date: todayInIsrael(),
             growth_stage: 'vegetative',
-            ai_analysis:  buildCheckinAnalysis(diagnosis),
+            ai_analysis:  aiAnalysis,
+            growing_plan: growingPlan,
             photo_path:   validatedPhotoPath,
           });
           if (checkinErr) {
