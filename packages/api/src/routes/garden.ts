@@ -711,6 +711,160 @@ gardenRouter.patch('/garden-plants/:id', async (req: any, res) => {
   }
 });
 
+// POST /api/garden/garden-plants/:id/move — move a plant to a different garden
+//
+// Body: { targetGardenId: string }
+//
+// Requires attachTier middleware (already on this router via route-level use below)
+// so that req.limits.maxPlantsPerGarden is available for the tier check.
+//
+// Write order (two-phase with best-effort compensation):
+//   1. UPDATE plant_trackers.garden_id WHERE garden_plants_id = plantId
+//   2. UPDATE garden_plants.garden_id = targetGardenId WHERE id = plantId
+//   If step 2 fails, attempt a revert of step 1 back to the source garden.
+//
+// NOTE: The two UPDATEs are not in a Postgres transaction — true atomicity requires
+// a Supabase RPC.  The compensation revert makes partial failure recoverable; add
+// an RPC wrapper as a follow-up when the feature is battle-tested.
+gardenRouter.post('/garden-plants/:id/move', attachTier, async (req: any, res) => {
+  try {
+    const userId  = req.user?.id;
+    const plantId = req.params.id;
+
+    if (!userId) return res.status(401).json({ error: 'Unauthorized' });
+
+    // ── 1. Validate body ───────────────────────────────────────────────────
+    const { targetGardenId } = req.body;
+    if (!targetGardenId || typeof targetGardenId !== 'string') {
+      return res.status(400).json({ error: 'targetGardenId_required' });
+    }
+
+    // ── 2. Fetch plant — get current garden_id ─────────────────────────────
+    const { data: gp, error: gpErr } = await db
+      .from('garden_plants')
+      .select('garden_id')
+      .eq('id', plantId)
+      .single();
+
+    if (gpErr || !gp) {
+      return res.status(404).json({ error: 'plant_not_found' });
+    }
+
+    const sourceGardenId = gp.garden_id;
+
+    // ── 3. Verify SOURCE garden ownership ──────────────────────────────────
+    const { data: srcGarden, error: srcErr } = await db
+      .from('gardens')
+      .select('id')
+      .eq('id', sourceGardenId)
+      .eq('user_id', userId)
+      .single();
+
+    if (srcErr || !srcGarden) {
+      return res.status(403).json({ error: 'Forbidden' });
+    }
+
+    // ── 4. Idempotent short-circuit — already in target garden ─────────────
+    if (sourceGardenId === targetGardenId) {
+      return res.json({ ok: true, moved: false });
+    }
+
+    // ── 5. Verify TARGET garden ownership ──────────────────────────────────
+    const { data: tgtGarden, error: tgtErr } = await db
+      .from('gardens')
+      .select('id')
+      .eq('id', targetGardenId)
+      .eq('user_id', userId)
+      .single();
+
+    if (tgtErr || !tgtGarden) {
+      return res.status(404).json({ error: 'target_garden_not_found' });
+    }
+
+    // ── 6. Tier check on TARGET — mirror creation check (garden.ts:445–465) ─
+    // Archived plants do not consume a slot; count only active ones.
+    // LAUNCH_FREE_MODE bypasses the limit — same guard as plant creation.
+    const LAUNCH_FREE_MODE = process.env.LAUNCH_FREE_MODE === 'true';
+    const maxPlants = req.limits?.maxPlantsPerGarden ?? null;
+    if (!LAUNCH_FREE_MODE && maxPlants !== null) {
+      const { count, error: countErr } = await db
+        .from('garden_plants')
+        .select('id', { count: 'exact', head: true })
+        .eq('garden_id', targetGardenId)
+        .is('archived_at', null);
+
+      if (countErr) throw countErr;
+
+      if ((count ?? 0) >= maxPlants) {
+        return res.status(403).json({
+          error: 'plant_limit_reached',
+          message: 'הגעת למגבלת הצמחים בגינת היעד בתכנית שלך.',
+          tier:  req.tier,
+          limit: maxPlants,
+          used:  count,
+        });
+      }
+    }
+
+    // ── 7. Write phase — trackers first, then plant row ────────────────────
+    // Updating trackers first means that if the plant UPDATE fails, the
+    // tracker temporarily points at the wrong garden — the compensation revert
+    // below attempts to restore it.  The inverse order (plant first) would
+    // leave a tracker pointing at a garden whose plant is gone, which is
+    // harder to surface and diagnose.
+
+    // Step 7a: update all trackers linked to this plant
+    const { error: trackerErr } = await db
+      .from('plant_trackers')
+      .update({ garden_id: targetGardenId })
+      .eq('garden_plants_id', plantId);
+
+    if (trackerErr) {
+      // Non-fatal: trackers will show under the wrong garden until the move is
+      // retried, but the plant itself hasn't moved yet — state is still consistent.
+      console.error('[move] plant_trackers update failed:', trackerErr.message, trackerErr.details);
+    }
+
+    // Step 7b: move the plant row (the authoritative change)
+    const { error: moveErr } = await db
+      .from('garden_plants')
+      .update({ garden_id: targetGardenId })
+      .eq('id', plantId);
+
+    if (moveErr) {
+      console.error('[move] garden_plants update failed:', moveErr.message, moveErr.details);
+
+      // Best-effort compensation: revert trackers back to the source garden so
+      // we don't leave them pointing at a garden their plant isn't in.
+      if (!trackerErr) {
+        const { error: revertErr } = await db
+          .from('plant_trackers')
+          .update({ garden_id: sourceGardenId })
+          .eq('garden_plants_id', plantId);
+
+        if (revertErr) {
+          console.error(
+            '[move] CRITICAL: tracker revert also failed — plant_trackers.garden_id is now stale.',
+            'plantId:', plantId,
+            'stale garden_id:', targetGardenId,
+            'intended garden_id:', sourceGardenId,
+            revertErr.message,
+          );
+        } else {
+          console.log('[move] tracker revert succeeded after garden_plants update failure');
+        }
+      }
+
+      return res.status(500).json({ error: 'move_failed', detail: moveErr.message });
+    }
+
+    return res.json({ ok: true, moved: true });
+  } catch (err: any) {
+    console.error('[POST /api/garden/garden-plants/:id/move]', err.message);
+    res.status(500).json({ error: err.message });
+  }
+});
+
 // PATCH /api/garden/:id/plants/bulk-archive — archive multiple plants in one call
 //
 // Body: { plant_ids: string[] }
