@@ -10,7 +10,7 @@ import type { ChupChuMessage, ChupChuContext } from '@gina-haya/shared';
 import { todayInIsrael } from '@gina-haya/shared';
 import { getRecentCompletedTasks } from '../db/queries/tasks';
 import { getLimits } from '../config/tiers';
-import { checkAndRecordVisionUse } from '../services/visionQuota';
+import { checkAndRecordVisionUse, recordFreeRetryVisionUse } from '../services/visionQuota';
 import { logApiUsage } from '../services/apiUsage';
 
 const ANTHROPIC_URL = 'https://api.anthropic.com/v1/messages';
@@ -69,10 +69,12 @@ async function insertChupChuTimelineEntry(
 async function uploadChupChuPhoto(
   userId: string,
   imageBase64: string,
+  subfolder?: string,
 ): Promise<string | null> {
   try {
     const compressed = await compressImageForClaude(imageBase64);
-    const storagePath = `${userId}/chupchu/${Date.now()}.jpg`;
+    const folder = subfolder ? `chupchu/${subfolder}` : 'chupchu';
+    const storagePath = `${userId}/${folder}/${Date.now()}.jpg`;
     const { error: uploadError } = await db.storage
       .from('tracker-photos')
       .upload(storagePath, compressed.buffer, { contentType: 'image/jpeg', upsert: false });
@@ -996,7 +998,7 @@ chupChuRouter.post('/chat', async (req: any, res) => {
   req.setTimeout(120000);
   res.setTimeout(120000);
   try {
-    const { message, gardenId, location, imageBase64, conversationHistory: clientHistory } = req.body;
+    const { message, gardenId, location, imageBase64, conversationHistory: clientHistory, retryOf } = req.body;
 
     const hasImage = typeof imageBase64 === 'string' && imageBase64.length > 0;
     const hasText  = typeof message === 'string' && message.trim().length > 0;
@@ -1005,12 +1007,23 @@ chupChuRouter.post('/chat', async (req: any, res) => {
       return res.status(400).json({ error: 'Message or image is required' });
     }
 
+    // Reject storage-key-only retries: a retry always requires a new imageBase64.
+    if (retryOf && !hasImage) {
+      return res.status(400).json({ error: 'retry_requires_image' });
+    }
+
     const userId = req.user.id;
 
     if (inFlight.has(userId)) {
       return res.status(429).json({ error: 'אירעה שגיאה. נסה שוב מאוחר יותר.' });
     }
     inFlight.add(userId);
+
+    // Retry tracking — populated during the hasImage quota block below.
+    // Declared in the outer try scope so they are visible to the post-Claude block.
+    let retryOriginal: { id: string; vision_use_id: string | null; status: string; retry_of_id: string | null } | null = null;
+    let retryVisionUseId: string | null = null;  // vision_uses.id charged for this turn
+    let recognitionForResponse: Record<string, any> | null = null;  // set after parsing Claude response
 
     try {
 
@@ -1039,9 +1052,53 @@ chupChuRouter.post('/chat', async (req: any, res) => {
     const monthlyLimit = tierLimits.maxChupChuPerMonth;
     const dailyLimit   = tierLimits.maxChupChuPerDay;
     if (hasImage) {
-      const quota = await checkAndRecordVisionUse(userId, 'chat_image', null, effectiveTier);
-      if (!quota.allowed) {
-        return res.json({ ok: false, reason: 'vision_quota_exceeded', used: quota.used, limit: quota.limit });
+      // ── Retry validation (one-hop max, ownership, not already retried) ──────
+      if (retryOf?.recognitionId) {
+        const { data: orig, error: origErr } = await db
+          .from('recognition_history')
+          .select('id, user_id, status, retry_of_id, vision_use_id')
+          .eq('id', retryOf.recognitionId)
+          .single();
+
+        if (origErr || !orig || orig.user_id !== userId) {
+          return res.status(400).json({ error: 'invalid_retry_target' });
+        }
+        if (orig.retry_of_id !== null) {
+          return res.status(400).json({ error: 'retry_chain_limit' });
+        }
+        if (orig.status === 'retried') {
+          return res.status(400).json({ error: 'already_retried' });
+        }
+        retryOriginal = orig;
+      }
+
+      // ── Vision quota (free retry bypasses the counter) ────────────────────
+      if (retryOriginal?.vision_use_id) {
+        // Check whether a free retry already exists for this original vision use
+        const { count: priorFreeCount } = await db
+          .from('vision_uses')
+          .select('id', { count: 'exact', head: true })
+          .eq('retry_of_id', retryOriginal.vision_use_id)
+          .eq('is_free_retry', true);
+
+        if ((priorFreeCount ?? 0) === 0) {
+          // First retry for this recognition — grant it free
+          retryVisionUseId = await recordFreeRetryVisionUse(userId, 'chat_image', retryOriginal.vision_use_id);
+        } else {
+          // Second retry onwards — charge normally
+          const quota = await checkAndRecordVisionUse(userId, 'chat_image', null, effectiveTier);
+          if (!quota.allowed) {
+            return res.json({ ok: false, reason: 'vision_quota_exceeded', used: quota.used, limit: quota.limit });
+          }
+          retryVisionUseId = quota.visionUseId;
+        }
+      } else {
+        // Normal (non-retry) image turn
+        const quota = await checkAndRecordVisionUse(userId, 'chat_image', null, effectiveTier);
+        if (!quota.allowed) {
+          return res.json({ ok: false, reason: 'vision_quota_exceeded', used: quota.used, limit: quota.limit });
+        }
+        retryVisionUseId = quota.visionUseId;
       }
     } else {
       // Text-only turn: check daily quota first, then monthly.
@@ -1514,6 +1571,32 @@ chupChuRouter.post('/chat', async (req: any, res) => {
       timestamp: new Date().toISOString(),
     };
 
+    // ── Build image-turn instruction for Claude (image path only) ────────────
+    // Lives in the volatile user message — does NOT touch any cached system block.
+    // On image turns we ask Claude to return a strict JSON mini-card.  The hint
+    // from a retry (retryOf.userHint) is prepended so Claude re-identifies with
+    // the user's correction in scope.
+    let messageForClaude: ChupChuMessage = newUserMessage;
+    if (hasImage) {
+      const retryHintLine = retryOriginal && retryOf?.userHint
+        ? (lang === 'he'
+            ? `המשתמש מציין שהצמח הוא כנראה ${String(retryOf.userHint).slice(0, 80)} — קח זאת בחשבון בזיהוי.\n`
+            : `The user suggests the plant is likely ${String(retryOf.userHint).slice(0, 80)} — factor this into your identification.\n`)
+        : '';
+
+      const imageInstruction = lang === 'he'
+        ? `${retryHintLine}זהה את הצמח בתמונה והחזר JSON בלבד עם המבנה הבא (ללא טקסט נוסף, ללא markdown):
+{"plant_name":"שם הצמח בעברית","plant_name_latin":"Latin species name","confidence":"high|medium|low","key_facts":["עובדה 1","עובדה 2","עובדה 3"],"summary":"1-2 משפטים בעברית","chupchu_comment":"שורה אחת חמה בסגנון צ'ופצ'ו"}`
+        : `${retryHintLine}Identify the plant in the image and return ONLY JSON with this exact structure (no extra text, no markdown):
+{"plant_name":"Hebrew plant name","plant_name_latin":"Latin species name","confidence":"high|medium|low","key_facts":["fact 1","fact 2","fact 3"],"summary":"1-2 sentences","chupchu_comment":"one warm Chupchu-style line"}`;
+
+      messageForClaude = {
+        role: 'user',
+        content: imageInstruction,
+        timestamp: new Date().toISOString(),
+      };
+    }
+
     const todayFormatted = new Date().toLocaleDateString(
       lang === 'he' ? 'he-IL' : 'en-US',
       { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric', timeZone: 'Asia/Jerusalem' }
@@ -1559,8 +1642,10 @@ chupChuRouter.post('/chat', async (req: any, res) => {
 
     // Always prepend history (with role-alternation safety) before the current user message,
     // even when the current message includes an image.
+    // For image turns, messageForClaude contains the JSON recognition instruction
+    // (NOT stored in DB — newUserMessage with the placeholder is stored instead).
     const { response: chupChuText, proposedTasks, mobileTool } = await askChupChu(
-      [...ensureRoleAlternation(historyForClaude), newUserMessage],
+      [...ensureRoleAlternation(historyForClaude), messageForClaude],
       context,
       stableContext || undefined,
       volatileContext || undefined,
@@ -1573,6 +1658,81 @@ chupChuRouter.post('/chat', async (req: any, res) => {
       content: chupChuText,
       timestamp: new Date().toISOString(),
     };
+
+    // ── 9b. Recognition: parse JSON mini-card, upload photo, persist row ─────
+    // Only runs on image turns.  Parse failure falls back to raw-text response
+    // (recognitionForResponse stays null — existing chat behaviour unchanged).
+    if (hasImage) {
+      let recognitionResult: any = null;
+
+      // Try direct parse, then regex-extract fallback (same pattern as full-diagnosis)
+      try {
+        recognitionResult = JSON.parse(chupChuText.trim());
+      } catch {
+        const match = chupChuText.match(/\{[\s\S]*\}/);
+        if (match) {
+          try { recognitionResult = JSON.parse(match[0]); } catch {}
+        }
+      }
+
+      // Validate: must have at least plant_name and confidence to be a mini-card
+      const isValidCard = recognitionResult !== null &&
+        typeof recognitionResult.plant_name === 'string' &&
+        typeof recognitionResult.confidence === 'string';
+
+      if (isValidCard) {
+        // Upload (awaited so we can include the key in both response and DB row)
+        const photoStorageKey = await uploadChupChuPhoto(userId, imageBase64, 'chat');
+
+        // Insert recognition_history row — explicit error check per spec
+        const rhPayload: Record<string, any> = {
+          user_id:     userId,
+          source:      'chat_image',
+          result_json: recognitionResult,
+          confidence:  ['high', 'medium', 'low'].includes(recognitionResult.confidence)
+            ? recognitionResult.confidence
+            : null,
+          status: 'pending',
+        };
+        if (photoStorageKey)        rhPayload.photo_storage_key = photoStorageKey;
+        if (retryVisionUseId)       rhPayload.vision_use_id     = retryVisionUseId;
+        if (retryOriginal) {
+          rhPayload.retry_of_id = retryOriginal.id;
+          if (retryOf?.userHint)   rhPayload.user_hint = String(retryOf.userHint).slice(0, 200);
+        }
+
+        const { data: rhData, error: rhErr } = await db
+          .from('recognition_history')
+          .insert(rhPayload)
+          .select('id')
+          .single();
+
+        if (rhErr) {
+          console.error('[chat] recognition_history insert failed:', rhErr.message, rhErr.details);
+        } else {
+          const newRhId = rhData?.id ?? null;
+
+          // Mark original recognition as retried (non-fatal on failure)
+          if (retryOriginal && newRhId) {
+            const { error: updateErr } = await db
+              .from('recognition_history')
+              .update({ status: 'retried' })
+              .eq('id', retryOriginal.id);
+            if (updateErr) {
+              console.error('[chat] recognition_history status update failed:', updateErr.message);
+            }
+          }
+
+          recognitionForResponse = {
+            id: newRhId,
+            ...recognitionResult,
+            photo_storage_key: photoStorageKey ?? null,
+          };
+        }
+      } else {
+        console.log('[chat] image turn — Claude did not return JSON mini-card, falling back to text response');
+      }
+    }
 
     // ── 10. Save to DB (fire-and-forget — never blocks the response) ─────────
     const updatedMessages = [...existingMessages, newUserMessage, chupChuMessage];
@@ -1643,6 +1803,9 @@ chupChuRouter.post('/chat', async (req: any, res) => {
       dailyLimit,
       ...(proposedTasks && proposedTasks.length > 0 ? { proposedTasks } : {}),
       ...(mobileTool ? { mobileTool } : {}),
+      // Present on image turns where Claude returned a parseable JSON mini-card.
+      // null/absent on text turns or when parse failed (response falls back to chupChuText).
+      ...(recognitionForResponse ? { recognition: recognitionForResponse } : {}),
     });
 
     } finally {

@@ -67,7 +67,8 @@ import { dashboardRouter }  from './routes/dashboard';
 import knowledgeRouter      from './routes/knowledge';
 import { weatherRouter }    from './routes/weather';
 import { homeRouter }       from './routes/home';
-import { waitlistRouter }   from './routes/waitlist';
+import { waitlistRouter }      from './routes/waitlist';
+import { recognitionsRouter }  from './routes/recognitions';
 import { startCronJobs } from './services/cronJobs';
 
 app.use('/api/auth',     authRouter);
@@ -91,6 +92,7 @@ app.use('/api/admin/knowledge',  knowledgeRouter);
 app.use('/api/weather',          weatherRouter);
 app.use('/api/home',             homeRouter);
 app.use('/api/waitlist',         waitlistRouter);
+app.use('/api/recognitions',     recognitionsRouter);
 
 app.use((_req, res) => {
   res.status(404).json({ error: 'Not found' });
