@@ -80,9 +80,21 @@ tasksRouter.delete('/:id', async (req, res) => {
 });
 
 // POST /api/tasks/bulk — create multiple tasks (from Chupchu proposals)
+//
+// Optional body field: source_timeline_id (UUID)
+//   When provided:
+//   • Written on every inserted row — links tasks back to the diagnosis entry.
+//   • Migration 032 adds a partial unique index (user_id, source_timeline_id, title)
+//     so the same diagnosis cannot produce duplicate rows even on retries.
+//   • On DB unique-violation (23505): falls back to per-row inserts; conflicting
+//     rows counted as skipped_existing rather than erroring.
+//   • After any successful insert(s): sets plant_timeline.content.tasks_added = true
+//     on the source entry (ownership-checked, non-fatal on failure).
+//
+// Requests without source_timeline_id behave exactly as before.
 tasksRouter.post('/bulk', async (req, res) => {
   try {
-    const { tasks } = req.body as {
+    const { tasks, source_timeline_id } = req.body as {
       tasks: Array<{
         title: string;
         notes: string;
@@ -90,6 +102,7 @@ tasksRouter.post('/bulk', async (req, res) => {
         category: string;
         priority: string;
       }>;
+      source_timeline_id?: string;
     };
 
     if (!Array.isArray(tasks) || tasks.length === 0) {
@@ -97,6 +110,13 @@ tasksRouter.post('/bulk', async (req, res) => {
     }
 
     const userId = req.user!.id;
+
+    // Normalise and validate source_timeline_id — must be a non-empty string if
+    // present; anything else is silently ignored so old clients keep working.
+    const sourceId: string | null =
+      source_timeline_id && typeof source_timeline_id === 'string'
+        ? source_timeline_id.trim() || null
+        : null;
 
     const tomorrow = new Date();
     tomorrow.setDate(tomorrow.getDate() + 1);
@@ -107,18 +127,19 @@ tasksRouter.post('/bulk', async (req, res) => {
       let date = (t.date ?? '').toString().split('T')[0].split(' ')[0];
       if (!/^\d{4}-\d{2}-\d{2}$/.test(date)) date = tomorrowStr;
       return {
-        user_id:          userId,
-        plan_id:          null,
+        user_id:            userId,
+        plan_id:            null,
         date,
-        title:            t.title,
-        type:             'custom' as const,
-        status:           'pending' as const,
-        notes:            t.notes || null,
-        plant_name:       (t as any).plant_name || null,
-        garden_plants_id: (t as any).garden_plants_id || null,
-        category:         t.category || 'general',
-        priority:         t.priority || 'medium',
-        source_action:    'chupchu',
+        title:              t.title,
+        type:               'custom' as const,
+        status:             'pending' as const,
+        notes:              t.notes || null,
+        plant_name:         (t as any).plant_name || null,
+        garden_plants_id:   (t as any).garden_plants_id || null,
+        category:           t.category || 'general',
+        priority:           t.priority || 'medium',
+        source_action:      'chupchu',
+        source_timeline_id: sourceId,  // null for requests without a source
       };
     });
 
@@ -180,17 +201,85 @@ tasksRouter.post('/bulk', async (req, res) => {
       });
     }
 
+    // ── Batch insert ──────────────────────────────────────────────────────────
+    let insertedTasks: any[] = [];
+    let dbSkipped = 0;
+
     const { data, error } = await db
       .from('garden_tasks')
       .insert(newRows)
       .select();
 
-    if (error) throw error;
+    if (error) {
+      // Unique-violation from the partial index (uq_garden_tasks_source, migration 032):
+      // the source_timeline_id + title pair already exists for this user.  Fall back to
+      // per-row inserts so we can separate successes from conflicts without a 500.
+      if (error.code === '23505') {
+        console.log('[POST /api/tasks/bulk] unique violation on batch — falling back to per-row inserts');
+        for (const row of newRows) {
+          const { data: singleData, error: singleErr } = await db
+            .from('garden_tasks')
+            .insert(row)
+            .select()
+            .single();
+          if (singleErr) {
+            if (singleErr.code === '23505') {
+              dbSkipped++;
+            } else {
+              // Unexpected error on a single row — propagate as 500
+              console.error('[POST /api/tasks/bulk] per-row insert failed:', singleErr.message);
+              throw singleErr;
+            }
+          } else if (singleData) {
+            insertedTasks.push(singleData);
+          }
+        }
+      } else {
+        throw error;
+      }
+    } else {
+      insertedTasks = data ?? [];
+    }
+
+    // ── Set tasks_added flag on the source timeline entry ─────────────────────
+    // Chosen variant: bulk endpoint sets the flag — one round-trip, no separate
+    // PATCH endpoint needed, and the client already owns the source_timeline_id.
+    // Only runs when we have a source and actually inserted at least one task.
+    // Ownership enforced via user_id filter on both read and write.
+    // Non-fatal: a failure here does not roll back the task inserts.
+    if (sourceId && insertedTasks.length > 0) {
+      try {
+        const { data: entry, error: readErr } = await db
+          .from('plant_timeline')
+          .select('content')
+          .eq('id', sourceId)
+          .eq('user_id', userId)
+          .single();
+
+        if (readErr || !entry) {
+          console.warn('[POST /api/tasks/bulk] tasks_added flag: source entry not found or not owned, skipping');
+        } else {
+          const updatedContent = { ...(entry.content ?? {}), tasks_added: true };
+          const { error: flagErr } = await db
+            .from('plant_timeline')
+            .update({ content: updatedContent })
+            .eq('id', sourceId)
+            .eq('user_id', userId);  // belt-and-braces ownership check on write
+
+          if (flagErr) {
+            console.error('[POST /api/tasks/bulk] tasks_added flag update failed:', flagErr.message);
+          }
+        }
+      } catch (flagEx: any) {
+        console.error('[POST /api/tasks/bulk] tasks_added flag threw:', flagEx.message);
+      }
+    }
+
     res.json({
       ok:               true,
-      count:            data?.length ?? 0,
-      tasks:            data,
-      skipped_existing: existingMatched.length,
+      count:            insertedTasks.length,
+      tasks:            insertedTasks,
+      skipped_existing: existingMatched.length + dbSkipped,
     });
   } catch (err: any) {
     console.error('[POST /api/tasks/bulk]', err.message);
