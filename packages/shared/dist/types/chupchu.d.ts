@@ -2,6 +2,8 @@ export interface ChupChuMessage {
     role: 'user' | 'assistant';
     content: string;
     timestamp: string;
+    recognition_id?: string;
+    recognition_photo_key?: string | null;
 }
 export interface ChupChuContext {
     gardenName: string | null;

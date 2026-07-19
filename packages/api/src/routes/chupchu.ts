@@ -1712,6 +1712,11 @@ chupChuRouter.post('/chat', async (req: any, res) => {
         } else {
           const newRhId = rhData?.id ?? null;
 
+          // Patch assistant message so restored history cards can render the photo.
+          // content stays as chupChuText — Claude-context rebuild reads only content.
+          if (newRhId) chupChuMessage.recognition_id = newRhId;
+          chupChuMessage.recognition_photo_key = photoStorageKey ?? null;
+
           // Mark original recognition as retried (non-fatal on failure)
           if (retryOriginal && newRhId) {
             const { error: updateErr } = await db
