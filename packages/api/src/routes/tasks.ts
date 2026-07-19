@@ -94,13 +94,17 @@ tasksRouter.delete('/:id', async (req, res) => {
 // Requests without source_timeline_id behave exactly as before.
 tasksRouter.post('/bulk', async (req, res) => {
   try {
-    const { tasks, source_timeline_id } = req.body as {
+    const { tasks, source_timeline_id: bodySourceId } = req.body as {
       tasks: Array<{
         title: string;
         notes: string;
         date: string;
         category: string;
         priority: string;
+        // Flutter sends source_timeline_id inside each task object rather than
+        // at the top level — accept it in both locations.
+        source_timeline_id?: string;
+        [key: string]: any;
       }>;
       source_timeline_id?: string;
     };
@@ -111,11 +115,22 @@ tasksRouter.post('/bulk', async (req, res) => {
 
     const userId = req.user!.id;
 
-    // Normalise and validate source_timeline_id — must be a non-empty string if
-    // present; anything else is silently ignored so old clients keep working.
+    // ── Resolve source_timeline_id tolerantly ────────────────────────────────
+    // Priority: top-level body field → first task's field → null.
+    // Flutter call sites embed the id inside each task object; top-level is the
+    // documented API contract.  Both are accepted so neither side needs a change.
+    // If tasks carry differing ids (not a designed use-case), first wins + warn.
+    const firstTaskSourceId: string | undefined = (tasks[0] as any)?.source_timeline_id;
+    if (firstTaskSourceId && !bodySourceId) {
+      const allSame = tasks.every((t: any) => t.source_timeline_id === firstTaskSourceId);
+      if (!allSame) {
+        console.warn('[POST /api/tasks/bulk] tasks carry differing source_timeline_ids — using first task\'s value');
+      }
+    }
+    const rawSourceId = bodySourceId ?? firstTaskSourceId ?? null;
     const sourceId: string | null =
-      source_timeline_id && typeof source_timeline_id === 'string'
-        ? source_timeline_id.trim() || null
+      rawSourceId && typeof rawSourceId === 'string'
+        ? rawSourceId.trim() || null
         : null;
 
     const tomorrow = new Date();
@@ -123,21 +138,25 @@ tasksRouter.post('/bulk', async (req, res) => {
     const tomorrowStr = tomorrow.toISOString().split('T')[0];
 
     const rows = tasks.map(t => {
+      // Destructure out source_timeline_id so it is never forwarded as a column
+      // value from the task object — the resolved sourceId is used instead.
+      const { source_timeline_id: _perTaskId, ...taskFields } = t as any;
+
       // Strip time part; fall back to tomorrow if date is missing or invalid
-      let date = (t.date ?? '').toString().split('T')[0].split(' ')[0];
+      let date = (taskFields.date ?? '').toString().split('T')[0].split(' ')[0];
       if (!/^\d{4}-\d{2}-\d{2}$/.test(date)) date = tomorrowStr;
       return {
         user_id:            userId,
         plan_id:            null,
         date,
-        title:              t.title,
+        title:              taskFields.title,
         type:               'custom' as const,
         status:             'pending' as const,
-        notes:              t.notes || null,
-        plant_name:         (t as any).plant_name || null,
-        garden_plants_id:   (t as any).garden_plants_id || null,
-        category:           t.category || 'general',
-        priority:           t.priority || 'medium',
+        notes:              taskFields.notes || null,
+        plant_name:         taskFields.plant_name || null,
+        garden_plants_id:   taskFields.garden_plants_id || null,
+        category:           taskFields.category || 'general',
+        priority:           taskFields.priority || 'medium',
         source_action:      'chupchu',
         source_timeline_id: sourceId,  // null for requests without a source
       };
