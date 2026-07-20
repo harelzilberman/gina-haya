@@ -1768,6 +1768,10 @@ chupChuRouter.post('/chat', async (req: any, res) => {
             id: newRhId,
             ...recognitionResult,
             photo_storage_key: photoStorageKey ?? null,
+            // Tells the client this card is itself a retry-result — the backend
+            // allows only one retry per original recognition (retry_chain_limit),
+            // so the client should not offer "טעית בזיהוי" again on this card.
+            is_retry: !!retryOriginal,
           };
         }
       } else {
