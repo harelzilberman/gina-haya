@@ -9,9 +9,6 @@ const ANTHROPIC_URL = 'https://api.anthropic.com/v1/messages';
 const ANTHROPIC_HEADERS = {
   'x-api-key': process.env.ANTHROPIC_API_KEY!,
   'anthropic-version': '2023-06-01',
-  // Required for 1-hour cache TTL (ttl: 3600 in cache_control).
-  // Standard 5-min ephemeral caching works without this header, but the extended TTL does not.
-  'anthropic-beta': 'extended-cache-ttl-2025-02-19',
   'content-type': 'application/json',
 };
 
@@ -334,9 +331,10 @@ function mobileToolDescription(name: string, params: Record<string, unknown>): s
 }
 
 // ── Tool definitions ───────────────────────────────────────────────────────
-// CacheControlExtended extends the SDK's CacheControlEphemeral with optional ttl (seconds).
+// CacheControlExtended extends the SDK's CacheControlEphemeral with optional ttl.
+// Per the API, ttl is the string enum '5m' | '1h' — NOT a number of seconds.
 // The SDK type (0.39) does not yet include ttl — we use a local type to avoid casting everywhere.
-type CacheControlExtended = { type: 'ephemeral'; ttl?: number };
+type CacheControlExtended = { type: 'ephemeral'; ttl?: '5m' | '1h' };
 type ToolWithCache = Omit<Anthropic.Messages.Tool, 'cache_control'> & {
   cache_control?: CacheControlExtended | null;
 };
@@ -518,7 +516,7 @@ const CHUPCHU_TOOLS: ToolWithCache[] = [
     },
     // cache_control on the LAST tool caches all 13 tool definitions as a single block
     // (~1,150 tokens off uncached input per call once warm).
-    cache_control: { type: 'ephemeral', ttl: 3600 },
+    cache_control: { type: 'ephemeral', ttl: '1h' },
   },
 ];
 
@@ -672,14 +670,13 @@ export async function askChupChu(
   // Block 2: per-session stable context (garden, memory, tasks) — cached per user session.
   //          Byte-stable because chupchu.ts caches the assembled string for 1h server-side.
   // Block 3: volatile context (past summary, date, weather) — NOT cached; changes every request.
-  // Both cached blocks use ttl:3600 (1h) to survive sporadic gardening-app usage patterns.
-  // Requires the anthropic-beta: extended-cache-ttl-2025-02-19 header set in ANTHROPIC_HEADERS.
+  // Both cached blocks use ttl:'1h' to survive sporadic gardening-app usage patterns.
   type TextBlock = { type: 'text'; text: string; cache_control?: CacheControlExtended };
   const systemBlocks: TextBlock[] = [
-    { type: 'text', text: basePrompt, cache_control: { type: 'ephemeral', ttl: 3600 } },
+    { type: 'text', text: basePrompt, cache_control: { type: 'ephemeral', ttl: '1h' } },
   ];
   if (stableContext) {
-    systemBlocks.push({ type: 'text', text: stableContext, cache_control: { type: 'ephemeral', ttl: 3600 } });
+    systemBlocks.push({ type: 'text', text: stableContext, cache_control: { type: 'ephemeral', ttl: '1h' } });
   }
   if (volatileContext) {
     systemBlocks.push({ type: 'text', text: volatileContext });
