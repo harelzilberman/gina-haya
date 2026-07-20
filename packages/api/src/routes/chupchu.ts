@@ -34,6 +34,27 @@ const inFlight = new Set<string>();
 const summarizeDailyCap = new Map<string, { date: string; count: number }>();
 const SUMMARIZE_DAILY_LIMIT = 10;
 
+// ── Block 2 (stableContext) in-process cache ──────────────────────────────────
+// Root cause of cache-bust investigation (Part 0): pendingTasksSection is rebuilt from
+// a live garden_tasks query on every message.  Since create_tasks fires on almost every
+// advice turn, the user may confirm tasks between messages, changing the pending-task list
+// → Block 2 content differs across consecutive messages → Anthropic 5-min TTL misses even
+// on rapid follow-ups.  Same applies to taskContext (completed tasks) and memorySection
+// (written by summarize calls).
+//
+// Fix: assemble the stableContext STRING once per session and freeze it for 1 hour.
+// This matches the Anthropic ttl:3600 on Block 2 — when the string is identical, the
+// cache hits.  Claude already knows mid-session task creations from the conversation
+// itself, so stale pending-task data in the prompt is harmless within a session.
+// The cache expires on its own when the user goes cold, ensuring the next session starts
+// with fresh garden/task state.
+interface StableContextEntry {
+  context: string;
+  builtAt: number;
+}
+const stableContextByUser = new Map<string, StableContextEntry>();
+const STABLE_CONTEXT_TTL_MS = 60 * 60 * 1000; // 1 h — mirrors Anthropic cache TTL
+
 // ── Shared helper: persist a chupchu analysis to plant_timeline ──────────────
 async function insertChupChuTimelineEntry(
   userId: string,
@@ -1623,14 +1644,29 @@ chupChuRouter.post('/chat', async (req: any, res) => {
     console.log('[Memory] injecting context:', pastContextSection.length > 0 ? `YES (${pastContextSection.length} chars)` : 'NO - empty');
 
     // Stable context: per-user data that does NOT change within a session.
-    // This block is sent with cache_control so Claude can reuse cached tokens.
-    const stableContext = [
-      memorySection,
-      gardenSection,
-      pendingTasksSection,
-      harvestsSection,
-      taskContext,
-    ].filter(Boolean).join('\n\n');
+    // This block is sent with cache_control (ttl:3600) so Claude can reuse cached tokens.
+    //
+    // We cache the assembled STRING in-process (stableContextByUser) for 1 h so that
+    // mid-session task creations, completions, and memory writes do NOT alter Block 2
+    // between consecutive messages.  A changed Block 2 string busts the Anthropic cache
+    // even when messages arrive within 5 min — this was the primary cache-miss cause.
+    // Claude knows about tasks it created from the conversation itself (not the prompt),
+    // so freezing the pending-task list mid-session is safe.
+    const nowMs = Date.now();
+    const cachedStable = stableContextByUser.get(userId);
+    let stableContext: string;
+    if (cachedStable && nowMs - cachedStable.builtAt < STABLE_CONTEXT_TTL_MS) {
+      stableContext = cachedStable.context;
+    } else {
+      stableContext = [
+        memorySection,
+        gardenSection,
+        pendingTasksSection,
+        harvestsSection,
+        taskContext,
+      ].filter(Boolean).join('\n\n');
+      stableContextByUser.set(userId, { context: stableContext, builtAt: nowMs });
+    }
 
     // Volatile context: changes on every request — must NOT be cached.
     // pastContextSection shifts every exchange; date/weather change constantly.

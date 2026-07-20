@@ -9,11 +9,17 @@ const ANTHROPIC_URL = 'https://api.anthropic.com/v1/messages';
 const ANTHROPIC_HEADERS = {
   'x-api-key': process.env.ANTHROPIC_API_KEY!,
   'anthropic-version': '2023-06-01',
+  // Required for 1-hour cache TTL (ttl: 3600 in cache_control).
+  // Standard 5-min ephemeral caching works without this header, but the extended TTL does not.
+  'anthropic-beta': 'extended-cache-ttl-2025-02-19',
   'content-type': 'application/json',
 };
 
 const MODEL = process.env.CLAUDE_MODEL ?? 'claude-sonnet-4-5';
 const VISION_MODEL = 'claude-opus-4-5';
+// Text-only chat model.  Set CHAT_TEXT_MODEL=claude-haiku-4-5-20251001 on Railway to
+// enable Haiku routing without touching image or full-diagnosis paths.
+const CHAT_TEXT_MODEL = process.env.CHAT_TEXT_MODEL ?? MODEL;
 
 const MAX_TOOL_ITERATIONS = 3;
 
@@ -328,8 +334,14 @@ function mobileToolDescription(name: string, params: Record<string, unknown>): s
 }
 
 // ── Tool definitions ───────────────────────────────────────────────────────
+// CacheControlExtended extends the SDK's CacheControlEphemeral with optional ttl (seconds).
+// The SDK type (0.39) does not yet include ttl — we use a local type to avoid casting everywhere.
+type CacheControlExtended = { type: 'ephemeral'; ttl?: number };
+type ToolWithCache = Omit<Anthropic.Messages.Tool, 'cache_control'> & {
+  cache_control?: CacheControlExtended | null;
+};
 
-const CHUPCHU_TOOLS: Anthropic.Messages.Tool[] = [
+const CHUPCHU_TOOLS: ToolWithCache[] = [
   {
     name: 'get_today_calendar',
     description: "Returns today's biodynamic calendar data: moon direction, node crossing, day type, moon sign, planting score, prep recommendations, perigee status.",
@@ -504,6 +516,9 @@ const CHUPCHU_TOOLS: Anthropic.Messages.Tool[] = [
       },
       required: ['tasks'],
     },
+    // cache_control on the LAST tool caches all 13 tool definitions as a single block
+    // (~1,150 tokens off uncached input per call once warm).
+    cache_control: { type: 'ephemeral', ttl: 3600 },
   },
 ];
 
@@ -655,13 +670,16 @@ export async function askChupChu(
   // Build system as cached content blocks for prompt caching.
   // Block 1: static base prompt — identical for all users per language (always cached).
   // Block 2: per-session stable context (garden, memory, tasks) — cached per user session.
+  //          Byte-stable because chupchu.ts caches the assembled string for 1h server-side.
   // Block 3: volatile context (past summary, date, weather) — NOT cached; changes every request.
-  type TextBlock = { type: 'text'; text: string; cache_control?: { type: 'ephemeral' } };
+  // Both cached blocks use ttl:3600 (1h) to survive sporadic gardening-app usage patterns.
+  // Requires the anthropic-beta: extended-cache-ttl-2025-02-19 header set in ANTHROPIC_HEADERS.
+  type TextBlock = { type: 'text'; text: string; cache_control?: CacheControlExtended };
   const systemBlocks: TextBlock[] = [
-    { type: 'text', text: basePrompt, cache_control: { type: 'ephemeral' } },
+    { type: 'text', text: basePrompt, cache_control: { type: 'ephemeral', ttl: 3600 } },
   ];
   if (stableContext) {
-    systemBlocks.push({ type: 'text', text: stableContext, cache_control: { type: 'ephemeral' } });
+    systemBlocks.push({ type: 'text', text: stableContext, cache_control: { type: 'ephemeral', ttl: 3600 } });
   }
   if (volatileContext) {
     systemBlocks.push({ type: 'text', text: volatileContext });
@@ -695,12 +713,16 @@ export async function askChupChu(
     return { role: m.role, content: m.content };
   });
 
-  const modelToUse = image ? VISION_MODEL : MODEL;
+  // Image turns always use the full vision model.
+  // Text-only turns use CHAT_TEXT_MODEL (default = MODEL; set CHAT_TEXT_MODEL env var for Haiku).
+  const modelToUse = image ? VISION_MODEL : CHAT_TEXT_MODEL;
+  // Haiku is faster and cheaper but doesn't need 6 000-token headroom — 2 000 is ample.
+  const maxTokens  = !image && CHAT_TEXT_MODEL.toLowerCase().includes('haiku') ? 2000 : 6000;
 
   for (let i = 0; i < MAX_TOOL_ITERATIONS; i++) {
     const response = (await axios.post(ANTHROPIC_URL, {
       model: modelToUse,
-      max_tokens: 6000,
+      max_tokens: maxTokens,
       system: systemBlocks,
       tools: CHUPCHU_TOOLS,
       messages: apiMessages,
