@@ -269,8 +269,42 @@ chupChuRouter.post('/analyze-image', async (req: any, res) => {
 // ── POST /api/chupchu/full-diagnosis ───────────────────────────────────────
 chupChuRouter.post('/full-diagnosis', async (req: any, res) => {
   try {
-    const { image, mimeType = 'image/jpeg', language = 'he', plant_id, tracker_id, source, photo_storage_key } = req.body;
+    const {
+      image, mimeType = 'image/jpeg', language = 'he',
+      plant_id, tracker_id, source, photo_storage_key,
+      established_plant_name: rawEstablishedName,
+      user_hint: rawUserHint,
+    } = req.body;
     if (!image) return res.status(400).json({ success: false, error: 'No image provided' });
+
+    // Sanitise the optional identification fields.
+    // user_hint: human-sourced correction — capped at 200 chars, matching the
+    //   chat-retry truncation policy.
+    // established_plant_name: model- or user-confirmed name from a prior recognition.
+    const userHint: string | null =
+      typeof rawUserHint === 'string' && rawUserHint.trim().length > 0
+        ? rawUserHint.trim().slice(0, 200)
+        : null;
+    const establishedName: string | null =
+      typeof rawEstablishedName === 'string' && rawEstablishedName.trim().length > 0
+        ? rawEstablishedName.trim()
+        : null;
+
+    // identification_source determines how the final plant_name was reached.
+    // Computed server-side from the input fields, not from the model response.
+    const identificationSource: 'fresh' | 'established' | 'user' =
+      userHint        ? 'user'        :
+      establishedName ? 'established' :
+      'fresh';
+
+    // Log the identification context so Railway logs show what the model was told.
+    if (establishedName || userHint) {
+      console.log(
+        `[full-diagnosis] established identification supplied — source=${identificationSource}` +
+        ` name="${establishedName ?? '(none)'}` +
+        `${userHint ? `" hint="${userHint}` : ''}"`,
+      );
+    }
 
     // ── Validate photo_storage_key if provided ───────────────────────────────
     // The client may supply a key it already uploaded to tracker-photos, in which
@@ -316,8 +350,65 @@ chupChuRouter.post('/full-diagnosis', async (req: any, res) => {
       ? `אתה צ'ופצ'ו, מומחה גינה ביודינמי. קיבלת תמונה של צמח. עליך לנתח אותה לעומק ולהחזיר תשובה בפורמט JSON בלבד — ללא טקסט נוסף, ללא markdown, רק JSON תקין. נתח: זיהוי הצמח, מצב בריאותו, בעיות שנראות, צעדי טיפול מפורטים, משימות דחופות, וטיפ ביודינמי. אם הצמח בריא, מלא את השדות בהתאם עם tasks ריק או עם משימות תחזוקה שגרתיות.`
       : `You are Chupchu, a biodynamic garden expert. You received a plant photo. Analyze it deeply and return a response in JSON format only — no extra text, no markdown, just valid JSON. Analyze: plant identification, health status, visible issues, detailed treatment steps, urgent tasks, and a biodynamic tip. If the plant is healthy, fill fields accordingly with empty tasks or routine maintenance tasks.`;
 
+    // ── Identification context prefix ────────────────────────────────────────
+    // When an established identification is supplied, it is injected before the
+    // JSON instruction so the model cannot miss it.  Authority levels:
+    //
+    //   user        — human-sourced correction; treat as fact, do not re-identify.
+    //                 If the image clearly contradicts the hint, note it in
+    //                 identification_conflict rather than silently replacing plant_name.
+    //   established — model-confirmed prior; treat as a strong prior, not a fact.
+    //                 May disagree, but must do so explicitly in identification_conflict.
+    //   fresh       — no prior; identify from scratch.
+    //
+    // The identification_conflict field is added to the schema only when a prior exists.
+    const buildIdentificationPrefix = (lang: string): string => {
+      if (!establishedName && !userHint) return '';
+
+      if (lang === 'he') {
+        if (userHint) {
+          return (
+            `המשתמש כבר זיהה את הצמח הזה בעצמו: "${establishedName ?? userHint}" (לפי דבריו: "${userHint}").\n` +
+            `התייחס לזיהוי הזה כנתון. אל תזהה מחדש מאפס — נתח את מצב הבריאות, הבעיות והטיפול של הצמח הזה.\n` +
+            `השתמש בשם שצוין בשדה plant_name. ` +
+            `אם התמונה סותרת את הזיהוי בבירור, ציין זאת במפורש בשדה identification_conflict — אך אל תחליף את השם בשקט.\n\n`
+          );
+        }
+        // established only (model-sourced prior)
+        return (
+          `זיהוי קודם של הצמח: "${establishedName}".\n` +
+          `התייחס לכך כמידע חזק אך לא מוחלט. אם אתה מסכים — השתמש בשם הזה בשדה plant_name. ` +
+          `אם אתה חושב שהזיהוי שגוי, ציין את דעתך בשדה identification_conflict ונמק — אך אל תחליף את השם בשקט.\n\n`
+        );
+      } else {
+        if (userHint) {
+          return (
+            `The user has already identified this plant as: "${establishedName ?? userHint}" (their exact words: "${userHint}").\n` +
+            `Treat this identification as established fact. Do not re-identify from scratch — analyse the health, issues, and care of this specific plant.\n` +
+            `Use the supplied name in the plant_name field. ` +
+            `If the image clearly contradicts the identification, state that explicitly in identification_conflict — do not silently substitute a different name.\n\n`
+          );
+        }
+        return (
+          `Prior plant identification: "${establishedName}".\n` +
+          `Treat this as a strong prior, not an absolute fact. If you agree, use it in plant_name. ` +
+          `If you believe the identification is wrong, explain in identification_conflict — do not silently substitute.\n\n`
+        );
+      }
+    };
+
+    const identificationPrefix = buildIdentificationPrefix(language);
+
+    // conflict field appended to schema when a prior exists (so model knows the slot is available)
+    const conflictFieldHe  = establishedName || userHint
+      ? `  "identification_conflict": null\n`
+      : '';
+    const conflictFieldEn  = establishedName || userHint
+      ? `,"identification_conflict":null`
+      : '';
+
     const userPrompt = language === 'he'
-      ? `נתח את הצמח בתמונה והחזר JSON תקין בלבד עם המבנה הבא בדיוק:
+      ? `${identificationPrefix}נתח את הצמח בתמונה והחזר JSON תקין בלבד עם המבנה הבא בדיוק:
 {
   "plant_name": "שם הצמח בעברית",
   "plant_name_latin": "Latin name",
@@ -348,10 +439,10 @@ chupChuRouter.post('/full-diagnosis', async (req: any, res) => {
       "urgency_label": "השבוע הזה"
     }
   ],
-  "prevention_tips": ["טיפ 1", "טיפ 2", "טיפ 3"]
+  "prevention_tips": ["טיפ 1", "טיפ 2", "טיפ 3"]${conflictFieldHe ? `,\n${conflictFieldHe.trimEnd()}` : ''}
 }
 ערכים חוקיים: confidence = high|medium|low, health_status = healthy|stressed|diseased|pest_damage, severity = low|medium|high, urgency = today|this_week|this_month.`
-      : `Analyze the plant in the image and return ONLY valid JSON with this exact structure: {"plant_name":"...","plant_name_latin":"...","confidence":"high","health_status":"healthy","health_status_label":"...","summary":"...","issues":[{"name":"...","severity":"low","description":"..."}],"treatment_steps":[{"step":1,"title":"...","description":"..."}],"biodynamic_tip":"...","tasks":[{"title":"...","description":"...","urgency":"this_week","urgency_label":"This week"}],"prevention_tips":["...","..."]}. Valid values: confidence=high|medium|low, health_status=healthy|stressed|diseased|pest_damage, severity=low|medium|high, urgency=today|this_week|this_month.`;
+      : `${identificationPrefix}Analyze the plant in the image and return ONLY valid JSON with this exact structure: {"plant_name":"...","plant_name_latin":"...","confidence":"high","health_status":"healthy","health_status_label":"...","summary":"...","issues":[{"name":"...","severity":"low","description":"..."}],"treatment_steps":[{"step":1,"title":"...","description":"..."}],"biodynamic_tip":"...","tasks":[{"title":"...","description":"...","urgency":"this_week","urgency_label":"This week"}],"prevention_tips":["...","..."]${conflictFieldEn}}. Valid values: confidence=high|medium|low, health_status=healthy|stressed|diseased|pest_damage, severity=low|medium|high, urgency=today|this_week|this_month.`;
 
     const response = (await axios.post(ANTHROPIC_URL, {
       model: 'claude-opus-4-5',
@@ -400,6 +491,24 @@ chupChuRouter.post('/full-diagnosis', async (req: any, res) => {
       } else {
         console.error('[POST /api/chupchu/full-diagnosis] No JSON found, raw:', raw.slice(0, 200));
         return res.json({ success: false, error: 'parse_error', raw });
+      }
+    }
+
+    // ── Disagreement detection ────────────────────────────────────────────────
+    // When an established name was supplied, compare it to what the model returned.
+    // A mismatch means the model silently substituted a different name — exactly the
+    // failure mode these fields exist to prevent.  Log it so it is visible in Railway,
+    // and surface it in the response so the client's graduation guard can act on it.
+    if (establishedName && diagnosis?.plant_name) {
+      const returnedName: string = String(diagnosis.plant_name).trim();
+      const namesMatch =
+        returnedName.toLowerCase() === establishedName.trim().toLowerCase();
+      if (!namesMatch) {
+        console.warn(
+          `[full-diagnosis] identification disagreement — ` +
+          `established="${establishedName}" returned="${returnedName}" ` +
+          `conflict="${diagnosis.identification_conflict ?? '(none)'}"`,
+        );
       }
     }
 
@@ -486,7 +595,20 @@ chupChuRouter.post('/full-diagnosis', async (req: any, res) => {
 
     // When no plant_id was supplied (chat "add to garden" flow), return photo_path
     // so the client can forward it to attach-diagnosis once a plant is created.
-    res.json({ success: true, diagnosis, timeline_entry_id: timelineEntryId, photo_path: photoPath });
+    res.json({
+      success: true,
+      diagnosis,
+      timeline_entry_id: timelineEntryId,
+      photo_path: photoPath,
+      // Tells the client which path produced plant_name:
+      //   "fresh"       — model identified from scratch (no prior supplied)
+      //   "established" — model-confirmed prior was supplied; model used or contested it
+      //   "user"        — human-typed correction was supplied; model was instructed to honour it
+      // When identificationSource is not "fresh", diagnosis.identification_conflict (if set)
+      // contains the model's explicit disagreement — the client should surface this rather
+      // than silently proceeding with the returned plant_name.
+      identification_source: identificationSource,
+    });
   } catch (err: any) {
     console.error('[POST /api/chupchu/full-diagnosis]', err.message);
     res.status(500).json({ success: false, error: err.message });
