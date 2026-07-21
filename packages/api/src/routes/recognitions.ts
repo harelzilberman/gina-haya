@@ -75,17 +75,21 @@ recognitionsRouter.get('/', async (req: any, res) => {
 // Updates a recognition's status.  Two client-writable transitions:
 //
 //   { status: 'confirmed' }
-//     pending  → confirmed : 200 { id, status: 'confirmed' }
-//     confirmed → confirmed: 200 idempotent (no DB write)
-//     wrong | retried      : 409 { error: 'invalid_transition' }
+//     pending   → confirmed : 200 { id, status: 'confirmed' }
+//     confirmed → confirmed : 200 idempotent (no DB write)
+//     wrong | retried | linked : 409 { error: 'invalid_transition' }
+//       linked is blocked because the recognition has already graduated to a
+//       garden plant; re-confirming would leave a stale garden_plants_id on a
+//       row that looks un-linked to the query layer.
 //
 //   { status: 'linked', garden_plants_id: '<uuid>' }
-//     pending | confirmed → linked : 200 { id, status: 'linked', garden_plants_id }
-//     linked → linked (same plant) : 200 idempotent
-//     linked → linked (diff plant) : 400 { error: 'already_linked_to_other_plant' }
-//     wrong | retried              : 400 { error: 'cannot_link_invalidated_recognition' }
-//     garden_plants_id missing     : 400
-//     garden_plant not owned       : 404 { error: 'garden_plant_not_found' }
+//     guard is keyed on garden_plants_id, not on current status:
+//       row.garden_plants_id null               : proceed
+//       row.garden_plants_id === requested      : 200 idempotent
+//       row.garden_plants_id !== requested      : 400 { error: 'already_linked_to_other_plant' }
+//     wrong | retried (no garden_plants_id set) : 400 { error: 'cannot_link_invalidated_recognition' }
+//     garden_plants_id missing from body        : 400
+//     garden_plant not owned                   : 404 { error: 'garden_plant_not_found' }
 //
 // 'wrong' and 'retried' are set server-side by the retry flow and are blocked
 // from client override here.
@@ -124,8 +128,12 @@ recognitionsRouter.patch('/:id', async (req: any, res) => {
     // ── 4. Route by requested status ──────────────────────────────────────
 
     if (status === 'confirmed') {
-      // Terminal states cannot be re-confirmed.
-      if (row.status === 'wrong' || row.status === 'retried') {
+      // wrong, retried, and linked cannot be re-confirmed.
+      // wrong/retried: invalidated by the retry flow — no going back.
+      // linked: recognition has already graduated to a garden plant; "confirming"
+      // it again would be meaningless and would silently leave a stale garden_plants_id
+      // on a row that looks un-linked to the query layer.
+      if (row.status === 'wrong' || row.status === 'retried' || row.status === 'linked') {
         return res.status(409).json({ error: 'invalid_transition', current_status: row.status });
       }
 
@@ -160,18 +168,21 @@ recognitionsRouter.patch('/:id', async (req: any, res) => {
       return res.status(400).json({ error: 'cannot_link_invalidated_recognition' });
     }
 
-    if (row.status === 'linked') {
-      // Guard B: idempotent only when linking to the SAME plant.
-      // Linking to a different plant is rejected to prevent silent re-assignment.
-      if (row.garden_plants_id && row.garden_plants_id !== garden_plants_id) {
-        console.warn(`[recognitions] rejected link: id=${id} status=${row.status} attempted_plant=${garden_plants_id}`);
-        return res.status(400).json({ error: 'already_linked_to_other_plant' });
+    // Guard B: keyed on garden_plants_id, not on status.
+    // A stale garden_plants_id can survive a linked→confirmed transition, so
+    // checking status alone would allow a bypass (linked→confirmed→linked(B)).
+    // We check the data column directly, regardless of current status.
+    if (row.garden_plants_id) {
+      if (row.garden_plants_id === garden_plants_id) {
+        // Idempotent — already linked to the requested plant.
+        return res.json({ id: row.id, status: row.status, garden_plants_id: row.garden_plants_id });
       }
-      // Same plant (or no prior garden_plants_id) — idempotent success
-      return res.json({ id: row.id, status: 'linked', garden_plants_id: row.garden_plants_id });
+      // Linked to a different plant — reject regardless of current status.
+      console.warn(`[recognitions] rejected link: id=${id} status=${row.status} existing_plant=${row.garden_plants_id} attempted_plant=${garden_plants_id}`);
+      return res.status(400).json({ error: 'already_linked_to_other_plant' });
     }
 
-    // row.status is 'pending' or 'confirmed' — both allowed to graduate to linked
+    // row.garden_plants_id is null — allowed to link
 
     // ── 5. Verify garden plant ownership ──────────────────────────────────
     // Join through gardens to confirm the plant belongs to this user.
