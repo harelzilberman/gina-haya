@@ -6,6 +6,12 @@ export interface ChupChuMessage {
   // Absent on text turns and when the recognition_history insert fails.
   recognition_id?: string;
   recognition_photo_key?: string | null;
+  // Survives history restore — true when this recognition was produced by a
+  // retry (prevents the client offering a second retry on a retry-result card).
+  is_retry?: boolean;
+  // The user-supplied correction hint that seeded this retry, if any.
+  // Stored here so the client can display it on restored history cards.
+  user_hint?: string | null;
 }
 
 export interface ChupChuContext {

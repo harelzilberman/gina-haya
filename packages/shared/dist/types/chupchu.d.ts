@@ -4,6 +4,8 @@ export interface ChupChuMessage {
     timestamp: string;
     recognition_id?: string;
     recognition_photo_key?: string | null;
+    is_retry?: boolean;
+    user_hint?: string | null;
 }
 export interface ChupChuContext {
     gardenName: string | null;

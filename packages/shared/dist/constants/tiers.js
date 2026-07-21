@@ -74,7 +74,7 @@ exports.TIER_LIMITS = {
 };
 function getLimits(tier) {
     if (!exports.TIER_LIMITS[tier]) {
-        console.warn(`[getLimits] Unknown tier key: "${tier}" — falling back to free limits`);
+        console.error(`[getLimits] Unknown tier key: "${tier}" — falling back to free limits`);
         return exports.TIER_LIMITS.free;
     }
     return exports.TIER_LIMITS[tier];

@@ -1877,6 +1877,13 @@ chupChuRouter.post('/chat', async (req: any, res) => {
           // content stays as chupChuText — Claude-context rebuild reads only content.
           if (newRhId) chupChuMessage.recognition_id = newRhId;
           chupChuMessage.recognition_photo_key = photoStorageKey ?? null;
+          // Persist retry metadata onto the message so both fields survive a
+          // history restore.  is_retry blocks the client from offering a second
+          // retry; user_hint lets the client display the correction that was given.
+          chupChuMessage.is_retry = !!retryOriginal;
+          if (retryOriginal && retryOf?.userHint) {
+            chupChuMessage.user_hint = String(retryOf.userHint).slice(0, 200);
+          }
 
           // Mark original recognition as retried (non-fatal on failure)
           if (retryOriginal && newRhId) {
@@ -1897,6 +1904,12 @@ chupChuRouter.post('/chat', async (req: any, res) => {
             // allows only one retry per original recognition (retry_chain_limit),
             // so the client should not offer "טעית בזיהוי" again on this card.
             is_retry: !!retryOriginal,
+            // The user-supplied correction hint (if any) that seeded this retry.
+            // Mirrored here so the client has it on the live response without a
+            // separate fetch; also stored on chupChuMessage for history restore.
+            user_hint: (retryOriginal && retryOf?.userHint)
+              ? String(retryOf.userHint).slice(0, 200)
+              : null,
           };
         }
       } else {
