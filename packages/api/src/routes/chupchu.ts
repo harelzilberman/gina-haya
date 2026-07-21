@@ -1091,6 +1091,9 @@ chupChuRouter.post('/chat', async (req: any, res) => {
           return res.status(400).json({ error: 'already_retried' });
         }
         retryOriginal = orig;
+        if (retryOf?.userHint) {
+          console.log(`[chupchu/chat] retry with userHint="${retryOf.userHint}"`);
+        }
       }
 
       // ── Vision quota (free retry bypasses the counter) ────────────────────
@@ -1601,7 +1604,7 @@ chupChuRouter.post('/chat', async (req: any, res) => {
     if (hasImage) {
       const retryHintLine = retryOriginal && retryOf?.userHint
         ? (lang === 'he'
-            ? `המשתמש מציין שהצמח הוא כנראה ${String(retryOf.userHint).slice(0, 80)} — קח זאת בחשבון בזיהוי.\n`
+            ? `המשתמש אמר שהזיהוי הקודם היה שגוי, ולפי דבריו הצמח הוא: "${String(retryOf.userHint).slice(0, 80)}".\nהתייחס לכך כמידע אמין ממקור אנושי. אמת אותו מול התמונה: אם הוא מתיישב עם מה שנראה בתמונה — השתמש בו, כולל הזן/הווריאציה אם צוינו. אם הוא סותר בבירור את התמונה — ציין זאת בעדינות ב-chupchu_comment והסבר מה כן נראה.\n`
             : `The user suggests the plant is likely ${String(retryOf.userHint).slice(0, 80)} — factor this into your identification.\n`)
         : '';
 
