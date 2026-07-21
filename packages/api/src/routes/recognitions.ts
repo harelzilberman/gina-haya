@@ -150,8 +150,24 @@ recognitionsRouter.patch('/:id', async (req: any, res) => {
 
     // status === 'linked'
 
+    // Guard A: only pending/confirmed may transition to linked; wrong/retried are
+    // invalidated states that must not be linked.  The general terminal-state guard
+    // above (line ~124) already blocks wrong/retried for all paths, but we return a
+    // more specific error code here so callers can distinguish "invalidated" from a
+    // generic invalid transition.
+    if (row.status !== 'pending' && row.status !== 'confirmed' && row.status !== 'linked') {
+      console.warn(`[recognitions] rejected link: id=${id} status=${row.status} attempted_plant=${garden_plants_id}`);
+      return res.status(400).json({ error: 'cannot_link_invalidated_recognition' });
+    }
+
     if (row.status === 'linked') {
-      // Idempotent — first link wins; do not re-link to a different plant
+      // Guard B: idempotent only when linking to the SAME plant.
+      // Linking to a different plant is rejected to prevent silent re-assignment.
+      if (row.garden_plants_id && row.garden_plants_id !== garden_plants_id) {
+        console.warn(`[recognitions] rejected link: id=${id} status=${row.status} attempted_plant=${garden_plants_id}`);
+        return res.status(400).json({ error: 'already_linked_to_other_plant' });
+      }
+      // Same plant (or no prior garden_plants_id) — idempotent success
       return res.json({ id: row.id, status: 'linked', garden_plants_id: row.garden_plants_id });
     }
 
