@@ -81,8 +81,9 @@ recognitionsRouter.get('/', async (req: any, res) => {
 //
 //   { status: 'linked', garden_plants_id: '<uuid>' }
 //     pending | confirmed → linked : 200 { id, status: 'linked', garden_plants_id }
-//     linked → linked              : 200 idempotent — first link wins, no re-link
-//     wrong | retried              : 409 { error: 'invalid_transition' }
+//     linked → linked (same plant) : 200 idempotent
+//     linked → linked (diff plant) : 400 { error: 'already_linked_to_other_plant' }
+//     wrong | retried              : 400 { error: 'cannot_link_invalidated_recognition' }
 //     garden_plants_id missing     : 400
 //     garden_plant not owned       : 404 { error: 'garden_plant_not_found' }
 //
@@ -120,20 +121,20 @@ recognitionsRouter.patch('/:id', async (req: any, res) => {
       return res.status(404).json({ error: 'recognition_not_found' });
     }
 
-    // ── 3. Blocked terminal states ────────────────────────────────────────
-    if (row.status === 'wrong' || row.status === 'retried') {
-      return res.status(409).json({ error: 'invalid_transition', current_status: row.status });
-    }
-
     // ── 4. Route by requested status ──────────────────────────────────────
 
     if (status === 'confirmed') {
+      // Terminal states cannot be re-confirmed.
+      if (row.status === 'wrong' || row.status === 'retried') {
+        return res.status(409).json({ error: 'invalid_transition', current_status: row.status });
+      }
+
       if (row.status === 'confirmed') {
         // Idempotent — no DB write needed
         return res.json({ id: row.id, status: 'confirmed' });
       }
 
-      // row.status === 'pending' (only remaining valid case after blocked check above)
+      // row.status === 'pending' (only remaining valid case after checks above)
       const { error: updateErr } = await db
         .from('recognition_history')
         .update({ status: 'confirmed' })
@@ -150,11 +151,10 @@ recognitionsRouter.patch('/:id', async (req: any, res) => {
 
     // status === 'linked'
 
-    // Guard A: only pending/confirmed may transition to linked; wrong/retried are
-    // invalidated states that must not be linked.  The general terminal-state guard
-    // above (line ~124) already blocks wrong/retried for all paths, but we return a
-    // more specific error code here so callers can distinguish "invalidated" from a
-    // generic invalid transition.
+    // Guard A: only pending/confirmed/linked may transition to linked.
+    // wrong/retried are invalidated states that must never be linked to a plant.
+    // Returns 400 (not 409) so callers can distinguish "invalidated" from a
+    // generic confirm-path invalid_transition.
     if (row.status !== 'pending' && row.status !== 'confirmed' && row.status !== 'linked') {
       console.warn(`[recognitions] rejected link: id=${id} status=${row.status} attempted_plant=${garden_plants_id}`);
       return res.status(400).json({ error: 'cannot_link_invalidated_recognition' });
