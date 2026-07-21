@@ -72,7 +72,7 @@ recognitionsRouter.get('/', async (req: any, res) => {
 });
 
 // ── PATCH /api/recognitions/:id ─────────────────────────────────────────────
-// Updates a recognition's status.  Two client-writable transitions:
+// Updates a recognition's status.  Three client-writable transitions:
 //
 //   { status: 'confirmed' }
 //     pending   → confirmed : 200 { id, status: 'confirmed' }
@@ -81,6 +81,17 @@ recognitionsRouter.get('/', async (req: any, res) => {
 //       linked is blocked because the recognition has already graduated to a
 //       garden plant; re-confirming would leave a stale garden_plants_id on a
 //       row that looks un-linked to the query layer.
+//
+//   { status: 'wrong' }
+//     Client signals the recognition result was incorrect.  Does not touch
+//     garden_plants_id.  The retry flow in chupchu.ts only blocks on
+//     status === 'retried' and retry_of_id !== null, so a wrong recognition
+//     remains retryable; the server overwrites it to 'retried' on retry success.
+//     pending | confirmed → wrong : 200 { id, status: 'wrong' }
+//     wrong   → wrong             : 200 idempotent (no DB write)
+//     linked  → wrong             : 409 { error: 'invalid_transition' }
+//       A graduated recognition must not be silently de-linked via status alone.
+//     retried → wrong             : 409 { error: 'invalid_transition' }
 //
 //   { status: 'linked', garden_plants_id: '<uuid>' }
 //     guard is keyed on garden_plants_id, not on current status:
@@ -91,8 +102,7 @@ recognitionsRouter.get('/', async (req: any, res) => {
 //     garden_plants_id missing from body        : 400
 //     garden_plant not owned                   : 404 { error: 'garden_plant_not_found' }
 //
-// 'wrong' and 'retried' are set server-side by the retry flow and are blocked
-// from client override here.
+// 'retried' is set server-side by the retry flow and is not client-writable.
 //
 // Own-row enforced: fetch by id + user_id; 404 if not found or not owned.
 recognitionsRouter.patch('/:id', async (req: any, res) => {
@@ -103,8 +113,8 @@ recognitionsRouter.patch('/:id', async (req: any, res) => {
     // ── 1. Validate request body ───────────────────────────────────────────
     const { status, garden_plants_id } = req.body ?? {};
 
-    if (status !== 'confirmed' && status !== 'linked') {
-      return res.status(400).json({ error: 'invalid_status', allowed: ['confirmed', 'linked'] });
+    if (status !== 'confirmed' && status !== 'wrong' && status !== 'linked') {
+      return res.status(400).json({ error: 'invalid_status', allowed: ['confirmed', 'wrong', 'linked'] });
     }
 
     if (status === 'linked') {
@@ -155,6 +165,36 @@ recognitionsRouter.patch('/:id', async (req: any, res) => {
       }
 
       return res.json({ id: row.id, status: 'confirmed' });
+    }
+
+    if (status === 'wrong') {
+      // linked: a graduated recognition must not be silently de-linked — unlinking
+      //   is a separate action; marking wrong alone would leave garden_plants_id set
+      //   while the status implies the result was discarded.
+      // retried: terminal server-side state; the user's opinion is already recorded
+      //   in the retry result.
+      if (row.status === 'linked' || row.status === 'retried') {
+        return res.status(409).json({ error: 'invalid_transition', current_status: row.status });
+      }
+
+      if (row.status === 'wrong') {
+        // Idempotent — no DB write needed
+        return res.json({ id: row.id, status: 'wrong' });
+      }
+
+      // row.status is 'pending' or 'confirmed' — both allowed
+      const { error: updateErr } = await db
+        .from('recognition_history')
+        .update({ status: 'wrong' })
+        .eq('id', id)
+        .eq('user_id', userId);  // belt-and-braces ownership check on write
+
+      if (updateErr) {
+        console.error('[PATCH /api/recognitions/:id] wrong update failed:', updateErr.message);
+        return res.status(500).json({ error: 'failed_to_mark_wrong' });
+      }
+
+      return res.json({ id: row.id, status: 'wrong' });
     }
 
     // status === 'linked'
