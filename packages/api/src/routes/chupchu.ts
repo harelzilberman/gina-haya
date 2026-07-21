@@ -275,7 +275,7 @@ chupChuRouter.post('/full-diagnosis', async (req: any, res) => {
       established_plant_name: rawEstablishedName,
       user_hint: rawUserHint,
     } = req.body;
-    if (!image) return res.status(400).json({ success: false, error: 'No image provided' });
+    if (!image && !photo_storage_key) return res.status(400).json({ success: false, error: 'No image provided' });
 
     // Sanitise the optional identification fields.
     // user_hint: human-sourced correction — capped at 200 chars, matching the
@@ -323,6 +323,34 @@ chupChuRouter.post('/full-diagnosis', async (req: any, res) => {
         return res.status(400).json({ success: false, error: 'invalid_photo_storage_key' });
       }
       clientPhotoKey = photo_storage_key;
+    }
+
+    // ── Resolve effective image ──────────────────────────────────────────────
+    // When the client omits image but supplies photo_storage_key (restored-card
+    // path: base64 is no longer in memory but the photo exists in Storage), we
+    // download the object from the tracker-photos bucket and use it as the image.
+    //
+    // Security: clientPhotoKey is validated above to start with the authenticated
+    // user's own userId prefix, so no cross-user access is possible.  The db
+    // client uses the service role key (bypasses RLS for server-side operations).
+    //
+    // Errors:
+    //   photo_not_found_in_storage — key supplied but download failed (missing/
+    //     deleted file), distinguishable from "no key at all" (No image provided).
+    let effectiveImage: string = image ?? '';
+    let effectiveMimeType: string = mimeType;
+    if (!image && clientPhotoKey) {
+      const { data: blob, error: dlErr } = await db.storage
+        .from('tracker-photos')
+        .download(clientPhotoKey);
+      if (dlErr || !blob) {
+        console.error('[full-diagnosis] storage download failed:', dlErr?.message ?? 'no blob', 'key:', clientPhotoKey);
+        return res.status(400).json({ success: false, error: 'photo_not_found_in_storage' });
+      }
+      const buf = Buffer.from(await blob.arrayBuffer());
+      effectiveImage = buf.toString('base64');
+      effectiveMimeType = blob.type && blob.type !== 'application/octet-stream' ? blob.type : 'image/jpeg';
+      console.log(`[full-diagnosis] resolved image from storage key=${clientPhotoKey} size=${buf.length}b mime=${effectiveMimeType}`);
     }
 
     // ── Vision quota gate ────────────────────────────────────────────────────
@@ -455,8 +483,8 @@ chupChuRouter.post('/full-diagnosis', async (req: any, res) => {
             type: 'image',
             source: {
               type: 'base64',
-              media_type: mimeType as any,
-              data: image,
+              media_type: effectiveMimeType as any,
+              data: effectiveImage,
             },
           },
           {
