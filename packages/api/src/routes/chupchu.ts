@@ -1604,8 +1604,8 @@ chupChuRouter.post('/chat', async (req: any, res) => {
     if (hasImage) {
       const retryHintLine = retryOriginal && retryOf?.userHint
         ? (lang === 'he'
-            ? `המשתמש אמר שהזיהוי הקודם היה שגוי, ולפי דבריו הצמח הוא: "${String(retryOf.userHint).slice(0, 80)}".\nהתייחס לכך כמידע אמין ממקור אנושי. אמת אותו מול התמונה: אם הוא מתיישב עם מה שנראה בתמונה — השתמש בו, כולל הזן/הווריאציה אם צוינו. אם הוא סותר בבירור את התמונה — ציין זאת בעדינות ב-chupchu_comment והסבר מה כן נראה.\n`
-            : `The user suggests the plant is likely ${String(retryOf.userHint).slice(0, 80)} — factor this into your identification.\n`)
+            ? `המשתמש אמר שהזיהוי הקודם היה שגוי, ולפי דבריו הצמח הוא: "${String(retryOf.userHint).slice(0, 200)}".\nהתייחס לכך כמידע אמין ממקור אנושי. אמת אותו מול התמונה: אם הוא מתיישב עם מה שנראה בתמונה — השתמש בו, כולל הזן/הווריאציה אם צוינו. אם הוא סותר בבירור את התמונה — ציין זאת בעדינות ב-chupchu_comment והסבר מה כן נראה.\n`
+            : `The user suggests the plant is likely ${String(retryOf.userHint).slice(0, 200)} — factor this into your identification.\n`)
         : '';
 
       const imageInstruction = lang === 'he'
