@@ -4,9 +4,11 @@ const CREAM        = '#FDF6EC';
 const WARN_BG      = '#fff7ed';
 const WARN_BORDER  = '#f97316';
 
-const CONTACT_EMAIL  = 'gina.haya.contact@gmail.com';
-const SUBJECT_HE     = 'בקשת מחיקת חשבון — גינה חיה';
-const SUBJECT_EN     = 'Account Deletion Request — Gina Haya';
+const CONTACT_EMAIL       = 'gina.haya.contact@gmail.com';
+const SUBJECT_HE          = 'בקשת מחיקת חשבון — גינה חיה';
+const SUBJECT_EN          = 'Account Deletion Request — Gina Haya';
+const SUBJECT_PARTIAL_HE  = 'בקשת מחיקת נתונים — גינה חיה';
+const SUBJECT_PARTIAL_EN  = 'Data Deletion Request — Gina Haya';
 
 function mailtoHref(subject: string) {
   return `mailto:${CONTACT_EMAIL}?subject=${encodeURIComponent(subject)}`;
@@ -76,6 +78,32 @@ export function DeleteAccountPage() {
                 {CONTACT_EMAIL}
               </a>
             </p>
+
+            {/* Partial deletion */}
+            <div style={{ marginTop: '36px', paddingTop: '28px', borderTop: '1px solid #e2e8f0' }}>
+              <h2 style={{ fontSize: '18px', fontWeight: 700, color: NAVY, marginBottom: '12px' }}>
+                מחיקת נתונים חלקית
+              </h2>
+              <p style={{ color: '#475569', lineHeight: 1.7, marginBottom: '16px' }}>
+                ניתן למחוק תוכן ספציפי — גינות, צמחים, תמונות, מעקבים — ישירות מתוך האפליקציה בכל עת. מחיקה כזו מסירה את הנתונים משרתינו מיידית.
+              </p>
+              <p style={{ color: '#475569', lineHeight: 1.7, marginBottom: '16px' }}>
+                ניתן גם לבקש מחיקה של נתונים ספציפיים מבלי למחוק את החשבון — שלח/י אימייל <strong>מכתובת הדוא"ל הרשומה בחשבונך</strong> עם פירוט הנתונים שברצונך להסיר. הבקשה תטופל תוך 30 יום.
+              </p>
+              <a
+                href={mailtoHref(SUBJECT_PARTIAL_HE)}
+                style={{
+                  display: 'inline-block', backgroundColor: NAVY, color: '#ffffff',
+                  textDecoration: 'none', fontWeight: 600, fontSize: '14px',
+                  padding: '10px 20px', borderRadius: '10px', marginBottom: '8px',
+                }}
+              >
+                שלח בקשת מחיקת נתונים חלקית
+              </a>
+              <p style={{ color: '#94a3b8', fontSize: '13px', marginTop: '8px' }}>
+                {CONTACT_EMAIL} · נושא: {SUBJECT_PARTIAL_HE}
+              </p>
+            </div>
           </div>
 
           {/* ── Separator ── */}
@@ -145,6 +173,32 @@ export function DeleteAccountPage() {
                 {CONTACT_EMAIL}
               </a>
             </p>
+
+            {/* Partial deletion */}
+            <div style={{ marginTop: '36px', paddingTop: '28px', borderTop: '1px solid #e2e8f0' }}>
+              <h2 style={{ fontSize: '18px', fontWeight: 700, color: NAVY, marginBottom: '12px' }}>
+                Partial data deletion
+              </h2>
+              <p style={{ color: '#475569', lineHeight: 1.7, marginBottom: '16px' }}>
+                You can delete specific content — gardens, plants, photos, trackers — directly inside the app at any time. Such deletions remove the data from our servers immediately.
+              </p>
+              <p style={{ color: '#475569', lineHeight: 1.7, marginBottom: '16px' }}>
+                You may also request deletion of specific data without deleting your account — send an email from <strong>the address registered on your account</strong> detailing the data you want removed. The request will be completed within 30 days.
+              </p>
+              <a
+                href={mailtoHref(SUBJECT_PARTIAL_EN)}
+                style={{
+                  display: 'inline-block', backgroundColor: NAVY, color: '#ffffff',
+                  textDecoration: 'none', fontWeight: 600, fontSize: '14px',
+                  padding: '10px 20px', borderRadius: '10px', marginBottom: '8px',
+                }}
+              >
+                Send partial data deletion request
+              </a>
+              <p style={{ color: '#94a3b8', fontSize: '13px', marginTop: '8px' }}>
+                {CONTACT_EMAIL} · Subject: {SUBJECT_PARTIAL_EN}
+              </p>
+            </div>
           </div>
 
         </div>
