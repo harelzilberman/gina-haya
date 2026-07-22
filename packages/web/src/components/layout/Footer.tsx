@@ -99,6 +99,9 @@ export function Footer() {
           <Link to="/privacy" style={linkStyle} onMouseEnter={hoverIn} onMouseLeave={hoverOut}>
             {isHebrew ? 'מדיניות פרטיות' : 'Privacy Policy'}
           </Link>
+          <Link to="/delete-account" style={linkStyle} onMouseEnter={hoverIn} onMouseLeave={hoverOut}>
+            {isHebrew ? 'מחיקת חשבון' : 'Delete Account'}
+          </Link>
           <a href="mailto:gina.haya.contact@gmail.com" style={linkStyle} onMouseEnter={hoverIn} onMouseLeave={hoverOut}>
             {isHebrew ? 'צור קשר' : 'Contact'}
           </a>

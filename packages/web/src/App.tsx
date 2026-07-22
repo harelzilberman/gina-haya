@@ -18,6 +18,7 @@ import { ArticlePage } from './pages/ArticlePage';
 import { TaskCalendarPage } from './pages/TaskCalendarPage';
 import { DashboardPage } from './pages/DashboardPage';
 import { PrivacyPolicyPage } from './pages/PrivacyPolicyPage';
+import { DeleteAccountPage } from './pages/DeleteAccountPage';
 import { PricingPage } from './pages/PricingPage';
 import { ShopPage } from './pages/ShopPage';
 import { GardensPage } from './pages/GardensPage';
@@ -157,6 +158,7 @@ export default function App() {
           {/* Public pages */}
           <Route path="/plants" element={<PlantsPage />} />
           <Route path="/privacy" element={<PrivacyPolicyPage />} />
+          <Route path="/delete-account" element={<DeleteAccountPage />} />
           <Route path="/pricing" element={<PricingPage />} />
           <Route path="/shop" element={<ShopPage />} />
           <Route path="/help" element={<HelpPage />} />
