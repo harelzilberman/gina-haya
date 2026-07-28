@@ -31,4 +31,5 @@ export interface BiodynamicDay {
   moonriseTime: string | null;
   moonsetTime: string | null;
   chupChuDailySummary: string;
+  chupChuDailySummaryEn?: string;
 }

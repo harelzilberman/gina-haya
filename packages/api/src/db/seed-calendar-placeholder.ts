@@ -87,6 +87,15 @@ const CHUPCHU_SUMMARIES: Record<string, string> = {
   node:   'יום צומת — נח לגינה, הימנע משתילה וקציר',
 };
 
+// English mirror of CHUPCHU_SUMMARIES — keep in sync by hand.
+const CHUPCHU_SUMMARIES_EN: Record<string, string> = {
+  fruit:  'Fruit day — the ideal time to plant tomatoes, cucumbers, and peppers',
+  root:   'Root day — plant carrots, beets, and onions today',
+  flower: 'Flower day — great for planting flowers and herbs',
+  leaf:   'Leaf day — a good time to prune and harvest leafy greens',
+  node:   'Node day — rest the garden, avoid planting and harvesting',
+};
+
 // 3 node blackout periods (each 2 days) spread across the year
 const NODE_PERIODS = [
   { start: 55,  end: 56  },  // ~2 months in
@@ -185,6 +194,9 @@ async function seed() {
     const chupChuDailySummary = nodeActive
       ? CHUPCHU_SUMMARIES.node
       : (CHUPCHU_SUMMARIES[zodiac.dayType] ?? CHUPCHU_SUMMARIES.fruit);
+    const chupChuDailySummaryEn = nodeActive
+      ? CHUPCHU_SUMMARIES_EN.node
+      : (CHUPCHU_SUMMARIES_EN[zodiac.dayType] ?? CHUPCHU_SUMMARIES_EN.fruit);
 
 
     rows.push({
@@ -211,6 +223,7 @@ async function seed() {
       moonrise_time:           formatTime(moonriseMin),
       moonset_time:            formatTime(moonsetMin),
       mon_daily_summary:     chupChuDailySummary,
+      mon_daily_summary_en:  chupChuDailySummaryEn,
     });
   }
 

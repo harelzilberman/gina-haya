@@ -28,6 +28,7 @@ interface CalendarRow {
   moonrise_time: string | null;
   moonset_time: string | null;
   mon_daily_summary: string;
+  mon_daily_summary_en?: string;
 }
 
 function toCalendarDay(row: CalendarRow): BiodynamicDay {
@@ -57,6 +58,7 @@ function toCalendarDay(row: CalendarRow): BiodynamicDay {
     moonriseTime: row.moonrise_time,
     moonsetTime: row.moonset_time,
     chupChuDailySummary: row.mon_daily_summary,
+    chupChuDailySummaryEn: row.mon_daily_summary_en,
   };
 }
 

@@ -406,6 +406,65 @@ def get_mon_summary(day_type, ascending, is_node, is_full_moon,
 
     return '. '.join(parts) if parts else f'יום {dt_he} — עבוד בגינה בהתאם לאנרגיית הירח'
 
+
+def get_mon_summary_en(day_type, ascending, is_node, is_full_moon,
+                        is_new_moon, is_pre_full_moon, moon_opposite_saturn,
+                        is_perigee, is_apogee, prep500, prep501):
+    """English mirror of get_mon_summary — same rule structure, translated
+    phrase templates. Deterministic (no AI call), so keep both in sync by
+    hand whenever the Hebrew phrasing/logic above changes."""
+    if is_node:
+        return "Node day — Chupchu recommends resting from garden work today and letting the soil breathe"
+
+    parts = []
+
+    if moon_opposite_saturn:
+        parts.append('Moon opposite Saturn — a blessed day for all garden work according to biodynamic tradition')
+
+    if is_full_moon:
+        parts.append('Full moon — heightened energy, plants at their peak vitality')
+    elif is_new_moon:
+        parts.append('New moon — a time of rest, avoid sowing and planting today')
+    elif is_pre_full_moon:
+        parts.append('48 hours before full moon — an excellent sowing window per the biodynamic calendar')
+
+    if is_perigee:
+        parts.append('Moon at perigee — avoid sowing and planting, risk of excessive growth surge')
+    elif is_apogee:
+        parts.append('Moon at apogee — good for planting tubers such as potatoes')
+
+    direction_en = 'ascending' if ascending else 'descending'
+
+    if day_type == 'fruit':
+        if not ascending:
+            parts.append(f'Fruit day with an {direction_en} moon — the ideal time to plant tomatoes, peppers, and cucumbers')
+        else:
+            parts.append(f'Fruit day with an {direction_en} moon — great for harvesting fruit and fruiting vegetables at peak flavor')
+    elif day_type == 'root':
+        if not ascending:
+            parts.append(f'Root day with a {direction_en} moon — plant carrots, beets, turnips, and onions today')
+        else:
+            parts.append(f'Root day with a {direction_en} moon — harvest and store root vegetables')
+    elif day_type == 'flower':
+        if not ascending:
+            parts.append(f'Flower day with a {direction_en} moon — plant flowers and herbs')
+        else:
+            parts.append(f'Flower day with a {direction_en} moon — harvest flowers for drying and herbs')
+    elif day_type == 'leaf':
+        if not ascending:
+            parts.append(f'Leaf day with a {direction_en} moon — plant lettuce, spinach, and leafy greens')
+        else:
+            parts.append(f'Leaf day with a {direction_en} moon — prune and harvest leafy greens at peak freshness')
+
+    if prep500 and prep501:
+        parts.append('Recommended: apply Prep 500 to the soil in the afternoon, and Prep 501 to the foliage at sunrise')
+    elif prep500:
+        parts.append('Recommended: apply Prep 500 to the soil in the afternoon (4–7 PM)')
+    elif prep501:
+        parts.append('Recommended: apply Prep 501 to the foliage in the morning (before 9 AM)')
+
+    return '. '.join(parts) if parts else f'{day_type.capitalize()} day — work in the garden according to the moon\'s energy'
+
 # ═══════════════════════════════════════════════════════
 # MAIN GENERATION LOOP
 # ═══════════════════════════════════════════════════════
@@ -512,6 +571,20 @@ def generate_calendar_data(start_date, days):
             prep501              = prep501,
         )
 
+        mon_en = get_mon_summary_en(
+            day_type             = moon_pos['day_type'],
+            ascending            = moon_decl['ascending'],
+            is_node              = node_data['is_node_day'],
+            is_full_moon         = moon_phase['is_full_moon'],
+            is_new_moon          = moon_phase['is_new_moon'],
+            is_pre_full_moon     = moon_phase['is_pre_full_moon'],
+            moon_opposite_saturn = saturn_data['moon_opposite_saturn'],
+            is_perigee           = perigee_data['is_perigee'],
+            is_apogee            = perigee_data['is_apogee'],
+            prep500              = prep500,
+            prep501              = prep501,
+        )
+
         rows.append({
             'date':                    date_str,
             'day_type':                moon_pos['day_type'],
@@ -541,6 +614,7 @@ def generate_calendar_data(start_date, days):
             'prep_501_recommended':    prep501,
             'cpp_recommended':         cpp,
             'mon_daily_summary':     mon,
+            'mon_daily_summary_en':  mon_en,
         })
 
         if offset % 30 == 0:
