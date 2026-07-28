@@ -8,11 +8,13 @@ import starterTasksData from '../../../shared/data/starter_tasks.json';
 // ── Types for starter_tasks.json ─────────────────────────────────────────────
 interface StarterTaskEntry {
   title: string;
+  titleEn?: string;
   category: string;
   priority: 'low' | 'medium' | 'high';
   dayOffset: number;
   lunarSensitive: boolean;
   notes?: string;
+  notesEn?: string;
 }
 interface StarterTasksSpecies {
   speciesId: string | null;
@@ -522,6 +524,7 @@ gardenRouter.delete('/:id/plants/:plantId', async (req: any, res) => {
 // Never 500s the caller — on any internal error, logs and returns empty result.
 gardenRouter.post('/garden-plants/:id/starter-tasks', async (req: any, res) => {
   const gardenPlantId = req.params.id;
+  const language: 'he' | 'en' = req.body?.language === 'en' ? 'en' : 'he';
   try {
     const userId = req.user?.id;
     if (!userId) return res.status(401).json({ error: 'Unauthorized' });
@@ -579,8 +582,8 @@ gardenRouter.post('/garden-plants/:id/starter-tasks', async (req: any, res) => {
         source_checkin_id: null,
         plan_id:           null,
         plant_name:        gp.common_name_he ?? null,
-        title:             t.title,
-        notes:             t.notes ?? null,
+        title:             language === 'en' ? (t.titleEn ?? t.title) : t.title,
+        notes:             language === 'en' ? (t.notesEn ?? t.notes ?? null) : (t.notes ?? null),
         category:          t.category,
         priority:          t.priority,
         type:              'custom' as const,

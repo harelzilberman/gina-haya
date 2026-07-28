@@ -25,28 +25,33 @@
         "priority": "high",
         "dayOffset": 0,
         "lunarSensitive": false,
-        "notes": "ודא שהמים מתנקזים ולא נעמדים בשורשים."
+        "notes": "ודא שהמים מתנקזים ולא נעמדים בשורשים.",
+        "titleEn": "Initial watering and drainage check",
+        "notesEn": "Make sure water drains and doesn't pool around the roots."
       },
       {
         "title": "בדיקת לחות ומצב הקרקע",
         "category": "soil",
         "priority": "medium",
         "dayOffset": 3,
-        "lunarSensitive": false
+        "lunarSensitive": false,
+        "titleEn": "Soil moisture and condition check"
       },
       {
         "title": "תצפית על העלים – סימני מזיקים או מחלה",
         "category": "observation",
         "priority": "medium",
         "dayOffset": 7,
-        "lunarSensitive": false
+        "lunarSensitive": false,
+        "titleEn": "Inspect leaves — signs of pests or disease"
       },
       {
         "title": "דישון קל בקומפוסט אורגני",
         "category": "fertilizing",
         "priority": "low",
         "dayOffset": 14,
-        "lunarSensitive": false
+        "lunarSensitive": false,
+        "titleEn": "Light feeding with organic compost"
       }
     ]
   },
@@ -66,35 +71,40 @@
           "category": "watering",
           "priority": "high",
           "dayOffset": 0,
-          "lunarSensitive": false
+          "lunarSensitive": false,
+          "titleEn": "Deep, regular watering"
         },
         {
           "title": "בדיקת ביסוס ותמיכת העץ",
           "category": "observation",
           "priority": "medium",
           "dayOffset": 3,
-          "lunarSensitive": false
+          "lunarSensitive": false,
+          "titleEn": "Check tree stability and staking"
         },
         {
           "title": "דישון אורגני מאוזן",
           "category": "fertilizing",
           "priority": "medium",
           "dayOffset": 12,
-          "lunarSensitive": false
+          "lunarSensitive": false,
+          "titleEn": "Balanced organic fertilizing"
         },
         {
           "title": "תצפית על מזיקים ומחלות בעלווה",
           "category": "pest",
           "priority": "medium",
           "dayOffset": 18,
-          "lunarSensitive": false
+          "lunarSensitive": false,
+          "titleEn": "Inspect foliage for pests and disease"
         },
         {
           "title": "גיזום ענפים יבשים ומיותרים",
           "category": "pruning",
           "priority": "low",
           "dayOffset": 30,
-          "lunarSensitive": true
+          "lunarSensitive": true,
+          "titleEn": "Prune dry and unnecessary branches"
         }
       ]
     },
@@ -113,35 +123,40 @@
           "category": "watering",
           "priority": "high",
           "dayOffset": 0,
-          "lunarSensitive": false
+          "lunarSensitive": false,
+          "titleEn": "Regular watering — consistency prevents fruit problems"
         },
         {
           "title": "סמך ותמיכה לצמח",
           "category": "support",
           "priority": "medium",
           "dayOffset": 3,
-          "lunarSensitive": false
+          "lunarSensitive": false,
+          "titleEn": "Stake and support the plant"
         },
         {
           "title": "דישון לעידוד פריחה ופרי",
           "category": "fertilizing",
           "priority": "medium",
           "dayOffset": 10,
-          "lunarSensitive": false
+          "lunarSensitive": false,
+          "titleEn": "Fertilize to encourage flowering and fruit"
         },
         {
           "title": "תצפית על כנימות וריקבון",
           "category": "pest",
           "priority": "medium",
           "dayOffset": 14,
-          "lunarSensitive": false
+          "lunarSensitive": false,
+          "titleEn": "Check for aphids and rot"
         },
         {
           "title": "דילול עלים תחתונים לאוורור",
           "category": "pruning",
           "priority": "low",
           "dayOffset": 18,
-          "lunarSensitive": true
+          "lunarSensitive": true,
+          "titleEn": "Thin lower leaves for airflow"
         }
       ]
     },
@@ -160,28 +175,32 @@
           "category": "watering",
           "priority": "medium",
           "dayOffset": 0,
-          "lunarSensitive": false
+          "lunarSensitive": false,
+          "titleEn": "Light watering — water only when the soil is dry"
         },
         {
           "title": "מיקום באור בהיר",
           "category": "observation",
           "priority": "low",
           "dayOffset": 5,
-          "lunarSensitive": false
+          "lunarSensitive": false,
+          "titleEn": "Place in bright light"
         },
         {
           "title": "בדיקת ניקוז המצע",
           "category": "soil",
           "priority": "low",
           "dayOffset": 8,
-          "lunarSensitive": false
+          "lunarSensitive": false,
+          "titleEn": "Check potting mix drainage"
         },
         {
           "title": "תצפית על ריקבון וכנימות מגן",
           "category": "pest",
           "priority": "low",
           "dayOffset": 12,
-          "lunarSensitive": false
+          "lunarSensitive": false,
+          "titleEn": "Check for rot and scale insects"
         }
       ]
     },
@@ -200,21 +219,24 @@
           "category": "watering",
           "priority": "high",
           "dayOffset": 0,
-          "lunarSensitive": false
+          "lunarSensitive": false,
+          "titleEn": "Deep watering during the hot season"
         },
         {
           "title": "תצפית על מזיקים ומחלות",
           "category": "pest",
           "priority": "medium",
           "dayOffset": 7,
-          "lunarSensitive": false
+          "lunarSensitive": false,
+          "titleEn": "Check for pests and disease"
         },
         {
           "title": "דישון אורגני באביב",
           "category": "fertilizing",
           "priority": "medium",
           "dayOffset": 15,
-          "lunarSensitive": false
+          "lunarSensitive": false,
+          "titleEn": "Organic fertilizing in spring"
         },
         {
           "title": "גיזום חורף – דילול ואוורור",
@@ -222,7 +244,9 @@
           "priority": "low",
           "dayOffset": 30,
           "lunarSensitive": true,
-          "notes": "בצע בעונת השלכת, כשהעץ רדום."
+          "notes": "בצע בעונת השלכת, כשהעץ רדום.",
+          "titleEn": "Winter pruning — thinning and airflow",
+          "notesEn": "Do this during the dormant season, while the tree is inactive."
         }
       ]
     },
@@ -241,28 +265,32 @@
           "category": "watering",
           "priority": "medium",
           "dayOffset": 0,
-          "lunarSensitive": false
+          "lunarSensitive": false,
+          "titleEn": "Moderate watering — sensitive to overwatering"
         },
         {
           "title": "בדיקת ניקוז הקרקע",
           "category": "soil",
           "priority": "low",
           "dayOffset": 8,
-          "lunarSensitive": false
+          "lunarSensitive": false,
+          "titleEn": "Check soil drainage"
         },
         {
           "title": "קטיף ענפים לשימוש ולעידוד צמיחה",
           "category": "harvest",
           "priority": "medium",
           "dayOffset": 6,
-          "lunarSensitive": true
+          "lunarSensitive": true,
+          "titleEn": "Harvest sprigs for use and to encourage growth"
         },
         {
           "title": "גיזום קל לאחר הפריחה",
           "category": "pruning",
           "priority": "low",
           "dayOffset": 14,
-          "lunarSensitive": true
+          "lunarSensitive": true,
+          "titleEn": "Light pruning after flowering"
         }
       ]
     },
@@ -281,28 +309,32 @@
           "category": "watering",
           "priority": "medium",
           "dayOffset": 0,
-          "lunarSensitive": false
+          "lunarSensitive": false,
+          "titleEn": "Light watering — water only when the soil is dry"
         },
         {
           "title": "מיקום באור בהיר",
           "category": "observation",
           "priority": "low",
           "dayOffset": 5,
-          "lunarSensitive": false
+          "lunarSensitive": false,
+          "titleEn": "Place in bright light"
         },
         {
           "title": "בדיקת ניקוז המצע",
           "category": "soil",
           "priority": "low",
           "dayOffset": 8,
-          "lunarSensitive": false
+          "lunarSensitive": false,
+          "titleEn": "Check potting mix drainage"
         },
         {
           "title": "תצפית על ריקבון וכנימות מגן",
           "category": "pest",
           "priority": "low",
           "dayOffset": 12,
-          "lunarSensitive": false
+          "lunarSensitive": false,
+          "titleEn": "Check for rot and scale insects"
         }
       ]
     },
@@ -321,28 +353,32 @@
           "category": "watering",
           "priority": "high",
           "dayOffset": 0,
-          "lunarSensitive": false
+          "lunarSensitive": false,
+          "titleEn": "Regular watering"
         },
         {
           "title": "דישון לעידוד פריחה",
           "category": "fertilizing",
           "priority": "medium",
           "dayOffset": 12,
-          "lunarSensitive": false
+          "lunarSensitive": false,
+          "titleEn": "Fertilize to encourage flowering"
         },
         {
           "title": "תצפית על כנימות ומזיקים",
           "category": "pest",
           "priority": "low",
           "dayOffset": 14,
-          "lunarSensitive": false
+          "lunarSensitive": false,
+          "titleEn": "Check for aphids and pests"
         },
         {
           "title": "הסרת פרחים נבולים (דד-הדינג)",
           "category": "pruning",
           "priority": "medium",
           "dayOffset": 7,
-          "lunarSensitive": true
+          "lunarSensitive": true,
+          "titleEn": "Remove spent blooms (deadheading)"
         }
       ]
     },
@@ -361,28 +397,32 @@
           "category": "watering",
           "priority": "high",
           "dayOffset": 0,
-          "lunarSensitive": false
+          "lunarSensitive": false,
+          "titleEn": "Regular watering"
         },
         {
           "title": "דישון לעידוד פריחה",
           "category": "fertilizing",
           "priority": "medium",
           "dayOffset": 12,
-          "lunarSensitive": false
+          "lunarSensitive": false,
+          "titleEn": "Fertilize to encourage flowering"
         },
         {
           "title": "תצפית על כנימות ומזיקים",
           "category": "pest",
           "priority": "low",
           "dayOffset": 14,
-          "lunarSensitive": false
+          "lunarSensitive": false,
+          "titleEn": "Check for aphids and pests"
         },
         {
           "title": "הסרת פרחים נבולים (דד-הדינג)",
           "category": "pruning",
           "priority": "medium",
           "dayOffset": 7,
-          "lunarSensitive": true
+          "lunarSensitive": true,
+          "titleEn": "Remove spent blooms (deadheading)"
         }
       ]
     },
@@ -401,28 +441,32 @@
           "category": "watering",
           "priority": "high",
           "dayOffset": 0,
-          "lunarSensitive": false
+          "lunarSensitive": false,
+          "titleEn": "Watering — keep the soil moist"
         },
         {
           "title": "קטיף ענפים עליונים לעידוד הסתעפות",
           "category": "harvest",
           "priority": "medium",
           "dayOffset": 5,
-          "lunarSensitive": true
+          "lunarSensitive": true,
+          "titleEn": "Pinch top sprigs to encourage branching"
         },
         {
           "title": "קמצוץ ראשי פריחה לשמירה על הטעם",
           "category": "pruning",
           "priority": "medium",
           "dayOffset": 10,
-          "lunarSensitive": true
+          "lunarSensitive": true,
+          "titleEn": "Pinch off flower buds to preserve flavor"
         },
         {
           "title": "דישון קל",
           "category": "fertilizing",
           "priority": "low",
           "dayOffset": 14,
-          "lunarSensitive": false
+          "lunarSensitive": false,
+          "titleEn": "Light fertilizing"
         }
       ]
     },
@@ -441,35 +485,40 @@
           "category": "watering",
           "priority": "high",
           "dayOffset": 0,
-          "lunarSensitive": false
+          "lunarSensitive": false,
+          "titleEn": "Watering — keep the soil moist"
         },
         {
           "title": "בדיקת חלזונות ומזיקי עלים",
           "category": "pest",
           "priority": "high",
           "dayOffset": 3,
-          "lunarSensitive": false
+          "lunarSensitive": false,
+          "titleEn": "Check for snails and leaf pests"
         },
         {
           "title": "דישון עשיר בחנקן לצמיחת עלווה",
           "category": "fertilizing",
           "priority": "medium",
           "dayOffset": 10,
-          "lunarSensitive": false
+          "lunarSensitive": false,
+          "titleEn": "Nitrogen-rich fertilizing for leaf growth"
         },
         {
           "title": "בדיקת לחות הקרקע",
           "category": "soil",
           "priority": "low",
           "dayOffset": 7,
-          "lunarSensitive": false
+          "lunarSensitive": false,
+          "titleEn": "Check soil moisture"
         },
         {
           "title": "קטיף עלים חיצוניים",
           "category": "harvest",
           "priority": "medium",
           "dayOffset": 14,
-          "lunarSensitive": true
+          "lunarSensitive": true,
+          "titleEn": "Harvest outer leaves"
         }
       ]
     },
@@ -488,35 +537,40 @@
           "category": "watering",
           "priority": "high",
           "dayOffset": 0,
-          "lunarSensitive": false
+          "lunarSensitive": false,
+          "titleEn": "Regular watering — consistency prevents fruit problems"
         },
         {
           "title": "סמך ותמיכה לצמח",
           "category": "support",
           "priority": "medium",
           "dayOffset": 3,
-          "lunarSensitive": false
+          "lunarSensitive": false,
+          "titleEn": "Stake and support the plant"
         },
         {
           "title": "דישון לעידוד פריחה ופרי",
           "category": "fertilizing",
           "priority": "medium",
           "dayOffset": 10,
-          "lunarSensitive": false
+          "lunarSensitive": false,
+          "titleEn": "Fertilize to encourage flowering and fruit"
         },
         {
           "title": "תצפית על כנימות וריקבון",
           "category": "pest",
           "priority": "medium",
           "dayOffset": 14,
-          "lunarSensitive": false
+          "lunarSensitive": false,
+          "titleEn": "Check for aphids and rot"
         },
         {
           "title": "דילול עלים תחתונים לאוורור",
           "category": "pruning",
           "priority": "low",
           "dayOffset": 18,
-          "lunarSensitive": true
+          "lunarSensitive": true,
+          "titleEn": "Thin lower leaves for airflow"
         }
       ]
     },
@@ -535,28 +589,32 @@
           "category": "watering",
           "priority": "high",
           "dayOffset": 0,
-          "lunarSensitive": false
+          "lunarSensitive": false,
+          "titleEn": "Regular watering"
         },
         {
           "title": "דישון לעידוד פריחה",
           "category": "fertilizing",
           "priority": "medium",
           "dayOffset": 12,
-          "lunarSensitive": false
+          "lunarSensitive": false,
+          "titleEn": "Fertilize to encourage flowering"
         },
         {
           "title": "תצפית על כנימות ומזיקים",
           "category": "pest",
           "priority": "low",
           "dayOffset": 14,
-          "lunarSensitive": false
+          "lunarSensitive": false,
+          "titleEn": "Check for aphids and pests"
         },
         {
           "title": "הסרת פרחים נבולים (דד-הדינג)",
           "category": "pruning",
           "priority": "medium",
           "dayOffset": 7,
-          "lunarSensitive": true
+          "lunarSensitive": true,
+          "titleEn": "Remove spent blooms (deadheading)"
         }
       ]
     },
@@ -575,21 +633,24 @@
           "category": "watering",
           "priority": "high",
           "dayOffset": 0,
-          "lunarSensitive": false
+          "lunarSensitive": false,
+          "titleEn": "Deep watering during the hot season"
         },
         {
           "title": "תצפית על מזיקים ומחלות",
           "category": "pest",
           "priority": "medium",
           "dayOffset": 7,
-          "lunarSensitive": false
+          "lunarSensitive": false,
+          "titleEn": "Check for pests and disease"
         },
         {
           "title": "דישון אורגני באביב",
           "category": "fertilizing",
           "priority": "medium",
           "dayOffset": 15,
-          "lunarSensitive": false
+          "lunarSensitive": false,
+          "titleEn": "Organic fertilizing in spring"
         },
         {
           "title": "גיזום חורף – דילול ואוורור",
@@ -597,7 +658,9 @@
           "priority": "low",
           "dayOffset": 30,
           "lunarSensitive": true,
-          "notes": "בצע בעונת השלכת, כשהעץ רדום."
+          "notes": "בצע בעונת השלכת, כשהעץ רדום.",
+          "titleEn": "Winter pruning — thinning and airflow",
+          "notesEn": "Do this during the dormant season, while the tree is inactive."
         }
       ]
     },
@@ -616,28 +679,32 @@
           "category": "watering",
           "priority": "high",
           "dayOffset": 0,
-          "lunarSensitive": false
+          "lunarSensitive": false,
+          "titleEn": "Deep watering"
         },
         {
           "title": "דישון לעידוד ראשי פריחה",
           "category": "fertilizing",
           "priority": "medium",
           "dayOffset": 10,
-          "lunarSensitive": false
+          "lunarSensitive": false,
+          "titleEn": "Fertilize to encourage flower heads"
         },
         {
           "title": "תצפית על כנימות",
           "category": "pest",
           "priority": "low",
           "dayOffset": 14,
-          "lunarSensitive": false
+          "lunarSensitive": false,
+          "titleEn": "Check for aphids"
         },
         {
           "title": "קטיף ראשי הפרח בזמן",
           "category": "harvest",
           "priority": "medium",
           "dayOffset": 20,
-          "lunarSensitive": true
+          "lunarSensitive": true,
+          "titleEn": "Harvest flower heads on time"
         }
       ]
     },
@@ -656,28 +723,32 @@
           "category": "watering",
           "priority": "medium",
           "dayOffset": 0,
-          "lunarSensitive": false
+          "lunarSensitive": false,
+          "titleEn": "Regular watering"
         },
         {
           "title": "חיפוי (מולץ') לשמירת לחות",
           "category": "soil",
           "priority": "medium",
           "dayOffset": 8,
-          "lunarSensitive": false
+          "lunarSensitive": false,
+          "titleEn": "Mulching to retain moisture"
         },
         {
           "title": "דישון אורגני קל",
           "category": "fertilizing",
           "priority": "low",
           "dayOffset": 14,
-          "lunarSensitive": false
+          "lunarSensitive": false,
+          "titleEn": "Light organic fertilizing"
         },
         {
           "title": "תצפית על בריאות הצמח",
           "category": "observation",
           "priority": "low",
           "dayOffset": 20,
-          "lunarSensitive": false
+          "lunarSensitive": false,
+          "titleEn": "Check overall plant health"
         }
       ]
     },
@@ -696,28 +767,32 @@
           "category": "watering",
           "priority": "high",
           "dayOffset": 0,
-          "lunarSensitive": false
+          "lunarSensitive": false,
+          "titleEn": "Deep watering — citrus is sensitive to dryness"
         },
         {
           "title": "בדיקת מזיקים (כנימות ומיני עש)",
           "category": "pest",
           "priority": "medium",
           "dayOffset": 5,
-          "lunarSensitive": false
+          "lunarSensitive": false,
+          "titleEn": "Check for pests (aphids and leaf miners)"
         },
         {
           "title": "דישון הדרים (עשיר באשלגן וברזל)",
           "category": "fertilizing",
           "priority": "medium",
           "dayOffset": 12,
-          "lunarSensitive": false
+          "lunarSensitive": false,
+          "titleEn": "Citrus fertilizing (rich in potassium and iron)"
         },
         {
           "title": "גיזום ענפי מים וסורים",
           "category": "pruning",
           "priority": "low",
           "dayOffset": 25,
-          "lunarSensitive": true
+          "lunarSensitive": true,
+          "titleEn": "Prune water shoots and suckers"
         }
       ]
     },
@@ -736,28 +811,32 @@
           "category": "watering",
           "priority": "high",
           "dayOffset": 0,
-          "lunarSensitive": false
+          "lunarSensitive": false,
+          "titleEn": "Regular watering"
         },
         {
           "title": "דישון לעידוד פריחה",
           "category": "fertilizing",
           "priority": "medium",
           "dayOffset": 12,
-          "lunarSensitive": false
+          "lunarSensitive": false,
+          "titleEn": "Fertilize to encourage flowering"
         },
         {
           "title": "תצפית על כנימות ומזיקים",
           "category": "pest",
           "priority": "low",
           "dayOffset": 14,
-          "lunarSensitive": false
+          "lunarSensitive": false,
+          "titleEn": "Check for aphids and pests"
         },
         {
           "title": "הסרת פרחים נבולים (דד-הדינג)",
           "category": "pruning",
           "priority": "medium",
           "dayOffset": 7,
-          "lunarSensitive": true
+          "lunarSensitive": true,
+          "titleEn": "Remove spent blooms (deadheading)"
         }
       ]
     },
@@ -776,28 +855,32 @@
           "category": "watering",
           "priority": "high",
           "dayOffset": 0,
-          "lunarSensitive": false
+          "lunarSensitive": false,
+          "titleEn": "Watering — keep the soil moist"
         },
         {
           "title": "קטיף ענפים עליונים לעידוד הסתעפות",
           "category": "harvest",
           "priority": "medium",
           "dayOffset": 5,
-          "lunarSensitive": true
+          "lunarSensitive": true,
+          "titleEn": "Pinch top sprigs to encourage branching"
         },
         {
           "title": "קמצוץ ראשי פריחה לשמירה על הטעם",
           "category": "pruning",
           "priority": "medium",
           "dayOffset": 10,
-          "lunarSensitive": true
+          "lunarSensitive": true,
+          "titleEn": "Pinch off flower buds to preserve flavor"
         },
         {
           "title": "דישון קל",
           "category": "fertilizing",
           "priority": "low",
           "dayOffset": 14,
-          "lunarSensitive": false
+          "lunarSensitive": false,
+          "titleEn": "Light fertilizing"
         }
       ]
     },
@@ -816,28 +899,32 @@
           "category": "watering",
           "priority": "high",
           "dayOffset": 0,
-          "lunarSensitive": false
+          "lunarSensitive": false,
+          "titleEn": "Regular, even watering"
         },
         {
           "title": "דילול שתילים לצפיפות נכונה",
           "category": "maintenance",
           "priority": "medium",
           "dayOffset": 5,
-          "lunarSensitive": true
+          "lunarSensitive": true,
+          "titleEn": "Thin seedlings to the correct spacing"
         },
         {
           "title": "ניכוש ואוורור הקרקע סביב הצמח",
           "category": "soil",
           "priority": "medium",
           "dayOffset": 10,
-          "lunarSensitive": false
+          "lunarSensitive": false,
+          "titleEn": "Weed and aerate the soil around the plant"
         },
         {
           "title": "תצפית על מזיקי קרקע",
           "category": "pest",
           "priority": "low",
           "dayOffset": 14,
-          "lunarSensitive": false
+          "lunarSensitive": false,
+          "titleEn": "Check for soil pests"
         }
       ]
     },
@@ -856,35 +943,40 @@
           "category": "watering",
           "priority": "high",
           "dayOffset": 0,
-          "lunarSensitive": false
+          "lunarSensitive": false,
+          "titleEn": "Regular watering — consistency prevents fruit problems"
         },
         {
           "title": "סמך ותמיכה לצמח",
           "category": "support",
           "priority": "medium",
           "dayOffset": 3,
-          "lunarSensitive": false
+          "lunarSensitive": false,
+          "titleEn": "Stake and support the plant"
         },
         {
           "title": "דישון לעידוד פריחה ופרי",
           "category": "fertilizing",
           "priority": "medium",
           "dayOffset": 10,
-          "lunarSensitive": false
+          "lunarSensitive": false,
+          "titleEn": "Fertilize to encourage flowering and fruit"
         },
         {
           "title": "תצפית על כנימות וריקבון",
           "category": "pest",
           "priority": "medium",
           "dayOffset": 14,
-          "lunarSensitive": false
+          "lunarSensitive": false,
+          "titleEn": "Check for aphids and rot"
         },
         {
           "title": "דילול עלים תחתונים לאוורור",
           "category": "pruning",
           "priority": "low",
           "dayOffset": 18,
-          "lunarSensitive": true
+          "lunarSensitive": true,
+          "titleEn": "Thin lower leaves for airflow"
         }
       ]
     },
@@ -903,35 +995,40 @@
           "category": "watering",
           "priority": "high",
           "dayOffset": 0,
-          "lunarSensitive": false
+          "lunarSensitive": false,
+          "titleEn": "Deep, regular watering"
         },
         {
           "title": "בדיקת ביסוס ותמיכת העץ",
           "category": "observation",
           "priority": "medium",
           "dayOffset": 3,
-          "lunarSensitive": false
+          "lunarSensitive": false,
+          "titleEn": "Check tree stability and staking"
         },
         {
           "title": "דישון אורגני מאוזן",
           "category": "fertilizing",
           "priority": "medium",
           "dayOffset": 12,
-          "lunarSensitive": false
+          "lunarSensitive": false,
+          "titleEn": "Balanced organic fertilizing"
         },
         {
           "title": "תצפית על מזיקים ומחלות בעלווה",
           "category": "pest",
           "priority": "medium",
           "dayOffset": 18,
-          "lunarSensitive": false
+          "lunarSensitive": false,
+          "titleEn": "Inspect foliage for pests and disease"
         },
         {
           "title": "גיזום ענפים יבשים ומיותרים",
           "category": "pruning",
           "priority": "low",
           "dayOffset": 30,
-          "lunarSensitive": true
+          "lunarSensitive": true,
+          "titleEn": "Prune dry and unnecessary branches"
         }
       ]
     },
@@ -950,28 +1047,32 @@
           "category": "watering",
           "priority": "high",
           "dayOffset": 0,
-          "lunarSensitive": false
+          "lunarSensitive": false,
+          "titleEn": "Regular, even watering"
         },
         {
           "title": "דילול שתילים לצפיפות נכונה",
           "category": "maintenance",
           "priority": "medium",
           "dayOffset": 5,
-          "lunarSensitive": true
+          "lunarSensitive": true,
+          "titleEn": "Thin seedlings to the correct spacing"
         },
         {
           "title": "ניכוש ואוורור הקרקע סביב הצמח",
           "category": "soil",
           "priority": "medium",
           "dayOffset": 10,
-          "lunarSensitive": false
+          "lunarSensitive": false,
+          "titleEn": "Weed and aerate the soil around the plant"
         },
         {
           "title": "תצפית על מזיקי קרקע",
           "category": "pest",
           "priority": "low",
           "dayOffset": 14,
-          "lunarSensitive": false
+          "lunarSensitive": false,
+          "titleEn": "Check for soil pests"
         }
       ]
     },
@@ -990,28 +1091,32 @@
           "category": "watering",
           "priority": "high",
           "dayOffset": 0,
-          "lunarSensitive": false
+          "lunarSensitive": false,
+          "titleEn": "Regular, even watering"
         },
         {
           "title": "דילול שתילים לצפיפות נכונה",
           "category": "maintenance",
           "priority": "medium",
           "dayOffset": 5,
-          "lunarSensitive": true
+          "lunarSensitive": true,
+          "titleEn": "Thin seedlings to the correct spacing"
         },
         {
           "title": "ניכוש ואוורור הקרקע סביב הצמח",
           "category": "soil",
           "priority": "medium",
           "dayOffset": 10,
-          "lunarSensitive": false
+          "lunarSensitive": false,
+          "titleEn": "Weed and aerate the soil around the plant"
         },
         {
           "title": "תצפית על מזיקי קרקע",
           "category": "pest",
           "priority": "low",
           "dayOffset": 14,
-          "lunarSensitive": false
+          "lunarSensitive": false,
+          "titleEn": "Check for soil pests"
         }
       ]
     },
@@ -1030,35 +1135,40 @@
           "category": "watering",
           "priority": "high",
           "dayOffset": 0,
-          "lunarSensitive": false
+          "lunarSensitive": false,
+          "titleEn": "Watering — keep the soil moist"
         },
         {
           "title": "בדיקת חלזונות ומזיקי עלים",
           "category": "pest",
           "priority": "high",
           "dayOffset": 3,
-          "lunarSensitive": false
+          "lunarSensitive": false,
+          "titleEn": "Check for snails and leaf pests"
         },
         {
           "title": "דישון עשיר בחנקן לצמיחת עלווה",
           "category": "fertilizing",
           "priority": "medium",
           "dayOffset": 10,
-          "lunarSensitive": false
+          "lunarSensitive": false,
+          "titleEn": "Nitrogen-rich fertilizing for leaf growth"
         },
         {
           "title": "בדיקת לחות הקרקע",
           "category": "soil",
           "priority": "low",
           "dayOffset": 7,
-          "lunarSensitive": false
+          "lunarSensitive": false,
+          "titleEn": "Check soil moisture"
         },
         {
           "title": "קטיף עלים חיצוניים",
           "category": "harvest",
           "priority": "medium",
           "dayOffset": 14,
-          "lunarSensitive": true
+          "lunarSensitive": true,
+          "titleEn": "Harvest outer leaves"
         }
       ]
     },
@@ -1077,28 +1187,32 @@
           "category": "watering",
           "priority": "high",
           "dayOffset": 0,
-          "lunarSensitive": false
+          "lunarSensitive": false,
+          "titleEn": "Regular watering"
         },
         {
           "title": "דישון לעידוד פריחה",
           "category": "fertilizing",
           "priority": "medium",
           "dayOffset": 12,
-          "lunarSensitive": false
+          "lunarSensitive": false,
+          "titleEn": "Fertilize to encourage flowering"
         },
         {
           "title": "תצפית על כנימות ומזיקים",
           "category": "pest",
           "priority": "low",
           "dayOffset": 14,
-          "lunarSensitive": false
+          "lunarSensitive": false,
+          "titleEn": "Check for aphids and pests"
         },
         {
           "title": "הסרת פרחים נבולים (דד-הדינג)",
           "category": "pruning",
           "priority": "medium",
           "dayOffset": 7,
-          "lunarSensitive": true
+          "lunarSensitive": true,
+          "titleEn": "Remove spent blooms (deadheading)"
         }
       ]
     },
@@ -1117,28 +1231,32 @@
           "category": "watering",
           "priority": "high",
           "dayOffset": 0,
-          "lunarSensitive": false
+          "lunarSensitive": false,
+          "titleEn": "Regular, even watering"
         },
         {
           "title": "דילול שתילים לצפיפות נכונה",
           "category": "maintenance",
           "priority": "medium",
           "dayOffset": 5,
-          "lunarSensitive": true
+          "lunarSensitive": true,
+          "titleEn": "Thin seedlings to the correct spacing"
         },
         {
           "title": "ניכוש ואוורור הקרקע סביב הצמח",
           "category": "soil",
           "priority": "medium",
           "dayOffset": 10,
-          "lunarSensitive": false
+          "lunarSensitive": false,
+          "titleEn": "Weed and aerate the soil around the plant"
         },
         {
           "title": "תצפית על מזיקי קרקע",
           "category": "pest",
           "priority": "low",
           "dayOffset": 14,
-          "lunarSensitive": false
+          "lunarSensitive": false,
+          "titleEn": "Check for soil pests"
         }
       ]
     },
@@ -1157,21 +1275,24 @@
           "category": "watering",
           "priority": "high",
           "dayOffset": 0,
-          "lunarSensitive": false
+          "lunarSensitive": false,
+          "titleEn": "Deep watering during the hot season"
         },
         {
           "title": "תצפית על מזיקים ומחלות",
           "category": "pest",
           "priority": "medium",
           "dayOffset": 7,
-          "lunarSensitive": false
+          "lunarSensitive": false,
+          "titleEn": "Check for pests and disease"
         },
         {
           "title": "דישון אורגני באביב",
           "category": "fertilizing",
           "priority": "medium",
           "dayOffset": 15,
-          "lunarSensitive": false
+          "lunarSensitive": false,
+          "titleEn": "Organic fertilizing in spring"
         },
         {
           "title": "גיזום חורף – דילול ואוורור",
@@ -1179,7 +1300,9 @@
           "priority": "low",
           "dayOffset": 30,
           "lunarSensitive": true,
-          "notes": "בצע בעונת השלכת, כשהעץ רדום."
+          "notes": "בצע בעונת השלכת, כשהעץ רדום.",
+          "titleEn": "Winter pruning — thinning and airflow",
+          "notesEn": "Do this during the dormant season, while the tree is inactive."
         }
       ]
     },
@@ -1198,28 +1321,32 @@
           "category": "watering",
           "priority": "high",
           "dayOffset": 0,
-          "lunarSensitive": false
+          "lunarSensitive": false,
+          "titleEn": "Regular watering"
         },
         {
           "title": "דישון לעידוד פריחה",
           "category": "fertilizing",
           "priority": "medium",
           "dayOffset": 12,
-          "lunarSensitive": false
+          "lunarSensitive": false,
+          "titleEn": "Fertilize to encourage flowering"
         },
         {
           "title": "תצפית על כנימות ומזיקים",
           "category": "pest",
           "priority": "low",
           "dayOffset": 14,
-          "lunarSensitive": false
+          "lunarSensitive": false,
+          "titleEn": "Check for aphids and pests"
         },
         {
           "title": "הסרת פרחים נבולים (דד-הדינג)",
           "category": "pruning",
           "priority": "medium",
           "dayOffset": 7,
-          "lunarSensitive": true
+          "lunarSensitive": true,
+          "titleEn": "Remove spent blooms (deadheading)"
         }
       ]
     },
@@ -1238,28 +1365,32 @@
           "category": "watering",
           "priority": "high",
           "dayOffset": 0,
-          "lunarSensitive": false
+          "lunarSensitive": false,
+          "titleEn": "Regular watering"
         },
         {
           "title": "דישון לעידוד פריחה",
           "category": "fertilizing",
           "priority": "medium",
           "dayOffset": 12,
-          "lunarSensitive": false
+          "lunarSensitive": false,
+          "titleEn": "Fertilize to encourage flowering"
         },
         {
           "title": "תצפית על כנימות ומזיקים",
           "category": "pest",
           "priority": "low",
           "dayOffset": 14,
-          "lunarSensitive": false
+          "lunarSensitive": false,
+          "titleEn": "Check for aphids and pests"
         },
         {
           "title": "הסרת פרחים נבולים (דד-הדינג)",
           "category": "pruning",
           "priority": "medium",
           "dayOffset": 7,
-          "lunarSensitive": true
+          "lunarSensitive": true,
+          "titleEn": "Remove spent blooms (deadheading)"
         }
       ]
     },
@@ -1278,28 +1409,32 @@
           "category": "watering",
           "priority": "high",
           "dayOffset": 0,
-          "lunarSensitive": false
+          "lunarSensitive": false,
+          "titleEn": "Regular watering"
         },
         {
           "title": "דישון לעידוד פריחה",
           "category": "fertilizing",
           "priority": "medium",
           "dayOffset": 12,
-          "lunarSensitive": false
+          "lunarSensitive": false,
+          "titleEn": "Fertilize to encourage flowering"
         },
         {
           "title": "תצפית על כנימות ומזיקים",
           "category": "pest",
           "priority": "low",
           "dayOffset": 14,
-          "lunarSensitive": false
+          "lunarSensitive": false,
+          "titleEn": "Check for aphids and pests"
         },
         {
           "title": "הסרת פרחים נבולים (דד-הדינג)",
           "category": "pruning",
           "priority": "medium",
           "dayOffset": 7,
-          "lunarSensitive": true
+          "lunarSensitive": true,
+          "titleEn": "Remove spent blooms (deadheading)"
         }
       ]
     },
@@ -1318,35 +1453,40 @@
           "category": "watering",
           "priority": "high",
           "dayOffset": 0,
-          "lunarSensitive": false
+          "lunarSensitive": false,
+          "titleEn": "Regular watering — consistency prevents fruit problems"
         },
         {
           "title": "סמך ותמיכה לצמח",
           "category": "support",
           "priority": "medium",
           "dayOffset": 3,
-          "lunarSensitive": false
+          "lunarSensitive": false,
+          "titleEn": "Stake and support the plant"
         },
         {
           "title": "דישון לעידוד פריחה ופרי",
           "category": "fertilizing",
           "priority": "medium",
           "dayOffset": 10,
-          "lunarSensitive": false
+          "lunarSensitive": false,
+          "titleEn": "Fertilize to encourage flowering and fruit"
         },
         {
           "title": "תצפית על כנימות וריקבון",
           "category": "pest",
           "priority": "medium",
           "dayOffset": 14,
-          "lunarSensitive": false
+          "lunarSensitive": false,
+          "titleEn": "Check for aphids and rot"
         },
         {
           "title": "דילול עלים תחתונים לאוורור",
           "category": "pruning",
           "priority": "low",
           "dayOffset": 18,
-          "lunarSensitive": true
+          "lunarSensitive": true,
+          "titleEn": "Thin lower leaves for airflow"
         }
       ]
     },
@@ -1365,28 +1505,32 @@
           "category": "watering",
           "priority": "high",
           "dayOffset": 0,
-          "lunarSensitive": false
+          "lunarSensitive": false,
+          "titleEn": "Watering — keep the soil moist"
         },
         {
           "title": "קטיף ענפים עליונים לעידוד הסתעפות",
           "category": "harvest",
           "priority": "medium",
           "dayOffset": 5,
-          "lunarSensitive": true
+          "lunarSensitive": true,
+          "titleEn": "Pinch top sprigs to encourage branching"
         },
         {
           "title": "קמצוץ ראשי פריחה לשמירה על הטעם",
           "category": "pruning",
           "priority": "medium",
           "dayOffset": 10,
-          "lunarSensitive": true
+          "lunarSensitive": true,
+          "titleEn": "Pinch off flower buds to preserve flavor"
         },
         {
           "title": "דישון קל",
           "category": "fertilizing",
           "priority": "low",
           "dayOffset": 14,
-          "lunarSensitive": false
+          "lunarSensitive": false,
+          "titleEn": "Light fertilizing"
         }
       ]
     },
@@ -1405,28 +1549,32 @@
           "category": "watering",
           "priority": "medium",
           "dayOffset": 0,
-          "lunarSensitive": false
+          "lunarSensitive": false,
+          "titleEn": "Light watering — water only when the soil is dry"
         },
         {
           "title": "מיקום באור בהיר",
           "category": "observation",
           "priority": "low",
           "dayOffset": 5,
-          "lunarSensitive": false
+          "lunarSensitive": false,
+          "titleEn": "Place in bright light"
         },
         {
           "title": "בדיקת ניקוז המצע",
           "category": "soil",
           "priority": "low",
           "dayOffset": 8,
-          "lunarSensitive": false
+          "lunarSensitive": false,
+          "titleEn": "Check potting mix drainage"
         },
         {
           "title": "תצפית על ריקבון וכנימות מגן",
           "category": "pest",
           "priority": "low",
           "dayOffset": 12,
-          "lunarSensitive": false
+          "lunarSensitive": false,
+          "titleEn": "Check for rot and scale insects"
         }
       ]
     },
@@ -1445,28 +1593,32 @@
           "category": "watering",
           "priority": "high",
           "dayOffset": 0,
-          "lunarSensitive": false
+          "lunarSensitive": false,
+          "titleEn": "Regular watering"
         },
         {
           "title": "דישון לעידוד פריחה",
           "category": "fertilizing",
           "priority": "medium",
           "dayOffset": 12,
-          "lunarSensitive": false
+          "lunarSensitive": false,
+          "titleEn": "Fertilize to encourage flowering"
         },
         {
           "title": "תצפית על כנימות ומזיקים",
           "category": "pest",
           "priority": "low",
           "dayOffset": 14,
-          "lunarSensitive": false
+          "lunarSensitive": false,
+          "titleEn": "Check for aphids and pests"
         },
         {
           "title": "הסרת פרחים נבולים (דד-הדינג)",
           "category": "pruning",
           "priority": "medium",
           "dayOffset": 7,
-          "lunarSensitive": true
+          "lunarSensitive": true,
+          "titleEn": "Remove spent blooms (deadheading)"
         }
       ]
     },
@@ -1485,28 +1637,32 @@
           "category": "watering",
           "priority": "medium",
           "dayOffset": 0,
-          "lunarSensitive": false
+          "lunarSensitive": false,
+          "titleEn": "Regular watering"
         },
         {
           "title": "חיפוי (מולץ') לשמירת לחות",
           "category": "soil",
           "priority": "medium",
           "dayOffset": 8,
-          "lunarSensitive": false
+          "lunarSensitive": false,
+          "titleEn": "Mulching to retain moisture"
         },
         {
           "title": "דישון אורגני קל",
           "category": "fertilizing",
           "priority": "low",
           "dayOffset": 14,
-          "lunarSensitive": false
+          "lunarSensitive": false,
+          "titleEn": "Light organic fertilizing"
         },
         {
           "title": "תצפית על בריאות הצמח",
           "category": "observation",
           "priority": "low",
           "dayOffset": 20,
-          "lunarSensitive": false
+          "lunarSensitive": false,
+          "titleEn": "Check overall plant health"
         }
       ]
     },
@@ -1525,28 +1681,32 @@
           "category": "watering",
           "priority": "high",
           "dayOffset": 0,
-          "lunarSensitive": false
+          "lunarSensitive": false,
+          "titleEn": "Regular watering"
         },
         {
           "title": "דישון לעידוד פריחה",
           "category": "fertilizing",
           "priority": "medium",
           "dayOffset": 12,
-          "lunarSensitive": false
+          "lunarSensitive": false,
+          "titleEn": "Fertilize to encourage flowering"
         },
         {
           "title": "תצפית על כנימות ומזיקים",
           "category": "pest",
           "priority": "low",
           "dayOffset": 14,
-          "lunarSensitive": false
+          "lunarSensitive": false,
+          "titleEn": "Check for aphids and pests"
         },
         {
           "title": "הסרת פרחים נבולים (דד-הדינג)",
           "category": "pruning",
           "priority": "medium",
           "dayOffset": 7,
-          "lunarSensitive": true
+          "lunarSensitive": true,
+          "titleEn": "Remove spent blooms (deadheading)"
         }
       ]
     },
@@ -1565,28 +1725,32 @@
           "category": "watering",
           "priority": "high",
           "dayOffset": 0,
-          "lunarSensitive": false
+          "lunarSensitive": false,
+          "titleEn": "Deep watering"
         },
         {
           "title": "דישון אורגני",
           "category": "fertilizing",
           "priority": "medium",
           "dayOffset": 12,
-          "lunarSensitive": false
+          "lunarSensitive": false,
+          "titleEn": "Organic fertilizing"
         },
         {
           "title": "תצפית על מזיקים",
           "category": "pest",
           "priority": "medium",
           "dayOffset": 16,
-          "lunarSensitive": false
+          "lunarSensitive": false,
+          "titleEn": "Check for pests"
         },
         {
           "title": "גיזום לאחר עונת הפרי",
           "category": "pruning",
           "priority": "low",
           "dayOffset": 30,
-          "lunarSensitive": true
+          "lunarSensitive": true,
+          "titleEn": "Prune after the fruiting season"
         }
       ]
     },
@@ -1605,28 +1769,32 @@
           "category": "watering",
           "priority": "high",
           "dayOffset": 0,
-          "lunarSensitive": false
+          "lunarSensitive": false,
+          "titleEn": "Regular watering"
         },
         {
           "title": "דישון לעידוד פריחה",
           "category": "fertilizing",
           "priority": "medium",
           "dayOffset": 12,
-          "lunarSensitive": false
+          "lunarSensitive": false,
+          "titleEn": "Fertilize to encourage flowering"
         },
         {
           "title": "תצפית על כנימות ומזיקים",
           "category": "pest",
           "priority": "low",
           "dayOffset": 14,
-          "lunarSensitive": false
+          "lunarSensitive": false,
+          "titleEn": "Check for aphids and pests"
         },
         {
           "title": "הסרת פרחים נבולים (דד-הדינג)",
           "category": "pruning",
           "priority": "medium",
           "dayOffset": 7,
-          "lunarSensitive": true
+          "lunarSensitive": true,
+          "titleEn": "Remove spent blooms (deadheading)"
         }
       ]
     },
@@ -1645,28 +1813,32 @@
           "category": "watering",
           "priority": "medium",
           "dayOffset": 0,
-          "lunarSensitive": false
+          "lunarSensitive": false,
+          "titleEn": "Check the irrigation system"
         },
         {
           "title": "גיזום עיצוב ואוורור הנוף",
           "category": "pruning",
           "priority": "medium",
           "dayOffset": 10,
-          "lunarSensitive": true
+          "lunarSensitive": true,
+          "titleEn": "Shaping pruning and canopy airflow"
         },
         {
           "title": "דישון אורגני",
           "category": "fertilizing",
           "priority": "low",
           "dayOffset": 18,
-          "lunarSensitive": false
+          "lunarSensitive": false,
+          "titleEn": "Organic fertilizing"
         },
         {
           "title": "תצפית על זבוב הזית",
           "category": "pest",
           "priority": "medium",
           "dayOffset": 25,
-          "lunarSensitive": false
+          "lunarSensitive": false,
+          "titleEn": "Check for olive fruit fly"
         }
       ]
     },
@@ -1685,28 +1857,32 @@
           "category": "watering",
           "priority": "medium",
           "dayOffset": 0,
-          "lunarSensitive": false
+          "lunarSensitive": false,
+          "titleEn": "Regular watering"
         },
         {
           "title": "חיפוי (מולץ') לשמירת לחות",
           "category": "soil",
           "priority": "medium",
           "dayOffset": 8,
-          "lunarSensitive": false
+          "lunarSensitive": false,
+          "titleEn": "Mulching to retain moisture"
         },
         {
           "title": "דישון אורגני קל",
           "category": "fertilizing",
           "priority": "low",
           "dayOffset": 14,
-          "lunarSensitive": false
+          "lunarSensitive": false,
+          "titleEn": "Light organic fertilizing"
         },
         {
           "title": "תצפית על בריאות הצמח",
           "category": "observation",
           "priority": "low",
           "dayOffset": 20,
-          "lunarSensitive": false
+          "lunarSensitive": false,
+          "titleEn": "Check overall plant health"
         }
       ]
     },
@@ -1725,28 +1901,32 @@
           "category": "watering",
           "priority": "high",
           "dayOffset": 0,
-          "lunarSensitive": false
+          "lunarSensitive": false,
+          "titleEn": "Regular watering"
         },
         {
           "title": "דישון לעידוד פריחה",
           "category": "fertilizing",
           "priority": "medium",
           "dayOffset": 12,
-          "lunarSensitive": false
+          "lunarSensitive": false,
+          "titleEn": "Fertilize to encourage flowering"
         },
         {
           "title": "תצפית על כנימות ומזיקים",
           "category": "pest",
           "priority": "low",
           "dayOffset": 14,
-          "lunarSensitive": false
+          "lunarSensitive": false,
+          "titleEn": "Check for aphids and pests"
         },
         {
           "title": "הסרת פרחים נבולים (דד-הדינג)",
           "category": "pruning",
           "priority": "medium",
           "dayOffset": 7,
-          "lunarSensitive": true
+          "lunarSensitive": true,
+          "titleEn": "Remove spent blooms (deadheading)"
         }
       ]
     },
@@ -1765,35 +1945,40 @@
           "category": "watering",
           "priority": "high",
           "dayOffset": 0,
-          "lunarSensitive": false
+          "lunarSensitive": false,
+          "titleEn": "Watering — keep the soil moist"
         },
         {
           "title": "בדיקת חלזונות ומזיקי עלים",
           "category": "pest",
           "priority": "high",
           "dayOffset": 3,
-          "lunarSensitive": false
+          "lunarSensitive": false,
+          "titleEn": "Check for snails and leaf pests"
         },
         {
           "title": "דישון עשיר בחנקן לצמיחת עלווה",
           "category": "fertilizing",
           "priority": "medium",
           "dayOffset": 10,
-          "lunarSensitive": false
+          "lunarSensitive": false,
+          "titleEn": "Nitrogen-rich fertilizing for leaf growth"
         },
         {
           "title": "בדיקת לחות הקרקע",
           "category": "soil",
           "priority": "low",
           "dayOffset": 7,
-          "lunarSensitive": false
+          "lunarSensitive": false,
+          "titleEn": "Check soil moisture"
         },
         {
           "title": "קטיף עלים חיצוניים",
           "category": "harvest",
           "priority": "medium",
           "dayOffset": 14,
-          "lunarSensitive": true
+          "lunarSensitive": true,
+          "titleEn": "Harvest outer leaves"
         }
       ]
     },
@@ -1812,35 +1997,40 @@
           "category": "watering",
           "priority": "high",
           "dayOffset": 0,
-          "lunarSensitive": false
+          "lunarSensitive": false,
+          "titleEn": "Regular watering — consistency prevents fruit problems"
         },
         {
           "title": "סמך ותמיכה לצמח",
           "category": "support",
           "priority": "medium",
           "dayOffset": 3,
-          "lunarSensitive": false
+          "lunarSensitive": false,
+          "titleEn": "Stake and support the plant"
         },
         {
           "title": "דישון לעידוד פריחה ופרי",
           "category": "fertilizing",
           "priority": "medium",
           "dayOffset": 10,
-          "lunarSensitive": false
+          "lunarSensitive": false,
+          "titleEn": "Fertilize to encourage flowering and fruit"
         },
         {
           "title": "תצפית על כנימות וריקבון",
           "category": "pest",
           "priority": "medium",
           "dayOffset": 14,
-          "lunarSensitive": false
+          "lunarSensitive": false,
+          "titleEn": "Check for aphids and rot"
         },
         {
           "title": "דילול עלים תחתונים לאוורור",
           "category": "pruning",
           "priority": "low",
           "dayOffset": 18,
-          "lunarSensitive": true
+          "lunarSensitive": true,
+          "titleEn": "Thin lower leaves for airflow"
         }
       ]
     },
@@ -1859,28 +2049,32 @@
           "category": "watering",
           "priority": "high",
           "dayOffset": 0,
-          "lunarSensitive": false
+          "lunarSensitive": false,
+          "titleEn": "Regular watering"
         },
         {
           "title": "דישון לעידוד פריחה",
           "category": "fertilizing",
           "priority": "medium",
           "dayOffset": 12,
-          "lunarSensitive": false
+          "lunarSensitive": false,
+          "titleEn": "Fertilize to encourage flowering"
         },
         {
           "title": "תצפית על כנימות ומזיקים",
           "category": "pest",
           "priority": "low",
           "dayOffset": 14,
-          "lunarSensitive": false
+          "lunarSensitive": false,
+          "titleEn": "Check for aphids and pests"
         },
         {
           "title": "הסרת פרחים נבולים (דד-הדינג)",
           "category": "pruning",
           "priority": "medium",
           "dayOffset": 7,
-          "lunarSensitive": true
+          "lunarSensitive": true,
+          "titleEn": "Remove spent blooms (deadheading)"
         }
       ]
     },
@@ -1899,28 +2093,32 @@
           "category": "watering",
           "priority": "medium",
           "dayOffset": 0,
-          "lunarSensitive": false
+          "lunarSensitive": false,
+          "titleEn": "Moderate watering — sensitive to overwatering"
         },
         {
           "title": "בדיקת ניקוז הקרקע",
           "category": "soil",
           "priority": "low",
           "dayOffset": 8,
-          "lunarSensitive": false
+          "lunarSensitive": false,
+          "titleEn": "Check soil drainage"
         },
         {
           "title": "קטיף ענפים לשימוש ולעידוד צמיחה",
           "category": "harvest",
           "priority": "medium",
           "dayOffset": 6,
-          "lunarSensitive": true
+          "lunarSensitive": true,
+          "titleEn": "Harvest sprigs for use and to encourage growth"
         },
         {
           "title": "גיזום קל לאחר הפריחה",
           "category": "pruning",
           "priority": "low",
           "dayOffset": 14,
-          "lunarSensitive": true
+          "lunarSensitive": true,
+          "titleEn": "Light pruning after flowering"
         }
       ]
     },
@@ -1939,28 +2137,32 @@
           "category": "watering",
           "priority": "high",
           "dayOffset": 0,
-          "lunarSensitive": false
+          "lunarSensitive": false,
+          "titleEn": "Watering — keep the soil moist"
         },
         {
           "title": "קטיף ענפים עליונים לעידוד הסתעפות",
           "category": "harvest",
           "priority": "medium",
           "dayOffset": 5,
-          "lunarSensitive": true
+          "lunarSensitive": true,
+          "titleEn": "Pinch top sprigs to encourage branching"
         },
         {
           "title": "קמצוץ ראשי פריחה לשמירה על הטעם",
           "category": "pruning",
           "priority": "medium",
           "dayOffset": 10,
-          "lunarSensitive": true
+          "lunarSensitive": true,
+          "titleEn": "Pinch off flower buds to preserve flavor"
         },
         {
           "title": "דישון קל",
           "category": "fertilizing",
           "priority": "low",
           "dayOffset": 14,
-          "lunarSensitive": false
+          "lunarSensitive": false,
+          "titleEn": "Light fertilizing"
         }
       ]
     },
@@ -1979,28 +2181,32 @@
           "category": "watering",
           "priority": "high",
           "dayOffset": 0,
-          "lunarSensitive": false
+          "lunarSensitive": false,
+          "titleEn": "Watering — keep the soil moist"
         },
         {
           "title": "קטיף ענפים עליונים לעידוד הסתעפות",
           "category": "harvest",
           "priority": "medium",
           "dayOffset": 5,
-          "lunarSensitive": true
+          "lunarSensitive": true,
+          "titleEn": "Pinch top sprigs to encourage branching"
         },
         {
           "title": "קמצוץ ראשי פריחה לשמירה על הטעם",
           "category": "pruning",
           "priority": "medium",
           "dayOffset": 10,
-          "lunarSensitive": true
+          "lunarSensitive": true,
+          "titleEn": "Pinch off flower buds to preserve flavor"
         },
         {
           "title": "דישון קל",
           "category": "fertilizing",
           "priority": "low",
           "dayOffset": 14,
-          "lunarSensitive": false
+          "lunarSensitive": false,
+          "titleEn": "Light fertilizing"
         }
       ]
     },
@@ -2019,28 +2225,32 @@
           "category": "watering",
           "priority": "medium",
           "dayOffset": 0,
-          "lunarSensitive": false
+          "lunarSensitive": false,
+          "titleEn": "Regular watering"
         },
         {
           "title": "חיפוי (מולץ') לשמירת לחות",
           "category": "soil",
           "priority": "medium",
           "dayOffset": 8,
-          "lunarSensitive": false
+          "lunarSensitive": false,
+          "titleEn": "Mulching to retain moisture"
         },
         {
           "title": "דישון אורגני קל",
           "category": "fertilizing",
           "priority": "low",
           "dayOffset": 14,
-          "lunarSensitive": false
+          "lunarSensitive": false,
+          "titleEn": "Light organic fertilizing"
         },
         {
           "title": "תצפית על בריאות הצמח",
           "category": "observation",
           "priority": "low",
           "dayOffset": 20,
-          "lunarSensitive": false
+          "lunarSensitive": false,
+          "titleEn": "Check overall plant health"
         }
       ]
     },
@@ -2059,35 +2269,40 @@
           "category": "watering",
           "priority": "high",
           "dayOffset": 0,
-          "lunarSensitive": false
+          "lunarSensitive": false,
+          "titleEn": "Watering — keep the soil moist"
         },
         {
           "title": "בדיקת חלזונות ומזיקי עלים",
           "category": "pest",
           "priority": "high",
           "dayOffset": 3,
-          "lunarSensitive": false
+          "lunarSensitive": false,
+          "titleEn": "Check for snails and leaf pests"
         },
         {
           "title": "דישון עשיר בחנקן לצמיחת עלווה",
           "category": "fertilizing",
           "priority": "medium",
           "dayOffset": 10,
-          "lunarSensitive": false
+          "lunarSensitive": false,
+          "titleEn": "Nitrogen-rich fertilizing for leaf growth"
         },
         {
           "title": "בדיקת לחות הקרקע",
           "category": "soil",
           "priority": "low",
           "dayOffset": 7,
-          "lunarSensitive": false
+          "lunarSensitive": false,
+          "titleEn": "Check soil moisture"
         },
         {
           "title": "קטיף עלים חיצוניים",
           "category": "harvest",
           "priority": "medium",
           "dayOffset": 14,
-          "lunarSensitive": true
+          "lunarSensitive": true,
+          "titleEn": "Harvest outer leaves"
         }
       ]
     },
@@ -2106,35 +2321,40 @@
           "category": "watering",
           "priority": "high",
           "dayOffset": 0,
-          "lunarSensitive": false
+          "lunarSensitive": false,
+          "titleEn": "Watering — keep the soil moist"
         },
         {
           "title": "בדיקת חלזונות ומזיקי עלים",
           "category": "pest",
           "priority": "high",
           "dayOffset": 3,
-          "lunarSensitive": false
+          "lunarSensitive": false,
+          "titleEn": "Check for snails and leaf pests"
         },
         {
           "title": "דישון עשיר בחנקן לצמיחת עלווה",
           "category": "fertilizing",
           "priority": "medium",
           "dayOffset": 10,
-          "lunarSensitive": false
+          "lunarSensitive": false,
+          "titleEn": "Nitrogen-rich fertilizing for leaf growth"
         },
         {
           "title": "בדיקת לחות הקרקע",
           "category": "soil",
           "priority": "low",
           "dayOffset": 7,
-          "lunarSensitive": false
+          "lunarSensitive": false,
+          "titleEn": "Check soil moisture"
         },
         {
           "title": "קטיף עלים חיצוניים",
           "category": "harvest",
           "priority": "medium",
           "dayOffset": 14,
-          "lunarSensitive": true
+          "lunarSensitive": true,
+          "titleEn": "Harvest outer leaves"
         }
       ]
     },
@@ -2153,35 +2373,40 @@
           "category": "watering",
           "priority": "high",
           "dayOffset": 0,
-          "lunarSensitive": false
+          "lunarSensitive": false,
+          "titleEn": "Watering — keep the soil moist"
         },
         {
           "title": "בדיקת חלזונות ומזיקי עלים",
           "category": "pest",
           "priority": "high",
           "dayOffset": 3,
-          "lunarSensitive": false
+          "lunarSensitive": false,
+          "titleEn": "Check for snails and leaf pests"
         },
         {
           "title": "דישון עשיר בחנקן לצמיחת עלווה",
           "category": "fertilizing",
           "priority": "medium",
           "dayOffset": 10,
-          "lunarSensitive": false
+          "lunarSensitive": false,
+          "titleEn": "Nitrogen-rich fertilizing for leaf growth"
         },
         {
           "title": "בדיקת לחות הקרקע",
           "category": "soil",
           "priority": "low",
           "dayOffset": 7,
-          "lunarSensitive": false
+          "lunarSensitive": false,
+          "titleEn": "Check soil moisture"
         },
         {
           "title": "קטיף עלים חיצוניים",
           "category": "harvest",
           "priority": "medium",
           "dayOffset": 14,
-          "lunarSensitive": true
+          "lunarSensitive": true,
+          "titleEn": "Harvest outer leaves"
         }
       ]
     },
@@ -2200,35 +2425,40 @@
           "category": "watering",
           "priority": "high",
           "dayOffset": 0,
-          "lunarSensitive": false
+          "lunarSensitive": false,
+          "titleEn": "Watering — keep the soil moist"
         },
         {
           "title": "בדיקת חלזונות ומזיקי עלים",
           "category": "pest",
           "priority": "high",
           "dayOffset": 3,
-          "lunarSensitive": false
+          "lunarSensitive": false,
+          "titleEn": "Check for snails and leaf pests"
         },
         {
           "title": "דישון עשיר בחנקן לצמיחת עלווה",
           "category": "fertilizing",
           "priority": "medium",
           "dayOffset": 10,
-          "lunarSensitive": false
+          "lunarSensitive": false,
+          "titleEn": "Nitrogen-rich fertilizing for leaf growth"
         },
         {
           "title": "בדיקת לחות הקרקע",
           "category": "soil",
           "priority": "low",
           "dayOffset": 7,
-          "lunarSensitive": false
+          "lunarSensitive": false,
+          "titleEn": "Check soil moisture"
         },
         {
           "title": "קטיף עלים חיצוניים",
           "category": "harvest",
           "priority": "medium",
           "dayOffset": 14,
-          "lunarSensitive": true
+          "lunarSensitive": true,
+          "titleEn": "Harvest outer leaves"
         }
       ]
     },
@@ -2247,28 +2477,32 @@
           "category": "watering",
           "priority": "high",
           "dayOffset": 0,
-          "lunarSensitive": false
+          "lunarSensitive": false,
+          "titleEn": "Regular, even watering"
         },
         {
           "title": "דילול שתילים לצפיפות נכונה",
           "category": "maintenance",
           "priority": "medium",
           "dayOffset": 5,
-          "lunarSensitive": true
+          "lunarSensitive": true,
+          "titleEn": "Thin seedlings to the correct spacing"
         },
         {
           "title": "ניכוש ואוורור הקרקע סביב הצמח",
           "category": "soil",
           "priority": "medium",
           "dayOffset": 10,
-          "lunarSensitive": false
+          "lunarSensitive": false,
+          "titleEn": "Weed and aerate the soil around the plant"
         },
         {
           "title": "תצפית על מזיקי קרקע",
           "category": "pest",
           "priority": "low",
           "dayOffset": 14,
-          "lunarSensitive": false
+          "lunarSensitive": false,
+          "titleEn": "Check for soil pests"
         }
       ]
     },
@@ -2287,28 +2521,32 @@
           "category": "watering",
           "priority": "medium",
           "dayOffset": 0,
-          "lunarSensitive": false
+          "lunarSensitive": false,
+          "titleEn": "Moderate watering — sensitive to overwatering"
         },
         {
           "title": "בדיקת ניקוז הקרקע",
           "category": "soil",
           "priority": "low",
           "dayOffset": 8,
-          "lunarSensitive": false
+          "lunarSensitive": false,
+          "titleEn": "Check soil drainage"
         },
         {
           "title": "קטיף ענפים לשימוש ולעידוד צמיחה",
           "category": "harvest",
           "priority": "medium",
           "dayOffset": 6,
-          "lunarSensitive": true
+          "lunarSensitive": true,
+          "titleEn": "Harvest sprigs for use and to encourage growth"
         },
         {
           "title": "גיזום קל לאחר הפריחה",
           "category": "pruning",
           "priority": "low",
           "dayOffset": 14,
-          "lunarSensitive": true
+          "lunarSensitive": true,
+          "titleEn": "Light pruning after flowering"
         }
       ]
     },
@@ -2327,28 +2565,32 @@
           "category": "watering",
           "priority": "high",
           "dayOffset": 0,
-          "lunarSensitive": false
+          "lunarSensitive": false,
+          "titleEn": "Watering — keep the soil moist"
         },
         {
           "title": "קטיף ענפים עליונים לעידוד הסתעפות",
           "category": "harvest",
           "priority": "medium",
           "dayOffset": 5,
-          "lunarSensitive": true
+          "lunarSensitive": true,
+          "titleEn": "Pinch top sprigs to encourage branching"
         },
         {
           "title": "קמצוץ ראשי פריחה לשמירה על הטעם",
           "category": "pruning",
           "priority": "medium",
           "dayOffset": 10,
-          "lunarSensitive": true
+          "lunarSensitive": true,
+          "titleEn": "Pinch off flower buds to preserve flavor"
         },
         {
           "title": "דישון קל",
           "category": "fertilizing",
           "priority": "low",
           "dayOffset": 14,
-          "lunarSensitive": false
+          "lunarSensitive": false,
+          "titleEn": "Light fertilizing"
         }
       ]
     },
@@ -2367,28 +2609,32 @@
           "category": "watering",
           "priority": "high",
           "dayOffset": 0,
-          "lunarSensitive": false
+          "lunarSensitive": false,
+          "titleEn": "Regular watering"
         },
         {
           "title": "דישון לעידוד פריחה",
           "category": "fertilizing",
           "priority": "medium",
           "dayOffset": 12,
-          "lunarSensitive": false
+          "lunarSensitive": false,
+          "titleEn": "Fertilize to encourage flowering"
         },
         {
           "title": "תצפית על כנימות ומזיקים",
           "category": "pest",
           "priority": "low",
           "dayOffset": 14,
-          "lunarSensitive": false
+          "lunarSensitive": false,
+          "titleEn": "Check for aphids and pests"
         },
         {
           "title": "הסרת פרחים נבולים (דד-הדינג)",
           "category": "pruning",
           "priority": "medium",
           "dayOffset": 7,
-          "lunarSensitive": true
+          "lunarSensitive": true,
+          "titleEn": "Remove spent blooms (deadheading)"
         }
       ]
     },
@@ -2407,28 +2653,32 @@
           "category": "watering",
           "priority": "high",
           "dayOffset": 0,
-          "lunarSensitive": false
+          "lunarSensitive": false,
+          "titleEn": "Watering — keep the soil moist"
         },
         {
           "title": "קטיף ענפים עליונים לעידוד הסתעפות",
           "category": "harvest",
           "priority": "medium",
           "dayOffset": 5,
-          "lunarSensitive": true
+          "lunarSensitive": true,
+          "titleEn": "Pinch top sprigs to encourage branching"
         },
         {
           "title": "קמצוץ ראשי פריחה לשמירה על הטעם",
           "category": "pruning",
           "priority": "medium",
           "dayOffset": 10,
-          "lunarSensitive": true
+          "lunarSensitive": true,
+          "titleEn": "Pinch off flower buds to preserve flavor"
         },
         {
           "title": "דישון קל",
           "category": "fertilizing",
           "priority": "low",
           "dayOffset": 14,
-          "lunarSensitive": false
+          "lunarSensitive": false,
+          "titleEn": "Light fertilizing"
         }
       ]
     },
@@ -2447,28 +2697,32 @@
           "category": "watering",
           "priority": "high",
           "dayOffset": 0,
-          "lunarSensitive": false
+          "lunarSensitive": false,
+          "titleEn": "Deep watering — citrus is sensitive to dryness"
         },
         {
           "title": "בדיקת מזיקים (כנימות ומיני עש)",
           "category": "pest",
           "priority": "medium",
           "dayOffset": 5,
-          "lunarSensitive": false
+          "lunarSensitive": false,
+          "titleEn": "Check for pests (aphids and leaf miners)"
         },
         {
           "title": "דישון הדרים (עשיר באשלגן וברזל)",
           "category": "fertilizing",
           "priority": "medium",
           "dayOffset": 12,
-          "lunarSensitive": false
+          "lunarSensitive": false,
+          "titleEn": "Citrus fertilizing (rich in potassium and iron)"
         },
         {
           "title": "גיזום ענפי מים וסורים",
           "category": "pruning",
           "priority": "low",
           "dayOffset": 25,
-          "lunarSensitive": true
+          "lunarSensitive": true,
+          "titleEn": "Prune water shoots and suckers"
         }
       ]
     },
@@ -2487,28 +2741,32 @@
           "category": "watering",
           "priority": "high",
           "dayOffset": 0,
-          "lunarSensitive": false
+          "lunarSensitive": false,
+          "titleEn": "Regular, even watering"
         },
         {
           "title": "דילול שתילים לצפיפות נכונה",
           "category": "maintenance",
           "priority": "medium",
           "dayOffset": 5,
-          "lunarSensitive": true
+          "lunarSensitive": true,
+          "titleEn": "Thin seedlings to the correct spacing"
         },
         {
           "title": "ניכוש ואוורור הקרקע סביב הצמח",
           "category": "soil",
           "priority": "medium",
           "dayOffset": 10,
-          "lunarSensitive": false
+          "lunarSensitive": false,
+          "titleEn": "Weed and aerate the soil around the plant"
         },
         {
           "title": "תצפית על מזיקי קרקע",
           "category": "pest",
           "priority": "low",
           "dayOffset": 14,
-          "lunarSensitive": false
+          "lunarSensitive": false,
+          "titleEn": "Check for soil pests"
         }
       ]
     },
@@ -2527,28 +2785,32 @@
           "category": "watering",
           "priority": "medium",
           "dayOffset": 0,
-          "lunarSensitive": false
+          "lunarSensitive": false,
+          "titleEn": "Moderate watering — check moisture before watering"
         },
         {
           "title": "מיקום באור עקיף בהיר",
           "category": "observation",
           "priority": "low",
           "dayOffset": 5,
-          "lunarSensitive": false
+          "lunarSensitive": false,
+          "titleEn": "Place in bright, indirect light"
         },
         {
           "title": "ניקוי אבק מהעלים",
           "category": "maintenance",
           "priority": "low",
           "dayOffset": 7,
-          "lunarSensitive": false
+          "lunarSensitive": false,
+          "titleEn": "Wipe dust off the leaves"
         },
         {
           "title": "תצפית על מזיקים (כנימות/אקריות)",
           "category": "pest",
           "priority": "low",
           "dayOffset": 12,
-          "lunarSensitive": false
+          "lunarSensitive": false,
+          "titleEn": "Check for pests (aphids/mites)"
         }
       ]
     },
@@ -2567,28 +2829,32 @@
           "category": "watering",
           "priority": "medium",
           "dayOffset": 0,
-          "lunarSensitive": false
+          "lunarSensitive": false,
+          "titleEn": "Light watering — water only when the soil is dry"
         },
         {
           "title": "מיקום באור בהיר",
           "category": "observation",
           "priority": "low",
           "dayOffset": 5,
-          "lunarSensitive": false
+          "lunarSensitive": false,
+          "titleEn": "Place in bright light"
         },
         {
           "title": "בדיקת ניקוז המצע",
           "category": "soil",
           "priority": "low",
           "dayOffset": 8,
-          "lunarSensitive": false
+          "lunarSensitive": false,
+          "titleEn": "Check potting mix drainage"
         },
         {
           "title": "תצפית על ריקבון וכנימות מגן",
           "category": "pest",
           "priority": "low",
           "dayOffset": 12,
-          "lunarSensitive": false
+          "lunarSensitive": false,
+          "titleEn": "Check for rot and scale insects"
         }
       ]
     },
@@ -2607,35 +2873,40 @@
           "category": "watering",
           "priority": "high",
           "dayOffset": 0,
-          "lunarSensitive": false
+          "lunarSensitive": false,
+          "titleEn": "Regular watering — consistency prevents fruit problems"
         },
         {
           "title": "סמך ותמיכה לצמח",
           "category": "support",
           "priority": "medium",
           "dayOffset": 3,
-          "lunarSensitive": false
+          "lunarSensitive": false,
+          "titleEn": "Stake and support the plant"
         },
         {
           "title": "דישון לעידוד פריחה ופרי",
           "category": "fertilizing",
           "priority": "medium",
           "dayOffset": 10,
-          "lunarSensitive": false
+          "lunarSensitive": false,
+          "titleEn": "Fertilize to encourage flowering and fruit"
         },
         {
           "title": "תצפית על כנימות וריקבון",
           "category": "pest",
           "priority": "medium",
           "dayOffset": 14,
-          "lunarSensitive": false
+          "lunarSensitive": false,
+          "titleEn": "Check for aphids and rot"
         },
         {
           "title": "דילול עלים תחתונים לאוורור",
           "category": "pruning",
           "priority": "low",
           "dayOffset": 18,
-          "lunarSensitive": true
+          "lunarSensitive": true,
+          "titleEn": "Thin lower leaves for airflow"
         }
       ]
     },
@@ -2654,28 +2925,32 @@
           "category": "watering",
           "priority": "high",
           "dayOffset": 0,
-          "lunarSensitive": false
+          "lunarSensitive": false,
+          "titleEn": "Watering — keep the soil moist"
         },
         {
           "title": "קטיף ענפים עליונים לעידוד הסתעפות",
           "category": "harvest",
           "priority": "medium",
           "dayOffset": 5,
-          "lunarSensitive": true
+          "lunarSensitive": true,
+          "titleEn": "Pinch top sprigs to encourage branching"
         },
         {
           "title": "קמצוץ ראשי פריחה לשמירה על הטעם",
           "category": "pruning",
           "priority": "medium",
           "dayOffset": 10,
-          "lunarSensitive": true
+          "lunarSensitive": true,
+          "titleEn": "Pinch off flower buds to preserve flavor"
         },
         {
           "title": "דישון קל",
           "category": "fertilizing",
           "priority": "low",
           "dayOffset": 14,
-          "lunarSensitive": false
+          "lunarSensitive": false,
+          "titleEn": "Light fertilizing"
         }
       ]
     },
@@ -2694,35 +2969,40 @@
           "category": "watering",
           "priority": "high",
           "dayOffset": 0,
-          "lunarSensitive": false
+          "lunarSensitive": false,
+          "titleEn": "Regular watering — consistency prevents fruit problems"
         },
         {
           "title": "סמך ותמיכה לצמח",
           "category": "support",
           "priority": "medium",
           "dayOffset": 3,
-          "lunarSensitive": false
+          "lunarSensitive": false,
+          "titleEn": "Stake and support the plant"
         },
         {
           "title": "דישון לעידוד פריחה ופרי",
           "category": "fertilizing",
           "priority": "medium",
           "dayOffset": 10,
-          "lunarSensitive": false
+          "lunarSensitive": false,
+          "titleEn": "Fertilize to encourage flowering and fruit"
         },
         {
           "title": "תצפית על כנימות וריקבון",
           "category": "pest",
           "priority": "medium",
           "dayOffset": 14,
-          "lunarSensitive": false
+          "lunarSensitive": false,
+          "titleEn": "Check for aphids and rot"
         },
         {
           "title": "דילול עלים תחתונים לאוורור",
           "category": "pruning",
           "priority": "low",
           "dayOffset": 18,
-          "lunarSensitive": true
+          "lunarSensitive": true,
+          "titleEn": "Thin lower leaves for airflow"
         }
       ]
     },
@@ -2741,35 +3021,40 @@
           "category": "watering",
           "priority": "high",
           "dayOffset": 0,
-          "lunarSensitive": false
+          "lunarSensitive": false,
+          "titleEn": "Watering — keep the soil moist"
         },
         {
           "title": "בדיקת חלזונות ומזיקי עלים",
           "category": "pest",
           "priority": "high",
           "dayOffset": 3,
-          "lunarSensitive": false
+          "lunarSensitive": false,
+          "titleEn": "Check for snails and leaf pests"
         },
         {
           "title": "דישון עשיר בחנקן לצמיחת עלווה",
           "category": "fertilizing",
           "priority": "medium",
           "dayOffset": 10,
-          "lunarSensitive": false
+          "lunarSensitive": false,
+          "titleEn": "Nitrogen-rich fertilizing for leaf growth"
         },
         {
           "title": "בדיקת לחות הקרקע",
           "category": "soil",
           "priority": "low",
           "dayOffset": 7,
-          "lunarSensitive": false
+          "lunarSensitive": false,
+          "titleEn": "Check soil moisture"
         },
         {
           "title": "קטיף עלים חיצוניים",
           "category": "harvest",
           "priority": "medium",
           "dayOffset": 14,
-          "lunarSensitive": true
+          "lunarSensitive": true,
+          "titleEn": "Harvest outer leaves"
         }
       ]
     },
@@ -2788,28 +3073,32 @@
           "category": "watering",
           "priority": "medium",
           "dayOffset": 0,
-          "lunarSensitive": false
+          "lunarSensitive": false,
+          "titleEn": "Moderate watering — sensitive to overwatering"
         },
         {
           "title": "בדיקת ניקוז הקרקע",
           "category": "soil",
           "priority": "low",
           "dayOffset": 8,
-          "lunarSensitive": false
+          "lunarSensitive": false,
+          "titleEn": "Check soil drainage"
         },
         {
           "title": "קטיף ענפים לשימוש ולעידוד צמיחה",
           "category": "harvest",
           "priority": "medium",
           "dayOffset": 6,
-          "lunarSensitive": true
+          "lunarSensitive": true,
+          "titleEn": "Harvest sprigs for use and to encourage growth"
         },
         {
           "title": "גיזום קל לאחר הפריחה",
           "category": "pruning",
           "priority": "low",
           "dayOffset": 14,
-          "lunarSensitive": true
+          "lunarSensitive": true,
+          "titleEn": "Light pruning after flowering"
         }
       ]
     },
@@ -2828,21 +3117,24 @@
           "category": "watering",
           "priority": "high",
           "dayOffset": 0,
-          "lunarSensitive": false
+          "lunarSensitive": false,
+          "titleEn": "Deep watering during the hot season"
         },
         {
           "title": "תצפית על מזיקים ומחלות",
           "category": "pest",
           "priority": "medium",
           "dayOffset": 7,
-          "lunarSensitive": false
+          "lunarSensitive": false,
+          "titleEn": "Check for pests and disease"
         },
         {
           "title": "דישון אורגני באביב",
           "category": "fertilizing",
           "priority": "medium",
           "dayOffset": 15,
-          "lunarSensitive": false
+          "lunarSensitive": false,
+          "titleEn": "Organic fertilizing in spring"
         },
         {
           "title": "גיזום חורף – דילול ואוורור",
@@ -2850,7 +3142,9 @@
           "priority": "low",
           "dayOffset": 30,
           "lunarSensitive": true,
-          "notes": "בצע בעונת השלכת, כשהעץ רדום."
+          "notes": "בצע בעונת השלכת, כשהעץ רדום.",
+          "titleEn": "Winter pruning — thinning and airflow",
+          "notesEn": "Do this during the dormant season, while the tree is inactive."
         }
       ]
     },
@@ -2869,28 +3163,32 @@
           "category": "watering",
           "priority": "high",
           "dayOffset": 0,
-          "lunarSensitive": false
+          "lunarSensitive": false,
+          "titleEn": "Regular watering"
         },
         {
           "title": "דישון לעידוד פריחה",
           "category": "fertilizing",
           "priority": "medium",
           "dayOffset": 12,
-          "lunarSensitive": false
+          "lunarSensitive": false,
+          "titleEn": "Fertilize to encourage flowering"
         },
         {
           "title": "תצפית על כנימות ומזיקים",
           "category": "pest",
           "priority": "low",
           "dayOffset": 14,
-          "lunarSensitive": false
+          "lunarSensitive": false,
+          "titleEn": "Check for aphids and pests"
         },
         {
           "title": "הסרת פרחים נבולים (דד-הדינג)",
           "category": "pruning",
           "priority": "medium",
           "dayOffset": 7,
-          "lunarSensitive": true
+          "lunarSensitive": true,
+          "titleEn": "Remove spent blooms (deadheading)"
         }
       ]
     },
@@ -2909,28 +3207,32 @@
           "category": "watering",
           "priority": "high",
           "dayOffset": 0,
-          "lunarSensitive": false
+          "lunarSensitive": false,
+          "titleEn": "Watering — keep the soil moist"
         },
         {
           "title": "קטיף ענפים עליונים לעידוד הסתעפות",
           "category": "harvest",
           "priority": "medium",
           "dayOffset": 5,
-          "lunarSensitive": true
+          "lunarSensitive": true,
+          "titleEn": "Pinch top sprigs to encourage branching"
         },
         {
           "title": "קמצוץ ראשי פריחה לשמירה על הטעם",
           "category": "pruning",
           "priority": "medium",
           "dayOffset": 10,
-          "lunarSensitive": true
+          "lunarSensitive": true,
+          "titleEn": "Pinch off flower buds to preserve flavor"
         },
         {
           "title": "דישון קל",
           "category": "fertilizing",
           "priority": "low",
           "dayOffset": 14,
-          "lunarSensitive": false
+          "lunarSensitive": false,
+          "titleEn": "Light fertilizing"
         }
       ]
     },
@@ -2949,28 +3251,32 @@
           "category": "watering",
           "priority": "high",
           "dayOffset": 0,
-          "lunarSensitive": false
+          "lunarSensitive": false,
+          "titleEn": "Watering — keep the soil moist"
         },
         {
           "title": "קטיף ענפים עליונים לעידוד הסתעפות",
           "category": "harvest",
           "priority": "medium",
           "dayOffset": 5,
-          "lunarSensitive": true
+          "lunarSensitive": true,
+          "titleEn": "Pinch top sprigs to encourage branching"
         },
         {
           "title": "קמצוץ ראשי פריחה לשמירה על הטעם",
           "category": "pruning",
           "priority": "medium",
           "dayOffset": 10,
-          "lunarSensitive": true
+          "lunarSensitive": true,
+          "titleEn": "Pinch off flower buds to preserve flavor"
         },
         {
           "title": "דישון קל",
           "category": "fertilizing",
           "priority": "low",
           "dayOffset": 14,
-          "lunarSensitive": false
+          "lunarSensitive": false,
+          "titleEn": "Light fertilizing"
         }
       ]
     },
@@ -2989,28 +3295,32 @@
           "category": "watering",
           "priority": "medium",
           "dayOffset": 0,
-          "lunarSensitive": false
+          "lunarSensitive": false,
+          "titleEn": "Light watering — water only when the soil is dry"
         },
         {
           "title": "מיקום באור בהיר",
           "category": "observation",
           "priority": "low",
           "dayOffset": 5,
-          "lunarSensitive": false
+          "lunarSensitive": false,
+          "titleEn": "Place in bright light"
         },
         {
           "title": "בדיקת ניקוז המצע",
           "category": "soil",
           "priority": "low",
           "dayOffset": 8,
-          "lunarSensitive": false
+          "lunarSensitive": false,
+          "titleEn": "Check potting mix drainage"
         },
         {
           "title": "תצפית על ריקבון וכנימות מגן",
           "category": "pest",
           "priority": "low",
           "dayOffset": 12,
-          "lunarSensitive": false
+          "lunarSensitive": false,
+          "titleEn": "Check for rot and scale insects"
         }
       ]
     },
@@ -3029,28 +3339,32 @@
           "category": "watering",
           "priority": "high",
           "dayOffset": 0,
-          "lunarSensitive": false
+          "lunarSensitive": false,
+          "titleEn": "Regular, even watering"
         },
         {
           "title": "דילול שתילים לצפיפות נכונה",
           "category": "maintenance",
           "priority": "medium",
           "dayOffset": 5,
-          "lunarSensitive": true
+          "lunarSensitive": true,
+          "titleEn": "Thin seedlings to the correct spacing"
         },
         {
           "title": "ניכוש ואוורור הקרקע סביב הצמח",
           "category": "soil",
           "priority": "medium",
           "dayOffset": 10,
-          "lunarSensitive": false
+          "lunarSensitive": false,
+          "titleEn": "Weed and aerate the soil around the plant"
         },
         {
           "title": "תצפית על מזיקי קרקע",
           "category": "pest",
           "priority": "low",
           "dayOffset": 14,
-          "lunarSensitive": false
+          "lunarSensitive": false,
+          "titleEn": "Check for soil pests"
         }
       ]
     },
@@ -3069,35 +3383,40 @@
           "category": "watering",
           "priority": "high",
           "dayOffset": 0,
-          "lunarSensitive": false
+          "lunarSensitive": false,
+          "titleEn": "Watering — keep the soil moist"
         },
         {
           "title": "בדיקת חלזונות ומזיקי עלים",
           "category": "pest",
           "priority": "high",
           "dayOffset": 3,
-          "lunarSensitive": false
+          "lunarSensitive": false,
+          "titleEn": "Check for snails and leaf pests"
         },
         {
           "title": "דישון עשיר בחנקן לצמיחת עלווה",
           "category": "fertilizing",
           "priority": "medium",
           "dayOffset": 10,
-          "lunarSensitive": false
+          "lunarSensitive": false,
+          "titleEn": "Nitrogen-rich fertilizing for leaf growth"
         },
         {
           "title": "בדיקת לחות הקרקע",
           "category": "soil",
           "priority": "low",
           "dayOffset": 7,
-          "lunarSensitive": false
+          "lunarSensitive": false,
+          "titleEn": "Check soil moisture"
         },
         {
           "title": "קטיף עלים חיצוניים",
           "category": "harvest",
           "priority": "medium",
           "dayOffset": 14,
-          "lunarSensitive": true
+          "lunarSensitive": true,
+          "titleEn": "Harvest outer leaves"
         }
       ]
     },
@@ -3116,28 +3435,32 @@
           "category": "watering",
           "priority": "high",
           "dayOffset": 0,
-          "lunarSensitive": false
+          "lunarSensitive": false,
+          "titleEn": "Deep watering"
         },
         {
           "title": "דישון אורגני",
           "category": "fertilizing",
           "priority": "medium",
           "dayOffset": 12,
-          "lunarSensitive": false
+          "lunarSensitive": false,
+          "titleEn": "Organic fertilizing"
         },
         {
           "title": "תצפית על מזיקים",
           "category": "pest",
           "priority": "medium",
           "dayOffset": 16,
-          "lunarSensitive": false
+          "lunarSensitive": false,
+          "titleEn": "Check for pests"
         },
         {
           "title": "גיזום לאחר עונת הפרי",
           "category": "pruning",
           "priority": "low",
           "dayOffset": 30,
-          "lunarSensitive": true
+          "lunarSensitive": true,
+          "titleEn": "Prune after the fruiting season"
         }
       ]
     },
@@ -3156,28 +3479,32 @@
           "category": "watering",
           "priority": "medium",
           "dayOffset": 0,
-          "lunarSensitive": false
+          "lunarSensitive": false,
+          "titleEn": "Moderate watering — check moisture before watering"
         },
         {
           "title": "מיקום באור עקיף בהיר",
           "category": "observation",
           "priority": "low",
           "dayOffset": 5,
-          "lunarSensitive": false
+          "lunarSensitive": false,
+          "titleEn": "Place in bright, indirect light"
         },
         {
           "title": "ניקוי אבק מהעלים",
           "category": "maintenance",
           "priority": "low",
           "dayOffset": 7,
-          "lunarSensitive": false
+          "lunarSensitive": false,
+          "titleEn": "Wipe dust off the leaves"
         },
         {
           "title": "תצפית על מזיקים (כנימות/אקריות)",
           "category": "pest",
           "priority": "low",
           "dayOffset": 12,
-          "lunarSensitive": false
+          "lunarSensitive": false,
+          "titleEn": "Check for pests (aphids/mites)"
         }
       ]
     },
@@ -3196,28 +3523,32 @@
           "category": "watering",
           "priority": "high",
           "dayOffset": 0,
-          "lunarSensitive": false
+          "lunarSensitive": false,
+          "titleEn": "Watering — keep the soil moist"
         },
         {
           "title": "קטיף ענפים עליונים לעידוד הסתעפות",
           "category": "harvest",
           "priority": "medium",
           "dayOffset": 5,
-          "lunarSensitive": true
+          "lunarSensitive": true,
+          "titleEn": "Pinch top sprigs to encourage branching"
         },
         {
           "title": "קמצוץ ראשי פריחה לשמירה על הטעם",
           "category": "pruning",
           "priority": "medium",
           "dayOffset": 10,
-          "lunarSensitive": true
+          "lunarSensitive": true,
+          "titleEn": "Pinch off flower buds to preserve flavor"
         },
         {
           "title": "דישון קל",
           "category": "fertilizing",
           "priority": "low",
           "dayOffset": 14,
-          "lunarSensitive": false
+          "lunarSensitive": false,
+          "titleEn": "Light fertilizing"
         }
       ]
     },
@@ -3236,35 +3567,40 @@
           "category": "watering",
           "priority": "high",
           "dayOffset": 0,
-          "lunarSensitive": false
+          "lunarSensitive": false,
+          "titleEn": "Regular watering — consistency prevents fruit problems"
         },
         {
           "title": "סמך ותמיכה לצמח",
           "category": "support",
           "priority": "medium",
           "dayOffset": 3,
-          "lunarSensitive": false
+          "lunarSensitive": false,
+          "titleEn": "Stake and support the plant"
         },
         {
           "title": "דישון לעידוד פריחה ופרי",
           "category": "fertilizing",
           "priority": "medium",
           "dayOffset": 10,
-          "lunarSensitive": false
+          "lunarSensitive": false,
+          "titleEn": "Fertilize to encourage flowering and fruit"
         },
         {
           "title": "תצפית על כנימות וריקבון",
           "category": "pest",
           "priority": "medium",
           "dayOffset": 14,
-          "lunarSensitive": false
+          "lunarSensitive": false,
+          "titleEn": "Check for aphids and rot"
         },
         {
           "title": "דילול עלים תחתונים לאוורור",
           "category": "pruning",
           "priority": "low",
           "dayOffset": 18,
-          "lunarSensitive": true
+          "lunarSensitive": true,
+          "titleEn": "Thin lower leaves for airflow"
         }
       ]
     },
@@ -3283,35 +3619,40 @@
           "category": "watering",
           "priority": "high",
           "dayOffset": 0,
-          "lunarSensitive": false
+          "lunarSensitive": false,
+          "titleEn": "Watering — keep the soil moist"
         },
         {
           "title": "בדיקת חלזונות ומזיקי עלים",
           "category": "pest",
           "priority": "high",
           "dayOffset": 3,
-          "lunarSensitive": false
+          "lunarSensitive": false,
+          "titleEn": "Check for snails and leaf pests"
         },
         {
           "title": "דישון עשיר בחנקן לצמיחת עלווה",
           "category": "fertilizing",
           "priority": "medium",
           "dayOffset": 10,
-          "lunarSensitive": false
+          "lunarSensitive": false,
+          "titleEn": "Nitrogen-rich fertilizing for leaf growth"
         },
         {
           "title": "בדיקת לחות הקרקע",
           "category": "soil",
           "priority": "low",
           "dayOffset": 7,
-          "lunarSensitive": false
+          "lunarSensitive": false,
+          "titleEn": "Check soil moisture"
         },
         {
           "title": "קטיף עלים חיצוניים",
           "category": "harvest",
           "priority": "medium",
           "dayOffset": 14,
-          "lunarSensitive": true
+          "lunarSensitive": true,
+          "titleEn": "Harvest outer leaves"
         }
       ]
     },
@@ -3330,28 +3671,32 @@
           "category": "watering",
           "priority": "high",
           "dayOffset": 0,
-          "lunarSensitive": false
+          "lunarSensitive": false,
+          "titleEn": "Watering — keep the soil moist"
         },
         {
           "title": "קטיף ענפים עליונים לעידוד הסתעפות",
           "category": "harvest",
           "priority": "medium",
           "dayOffset": 5,
-          "lunarSensitive": true
+          "lunarSensitive": true,
+          "titleEn": "Pinch top sprigs to encourage branching"
         },
         {
           "title": "קמצוץ ראשי פריחה לשמירה על הטעם",
           "category": "pruning",
           "priority": "medium",
           "dayOffset": 10,
-          "lunarSensitive": true
+          "lunarSensitive": true,
+          "titleEn": "Pinch off flower buds to preserve flavor"
         },
         {
           "title": "דישון קל",
           "category": "fertilizing",
           "priority": "low",
           "dayOffset": 14,
-          "lunarSensitive": false
+          "lunarSensitive": false,
+          "titleEn": "Light fertilizing"
         }
       ]
     },
@@ -3370,28 +3715,32 @@
           "category": "watering",
           "priority": "medium",
           "dayOffset": 0,
-          "lunarSensitive": false
+          "lunarSensitive": false,
+          "titleEn": "Light watering — water only when the soil is dry"
         },
         {
           "title": "מיקום באור בהיר",
           "category": "observation",
           "priority": "low",
           "dayOffset": 5,
-          "lunarSensitive": false
+          "lunarSensitive": false,
+          "titleEn": "Place in bright light"
         },
         {
           "title": "בדיקת ניקוז המצע",
           "category": "soil",
           "priority": "low",
           "dayOffset": 8,
-          "lunarSensitive": false
+          "lunarSensitive": false,
+          "titleEn": "Check potting mix drainage"
         },
         {
           "title": "תצפית על ריקבון וכנימות מגן",
           "category": "pest",
           "priority": "low",
           "dayOffset": 12,
-          "lunarSensitive": false
+          "lunarSensitive": false,
+          "titleEn": "Check for rot and scale insects"
         }
       ]
     },
@@ -3410,35 +3759,40 @@
           "category": "watering",
           "priority": "high",
           "dayOffset": 0,
-          "lunarSensitive": false
+          "lunarSensitive": false,
+          "titleEn": "Watering — keep the soil moist"
         },
         {
           "title": "בדיקת חלזונות ומזיקי עלים",
           "category": "pest",
           "priority": "high",
           "dayOffset": 3,
-          "lunarSensitive": false
+          "lunarSensitive": false,
+          "titleEn": "Check for snails and leaf pests"
         },
         {
           "title": "דישון עשיר בחנקן לצמיחת עלווה",
           "category": "fertilizing",
           "priority": "medium",
           "dayOffset": 10,
-          "lunarSensitive": false
+          "lunarSensitive": false,
+          "titleEn": "Nitrogen-rich fertilizing for leaf growth"
         },
         {
           "title": "בדיקת לחות הקרקע",
           "category": "soil",
           "priority": "low",
           "dayOffset": 7,
-          "lunarSensitive": false
+          "lunarSensitive": false,
+          "titleEn": "Check soil moisture"
         },
         {
           "title": "קטיף עלים חיצוניים",
           "category": "harvest",
           "priority": "medium",
           "dayOffset": 14,
-          "lunarSensitive": true
+          "lunarSensitive": true,
+          "titleEn": "Harvest outer leaves"
         }
       ]
     },
@@ -3457,28 +3811,32 @@
           "category": "watering",
           "priority": "medium",
           "dayOffset": 0,
-          "lunarSensitive": false
+          "lunarSensitive": false,
+          "titleEn": "Moderate watering — check moisture before watering"
         },
         {
           "title": "מיקום באור עקיף בהיר",
           "category": "observation",
           "priority": "low",
           "dayOffset": 5,
-          "lunarSensitive": false
+          "lunarSensitive": false,
+          "titleEn": "Place in bright, indirect light"
         },
         {
           "title": "ניקוי אבק מהעלים",
           "category": "maintenance",
           "priority": "low",
           "dayOffset": 7,
-          "lunarSensitive": false
+          "lunarSensitive": false,
+          "titleEn": "Wipe dust off the leaves"
         },
         {
           "title": "תצפית על מזיקים (כנימות/אקריות)",
           "category": "pest",
           "priority": "low",
           "dayOffset": 12,
-          "lunarSensitive": false
+          "lunarSensitive": false,
+          "titleEn": "Check for pests (aphids/mites)"
         }
       ]
     },
@@ -3497,35 +3855,40 @@
           "category": "watering",
           "priority": "high",
           "dayOffset": 0,
-          "lunarSensitive": false
+          "lunarSensitive": false,
+          "titleEn": "Regular watering — consistency prevents fruit problems"
         },
         {
           "title": "סמך ותמיכה לצמח",
           "category": "support",
           "priority": "medium",
           "dayOffset": 3,
-          "lunarSensitive": false
+          "lunarSensitive": false,
+          "titleEn": "Stake and support the plant"
         },
         {
           "title": "דישון לעידוד פריחה ופרי",
           "category": "fertilizing",
           "priority": "medium",
           "dayOffset": 10,
-          "lunarSensitive": false
+          "lunarSensitive": false,
+          "titleEn": "Fertilize to encourage flowering and fruit"
         },
         {
           "title": "תצפית על כנימות וריקבון",
           "category": "pest",
           "priority": "medium",
           "dayOffset": 14,
-          "lunarSensitive": false
+          "lunarSensitive": false,
+          "titleEn": "Check for aphids and rot"
         },
         {
           "title": "דילול עלים תחתונים לאוורור",
           "category": "pruning",
           "priority": "low",
           "dayOffset": 18,
-          "lunarSensitive": true
+          "lunarSensitive": true,
+          "titleEn": "Thin lower leaves for airflow"
         }
       ]
     },
@@ -3544,28 +3907,32 @@
           "category": "watering",
           "priority": "high",
           "dayOffset": 0,
-          "lunarSensitive": false
+          "lunarSensitive": false,
+          "titleEn": "Regular watering"
         },
         {
           "title": "דישון לעידוד פריחה",
           "category": "fertilizing",
           "priority": "medium",
           "dayOffset": 12,
-          "lunarSensitive": false
+          "lunarSensitive": false,
+          "titleEn": "Fertilize to encourage flowering"
         },
         {
           "title": "תצפית על כנימות ומזיקים",
           "category": "pest",
           "priority": "low",
           "dayOffset": 14,
-          "lunarSensitive": false
+          "lunarSensitive": false,
+          "titleEn": "Check for aphids and pests"
         },
         {
           "title": "הסרת פרחים נבולים (דד-הדינג)",
           "category": "pruning",
           "priority": "medium",
           "dayOffset": 7,
-          "lunarSensitive": true
+          "lunarSensitive": true,
+          "titleEn": "Remove spent blooms (deadheading)"
         }
       ]
     },
@@ -3584,28 +3951,32 @@
           "category": "watering",
           "priority": "high",
           "dayOffset": 0,
-          "lunarSensitive": false
+          "lunarSensitive": false,
+          "titleEn": "Watering — keep the soil moist"
         },
         {
           "title": "קטיף ענפים עליונים לעידוד הסתעפות",
           "category": "harvest",
           "priority": "medium",
           "dayOffset": 5,
-          "lunarSensitive": true
+          "lunarSensitive": true,
+          "titleEn": "Pinch top sprigs to encourage branching"
         },
         {
           "title": "קמצוץ ראשי פריחה לשמירה על הטעם",
           "category": "pruning",
           "priority": "medium",
           "dayOffset": 10,
-          "lunarSensitive": true
+          "lunarSensitive": true,
+          "titleEn": "Pinch off flower buds to preserve flavor"
         },
         {
           "title": "דישון קל",
           "category": "fertilizing",
           "priority": "low",
           "dayOffset": 14,
-          "lunarSensitive": false
+          "lunarSensitive": false,
+          "titleEn": "Light fertilizing"
         }
       ]
     },
@@ -3624,28 +3995,32 @@
           "category": "watering",
           "priority": "medium",
           "dayOffset": 0,
-          "lunarSensitive": false
+          "lunarSensitive": false,
+          "titleEn": "Moderate watering — check moisture before watering"
         },
         {
           "title": "מיקום באור עקיף בהיר",
           "category": "observation",
           "priority": "low",
           "dayOffset": 5,
-          "lunarSensitive": false
+          "lunarSensitive": false,
+          "titleEn": "Place in bright, indirect light"
         },
         {
           "title": "ניקוי אבק מהעלים",
           "category": "maintenance",
           "priority": "low",
           "dayOffset": 7,
-          "lunarSensitive": false
+          "lunarSensitive": false,
+          "titleEn": "Wipe dust off the leaves"
         },
         {
           "title": "תצפית על מזיקים (כנימות/אקריות)",
           "category": "pest",
           "priority": "low",
           "dayOffset": 12,
-          "lunarSensitive": false
+          "lunarSensitive": false,
+          "titleEn": "Check for pests (aphids/mites)"
         }
       ]
     },
@@ -3664,28 +4039,32 @@
           "category": "watering",
           "priority": "medium",
           "dayOffset": 0,
-          "lunarSensitive": false
+          "lunarSensitive": false,
+          "titleEn": "Moderate watering — check moisture before watering"
         },
         {
           "title": "מיקום באור עקיף בהיר",
           "category": "observation",
           "priority": "low",
           "dayOffset": 5,
-          "lunarSensitive": false
+          "lunarSensitive": false,
+          "titleEn": "Place in bright, indirect light"
         },
         {
           "title": "ניקוי אבק מהעלים",
           "category": "maintenance",
           "priority": "low",
           "dayOffset": 7,
-          "lunarSensitive": false
+          "lunarSensitive": false,
+          "titleEn": "Wipe dust off the leaves"
         },
         {
           "title": "תצפית על מזיקים (כנימות/אקריות)",
           "category": "pest",
           "priority": "low",
           "dayOffset": 12,
-          "lunarSensitive": false
+          "lunarSensitive": false,
+          "titleEn": "Check for pests (aphids/mites)"
         }
       ]
     },
@@ -3704,35 +4083,40 @@
           "category": "watering",
           "priority": "high",
           "dayOffset": 0,
-          "lunarSensitive": false
+          "lunarSensitive": false,
+          "titleEn": "Regular watering — consistency prevents fruit problems"
         },
         {
           "title": "סמך ותמיכה לצמח",
           "category": "support",
           "priority": "medium",
           "dayOffset": 3,
-          "lunarSensitive": false
+          "lunarSensitive": false,
+          "titleEn": "Stake and support the plant"
         },
         {
           "title": "דישון לעידוד פריחה ופרי",
           "category": "fertilizing",
           "priority": "medium",
           "dayOffset": 10,
-          "lunarSensitive": false
+          "lunarSensitive": false,
+          "titleEn": "Fertilize to encourage flowering and fruit"
         },
         {
           "title": "תצפית על כנימות וריקבון",
           "category": "pest",
           "priority": "medium",
           "dayOffset": 14,
-          "lunarSensitive": false
+          "lunarSensitive": false,
+          "titleEn": "Check for aphids and rot"
         },
         {
           "title": "דילול עלים תחתונים לאוורור",
           "category": "pruning",
           "priority": "low",
           "dayOffset": 18,
-          "lunarSensitive": true
+          "lunarSensitive": true,
+          "titleEn": "Thin lower leaves for airflow"
         }
       ]
     },
@@ -3751,28 +4135,32 @@
           "category": "watering",
           "priority": "high",
           "dayOffset": 0,
-          "lunarSensitive": false
+          "lunarSensitive": false,
+          "titleEn": "Regular, even watering"
         },
         {
           "title": "דילול שתילים לצפיפות נכונה",
           "category": "maintenance",
           "priority": "medium",
           "dayOffset": 5,
-          "lunarSensitive": true
+          "lunarSensitive": true,
+          "titleEn": "Thin seedlings to the correct spacing"
         },
         {
           "title": "ניכוש ואוורור הקרקע סביב הצמח",
           "category": "soil",
           "priority": "medium",
           "dayOffset": 10,
-          "lunarSensitive": false
+          "lunarSensitive": false,
+          "titleEn": "Weed and aerate the soil around the plant"
         },
         {
           "title": "תצפית על מזיקי קרקע",
           "category": "pest",
           "priority": "low",
           "dayOffset": 14,
-          "lunarSensitive": false
+          "lunarSensitive": false,
+          "titleEn": "Check for soil pests"
         }
       ]
     },
@@ -3791,28 +4179,32 @@
           "category": "watering",
           "priority": "high",
           "dayOffset": 0,
-          "lunarSensitive": false
+          "lunarSensitive": false,
+          "titleEn": "Regular watering"
         },
         {
           "title": "דישון לעידוד פריחה",
           "category": "fertilizing",
           "priority": "medium",
           "dayOffset": 12,
-          "lunarSensitive": false
+          "lunarSensitive": false,
+          "titleEn": "Fertilize to encourage flowering"
         },
         {
           "title": "תצפית על כנימות ומזיקים",
           "category": "pest",
           "priority": "low",
           "dayOffset": 14,
-          "lunarSensitive": false
+          "lunarSensitive": false,
+          "titleEn": "Check for aphids and pests"
         },
         {
           "title": "הסרת פרחים נבולים (דד-הדינג)",
           "category": "pruning",
           "priority": "medium",
           "dayOffset": 7,
-          "lunarSensitive": true
+          "lunarSensitive": true,
+          "titleEn": "Remove spent blooms (deadheading)"
         }
       ]
     },
@@ -3831,28 +4223,32 @@
           "category": "watering",
           "priority": "low",
           "dayOffset": 0,
-          "lunarSensitive": false
+          "lunarSensitive": false,
+          "titleEn": "Very light watering"
         },
         {
           "title": "מיקום בשמש מלאה",
           "category": "observation",
           "priority": "low",
           "dayOffset": 5,
-          "lunarSensitive": false
+          "lunarSensitive": false,
+          "titleEn": "Place in full sun"
         },
         {
           "title": "בדיקת ניקוז המצע",
           "category": "soil",
           "priority": "low",
           "dayOffset": 10,
-          "lunarSensitive": false
+          "lunarSensitive": false,
+          "titleEn": "Check potting mix drainage"
         },
         {
           "title": "תצפית על ריקבון",
           "category": "pest",
           "priority": "low",
           "dayOffset": 12,
-          "lunarSensitive": false
+          "lunarSensitive": false,
+          "titleEn": "Check for rot"
         }
       ]
     },
@@ -3871,28 +4267,32 @@
           "category": "watering",
           "priority": "low",
           "dayOffset": 0,
-          "lunarSensitive": false
+          "lunarSensitive": false,
+          "titleEn": "Very light watering"
         },
         {
           "title": "מיקום בשמש מלאה",
           "category": "observation",
           "priority": "low",
           "dayOffset": 5,
-          "lunarSensitive": false
+          "lunarSensitive": false,
+          "titleEn": "Place in full sun"
         },
         {
           "title": "בדיקת ניקוז המצע",
           "category": "soil",
           "priority": "low",
           "dayOffset": 10,
-          "lunarSensitive": false
+          "lunarSensitive": false,
+          "titleEn": "Check potting mix drainage"
         },
         {
           "title": "תצפית על ריקבון",
           "category": "pest",
           "priority": "low",
           "dayOffset": 12,
-          "lunarSensitive": false
+          "lunarSensitive": false,
+          "titleEn": "Check for rot"
         }
       ]
     },
@@ -3911,28 +4311,32 @@
           "category": "watering",
           "priority": "low",
           "dayOffset": 0,
-          "lunarSensitive": false
+          "lunarSensitive": false,
+          "titleEn": "Very light watering"
         },
         {
           "title": "מיקום בשמש מלאה",
           "category": "observation",
           "priority": "low",
           "dayOffset": 5,
-          "lunarSensitive": false
+          "lunarSensitive": false,
+          "titleEn": "Place in full sun"
         },
         {
           "title": "בדיקת ניקוז המצע",
           "category": "soil",
           "priority": "low",
           "dayOffset": 10,
-          "lunarSensitive": false
+          "lunarSensitive": false,
+          "titleEn": "Check potting mix drainage"
         },
         {
           "title": "תצפית על ריקבון",
           "category": "pest",
           "priority": "low",
           "dayOffset": 12,
-          "lunarSensitive": false
+          "lunarSensitive": false,
+          "titleEn": "Check for rot"
         }
       ]
     },
@@ -3951,28 +4355,32 @@
           "category": "watering",
           "priority": "low",
           "dayOffset": 0,
-          "lunarSensitive": false
+          "lunarSensitive": false,
+          "titleEn": "Very light watering"
         },
         {
           "title": "מיקום בשמש מלאה",
           "category": "observation",
           "priority": "low",
           "dayOffset": 5,
-          "lunarSensitive": false
+          "lunarSensitive": false,
+          "titleEn": "Place in full sun"
         },
         {
           "title": "בדיקת ניקוז המצע",
           "category": "soil",
           "priority": "low",
           "dayOffset": 10,
-          "lunarSensitive": false
+          "lunarSensitive": false,
+          "titleEn": "Check potting mix drainage"
         },
         {
           "title": "תצפית על ריקבון",
           "category": "pest",
           "priority": "low",
           "dayOffset": 12,
-          "lunarSensitive": false
+          "lunarSensitive": false,
+          "titleEn": "Check for rot"
         }
       ]
     },
@@ -3991,28 +4399,32 @@
           "category": "watering",
           "priority": "medium",
           "dayOffset": 0,
-          "lunarSensitive": false
+          "lunarSensitive": false,
+          "titleEn": "Moderate watering — check moisture before watering"
         },
         {
           "title": "מיקום באור עקיף בהיר",
           "category": "observation",
           "priority": "low",
           "dayOffset": 5,
-          "lunarSensitive": false
+          "lunarSensitive": false,
+          "titleEn": "Place in bright, indirect light"
         },
         {
           "title": "ניקוי אבק מהעלים",
           "category": "maintenance",
           "priority": "low",
           "dayOffset": 7,
-          "lunarSensitive": false
+          "lunarSensitive": false,
+          "titleEn": "Wipe dust off the leaves"
         },
         {
           "title": "תצפית על מזיקים (כנימות/אקריות)",
           "category": "pest",
           "priority": "low",
           "dayOffset": 12,
-          "lunarSensitive": false
+          "lunarSensitive": false,
+          "titleEn": "Check for pests (aphids/mites)"
         }
       ]
     },
@@ -4031,28 +4443,32 @@
           "category": "watering",
           "priority": "medium",
           "dayOffset": 0,
-          "lunarSensitive": false
+          "lunarSensitive": false,
+          "titleEn": "Moderate watering — check moisture before watering"
         },
         {
           "title": "מיקום באור עקיף בהיר",
           "category": "observation",
           "priority": "low",
           "dayOffset": 5,
-          "lunarSensitive": false
+          "lunarSensitive": false,
+          "titleEn": "Place in bright, indirect light"
         },
         {
           "title": "ניקוי אבק מהעלים",
           "category": "maintenance",
           "priority": "low",
           "dayOffset": 7,
-          "lunarSensitive": false
+          "lunarSensitive": false,
+          "titleEn": "Wipe dust off the leaves"
         },
         {
           "title": "תצפית על מזיקים (כנימות/אקריות)",
           "category": "pest",
           "priority": "low",
           "dayOffset": 12,
-          "lunarSensitive": false
+          "lunarSensitive": false,
+          "titleEn": "Check for pests (aphids/mites)"
         }
       ]
     },
@@ -4071,28 +4487,32 @@
           "category": "watering",
           "priority": "high",
           "dayOffset": 0,
-          "lunarSensitive": false
+          "lunarSensitive": false,
+          "titleEn": "Regular, even watering"
         },
         {
           "title": "דילול שתילים לצפיפות נכונה",
           "category": "maintenance",
           "priority": "medium",
           "dayOffset": 5,
-          "lunarSensitive": true
+          "lunarSensitive": true,
+          "titleEn": "Thin seedlings to the correct spacing"
         },
         {
           "title": "ניכוש ואוורור הקרקע סביב הצמח",
           "category": "soil",
           "priority": "medium",
           "dayOffset": 10,
-          "lunarSensitive": false
+          "lunarSensitive": false,
+          "titleEn": "Weed and aerate the soil around the plant"
         },
         {
           "title": "תצפית על מזיקי קרקע",
           "category": "pest",
           "priority": "low",
           "dayOffset": 14,
-          "lunarSensitive": false
+          "lunarSensitive": false,
+          "titleEn": "Check for soil pests"
         }
       ]
     },
@@ -4111,28 +4531,32 @@
           "category": "watering",
           "priority": "high",
           "dayOffset": 0,
-          "lunarSensitive": false
+          "lunarSensitive": false,
+          "titleEn": "Regular watering"
         },
         {
           "title": "דישון לעידוד פריחה",
           "category": "fertilizing",
           "priority": "medium",
           "dayOffset": 12,
-          "lunarSensitive": false
+          "lunarSensitive": false,
+          "titleEn": "Fertilize to encourage flowering"
         },
         {
           "title": "תצפית על כנימות ומזיקים",
           "category": "pest",
           "priority": "low",
           "dayOffset": 14,
-          "lunarSensitive": false
+          "lunarSensitive": false,
+          "titleEn": "Check for aphids and pests"
         },
         {
           "title": "הסרת פרחים נבולים (דד-הדינג)",
           "category": "pruning",
           "priority": "medium",
           "dayOffset": 7,
-          "lunarSensitive": true
+          "lunarSensitive": true,
+          "titleEn": "Remove spent blooms (deadheading)"
         }
       ]
     },
@@ -4151,35 +4575,40 @@
           "category": "watering",
           "priority": "high",
           "dayOffset": 0,
-          "lunarSensitive": false
+          "lunarSensitive": false,
+          "titleEn": "Regular watering — consistency prevents fruit problems"
         },
         {
           "title": "סמך ותמיכה לצמח",
           "category": "support",
           "priority": "medium",
           "dayOffset": 3,
-          "lunarSensitive": false
+          "lunarSensitive": false,
+          "titleEn": "Stake and support the plant"
         },
         {
           "title": "דישון לעידוד פריחה ופרי",
           "category": "fertilizing",
           "priority": "medium",
           "dayOffset": 10,
-          "lunarSensitive": false
+          "lunarSensitive": false,
+          "titleEn": "Fertilize to encourage flowering and fruit"
         },
         {
           "title": "תצפית על כנימות וריקבון",
           "category": "pest",
           "priority": "medium",
           "dayOffset": 14,
-          "lunarSensitive": false
+          "lunarSensitive": false,
+          "titleEn": "Check for aphids and rot"
         },
         {
           "title": "דילול עלים תחתונים לאוורור",
           "category": "pruning",
           "priority": "low",
           "dayOffset": 18,
-          "lunarSensitive": true
+          "lunarSensitive": true,
+          "titleEn": "Thin lower leaves for airflow"
         }
       ]
     },
@@ -4198,28 +4627,32 @@
           "category": "watering",
           "priority": "high",
           "dayOffset": 0,
-          "lunarSensitive": false
+          "lunarSensitive": false,
+          "titleEn": "Regular watering"
         },
         {
           "title": "דישון לעידוד פריחה",
           "category": "fertilizing",
           "priority": "medium",
           "dayOffset": 12,
-          "lunarSensitive": false
+          "lunarSensitive": false,
+          "titleEn": "Fertilize to encourage flowering"
         },
         {
           "title": "תצפית על כנימות ומזיקים",
           "category": "pest",
           "priority": "low",
           "dayOffset": 14,
-          "lunarSensitive": false
+          "lunarSensitive": false,
+          "titleEn": "Check for aphids and pests"
         },
         {
           "title": "הסרת פרחים נבולים (דד-הדינג)",
           "category": "pruning",
           "priority": "medium",
           "dayOffset": 7,
-          "lunarSensitive": true
+          "lunarSensitive": true,
+          "titleEn": "Remove spent blooms (deadheading)"
         }
       ]
     },
@@ -4238,28 +4671,32 @@
           "category": "watering",
           "priority": "high",
           "dayOffset": 0,
-          "lunarSensitive": false
+          "lunarSensitive": false,
+          "titleEn": "Regular watering"
         },
         {
           "title": "דישון לעידוד פריחה",
           "category": "fertilizing",
           "priority": "medium",
           "dayOffset": 12,
-          "lunarSensitive": false
+          "lunarSensitive": false,
+          "titleEn": "Fertilize to encourage flowering"
         },
         {
           "title": "תצפית על כנימות ומזיקים",
           "category": "pest",
           "priority": "low",
           "dayOffset": 14,
-          "lunarSensitive": false
+          "lunarSensitive": false,
+          "titleEn": "Check for aphids and pests"
         },
         {
           "title": "הסרת פרחים נבולים (דד-הדינג)",
           "category": "pruning",
           "priority": "medium",
           "dayOffset": 7,
-          "lunarSensitive": true
+          "lunarSensitive": true,
+          "titleEn": "Remove spent blooms (deadheading)"
         }
       ]
     },
@@ -4278,28 +4715,32 @@
           "category": "watering",
           "priority": "medium",
           "dayOffset": 0,
-          "lunarSensitive": false
+          "lunarSensitive": false,
+          "titleEn": "Moderate watering — sensitive to overwatering"
         },
         {
           "title": "בדיקת ניקוז הקרקע",
           "category": "soil",
           "priority": "low",
           "dayOffset": 8,
-          "lunarSensitive": false
+          "lunarSensitive": false,
+          "titleEn": "Check soil drainage"
         },
         {
           "title": "קטיף ענפים לשימוש ולעידוד צמיחה",
           "category": "harvest",
           "priority": "medium",
           "dayOffset": 6,
-          "lunarSensitive": true
+          "lunarSensitive": true,
+          "titleEn": "Harvest sprigs for use and to encourage growth"
         },
         {
           "title": "גיזום קל לאחר הפריחה",
           "category": "pruning",
           "priority": "low",
           "dayOffset": 14,
-          "lunarSensitive": true
+          "lunarSensitive": true,
+          "titleEn": "Light pruning after flowering"
         }
       ]
     },
@@ -4318,35 +4759,40 @@
           "category": "watering",
           "priority": "high",
           "dayOffset": 0,
-          "lunarSensitive": false
+          "lunarSensitive": false,
+          "titleEn": "Watering — keep the soil moist"
         },
         {
           "title": "בדיקת חלזונות ומזיקי עלים",
           "category": "pest",
           "priority": "high",
           "dayOffset": 3,
-          "lunarSensitive": false
+          "lunarSensitive": false,
+          "titleEn": "Check for snails and leaf pests"
         },
         {
           "title": "דישון עשיר בחנקן לצמיחת עלווה",
           "category": "fertilizing",
           "priority": "medium",
           "dayOffset": 10,
-          "lunarSensitive": false
+          "lunarSensitive": false,
+          "titleEn": "Nitrogen-rich fertilizing for leaf growth"
         },
         {
           "title": "בדיקת לחות הקרקע",
           "category": "soil",
           "priority": "low",
           "dayOffset": 7,
-          "lunarSensitive": false
+          "lunarSensitive": false,
+          "titleEn": "Check soil moisture"
         },
         {
           "title": "קטיף עלים חיצוניים",
           "category": "harvest",
           "priority": "medium",
           "dayOffset": 14,
-          "lunarSensitive": true
+          "lunarSensitive": true,
+          "titleEn": "Harvest outer leaves"
         }
       ]
     },
@@ -4365,28 +4811,32 @@
           "category": "watering",
           "priority": "high",
           "dayOffset": 0,
-          "lunarSensitive": false
+          "lunarSensitive": false,
+          "titleEn": "Watering — keep the soil moist"
         },
         {
           "title": "קטיף ענפים עליונים לעידוד הסתעפות",
           "category": "harvest",
           "priority": "medium",
           "dayOffset": 5,
-          "lunarSensitive": true
+          "lunarSensitive": true,
+          "titleEn": "Pinch top sprigs to encourage branching"
         },
         {
           "title": "קמצוץ ראשי פריחה לשמירה על הטעם",
           "category": "pruning",
           "priority": "medium",
           "dayOffset": 10,
-          "lunarSensitive": true
+          "lunarSensitive": true,
+          "titleEn": "Pinch off flower buds to preserve flavor"
         },
         {
           "title": "דישון קל",
           "category": "fertilizing",
           "priority": "low",
           "dayOffset": 14,
-          "lunarSensitive": false
+          "lunarSensitive": false,
+          "titleEn": "Light fertilizing"
         }
       ]
     },
@@ -4405,21 +4855,24 @@
           "category": "watering",
           "priority": "high",
           "dayOffset": 0,
-          "lunarSensitive": false
+          "lunarSensitive": false,
+          "titleEn": "Deep watering during the hot season"
         },
         {
           "title": "תצפית על מזיקים ומחלות",
           "category": "pest",
           "priority": "medium",
           "dayOffset": 7,
-          "lunarSensitive": false
+          "lunarSensitive": false,
+          "titleEn": "Check for pests and disease"
         },
         {
           "title": "דישון אורגני באביב",
           "category": "fertilizing",
           "priority": "medium",
           "dayOffset": 15,
-          "lunarSensitive": false
+          "lunarSensitive": false,
+          "titleEn": "Organic fertilizing in spring"
         },
         {
           "title": "גיזום חורף – דילול ואוורור",
@@ -4427,7 +4880,9 @@
           "priority": "low",
           "dayOffset": 30,
           "lunarSensitive": true,
-          "notes": "בצע בעונת השלכת, כשהעץ רדום."
+          "notes": "בצע בעונת השלכת, כשהעץ רדום.",
+          "titleEn": "Winter pruning — thinning and airflow",
+          "notesEn": "Do this during the dormant season, while the tree is inactive."
         }
       ]
     },
@@ -4446,28 +4901,32 @@
           "category": "watering",
           "priority": "high",
           "dayOffset": 0,
-          "lunarSensitive": false
+          "lunarSensitive": false,
+          "titleEn": "Regular, even watering"
         },
         {
           "title": "דילול שתילים לצפיפות נכונה",
           "category": "maintenance",
           "priority": "medium",
           "dayOffset": 5,
-          "lunarSensitive": true
+          "lunarSensitive": true,
+          "titleEn": "Thin seedlings to the correct spacing"
         },
         {
           "title": "ניכוש ואוורור הקרקע סביב הצמח",
           "category": "soil",
           "priority": "medium",
           "dayOffset": 10,
-          "lunarSensitive": false
+          "lunarSensitive": false,
+          "titleEn": "Weed and aerate the soil around the plant"
         },
         {
           "title": "תצפית על מזיקי קרקע",
           "category": "pest",
           "priority": "low",
           "dayOffset": 14,
-          "lunarSensitive": false
+          "lunarSensitive": false,
+          "titleEn": "Check for soil pests"
         }
       ]
     },
@@ -4486,35 +4945,40 @@
           "category": "watering",
           "priority": "high",
           "dayOffset": 0,
-          "lunarSensitive": false
+          "lunarSensitive": false,
+          "titleEn": "Watering — keep the soil moist"
         },
         {
           "title": "בדיקת חלזונות ומזיקי עלים",
           "category": "pest",
           "priority": "high",
           "dayOffset": 3,
-          "lunarSensitive": false
+          "lunarSensitive": false,
+          "titleEn": "Check for snails and leaf pests"
         },
         {
           "title": "דישון עשיר בחנקן לצמיחת עלווה",
           "category": "fertilizing",
           "priority": "medium",
           "dayOffset": 10,
-          "lunarSensitive": false
+          "lunarSensitive": false,
+          "titleEn": "Nitrogen-rich fertilizing for leaf growth"
         },
         {
           "title": "בדיקת לחות הקרקע",
           "category": "soil",
           "priority": "low",
           "dayOffset": 7,
-          "lunarSensitive": false
+          "lunarSensitive": false,
+          "titleEn": "Check soil moisture"
         },
         {
           "title": "קטיף עלים חיצוניים",
           "category": "harvest",
           "priority": "medium",
           "dayOffset": 14,
-          "lunarSensitive": true
+          "lunarSensitive": true,
+          "titleEn": "Harvest outer leaves"
         }
       ]
     },
@@ -4533,28 +4997,32 @@
           "category": "watering",
           "priority": "medium",
           "dayOffset": 0,
-          "lunarSensitive": false
+          "lunarSensitive": false,
+          "titleEn": "Moderate watering — check moisture before watering"
         },
         {
           "title": "מיקום באור עקיף בהיר",
           "category": "observation",
           "priority": "low",
           "dayOffset": 5,
-          "lunarSensitive": false
+          "lunarSensitive": false,
+          "titleEn": "Place in bright, indirect light"
         },
         {
           "title": "ניקוי אבק מהעלים",
           "category": "maintenance",
           "priority": "low",
           "dayOffset": 7,
-          "lunarSensitive": false
+          "lunarSensitive": false,
+          "titleEn": "Wipe dust off the leaves"
         },
         {
           "title": "תצפית על מזיקים (כנימות/אקריות)",
           "category": "pest",
           "priority": "low",
           "dayOffset": 12,
-          "lunarSensitive": false
+          "lunarSensitive": false,
+          "titleEn": "Check for pests (aphids/mites)"
         }
       ]
     },
@@ -4573,21 +5041,24 @@
           "category": "watering",
           "priority": "high",
           "dayOffset": 0,
-          "lunarSensitive": false
+          "lunarSensitive": false,
+          "titleEn": "Deep watering during the hot season"
         },
         {
           "title": "תצפית על מזיקים ומחלות",
           "category": "pest",
           "priority": "medium",
           "dayOffset": 7,
-          "lunarSensitive": false
+          "lunarSensitive": false,
+          "titleEn": "Check for pests and disease"
         },
         {
           "title": "דישון אורגני באביב",
           "category": "fertilizing",
           "priority": "medium",
           "dayOffset": 15,
-          "lunarSensitive": false
+          "lunarSensitive": false,
+          "titleEn": "Organic fertilizing in spring"
         },
         {
           "title": "גיזום חורף – דילול ואוורור",
@@ -4595,7 +5066,9 @@
           "priority": "low",
           "dayOffset": 30,
           "lunarSensitive": true,
-          "notes": "בצע בעונת השלכת, כשהעץ רדום."
+          "notes": "בצע בעונת השלכת, כשהעץ רדום.",
+          "titleEn": "Winter pruning — thinning and airflow",
+          "notesEn": "Do this during the dormant season, while the tree is inactive."
         }
       ]
     },
@@ -4614,28 +5087,32 @@
           "category": "watering",
           "priority": "high",
           "dayOffset": 0,
-          "lunarSensitive": false
+          "lunarSensitive": false,
+          "titleEn": "Watering — keep the soil moist"
         },
         {
           "title": "קטיף ענפים עליונים לעידוד הסתעפות",
           "category": "harvest",
           "priority": "medium",
           "dayOffset": 5,
-          "lunarSensitive": true
+          "lunarSensitive": true,
+          "titleEn": "Pinch top sprigs to encourage branching"
         },
         {
           "title": "קמצוץ ראשי פריחה לשמירה על הטעם",
           "category": "pruning",
           "priority": "medium",
           "dayOffset": 10,
-          "lunarSensitive": true
+          "lunarSensitive": true,
+          "titleEn": "Pinch off flower buds to preserve flavor"
         },
         {
           "title": "דישון קל",
           "category": "fertilizing",
           "priority": "low",
           "dayOffset": 14,
-          "lunarSensitive": false
+          "lunarSensitive": false,
+          "titleEn": "Light fertilizing"
         }
       ]
     },
@@ -4654,28 +5131,32 @@
           "category": "watering",
           "priority": "high",
           "dayOffset": 0,
-          "lunarSensitive": false
+          "lunarSensitive": false,
+          "titleEn": "Watering — keep the soil moist"
         },
         {
           "title": "קטיף ענפים עליונים לעידוד הסתעפות",
           "category": "harvest",
           "priority": "medium",
           "dayOffset": 5,
-          "lunarSensitive": true
+          "lunarSensitive": true,
+          "titleEn": "Pinch top sprigs to encourage branching"
         },
         {
           "title": "קמצוץ ראשי פריחה לשמירה על הטעם",
           "category": "pruning",
           "priority": "medium",
           "dayOffset": 10,
-          "lunarSensitive": true
+          "lunarSensitive": true,
+          "titleEn": "Pinch off flower buds to preserve flavor"
         },
         {
           "title": "דישון קל",
           "category": "fertilizing",
           "priority": "low",
           "dayOffset": 14,
-          "lunarSensitive": false
+          "lunarSensitive": false,
+          "titleEn": "Light fertilizing"
         }
       ]
     },
@@ -4694,35 +5175,40 @@
           "category": "watering",
           "priority": "high",
           "dayOffset": 0,
-          "lunarSensitive": false
+          "lunarSensitive": false,
+          "titleEn": "Regular watering — consistency prevents fruit problems"
         },
         {
           "title": "סמך ותמיכה לצמח",
           "category": "support",
           "priority": "medium",
           "dayOffset": 3,
-          "lunarSensitive": false
+          "lunarSensitive": false,
+          "titleEn": "Stake and support the plant"
         },
         {
           "title": "דישון לעידוד פריחה ופרי",
           "category": "fertilizing",
           "priority": "medium",
           "dayOffset": 10,
-          "lunarSensitive": false
+          "lunarSensitive": false,
+          "titleEn": "Fertilize to encourage flowering and fruit"
         },
         {
           "title": "תצפית על כנימות וריקבון",
           "category": "pest",
           "priority": "medium",
           "dayOffset": 14,
-          "lunarSensitive": false
+          "lunarSensitive": false,
+          "titleEn": "Check for aphids and rot"
         },
         {
           "title": "דילול עלים תחתונים לאוורור",
           "category": "pruning",
           "priority": "low",
           "dayOffset": 18,
-          "lunarSensitive": true
+          "lunarSensitive": true,
+          "titleEn": "Thin lower leaves for airflow"
         }
       ]
     },
@@ -4741,21 +5227,24 @@
           "category": "watering",
           "priority": "high",
           "dayOffset": 0,
-          "lunarSensitive": false
+          "lunarSensitive": false,
+          "titleEn": "Deep watering during the hot season"
         },
         {
           "title": "תצפית על מזיקים ומחלות",
           "category": "pest",
           "priority": "medium",
           "dayOffset": 7,
-          "lunarSensitive": false
+          "lunarSensitive": false,
+          "titleEn": "Check for pests and disease"
         },
         {
           "title": "דישון אורגני באביב",
           "category": "fertilizing",
           "priority": "medium",
           "dayOffset": 15,
-          "lunarSensitive": false
+          "lunarSensitive": false,
+          "titleEn": "Organic fertilizing in spring"
         },
         {
           "title": "גיזום חורף – דילול ואוורור",
@@ -4763,7 +5252,9 @@
           "priority": "low",
           "dayOffset": 30,
           "lunarSensitive": true,
-          "notes": "בצע בעונת השלכת, כשהעץ רדום."
+          "notes": "בצע בעונת השלכת, כשהעץ רדום.",
+          "titleEn": "Winter pruning — thinning and airflow",
+          "notesEn": "Do this during the dormant season, while the tree is inactive."
         }
       ]
     },
@@ -4782,35 +5273,40 @@
           "category": "watering",
           "priority": "high",
           "dayOffset": 0,
-          "lunarSensitive": false
+          "lunarSensitive": false,
+          "titleEn": "Regular watering — consistency prevents fruit problems"
         },
         {
           "title": "סמך ותמיכה לצמח",
           "category": "support",
           "priority": "medium",
           "dayOffset": 3,
-          "lunarSensitive": false
+          "lunarSensitive": false,
+          "titleEn": "Stake and support the plant"
         },
         {
           "title": "דישון לעידוד פריחה ופרי",
           "category": "fertilizing",
           "priority": "medium",
           "dayOffset": 10,
-          "lunarSensitive": false
+          "lunarSensitive": false,
+          "titleEn": "Fertilize to encourage flowering and fruit"
         },
         {
           "title": "תצפית על כנימות וריקבון",
           "category": "pest",
           "priority": "medium",
           "dayOffset": 14,
-          "lunarSensitive": false
+          "lunarSensitive": false,
+          "titleEn": "Check for aphids and rot"
         },
         {
           "title": "דילול עלים תחתונים לאוורור",
           "category": "pruning",
           "priority": "low",
           "dayOffset": 18,
-          "lunarSensitive": true
+          "lunarSensitive": true,
+          "titleEn": "Thin lower leaves for airflow"
         }
       ]
     },
@@ -4829,35 +5325,40 @@
           "category": "watering",
           "priority": "high",
           "dayOffset": 0,
-          "lunarSensitive": false
+          "lunarSensitive": false,
+          "titleEn": "Regular watering — consistency prevents fruit problems"
         },
         {
           "title": "סמך ותמיכה לצמח",
           "category": "support",
           "priority": "medium",
           "dayOffset": 3,
-          "lunarSensitive": false
+          "lunarSensitive": false,
+          "titleEn": "Stake and support the plant"
         },
         {
           "title": "דישון לעידוד פריחה ופרי",
           "category": "fertilizing",
           "priority": "medium",
           "dayOffset": 10,
-          "lunarSensitive": false
+          "lunarSensitive": false,
+          "titleEn": "Fertilize to encourage flowering and fruit"
         },
         {
           "title": "תצפית על כנימות וריקבון",
           "category": "pest",
           "priority": "medium",
           "dayOffset": 14,
-          "lunarSensitive": false
+          "lunarSensitive": false,
+          "titleEn": "Check for aphids and rot"
         },
         {
           "title": "דילול עלים תחתונים לאוורור",
           "category": "pruning",
           "priority": "low",
           "dayOffset": 18,
-          "lunarSensitive": true
+          "lunarSensitive": true,
+          "titleEn": "Thin lower leaves for airflow"
         }
       ]
     },
@@ -4876,35 +5377,40 @@
           "category": "watering",
           "priority": "high",
           "dayOffset": 0,
-          "lunarSensitive": false
+          "lunarSensitive": false,
+          "titleEn": "Deep, regular watering"
         },
         {
           "title": "בדיקת ביסוס ותמיכת העץ",
           "category": "observation",
           "priority": "medium",
           "dayOffset": 3,
-          "lunarSensitive": false
+          "lunarSensitive": false,
+          "titleEn": "Check tree stability and staking"
         },
         {
           "title": "דישון אורגני מאוזן",
           "category": "fertilizing",
           "priority": "medium",
           "dayOffset": 12,
-          "lunarSensitive": false
+          "lunarSensitive": false,
+          "titleEn": "Balanced organic fertilizing"
         },
         {
           "title": "תצפית על מזיקים ומחלות בעלווה",
           "category": "pest",
           "priority": "medium",
           "dayOffset": 18,
-          "lunarSensitive": false
+          "lunarSensitive": false,
+          "titleEn": "Inspect foliage for pests and disease"
         },
         {
           "title": "גיזום ענפים יבשים ומיותרים",
           "category": "pruning",
           "priority": "low",
           "dayOffset": 30,
-          "lunarSensitive": true
+          "lunarSensitive": true,
+          "titleEn": "Prune dry and unnecessary branches"
         }
       ]
     },
@@ -4923,28 +5429,32 @@
           "category": "watering",
           "priority": "high",
           "dayOffset": 0,
-          "lunarSensitive": false
+          "lunarSensitive": false,
+          "titleEn": "Deep watering — citrus is sensitive to dryness"
         },
         {
           "title": "בדיקת מזיקים (כנימות ומיני עש)",
           "category": "pest",
           "priority": "medium",
           "dayOffset": 5,
-          "lunarSensitive": false
+          "lunarSensitive": false,
+          "titleEn": "Check for pests (aphids and leaf miners)"
         },
         {
           "title": "דישון הדרים (עשיר באשלגן וברזל)",
           "category": "fertilizing",
           "priority": "medium",
           "dayOffset": 12,
-          "lunarSensitive": false
+          "lunarSensitive": false,
+          "titleEn": "Citrus fertilizing (rich in potassium and iron)"
         },
         {
           "title": "גיזום ענפי מים וסורים",
           "category": "pruning",
           "priority": "low",
           "dayOffset": 25,
-          "lunarSensitive": true
+          "lunarSensitive": true,
+          "titleEn": "Prune water shoots and suckers"
         }
       ]
     },
@@ -4963,21 +5473,24 @@
           "category": "watering",
           "priority": "high",
           "dayOffset": 0,
-          "lunarSensitive": false
+          "lunarSensitive": false,
+          "titleEn": "Deep watering during the hot season"
         },
         {
           "title": "תצפית על מזיקים ומחלות",
           "category": "pest",
           "priority": "medium",
           "dayOffset": 7,
-          "lunarSensitive": false
+          "lunarSensitive": false,
+          "titleEn": "Check for pests and disease"
         },
         {
           "title": "דישון אורגני באביב",
           "category": "fertilizing",
           "priority": "medium",
           "dayOffset": 15,
-          "lunarSensitive": false
+          "lunarSensitive": false,
+          "titleEn": "Organic fertilizing in spring"
         },
         {
           "title": "גיזום חורף – דילול ואוורור",
@@ -4985,7 +5498,9 @@
           "priority": "low",
           "dayOffset": 30,
           "lunarSensitive": true,
-          "notes": "בצע בעונת השלכת, כשהעץ רדום."
+          "notes": "בצע בעונת השלכת, כשהעץ רדום.",
+          "titleEn": "Winter pruning — thinning and airflow",
+          "notesEn": "Do this during the dormant season, while the tree is inactive."
         }
       ]
     },
@@ -5004,28 +5519,32 @@
           "category": "watering",
           "priority": "high",
           "dayOffset": 0,
-          "lunarSensitive": false
+          "lunarSensitive": false,
+          "titleEn": "Regular, even watering"
         },
         {
           "title": "דילול שתילים לצפיפות נכונה",
           "category": "maintenance",
           "priority": "medium",
           "dayOffset": 5,
-          "lunarSensitive": true
+          "lunarSensitive": true,
+          "titleEn": "Thin seedlings to the correct spacing"
         },
         {
           "title": "ניכוש ואוורור הקרקע סביב הצמח",
           "category": "soil",
           "priority": "medium",
           "dayOffset": 10,
-          "lunarSensitive": false
+          "lunarSensitive": false,
+          "titleEn": "Weed and aerate the soil around the plant"
         },
         {
           "title": "תצפית על מזיקי קרקע",
           "category": "pest",
           "priority": "low",
           "dayOffset": 14,
-          "lunarSensitive": false
+          "lunarSensitive": false,
+          "titleEn": "Check for soil pests"
         }
       ]
     },
@@ -5044,35 +5563,40 @@
           "category": "watering",
           "priority": "high",
           "dayOffset": 0,
-          "lunarSensitive": false
+          "lunarSensitive": false,
+          "titleEn": "Watering — keep the soil moist"
         },
         {
           "title": "בדיקת חלזונות ומזיקי עלים",
           "category": "pest",
           "priority": "high",
           "dayOffset": 3,
-          "lunarSensitive": false
+          "lunarSensitive": false,
+          "titleEn": "Check for snails and leaf pests"
         },
         {
           "title": "דישון עשיר בחנקן לצמיחת עלווה",
           "category": "fertilizing",
           "priority": "medium",
           "dayOffset": 10,
-          "lunarSensitive": false
+          "lunarSensitive": false,
+          "titleEn": "Nitrogen-rich fertilizing for leaf growth"
         },
         {
           "title": "בדיקת לחות הקרקע",
           "category": "soil",
           "priority": "low",
           "dayOffset": 7,
-          "lunarSensitive": false
+          "lunarSensitive": false,
+          "titleEn": "Check soil moisture"
         },
         {
           "title": "קטיף עלים חיצוניים",
           "category": "harvest",
           "priority": "medium",
           "dayOffset": 14,
-          "lunarSensitive": true
+          "lunarSensitive": true,
+          "titleEn": "Harvest outer leaves"
         }
       ]
     },
@@ -5092,21 +5616,24 @@
           "category": "watering",
           "priority": "high",
           "dayOffset": 0,
-          "lunarSensitive": false
+          "lunarSensitive": false,
+          "titleEn": "Deep watering during the hot season"
         },
         {
           "title": "תצפית על מזיקים ומחלות",
           "category": "pest",
           "priority": "medium",
           "dayOffset": 7,
-          "lunarSensitive": false
+          "lunarSensitive": false,
+          "titleEn": "Check for pests and disease"
         },
         {
           "title": "דישון אורגני באביב",
           "category": "fertilizing",
           "priority": "medium",
           "dayOffset": 15,
-          "lunarSensitive": false
+          "lunarSensitive": false,
+          "titleEn": "Organic fertilizing in spring"
         },
         {
           "title": "גיזום חורף – דילול ואוורור",
@@ -5114,7 +5641,9 @@
           "priority": "low",
           "dayOffset": 30,
           "lunarSensitive": true,
-          "notes": "בצע בעונת השלכת, כשהעץ רדום."
+          "notes": "בצע בעונת השלכת, כשהעץ רדום.",
+          "titleEn": "Winter pruning — thinning and airflow",
+          "notesEn": "Do this during the dormant season, while the tree is inactive."
         }
       ]
     },
@@ -5135,35 +5664,40 @@
           "category": "watering",
           "priority": "high",
           "dayOffset": 0,
-          "lunarSensitive": false
+          "lunarSensitive": false,
+          "titleEn": "Deep, regular watering"
         },
         {
           "title": "בדיקת ביסוס ותמיכת העץ",
           "category": "observation",
           "priority": "medium",
           "dayOffset": 3,
-          "lunarSensitive": false
+          "lunarSensitive": false,
+          "titleEn": "Check tree stability and staking"
         },
         {
           "title": "דישון אורגני מאוזן",
           "category": "fertilizing",
           "priority": "medium",
           "dayOffset": 12,
-          "lunarSensitive": false
+          "lunarSensitive": false,
+          "titleEn": "Balanced organic fertilizing"
         },
         {
           "title": "תצפית על מזיקים ומחלות בעלווה",
           "category": "pest",
           "priority": "medium",
           "dayOffset": 18,
-          "lunarSensitive": false
+          "lunarSensitive": false,
+          "titleEn": "Inspect foliage for pests and disease"
         },
         {
           "title": "גיזום ענפים יבשים ומיותרים",
           "category": "pruning",
           "priority": "low",
           "dayOffset": 30,
-          "lunarSensitive": true
+          "lunarSensitive": true,
+          "titleEn": "Prune dry and unnecessary branches"
         }
       ]
     }
