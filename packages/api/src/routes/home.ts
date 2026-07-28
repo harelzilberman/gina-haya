@@ -103,7 +103,7 @@ homeRouter.get('/summary', verifyToken, async (req: any, res) => {
     // ── 4. Next planting window ───────────────────────────────────────────
     const { data: nextWindows } = await db
       .from('biodynamic_calendar')
-      .select('date, day_type_he, day_type_emoji, planting_score, moon_phase_name_he')
+      .select('date, day_type, day_type_he, day_type_emoji, planting_score, moon_phase_name_he')
       .gt('date', today)
       .gte('planting_score', 7)
       .order('date', { ascending: true })
@@ -120,6 +120,7 @@ homeRouter.get('/summary', verifyToken, async (req: any, res) => {
       recentActivity,
       nextPlantingWindows: (nextWindows || []).map((w: any) => ({
         date: w.date,
+        dayType: w.day_type,
         dayTypeHe: w.day_type_he,
         dayTypeEmoji: w.day_type_emoji,
         score: w.planting_score,
