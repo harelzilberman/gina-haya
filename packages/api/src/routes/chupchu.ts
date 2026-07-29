@@ -1169,7 +1169,7 @@ chupChuRouter.post('/chat', async (req: any, res) => {
   req.setTimeout(120000);
   res.setTimeout(120000);
   try {
-    const { message, gardenId, location, imageBase64, conversationHistory: clientHistory, retryOf } = req.body;
+    const { message, gardenId, location, imageBase64, conversationHistory: clientHistory, retryOf, language } = req.body;
 
     const hasImage = typeof imageBase64 === 'string' && imageBase64.length > 0;
     const hasText  = typeof message === 'string' && message.trim().length > 0;
@@ -1206,7 +1206,9 @@ chupChuRouter.post('/chat', async (req: any, res) => {
       .single();
 
     const tier = userProfile?.subscription_tier || 'free';
-    const lang = userProfile?.language_preference || 'he';
+    const lang = (language === 'he' || language === 'en')
+      ? language
+      : userProfile?.language_preference || 'he';
 
     // ── 2. Check monthly limits ───────────────────────────────────────────
     // Fix 4: use 'professional' (the real top-tier key in TIER_LIMITS) so
