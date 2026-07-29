@@ -436,7 +436,7 @@ function DroppableDayCell({
             </div>
             <div style={{ textAlign: isHe ? 'right' : 'left' }}>
               <span style={{ fontFamily: FRANK, fontSize: '14px', color: isToday ? GOLD : isCurrentMonth ? PARCH : `${PARCH}50`, fontWeight: isToday ? 700 : 400 }}>{num}</span>
-              <span style={{ fontFamily: ASST, fontSize: '10px', color: `${PARCH}60`, marginRight: isHe ? '3px' : 0, marginLeft: isHe ? 0 : '3px' }}>{day}</span>
+              <span style={{ fontFamily: ASST, fontSize: '11px', color: `${PARCH}CC`, marginRight: isHe ? '3px' : 0, marginLeft: isHe ? 0 : '3px' }}>{day}</span>
             </div>
           </div>
           {bd && bd.plantingScore > 0 && (
@@ -444,15 +444,15 @@ function DroppableDayCell({
               {Array.from({ length: 10 }, (_, i) => (
                 <div key={i} style={{ width: '4px', height: '4px', borderRadius: '50%', background: i < bd.plantingScore ? (bd.plantingScore <= 3 ? '#E24B4A' : bd.plantingScore <= 6 ? '#EF9F27' : '#639922') : 'rgba(255,255,255,0.08)' }} />
               ))}
-              <span style={{ fontFamily: ASST, fontSize: '8px', color: `${PARCH}50`, marginInlineStart: '2px' }}>{bd.plantingScore}</span>
+              <span style={{ fontFamily: ASST, fontSize: '11px', color: `${PARCH}BF`, marginInlineStart: '2px' }}>{bd.plantingScore}</span>
             </div>
           )}
         </>
       ) : (
         <div style={{ textAlign: 'center', marginBottom: '6px' }}>
-          <div style={{ fontFamily: ASST, fontSize: '11px', color: `${PARCH}55` }}>{day}</div>
+          <div style={{ fontFamily: ASST, fontSize: '11px', color: `${PARCH}CC` }}>{day}</div>
           <div style={{ fontFamily: FRANK, fontSize: '16px', color: isToday ? GOLD : isCurrentMonth ? PARCH : `${PARCH}50`, fontWeight: isToday ? 700 : 400 }}>{num}</div>
-          <div style={{ fontFamily: ASST, fontSize: '10px', color: `${PARCH}40` }}>{month}</div>
+          <div style={{ fontFamily: ASST, fontSize: '11px', color: `${PARCH}BF` }}>{month}</div>
           <div style={{ display: 'flex', gap: '4px', justifyContent: 'center', alignItems: 'center', marginTop: '2px' }}>
             {dayStyle && <span style={{ fontSize: '12px' }} title={`${t(dayStyle.labelKey)} — ${DAY_TYPE_DESCS_HE[bd!.dayType] ?? ''}`}>{dayStyle.emoji}</span>}
             {bd && <span style={{ fontSize: '12px' }} title={bd.moonPhaseNameHe}>{moonEmoji(bd.moonPhasePct, (bd.moonPhaseAngle ?? 90) <= 180)}</span>}
@@ -463,9 +463,9 @@ function DroppableDayCell({
                 {Array.from({ length: 10 }, (_, i) => (
                   <div key={i} style={{ width: '5px', height: '5px', borderRadius: '50%', background: i < bd.plantingScore ? (bd.plantingScore <= 3 ? '#E24B4A' : bd.plantingScore <= 6 ? '#EF9F27' : '#639922') : 'rgba(255,255,255,0.08)' }} />
                 ))}
-                <span style={{ fontFamily: ASST, fontSize: '10px', color: `${PARCH}60`, marginInlineStart: '4px' }}>{bd.plantingScore}/10</span>
+                <span style={{ fontFamily: ASST, fontSize: '11px', color: `${PARCH}CC`, marginInlineStart: '4px' }}>{bd.plantingScore}/10</span>
               </div>
-              <span style={{ fontFamily: ASST, fontSize: '9px', color: `${PARCH}30` }}>ציון שתילה ביודינמי</span>
+              <span style={{ fontFamily: ASST, fontSize: '11px', color: `${PARCH}BF` }}>ציון שתילה ביודינמי</span>
             </div>
           )}
         </div>
@@ -484,7 +484,7 @@ function DroppableDayCell({
           />
         ))}
         {compact && tasks.length > 3 && (
-          <span style={{ fontFamily: ASST, fontSize: '10px', color: `${PARCH}50` }}>
+          <span style={{ fontFamily: ASST, fontSize: '11px', color: `${PARCH}BF` }}>
             {t('moreCount', { count: tasks.length - 3 })}
           </span>
         )}
@@ -496,16 +496,16 @@ function DroppableDayCell({
           onClick={e => { e.stopPropagation(); onAdd(date); }}
           style={{
             background: 'none', border: 'none', cursor: 'pointer',
-            fontFamily: ASST, fontSize: '11px', color: `${PARCH}40`,
+            fontFamily: ASST, fontSize: '11px', color: `${PARCH}BF`,
             padding: '0', lineHeight: 1, minHeight: '44px', minWidth: '44px',
           }}
           onMouseEnter={e => { (e.currentTarget as HTMLElement).style.color = GOLD; }}
-          onMouseLeave={e => { (e.currentTarget as HTMLElement).style.color = `${PARCH}40`; }}
+          onMouseLeave={e => { (e.currentTarget as HTMLElement).style.color = `${PARCH}BF`; }}
         >
           {t('addButton')}
         </button>
         {tasks.length > 0 && (
-          <span style={{ fontFamily: ASST, fontSize: '10px', color: `${PARCH}40` }}>
+          <span style={{ fontFamily: ASST, fontSize: '11px', color: `${PARCH}BF` }}>
             {done}/{tasks.length}
           </span>
         )}
@@ -821,7 +821,7 @@ function DayDetailModal({ date, tasks, bd, onClose, onStatusToggle, onAddTask }:
                   <div style={{
                     display: 'flex', alignItems: 'center', gap: '8px',
                     margin: '14px 0 8px',
-                    color: `${PARCH}40`, fontFamily: ASST, fontSize: '11px',
+                    color: `${PARCH}BF`, fontFamily: ASST, fontSize: '11px',
                   }}>
                     <div style={{ flex: 1, height: '1px', background: 'rgba(255,255,255,0.07)' }} />
                     <span>{t('dayModal.done')}</span>
@@ -1083,7 +1083,7 @@ export function TaskCalendarPage() {
                 {t('title')}
               </h1>
               {tasks.length > 0 && (
-                <p style={{ fontFamily: ASST, fontSize: '12px', color: `${PARCH}55`, margin: 0 }}>
+                <p style={{ fontFamily: ASST, fontSize: '12px', color: `${PARCH}CC`, margin: 0 }}>
                   {t('completedOf', { done: totalDone, total: totalDone + totalPending })}
                 </p>
               )}
@@ -1186,7 +1186,7 @@ export function TaskCalendarPage() {
                     <span style={{ fontSize: '13px' }}>{s.emoji}</span>
                     <div style={{ fontFamily: ASST }}>
                       <span style={{ fontSize: '11px', fontWeight: 600, color: s.color }}>{t(s.labelKey)}</span>
-                      <span style={{ fontSize: '10px', color: `${PARCH}55` }}> — {desc}</span>
+                      <span style={{ fontSize: '11px', color: `${PARCH}BF` }}> — {desc}</span>
                     </div>
                   </div>
                 );
@@ -1213,7 +1213,7 @@ export function TaskCalendarPage() {
         {view === 'month' && (
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(7, 1fr)', gap: isMobile ? '3px' : '6px', marginBottom: '4px' }}>
             {DAY_NAMES.map(d => (
-              <div key={d} style={{ textAlign: 'center', fontFamily: ASST, fontSize: isMobile ? '9px' : '11px', color: `${PARCH}50`, padding: '4px 0' }}>
+              <div key={d} style={{ textAlign: 'center', fontFamily: ASST, fontSize: '11px', color: `${PARCH}BF`, padding: '4px 0' }}>
                 {isMobile ? d.slice(0, 1) : d}
               </div>
             ))}
@@ -1224,7 +1224,7 @@ export function TaskCalendarPage() {
         {isLoading ? (
           <div style={{ textAlign: 'center', padding: '60px 0' }}>
             <div style={{ fontSize: '48px' }} className="animate-pulse">🌱</div>
-            <p style={{ fontFamily: ASST, fontSize: '14px', color: `${PARCH}50`, marginTop: '12px' }}>{t('loading')}</p>
+            <p style={{ fontFamily: ASST, fontSize: '14px', color: `${PARCH}BF`, marginTop: '12px' }}>{t('loading')}</p>
           </div>
         ) : (
           <DndContext sensors={sensors} onDragStart={handleDragStart} onDragEnd={handleDragEnd}>

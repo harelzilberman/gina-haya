@@ -98,7 +98,7 @@ export function TaskManager({ tasks, onUpdateStatus, onDelete, onAdd, isLoading 
             <span style={{ fontFamily: ASSIST, fontSize: '12px', color: `${PARCH}70` }}>
               {isHe ? `${done} מתוך ${total} משימות הושלמו` : `${done} of ${total} tasks completed`}
             </span>
-            <span style={{ fontFamily: ASSIST, fontSize: '12px', color: `${PARCH}50` }}>
+            <span style={{ fontFamily: ASSIST, fontSize: '12px', color: `${PARCH}BF` }}>
               {isHe ? `${pending} ממתינות` : `${pending} pending`}
             </span>
           </div>
@@ -182,11 +182,11 @@ export function TaskManager({ tasks, onUpdateStatus, onDelete, onAdd, isLoading 
 
       {/* Tasks by date */}
       {isLoading ? (
-        <p style={{ fontFamily: ASSIST, fontSize: '14px', color: `${PARCH}50`, textAlign: 'center', padding: '20px' }}>
+        <p style={{ fontFamily: ASSIST, fontSize: '14px', color: `${PARCH}BF`, textAlign: 'center', padding: '20px' }}>
           {isHe ? 'טוען משימות...' : 'Loading tasks...'}
         </p>
       ) : dates.length === 0 ? (
-        <p style={{ fontFamily: ASSIST, fontSize: '14px', color: `${PARCH}50`, textAlign: 'center', padding: '20px' }}>
+        <p style={{ fontFamily: ASSIST, fontSize: '14px', color: `${PARCH}BF`, textAlign: 'center', padding: '20px' }}>
           {filter === 'done'
             ? (isHe ? 'עדיין לא הושלמו משימות השבוע' : 'No tasks completed yet')
             : (isHe ? 'אין משימות לשבוע זה' : 'No tasks this week')}
