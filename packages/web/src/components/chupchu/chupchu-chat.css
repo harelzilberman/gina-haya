@@ -10,7 +10,7 @@
 .chupchu-dot          { animation: chupchu-bounce 1.4s ease-in-out infinite; }
 .chupchu-avatar-pulse { animation: chupchu-glow 3s ease-in-out infinite; }
 
-.chupchu-textarea::placeholder { color: rgba(176,207,191,0.3); }
+.chupchu-textarea::placeholder { color: #6b9080; }
 .chupchu-textarea:focus        { border-color: rgba(0,229,195,0.4) !important; outline: none; }
 
 .chupchu-scroll::-webkit-scrollbar       { width: 4px; }

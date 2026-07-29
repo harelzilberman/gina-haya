@@ -14,11 +14,11 @@ export function AdBanner() {
         style={{
           width: '728px',
           height: '90px',
-          backgroundColor: '#F9FAFB',
-          border: '1px dashed #D1D5DB',
+          backgroundColor: '#111f18',
+          border: '1px dashed rgba(0,229,195,0.2)',
         }}
       >
-        <p className="text-sm" style={{ color: '#9CA3AF' }}>פרסומת — Google AdSense</p>
+        <p className="text-sm" style={{ color: '#6b9080' }}>פרסומת — Google AdSense</p>
       </div>
 
       {/* Mobile banner 320×50 */}
@@ -27,11 +27,11 @@ export function AdBanner() {
         style={{
           width: '320px',
           height: '50px',
-          backgroundColor: '#F9FAFB',
-          border: '1px dashed #D1D5DB',
+          backgroundColor: '#111f18',
+          border: '1px dashed rgba(0,229,195,0.2)',
         }}
       >
-        <p className="text-xs" style={{ color: '#9CA3AF' }}>פרסומת — Google AdSense</p>
+        <p className="text-xs" style={{ color: '#6b9080' }}>פרסומת — Google AdSense</p>
       </div>
     </div>
   );

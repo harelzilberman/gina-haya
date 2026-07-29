@@ -358,7 +358,7 @@ export default function App() {
           justifyContent: 'space-between',
           alignItems: 'center',
           fontSize: '12px',
-          color: 'rgba(176,207,191,0.4)',
+          color: '#6b9080',
           direction: 'rtl',
           flexShrink: 0,
         }}
@@ -366,7 +366,7 @@ export default function App() {
         <span>© 2026 גינה חיה</span>
         <a
           href="mailto:gina.haya.contact@gmail.com"
-          style={{ color: 'rgba(176,207,191,0.5)', textDecoration: 'none' }}
+          style={{ color: '#6b9080', textDecoration: 'none' }}
         >
           📧 צור קשר
         </a>

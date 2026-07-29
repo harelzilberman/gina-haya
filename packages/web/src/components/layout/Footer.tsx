@@ -123,7 +123,7 @@ export function Footer() {
 
       <div style={{ height: '1px', backgroundColor: 'rgba(0,229,195,0.07)', margin: '0 32px' }} />
       <div style={{ padding: '16px 32px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '8px' }}>
-        <p style={{ fontFamily: DM_SANS, fontSize: '11px', color: MUTED, opacity: 0.55 }}>
+        <p style={{ fontFamily: DM_SANS, fontSize: '11px', color: MUTED }}>
           © 2026 גינה חיה · Gina Haya · Made in Israel
         </p>
         <div style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', padding: '4px 12px',

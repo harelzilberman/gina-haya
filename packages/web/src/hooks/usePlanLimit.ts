@@ -41,7 +41,7 @@ const TIER_LIMITS: Record<string, PlanLimits> = {
 
 export const TIER_DISPLAY: Record<string, { he: string; en: string; color: string }> = {
   free:         { he: 'חינם',       en: 'Free',         color: '#9CA3AF' },
-  grower:       { he: 'גרואר',      en: 'Grower',       color: '#4A9C68' },
+  grower:       { he: 'גרואר',      en: 'Grower',       color: '#56B87A' },
   gardener_pro: { he: 'גנן פרו',    en: 'Gardener Pro', color: '#00e5c3' },
   professional: { he: 'מקצועי',     en: 'Professional', color: '#60A5FA' },
 };
