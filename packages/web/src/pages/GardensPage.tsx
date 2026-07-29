@@ -30,7 +30,7 @@ export function GardensPage() {
   const navigate = useNavigate();
   const { i18n } = useTranslation('common');
   const isHe = i18n.language === 'he';
-  const { session } = useAuthStore();
+  const { session, profile: authProfile, isAuthReady } = useAuthStore();
   const { gardens, activeGardenId, switchGarden, deleteGarden, setDefaultGarden, loadGardens } = useGardenSwitcherStore();
   const { tier, limits } = usePlanLimit();
   const { show: showToast } = useToastStore();
@@ -44,13 +44,14 @@ export function GardensPage() {
   const [isSaving, setIsSaving] = useState(false);
   const [stats, setStats] = useState<GardenStats>({});
 
-  // Redirect non-pro users
+  // Redirect non-pro users — only after auth + profile have fully loaded
   useEffect(() => {
-    if (tier && tier !== 'gardener_pro' && tier !== 'professional') {
+    if (!isAuthReady || authProfile === null) return;
+    if (tier !== 'gardener_pro' && tier !== 'professional') {
       showToast('גינות מרובות זמינות בתכנית המקצועית', 'info');
-      navigate('/map');
+      navigate('/garden');
     }
-  }, [tier]);
+  }, [tier, isAuthReady, authProfile]);
 
   useEffect(() => { loadGardens(); }, []);
 
