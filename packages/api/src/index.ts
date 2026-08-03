@@ -28,10 +28,16 @@ console.log(`[CORS] NODE_ENV=${process.env.NODE_ENV ?? 'unset'}, allowed origins
 // 2 MB ceiling: post-compression images peak at ~600 KB base64; anything
 // larger than 2 MB is suspicious and benefits from early rejection.
 app.use(express.json({ limit: '2mb' }));
-// Grow webhook may send application/x-www-form-urlencoded instead of JSON.
-// Register urlencoded parser specifically for that path so the diagnostic
-// log in billing.ts captures real field values regardless of content-type.
-app.use('/api/billing/grow/webhook', express.urlencoded({ extended: true }));
+// Grow's PaymentLinks webhook sends real JSON but with a mislabeled
+// Content-Type: application/x-www-form-urlencoded header.  The global
+// express.json() above only fires on application/json, so it passes this
+// request through unparsed.  This path-specific parser accepts any content-type
+// and re-parses the body as JSON so the handler always receives a plain object.
+// Path covers both /api/billing/grow/webhook and /api/billing/grow/webhook/:secret
+app.use('/api/billing/grow/webhook', express.json({
+  type: () => true,   // accept regardless of Content-Type header
+  limit: '1mb',
+}));
 app.use(cors({
   origin: allowedOrigins,
   credentials: true,

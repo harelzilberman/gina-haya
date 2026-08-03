@@ -551,110 +551,78 @@ billingRouter.post('/grow/create-payment', verifyToken, async (req: any, res) =>
   }
 });
 
-// ── POST /api/billing/grow/webhook ────────────────────────────────────────────
-// PUBLIC route — no Bearer token.  Authenticated via static webhookKey field
-// that Grow includes in every payload (configured in the Grow dashboard).
+// ── POST /api/billing/grow/webhook/:secret ────────────────────────────────────
+// PUBLIC route — no Bearer token.
 //
-// Three payload shapes to handle:
-//   1. Successful one-time   paymentType="רגיל"
-//   2. Successful recurring  paymentType="הוראת קבע" + paymentSource="ריצת הוראת קבע"
-//   3. Failed recurring      snake_case payload with error_message / charges_attempts
-billingRouter.post('/grow/webhook', async (req: Request, res) => {
-  // ── DIAGNOSTIC LOGGING (temporary) ────────────────────────────────────────
-  // Log the raw content-type and body before any parsing so we can confirm
-  // what shape Grow actually sends.  Remove once payload format is confirmed.
+// Authentication: URL-embedded secret (GROW_WEBHOOK_SECRET env var).
+// Grow's PaymentLinks webhook format does not include any per-call signing
+// (no webhookKey in the body, no signature header).  The full webhook URL
+// including the secret token must be configured in Grow's dashboard, making
+// the URL itself the shared secret.  Set in Railway as GROW_WEBHOOK_SECRET.
+//
+// Body format: Grow sends real JSON with a mislabeled
+// Content-Type: application/x-www-form-urlencoded header.  The route-specific
+// express.json({ type: () => true }) in index.ts handles this transparently.
+//
+// Payload shape (Grow PaymentLinks "Regular Payment Webhook" format):
+//   { err: "", status: "1", data: { statusCode: "2", transactionId, payerEmail,
+//     customFields: { cField1: userId, cField2: tier }, productData: [...], ... } }
+//
+// TODO: Verify recurring-cycle webhook shape when a real recurring PaymentLinks
+//   call arrives.  transactionId may differ per cycle; a stable token reference
+//   (paymentLinkProcessId?) may be needed to tie cycles to the same subscription row.
+//
+// TODO: Verify failed-payment webhook shape for the PaymentLinks system.
+//   The old handler assumed snake_case fields (regular_payment_id, webhook_key)
+//   from Grow's legacy system — not yet confirmed against a real failed PaymentLinks call.
+billingRouter.post('/grow/webhook/:secret', async (req: Request, res) => {
+  // ── DIAGNOSTIC LOGGING (keep until recurring/failed shapes are confirmed) ──
   console.log('[grow/webhook] content-type:', req.headers['content-type']);
-  console.log('[grow/webhook] raw body:', JSON.stringify(req.body));
+  console.log('[grow/webhook] body:', JSON.stringify(req.body));
   // ──────────────────────────────────────────────────────────────────────────
 
-  const payload = req.body as Record<string, any>;
-
-  // ── Authenticate ───────────────────────────────────────────────────────────
-  // Failed-recurring events use snake_case "webhook_key"; all others use camelCase.
-  // Two separate Grow webhooks exist (one-time vs recurring), each with its own key.
-  const receivedKey = payload.webhookKey ?? payload.webhook_key;
-  const validKeys = [
-    process.env.GROW_WEBHOOK_KEY_ONETIME,
-    process.env.GROW_WEBHOOK_KEY_RECURRING,
-  ].filter(Boolean);
-  if (!receivedKey || !validKeys.includes(receivedKey)) {
-    console.warn('[grow/webhook] Invalid or missing webhookKey');
+  // ── Authenticate via URL-embedded secret ──────────────────────────────────
+  const webhookSecret = process.env.GROW_WEBHOOK_SECRET;
+  if (!webhookSecret || (req.params as any).secret !== webhookSecret) {
+    console.warn('[grow/webhook] Invalid or missing secret in URL');
     res.status(401).json({ error: 'Unauthorized' });
     return;
   }
 
   try {
-    // ── Failed recurring charge (snake_case shape) ─────────────────────────
-    if (payload.error_message != null || payload.charges_attempts != null) {
-      const directDebitId   = payload.regular_payment_id as string | undefined;
-      const chargesAttempts = Number(payload.charges_attempts ?? 0);
-      // Grow retries up to a configurable number of times; downgrade after final attempt.
-      // 3 is a common default — confirm the configured retry count in your Grow dashboard.
-      const MAX_ATTEMPTS = 3;
+    const envelope = req.body as { err?: string; status?: string; data?: Record<string, any> };
+    const data = envelope?.data;
 
-      console.warn(
-        `[grow/webhook] Failed recurring charge directDebitId=${directDebitId} ` +
-        `attempts=${chargesAttempts} error=${payload.error_message}`
-      );
-
-      if (directDebitId) {
-        const newStatus = chargesAttempts >= MAX_ATTEMPTS ? 'expired' : 'grace_period';
-
-        await db.from('user_subscriptions').update({
-          status:           newStatus,
-          raw_notification: payload,
-          updated_at:       new Date().toISOString(),
-        }).eq('purchase_token', directDebitId).eq('platform', 'grow');
-
-        if (chargesAttempts >= MAX_ATTEMPTS) {
-          const { data: subRecord } = await db
-            .from('user_subscriptions')
-            .select('user_id')
-            .eq('purchase_token', directDebitId)
-            .eq('platform', 'grow')
-            .maybeSingle();
-
-          if (subRecord) {
-            await db.from('users').update({
-              subscription_tier: 'free',
-              updated_at:        new Date().toISOString(),
-            }).eq('id', subRecord.user_id);
-
-            console.log(
-              `[grow/webhook] Downgraded user=${subRecord.user_id} ` +
-              `after ${chargesAttempts} failed recurring attempts`
-            );
-          }
-        }
-      }
-
+    // ── Non-success envelope ───────────────────────────────────────────────
+    // status "1" = call succeeded at transport level.  statusCode "2" inside
+    // data = payment was actually paid (שולם).  Any other combination is logged
+    // and acked without touching the DB.
+    if (!data || envelope.status !== '1') {
+      console.warn('[grow/webhook] Non-success envelope or missing data:', JSON.stringify(envelope));
       res.json({ received: true });
       return;
     }
 
-    // ── Successful payment (one-time or recurring cycle) ───────────────────
-    const paymentType   = payload.paymentType   as string | undefined;
-    const paymentSource = payload.paymentSource as string | undefined;
-    const transactionCode = payload.transactionCode as string | undefined;
-    const directDebitId   = payload.directDebitId   as string | undefined;
-    const payerEmail      = payload.payerEmail       as string | undefined;
+    if (data.statusCode !== '2') {
+      console.warn('[grow/webhook] Payment not in paid state, statusCode:', data.statusCode);
+      res.json({ received: true });
+      return;
+    }
 
-    // cField1/cField2 echoed back if Grow supports it — verify field names
-    // against Grow's Postman collection before relying on them.
-    const internalUserId   = payload.cField1 as string | undefined;
-    const tierFromPayload  = payload.cField2 as string | undefined;
+    // ── Extract fields ─────────────────────────────────────────────────────
+    const transactionId  = data.transactionId  as string | undefined;
+    const payerEmail     = data.payerEmail     as string | undefined;
+    const customFields   = data.customFields   as { cField1?: string; cField2?: string } | undefined;
+    const internalUserId = customFields?.cField1;
+    const tierFromPayload = customFields?.cField2;
 
-    const isRecurringCycle =
-      paymentType === 'הוראת קבע' && paymentSource === 'ריצת הוראת קבע';
+    // One-time: transactionId is unique per charge, used as the canonical token.
+    // TODO: for recurring cycles, verify whether transactionId changes each cycle
+    // or whether paymentLinkProcessId is the stable identifier to use instead.
+    const token = transactionId;
 
-    // For recurring: use directDebitId (stable across cycles) as the canonical token.
-    // For one-time:  use transactionCode (unique per charge).
-    const token = isRecurringCycle
-      ? (directDebitId ?? transactionCode)
-      : transactionCode;
-
-    // ── Resolve user ─────────────────────────────────────────────────────────
-    // Priority: cField1 echo-back → email lookup → existing subscription record
+    // ── Resolve user ──────────────────────────────────────────────────────────
+    // Priority: cField1 (userId set at payment-link creation) → email lookup
     let userId: string | null = internalUserId ?? null;
 
     if (!userId && payerEmail) {
@@ -666,39 +634,24 @@ billingRouter.post('/grow/webhook', async (req: Request, res) => {
       userId = userRow?.id ?? null;
     }
 
-    if (!userId && token) {
-      // Recurring cycle 2+: the subscription record already exists from the first charge
-      const { data: subRow } = await db
-        .from('user_subscriptions')
-        .select('user_id')
-        .eq('purchase_token', token)
-        .eq('platform', 'grow')
-        .maybeSingle();
-      userId = subRow?.user_id ?? null;
-    }
-
     if (!userId) {
       console.warn(
-        '[grow/webhook] Could not resolve user from payload ' +
-        `payerEmail=${payerEmail} token=${token} — acking without action`
+        '[grow/webhook] Could not resolve user ' +
+        `cField1=${internalUserId} payerEmail=${payerEmail} — acking without action`
       );
       res.json({ received: true });
       return;
     }
 
     // ── Resolve tier ──────────────────────────────────────────────────────────
-    // cField2 is the most reliable if Grow echoes it; falls back to gardener_pro.
-    // TODO: once confirmed that Grow echoes custom fields, remove the fallback.
     const tier = tierFromPayload && TIER_ORDER.includes(tierFromPayload)
       ? tierFromPayload
       : 'gardener_pro';
 
-    // ── approveTransaction (required for one-time; verify for first recurring charge) ──
-    // Grow requires an explicit server-to-server approval after a one-time payment
-    // webhook fires, otherwise the transaction is not finalised on Grow's side.
-    // TODO: confirm endpoint path + request body against Grow's Postman collection.
-    // TODO: confirm with Grow/sandbox whether the first recurring charge also needs this call.
-    if (!isRecurringCycle && transactionCode) {
+    // ── approveTransaction ────────────────────────────────────────────────────
+    // Grow requires explicit server-to-server approval after a PaymentLinks
+    // transaction webhook fires.  Non-fatal if it fails — log and continue.
+    if (transactionId) {
       try {
         const approveRes = await fetch(
           `https://${process.env.GROW_API_HOST}/api/v1/Transaction/approve`,
@@ -708,12 +661,11 @@ billingRouter.post('/grow/webhook', async (req: Request, res) => {
             body: JSON.stringify({
               userId:          process.env.GROW_USER_ID,
               pageCode:        process.env.GROW_PAGE_CODE_ONETIME,
-              transactionCode,
+              transactionCode: transactionId,
             }),
           }
         );
         if (!approveRes.ok) {
-          // Non-fatal — log for manual review but continue with subscription update
           console.error(
             '[grow/webhook] approveTransaction failed:',
             approveRes.status,
@@ -726,8 +678,6 @@ billingRouter.post('/grow/webhook', async (req: Request, res) => {
     }
 
     // ── Upsert subscription record ────────────────────────────────────────────
-    // purchase_token is UNIQUE — upsert is idempotent: recurring cycles update
-    // the existing row rather than inserting a duplicate.
     if (token) {
       await db.from('user_subscriptions').upsert(
         {
@@ -735,10 +685,10 @@ billingRouter.post('/grow/webhook', async (req: Request, res) => {
           platform:         'grow',
           purchase_token:   token,
           product_id:       tier,
-          expires_at:       null, // Grow manages the recurring schedule; no explicit expiry
+          expires_at:       null,
           status:           'active',
-          acknowledged:     true, // Grow does not require purchase acknowledgement
-          raw_notification: payload,
+          acknowledged:     true,
+          raw_notification: req.body,
           updated_at:       new Date().toISOString(),
         },
         { onConflict: 'purchase_token' }
@@ -752,12 +702,11 @@ billingRouter.post('/grow/webhook', async (req: Request, res) => {
     }).eq('id', userId);
 
     console.log(
-      `[grow/webhook] user=${userId} tier=${tier} ` +
-      `isRecurring=${isRecurringCycle} token=${token}`
+      `[grow/webhook] ACCEPTED user=${userId} tier=${tier} transactionId=${transactionId}`
     );
   } catch (err: any) {
     console.error('[grow/webhook] handler error:', err);
-    // Return 200 so Grow does not keep retrying on internal errors
+    // Always 200 so Grow does not retry on internal errors
   }
 
   res.json({ received: true });
