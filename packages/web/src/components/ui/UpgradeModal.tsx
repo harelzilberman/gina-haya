@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { useUpgradeModalStore } from '../../stores/upgradeModalStore';
 import { useAuthStore } from '../../stores/authStore';
 import { useTier } from '../../hooks/useTier';
@@ -69,30 +70,98 @@ const TIER_FEATURES_LIST: Record<string, string[]> = {
   ],
 };
 
+const ISRAELI_MOBILE_RE = /^05\d{8}$/;
+const validatePhone = (v: string): string | null =>
+  ISRAELI_MOBILE_RE.test(v) ? null : 'מספר פלאפון ישראלי לא תקין (לדוגמה: 0501234567)';
+
+// Grow requires first + last name, each at least 2 characters.
+const validateFullName = (v: string): string | null => {
+  const words = v.trim().split(/\s+/);
+  return words.length >= 2 && words.every(w => w.length >= 2)
+    ? null
+    : 'נדרש שם מלא — שם פרטי ושם משפחה (לפחות 2 תווים כל אחד)';
+};
+
 export function UpgradeModal() {
   if (import.meta.env.PROD && import.meta.env.VITE_LAUNCH_FREE_MODE === 'true') {
     return null;
   }
 
-  const { close }           = useUpgradeModalStore();
-  const { session }         = useAuthStore();
+  const { close }             = useUpgradeModalStore();
+  const { session }           = useAuthStore();
   const { tier: currentTier } = useTier();
+  const { i18n }              = useTranslation();
   const [loading, setLoading] = useState<string | null>(null);
 
-  const handleUpgrade = async (targetTier: SubscriptionTier) => {
+  // Grow-only checkout collection state.
+  // pendingGrowTier: when set, renders the name+phone step instead of the tier grid.
+  const [pendingGrowTier, setPendingGrowTier] = useState<SubscriptionTier | null>(null);
+  const [fullName,    setFullName]    = useState('');
+  const [fullNameErr, setFullNameErr] = useState<string | null>(null);
+  const [phone,       setPhone]       = useState('');
+  const [phoneError,  setPhoneError]  = useState<string | null>(null);
+
+  const resetCheckoutStep = () => {
+    setPendingGrowTier(null);
+    setFullName('');
+    setFullNameErr(null);
+    setPhone('');
+    setPhoneError(null);
+  };
+
+  // Called when a tier card's upgrade button is clicked.
+  const handleUpgrade = (targetTier: SubscriptionTier) => {
     if (targetTier === 'free' || !session?.access_token) return;
+
+    if (i18n.language === 'he') {
+      // Hebrew/Israeli users → Grow path.
+      // Show the phone collection step; don't call the API yet.
+      setPendingGrowTier(targetTier);
+      return;
+    }
+
+    // Non-Hebrew → Stripe.
     setLoading(targetTier);
+    api.post<{ checkoutUrl?: string }>(
+      '/api/billing/create-checkout',
+      { tier: targetTier },
+      session.access_token,
+    ).then(data => {
+      if (data.checkoutUrl) window.location.href = data.checkoutUrl;
+    }).catch(() => {
+      // silent
+    }).finally(() => {
+      setLoading(null);
+    });
+  };
+
+  // Called when user confirms name + phone and clicks pay (Grow path only).
+  const handleGrowConfirm = async () => {
+    if (!pendingGrowTier || !session?.access_token) return;
+
+    const nameErr  = validateFullName(fullName);
+    const phoneErr = validatePhone(phone);
+    if (nameErr)  { setFullNameErr(nameErr);  return; }
+    if (phoneErr) { setPhoneError(phoneErr);  return; }
+
+    setLoading(pendingGrowTier);
     try {
-      const data = await api.post<{ checkoutUrl?: string }>('/api/billing/create-checkout', { tier: targetTier }, session.access_token);
-      if (data.checkoutUrl) {
-        window.location.href = data.checkoutUrl;
-      }
+      const data = await api.post<{ paymentUrl?: string }>(
+        '/api/billing/grow/create-payment',
+        { tier: pendingGrowTier, recurring: false, fullName: fullName.trim(), phone },
+        session.access_token,
+      );
+      if (data.paymentUrl) window.location.href = data.paymentUrl;
     } catch {
       // silent
     } finally {
       setLoading(null);
     }
   };
+
+  const isFullNameValid = validateFullName(fullName) === null;
+  const isPhoneValid    = ISRAELI_MOBILE_RE.test(phone);
+  const isFormValid     = isFullNameValid && isPhoneValid;
 
   return (
     <>
@@ -110,7 +179,7 @@ export function UpgradeModal() {
           padding:         '16px',
           backgroundColor: 'rgba(0,0,0,0.9)',
         }}
-        onClick={e => { if (e.target === e.currentTarget) close(); }}
+        onClick={e => { if (e.target === e.currentTarget) { resetCheckoutStep(); close(); } }}
       >
         <div
           className="upgrade-modal-card upgrade-modal-scroll"
@@ -127,15 +196,15 @@ export function UpgradeModal() {
         >
           {/* Header */}
           <div style={{
-            display:      'flex',
-            alignItems:   'center',
-            justifyContent:'space-between',
-            padding:      '24px 28px 20px',
-            borderBottom: '1px solid rgba(0,229,195,0.1)',
-            position:     'sticky',
-            top:          0,
+            display:         'flex',
+            alignItems:      'center',
+            justifyContent:  'space-between',
+            padding:         '24px 28px 20px',
+            borderBottom:    '1px solid rgba(0,229,195,0.1)',
+            position:        'sticky',
+            top:             0,
             backgroundColor: SOIL,
-            zIndex:       1,
+            zIndex:          1,
           }}>
             <div>
               <h2 style={{
@@ -145,7 +214,7 @@ export function UpgradeModal() {
                 color:      GOLD,
                 margin:     '0 0 4px',
               }}>
-                שדרג את התוכנית שלך
+                {pendingGrowTier ? 'השלמת הרכישה' : 'שדרג את התוכנית שלך'}
               </h2>
               <p style={{
                 fontFamily: ASSIST,
@@ -153,12 +222,14 @@ export function UpgradeModal() {
                 color:      `${PARCH}55`,
                 margin:     0,
               }}>
-                בחר את התוכנית המתאימה לך
+                {pendingGrowTier
+                  ? `תוכנית ${getLimits(pendingGrowTier).displayNameHe} — ₪${TIER_PRICING[pendingGrowTier]?.monthly} / חודש`
+                  : 'בחר את התוכנית המתאימה לך'}
               </p>
             </div>
-            {/* Close — top-LEFT (RTL) */}
+            {/* Close button */}
             <button
-              onClick={close}
+              onClick={() => { resetCheckoutStep(); close(); }}
               aria-label="סגור"
               style={{
                 width:           '34px',
@@ -182,172 +253,319 @@ export function UpgradeModal() {
             </button>
           </div>
 
-          {/* Tier cards grid */}
-          <div style={{
-            display:             'grid',
-            gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))',
-            gap:                 '14px',
-            padding:             '24px 28px',
-          }}>
-            {TIER_ORDER.map(tier => {
-              const isCurrent   = tier === currentTier;
-              const isPro       = tier === 'gardener_pro';
-              const isDowngrade = TIER_ORDER.indexOf(tier) < TIER_ORDER.indexOf(currentTier);
+          {/* ── Name + phone collection step (Grow / Hebrew only) ── */}
+          {pendingGrowTier ? (
+            <div dir="rtl" style={{ padding: '28px', display: 'flex', flexDirection: 'column', gap: '20px' }}>
+              <p style={{ fontFamily: ASSIST, fontSize: '14px', color: `${PARCH}CC`, margin: 0 }}>
+                לצורך עיבוד התשלום נדרשים שם מלא ומספר פלאפון ישראלי.
+              </p>
 
-              return (
-                <div
-                  key={tier}
+              {/* Full name */}
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
+                <label
+                  htmlFor="grow-fullname"
+                  style={{ fontFamily: ASSIST, fontSize: '13px', fontWeight: 600, color: PARCH }}
+                >
+                  שם מלא
+                </label>
+                <input
+                  id="grow-fullname"
+                  type="text"
+                  dir="rtl"
+                  placeholder="ישראל ישראלי"
+                  value={fullName}
+                  onChange={e => {
+                    setFullName(e.target.value);
+                    if (e.target.value.length > 0) setFullNameErr(validateFullName(e.target.value));
+                    else setFullNameErr(null);
+                  }}
+                  onBlur={() => {
+                    if (fullName.length > 0) setFullNameErr(validateFullName(fullName));
+                  }}
                   style={{
-                    position:        'relative',
-                    borderRadius:    '12px',
-                    padding:         '20px',
-                    display:         'flex',
-                    flexDirection:   'column',
-                    gap:             '12px',
-                    background:      'rgba(9,20,16,0.6)',
-                    border:          isCurrent
-                      ? `2px solid ${SAGE}88`
-                      : isPro
-                      ? `2px solid ${GOLD}`
-                      : '1px solid rgba(0,229,195,0.15)',
-                    transform:       isPro ? 'scale(1.02)' : 'none',
+                    width:           '100%',
+                    padding:         '11px 14px',
+                    borderRadius:    '8px',
+                    border:          fullNameErr
+                      ? '1px solid rgba(192,57,43,0.7)'
+                      : isFullNameValid && fullName.length > 0
+                      ? `1px solid ${SAGE}88`
+                      : '1px solid rgba(0,229,195,0.2)',
+                    backgroundColor: 'rgba(9,20,16,0.6)',
+                    fontFamily:      ASSIST,
+                    fontSize:        '15px',
+                    color:           PARCH,
+                    outline:         'none',
+                    boxSizing:       'border-box',
+                  }}
+                />
+                {fullNameErr && (
+                  <p style={{ fontFamily: ASSIST, fontSize: '12px', color: '#C0372A', margin: 0 }}>
+                    {fullNameErr}
+                  </p>
+                )}
+              </div>
+
+              {/* Phone */}
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
+                <label
+                  htmlFor="grow-phone"
+                  style={{ fontFamily: ASSIST, fontSize: '13px', fontWeight: 600, color: PARCH }}
+                >
+                  מספר פלאפון
+                </label>
+                <input
+                  id="grow-phone"
+                  type="tel"
+                  dir="ltr"
+                  inputMode="numeric"
+                  placeholder="0501234567"
+                  value={phone}
+                  onChange={e => {
+                    const v = e.target.value.replace(/\D/g, '').slice(0, 10);
+                    setPhone(v);
+                    if (v.length > 0) setPhoneError(validatePhone(v));
+                    else setPhoneError(null);
+                  }}
+                  onBlur={() => {
+                    if (phone.length > 0) setPhoneError(validatePhone(phone));
+                  }}
+                  style={{
+                    width:           '100%',
+                    padding:         '11px 14px',
+                    borderRadius:    '8px',
+                    border:          phoneError
+                      ? '1px solid rgba(192,57,43,0.7)'
+                      : isPhoneValid
+                      ? `1px solid ${SAGE}88`
+                      : '1px solid rgba(0,229,195,0.2)',
+                    backgroundColor: 'rgba(9,20,16,0.6)',
+                    fontFamily:      ASSIST,
+                    fontSize:        '15px',
+                    color:           PARCH,
+                    outline:         'none',
+                    boxSizing:       'border-box',
+                    letterSpacing:   '0.06em',
+                  }}
+                />
+                {phoneError && (
+                  <p style={{ fontFamily: ASSIST, fontSize: '12px', color: '#C0372A', margin: 0 }}>
+                    {phoneError}
+                  </p>
+                )}
+              </div>
+
+              <div style={{ display: 'flex', gap: '10px' }}>
+                <button
+                  onClick={resetCheckoutStep}
+                  style={{
+                    flex:            1,
+                    padding:         '11px',
+                    borderRadius:    '8px',
+                    border:          '1px solid rgba(0,229,195,0.15)',
+                    backgroundColor: 'transparent',
+                    fontFamily:      ASSIST,
+                    fontSize:        '13px',
+                    color:           `${PARCH}77`,
+                    cursor:          'pointer',
                   }}
                 >
-                  {/* Badges */}
-                  {isPro && (
-                    <span style={{
-                      position:        'absolute',
-                      top:             '-12px',
-                      left:            '50%',
-                      transform:       'translateX(-50%)',
-                      fontFamily:      FRANK,
-                      fontWeight:      700,
-                      fontSize:        '11px',
-                      padding:         '3px 12px',
-                      borderRadius:    '50px',
-                      backgroundColor: GOLD,
-                      color:           EARTH,
-                      whiteSpace:      'nowrap',
-                    }}>
-                      הכי פופולרי
-                    </span>
-                  )}
-                  {isCurrent && (
-                    <span style={{
-                      position:        'absolute',
-                      top:             '-12px',
-                      left:            '50%',
-                      transform:       'translateX(-50%)',
-                      fontFamily:      ASSIST,
-                      fontWeight:      600,
-                      fontSize:        '11px',
-                      padding:         '3px 12px',
-                      borderRadius:    '50px',
-                      backgroundColor: 'rgba(74,156,104,0.3)',
-                      border:          `1px solid ${SAGE}44`,
-                      color:           SAGE,
-                      whiteSpace:      'nowrap',
-                    }}>
-                      התוכנית הנוכחית שלך
-                    </span>
-                  )}
+                  חזרה
+                </button>
+                <button
+                  onClick={handleGrowConfirm}
+                  disabled={!isFormValid || loading === pendingGrowTier}
+                  style={{
+                    flex:            2,
+                    padding:         '11px',
+                    borderRadius:    '8px',
+                    border:          'none',
+                    backgroundColor: isFormValid && loading !== pendingGrowTier ? GOLD : `${GOLD}44`,
+                    fontFamily:      FRANK,
+                    fontWeight:      600,
+                    fontSize:        '14px',
+                    color:           EARTH,
+                    cursor:          isFormValid && loading !== pendingGrowTier ? 'pointer' : 'default',
+                    transition:      'filter 0.15s',
+                  }}
+                  onMouseEnter={e => {
+                    if (isFormValid && loading !== pendingGrowTier)
+                      (e.currentTarget as HTMLElement).style.filter = 'brightness(1.1)';
+                  }}
+                  onMouseLeave={e => { (e.currentTarget as HTMLElement).style.filter = 'none'; }}
+                >
+                  {loading === pendingGrowTier ? '...' : 'לתשלום'}
+                </button>
+              </div>
+            </div>
+          ) : (
+            /* ── Tier cards grid (default view) ── */
+            <div style={{
+              display:             'grid',
+              gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))',
+              gap:                 '14px',
+              padding:             '24px 28px',
+            }}>
+              {TIER_ORDER.map(tier => {
+                const isCurrent   = tier === currentTier;
+                const isPro       = tier === 'gardener_pro';
+                const isDowngrade = TIER_ORDER.indexOf(tier) < TIER_ORDER.indexOf(currentTier);
 
-                  {/* Name & price */}
-                  <div>
-                    <p style={{
-                      fontFamily: FRANK,
-                      fontWeight: 700,
-                      fontSize:   '16px',
-                      color:      isPro ? GOLD : PARCH,
-                      margin:     '0 0 4px',
-                    }}>
-                      {getLimits(tier).displayNameHe}
-                    </p>
-                    <p style={{
-                      fontFamily: PLAYFAIR,
-                      fontStyle:  'italic',
-                      fontSize:   '15px',
-                      color:      isPro ? GOLD : `${PARCH}BB`,
-                      margin:     0,
-                    }}>
-                      {TIER_PRICING[tier]?.monthly != null ? `₪${TIER_PRICING[tier].monthly} / חודש` : 'חינם'}
-                    </p>
-                  </div>
+                return (
+                  <div
+                    key={tier}
+                    style={{
+                      position:      'relative',
+                      borderRadius:  '12px',
+                      padding:       '20px',
+                      display:       'flex',
+                      flexDirection: 'column',
+                      gap:           '12px',
+                      background:    'rgba(9,20,16,0.6)',
+                      border:        isCurrent
+                        ? `2px solid ${SAGE}88`
+                        : isPro
+                        ? `2px solid ${GOLD}`
+                        : '1px solid rgba(0,229,195,0.15)',
+                      transform:     isPro ? 'scale(1.02)' : 'none',
+                    }}
+                  >
+                    {/* Badges */}
+                    {isPro && (
+                      <span style={{
+                        position:        'absolute',
+                        top:             '-12px',
+                        left:            '50%',
+                        transform:       'translateX(-50%)',
+                        fontFamily:      FRANK,
+                        fontWeight:      700,
+                        fontSize:        '11px',
+                        padding:         '3px 12px',
+                        borderRadius:    '50px',
+                        backgroundColor: GOLD,
+                        color:           EARTH,
+                        whiteSpace:      'nowrap',
+                      }}>
+                        הכי פופולרי
+                      </span>
+                    )}
+                    {isCurrent && (
+                      <span style={{
+                        position:        'absolute',
+                        top:             '-12px',
+                        left:            '50%',
+                        transform:       'translateX(-50%)',
+                        fontFamily:      ASSIST,
+                        fontWeight:      600,
+                        fontSize:        '11px',
+                        padding:         '3px 12px',
+                        borderRadius:    '50px',
+                        backgroundColor: 'rgba(74,156,104,0.3)',
+                        border:          `1px solid ${SAGE}44`,
+                        color:           SAGE,
+                        whiteSpace:      'nowrap',
+                      }}>
+                        התוכנית הנוכחית שלך
+                      </span>
+                    )}
 
-                  {/* Features */}
-                  <ul style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: '7px', margin: 0, padding: 0, listStyle: 'none' }}>
-                    {TIER_FEATURES_LIST[tier].map(feature => (
-                      <li key={feature} style={{ display: 'flex', alignItems: 'flex-start', gap: '6px', fontFamily: ASSIST, fontSize: '12px', color: `${PARCH}AA` }}>
-                        <span style={{ color: SAGE, flexShrink: 0, marginTop: '1px' }}>✓</span>
-                        {feature}
-                      </li>
-                    ))}
-                  </ul>
-
-                  {/* CTA */}
-                  {tier === 'free' || isCurrent ? (
-                    <div style={{
-                      padding:         '10px',
-                      borderRadius:    '8px',
-                      textAlign:       'center',
-                      fontFamily:      ASSIST,
-                      fontSize:        '13px',
-                      color:           `${PARCH}44`,
-                      backgroundColor: 'rgba(255,255,255,0.03)',
-                      border:          '1px solid rgba(255,255,255,0.06)',
-                    }}>
-                      {isCurrent ? 'תוכנית נוכחית' : 'חינמי'}
+                    {/* Name & price */}
+                    <div>
+                      <p style={{
+                        fontFamily: FRANK,
+                        fontWeight: 700,
+                        fontSize:   '16px',
+                        color:      isPro ? GOLD : PARCH,
+                        margin:     '0 0 4px',
+                      }}>
+                        {getLimits(tier).displayNameHe}
+                      </p>
+                      <p style={{
+                        fontFamily: PLAYFAIR,
+                        fontStyle:  'italic',
+                        fontSize:   '15px',
+                        color:      isPro ? GOLD : `${PARCH}BB`,
+                        margin:     0,
+                      }}>
+                        {TIER_PRICING[tier]?.monthly != null ? `₪${TIER_PRICING[tier].monthly} / חודש` : 'חינם'}
+                      </p>
                     </div>
-                  ) : isDowngrade ? (
-                    <div style={{
-                      padding:         '10px',
-                      borderRadius:    '8px',
-                      textAlign:       'center',
-                      fontFamily:      ASSIST,
-                      fontSize:        '13px',
-                      color:           `${PARCH}33`,
-                      backgroundColor: 'rgba(255,255,255,0.03)',
-                    }}>
-                      לא זמין
-                    </div>
-                  ) : (
-                    <button
-                      onClick={() => handleUpgrade(tier)}
-                      disabled={loading === tier}
-                      style={{
-                        width:           '100%',
+
+                    {/* Features */}
+                    <ul style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: '7px', margin: 0, padding: 0, listStyle: 'none' }}>
+                      {TIER_FEATURES_LIST[tier].map(feature => (
+                        <li key={feature} style={{ display: 'flex', alignItems: 'flex-start', gap: '6px', fontFamily: ASSIST, fontSize: '12px', color: `${PARCH}AA` }}>
+                          <span style={{ color: SAGE, flexShrink: 0, marginTop: '1px' }}>✓</span>
+                          {feature}
+                        </li>
+                      ))}
+                    </ul>
+
+                    {/* CTA */}
+                    {tier === 'free' || isCurrent ? (
+                      <div style={{
                         padding:         '10px',
                         borderRadius:    '8px',
-                        border:          isPro ? 'none' : `1px solid ${GOLD}55`,
-                        backgroundColor: isPro ? GOLD : 'transparent',
-                        fontFamily:      FRANK,
-                        fontWeight:      600,
+                        textAlign:       'center',
+                        fontFamily:      ASSIST,
                         fontSize:        '13px',
-                        color:           isPro ? EARTH : GOLD,
-                        cursor:          loading === tier ? 'default' : 'pointer',
-                        opacity:         loading === tier ? 0.7 : 1,
-                        transition:      'filter 0.15s, background-color 0.15s',
-                      }}
-                      onMouseEnter={e => {
-                        if (loading !== tier) {
+                        color:           `${PARCH}44`,
+                        backgroundColor: 'rgba(255,255,255,0.03)',
+                        border:          '1px solid rgba(255,255,255,0.06)',
+                      }}>
+                        {isCurrent ? 'תוכנית נוכחית' : 'חינמי'}
+                      </div>
+                    ) : isDowngrade ? (
+                      <div style={{
+                        padding:         '10px',
+                        borderRadius:    '8px',
+                        textAlign:       'center',
+                        fontFamily:      ASSIST,
+                        fontSize:        '13px',
+                        color:           `${PARCH}33`,
+                        backgroundColor: 'rgba(255,255,255,0.03)',
+                      }}>
+                        לא זמין
+                      </div>
+                    ) : (
+                      <button
+                        onClick={() => handleUpgrade(tier)}
+                        disabled={loading === tier}
+                        style={{
+                          width:           '100%',
+                          padding:         '10px',
+                          borderRadius:    '8px',
+                          border:          isPro ? 'none' : `1px solid ${GOLD}55`,
+                          backgroundColor: isPro ? GOLD : 'transparent',
+                          fontFamily:      FRANK,
+                          fontWeight:      600,
+                          fontSize:        '13px',
+                          color:           isPro ? EARTH : GOLD,
+                          cursor:          loading === tier ? 'default' : 'pointer',
+                          opacity:         loading === tier ? 0.7 : 1,
+                          transition:      'filter 0.15s, background-color 0.15s',
+                        }}
+                        onMouseEnter={e => {
+                          if (loading !== tier) {
+                            const el = e.currentTarget as HTMLElement;
+                            if (isPro) el.style.filter = 'brightness(1.1)';
+                            else el.style.backgroundColor = 'rgba(0,229,195,0.1)';
+                          }
+                        }}
+                        onMouseLeave={e => {
                           const el = e.currentTarget as HTMLElement;
-                          if (isPro) el.style.filter = 'brightness(1.1)';
-                          else el.style.backgroundColor = 'rgba(0,229,195,0.1)';
-                        }
-                      }}
-                      onMouseLeave={e => {
-                        const el = e.currentTarget as HTMLElement;
-                        el.style.filter = 'none';
-                        if (!isPro) el.style.backgroundColor = 'transparent';
-                      }}
-                    >
-                      {loading === tier ? '...' : 'שדרג עכשיו'}
-                    </button>
-                  )}
-                </div>
-              );
-            })}
-          </div>
+                          el.style.filter = 'none';
+                          if (!isPro) el.style.backgroundColor = 'transparent';
+                        }}
+                      >
+                        {loading === tier ? '...' : 'שדרג עכשיו'}
+                      </button>
+                    )}
+                  </div>
+                );
+              })}
+            </div>
+          )}
 
         </div>
       </div>

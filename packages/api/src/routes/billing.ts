@@ -443,6 +443,314 @@ billingRouter.post('/play/rtdn', async (req: Request, res) => {
   res.json({ received: true });
 });
 
+// ═══════════════════════════════════════════════════════════════════════════════
+// GROW PAYMENTS (formerly Meshulam) — Israeli payment gateway
+// ═══════════════════════════════════════════════════════════════════════════════
+//
+// One-time payment flow (active):
+//   1. Frontend calls POST /api/billing/grow/create-payment
+//   2. Backend POSTs to the Make.com webhook (GROW_MAKE_WEBHOOK_URL)
+//      Make runs: Custom Webhook → Grow "Create Payment Link" → Webhook Response
+//   3. Make returns { paymentUrl } — a sandbox.grow.link / grow.link URL
+//   4. Backend relays paymentUrl to the frontend; frontend redirects the user
+//   5. After the user pays, Grow POSTs a completion event to /api/billing/grow/webhook
+//   6. Webhook handler calls approveTransaction (direct Grow API) to finalise
+//
+// Recurring/subscription flow: not yet active — a second Make scenario will be
+// built for "הוראת קבע" (standing orders) with its own webhook URL.
+// ═══════════════════════════════════════════════════════════════════════════════
+
+// ── POST /api/billing/grow/create-payment ─────────────────────────────────────
+// Creates a Grow payment link via Make.com and returns it to the frontend.
+// The browser never touches Grow directly — Grow blocks cross-origin requests.
+const ISRAELI_MOBILE_RE = /^05\d{8}$/;
+
+billingRouter.post('/grow/create-payment', verifyToken, async (req: any, res) => {
+  try {
+    const { tier, recurring = false, fullName, phone } = req.body as {
+      tier: string;
+      recurring?: boolean;
+      fullName?: string;
+      phone?: string;
+    };
+
+    const makeWebhookUrl = recurring
+      ? process.env.GROW_MAKE_WEBHOOK_URL_RECURRING
+      : process.env.GROW_MAKE_WEBHOOK_URL;
+
+    if (!makeWebhookUrl) {
+      res.status(503).json({ error: 'Grow payments not configured for this mode' });
+      return;
+    }
+
+    const amount = TIER_PRICING[tier]?.monthly ?? null;
+    if (!amount) {
+      res.status(400).json({ error: 'Invalid tier or tier has no price' });
+      return;
+    }
+
+    // Validate fullName — Grow requires first + last name, each at least 2 characters.
+    const nameParts = (fullName ?? '').trim().split(/\s+/);
+    if (nameParts.length < 2 || nameParts.some(w => w.length < 2)) {
+      res.status(400).json({ error: 'Full name required (first and last name, each at least 2 characters)' });
+      return;
+    }
+    const validatedName = nameParts.join(' ');
+
+    // Validate phone — Grow requires a valid Israeli mobile number (05XXXXXXXX).
+    if (!phone || !ISRAELI_MOBILE_RE.test(phone)) {
+      res.status(400).json({ error: 'Valid Israeli mobile phone number required (e.g. 0501234567)' });
+      return;
+    }
+
+    const origin = req.headers.origin ?? 'https://gina-haya.com';
+
+    const makeRes = await fetch(makeWebhookUrl, {
+      method:  'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        fullName: validatedName,
+        phone,
+        email:      req.user.email,
+        sum:        amount,
+        userId:     req.user.id,
+        tier,
+        successUrl: `${origin}/billing?status=success`,
+        cancelUrl:  `${origin}/billing?status=cancelled`,
+      }),
+    });
+
+    const rawBody = await makeRes.text();
+
+    if (!makeRes.ok) {
+      console.error('[grow/create-payment] Make webhook error:', makeRes.status, rawBody);
+      res.status(502).json({ error: 'Payment creation failed' });
+      return;
+    }
+
+    let data: any;
+    try {
+      data = JSON.parse(rawBody);
+    } catch {
+      console.error('[grow/create-payment] Make returned non-JSON:', rawBody);
+      res.status(502).json({ error: 'Payment creation failed' });
+      return;
+    }
+
+    const paymentUrl: string | undefined = data?.paymentUrl;
+    if (!paymentUrl) {
+      console.error('[grow/create-payment] No paymentUrl in Make response:', data);
+      res.status(502).json({ error: 'Payment creation failed' });
+      return;
+    }
+
+    res.json({ paymentUrl });
+  } catch (err: any) {
+    console.error('[POST /api/billing/grow/create-payment]', err);
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// ── POST /api/billing/grow/webhook ────────────────────────────────────────────
+// PUBLIC route — no Bearer token.  Authenticated via static webhookKey field
+// that Grow includes in every payload (configured in the Grow dashboard).
+//
+// Three payload shapes to handle:
+//   1. Successful one-time   paymentType="רגיל"
+//   2. Successful recurring  paymentType="הוראת קבע" + paymentSource="ריצת הוראת קבע"
+//   3. Failed recurring      snake_case payload with error_message / charges_attempts
+billingRouter.post('/grow/webhook', async (req: Request, res) => {
+  const payload = req.body as Record<string, any>;
+
+  // ── Authenticate ───────────────────────────────────────────────────────────
+  // Failed-recurring events use snake_case "webhook_key"; all others use camelCase.
+  const receivedKey = payload.webhookKey ?? payload.webhook_key;
+  if (!receivedKey || receivedKey !== process.env.GROW_WEBHOOK_KEY) {
+    console.warn('[grow/webhook] Invalid or missing webhookKey');
+    res.status(401).json({ error: 'Unauthorized' });
+    return;
+  }
+
+  try {
+    // ── Failed recurring charge (snake_case shape) ─────────────────────────
+    if (payload.error_message != null || payload.charges_attempts != null) {
+      const directDebitId   = payload.regular_payment_id as string | undefined;
+      const chargesAttempts = Number(payload.charges_attempts ?? 0);
+      // Grow retries up to a configurable number of times; downgrade after final attempt.
+      // 3 is a common default — confirm the configured retry count in your Grow dashboard.
+      const MAX_ATTEMPTS = 3;
+
+      console.warn(
+        `[grow/webhook] Failed recurring charge directDebitId=${directDebitId} ` +
+        `attempts=${chargesAttempts} error=${payload.error_message}`
+      );
+
+      if (directDebitId) {
+        const newStatus = chargesAttempts >= MAX_ATTEMPTS ? 'expired' : 'grace_period';
+
+        await db.from('user_subscriptions').update({
+          status:           newStatus,
+          raw_notification: payload,
+          updated_at:       new Date().toISOString(),
+        }).eq('purchase_token', directDebitId).eq('platform', 'grow');
+
+        if (chargesAttempts >= MAX_ATTEMPTS) {
+          const { data: subRecord } = await db
+            .from('user_subscriptions')
+            .select('user_id')
+            .eq('purchase_token', directDebitId)
+            .eq('platform', 'grow')
+            .maybeSingle();
+
+          if (subRecord) {
+            await db.from('users').update({
+              subscription_tier: 'free',
+              updated_at:        new Date().toISOString(),
+            }).eq('id', subRecord.user_id);
+
+            console.log(
+              `[grow/webhook] Downgraded user=${subRecord.user_id} ` +
+              `after ${chargesAttempts} failed recurring attempts`
+            );
+          }
+        }
+      }
+
+      res.json({ received: true });
+      return;
+    }
+
+    // ── Successful payment (one-time or recurring cycle) ───────────────────
+    const paymentType   = payload.paymentType   as string | undefined;
+    const paymentSource = payload.paymentSource as string | undefined;
+    const transactionCode = payload.transactionCode as string | undefined;
+    const directDebitId   = payload.directDebitId   as string | undefined;
+    const payerEmail      = payload.payerEmail       as string | undefined;
+
+    // cField1/cField2 echoed back if Grow supports it — verify field names
+    // against Grow's Postman collection before relying on them.
+    const internalUserId   = payload.cField1 as string | undefined;
+    const tierFromPayload  = payload.cField2 as string | undefined;
+
+    const isRecurringCycle =
+      paymentType === 'הוראת קבע' && paymentSource === 'ריצת הוראת קבע';
+
+    // For recurring: use directDebitId (stable across cycles) as the canonical token.
+    // For one-time:  use transactionCode (unique per charge).
+    const token = isRecurringCycle
+      ? (directDebitId ?? transactionCode)
+      : transactionCode;
+
+    // ── Resolve user ─────────────────────────────────────────────────────────
+    // Priority: cField1 echo-back → email lookup → existing subscription record
+    let userId: string | null = internalUserId ?? null;
+
+    if (!userId && payerEmail) {
+      const { data: userRow } = await db
+        .from('users')
+        .select('id')
+        .eq('email', payerEmail)
+        .maybeSingle();
+      userId = userRow?.id ?? null;
+    }
+
+    if (!userId && token) {
+      // Recurring cycle 2+: the subscription record already exists from the first charge
+      const { data: subRow } = await db
+        .from('user_subscriptions')
+        .select('user_id')
+        .eq('purchase_token', token)
+        .eq('platform', 'grow')
+        .maybeSingle();
+      userId = subRow?.user_id ?? null;
+    }
+
+    if (!userId) {
+      console.warn(
+        '[grow/webhook] Could not resolve user from payload ' +
+        `payerEmail=${payerEmail} token=${token} — acking without action`
+      );
+      res.json({ received: true });
+      return;
+    }
+
+    // ── Resolve tier ──────────────────────────────────────────────────────────
+    // cField2 is the most reliable if Grow echoes it; falls back to gardener_pro.
+    // TODO: once confirmed that Grow echoes custom fields, remove the fallback.
+    const tier = tierFromPayload && TIER_ORDER.includes(tierFromPayload)
+      ? tierFromPayload
+      : 'gardener_pro';
+
+    // ── approveTransaction (required for one-time; verify for first recurring charge) ──
+    // Grow requires an explicit server-to-server approval after a one-time payment
+    // webhook fires, otherwise the transaction is not finalised on Grow's side.
+    // TODO: confirm endpoint path + request body against Grow's Postman collection.
+    // TODO: confirm with Grow/sandbox whether the first recurring charge also needs this call.
+    if (!isRecurringCycle && transactionCode) {
+      try {
+        const approveRes = await fetch(
+          `https://${process.env.GROW_API_HOST}/api/v1/Transaction/approve`,
+          {
+            method:  'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              userId:          process.env.GROW_USER_ID,
+              pageCode:        process.env.GROW_PAGE_CODE_ONETIME,
+              transactionCode,
+            }),
+          }
+        );
+        if (!approveRes.ok) {
+          // Non-fatal — log for manual review but continue with subscription update
+          console.error(
+            '[grow/webhook] approveTransaction failed:',
+            approveRes.status,
+            await approveRes.text()
+          );
+        }
+      } catch (approveErr: any) {
+        console.error('[grow/webhook] approveTransaction threw:', approveErr.message);
+      }
+    }
+
+    // ── Upsert subscription record ────────────────────────────────────────────
+    // purchase_token is UNIQUE — upsert is idempotent: recurring cycles update
+    // the existing row rather than inserting a duplicate.
+    if (token) {
+      await db.from('user_subscriptions').upsert(
+        {
+          user_id:          userId,
+          platform:         'grow',
+          purchase_token:   token,
+          product_id:       tier,
+          expires_at:       null, // Grow manages the recurring schedule; no explicit expiry
+          status:           'active',
+          acknowledged:     true, // Grow does not require purchase acknowledgement
+          raw_notification: payload,
+          updated_at:       new Date().toISOString(),
+        },
+        { onConflict: 'purchase_token' }
+      );
+    }
+
+    // ── Update user tier ──────────────────────────────────────────────────────
+    await db.from('users').update({
+      subscription_tier: tier,
+      updated_at:        new Date().toISOString(),
+    }).eq('id', userId);
+
+    console.log(
+      `[grow/webhook] user=${userId} tier=${tier} ` +
+      `isRecurring=${isRecurringCycle} token=${token}`
+    );
+  } catch (err: any) {
+    console.error('[grow/webhook] handler error:', err);
+    // Return 200 so Grow does not keep retrying on internal errors
+  }
+
+  res.json({ received: true });
+});
+
 // ── GET /api/billing/play/status ──────────────────────────────────────────────
 billingRouter.get('/play/status', verifyToken, async (req: any, res) => {
   try {
