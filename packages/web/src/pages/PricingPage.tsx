@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useAuthStore } from '../stores/authStore';
+import { useUpgradeModalStore } from '../stores/upgradeModalStore';
 import { getLimits, TIER_PRICING } from '@gina-haya/shared';
 
 const NIGHT      = '#050d0a';
@@ -151,6 +152,7 @@ function ComingSoonToast({ visible }: { visible: boolean }) {
 
 export function PricingPage() {
   const { profile } = useAuthStore();
+  const { open: openUpgradeModal } = useUpgradeModalStore();
   const [isAnnual, setIsAnnual] = useState(false);
   const [openFaq, setOpenFaq] = useState<number | null>(null);
   const [toastVisible, setToastVisible] = useState(false);
@@ -189,7 +191,7 @@ export function PricingPage() {
 
   const upgradeBtn = (label: string) => (
     <button
-      onClick={showToast}
+      onClick={() => openUpgradeModal('pricing_page')}
       style={{
         display: 'block', width: '100%',
         fontFamily: FRANK, fontSize: '15px', fontWeight: 700,
