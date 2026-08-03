@@ -560,6 +560,13 @@ billingRouter.post('/grow/create-payment', verifyToken, async (req: any, res) =>
 //   2. Successful recurring  paymentType="הוראת קבע" + paymentSource="ריצת הוראת קבע"
 //   3. Failed recurring      snake_case payload with error_message / charges_attempts
 billingRouter.post('/grow/webhook', async (req: Request, res) => {
+  // ── DIAGNOSTIC LOGGING (temporary) ────────────────────────────────────────
+  // Log the raw content-type and body before any parsing so we can confirm
+  // what shape Grow actually sends.  Remove once payload format is confirmed.
+  console.log('[grow/webhook] content-type:', req.headers['content-type']);
+  console.log('[grow/webhook] raw body:', JSON.stringify(req.body));
+  // ──────────────────────────────────────────────────────────────────────────
+
   const payload = req.body as Record<string, any>;
 
   // ── Authenticate ───────────────────────────────────────────────────────────

@@ -28,6 +28,10 @@ console.log(`[CORS] NODE_ENV=${process.env.NODE_ENV ?? 'unset'}, allowed origins
 // 2 MB ceiling: post-compression images peak at ~600 KB base64; anything
 // larger than 2 MB is suspicious and benefits from early rejection.
 app.use(express.json({ limit: '2mb' }));
+// Grow webhook may send application/x-www-form-urlencoded instead of JSON.
+// Register urlencoded parser specifically for that path so the diagnostic
+// log in billing.ts captures real field values regardless of content-type.
+app.use('/api/billing/grow/webhook', express.urlencoded({ extended: true }));
 app.use(cors({
   origin: allowedOrigins,
   credentials: true,
