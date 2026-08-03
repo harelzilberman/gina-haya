@@ -564,8 +564,13 @@ billingRouter.post('/grow/webhook', async (req: Request, res) => {
 
   // ── Authenticate ───────────────────────────────────────────────────────────
   // Failed-recurring events use snake_case "webhook_key"; all others use camelCase.
+  // Two separate Grow webhooks exist (one-time vs recurring), each with its own key.
   const receivedKey = payload.webhookKey ?? payload.webhook_key;
-  if (!receivedKey || receivedKey !== process.env.GROW_WEBHOOK_KEY) {
+  const validKeys = [
+    process.env.GROW_WEBHOOK_KEY_ONETIME,
+    process.env.GROW_WEBHOOK_KEY_RECURRING,
+  ].filter(Boolean);
+  if (!receivedKey || !validKeys.includes(receivedKey)) {
     console.warn('[grow/webhook] Invalid or missing webhookKey');
     res.status(401).json({ error: 'Unauthorized' });
     return;
