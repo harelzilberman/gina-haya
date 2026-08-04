@@ -2,6 +2,7 @@ import 'dotenv/config';
 import { Router, type IRouter, type Request } from 'express';
 import Stripe from 'stripe';
 import { OAuth2Client } from 'google-auth-library';
+import qs from 'qs';
 import { TIER_PRICING } from '@gina-haya/shared';
 import { db } from '../db/client';
 import { verifyToken } from '../middleware/auth';
@@ -560,22 +561,21 @@ billingRouter.post('/grow/create-payment', verifyToken, async (req: any, res) =>
 // including the secret token must be configured in Grow's dashboard, making
 // the URL itself the shared secret.  Set in Railway as GROW_WEBHOOK_SECRET.
 //
-// Two delivery sources, two body formats — parsed defensively in the handler:
+// Two delivery sources, same logical payload shape, different wire serialization:
 //
 // SOURCE 1 — PaymentLinks "notify Url" (Make.com module config):
 //   Sends real JSON with a mislabeled Content-Type: application/x-www-form-urlencoded.
-//   Shape: { err: "", status: "1", data: { statusCode: "2", transactionId, payerEmail,
-//            customFields: { cField1: userId, cField2: tier }, productData: [...], ... } }
 //
 // SOURCE 2 — Account-level dashboard webhooks ("gina haya one time", "gina haya recurring"):
-//   Sends genuine form-urlencoded key=value pairs.  Shape: TBD — logged on next real call.
-//   Likely the older webhookKey/transactionCode/paymentType format per Grow's docs.
+//   Sends genuine form-urlencoded with PHP/Rails bracket notation:
+//   err=&status=1&data[statusCode]=2&data[customFields][cField1]=<userId>&...
+//
+// Both decode to the same nested shape and run through the same extraction logic.
+// qs.parse() handles bracket notation; JSON.parse() handles the JSON variant.
 //
 // TODO: Verify recurring-cycle webhook shape when a real recurring PaymentLinks
 //   call arrives.  transactionId may differ per cycle; a stable token reference
 //   (paymentLinkProcessId?) may be needed to tie cycles to the same subscription row.
-//
-// TODO: Once SOURCE-2 field names are confirmed from logs, implement extraction logic.
 billingRouter.post('/grow/webhook/:secret', async (req: Request, res) => {
   // ── Authenticate via URL-embedded secret ──────────────────────────────────
   const webhookSecret = process.env.GROW_WEBHOOK_SECRET;
@@ -587,8 +587,11 @@ billingRouter.post('/grow/webhook/:secret', async (req: Request, res) => {
 
   // ── Defensive body parsing ─────────────────────────────────────────────────
   // express.text() in index.ts gives us a raw string regardless of Content-Type.
-  // Source 1 (PaymentLinks notify Url): real JSON, mislabeled as form-urlencoded.
-  // Source 2 (account-level dashboard): genuine form-urlencoded key=value pairs.
+  // Both sources send the same logical shape; they just serialize differently:
+  //   JSON variant:      {"err":"","status":"1","data":{"statusCode":"2",...,"customFields":{"cField1":...}}}
+  //   Form-urlencoded:   err=&status=1&data[statusCode]=2&...&data[customFields][cField1]=...
+  // qs.parse() handles bracket notation (a[b][c]=v → {a:{b:{c:v}}}) so both
+  // paths produce an identical nested object before the extraction logic runs.
   const rawText: string = typeof req.body === 'string'
     ? req.body
     : req.body instanceof Buffer
@@ -605,19 +608,17 @@ billingRouter.post('/grow/webhook/:secret', async (req: Request, res) => {
   }
 
   let parsedBody: any;
-  let parseSource: 'json' | 'form-urlencoded';
 
   try {
     parsedBody = JSON.parse(rawText);
-    parseSource = 'json';
     console.log('[grow/webhook] parsed as JSON');
   } catch {
+    // Not JSON — try bracket-notation form-urlencoded (qs handles a[b][c]=v)
     try {
-      parsedBody = Object.fromEntries(new URLSearchParams(rawText).entries());
-      parseSource = 'form-urlencoded';
-      console.log('[grow/webhook] parsed as form-urlencoded');
+      parsedBody = qs.parse(rawText, { allowDots: false, depth: 10 });
+      console.log('[grow/webhook] parsed as form-urlencoded (qs)');
     } catch {
-      console.error('[grow/webhook] body is neither JSON nor form-urlencoded, raw:', rawText);
+      console.error('[grow/webhook] body is unparseable, raw:', rawText);
       res.status(400).json({ error: 'Unparseable body' });
       return;
     }
@@ -626,148 +627,140 @@ billingRouter.post('/grow/webhook/:secret', async (req: Request, res) => {
   console.log('[grow/webhook] parsed body:', JSON.stringify(parsedBody));
 
   try {
-    // ── Branch by shape ────────────────────────────────────────────────────
-    if (parsedBody?.data && typeof parsedBody.data === 'object') {
-      // ── SOURCE 1: PaymentLinks "notify Url" ─────────────────────────────
-      // { err: "", status: "1", data: { statusCode: "2", transactionId,
-      //   payerEmail, customFields: { cField1: userId, cField2: tier }, ... } }
-      console.log('[grow/webhook] SOURCE-1 (PaymentLinks notify Url)');
+    // ── Unified extraction (same shape from both wire formats) ─────────────
+    // { err, status: "1", data: { statusCode: "2", transactionId, payerEmail,
+    //   customFields: { cField1: userId, cField2: tier }, productData: [...], ... } }
+    const envelope = parsedBody as { err?: string; status?: string; data?: Record<string, any> };
+    const data = envelope?.data;
 
-      const envelope = parsedBody as { err?: string; status?: string; data: Record<string, any> };
-      const data = envelope.data;
-
-      if (envelope.status !== '1') {
-        console.warn('[grow/webhook] Non-success envelope, status:', envelope.status);
-        res.json({ received: true });
-        return;
-      }
-
-      if (data.statusCode !== '2') {
-        console.warn('[grow/webhook] Payment not paid, statusCode:', data.statusCode);
-        res.json({ received: true });
-        return;
-      }
-
-      const transactionId   = data.transactionId  as string | undefined;
-      const payerEmail      = data.payerEmail     as string | undefined;
-      const customFields    = data.customFields   as { cField1?: string; cField2?: string } | undefined;
-      const internalUserId  = customFields?.cField1;
-      const tierFromPayload = customFields?.cField2;
-
-      // One-time: transactionId is unique per charge, used as the canonical token.
-      // TODO: for recurring cycles, verify whether transactionId changes each cycle
-      // or whether paymentLinkProcessId is the stable identifier to use instead.
-      const token = transactionId;
-
-      // ── Dedup: skip if already processed ────────────────────────────────
-      if (token) {
-        const { data: existingRow } = await db
-          .from('user_subscriptions')
-          .select('user_id')
-          .eq('purchase_token', token)
-          .eq('platform', 'grow')
-          .maybeSingle();
-
-        if (existingRow) {
-          console.log(`[grow/webhook] Duplicate transactionId=${token}, already processed — skipping`);
-          res.json({ received: true });
-          return;
-        }
-      }
-
-      // ── Resolve user ─────────────────────────────────────────────────────
-      // Priority: cField1 (userId set at payment-link creation) → email lookup
-      let userId: string | null = internalUserId ?? null;
-
-      if (!userId && payerEmail) {
-        const { data: userRow } = await db
-          .from('users')
-          .select('id')
-          .eq('email', payerEmail)
-          .maybeSingle();
-        userId = userRow?.id ?? null;
-      }
-
-      if (!userId) {
-        console.warn(
-          '[grow/webhook] Could not resolve user ' +
-          `cField1=${internalUserId} payerEmail=${payerEmail} — acking without action`
-        );
-        res.json({ received: true });
-        return;
-      }
-
-      // ── Resolve tier ─────────────────────────────────────────────────────
-      const tier = tierFromPayload && TIER_ORDER.includes(tierFromPayload)
-        ? tierFromPayload
-        : 'gardener_pro';
-
-      // ── approveTransaction ───────────────────────────────────────────────
-      // Grow requires explicit server-to-server approval after a PaymentLinks
-      // transaction webhook fires.  Non-fatal if it fails — log and continue.
-      if (transactionId) {
-        try {
-          const approveRes = await fetch(
-            `https://${process.env.GROW_API_HOST}/api/v1/Transaction/approve`,
-            {
-              method:  'POST',
-              headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify({
-                userId:          process.env.GROW_USER_ID,
-                pageCode:        process.env.GROW_PAGE_CODE_ONETIME,
-                transactionCode: transactionId,
-              }),
-            }
-          );
-          if (!approveRes.ok) {
-            console.error(
-              '[grow/webhook] approveTransaction failed:',
-              approveRes.status,
-              await approveRes.text()
-            );
-          }
-        } catch (approveErr: any) {
-          console.error('[grow/webhook] approveTransaction threw:', approveErr.message);
-        }
-      }
-
-      // ── Upsert subscription record ───────────────────────────────────────
-      if (token) {
-        await db.from('user_subscriptions').upsert(
-          {
-            user_id:          userId,
-            platform:         'grow',
-            purchase_token:   token,
-            product_id:       tier,
-            expires_at:       null,
-            status:           'active',
-            acknowledged:     true,
-            raw_notification: parsedBody,
-            updated_at:       new Date().toISOString(),
-          },
-          { onConflict: 'purchase_token' }
-        );
-      }
-
-      // ── Update user tier ─────────────────────────────────────────────────
-      await db.from('users').update({
-        subscription_tier: tier,
-        updated_at:        new Date().toISOString(),
-      }).eq('id', userId);
-
-      console.log(
-        `[grow/webhook] SOURCE-1 ACCEPTED user=${userId} tier=${tier} transactionId=${transactionId}`
-      );
-
-    } else {
-      // ── SOURCE 2: Account-level dashboard webhook (legacy Grow format) ───
-      // Real form-urlencoded — shape not yet confirmed from a live sample.
-      // Logging the decoded body here to capture the real field names.
-      // Do NOT attempt extraction until we've confirmed the shape.
-      console.log('[grow/webhook] SOURCE-2 (account-level dashboard webhook) decoded body:', JSON.stringify(parsedBody));
-      console.log('[grow/webhook] SOURCE-2 parse method:', parseSource!);
-      // Ack without touching DB until field names are confirmed
+    if (!data || typeof data !== 'object') {
+      console.warn('[grow/webhook] Missing or non-object data field:', JSON.stringify(envelope));
+      res.json({ received: true });
+      return;
     }
+
+    if (envelope.status !== '1') {
+      console.warn('[grow/webhook] Non-success envelope, status:', envelope.status);
+      res.json({ received: true });
+      return;
+    }
+
+    if (data.statusCode !== '2') {
+      console.warn('[grow/webhook] Payment not paid, statusCode:', data.statusCode);
+      res.json({ received: true });
+      return;
+    }
+
+    const transactionId   = data.transactionId  as string | undefined;
+    const payerEmail      = data.payerEmail     as string | undefined;
+    const customFields    = data.customFields   as { cField1?: string; cField2?: string } | undefined;
+    const internalUserId  = customFields?.cField1;
+    const tierFromPayload = customFields?.cField2;
+
+    // One-time: transactionId is unique per charge, used as the canonical token.
+    // TODO: for recurring cycles, verify whether transactionId changes each cycle
+    // or whether paymentLinkProcessId is the stable identifier to use instead.
+    const token = transactionId;
+
+    // ── Dedup: skip if already processed ──────────────────────────────────
+    if (token) {
+      const { data: existingRow } = await db
+        .from('user_subscriptions')
+        .select('user_id')
+        .eq('purchase_token', token)
+        .eq('platform', 'grow')
+        .maybeSingle();
+
+      if (existingRow) {
+        console.log(`[grow/webhook] Duplicate transactionId=${token}, already processed — skipping`);
+        res.json({ received: true });
+        return;
+      }
+    }
+
+    // ── Resolve user ───────────────────────────────────────────────────────
+    // Priority: cField1 (userId set at payment-link creation) → email lookup
+    let userId: string | null = internalUserId ?? null;
+
+    if (!userId && payerEmail) {
+      const { data: userRow } = await db
+        .from('users')
+        .select('id')
+        .eq('email', payerEmail)
+        .maybeSingle();
+      userId = userRow?.id ?? null;
+    }
+
+    if (!userId) {
+      console.warn(
+        '[grow/webhook] Could not resolve user ' +
+        `cField1=${internalUserId} payerEmail=${payerEmail} — acking without action`
+      );
+      res.json({ received: true });
+      return;
+    }
+
+    // ── Resolve tier ───────────────────────────────────────────────────────
+    const tier = tierFromPayload && TIER_ORDER.includes(tierFromPayload)
+      ? tierFromPayload
+      : 'gardener_pro';
+
+    // ── approveTransaction ─────────────────────────────────────────────────
+    // Grow requires explicit server-to-server approval after a PaymentLinks
+    // transaction webhook fires.  Non-fatal if it fails — log and continue.
+    if (transactionId) {
+      try {
+        const approveRes = await fetch(
+          `https://${process.env.GROW_API_HOST}/api/v1/Transaction/approve`,
+          {
+            method:  'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              userId:          process.env.GROW_USER_ID,
+              pageCode:        process.env.GROW_PAGE_CODE_ONETIME,
+              transactionCode: transactionId,
+            }),
+          }
+        );
+        if (!approveRes.ok) {
+          console.error(
+            '[grow/webhook] approveTransaction failed:',
+            approveRes.status,
+            await approveRes.text()
+          );
+        }
+      } catch (approveErr: any) {
+        console.error('[grow/webhook] approveTransaction threw:', approveErr.message);
+      }
+    }
+
+    // ── Upsert subscription record ─────────────────────────────────────────
+    if (token) {
+      await db.from('user_subscriptions').upsert(
+        {
+          user_id:          userId,
+          platform:         'grow',
+          purchase_token:   token,
+          product_id:       tier,
+          expires_at:       null,
+          status:           'active',
+          acknowledged:     true,
+          raw_notification: parsedBody,
+          updated_at:       new Date().toISOString(),
+        },
+        { onConflict: 'purchase_token' }
+      );
+    }
+
+    // ── Update user tier ───────────────────────────────────────────────────
+    await db.from('users').update({
+      subscription_tier: tier,
+      updated_at:        new Date().toISOString(),
+    }).eq('id', userId);
+
+    console.log(
+      `[grow/webhook] ACCEPTED user=${userId} tier=${tier} transactionId=${transactionId}`
+    );
 
   } catch (err: any) {
     console.error('[grow/webhook] handler error:', err);
