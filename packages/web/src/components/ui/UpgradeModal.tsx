@@ -148,7 +148,7 @@ export function UpgradeModal() {
     try {
       const data = await api.post<{ paymentUrl?: string }>(
         '/api/billing/grow/create-payment',
-        { tier: pendingGrowTier, recurring: false, fullName: fullName.trim(), phone },
+        { tier: pendingGrowTier, recurring: true, fullName: fullName.trim(), phone },
         session.access_token,
       );
       if (data.paymentUrl) window.location.href = data.paymentUrl;
@@ -353,6 +353,22 @@ export function UpgradeModal() {
                     {phoneError}
                   </p>
                 )}
+              </div>
+
+              {/* Recurring billing disclosure — required before user confirms */}
+              <div style={{
+                padding:      '12px 14px',
+                borderRadius: '8px',
+                border:       '1px solid rgba(0,229,195,0.15)',
+                background:   'rgba(0,229,195,0.04)',
+              }}>
+                <p style={{ fontFamily: ASSIST, fontSize: '13px', color: `${PARCH}BB`, margin: 0, lineHeight: 1.55 }}>
+                  מנוי חודשי מתחדש — התשלום של{' '}
+                  <strong style={{ color: GOLD }}>
+                    ₪{TIER_PRICING[pendingGrowTier]?.monthly}
+                  </strong>{' '}
+                  יתבצע אוטומטית כל חודש עד לביטול המנוי.
+                </p>
               </div>
 
               <div style={{ display: 'flex', gap: '10px' }}>

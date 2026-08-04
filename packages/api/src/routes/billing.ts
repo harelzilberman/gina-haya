@@ -148,6 +148,12 @@ billingRouter.get('/status', verifyToken, async (req: any, res) => {
 });
 
 // ── POST /api/billing/cancel ──────────────────────────────────────────────────
+// TODO: Grow recurring subscriptions (הוראת קבע) are NOT covered by this endpoint.
+// This only cancels Stripe subscriptions. Grow recurring charges will continue on
+// Grow's side until manually stopped in Grow's dashboard ("גינה היא" → standing orders).
+// Grow's Make.com app has no "Cancel Recurring" action, so automated cancellation
+// would require a direct API call to Grow's paid REST API or a manual operator step.
+// Do not ship Grow recurring billing to real paying customers without resolving this gap.
 billingRouter.post('/cancel', verifyToken, async (req: any, res) => {
   try {
     const { data, error } = await db
