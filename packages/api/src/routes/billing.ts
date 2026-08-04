@@ -706,33 +706,14 @@ billingRouter.post('/grow/webhook/:secret', async (req: Request, res) => {
       : 'gardener_pro';
 
     // ── approveTransaction ─────────────────────────────────────────────────
-    // Grow requires explicit server-to-server approval after a PaymentLinks
-    // transaction webhook fires.  Non-fatal if it fails — log and continue.
-    if (transactionId) {
-      try {
-        const approveRes = await fetch(
-          `https://${process.env.GROW_API_HOST}/api/v1/Transaction/approve`,
-          {
-            method:  'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-              userId:          process.env.GROW_USER_ID,
-              pageCode:        process.env.GROW_PAGE_CODE_ONETIME,
-              transactionCode: transactionId,
-            }),
-          }
-        );
-        if (!approveRes.ok) {
-          console.error(
-            '[grow/webhook] approveTransaction failed:',
-            approveRes.status,
-            await approveRes.text()
-          );
-        }
-      } catch (approveErr: any) {
-        console.error('[grow/webhook] approveTransaction threw:', approveErr.message);
-      }
-    }
+    // Skipped intentionally: we don't have paid Grow REST API access (the
+    // Light API that exposes /api/v1/Transaction/approve costs 500 ILS+VAT/month).
+    // Per Grow's docs, payment completes regardless — this call is not required.
+    // Future option: route through Make.com's "Approve Transaction" action
+    // (same pattern as create-payment), but only if Grow support indicates it
+    // is ever actually required for our account type.
+    console.log(`[grow/webhook] approveTransaction skipped — not required per Grow docs, no paid API access configured (transactionId=${transactionId})`);
+
 
     // ── Upsert subscription record ─────────────────────────────────────────
     if (token) {
