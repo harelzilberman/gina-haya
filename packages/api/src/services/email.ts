@@ -175,3 +175,58 @@ export async function sendWelcome(user: EmailUser): Promise<void> {
     console.error('[sendWelcome] Resend error:', error);
   }
 }
+
+export async function sendRenewalReminder(opts: {
+  email:       string;
+  displayName: string;
+  tierNameHe:  string;
+  expiresAt:   Date;
+}): Promise<void> {
+  const { email, displayName, tierNameHe, expiresAt } = opts;
+  const name = displayName || email;
+
+  const expiryStr = expiresAt.toLocaleDateString('he-IL', {
+    year: 'numeric', month: 'long', day: 'numeric',
+    timeZone: 'Asia/Jerusalem',
+  });
+
+  const pricingUrl = `${APP_URL}/pricing`;
+
+  const html = `
+    <div dir="rtl" style="font-family:Arial,Helvetica,sans-serif;max-width:560px;margin:0 auto;padding:32px;background:#f9fafb;border-radius:12px;">
+      <h2 style="color:#050d0a;font-size:22px;margin:0 0 8px;">🌿 המנוי שלך מסתיים בקרוב</h2>
+      <p style="color:#374151;font-size:15px;margin:0 0 20px;">שלום ${name},</p>
+      <p style="color:#374151;font-size:15px;margin:0 0 20px;">
+        מנוי <strong style="color:#050d0a;">${tierNameHe}</strong> שלך ב-גינה חיה יסתיים בתאריך
+        <strong style="color:#050d0a;">${expiryStr}</strong>.
+      </p>
+      <p style="color:#374151;font-size:15px;margin:0 0 28px;">
+        כדי להמשיך ליהנות מכל התכונות, חדש את המנוי שלך לפני שיסתיים.
+      </p>
+      <a
+        href="${pricingUrl}"
+        style="display:inline-block;background:#00e5c3;color:#050d0a;font-weight:700;font-size:15px;padding:14px 28px;border-radius:100px;text-decoration:none;"
+      >
+        חדש את המנוי שלך
+      </a>
+      <p style="color:#9ca3af;font-size:12px;margin:32px 0 0;">
+        קיבלת מייל זה כי יש לך מנוי שנתי פעיל בגינה חיה.
+        לשאלות פנה אלינו על ידי מענה למייל זה.
+      </p>
+    </div>
+  `;
+
+  const { error } = await resend.emails.send({
+    from:    FROM_HE,
+    to:      email,
+    subject: `המנוי שלך ב-גינה חיה מסתיים ב-${expiryStr} — חידוש מהיר`,
+    html,
+  });
+
+  if (error) {
+    console.error('[sendRenewalReminder] Resend error:', error);
+    throw new Error(`Failed to send renewal reminder: ${error.message}`);
+  }
+
+  console.log(`[sendRenewalReminder] Sent to ${email}`);
+}

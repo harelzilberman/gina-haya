@@ -191,7 +191,7 @@ export function PricingPage() {
 
   const upgradeBtn = (label: string) => (
     <button
-      onClick={() => openUpgradeModal('pricing_page')}
+      onClick={() => openUpgradeModal('pricing_page', isAnnual ? 'annual' : 'monthly')}
       style={{
         display: 'block', width: '100%',
         fontFamily: FRANK, fontSize: '15px', fontWeight: 700,

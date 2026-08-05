@@ -472,16 +472,37 @@ billingRouter.post('/play/rtdn', async (req: Request, res) => {
 // The browser never touches Grow directly — Grow blocks cross-origin requests.
 const ISRAELI_MOBILE_RE = /^05\d{8}$/;
 
+const VALID_PAYMENT_MODES = ['recurring', 'one_time_monthly', 'one_time_annual'] as const;
+type PaymentMode = typeof VALID_PAYMENT_MODES[number];
+
 billingRouter.post('/grow/create-payment', verifyToken, async (req: any, res) => {
   try {
-    const { tier, recurring = false, fullName, phone } = req.body as {
+    const {
+      tier,
+      paymentMode: rawPaymentMode,
+      // Keep recurring for backwards compat — ignored when paymentMode is present
+      recurring: legacyRecurring = false,
+      fullName,
+      phone,
+    } = req.body as {
       tier: string;
+      paymentMode?: string;
       recurring?: boolean;
       fullName?: string;
       phone?: string;
     };
 
-    const makeWebhookUrl = recurring
+    // Resolve payment mode: prefer explicit paymentMode, fall back to legacy recurring bool
+    const paymentMode: PaymentMode =
+      VALID_PAYMENT_MODES.includes(rawPaymentMode as PaymentMode)
+        ? (rawPaymentMode as PaymentMode)
+        : legacyRecurring
+        ? 'recurring'
+        : 'one_time_monthly';
+
+    const isRecurring = paymentMode === 'recurring';
+
+    const makeWebhookUrl = isRecurring
       ? process.env.GROW_MAKE_WEBHOOK_URL_RECURRING
       : process.env.GROW_MAKE_WEBHOOK_URL;
 
@@ -490,7 +511,11 @@ billingRouter.post('/grow/create-payment', verifyToken, async (req: any, res) =>
       return;
     }
 
-    const amount = TIER_PRICING[tier]?.monthly ?? null;
+    const pricing = TIER_PRICING[tier];
+    // Annual one-time charge uses the annual total; everything else uses monthly.
+    const amount = paymentMode === 'one_time_annual'
+      ? (pricing?.annual ?? null)
+      : (pricing?.monthly ?? null);
     if (!amount) {
       res.status(400).json({ error: 'Invalid tier or tier has no price' });
       return;
@@ -512,18 +537,21 @@ billingRouter.post('/grow/create-payment', verifyToken, async (req: any, res) =>
 
     const origin = req.headers.origin ?? 'https://gina-haya.com';
 
+    // NOTE: Make.com scenario must map the `paymentMode` field to cField3 on the
+    // Grow "Create Payment Link" module so the webhook handler can read it back.
     const makeRes = await fetch(makeWebhookUrl, {
       method:  'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
-        fullName: validatedName,
+        fullName:    validatedName,
         phone,
-        email:      req.user.email,
-        sum:        amount,
-        userId:     req.user.id,
+        email:       req.user.email,
+        sum:         amount,
+        userId:      req.user.id,
         tier,
-        successUrl: `${origin}/billing?status=success`,
-        cancelUrl:  `${origin}/billing?status=cancelled`,
+        paymentMode,  // → cField3 in Make.com; webhook reads it back from data.customFields.cField3
+        successUrl:  `${origin}/billing?status=success`,
+        cancelUrl:   `${origin}/billing?status=cancelled`,
       }),
     });
 
@@ -657,11 +685,14 @@ billingRouter.post('/grow/webhook/:secret', async (req: Request, res) => {
       return;
     }
 
-    const transactionId   = data.transactionId  as string | undefined;
-    const payerEmail      = data.payerEmail     as string | undefined;
-    const customFields    = data.customFields   as { cField1?: string; cField2?: string } | undefined;
-    const internalUserId  = customFields?.cField1;
-    const tierFromPayload = customFields?.cField2;
+    const transactionId    = data.transactionId  as string | undefined;
+    const payerEmail       = data.payerEmail     as string | undefined;
+    const customFields     = data.customFields   as { cField1?: string; cField2?: string; cField3?: string } | undefined;
+    const internalUserId   = customFields?.cField1;
+    const tierFromPayload  = customFields?.cField2;
+    // cField3 = paymentMode set at payment-link creation time.
+    // Absent on payments created before this feature was added → treat as recurring (old behaviour).
+    const paymentModeFromWebhook = (customFields?.cField3 ?? 'recurring') as PaymentMode;
 
     // One-time: transactionId is unique per charge, used as the canonical token.
     // TODO: for recurring cycles, verify whether transactionId changes each cycle
@@ -721,6 +752,23 @@ billingRouter.post('/grow/webhook/:secret', async (req: Request, res) => {
     console.log(`[grow/webhook] approveTransaction skipped — not required per Grow docs, no paid API access configured (transactionId=${transactionId})`);
 
 
+    // ── Compute expiry and plan label from paymentMode ────────────────────
+    // recurring       → Grow manages renewal cadence; we don't track expiry.
+    // one_time_monthly → 30 days access from now.
+    // one_time_annual  → 365 days access from now.
+    // base_plan_id is used as a queryable label so the renewal cron can
+    // target annual purchases without guessing from date math alone.
+    const now = Date.now();
+    const expiresAt: string | null =
+      paymentModeFromWebhook === 'one_time_annual'   ? new Date(now + 365 * 24 * 60 * 60 * 1000).toISOString()
+      : paymentModeFromWebhook === 'one_time_monthly' ? new Date(now +  30 * 24 * 60 * 60 * 1000).toISOString()
+      : null;  // recurring — no fixed expiry
+
+    const basePlanId: string | null =
+      paymentModeFromWebhook === 'one_time_annual'   ? 'annual'
+      : paymentModeFromWebhook === 'one_time_monthly' ? 'monthly_trial'
+      : null;  // recurring
+
     // ── Upsert subscription record ─────────────────────────────────────────
     if (token) {
       await db.from('user_subscriptions').upsert(
@@ -729,7 +777,8 @@ billingRouter.post('/grow/webhook/:secret', async (req: Request, res) => {
           platform:         'grow',
           purchase_token:   token,
           product_id:       tier,
-          expires_at:       null,
+          base_plan_id:     basePlanId,
+          expires_at:       expiresAt,
           status:           'active',
           acknowledged:     true,
           raw_notification: parsedBody,
@@ -746,7 +795,8 @@ billingRouter.post('/grow/webhook/:secret', async (req: Request, res) => {
     }).eq('id', userId);
 
     console.log(
-      `[grow/webhook] ACCEPTED user=${userId} tier=${tier} transactionId=${transactionId}`
+      `[grow/webhook] ACCEPTED user=${userId} tier=${tier} ` +
+      `paymentMode=${paymentModeFromWebhook} expiresAt=${expiresAt ?? 'null'} transactionId=${transactionId}`
     );
 
   } catch (err: any) {

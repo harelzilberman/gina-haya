@@ -87,10 +87,10 @@ export function UpgradeModal() {
     return null;
   }
 
-  const { close }             = useUpgradeModalStore();
-  const { session }           = useAuthStore();
-  const { tier: currentTier } = useTier();
-  const { i18n }              = useTranslation();
+  const { close, billingPeriod } = useUpgradeModalStore();
+  const { session }              = useAuthStore();
+  const { tier: currentTier }   = useTier();
+  const { i18n }                 = useTranslation();
   const [loading, setLoading] = useState<string | null>(null);
 
   // Grow-only checkout collection state.
@@ -138,6 +138,16 @@ export function UpgradeModal() {
     });
   };
 
+  // Derive paymentMode from billingPeriod + recurring selection.
+  // Annual is always one-time (no recurring interval in Grow's free integration).
+  // Monthly lets the user choose between auto-renewing or a single trial charge.
+  const paymentMode: 'recurring' | 'one_time_monthly' | 'one_time_annual' =
+    billingPeriod === 'annual'
+      ? 'one_time_annual'
+      : recurring
+      ? 'recurring'
+      : 'one_time_monthly';
+
   // Called when user confirms name + phone and clicks pay (Grow path only).
   const handleGrowConfirm = async () => {
     if (!pendingGrowTier || !session?.access_token) return;
@@ -151,7 +161,14 @@ export function UpgradeModal() {
     try {
       const data = await api.post<{ paymentUrl?: string }>(
         '/api/billing/grow/create-payment',
-        { tier: pendingGrowTier, recurring, fullName: fullName.trim(), phone },
+        {
+          tier:        pendingGrowTier,
+          paymentMode,
+          // Keep recurring boolean for any other code that may read it
+          recurring:   paymentMode === 'recurring',
+          fullName:    fullName.trim(),
+          phone,
+        },
         session.access_token,
       );
       if (data.paymentUrl) window.location.href = data.paymentUrl;
@@ -226,7 +243,9 @@ export function UpgradeModal() {
                 margin:     0,
               }}>
                 {pendingGrowTier
-                  ? `תוכנית ${getLimits(pendingGrowTier).displayNameHe} — ₪${TIER_PRICING[pendingGrowTier]?.monthly} / חודש`
+                  ? billingPeriod === 'annual'
+                    ? `תוכנית ${getLimits(pendingGrowTier).displayNameHe} — ₪${TIER_PRICING[pendingGrowTier]?.annual} / שנה`
+                    : `תוכנית ${getLimits(pendingGrowTier).displayNameHe} — ₪${TIER_PRICING[pendingGrowTier]?.monthly} / חודש`
                   : 'בחר את התוכנית המתאימה לך'}
               </p>
             </div>
@@ -358,80 +377,98 @@ export function UpgradeModal() {
                 )}
               </div>
 
-              {/* Payment type selector — mutually exclusive, radio-card style */}
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-                {([
-                  {
-                    value:    true,
-                    title:    'מנוי חודשי מתחדש',
-                    subtitle: `התשלום של ₪${TIER_PRICING[pendingGrowTier]?.monthly} יתבצע אוטומטית כל חודש עד לביטול המנוי`,
-                  },
-                  {
-                    value:    false,
-                    title:    'תשלום חד פעמי',
-                    subtitle: `נסו את התוכנית לחודש אחד (₪${TIER_PRICING[pendingGrowTier]?.monthly}), ללא חידוש אוטומטי`,
-                  },
-                ] as const).map(opt => {
-                  const active = recurring === opt.value;
-                  return (
-                    <button
-                      key={String(opt.value)}
-                      type="button"
-                      onClick={() => setRecurring(opt.value)}
-                      style={{
-                        display:         'flex',
-                        alignItems:      'flex-start',
-                        gap:             '12px',
-                        padding:         '12px 14px',
-                        borderRadius:    '8px',
-                        border:          active
-                          ? `1.5px solid ${GOLD}99`
-                          : '1px solid rgba(0,229,195,0.15)',
-                        background:      active
-                          ? 'rgba(0,229,195,0.07)'
-                          : 'rgba(9,20,16,0.4)',
-                        cursor:          'pointer',
-                        textAlign:       'right',
-                        width:           '100%',
-                        transition:      'border-color 0.15s, background 0.15s',
-                      }}
-                    >
-                      {/* Radio dot */}
-                      <span style={{
-                        flexShrink:   0,
-                        marginTop:    '3px',
-                        width:        '16px',
-                        height:       '16px',
-                        borderRadius: '50%',
-                        border:       active ? `5px solid ${GOLD}` : '2px solid rgba(0,229,195,0.35)',
-                        background:   'transparent',
-                        display:      'block',
-                        boxSizing:    'border-box',
-                        transition:   'border 0.15s',
-                      }} />
-                      <span style={{ display: 'flex', flexDirection: 'column', gap: '2px' }}>
+              {billingPeriod === 'annual' ? (
+                /* ── Annual: single disclosure, no choice needed ── */
+                <div style={{
+                  padding:      '12px 14px',
+                  borderRadius: '8px',
+                  border:       `1.5px solid ${GOLD}99`,
+                  background:   'rgba(0,229,195,0.07)',
+                }}>
+                  <p style={{ fontFamily: ASSIST, fontSize: '13px', color: `${PARCH}BB`, margin: 0, lineHeight: 1.55 }}>
+                    מנוי שנתי — תשלום חד פעמי מראש של{' '}
+                    <strong style={{ color: GOLD }}>
+                      ₪{TIER_PRICING[pendingGrowTier]?.annual}
+                    </strong>{' '}
+                    לשנה, ללא חידוש אוטומטי. נשלח לך תזכורת לפני שהמנוי יסתיים.
+                  </p>
+                </div>
+              ) : (
+                /* ── Monthly: two mutually exclusive radio cards ── */
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                  {([
+                    {
+                      value:    true,
+                      title:    'מנוי חודשי מתחדש',
+                      subtitle: `התשלום של ₪${TIER_PRICING[pendingGrowTier]?.monthly} יתבצע אוטומטית כל חודש עד לביטול המנוי`,
+                    },
+                    {
+                      value:    false,
+                      title:    'תשלום חד פעמי',
+                      subtitle: `נסו את התוכנית לחודש אחד (₪${TIER_PRICING[pendingGrowTier]?.monthly}), ללא חידוש אוטומטי`,
+                    },
+                  ] as const).map(opt => {
+                    const active = recurring === opt.value;
+                    return (
+                      <button
+                        key={String(opt.value)}
+                        type="button"
+                        onClick={() => setRecurring(opt.value)}
+                        style={{
+                          display:         'flex',
+                          alignItems:      'flex-start',
+                          gap:             '12px',
+                          padding:         '12px 14px',
+                          borderRadius:    '8px',
+                          border:          active
+                            ? `1.5px solid ${GOLD}99`
+                            : '1px solid rgba(0,229,195,0.15)',
+                          background:      active
+                            ? 'rgba(0,229,195,0.07)'
+                            : 'rgba(9,20,16,0.4)',
+                          cursor:          'pointer',
+                          textAlign:       'right',
+                          width:           '100%',
+                          transition:      'border-color 0.15s, background 0.15s',
+                        }}
+                      >
+                        {/* Radio dot */}
                         <span style={{
-                          fontFamily: ASSIST,
-                          fontWeight: 600,
-                          fontSize:   '13px',
-                          color:      active ? GOLD : PARCH,
-                          transition: 'color 0.15s',
-                        }}>
-                          {opt.title}
+                          flexShrink:   0,
+                          marginTop:    '3px',
+                          width:        '16px',
+                          height:       '16px',
+                          borderRadius: '50%',
+                          border:       active ? `5px solid ${GOLD}` : '2px solid rgba(0,229,195,0.35)',
+                          background:   'transparent',
+                          display:      'block',
+                          boxSizing:    'border-box',
+                          transition:   'border 0.15s',
+                        }} />
+                        <span style={{ display: 'flex', flexDirection: 'column', gap: '2px' }}>
+                          <span style={{
+                            fontFamily: ASSIST,
+                            fontWeight: 600,
+                            fontSize:   '13px',
+                            color:      active ? GOLD : PARCH,
+                            transition: 'color 0.15s',
+                          }}>
+                            {opt.title}
+                          </span>
+                          <span style={{
+                            fontFamily: ASSIST,
+                            fontSize:   '12px',
+                            color:      `${PARCH}88`,
+                            lineHeight: 1.5,
+                          }}>
+                            {opt.subtitle}
+                          </span>
                         </span>
-                        <span style={{
-                          fontFamily: ASSIST,
-                          fontSize:   '12px',
-                          color:      `${PARCH}88`,
-                          lineHeight: 1.5,
-                        }}>
-                          {opt.subtitle}
-                        </span>
-                      </span>
-                    </button>
-                  );
-                })}
-              </div>
+                      </button>
+                    );
+                  })}
+                </div>
+              )}
 
               <div style={{ display: 'flex', gap: '10px' }}>
                 <button

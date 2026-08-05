@@ -1,9 +1,11 @@
 import cron from 'node-cron';
 import { db } from '../db/client';
 import webpush from 'web-push';
+import { sendRenewalReminder } from './email';
+import { getLimits } from '@gina-haya/shared';
 
 export function startCronJobs() {
-  // Daily summary — every day at 7:00am Israel time (UTC+3 = 04:00 UTC)
+  // Daily garden task push — 7:00am Israel time (04:00 UTC)
   cron.schedule('0 4 * * *', async () => {
     console.log('[cron] Sending daily garden task notifications...');
     try {
@@ -13,7 +15,17 @@ export function startCronJobs() {
     }
   }, { timezone: 'Asia/Jerusalem' });
 
-  console.log('[cron] Jobs scheduled: daily summary at 7:00am Israel time');
+  // Annual subscription renewal reminders — 9:00am Israel time (06:00 UTC)
+  cron.schedule('0 6 * * *', async () => {
+    console.log('[cron] Sending annual renewal reminders...');
+    try {
+      await sendAnnualRenewalReminders();
+    } catch (e) {
+      console.error('[cron] Annual renewal reminders failed:', e);
+    }
+  }, { timezone: 'Asia/Jerusalem' });
+
+  console.log('[cron] Jobs scheduled: daily summary at 7:00am, renewal reminders at 9:00am Israel time');
 }
 
 async function sendDailySummary() {
@@ -73,6 +85,103 @@ async function sendDailySummary() {
   }
 
   console.log(`[cron] Daily summary: sent=${sent} failed=${failed}`);
+}
+
+// Exported so it can be invoked directly for manual testing without waiting for the schedule.
+export async function sendAnnualRenewalReminders(): Promise<void> {
+  const now = new Date();
+  const in7Days = new Date(now.getTime() + 7 * 24 * 60 * 60 * 1000);
+
+  // Find active annual Grow subscriptions expiring within the next 7 days.
+  // base_plan_id = 'annual' is the queryable label set by the webhook handler.
+  const { data: expiring, error } = await db
+    .from('user_subscriptions')
+    .select('user_id, product_id, expires_at')
+    .eq('platform', 'grow')
+    .eq('base_plan_id', 'annual')
+    .eq('status', 'active')
+    .gte('expires_at', now.toISOString())
+    .lte('expires_at', in7Days.toISOString());
+
+  if (error) {
+    console.error('[cron/renewal] Failed to query expiring subscriptions:', error);
+    return;
+  }
+
+  if (!expiring || expiring.length === 0) {
+    console.log('[cron/renewal] No annual subscriptions expiring within 7 days');
+    return;
+  }
+
+  console.log(`[cron/renewal] Found ${expiring.length} subscriptions to remind`);
+
+  let emailSent = 0;
+  let emailFailed = 0;
+  let pushSent = 0;
+
+  for (const row of expiring) {
+    // Fetch user details for the email
+    const { data: user } = await db
+      .from('users')
+      .select('email, display_name')
+      .eq('id', row.user_id)
+      .maybeSingle();
+
+    if (!user?.email) {
+      console.warn(`[cron/renewal] No email found for user_id=${row.user_id} — skipping`);
+      continue;
+    }
+
+    const tierNameHe = getLimits(row.product_id)?.displayNameHe ?? row.product_id;
+    const expiresAt  = new Date(row.expires_at);
+
+    // Primary channel: email (doesn't require push permission to be active)
+    try {
+      await sendRenewalReminder({
+        email:      user.email,
+        displayName: user.display_name ?? '',
+        tierNameHe,
+        expiresAt,
+      });
+      emailSent++;
+    } catch (err) {
+      console.error(`[cron/renewal] Email failed for user_id=${row.user_id}:`, err);
+      emailFailed++;
+    }
+
+    // Secondary channel: push notification (best-effort, stale subscriptions auto-cleaned)
+    try {
+      const { data: pushSub } = await db
+        .from('push_subscriptions')
+        .select('subscription')
+        .eq('user_id', row.user_id)
+        .maybeSingle();
+
+      if (pushSub?.subscription) {
+        const expiryStr = expiresAt.toLocaleDateString('he-IL', {
+          month: 'long', day: 'numeric', timeZone: 'Asia/Jerusalem',
+        });
+        await webpush.sendNotification(
+          pushSub.subscription,
+          JSON.stringify({
+            title: '🌿 המנוי השנתי שלך מסתיים בקרוב',
+            body:  `תוכנית ${tierNameHe} מסתיימת ב-${expiryStr} — לחץ לחידוש`,
+            url:   '/pricing',
+          })
+        );
+        pushSent++;
+      }
+    } catch (e: any) {
+      // Remove stale push subscription — don't let it block the loop
+      if (e.statusCode === 404 || e.statusCode === 410) {
+        await db.from('push_subscriptions').delete().eq('user_id', row.user_id);
+      }
+    }
+  }
+
+  console.log(
+    `[cron/renewal] Done. email sent=${emailSent} failed=${emailFailed} push sent=${pushSent}`
+  );
 }
 
 export async function sendSmartReminder(userId: string, message: string) {
