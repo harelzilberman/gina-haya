@@ -208,7 +208,7 @@ export function BillingPage() {
                 {t('upgradeDesc')}
               </p>
               <button
-                onClick={() => openUpgradeModal('billing_page')}
+                onClick={() => openUpgradeModal('billing_page', 'monthly', nextTier)}
                 style={{
                   width:           '100%',
                   padding:         '13px',

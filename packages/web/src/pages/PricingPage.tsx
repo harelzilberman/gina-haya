@@ -189,9 +189,9 @@ export function PricingPage() {
     return p.monthly * 12 - p.annual;
   }
 
-  const upgradeBtn = (label: string) => (
+  const upgradeBtn = (label: string, tier: string) => (
     <button
-      onClick={() => openUpgradeModal('pricing_page', isAnnual ? 'annual' : 'monthly')}
+      onClick={() => openUpgradeModal('pricing_page', isAnnual ? 'annual' : 'monthly', tier)}
       style={{
         display: 'block', width: '100%',
         fontFamily: FRANK, fontSize: '15px', fontWeight: 700,
@@ -390,7 +390,7 @@ export function PricingPage() {
             <div style={{ flex: 1, marginBottom: '24px' }}>
               {GP_FEATURES.map((f, i) => <FeatureRow key={i} {...f} />)}
             </div>
-            {upgradeBtn(`שדרג ל${GP_L.displayNameHe}`)}
+            {upgradeBtn(`שדרג ל${GP_L.displayNameHe}`, 'gardener_pro')}
           </div>
 
           {/* ── Advanced ── */}
@@ -426,7 +426,7 @@ export function PricingPage() {
             <div style={{ flex: 1, marginBottom: '24px' }}>
               {ADV_FEATURES.map((f, i) => <FeatureRow key={i} {...f} />)}
             </div>
-            {upgradeBtn(`שדרג ל${ADV_L.displayNameHe}`)}
+            {upgradeBtn(`שדרג ל${ADV_L.displayNameHe}`, 'advanced')}
           </div>
 
           {/* ── Professional ── */}
@@ -462,7 +462,7 @@ export function PricingPage() {
             <div style={{ flex: 1, marginBottom: '24px' }}>
               {PRO_FEATURES.map((f, i) => <FeatureRow key={i} {...f} />)}
             </div>
-            {upgradeBtn(`שדרג ל${PRO_L.displayNameHe}`)}
+            {upgradeBtn(`שדרג ל${PRO_L.displayNameHe}`, 'professional')}
           </div>
         </div>
 

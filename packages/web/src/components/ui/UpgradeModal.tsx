@@ -87,7 +87,7 @@ export function UpgradeModal() {
     return null;
   }
 
-  const { close, billingPeriod } = useUpgradeModalStore();
+  const { close, billingPeriod, targetTier } = useUpgradeModalStore();
   const { session }              = useAuthStore();
   const { tier: currentTier }   = useTier();
   const { i18n }                 = useTranslation();
@@ -206,12 +206,14 @@ export function UpgradeModal() {
           style={{
             position:        'relative',
             width:           '100%',
-            maxWidth:        '860px',
+            // Narrow for confirmation + checkout steps; wide only for the fallback tier-picker grid
+            maxWidth:        (!targetTier && !pendingGrowTier) ? '860px' : '500px',
             maxHeight:       '90vh',
             overflowY:       'auto',
             backgroundColor: SOIL,
             border:          '1px solid rgba(0,229,195,0.2)',
             borderRadius:    '16px',
+            transition:      'max-width 0.2s ease',
           }}
         >
           {/* Header */}
@@ -234,7 +236,11 @@ export function UpgradeModal() {
                 color:      GOLD,
                 margin:     '0 0 4px',
               }}>
-                {pendingGrowTier ? 'השלמת הרכישה' : 'שדרג את התוכנית שלך'}
+                {pendingGrowTier
+                  ? 'השלמת הרכישה'
+                  : targetTier
+                  ? 'אישור שדרוג'
+                  : 'שדרג את התוכנית שלך'}
               </h2>
               <p style={{
                 fontFamily: ASSIST,
@@ -246,6 +252,8 @@ export function UpgradeModal() {
                   ? billingPeriod === 'annual'
                     ? `תוכנית ${getLimits(pendingGrowTier).displayNameHe} — ₪${TIER_PRICING[pendingGrowTier]?.annual} / שנה`
                     : `תוכנית ${getLimits(pendingGrowTier).displayNameHe} — ₪${TIER_PRICING[pendingGrowTier]?.monthly} / חודש`
+                  : targetTier
+                  ? `${getLimits(currentTier).displayNameHe} → ${getLimits(targetTier).displayNameHe}`
                   : 'בחר את התוכנית המתאימה לך'}
               </p>
             </div>
@@ -275,8 +283,117 @@ export function UpgradeModal() {
             </button>
           </div>
 
-          {/* ── Name + phone collection step (Grow / Hebrew only) ── */}
-          {pendingGrowTier ? (
+          {/* ── Step 1: Order confirmation (when targetTier is pre-set) ── */}
+          {!pendingGrowTier && targetTier ? (
+            <div dir="rtl" style={{ padding: '28px', display: 'flex', flexDirection: 'column', gap: '20px' }}>
+
+              {/* Current → New plan summary */}
+              <div style={{
+                display:       'flex',
+                flexDirection: 'column',
+                gap:           '10px',
+              }}>
+                {/* Current plan row */}
+                <div style={{
+                  display:         'flex',
+                  alignItems:      'center',
+                  justifyContent:  'space-between',
+                  padding:         '12px 16px',
+                  borderRadius:    '8px',
+                  background:      'rgba(255,255,255,0.03)',
+                  border:          '1px solid rgba(176,207,191,0.1)',
+                }}>
+                  <span style={{ fontFamily: ASSIST, fontSize: '13px', color: `${PARCH}66` }}>
+                    תוכנית נוכחית
+                  </span>
+                  <span style={{ fontFamily: ASSIST, fontSize: '14px', color: `${PARCH}88`, fontWeight: 600 }}>
+                    {getLimits(currentTier).displayNameHe}
+                  </span>
+                </div>
+
+                {/* Arrow */}
+                <div style={{ textAlign: 'center', color: GOLD, fontSize: '18px', lineHeight: 1 }}>↓</div>
+
+                {/* New plan row */}
+                <div style={{
+                  display:         'flex',
+                  alignItems:      'center',
+                  justifyContent:  'space-between',
+                  padding:         '14px 16px',
+                  borderRadius:    '10px',
+                  background:      'rgba(0,229,195,0.07)',
+                  border:          `1.5px solid ${GOLD}99`,
+                }}>
+                  <span style={{ fontFamily: ASSIST, fontSize: '13px', color: `${PARCH}CC` }}>
+                    שדרוג ל
+                  </span>
+                  <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start', gap: '2px' }}>
+                    <span style={{ fontFamily: FRANK, fontSize: '16px', color: GOLD, fontWeight: 700 }}>
+                      {getLimits(targetTier).displayNameHe}
+                    </span>
+                    <span style={{ fontFamily: ASSIST, fontSize: '12px', color: `${PARCH}99` }}>
+                      {billingPeriod === 'annual'
+                        ? `₪${TIER_PRICING[targetTier]?.annual} / שנה`
+                        : `₪${TIER_PRICING[targetTier]?.monthly} / חודש`}
+                    </span>
+                  </div>
+                </div>
+              </div>
+
+              {/* Billing period note */}
+              {billingPeriod === 'annual' && (
+                <p style={{ fontFamily: ASSIST, fontSize: '12px', color: `${PARCH}66`, margin: 0 }}>
+                  תשלום שנתי חד פעמי — ללא חידוש אוטומטי
+                </p>
+              )}
+
+              {/* Actions */}
+              <div style={{ display: 'flex', gap: '10px' }}>
+                <button
+                  onClick={() => close()}
+                  style={{
+                    flex:            1,
+                    padding:         '11px',
+                    borderRadius:    '8px',
+                    border:          '1px solid rgba(0,229,195,0.15)',
+                    backgroundColor: 'transparent',
+                    fontFamily:      ASSIST,
+                    fontSize:        '13px',
+                    color:           `${PARCH}77`,
+                    cursor:          'pointer',
+                  }}
+                >
+                  ביטול
+                </button>
+                <button
+                  onClick={() => handleUpgrade(targetTier as SubscriptionTier)}
+                  disabled={loading === targetTier}
+                  style={{
+                    flex:            2,
+                    padding:         '11px',
+                    borderRadius:    '8px',
+                    border:          'none',
+                    backgroundColor: loading !== targetTier ? GOLD : `${GOLD}44`,
+                    fontFamily:      FRANK,
+                    fontWeight:      600,
+                    fontSize:        '15px',
+                    color:           EARTH,
+                    cursor:          loading !== targetTier ? 'pointer' : 'default',
+                    transition:      'filter 0.15s',
+                  }}
+                  onMouseEnter={e => {
+                    if (loading !== targetTier)
+                      (e.currentTarget as HTMLElement).style.filter = 'brightness(1.1)';
+                  }}
+                  onMouseLeave={e => { (e.currentTarget as HTMLElement).style.filter = 'none'; }}
+                >
+                  {loading === targetTier ? '...' : 'המשך לתשלום'}
+                </button>
+              </div>
+            </div>
+
+          ) : /* ── Step 2: Name + phone collection step (Grow / Hebrew only) ── */
+          pendingGrowTier ? (
             <div dir="rtl" style={{ padding: '28px', display: 'flex', flexDirection: 'column', gap: '20px' }}>
               <p style={{ fontFamily: ASSIST, fontSize: '14px', color: `${PARCH}CC`, margin: 0 }}>
                 לצורך עיבוד התשלום נדרשים שם מלא ומספר פלאפון ישראלי.
