@@ -1,6 +1,7 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
+import { getLimits } from '@gina-haya/shared';
 import { useAuthStore } from '../stores/authStore';
 import { useUpgradeModalStore } from '../stores/upgradeModalStore';
 import { useTier } from '../hooks/useTier';
@@ -17,17 +18,10 @@ const PLAYFAIR = '"Playfair Display", Georgia, serif';
 
 const NOISE_BG = `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='250' height='250'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.75' numOctaves='4' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='250' height='250' filter='url(%23n)' opacity='0.55'/%3E%3C/svg%3E")`;
 
-const TIER_NAMES_HE: Record<string, string> = {
-  free:         'חינמי',
-  grower:       'גדל',
-  gardener_pro: 'גנן פרו',
-  professional: 'מקצועי',
-};
-
 const TIER_NAMES_EN: Record<string, string> = {
   free:         'Free',
-  grower:       'Grower',
   gardener_pro: 'Gardener Pro',
+  advanced:     'Advanced',
   professional: 'Professional',
 };
 
@@ -58,7 +52,7 @@ export function BillingPage() {
   const isHe = i18n.language === 'he';
   const [searchParams] = useSearchParams();
   const status = searchParams.get('status');
-  const { session } = useAuthStore();
+  const { session, loadProfile } = useAuthStore();
   const { tier, monthlyPrice, canUpgradeTo } = useTier();
   const { open: openUpgradeModal } = useUpgradeModalStore();
 
@@ -66,12 +60,47 @@ export function BillingPage() {
   const [cancelling,        setCancelling]        = useState(false);
   const [cancelledAt,       setCancelledAt]       = useState<string | null>(null);
 
+  // Polling state for post-payment tier refresh
+  const [polling,      setPolling]      = useState(status === 'success');
+  const [pollTimedOut, setPollTimedOut] = useState(false);
+  const pollRef   = useRef<ReturnType<typeof setInterval> | null>(null);
+  const pollCount = useRef(0);
+
   useEffect(() => {
-    if (status) {
+    function clearParam() {
       const url = new URL(window.location.href);
       url.searchParams.delete('status');
       window.history.replaceState({}, '', url.toString());
     }
+
+    if (status !== 'success') {
+      if (status) clearParam();
+      return;
+    }
+
+    // Poll loadProfile() every 2 s, up to 6 tries, until tier is non-free
+    pollRef.current = setInterval(async () => {
+      pollCount.current += 1;
+      await loadProfile();
+
+      const currentTier = useAuthStore.getState().profile?.subscription_tier ?? 'free';
+      if (currentTier !== 'free') {
+        clearInterval(pollRef.current!);
+        setPolling(false);
+        clearParam();
+        return;
+      }
+
+      if (pollCount.current >= 6) {
+        clearInterval(pollRef.current!);
+        setPolling(false);
+        setPollTimedOut(true);
+        clearParam();
+      }
+    }, 2000);
+
+    return () => { if (pollRef.current) clearInterval(pollRef.current); };
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const handleCancel = async () => {
@@ -90,12 +119,13 @@ export function BillingPage() {
     }
   };
 
-  const tierNames = isHe ? TIER_NAMES_HE : TIER_NAMES_EN;
   const tierFeatures = isHe ? TIER_FEATURES_HE : TIER_FEATURES_EN;
-  const tierName = tierNames[tier] ?? tier;
-  const features = tierFeatures[tier] ?? [];
-  const nextTier = canUpgradeTo;
-  const nextName = nextTier ? (tierNames[nextTier] ?? nextTier) : null;
+  const tierName  = isHe ? getLimits(tier).displayNameHe : (TIER_NAMES_EN[tier] ?? tier);
+  const features  = tierFeatures[tier] ?? [];
+  const nextTier  = canUpgradeTo;
+  const nextName  = nextTier
+    ? (isHe ? getLimits(nextTier).displayNameHe : (TIER_NAMES_EN[nextTier] ?? nextTier))
+    : null;
 
   return (
     <>
@@ -129,7 +159,38 @@ export function BillingPage() {
           </h1>
 
           {/* Status banners */}
-          {status === 'success' && (
+          {polling && (
+            <div style={{
+              ...cardStyle(),
+              border:          '1px solid rgba(0,229,195,0.25)',
+              backgroundColor: 'rgba(0,229,195,0.07)',
+              fontFamily:      ASSIST,
+              fontSize:        '14px',
+              color:           GOLD,
+              display:         'flex',
+              alignItems:      'center',
+              gap:             '10px',
+            }}>
+              <span style={{ animation: 'spin 1s linear infinite', display: 'inline-block' }}>⟳</span>
+              {isHe ? 'מעדכן את המנוי שלך...' : 'Updating your subscription…'}
+              <style>{`@keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }`}</style>
+            </div>
+          )}
+          {!polling && pollTimedOut && (
+            <div style={{
+              ...cardStyle(),
+              border:          `1px solid ${CLAY}55`,
+              backgroundColor: 'rgba(155,122,72,0.15)',
+              fontFamily:      ASSIST,
+              fontSize:        '14px',
+              color:           `${PARCH}CC`,
+            }}>
+              {isHe
+                ? 'התשלום התקבל — העדכון עשוי לקחת עוד רגע. רענן את הדף בעוד כמה שניות.'
+                : 'Payment received — the update may take a moment. Refresh the page in a few seconds.'}
+            </div>
+          )}
+          {!polling && !pollTimedOut && tier !== 'free' && status === 'success' && (
             <div style={{
               ...cardStyle(),
               border:          '1px solid rgba(0,229,195,0.4)',

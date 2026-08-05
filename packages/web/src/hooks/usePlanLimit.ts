@@ -1,3 +1,4 @@
+import { getLimits } from '@gina-haya/shared';
 import { useAuthStore } from '../stores/authStore';
 
 export interface PlanLimits {
@@ -8,49 +9,41 @@ export interface PlanLimits {
   encyclopediaAccess: boolean;
 }
 
-const TIER_LIMITS: Record<string, PlanLimits> = {
-  free: {
-    maxGardens:         1,
-    maxPlantsPerGarden: 10,
-    maxTrackers:        1,
-    maxChupChuPerMonth: 20,
-    encyclopediaAccess: false,
-  },
-  grower: {
-    maxGardens:         3,
-    maxPlantsPerGarden: 25,
-    maxTrackers:        3,
-    maxChupChuPerMonth: 50,
-    encyclopediaAccess: true,
-  },
-  gardener_pro: {
-    maxGardens:         10,
-    maxPlantsPerGarden: null,
-    maxTrackers:        10,
-    maxChupChuPerMonth: null,
-    encyclopediaAccess: true,
-  },
-  professional: {
-    maxGardens:         null,
-    maxPlantsPerGarden: null,
-    maxTrackers:        null,
-    maxChupChuPerMonth: null,
-    encyclopediaAccess: true,
-  },
+// en display name + badge color per tier (Hebrew name comes from shared getLimits)
+const TIER_META: Record<string, { en: string; color: string }> = {
+  free:         { en: 'Free',         color: '#9CA3AF' },
+  gardener_pro: { en: 'Gardener Pro', color: '#00e5c3' },
+  advanced:     { en: 'Advanced',     color: '#56B87A' },
+  professional: { en: 'Professional', color: '#60A5FA' },
+  owner:        { en: 'Owner',        color: '#FFD700' },
 };
 
-export const TIER_DISPLAY: Record<string, { he: string; en: string; color: string }> = {
-  free:         { he: 'חינם',       en: 'Free',         color: '#9CA3AF' },
-  grower:       { he: 'גרואר',      en: 'Grower',       color: '#56B87A' },
-  gardener_pro: { he: 'גנן פרו',    en: 'Gardener Pro', color: '#00e5c3' },
-  professional: { he: 'מקצועי',     en: 'Professional', color: '#60A5FA' },
-};
+const FALLBACK_META = { en: 'Free', color: '#9CA3AF' };
+
+export function getTierDisplay(tier: string): { he: string; en: string; color: string } {
+  const meta = TIER_META[tier] ?? FALLBACK_META;
+  return { he: getLimits(tier).displayNameHe, en: meta.en, color: meta.color };
+}
+
+/** @deprecated Import getTierDisplay() instead */
+export const TIER_DISPLAY: Record<string, { he: string; en: string; color: string }> = new Proxy(
+  {} as Record<string, { he: string; en: string; color: string }>,
+  { get: (_t, key: string) => getTierDisplay(key) },
+);
 
 export function usePlanLimit() {
   const { profile } = useAuthStore();
   const tier = profile?.subscription_tier ?? 'free';
-  const limits = TIER_LIMITS[tier] ?? TIER_LIMITS.free;
-  const display = TIER_DISPLAY[tier] ?? TIER_DISPLAY.free;
+  const sharedLimits = getLimits(tier);
+  const display = getTierDisplay(tier);
+
+  const limits: PlanLimits = {
+    maxGardens:         sharedLimits.maxGardens,
+    maxPlantsPerGarden: sharedLimits.maxPlantsPerGarden,
+    maxTrackers:        sharedLimits.maxTrackers,
+    maxChupChuPerMonth: sharedLimits.maxChupChuPerMonth,
+    encyclopediaAccess: sharedLimits.encyclopediaAccess,
+  };
 
   return {
     tier,
