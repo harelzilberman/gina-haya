@@ -246,7 +246,7 @@ export function PricingPage() {
             fontFamily: FRANK, fontSize: 'clamp(28px, 5vw, 44px)',
             color: BIO_CYAN, margin: '0 0 12px', fontWeight: 700, lineHeight: 1.2,
           }}>
-            בחר את התכנית שלך
+            בחר/י את תוכנית המינוי שלך
           </h1>
           <p style={{
             fontFamily: ASST, fontSize: '16px',
