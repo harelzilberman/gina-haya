@@ -717,7 +717,8 @@ billingRouter.post('/grow/webhook/:secret', async (req: Request, res) => {
 
     // ── Resolve user ───────────────────────────────────────────────────────
     // Priority: cField1 (userId set at payment-link creation) → email lookup
-    let userId: string | null = internalUserId ?? null;
+    // Trim to guard against whitespace added by form-urlencoded decoding.
+    let userId: string | null = internalUserId?.trim() ?? null;
 
     if (!userId && payerEmail) {
       const { data: userRow } = await db
@@ -771,7 +772,7 @@ billingRouter.post('/grow/webhook/:secret', async (req: Request, res) => {
 
     // ── Upsert subscription record ─────────────────────────────────────────
     if (token) {
-      await db.from('user_subscriptions').upsert(
+      const { error: upsertError } = await db.from('user_subscriptions').upsert(
         {
           user_id:          userId,
           platform:         'grow',
@@ -786,13 +787,74 @@ billingRouter.post('/grow/webhook/:secret', async (req: Request, res) => {
         },
         { onConflict: 'purchase_token' }
       );
+      if (upsertError) {
+        console.error(
+          `[grow/webhook] user_subscriptions upsert FAILED user=${userId} token=${token}:`,
+          upsertError
+        );
+        // Don't abort — still try to update the users table so the tier change lands
+        // even if the subscription audit row fails (e.g. schema mismatch).
+      }
     }
 
     // ── Update user tier ───────────────────────────────────────────────────
-    await db.from('users').update({
-      subscription_tier: tier,
-      updated_at:        new Date().toISOString(),
-    }).eq('id', userId);
+    // IMPORTANT: capture the result — Supabase never throws on soft errors,
+    // it returns { error } instead.  Chaining .select() forces a non-null
+    // response so we can distinguish "0 rows matched" from a genuine update.
+    const { data: tierUpdateData, error: tierUpdateError } = await db
+      .from('users')
+      .update({
+        subscription_tier: tier,
+        updated_at:        new Date().toISOString(),
+      })
+      .eq('id', userId)
+      .select('id, subscription_tier');
+
+    if (tierUpdateError) {
+      console.error(
+        `[grow/webhook] users.update FAILED user=${userId} tier=${tier}:`,
+        tierUpdateError
+      );
+    } else if (!tierUpdateData || tierUpdateData.length === 0) {
+      console.error(
+        `[grow/webhook] users.update ZERO ROWS — userId=${userId} not found in users table. ` +
+        `Falling back to email lookup.`
+      );
+      // Fallback: try matching by payer email (covers the case where cField1 UUID
+      // was somehow wrong / truncated in the Make.com scenario)
+      if (payerEmail) {
+        const { data: emailUpdateData, error: emailUpdateError } = await db
+          .from('users')
+          .update({
+            subscription_tier: tier,
+            updated_at:        new Date().toISOString(),
+          })
+          .eq('email', payerEmail)
+          .select('id, subscription_tier');
+
+        if (emailUpdateError) {
+          console.error(
+            `[grow/webhook] users.update (email fallback) FAILED email=${payerEmail}:`,
+            emailUpdateError
+          );
+        } else if (!emailUpdateData || emailUpdateData.length === 0) {
+          console.error(
+            `[grow/webhook] users.update (email fallback) ZERO ROWS — email=${payerEmail} not found either`
+          );
+        } else {
+          console.log(
+            `[grow/webhook] users.update (email fallback) OK ` +
+            `user=${emailUpdateData[0].id} new_tier=${emailUpdateData[0].subscription_tier}`
+          );
+        }
+      }
+    } else {
+      console.log(
+        `[grow/webhook] users.update OK ` +
+        `user=${tierUpdateData[0].id} new_tier=${tierUpdateData[0].subscription_tier} ` +
+        `(${tierUpdateData.length} row(s) affected)`
+      );
+    }
 
     console.log(
       `[grow/webhook] ACCEPTED user=${userId} tier=${tier} ` +
