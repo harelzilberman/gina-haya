@@ -60,6 +60,7 @@ export function BillingPage() {
   const [showCancelConfirm, setShowCancelConfirm] = useState(false);
   const [cancelling,        setCancelling]        = useState(false);
   const [cancelledAt,       setCancelledAt]       = useState<string | null>(null);
+  const [cancelError,       setCancelError]       = useState<string | null>(null);
 
   // Polling state for post-payment tier refresh
   const [polling,      setPolling]      = useState(status === 'success');
@@ -107,6 +108,7 @@ export function BillingPage() {
   const handleCancel = async () => {
     if (!session?.access_token || cancelling) return;
     setCancelling(true);
+    setCancelError(null);
     try {
       const data = await api.post<{ success: boolean; cancelAt: string }>('/api/billing/cancel', {}, session.access_token);
       if (data.success) {
@@ -114,7 +116,7 @@ export function BillingPage() {
         setShowCancelConfirm(false);
       }
     } catch {
-      // silent
+      setCancelError(isHe ? 'אירעה שגיאה. אנא נסה שוב מאוחר יותר.' : 'Something went wrong. Please try again later.');
     } finally {
       setCancelling(false);
     }
@@ -335,6 +337,11 @@ export function BillingPage() {
                   <p style={{ fontFamily: ASSIST, fontSize: '13px', color: PARCH, margin: 0 }}>
                     {t('cancel.confirm')}
                   </p>
+                  {cancelError && (
+                    <p style={{ fontFamily: ASSIST, fontSize: '13px', color: '#f87171', margin: 0 }}>
+                      {cancelError}
+                    </p>
+                  )}
                   <div style={{ display: 'flex', gap: '10px' }}>
                     <button
                       onClick={() => setShowCancelConfirm(false)}

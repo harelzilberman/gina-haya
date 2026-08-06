@@ -6,6 +6,7 @@ import qs from 'qs';
 import { TIER_PRICING } from '@gina-haya/shared';
 import { db } from '../db/client';
 import { verifyToken } from '../middleware/auth';
+import { sendCancellationRequestNotice } from '../services/email';
 import { getAndroidPublisherClient } from '../services/googlePlay';
 import {
   PLAY_PRODUCT_TO_TIER,
@@ -148,14 +149,82 @@ billingRouter.get('/status', verifyToken, async (req: any, res) => {
 });
 
 // ── POST /api/billing/cancel ──────────────────────────────────────────────────
-// TODO: Grow recurring subscriptions (הוראת קבע) are NOT covered by this endpoint.
-// This only cancels Stripe subscriptions. Grow recurring charges will continue on
-// Grow's side until manually stopped in Grow's dashboard ("גינה היא" → standing orders).
-// Grow's Make.com app has no "Cancel Recurring" action, so automated cancellation
-// would require a direct API call to Grow's paid REST API or a manual operator step.
-// Do not ship Grow recurring billing to real paying customers without resolving this gap.
+// Branches on the user's active subscription platform:
+//
+// grow    — marks status='cancellation_requested', sends admin notification email
+//           so the owner can manually cancel the standing order in Grow's dashboard.
+//           Access continues until expires_at (rolling 33-day window, set by webhook).
+//           Automated downgrade fires via the attachTier safety-net once expires_at passes.
+//
+// stripe  — existing cancel_at_period_end=true flow, unchanged.
+//
+// google_play — out of scope; returns 400 if attempted.
 billingRouter.post('/cancel', verifyToken, async (req: any, res) => {
   try {
+    // Find the most recent active Grow subscription for this user
+    const { data: growSub } = await db
+      .from('user_subscriptions')
+      .select('platform, purchase_token, expires_at, product_id, status')
+      .eq('user_id', req.user.id)
+      .eq('platform', 'grow')
+      .eq('status', 'active')
+      .order('created_at', { ascending: false })
+      .limit(1)
+      .maybeSingle();
+
+    if (growSub) {
+      // ── Grow cancellation ─────────────────────────────────────────────────
+      // expires_at is a rolling future date set by the webhook (33 days from last charge).
+      // For old rows created before this was introduced, expires_at may be null —
+      // fall back to now + 30 days and write it to the row so the downgrade check works.
+      const MS_30D = 30 * 24 * 60 * 60 * 1000;
+      const periodEnd: Date = growSub.expires_at
+        ? new Date(growSub.expires_at)
+        : new Date(Date.now() + MS_30D);
+
+      const updatePayload: Record<string, any> = {
+        status:     'cancellation_requested',
+        updated_at: new Date().toISOString(),
+      };
+      if (!growSub.expires_at) {
+        updatePayload.expires_at = periodEnd.toISOString();
+      }
+
+      await db
+        .from('user_subscriptions')
+        .update(updatePayload)
+        .eq('purchase_token', growSub.purchase_token);
+
+      // Fetch customer details for the admin notification
+      const { data: user } = await db
+        .from('users')
+        .select('email, display_name')
+        .eq('id', req.user.id)
+        .single();
+
+      try {
+        await sendCancellationRequestNotice({
+          customerEmail: user?.email ?? req.user.email,
+          customerName:  user?.display_name ?? '',
+          tier:          growSub.product_id,
+          purchaseToken: growSub.purchase_token,
+          periodEnd,
+        });
+      } catch (emailErr) {
+        // Non-fatal — cancellation is still recorded in the DB even if the email fails.
+        console.error('[POST /api/billing/cancel] Admin email failed (non-fatal):', emailErr);
+      }
+
+      console.log(
+        `[POST /api/billing/cancel] Grow cancellation_requested: ` +
+        `user=${req.user.id} token=${growSub.purchase_token} periodEnd=${periodEnd.toISOString()}`
+      );
+
+      res.json({ success: true, cancelAt: periodEnd.toISOString() });
+      return;
+    }
+
+    // ── Stripe cancellation ─────────────────────────────────────────────────
     const { data, error } = await db
       .from('users')
       .select('stripe_customer_id')
@@ -764,10 +833,10 @@ billingRouter.post('/grow/webhook/:secret', async (req: Request, res) => {
     // base_plan_id is used as a queryable label so the renewal cron can
     // target annual purchases without guessing from date math alone.
     const now = Date.now();
-    const expiresAt: string | null =
+    const expiresAt: string =
       paymentModeFromWebhook === 'one_time_annual'   ? new Date(now + 365 * 24 * 60 * 60 * 1000).toISOString()
       : paymentModeFromWebhook === 'one_time_monthly' ? new Date(now +  30 * 24 * 60 * 60 * 1000).toISOString()
-      : null;  // recurring — no fixed expiry
+      : new Date(now + 33 * 24 * 60 * 60 * 1000).toISOString(); // recurring — rolling 33-day window; refreshed on every successful charge
 
     const basePlanId: string | null =
       paymentModeFromWebhook === 'one_time_annual'   ? 'annual'

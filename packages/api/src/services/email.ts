@@ -176,6 +176,57 @@ export async function sendWelcome(user: EmailUser): Promise<void> {
   }
 }
 
+const ADMIN_EMAIL = 'harelzilberman@gmail.com';
+
+export async function sendCancellationRequestNotice(opts: {
+  customerEmail: string;
+  customerName:  string;
+  tier:          string;
+  purchaseToken: string;
+  periodEnd:     Date;
+}): Promise<void> {
+  const { customerEmail, customerName, tier, purchaseToken, periodEnd } = opts;
+
+  const periodEndStr = periodEnd.toLocaleDateString('he-IL', {
+    year: 'numeric', month: 'long', day: 'numeric',
+    timeZone: 'Asia/Jerusalem',
+  });
+
+  const html = `
+    <div style="font-family:Arial,Helvetica,sans-serif;max-width:560px;margin:0 auto;padding:32px;background:#f9fafb;border-radius:12px;">
+      <h2 style="color:#050d0a;font-size:20px;margin:0 0 16px;">⚠️ בקשת ביטול מנוי — Grow הוראת קבע</h2>
+      <p style="color:#374151;font-size:15px;margin:0 0 8px;"><strong>לקוח/ה:</strong> ${customerName || '(ללא שם)'}</p>
+      <p style="color:#374151;font-size:15px;margin:0 0 8px;"><strong>אימייל:</strong> ${customerEmail}</p>
+      <p style="color:#374151;font-size:15px;margin:0 0 8px;"><strong>תוכנית:</strong> ${tier}</p>
+      <p style="color:#374151;font-size:15px;margin:0 0 8px;"><strong>מזהה עסקה (Grow):</strong> <code style="font-size:13px;background:#e5e7eb;padding:2px 6px;border-radius:4px;">${purchaseToken}</code></p>
+      <p style="color:#374151;font-size:15px;margin:0 0 20px;"><strong>סוף תקופת גישה:</strong> ${periodEndStr}</p>
+      <div style="background:#fef3c7;border:1px solid #f59e0b;border-radius:8px;padding:16px;margin:0 0 20px;">
+        <p style="color:#92400e;font-size:14px;margin:0;font-weight:600;">
+          נדרשת פעולה ידנית: בטל את ההוראת קבע של הלקוח/ה בלוח הניהול של Grow לפני ${periodEndStr}.<br>
+          אם לא יבוטל בזמן, Grow עלול לחייב מחזור נוסף.
+        </p>
+      </div>
+      <p style="color:#6b7280;font-size:13px;margin:0;">
+        הגישה של הלקוח/ה תמשיך עד ${periodEndStr} ואז תרד אוטומטית לחינם — ללא קשר לביטול ב-Grow.
+      </p>
+    </div>
+  `;
+
+  const { error } = await resend.emails.send({
+    from:    FROM_HE,
+    to:      ADMIN_EMAIL,
+    subject: `[גינה חיה] ביטול מנוי Grow — ${customerEmail}`,
+    html,
+  });
+
+  if (error) {
+    console.error('[sendCancellationRequestNotice] Resend error:', error);
+    throw new Error(`Failed to send cancellation notice: ${error.message}`);
+  }
+
+  console.log(`[sendCancellationRequestNotice] Sent to ${ADMIN_EMAIL} for customer=${customerEmail}`);
+}
+
 export async function sendRenewalReminder(opts: {
   email:       string;
   displayName: string;

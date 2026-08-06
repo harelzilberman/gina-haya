@@ -34,45 +34,44 @@ export async function attachTier(req: Request, res: Response, next: NextFunction
       ? 'professional'
       : (data?.subscription_tier ?? 'free');
 
-    // Safety net: for paid-tier users with a Google Play subscription,
-    // check whether the subscription has silently expired (missed RTDN).
+    // Safety net: check Google Play and Grow subscriptions for silent expiry.
     // Only runs when LAUNCH_FREE_MODE is off and the tier is a paid tier.
     if (!LAUNCH_FREE_MODE && !FREE_TIERS.has(tier)) {
       try {
-        const { data: sub } = await db
-          .from('user_subscriptions')
-          .select('expires_at, status')
-          .eq('user_id', userId)
-          .eq('platform', 'google_play')
-          .order('created_at', { ascending: false })
-          .limit(1)
-          .maybeSingle();
+        // Fetch both platform subscriptions in parallel (one query each).
+        const [{ data: playSub }, { data: growSub }] = await Promise.all([
+          db.from('user_subscriptions')
+            .select('expires_at, status')
+            .eq('user_id', userId)
+            .eq('platform', 'google_play')
+            .order('created_at', { ascending: false })
+            .limit(1)
+            .maybeSingle(),
+          db.from('user_subscriptions')
+            .select('expires_at, status')
+            .eq('user_id', userId)
+            .eq('platform', 'grow')
+            .order('created_at', { ascending: false })
+            .limit(1)
+            .maybeSingle(),
+        ]);
 
-        if (sub?.expires_at) {
+        const now = new Date();
+        const growExpiresAt   = growSub?.expires_at ? new Date(growSub.expires_at) : null;
+        const growNotExpired  = growSub !== null && (growExpiresAt === null || growExpiresAt > now);
+        // active OR cancellation_requested-but-not-yet-expired both count as valid Grow access.
+        const hasActiveGrow   = growNotExpired && (
+          growSub!.status === 'active' || growSub!.status === 'cancellation_requested'
+        );
+
+        // ── 1. Google Play expiry check ──────────────────────────────────────
+        if (playSub?.expires_at) {
           const expiredMoreThan24hAgo =
-            Date.now() - new Date(sub.expires_at).getTime() > MS_24H;
+            Date.now() - new Date(playSub.expires_at).getTime() > MS_24H;
           const notActive =
-            sub.status !== 'active' && sub.status !== 'grace_period';
+            playSub.status !== 'active' && playSub.status !== 'grace_period';
 
           if (expiredMoreThan24hAgo && notActive) {
-            // Before downgrading, check whether an active Grow subscription
-            // independently justifies the paid tier.  A Grow recurring row has
-            // expires_at = null (no fixed expiry); a one-time row has a future
-            // expires_at.  Either counts as "active" and must block the downgrade.
-            const { data: growSub } = await db
-              .from('user_subscriptions')
-              .select('expires_at')
-              .eq('user_id', userId)
-              .eq('platform', 'grow')
-              .eq('status', 'active')
-              .limit(1)
-              .maybeSingle();
-
-            const hasActiveGrow =
-              growSub !== null &&
-              (growSub.expires_at === null ||             // recurring — no fixed expiry
-               new Date(growSub.expires_at) > new Date()); // one-time — not yet expired
-
             if (hasActiveGrow) {
               // User's paid tier is valid via Grow — don't downgrade based on a
               // stale google_play row (e.g. an old test subscription).
@@ -94,6 +93,25 @@ export async function attachTier(req: Request, res: Response, next: NextFunction
               tier = 'free';
             }
           }
+        }
+
+        // ── 2. Grow cancellation expiry check ────────────────────────────────
+        // Covers Grow-only users (no Play sub). If the most recent Grow row has
+        // status='cancellation_requested' and expires_at has passed, downgrade.
+        // This is the automatic tier-revocation mechanism after a manual Grow cancel.
+        if (!FREE_TIERS.has(tier) &&
+            growSub?.status === 'cancellation_requested' &&
+            growExpiresAt !== null &&
+            growExpiresAt <= now) {
+          console.warn(
+            `[attachTier] safety-net: downgrading user=${userId} to free ` +
+            `— Grow cancellation period ended (expires_at=${growSub.expires_at})`
+          );
+          await db.from('users').update({
+            subscription_tier: 'free',
+            updated_at: new Date().toISOString(),
+          }).eq('id', userId);
+          tier = 'free';
         }
       } catch (safetyErr) {
         // Fail-open: keep current tier if the check errors
