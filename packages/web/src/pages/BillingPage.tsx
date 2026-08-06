@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
-import { useSearchParams } from 'react-router-dom';
+import { useSearchParams, useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { getLimits } from '@gina-haya/shared';
 import { useAuthStore } from '../stores/authStore';
@@ -55,6 +55,7 @@ export function BillingPage() {
   const { session, loadProfile } = useAuthStore();
   const { tier, monthlyPrice, canUpgradeTo } = useTier();
   const { open: openUpgradeModal } = useUpgradeModalStore();
+  const navigate = useNavigate();
 
   const [showCancelConfirm, setShowCancelConfirm] = useState(false);
   const [cancelling,        setCancelling]        = useState(false);
@@ -269,7 +270,7 @@ export function BillingPage() {
                 {t('upgradeDesc')}
               </p>
               <button
-                onClick={() => openUpgradeModal('billing_page', 'monthly', nextTier)}
+                onClick={() => navigate('/pricing')}
                 style={{
                   width:           '100%',
                   padding:         '13px',
