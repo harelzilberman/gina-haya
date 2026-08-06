@@ -386,6 +386,22 @@ export function SettingsPage() {
                 {isHe ? 'לחנות' : 'Shop'}
               </button>
             </div>
+            {tier !== 'free' && (
+              <button
+                onClick={() => navigate('/billing#cancel-subscription')}
+                style={{
+                  marginTop: '8px', width: '100%', padding: '8px',
+                  backgroundColor: 'transparent',
+                  color: 'rgba(220,80,80,0.75)', border: '1px solid rgba(220,80,80,0.25)',
+                  borderRadius: '8px', fontFamily: ASSIST, fontSize: '13px',
+                  cursor: 'pointer', transition: 'border-color 0.2s, color 0.2s',
+                }}
+                onMouseEnter={e => { const el = e.currentTarget as HTMLElement; el.style.color = 'rgba(220,80,80,1)'; el.style.borderColor = 'rgba(220,80,80,0.5)'; }}
+                onMouseLeave={e => { const el = e.currentTarget as HTMLElement; el.style.color = 'rgba(220,80,80,0.75)'; el.style.borderColor = 'rgba(220,80,80,0.25)'; }}
+              >
+                {isHe ? 'ביטול מנוי' : 'Cancel subscription'}
+              </button>
+            )}
           </div>
 
           {/* Notifications section */}

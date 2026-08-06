@@ -68,6 +68,22 @@ export function BillingPage() {
   const pollRef   = useRef<ReturnType<typeof setInterval> | null>(null);
   const pollCount = useRef(0);
 
+  // Scroll to cancellation section when navigated here via #cancel-subscription
+  useEffect(() => {
+    if (window.location.hash !== '#cancel-subscription') return;
+    const el = document.getElementById('cancel-subscription');
+    if (el) {
+      el.scrollIntoView({ behavior: 'smooth' });
+    } else {
+      // Section may not be rendered yet (e.g. tier still loading); poll briefly
+      const timer = setTimeout(() => {
+        document.getElementById('cancel-subscription')?.scrollIntoView({ behavior: 'smooth' });
+      }, 300);
+      return () => clearTimeout(timer);
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
   useEffect(() => {
     function clearParam() {
       const url = new URL(window.location.href);
@@ -296,7 +312,7 @@ export function BillingPage() {
 
           {/* Cancel */}
           {tier !== 'free' && !cancelledAt && (
-            <div style={cardStyle()}>
+            <div id="cancel-subscription" style={cardStyle()}>
               <h3 style={{ fontFamily: FRANK, fontWeight: 600, fontSize: '16px', color: PARCH, margin: '0 0 6px' }}>
                 {t('cancel.title')}
               </h3>

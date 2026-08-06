@@ -308,7 +308,7 @@ export function Navbar() {
               nodeRef={moreRef}
               items={[
                 { label: isHebrew ? 'חנות'  : 'Store',   to: '/shop'    },
-                { label: isHebrew ? 'תמחור' : 'Pricing', to: '/pricing' },
+                { label: isHebrew ? 'תוכניות ומחירים' : 'Pricing', to: '/pricing' },
                 { label: isHebrew ? 'אודות' : 'About',   to: '/about'   },
               ]}
             />
@@ -415,6 +415,14 @@ export function Navbar() {
                         <div style={{ height: '1px', backgroundColor: 'rgba(0,229,195,0.1)', margin: '4px 0' }} />
                       </>
                     )}
+
+                    {/* Billing */}
+                    <Link to="/billing" className="gina-dropdown-item"
+                      onClick={() => setDropdownOpen(false)}
+                      style={{ display: 'block', padding: '9px 16px', fontFamily: DM_SANS, fontSize: '14px',
+                        color: TEXT_MID, textDecoration: 'none', transition: 'background-color 0.15s, color 0.15s' }}>
+                      {isHebrew ? 'חיוב ותוכניות' : 'Billing & Plans'}
+                    </Link>
 
                     {/* Settings */}
                     <Link to="/settings" className="gina-dropdown-item"

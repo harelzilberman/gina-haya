@@ -72,7 +72,7 @@ const TIER_FEATURES_LIST: Record<string, string[]> = {
 
 const ISRAELI_MOBILE_RE = /^05\d{8}$/;
 const validatePhone = (v: string): string | null =>
-  ISRAELI_MOBILE_RE.test(v) ? null : 'מספר פלאפון ישראלי לא תקין (לדוגמה: 0501234567)';
+  ISRAELI_MOBILE_RE.test(v) ? null : 'מספר טלפון נייד ישראלי לא תקין (לדוגמה: 0501234567)';
 
 // Grow requires first + last name, each at least 2 characters.
 const validateFullName = (v: string): string | null => {
@@ -396,7 +396,7 @@ export function UpgradeModal() {
           pendingGrowTier ? (
             <div dir="rtl" style={{ padding: '28px', display: 'flex', flexDirection: 'column', gap: '20px' }}>
               <p style={{ fontFamily: ASSIST, fontSize: '14px', color: `${PARCH}CC`, margin: 0 }}>
-                לצורך עיבוד התשלום נדרשים שם מלא ומספר פלאפון ישראלי.
+                לצורך עיבוד התשלום נדרשים שם מלא ומספר טלפון נייד ישראלי.
               </p>
 
               {/* Full name */}
@@ -451,7 +451,7 @@ export function UpgradeModal() {
                   htmlFor="grow-phone"
                   style={{ fontFamily: ASSIST, fontSize: '13px', fontWeight: 600, color: PARCH }}
                 >
-                  מספר פלאפון
+                  מספר טלפון נייד
                 </label>
                 <input
                   id="grow-phone"
