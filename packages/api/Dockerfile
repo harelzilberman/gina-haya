@@ -16,6 +16,12 @@ COPY packages/i18n/package.json ./packages/i18n/package.json
 
 RUN pnpm install --no-frozen-lockfile
 
+# CACHE_BUST: changing this value forces Railway to rebuild all layers below,
+# bypassing any stale Docker registry cache. Increment when a deploy appears
+# "successful" but logs show old code is still running.
+ARG CACHE_BUST=20260806
+RUN echo "Build: $CACHE_BUST"
+
 # Copy source after install
 COPY packages/shared ./packages/shared
 COPY packages/api ./packages/api

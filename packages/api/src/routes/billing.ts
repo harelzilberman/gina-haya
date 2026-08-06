@@ -611,6 +611,10 @@ billingRouter.post('/grow/create-payment', verifyToken, async (req: any, res) =>
 //   call arrives.  transactionId may differ per cycle; a stable token reference
 //   (paymentLinkProcessId?) may be needed to tie cycles to the same subscription row.
 billingRouter.post('/grow/webhook/:secret', async (req: Request, res) => {
+  // BUILD MARKER — update this whenever deploying a new version so Railway logs
+  // prove which code is actually running (guards against stale Docker layer cache).
+  console.log('[grow/webhook] build=20260806a handler invoked');
+
   // ── Authenticate via URL-embedded secret ──────────────────────────────────
   const webhookSecret = process.env.GROW_WEBHOOK_SECRET;
   if (!webhookSecret || (req.params as any).secret !== webhookSecret) {
