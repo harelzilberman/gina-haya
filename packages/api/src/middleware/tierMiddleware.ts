@@ -55,12 +55,44 @@ export async function attachTier(req: Request, res: Response, next: NextFunction
             sub.status !== 'active' && sub.status !== 'grace_period';
 
           if (expiredMoreThan24hAgo && notActive) {
-            // Inline downgrade — Pub/Sub must have missed the expiry notification
-            await db.from('users').update({
-              subscription_tier: 'free',
-              updated_at: new Date().toISOString(),
-            }).eq('id', userId);
-            tier = 'free';
+            // Before downgrading, check whether an active Grow subscription
+            // independently justifies the paid tier.  A Grow recurring row has
+            // expires_at = null (no fixed expiry); a one-time row has a future
+            // expires_at.  Either counts as "active" and must block the downgrade.
+            const { data: growSub } = await db
+              .from('user_subscriptions')
+              .select('expires_at')
+              .eq('user_id', userId)
+              .eq('platform', 'grow')
+              .eq('status', 'active')
+              .limit(1)
+              .maybeSingle();
+
+            const hasActiveGrow =
+              growSub !== null &&
+              (growSub.expires_at === null ||             // recurring — no fixed expiry
+               new Date(growSub.expires_at) > new Date()); // one-time — not yet expired
+
+            if (hasActiveGrow) {
+              // User's paid tier is valid via Grow — don't downgrade based on a
+              // stale google_play row (e.g. an old test subscription).
+              console.warn(
+                `[attachTier] safety-net: skipping google_play downgrade for user=${userId} ` +
+                `— active Grow subscription found (expires_at=${growSub?.expires_at ?? 'null'})`
+              );
+            } else {
+              // Inline downgrade — Pub/Sub must have missed the Play expiry notification
+              // and there is no active Grow subscription to fall back on.
+              console.warn(
+                `[attachTier] safety-net: downgrading user=${userId} to free ` +
+                `— google_play sub expired+inactive, no active Grow sub`
+              );
+              await db.from('users').update({
+                subscription_tier: 'free',
+                updated_at: new Date().toISOString(),
+              }).eq('id', userId);
+              tier = 'free';
+            }
           }
         }
       } catch (safetyErr) {
