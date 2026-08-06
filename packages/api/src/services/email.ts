@@ -5,6 +5,9 @@ import path from 'path';
 import jwt from 'jsonwebtoken';
 import type { BiodynamicDay } from '@gina-haya/shared';
 
+if (!process.env.RESEND_API_KEY) {
+  console.error('[email] RESEND_API_KEY is not set — all email sends will fail');
+}
 const resend = new Resend(process.env.RESEND_API_KEY!);
 const APP_URL = process.env.APP_URL || 'http://localhost:5173';
 const JWT_SECRET = process.env.JWT_SECRET!;
@@ -220,7 +223,7 @@ export async function sendCancellationRequestNotice(opts: {
   });
 
   if (error) {
-    console.error('[sendCancellationRequestNotice] Resend error:', error);
+    console.error('[sendCancellationRequestNotice] Resend error:', JSON.stringify(error));
     throw new Error(`Failed to send cancellation notice: ${error.message}`);
   }
 

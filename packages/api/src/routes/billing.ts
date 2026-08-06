@@ -160,6 +160,7 @@ billingRouter.get('/status', verifyToken, async (req: any, res) => {
 //
 // google_play — out of scope; returns 400 if attempted.
 billingRouter.post('/cancel', verifyToken, async (req: any, res) => {
+  console.log(`[POST /api/billing/cancel] invoked user=${(req as any).user?.id}`);
   try {
     // Find the most recent active Grow subscription for this user
     const { data: growSub } = await db
@@ -171,6 +172,8 @@ billingRouter.post('/cancel', verifyToken, async (req: any, res) => {
       .order('created_at', { ascending: false })
       .limit(1)
       .maybeSingle();
+
+    console.log(`[POST /api/billing/cancel] growSub lookup: found=${!!growSub} status=${growSub?.status ?? 'n/a'} token=${growSub?.purchase_token ?? 'n/a'}`);
 
     if (growSub) {
       // ── Grow cancellation ─────────────────────────────────────────────────
@@ -202,6 +205,7 @@ billingRouter.post('/cancel', verifyToken, async (req: any, res) => {
         .eq('id', req.user.id)
         .single();
 
+      console.log(`[POST /api/billing/cancel] sending admin cancellation email to ADMIN for customer=${user?.email ?? req.user.email}`);
       try {
         await sendCancellationRequestNotice({
           customerEmail: user?.email ?? req.user.email,
@@ -210,9 +214,13 @@ billingRouter.post('/cancel', verifyToken, async (req: any, res) => {
           purchaseToken: growSub.purchase_token,
           periodEnd,
         });
-      } catch (emailErr) {
+        console.log('[POST /api/billing/cancel] Admin email sent OK');
+      } catch (emailErr: any) {
         // Non-fatal — cancellation is still recorded in the DB even if the email fails.
-        console.error('[POST /api/billing/cancel] Admin email failed (non-fatal):', emailErr);
+        console.error(
+          '[POST /api/billing/cancel] Admin email failed (non-fatal):',
+          emailErr?.message ?? String(emailErr)
+        );
       }
 
       console.log(
