@@ -10,10 +10,8 @@ const ANTHROPIC_HEADERS = {
   'x-api-key':        process.env.ANTHROPIC_API_KEY!,
   'anthropic-version': '2023-06-01',
   'content-type':      'application/json',
-  // Required for cache_control ttl:'1h' (extended prompt-cache TTL, GA Feb 2025).
-  // Without this header, Anthropic returns 400 invalid_request_error on any request
-  // that includes a non-default ttl in a cache_control block.
-  'anthropic-beta':    'extended-cache-ttl-2025-02-19',
+  // Note: cache_control ttl:'1h' (extended prompt-cache TTL) is now GA — no beta header needed.
+  // The 'extended-cache-ttl-2025-02-19' beta flag was removed after Anthropic rejected it as unrecognised.
 };
 
 const MODEL = process.env.CLAUDE_MODEL ?? 'claude-sonnet-4-5';
