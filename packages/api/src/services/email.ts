@@ -20,6 +20,13 @@ const FROM_DOMAIN = process.env.NODE_ENV === 'production'
 const FROM_HE = `צ'ופצ'ו מגינה חיה <onboarding@${FROM_DOMAIN}>`;
 const FROM_EN = `ChupChu from Gina Haya <onboarding@${FROM_DOMAIN}>`;
 
+// Resend's always-verified sandbox sender — used only as a fallback for internal
+// admin emails when the primary domain is not yet verified.
+// TODO: remove resend.dev fallback once gina-haya.com is verified in Resend
+const FROM_RESEND_DEV = 'Gina Haya <onboarding@resend.dev>';
+
+const ADMIN_EMAIL = 'harelzilberman@gmail.com';
+
 const TEMPLATES_DIR = path.join(__dirname, '../templates');
 let heTemplate: string;
 let enTemplate: string;
@@ -134,8 +141,8 @@ export async function sendDailyTip(user: EmailUser, day: BiodynamicDay): Promise
   });
 
   if (error) {
-    console.error('[sendDailyTip] Resend error:', error);
-    throw new Error(`Failed to send email: ${error.message}`);
+    console.error('[sendDailyTip] Resend error:', JSON.stringify(error));
+    throw new Error(`Failed to send daily tip: ${error.message}`);
   }
 
   console.log(`[sendDailyTip] Sent to ${user.email}`);
@@ -175,11 +182,12 @@ export async function sendWelcome(user: EmailUser): Promise<void> {
   });
 
   if (error) {
-    console.error('[sendWelcome] Resend error:', error);
+    console.error('[sendWelcome] Resend error:', JSON.stringify(error));
+    throw new Error(`Failed to send welcome email: ${error.message}`);
   }
-}
 
-const ADMIN_EMAIL = 'harelzilberman@gmail.com';
+  console.log(`[sendWelcome] Sent to ${user.email}`);
+}
 
 export async function sendCancellationRequestNotice(opts: {
   customerEmail: string;
@@ -195,6 +203,7 @@ export async function sendCancellationRequestNotice(opts: {
     timeZone: 'Asia/Jerusalem',
   });
 
+  const subject = `[גינה חיה] ביטול מנוי Grow — ${customerEmail}`;
   const html = `
     <div style="font-family:Arial,Helvetica,sans-serif;max-width:560px;margin:0 auto;padding:32px;background:#f9fafb;border-radius:12px;">
       <h2 style="color:#050d0a;font-size:20px;margin:0 0 16px;">⚠️ בקשת ביטול מנוי — Grow הוראת קבע</h2>
@@ -218,16 +227,41 @@ export async function sendCancellationRequestNotice(opts: {
   const { error } = await resend.emails.send({
     from:    FROM_HE,
     to:      ADMIN_EMAIL,
-    subject: `[גינה חיה] ביטול מנוי Grow — ${customerEmail}`,
+    subject,
     html,
   });
 
-  if (error) {
-    console.error('[sendCancellationRequestNotice] Resend error:', JSON.stringify(error));
-    throw new Error(`Failed to send cancellation notice: ${error.message}`);
+  if (!error) {
+    console.log(`[sendCancellationRequestNotice] Sent to ${ADMIN_EMAIL} for customer=${customerEmail}`);
+    return;
   }
 
-  console.log(`[sendCancellationRequestNotice] Sent to ${ADMIN_EMAIL} for customer=${customerEmail}`);
+  console.error('[sendCancellationRequestNotice] Resend error (primary):', JSON.stringify(error));
+
+  // Fallback: if the primary domain is not yet verified, retry via Resend's always-verified
+  // sandbox sender so the admin notification still gets through.
+  // This is an internal-only email, so an unbranded sender is acceptable in the interim.
+  // TODO: remove resend.dev fallback once gina-haya.com is verified in Resend
+  if ((error as any).statusCode === 403 && (error as any).name === 'validation_error') {
+    console.warn('[sendCancellationRequestNotice] primary domain unverified — retrying via resend.dev fallback');
+    const { error: fallbackError } = await resend.emails.send({
+      from:    FROM_RESEND_DEV,
+      to:      ADMIN_EMAIL,
+      subject,
+      html,
+    });
+
+    if (fallbackError) {
+      console.error('[sendCancellationRequestNotice] fallback send also failed:', JSON.stringify(fallbackError));
+      throw new Error(`Failed to send cancellation notice (fallback): ${fallbackError.message}`);
+    }
+
+    console.log('[sendCancellationRequestNotice] fallback via resend.dev sent OK to', ADMIN_EMAIL);
+    return;
+  }
+
+  // Non-403 error (auth, rate-limit, etc.) — no fallback applies
+  throw new Error(`Failed to send cancellation notice: ${error.message}`);
 }
 
 export async function sendRenewalReminder(opts: {
@@ -278,7 +312,7 @@ export async function sendRenewalReminder(opts: {
   });
 
   if (error) {
-    console.error('[sendRenewalReminder] Resend error:', error);
+    console.error('[sendRenewalReminder] Resend error:', JSON.stringify(error));
     throw new Error(`Failed to send renewal reminder: ${error.message}`);
   }
 
