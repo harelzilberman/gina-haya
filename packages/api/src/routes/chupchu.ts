@@ -2026,6 +2026,12 @@ chupChuRouter.post('/chat', async (req: any, res) => {
     }
 
   } catch (err: any) {
+    // Log the axios response body when available (contains the actual Anthropic error detail).
+    // Without this, Railway logs show only the generic "Request failed with status code 4xx"
+    // message and the root cause (e.g. invalid model, missing beta header) stays hidden.
+    if (err?.response?.data) {
+      console.error('[CHAT ERROR] Upstream API response:', JSON.stringify(err.response.data));
+    }
     console.error('[CHAT ERROR]', err?.message);
     console.error('[CHAT ERROR STACK]', err?.stack?.slice(0, 800));
     res.status(500).json({ error: err?.message ?? 'unknown error' });

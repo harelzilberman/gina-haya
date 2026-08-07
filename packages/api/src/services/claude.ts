@@ -7,9 +7,13 @@ import { logApiUsage } from './apiUsage';
 
 const ANTHROPIC_URL = 'https://api.anthropic.com/v1/messages';
 const ANTHROPIC_HEADERS = {
-  'x-api-key': process.env.ANTHROPIC_API_KEY!,
+  'x-api-key':        process.env.ANTHROPIC_API_KEY!,
   'anthropic-version': '2023-06-01',
-  'content-type': 'application/json',
+  'content-type':      'application/json',
+  // Required for cache_control ttl:'1h' (extended prompt-cache TTL, GA Feb 2025).
+  // Without this header, Anthropic returns 400 invalid_request_error on any request
+  // that includes a non-default ttl in a cache_control block.
+  'anthropic-beta':    'extended-cache-ttl-2025-02-19',
 };
 
 const MODEL = process.env.CLAUDE_MODEL ?? 'claude-sonnet-4-5';
