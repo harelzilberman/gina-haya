@@ -20,10 +20,6 @@ const FROM_DOMAIN = process.env.NODE_ENV === 'production'
 const FROM_HE = `צ'ופצ'ו מגינה חיה <onboarding@${FROM_DOMAIN}>`;
 const FROM_EN = `ChupChu from Gina Haya <onboarding@${FROM_DOMAIN}>`;
 
-// Resend's always-verified sandbox sender — used only as a fallback for internal
-// admin emails when the primary domain is not yet verified.
-// TODO: remove resend.dev fallback once gina-haya.com is verified in Resend
-const FROM_RESEND_DEV = 'Gina Haya <onboarding@resend.dev>';
 
 const ADMIN_EMAIL = 'harelzilberman@gmail.com';
 
@@ -231,37 +227,12 @@ export async function sendCancellationRequestNotice(opts: {
     html,
   });
 
-  if (!error) {
-    console.log(`[sendCancellationRequestNotice] Sent to ${ADMIN_EMAIL} for customer=${customerEmail}`);
-    return;
+  if (error) {
+    console.error('[sendCancellationRequestNotice] Resend error:', JSON.stringify(error));
+    throw new Error(`Failed to send cancellation notice: ${error.message}`);
   }
 
-  console.error('[sendCancellationRequestNotice] Resend error (primary):', JSON.stringify(error));
-
-  // Fallback: if the primary domain is not yet verified, retry via Resend's always-verified
-  // sandbox sender so the admin notification still gets through.
-  // This is an internal-only email, so an unbranded sender is acceptable in the interim.
-  // TODO: remove resend.dev fallback once gina-haya.com is verified in Resend
-  if ((error as any).statusCode === 403 && (error as any).name === 'validation_error') {
-    console.warn('[sendCancellationRequestNotice] primary domain unverified — retrying via resend.dev fallback');
-    const { error: fallbackError } = await resend.emails.send({
-      from:    FROM_RESEND_DEV,
-      to:      ADMIN_EMAIL,
-      subject,
-      html,
-    });
-
-    if (fallbackError) {
-      console.error('[sendCancellationRequestNotice] fallback send also failed:', JSON.stringify(fallbackError));
-      throw new Error(`Failed to send cancellation notice (fallback): ${fallbackError.message}`);
-    }
-
-    console.log('[sendCancellationRequestNotice] fallback via resend.dev sent OK to', ADMIN_EMAIL);
-    return;
-  }
-
-  // Non-403 error (auth, rate-limit, etc.) — no fallback applies
-  throw new Error(`Failed to send cancellation notice: ${error.message}`);
+  console.log(`[sendCancellationRequestNotice] Sent to ${ADMIN_EMAIL} for customer=${customerEmail}`);
 }
 
 export async function sendRenewalReminder(opts: {
