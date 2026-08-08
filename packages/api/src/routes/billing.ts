@@ -581,6 +581,8 @@ billingRouter.post('/grow/create-payment', verifyToken, async (req: any, res) =>
 
     const makeWebhookUrl = isRecurring
       ? process.env.GROW_MAKE_WEBHOOK_URL_RECURRING
+      : paymentMode === 'one_time_annual'
+      ? process.env.GROW_MAKE_WEBHOOK_URL_ANNUAL
       : process.env.GROW_MAKE_WEBHOOK_URL;
 
     if (!makeWebhookUrl) {
