@@ -1,5 +1,5 @@
-import { useState } from 'react';
-import { Link } from 'react-router-dom';
+import { useState, useEffect, useRef } from 'react';
+import { Link, useSearchParams } from 'react-router-dom';
 import { CheckoutModal, type CartItem } from '../components/shop/CheckoutModal';
 import { useCredits, type Credits } from '../hooks/useCredits';
 import { useAuthStore } from '../stores/authStore';
@@ -410,12 +410,67 @@ function ProductCard({
 
 // ── Main page ───────────────────────────────────────────────────────────────
 
+const CART_STORAGE_KEY = 'gina-haya-shop-cart';
+
 export function ShopPage() {
   const { user } = useAuthStore();
   const { credits, refresh: refreshCredits } = useCredits();
-  const [cart, setCart]                   = useState<CartItem[]>([]);
-  const [drawerOpen, setDrawerOpen]       = useState(false);
-  const [checkoutOpen, setCheckoutOpen]   = useState(false);
+  const [searchParams] = useSearchParams();
+  const status = searchParams.get('status');
+
+  // ── Cart — persisted to localStorage so it survives the redirect to Grow ──
+  const [cart, setCart] = useState<CartItem[]>(() => {
+    try {
+      const saved = localStorage.getItem(CART_STORAGE_KEY);
+      return saved ? (JSON.parse(saved) as CartItem[]) : [];
+    } catch {
+      return [];
+    }
+  });
+
+  useEffect(() => {
+    localStorage.setItem(CART_STORAGE_KEY, JSON.stringify(cart));
+  }, [cart]);
+
+  const [drawerOpen, setDrawerOpen]     = useState(false);
+  const [checkoutOpen, setCheckoutOpen] = useState(false);
+
+  // ── Post-payment banner (shown when user returns from Grow via successUrl) ──
+  const [paymentBanner, setPaymentBanner] = useState<'pending' | 'done' | null>(
+    status === 'success' ? 'pending' : null
+  );
+  const bannerTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  useEffect(() => {
+    function clearStatusParam() {
+      const url = new URL(window.location.href);
+      url.searchParams.delete('status');
+      window.history.replaceState({}, '', url.toString());
+    }
+
+    if (status !== 'success') {
+      if (status) clearStatusParam();
+      return;
+    }
+
+    clearStatusParam();
+
+    // Clear cart — payment was confirmed
+    localStorage.removeItem(CART_STORAGE_KEY);
+    setCart([]);
+
+    // After a brief delay (webhook fires ~1–2 s after payment),
+    // refresh credits and show success.
+    bannerTimerRef.current = setTimeout(async () => {
+      await refreshCredits();
+      setPaymentBanner('done');
+    }, 3000);
+
+    return () => {
+      if (bannerTimerRef.current) clearTimeout(bannerTimerRef.current);
+    };
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   const cartCount = cart.length;
 
@@ -430,7 +485,9 @@ export function ShopPage() {
     setCart(prev => prev.filter(i => i.productId !== productId));
   }
 
-  function handleCheckoutSuccess(newCredits: Credits) {
+  function handleCheckoutSuccess(_newCredits: Credits) {
+    // Called only by the mock /purchase path (dev mode).
+    // In the Grow path the user is redirected away; success is handled via ?status=success above.
     refreshCredits();
     setCart([]);
     setDrawerOpen(false);
@@ -614,6 +671,37 @@ export function ShopPage() {
       )}
 
       <div dir="rtl" style={{ minHeight: '100vh', background: EARTH, fontFamily: ASST }}>
+
+        {/* ── Post-payment banners ── */}
+        {paymentBanner === 'pending' && (
+          <div style={{ maxWidth: '900px', margin: '0 auto', padding: '16px 20px 0' }}>
+            <div style={{
+              backgroundColor: 'rgba(0,229,195,0.07)',
+              border: '1px solid rgba(0,229,195,0.25)',
+              borderRadius: '10px',
+              padding: '14px 20px',
+              fontFamily: ASST, fontSize: '14px', color: GOLD,
+              display: 'flex', alignItems: 'center', gap: '10px',
+            }}>
+              <span style={{ animation: 'spin 1s linear infinite', display: 'inline-block' }}>⟳</span>
+              מעדכן את הקרדיטים שלך...
+              <style>{`@keyframes spin { from{transform:rotate(0deg)} to{transform:rotate(360deg)} }`}</style>
+            </div>
+          </div>
+        )}
+        {paymentBanner === 'done' && (
+          <div style={{ maxWidth: '900px', margin: '0 auto', padding: '16px 20px 0' }}>
+            <div style={{
+              backgroundColor: 'rgba(143,191,127,0.1)',
+              border: '1px solid rgba(143,191,127,0.3)',
+              borderRadius: '10px',
+              padding: '14px 20px',
+              fontFamily: FRANK, fontSize: '15px', color: '#8FBF7F',
+            }}>
+              🎉 הרכישה הושלמה! הקרדיטים שלך עודכנו.
+            </div>
+          </div>
+        )}
 
         {/* ── Hero ── */}
         <div style={{

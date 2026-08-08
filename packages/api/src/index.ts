@@ -38,6 +38,10 @@ app.use('/api/billing/grow/webhook', express.text({
   type: () => true,   // accept regardless of Content-Type header
   limit: '1mb',
 }));
+app.use('/api/shop/grow/webhook', express.text({
+  type: () => true,
+  limit: '1mb',
+}));
 app.use(cors({
   origin: allowedOrigins,
   credentials: true,
