@@ -33,9 +33,11 @@ router.post('/upload', async (req: any, res) => {
 
   try {
     // eslint-disable-next-line @typescript-eslint/no-var-requires
-    const pdfParse = require('pdf-parse');
+    const { PDFParse } = require('pdf-parse');
     const buffer = Buffer.from(pdfBase64, 'base64');
-    const data = await pdfParse(buffer);
+    const parser = await new PDFParse({ data: buffer });
+    const data = await parser.getText();
+    await parser.destroy();
     const fullText = data.text;
 
     const chunks = chunkText(fullText);
