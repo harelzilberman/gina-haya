@@ -271,7 +271,7 @@ export function CheckoutModal({ cart, onClose }: Props) {
                   onMouseEnter={e => { if (isFormValid) (e.currentTarget as HTMLElement).style.filter = 'brightness(1.1)'; }}
                   onMouseLeave={e => { (e.currentTarget as HTMLElement).style.filter = 'none'; }}
                 >
-                  לתשלום בגרו ←
+                  לתשלום ←
                 </button>
 
                 <p style={{
