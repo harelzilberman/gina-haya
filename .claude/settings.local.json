@@ -103,7 +103,7 @@
       "Bash(railway login *)",
       "Bash(railway whoami *)",
       "Bash(kill 1000)",
-      "Bash(bash packages/api/scripts/test_established_identification.sh https://powerful-embrace-production-95ea.up.railway.app https://qlcaweebrouzfwkumffc.supabase.co eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InFsY2F3ZWVicm91emZ3a3VtZmZjIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc3MzQyNjEwNywiZXhwIjoyMDg5MDAyMTA3fQ.d5mlm7KYhKscYbTsmyNIl8QtzMfPYXBJSeoXfjP31dA b0902d9f-a5c6-4875-9b30-b4251061f395/chupchu/chat/1784648286213.jpg)",
+      "Bash(bash packages/api/scripts/test_established_identification.sh https://powerful-embrace-production-95ea.up.railway.app https://qlcaweebrouzfwkumffc.supabase.co REDACTED_SERVICE_ROLE_KEY b0902d9f-a5c6-4875-9b30-b4251061f395/chupchu/chat/1784648286213.jpg)",
       "Bash(npm run *)",
       "Bash(echo \"PID=$!\")",
       "Bash(curl -s http://localhost:3001/health)",
