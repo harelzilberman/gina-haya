@@ -1034,7 +1034,7 @@ export function ShopPage() {
               borderRadius: '12px', padding: '12px 16px',
             }}>
               <img
-                src="https://gina-haya.vercel.app/chupchu_final.png"
+                src="https://gina-haya.com/chupchu_final.png"
                 alt="צ'ופצ'ו"
                 style={{ width: '32px', height: '32px', borderRadius: '50%', flexShrink: 0, objectFit: 'cover' }}
               />

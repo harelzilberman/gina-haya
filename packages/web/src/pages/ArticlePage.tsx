@@ -69,7 +69,7 @@ function ChupChuBox({ children }: { children: React.ReactNode }) {
       alignItems: 'flex-start', direction: 'rtl',
     }}>
       <img
-        src="https://gina-haya.vercel.app/chupchu_final.png"
+        src="https://gina-haya.com/chupchu_final.png"
         alt="צ'ופצ'ו"
         style={{
           width: '46px', height: '46px', borderRadius: '50%',

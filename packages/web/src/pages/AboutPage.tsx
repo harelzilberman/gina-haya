@@ -106,7 +106,7 @@ export function AboutPage() {
           {/* Avatar column */}
           <div style={{ flexShrink: 0, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '8px' }}>
             <img
-              src="https://gina-haya.vercel.app/chupchu_final.png"
+              src="https://gina-haya.com/chupchu_final.png"
               alt="Chupchu"
               style={{
                 width: 'clamp(64px, 12vw, 90px)',
