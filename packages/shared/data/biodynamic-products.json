@@ -1,0 +1,106 @@
+[
+  {
+    "id": "magic-garden-3l",
+    "nameHe": "Magic Garden – תוסף ביודינמי לגינה – אורגני 3 ליטר",
+    "nameEn": "",
+    "priceIls": 42,
+    "category": "הומוס ביודינמי",
+    "descriptionHe": "",
+    "descriptionEn": "",
+    "note": null
+  },
+  {
+    "id": "arbovita-750ml",
+    "nameHe": "ARBOVITA – משחת ריפוי לעצים 750 מ\"ל",
+    "nameEn": "",
+    "priceIls": 78,
+    "category": "הומוס ביודינמי",
+    "descriptionHe": "",
+    "descriptionEn": "",
+    "note": null
+  },
+  {
+    "id": "revita-250ml",
+    "nameHe": "REVITA – תרסיס הפלא 250 מ\"ל",
+    "nameEn": "",
+    "priceIls": 39,
+    "category": "הומוס ביודינמי / פרפרטים",
+    "descriptionHe": "",
+    "descriptionEn": "",
+    "note": null
+  },
+  {
+    "id": "magic-garden-shtila-10l",
+    "nameHe": "Magic Garden – תערובת שתילה ביודינמית-אורגנית 10 ליטר",
+    "nameEn": "",
+    "priceIls": 29,
+    "originalPriceIls": 39,
+    "category": "הומוס ביודינמי",
+    "descriptionHe": "",
+    "descriptionEn": "",
+    "note": "נגמר המלאי אצל הספק"
+  },
+  {
+    "id": "humic-250ml",
+    "nameHe": "HUMIC – דשן הומוס ביודינמי 250 מ\"ל",
+    "nameEn": "",
+    "priceIls": 43,
+    "category": "הומוס ביודינמי",
+    "descriptionHe": "",
+    "descriptionEn": "",
+    "note": null
+  },
+  {
+    "id": "humic-5l",
+    "nameHe": "HUMIC – דשן הומוס ביודינמי 5 ליטר",
+    "nameEn": "",
+    "priceIls": 275,
+    "category": "הומוס ביודינמי",
+    "descriptionHe": "",
+    "descriptionEn": "",
+    "note": null
+  },
+  {
+    "id": "magic-garden-hakarut-kit",
+    "nameHe": "Magic Garden – ערכת הכרות",
+    "nameEn": "",
+    "priceIls": 167,
+    "originalPriceIls": 202,
+    "category": "הומוס ביודינמי",
+    "descriptionHe": "",
+    "descriptionEn": "",
+    "note": null
+  },
+  {
+    "id": "terravita-10l",
+    "nameHe": "TERRAVITA – מצע הנבטה ביודינמי-אורגני 10 ליטר",
+    "nameEn": "",
+    "priceIls": 29,
+    "originalPriceIls": 39,
+    "category": "הומוס ביודינמי",
+    "descriptionHe": "",
+    "descriptionEn": "",
+    "note": null
+  },
+  {
+    "id": "nitro-500ml",
+    "nameHe": "NITRO – דשן ביודינמי נוזלי 500 מ\"ל",
+    "nameEn": "",
+    "priceIls": 97,
+    "originalPriceIls": 137,
+    "category": "הומוס ביודינמי",
+    "descriptionHe": "",
+    "descriptionEn": "",
+    "note": null
+  },
+  {
+    "id": "magic-garden-etz-kit",
+    "nameHe": "Magic Garden – ערכת טיפוח לעצים",
+    "nameEn": "",
+    "priceIls": 457,
+    "category": "הומוס ביודינמי",
+    "descriptionHe": "",
+    "descriptionEn": "",
+    "note": null
+  }
+]

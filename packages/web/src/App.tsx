@@ -26,6 +26,7 @@ import { HelpPage } from './pages/HelpPage';
 import { AboutPage } from './pages/AboutPage';
 import { AdminTemplatesPage } from './pages/AdminTemplatesPage';
 import { AdminKnowledgePage } from './pages/AdminKnowledgePage';
+import { AdminWaitlistPage } from './pages/AdminWaitlistPage';
 import { ProtectedRoute } from './components/auth/ProtectedRoute';
 import { OnboardingWizard } from './components/auth/OnboardingWizard';
 import { WelcomeScreen } from './components/auth/WelcomeScreen';
@@ -229,6 +230,7 @@ export default function App() {
 
           <Route path="/admin/templates" element={<AdminTemplatesPage />} />
           <Route path="/admin/knowledge" element={<AdminKnowledgePage />} />
+          <Route path="/admin/waitlist"  element={<AdminWaitlistPage />} />
 
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>

@@ -3,6 +3,8 @@ import { Link, useSearchParams } from 'react-router-dom';
 import { CheckoutModal, type CartItem } from '../components/shop/CheckoutModal';
 import { useCredits, type Credits } from '../hooks/useCredits';
 import { useAuthStore } from '../stores/authStore';
+import { api } from '../api/client';
+import BIODYNAMIC_RAW from '../../../shared/data/biodynamic-products.json';
 
 export type ProductId =
   | 'analysis_single'
@@ -168,6 +170,27 @@ const WOOD_PRODUCTS = [
 ] as const;
 
 type WoodProduct = typeof WOOD_PRODUCTS[number];
+
+interface BiodynamicProduct {
+  id: string;
+  nameHe: string;
+  nameEn: string;
+  priceIls: number;
+  originalPriceIls?: number;
+  category: string;
+  descriptionHe: string;
+  descriptionEn: string;
+  note?: string | null;
+}
+const BIODYNAMIC_PRODUCTS = BIODYNAMIC_RAW as BiodynamicProduct[];
+
+// Unified product descriptor passed to the waitlist modal
+interface WaitlistProduct {
+  id: string;
+  nameHe: string;
+  priceStr: string;
+  category: string;
+}
 
 // ── Cart Drawer ────────────────────────────────────────────────────────────
 
@@ -495,27 +518,44 @@ export function ShopPage() {
 
   const hasAnyCredits = credits.analysis.available > 0 || credits.tracker.available > 0 || credits.garden.available > 0;
 
-  const [woodOrderProduct, setWoodOrderProduct] = useState<WoodProduct | null>(null);
-  const [woodOrderSent, setWoodOrderSent] = useState(false);
-  const [woodForm, setWoodForm] = useState({ name: '', email: '', notes: '' });
+  // ── Waitlist modal (wood + biodynamic products) ──────────────────────────
+  const [waitlistProduct, setWaitlistProduct] = useState<WaitlistProduct | null>(null);
+  const [waitlistSent, setWaitlistSent] = useState(false);
+  const [waitlistSubmitting, setWaitlistSubmitting] = useState(false);
+  const [waitlistError, setWaitlistError] = useState<string | null>(null);
+  const [waitlistForm, setWaitlistForm] = useState({ email: '', notes: '' });
 
-  function handleWoodOrder(product: WoodProduct) {
-    setWoodOrderProduct(product);
-    setWoodOrderSent(false);
-    setWoodForm({
-      name: '',
+  function openWaitlistModal(product: WaitlistProduct) {
+    setWaitlistProduct(product);
+    setWaitlistSent(false);
+    setWaitlistSubmitting(false);
+    setWaitlistError(null);
+    setWaitlistForm({
       email: '',
-      notes: `שלום, אני מעוניין/ת להזמין: ${product.nameHe} (${product.price})\n\n`,
+      notes: `שלום, אני מעוניין/ת להזמין: ${product.nameHe} (${product.priceStr})\n\n`,
     });
   }
 
-  function handleWoodSend() {
-    const subject = encodeURIComponent(`הזמנה מגינה חיה — ${woodOrderProduct?.nameHe}`);
-    const body = encodeURIComponent(
-      `שם: ${woodForm.name}\nאימייל: ${woodForm.email}\n\n${woodForm.notes}`
-    );
-    window.open(`mailto:gina.haya.contact@gmail.com?subject=${subject}&body=${body}`);
-    setWoodOrderSent(true);
+  async function handleWaitlistSubmit() {
+    if (!waitlistForm.email.trim() || !waitlistProduct) return;
+    setWaitlistSubmitting(true);
+    setWaitlistError(null);
+    try {
+      await api.post<{ ok: boolean }>('/api/waitlist', {
+        email:        waitlistForm.email.trim(),
+        source:       'shop_waitlist',
+        locale:       'he',
+        product_id:   waitlistProduct.id,
+        product_name: waitlistProduct.nameHe,
+        notes:        waitlistForm.notes,
+        category:     waitlistProduct.category,
+      });
+      setWaitlistSent(true);
+    } catch {
+      setWaitlistError('משהו השתבש, נסו שוב.');
+    } finally {
+      setWaitlistSubmitting(false);
+    }
   }
 
   return (
@@ -539,11 +579,11 @@ export function ShopPage() {
         />
       )}
 
-      {/* Wood order modal */}
-      {woodOrderProduct && (
+      {/* Waitlist modal (shared by wood + biodynamic products) */}
+      {waitlistProduct && (
         <>
           <div
-            onClick={() => setWoodOrderProduct(null)}
+            onClick={() => setWaitlistProduct(null)}
             style={{
               position: 'fixed', inset: 0, zIndex: 400,
               backgroundColor: 'rgba(0,0,0,0.6)', backdropFilter: 'blur(3px)',
@@ -556,103 +596,122 @@ export function ShopPage() {
               transform: 'translate(-50%, -50%)',
               zIndex: 401,
               width: 'min(480px, 92vw)',
+              maxHeight: '90vh',
               backgroundColor: '#1B3D22',
               border: `1px solid rgba(200,169,81,0.25)`,
               borderRadius: '18px',
-              padding: '28px 28px 24px',
               boxShadow: '0 24px 80px rgba(0,0,0,0.6)',
               animation: 'shopFadeIn 0.2s ease both',
+              display: 'flex',
+              flexDirection: 'column',
+              overflow: 'hidden',
             }}
           >
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '6px' }}>
-              <h2 style={{ fontFamily: FRANK, fontSize: '20px', color: GOLD, fontWeight: 700, margin: 0 }}>
-                {woodOrderProduct.nameHe}
-              </h2>
-              <button
-                onClick={() => setWoodOrderProduct(null)}
-                style={{ background: 'none', border: 'none', color: `${PARCH}50`, cursor: 'pointer', fontSize: '18px', padding: '0 0 0 8px', flexShrink: 0 }}
-              >
-                ✕
-              </button>
-            </div>
-            <p style={{ fontFamily: ASST, fontSize: '13px', color: MUTED, margin: '0 0 20px' }}>
-              {woodOrderProduct.price} · זמן ייצור 1–3 שבועות
-            </p>
-
-            {!woodOrderSent ? (
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-                <div>
-                  <label style={{ fontFamily: ASST, fontSize: '12px', color: `${PARCH}70`, display: 'block', marginBottom: '5px' }}>שם</label>
-                  <input
-                    type="text"
-                    value={woodForm.name}
-                    onChange={e => setWoodForm(f => ({ ...f, name: e.target.value }))}
-                    style={{
-                      width: '100%', boxSizing: 'border-box',
-                      padding: '10px 12px', borderRadius: '8px',
-                      background: 'rgba(255,255,255,0.06)',
-                      border: `1px solid rgba(200,169,81,0.15)`,
-                      color: PARCH, fontFamily: ASST, fontSize: '14px',
-                      outline: 'none',
-                    }}
-                  />
-                </div>
-                <div>
-                  <label style={{ fontFamily: ASST, fontSize: '12px', color: `${PARCH}70`, display: 'block', marginBottom: '5px' }}>אימייל</label>
-                  <input
-                    type="email"
-                    value={woodForm.email}
-                    onChange={e => setWoodForm(f => ({ ...f, email: e.target.value }))}
-                    style={{
-                      width: '100%', boxSizing: 'border-box',
-                      padding: '10px 12px', borderRadius: '8px',
-                      background: 'rgba(255,255,255,0.06)',
-                      border: `1px solid rgba(200,169,81,0.15)`,
-                      color: PARCH, fontFamily: ASST, fontSize: '14px',
-                      outline: 'none',
-                    }}
-                  />
-                </div>
-                <div>
-                  <label style={{ fontFamily: ASST, fontSize: '12px', color: `${PARCH}70`, display: 'block', marginBottom: '5px' }}>הערות / גודל / שאלות</label>
-                  <textarea
-                    value={woodForm.notes}
-                    onChange={e => setWoodForm(f => ({ ...f, notes: e.target.value }))}
-                    rows={4}
-                    style={{
-                      width: '100%', boxSizing: 'border-box',
-                      padding: '10px 12px', borderRadius: '8px',
-                      background: 'rgba(255,255,255,0.06)',
-                      border: `1px solid rgba(200,169,81,0.15)`,
-                      color: PARCH, fontFamily: ASST, fontSize: '14px',
-                      outline: 'none', resize: 'vertical',
-                    }}
-                  />
-                </div>
+            {/* Non-scrolling header */}
+            <div style={{ padding: '24px 28px 16px', flexShrink: 0, borderBottom: `1px solid rgba(200,169,81,0.1)` }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '4px' }}>
+                <h2 style={{ fontFamily: FRANK, fontSize: '20px', color: GOLD, fontWeight: 700, margin: 0, lineHeight: 1.3 }}>
+                  {waitlistProduct.nameHe}
+                </h2>
                 <button
-                  onClick={handleWoodSend}
-                  style={{
-                    marginTop: '4px',
-                    width: '100%', padding: '13px',
-                    backgroundColor: GOLD, color: EARTH,
-                    border: 'none', borderRadius: '10px',
-                    fontFamily: FRANK, fontSize: '16px', fontWeight: 700,
-                    cursor: 'pointer', transition: 'filter 0.2s',
-                  }}
-                  onMouseEnter={e => { (e.currentTarget as HTMLElement).style.filter = 'brightness(1.1)'; }}
-                  onMouseLeave={e => { (e.currentTarget as HTMLElement).style.filter = 'none'; }}
+                  onClick={() => setWaitlistProduct(null)}
+                  style={{ background: 'none', border: 'none', color: `${PARCH}50`, cursor: 'pointer', fontSize: '18px', padding: '0 0 0 8px', flexShrink: 0 }}
                 >
-                  שלחו הודעה
+                  ✕
                 </button>
               </div>
+              <p style={{ fontFamily: ASST, fontSize: '13px', color: MUTED, margin: 0 }}>
+                {waitlistProduct.priceStr} · נודיע כשהמוצר זמין
+              </p>
+            </div>
+
+            {!waitlistSent ? (
+              <>
+                {/* Scrollable form body */}
+                <div style={{ flex: 1, overflowY: 'auto', padding: '20px 28px 8px' }}>
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
+                    <div>
+                      <label style={{ fontFamily: ASST, fontSize: '12px', color: `${PARCH}70`, display: 'block', marginBottom: '5px' }}>
+                        אימייל *
+                      </label>
+                      <input
+                        type="email"
+                        value={waitlistForm.email}
+                        onChange={e => setWaitlistForm(f => ({ ...f, email: e.target.value }))}
+                        placeholder="your@email.com"
+                        style={{
+                          width: '100%', boxSizing: 'border-box',
+                          padding: '10px 12px', borderRadius: '8px',
+                          background: 'rgba(255,255,255,0.06)',
+                          border: `1px solid rgba(200,169,81,0.15)`,
+                          color: PARCH, fontFamily: ASST, fontSize: '14px',
+                          outline: 'none',
+                        }}
+                      />
+                    </div>
+                    <div>
+                      <label style={{ fontFamily: ASST, fontSize: '12px', color: `${PARCH}70`, display: 'block', marginBottom: '5px' }}>
+                        הערות / שאלות
+                      </label>
+                      <textarea
+                        value={waitlistForm.notes}
+                        onChange={e => setWaitlistForm(f => ({ ...f, notes: e.target.value }))}
+                        rows={4}
+                        style={{
+                          width: '100%', boxSizing: 'border-box',
+                          padding: '10px 12px', borderRadius: '8px',
+                          background: 'rgba(255,255,255,0.06)',
+                          border: `1px solid rgba(200,169,81,0.15)`,
+                          color: PARCH, fontFamily: ASST, fontSize: '14px',
+                          outline: 'none', resize: 'vertical',
+                        }}
+                      />
+                    </div>
+                    {waitlistError && (
+                      <p style={{ fontFamily: ASST, fontSize: '13px', color: '#E06060', margin: 0 }}>
+                        {waitlistError}
+                      </p>
+                    )}
+                  </div>
+                </div>
+
+                {/* Sticky footer with submit button — always visible */}
+                <div style={{ padding: '16px 28px 24px', flexShrink: 0 }}>
+                  <button
+                    onClick={handleWaitlistSubmit}
+                    disabled={waitlistSubmitting || !waitlistForm.email.trim()}
+                    style={{
+                      width: '100%', padding: '13px',
+                      backgroundColor: waitlistSubmitting || !waitlistForm.email.trim()
+                        ? `rgba(200,169,81,0.35)`
+                        : GOLD,
+                      color: EARTH,
+                      border: 'none', borderRadius: '10px',
+                      fontFamily: FRANK, fontSize: '16px', fontWeight: 700,
+                      cursor: waitlistSubmitting || !waitlistForm.email.trim() ? 'not-allowed' : 'pointer',
+                      transition: 'filter 0.2s',
+                    }}
+                    onMouseEnter={e => {
+                      if (!waitlistSubmitting && waitlistForm.email.trim())
+                        (e.currentTarget as HTMLElement).style.filter = 'brightness(1.1)';
+                    }}
+                    onMouseLeave={e => { (e.currentTarget as HTMLElement).style.filter = 'none'; }}
+                  >
+                    {waitlistSubmitting ? 'שולח...' : 'הצטרפו לרשימת ההמתנה'}
+                  </button>
+                </div>
+              </>
             ) : (
-              <div style={{ textAlign: 'center', padding: '20px 0' }}>
+              <div style={{ textAlign: 'center', padding: '32px 28px' }}>
                 <div style={{ fontSize: '40px', marginBottom: '12px' }}>🌿</div>
-                <p style={{ fontFamily: FRANK, fontSize: '18px', color: SAGE, fontWeight: 700, margin: '0 0 20px' }}>
-                  תודה! נחזור אליך בהקדם.
+                <p style={{ fontFamily: FRANK, fontSize: '18px', color: SAGE, fontWeight: 700, margin: '0 0 8px' }}>
+                  נרשמתם בהצלחה!
+                </p>
+                <p style={{ fontFamily: ASST, fontSize: '13px', color: MUTED, margin: '0 0 24px' }}>
+                  נעדכן אתכם ברגע שהמוצר זמין.
                 </p>
                 <button
-                  onClick={() => setWoodOrderProduct(null)}
+                  onClick={() => setWaitlistProduct(null)}
                   style={{
                     padding: '10px 28px',
                     background: 'transparent',
@@ -1111,7 +1170,113 @@ export function ShopPage() {
 
                 {/* Footer button */}
                 <div style={{ padding: '0 20px 20px' }}>
-                  <button className="shop-wood-btn" onClick={() => handleWoodOrder(product)}>
+                  <button
+                    className="shop-wood-btn"
+                    onClick={() => openWaitlistModal({
+                      id: product.id,
+                      nameHe: product.nameHe,
+                      priceStr: product.price,
+                      category: 'wood',
+                    })}
+                  >
+                    ספרו לי כשמוכן
+                  </button>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        {/* ── Biodynamic products ── */}
+        <div
+          style={{
+            maxWidth: '900px', margin: '0 auto',
+            padding: '0 20px',
+            animation: 'shopFadeIn 0.5s ease 0.2s both',
+          }}
+        >
+          <hr style={{ border: 'none', borderTop: `1px solid rgba(200,169,81,0.12)`, margin: '0 0 40px' }} />
+
+          {/* Section header */}
+          <div style={{ marginBottom: '24px' }}>
+            <h2 style={{ fontFamily: FRANK, fontSize: '22px', color: GOLD, fontWeight: 700, margin: '0 0 8px' }}>
+              🌿 תוספים ביודינמיים — טרם זמינים
+            </h2>
+            <p style={{ fontFamily: ASST, fontSize: '14px', color: MUTED, margin: '0 0 6px', lineHeight: 1.6 }}>
+              מוצרים מ-Vitalis Biodynamic Israel (ניצן שפילמן). אנחנו בתהליך גיבוש שיתוף הפעולה עם הספק —
+              השאירו אימייל ונעדכן אתכם ברגע שמוכן.
+            </p>
+            <p style={{ fontFamily: ASST, fontSize: '12px', color: `${MUTED}90`, margin: 0, lineHeight: 1.5 }}>
+              * המחירים המוצגים הם מחירי הספק ועשויים להשתנות. אין כאן הצעת מכר בשלב זה.
+            </p>
+          </div>
+
+          {/* Products grid */}
+          <div style={{
+            display: 'grid',
+            gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))',
+            gap: '16px',
+            marginBottom: '48px',
+          }}>
+            {BIODYNAMIC_PRODUCTS.map(product => (
+              <div
+                key={product.id}
+                className="shop-product-card"
+                style={{
+                  position: 'relative',
+                  background: 'rgba(10,42,18,0.6)',
+                  border: `1px solid rgba(200,169,81,0.15)`,
+                  borderRadius: '14px',
+                  overflow: 'hidden',
+                  display: 'flex', flexDirection: 'column',
+                  boxShadow: '0 2px 12px rgba(0,0,0,0.15)',
+                }}
+              >
+                {/* Note badge (e.g. out of stock at supplier) */}
+                {product.note && (
+                  <div style={{
+                    position: 'absolute', top: 10, insetInlineEnd: 12,
+                    background: `rgba(200,169,81,0.15)`,
+                    color: `${GOLD}CC`,
+                    fontFamily: ASST, fontSize: '10px', fontWeight: 700,
+                    padding: '2px 8px', borderRadius: '99px',
+                    maxWidth: '120px', lineHeight: 1.3,
+                  }}>
+                    {product.note}
+                  </div>
+                )}
+
+                {/* Body */}
+                <div style={{ padding: '20px 20px 12px', flex: 1, display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                  <div style={{ fontFamily: FRANK, fontSize: '15px', color: PARCH, fontWeight: 700, lineHeight: 1.35 }}>
+                    {product.nameHe}
+                  </div>
+                  <div style={{ fontFamily: ASST, fontSize: '11px', color: `${MUTED}80`, marginBottom: '8px' }}>
+                    {product.category}
+                  </div>
+                  <div style={{ display: 'flex', alignItems: 'baseline', gap: '8px', marginTop: 'auto' }}>
+                    <span style={{ fontFamily: FRANK, fontSize: '20px', color: GOLD, fontWeight: 700 }}>
+                      ₪{product.priceIls}
+                    </span>
+                    {product.originalPriceIls && (
+                      <span style={{ fontFamily: ASST, fontSize: '13px', color: MUTED, textDecoration: 'line-through' }}>
+                        ₪{product.originalPriceIls}
+                      </span>
+                    )}
+                  </div>
+                </div>
+
+                {/* Footer button */}
+                <div style={{ padding: '0 20px 20px' }}>
+                  <button
+                    className="shop-wood-btn"
+                    onClick={() => openWaitlistModal({
+                      id: product.id,
+                      nameHe: product.nameHe,
+                      priceStr: `₪${product.priceIls}`,
+                      category: 'biodynamic',
+                    })}
+                  >
                     ספרו לי כשמוכן
                   </button>
                 </div>

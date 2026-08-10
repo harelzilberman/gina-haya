@@ -15,3 +15,10 @@ create table if not exists waitlist_signups (
 );
 
 alter table waitlist_signups enable row level security;
+
+-- Migration: add product/notes columns (run once; all nullable for backwards compat)
+alter table waitlist_signups
+  add column if not exists product_id   text,
+  add column if not exists product_name text,
+  add column if not exists notes        text,
+  add column if not exists category     text;
