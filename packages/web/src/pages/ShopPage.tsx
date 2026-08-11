@@ -582,21 +582,26 @@ export function ShopPage() {
       {/* Waitlist modal (shared by wood + biodynamic products) */}
       {waitlistProduct && (
         <>
+          {/* Backdrop doubles as the flex centering container so the modal
+              always has breathing room above and below, even on short viewports.
+              padding: 24px 0 keeps the modal away from the top/bottom edges. */}
           <div
             onClick={() => setWaitlistProduct(null)}
             style={{
               position: 'fixed', inset: 0, zIndex: 400,
               backgroundColor: 'rgba(0,0,0,0.6)', backdropFilter: 'blur(3px)',
+              display: 'flex', alignItems: 'center', justifyContent: 'center',
+              padding: '24px 16px',
             }}
-          />
+          >
           <div
             dir="rtl"
+            onClick={e => e.stopPropagation()}
             style={{
-              position: 'fixed', top: '50%', left: '50%',
-              transform: 'translate(-50%, -50%)',
-              zIndex: 401,
               width: 'min(480px, 92vw)',
-              maxHeight: '90vh',
+              /* 80dvh is the true available height on mobile where vh overestimates.
+                 min() with 80vh is the fallback for browsers without dvh support. */
+              maxHeight: 'min(80vh, 80dvh)',
               backgroundColor: '#1B3D22',
               border: `1px solid rgba(200,169,81,0.25)`,
               borderRadius: '18px',
@@ -627,8 +632,9 @@ export function ShopPage() {
 
             {!waitlistSent ? (
               <>
-                {/* Scrollable form body */}
-                <div style={{ flex: 1, overflowY: 'auto', padding: '20px 28px 8px' }}>
+                {/* Scrollable form body — minHeight:0 is required so flex+overflow
+                    actually constrains height rather than expanding to content */}
+                <div style={{ flex: 1, minHeight: 0, overflowY: 'auto', padding: '20px 28px 8px' }}>
                   <div style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
                     <div>
                       <label style={{ fontFamily: ASST, fontSize: '12px', color: `${PARCH}70`, display: 'block', marginBottom: '5px' }}>
@@ -725,6 +731,7 @@ export function ShopPage() {
                 </button>
               </div>
             )}
+          </div>
           </div>
         </>
       )}
