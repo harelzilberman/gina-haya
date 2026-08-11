@@ -178,8 +178,11 @@ interface BiodynamicProduct {
   priceIls: number;
   originalPriceIls?: number;
   category: string;
+  imageUrl?: string;
   descriptionHe: string;
   descriptionEn: string;
+  benefitsHe?: string[];
+  usageHe?: string[];
   note?: string | null;
 }
 const BIODYNAMIC_PRODUCTS = BIODYNAMIC_RAW as BiodynamicProduct[];
@@ -517,6 +520,16 @@ export function ShopPage() {
   }
 
   const hasAnyCredits = credits.analysis.available > 0 || credits.tracker.available > 0 || credits.garden.available > 0;
+
+  // ── Biodynamic card expand/collapse ──────────────────────────────────────
+  const [expandedBiodynamic, setExpandedBiodynamic] = useState<Set<string>>(new Set());
+  function toggleBiodynamicExpand(id: string) {
+    setExpandedBiodynamic(prev => {
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id); else next.add(id);
+      return next;
+    });
+  }
 
   // ── Waitlist modal (wood + biodynamic products) ──────────────────────────
   const [waitlistProduct, setWaitlistProduct] = useState<WaitlistProduct | null>(null);
@@ -1225,70 +1238,137 @@ export function ShopPage() {
             gap: '16px',
             marginBottom: '48px',
           }}>
-            {BIODYNAMIC_PRODUCTS.map(product => (
-              <div
-                key={product.id}
-                className="shop-product-card"
-                style={{
-                  position: 'relative',
-                  background: 'rgba(10,42,18,0.6)',
-                  border: `1px solid rgba(200,169,81,0.15)`,
-                  borderRadius: '14px',
-                  overflow: 'hidden',
-                  display: 'flex', flexDirection: 'column',
-                  boxShadow: '0 2px 12px rgba(0,0,0,0.15)',
-                }}
-              >
-                {/* Note badge (e.g. out of stock at supplier) */}
-                {product.note && (
-                  <div style={{
-                    position: 'absolute', top: 10, insetInlineEnd: 12,
-                    background: `rgba(200,169,81,0.15)`,
-                    color: `${GOLD}CC`,
-                    fontFamily: ASST, fontSize: '10px', fontWeight: 700,
-                    padding: '2px 8px', borderRadius: '99px',
-                    maxWidth: '120px', lineHeight: 1.3,
-                  }}>
-                    {product.note}
-                  </div>
-                )}
+            {BIODYNAMIC_PRODUCTS.map(product => {
+              const isExpanded = expandedBiodynamic.has(product.id);
+              const hasDetails = !!(product.descriptionHe || (product.benefitsHe?.length) || (product.usageHe?.length));
+              return (
+                <div
+                  key={product.id}
+                  className="shop-product-card"
+                  style={{
+                    position: 'relative',
+                    background: 'rgba(10,42,18,0.6)',
+                    border: `1px solid rgba(200,169,81,0.15)`,
+                    borderRadius: '14px',
+                    overflow: 'hidden',
+                    display: 'flex', flexDirection: 'column',
+                    boxShadow: '0 2px 12px rgba(0,0,0,0.15)',
+                  }}
+                >
+                  {/* Note badge (e.g. out of stock at supplier) */}
+                  {product.note && (
+                    <div style={{
+                      position: 'absolute', top: 10, insetInlineEnd: 12,
+                      background: `rgba(200,169,81,0.15)`,
+                      color: `${GOLD}CC`,
+                      fontFamily: ASST, fontSize: '10px', fontWeight: 700,
+                      padding: '2px 8px', borderRadius: '99px',
+                      maxWidth: '130px', lineHeight: 1.3, zIndex: 1,
+                    }}>
+                      {product.note}
+                    </div>
+                  )}
 
-                {/* Body */}
-                <div style={{ padding: '20px 20px 12px', flex: 1, display: 'flex', flexDirection: 'column', gap: '4px' }}>
-                  <div style={{ fontFamily: FRANK, fontSize: '15px', color: PARCH, fontWeight: 700, lineHeight: 1.35 }}>
-                    {product.nameHe}
-                  </div>
-                  <div style={{ fontFamily: ASST, fontSize: '11px', color: `${MUTED}80`, marginBottom: '8px' }}>
-                    {product.category}
-                  </div>
-                  <div style={{ display: 'flex', alignItems: 'baseline', gap: '8px', marginTop: 'auto' }}>
-                    <span style={{ fontFamily: FRANK, fontSize: '20px', color: GOLD, fontWeight: 700 }}>
-                      ₪{product.priceIls}
-                    </span>
-                    {product.originalPriceIls && (
-                      <span style={{ fontFamily: ASST, fontSize: '13px', color: MUTED, textDecoration: 'line-through' }}>
-                        ₪{product.originalPriceIls}
-                      </span>
+                  {/* Always-visible body */}
+                  <div style={{ padding: '20px 20px 12px', flex: 1, display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                    <div style={{ fontFamily: FRANK, fontSize: '15px', color: PARCH, fontWeight: 700, lineHeight: 1.35, paddingInlineEnd: product.note ? '80px' : 0 }}>
+                      {product.nameHe}
+                    </div>
+                    <div style={{ fontFamily: ASST, fontSize: '11px', color: `${MUTED}80`, marginBottom: '8px' }}>
+                      {product.category}
+                    </div>
+
+                    {/* Expandable details section */}
+                    {isExpanded && hasDetails && (
+                      <div style={{ marginBottom: '10px' }}>
+                        {product.descriptionHe && (
+                          <p style={{
+                            fontFamily: ASST, fontSize: '12px', color: MUTED,
+                            margin: '0 0 10px', lineHeight: 1.65,
+                          }}>
+                            {product.descriptionHe}
+                          </p>
+                        )}
+                        {product.benefitsHe && product.benefitsHe.length > 0 && (
+                          <div style={{ marginBottom: '8px' }}>
+                            <div style={{ fontFamily: FRANK, fontSize: '11px', color: SAGE, fontWeight: 700, marginBottom: '5px', letterSpacing: '0.03em' }}>
+                              יתרונות
+                            </div>
+                            <ul style={{ margin: 0, padding: 0, listStyle: 'none', display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                              {product.benefitsHe.map((b, i) => (
+                                <li key={i} style={{ fontFamily: ASST, fontSize: '12px', color: MUTED, display: 'flex', alignItems: 'flex-start', gap: '6px', lineHeight: 1.5 }}>
+                                  <span style={{ color: SAGE, fontSize: '10px', marginTop: '3px', flexShrink: 0 }}>✓</span>
+                                  {b}
+                                </li>
+                              ))}
+                            </ul>
+                          </div>
+                        )}
+                        {product.usageHe && product.usageHe.length > 0 && (
+                          <div>
+                            <div style={{ fontFamily: FRANK, fontSize: '11px', color: GOLD, fontWeight: 700, marginBottom: '5px', letterSpacing: '0.03em' }}>
+                              אופן שימוש
+                            </div>
+                            <ul style={{ margin: 0, padding: 0, listStyle: 'none', display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                              {product.usageHe.map((u, i) => (
+                                <li key={i} style={{ fontFamily: ASST, fontSize: '12px', color: MUTED, display: 'flex', alignItems: 'flex-start', gap: '6px', lineHeight: 1.5 }}>
+                                  <span style={{ color: `${GOLD}80`, fontSize: '10px', marginTop: '3px', flexShrink: 0 }}>·</span>
+                                  {u}
+                                </li>
+                              ))}
+                            </ul>
+                          </div>
+                        )}
+                      </div>
                     )}
+
+                    {/* Price + expand toggle row */}
+                    <div style={{ display: 'flex', alignItems: 'baseline', justifyContent: 'space-between', marginTop: 'auto', gap: '8px' }}>
+                      <div style={{ display: 'flex', alignItems: 'baseline', gap: '8px' }}>
+                        <span style={{ fontFamily: FRANK, fontSize: '20px', color: GOLD, fontWeight: 700 }}>
+                          ₪{product.priceIls}
+                        </span>
+                        {product.originalPriceIls && (
+                          <span style={{ fontFamily: ASST, fontSize: '13px', color: MUTED, textDecoration: 'line-through' }}>
+                            ₪{product.originalPriceIls}
+                          </span>
+                        )}
+                      </div>
+                      {hasDetails && (
+                        <button
+                          onClick={() => toggleBiodynamicExpand(product.id)}
+                          style={{
+                            background: 'none', border: 'none',
+                            fontFamily: ASST, fontSize: '11px', fontWeight: 600,
+                            color: isExpanded ? MUTED : SAGE,
+                            cursor: 'pointer', padding: '2px 0',
+                            display: 'flex', alignItems: 'center', gap: '3px',
+                            flexShrink: 0,
+                          }}
+                        >
+                          {isExpanded ? 'פחות ▲' : 'פרטים ▼'}
+                        </button>
+                      )}
+                    </div>
+                  </div>
+
+                  {/* Footer button */}
+                  <div style={{ padding: '0 20px 20px' }}>
+                    <button
+                      className="shop-wood-btn"
+                      onClick={() => openWaitlistModal({
+                        id: product.id,
+                        nameHe: product.nameHe,
+                        priceStr: `₪${product.priceIls}`,
+                        category: 'biodynamic',
+                      })}
+                    >
+                      ספרו לי כשמוכן
+                    </button>
                   </div>
                 </div>
-
-                {/* Footer button */}
-                <div style={{ padding: '0 20px 20px' }}>
-                  <button
-                    className="shop-wood-btn"
-                    onClick={() => openWaitlistModal({
-                      id: product.id,
-                      nameHe: product.nameHe,
-                      priceStr: `₪${product.priceIls}`,
-                      category: 'biodynamic',
-                    })}
-                  >
-                    ספרו לי כשמוכן
-                  </button>
-                </div>
-              </div>
-            ))}
+              );
+            })}
           </div>
         </div>
 
