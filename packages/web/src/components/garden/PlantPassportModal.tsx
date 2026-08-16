@@ -48,24 +48,16 @@ function irrigationBadgeText(plant: GardenPlant): string {
   const activeDays = (plant.irrigation_days ?? []).filter(d => d >= 0 && d <= 6);
   const times      = plant.irrigation_times ?? [];
   const liters: (number | null)[] | null = plant.irrigation_liters ?? null;
-  const anyLiters  = liters?.some(v => v !== null) ?? false;
 
-  let subtitle: string;
-  if (anyLiters) {
-    // Volume is known — use compact "{n} ימים" to make room for the liters value.
-    const dayStr    = activeDays.length > 0 ? `${activeDays.length} ימים` : '';
-    const timeStrs  = times.map((t, i) => {
-      const norm = String(t).slice(0, 5);
-      const l    = liters?.[i] ?? null;
-      return l !== null ? `${norm}·${l}ל` : norm;
-    });
-    subtitle = [dayStr, timeStrs.join(', ')].filter(Boolean).join(' · ');
-  } else {
-    // No volume data — show full day letters.
-    const days  = activeDays.map(d => DAY_LETTERS_HE[d]).join(',');
-    const tStr  = times.map(t => String(t).slice(0, 5)).join(', ');
-    subtitle = [days, tStr].filter(Boolean).join(' · ');
-  }
+  // One format: time[·volume] pairs, then day letters.
+  // Volume appended only when recorded; null entries produce no dangling separator.
+  const timeStrs = times.map((t, i) => {
+    const norm = String(t).slice(0, 5);
+    const l    = liters?.[i] ?? null;
+    return l !== null ? `${norm}·${l}ל` : norm;
+  });
+  const days    = activeDays.map(d => DAY_LETTERS_HE[d]).join(',');
+  const subtitle = [timeStrs.join(', '), days].filter(Boolean).join(' · ');
 
   return `💧⏱️ השקיה אוטומטית${subtitle ? ` · ${subtitle}` : ''}`;
 }
