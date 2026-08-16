@@ -290,6 +290,9 @@ gardenRouter.get('/', async (req: any, res) => {
     for (const garden of gardens) {
       for (const plant of (garden.garden_plants ?? [])) {
         plant.last_watering = lastWateringsMap.get(plant.id) ?? null;
+        if (Array.isArray(plant.irrigation_times)) {
+          plant.irrigation_times = plant.irrigation_times.map(normaliseTime);
+        }
       }
     }
 
@@ -318,6 +321,9 @@ gardenRouter.get('/:id', async (req: any, res) => {
     const lastWateringsMap = await resolveLastWaterings(plants, new Date());
     for (const plant of plants) {
       plant.last_watering = lastWateringsMap.get(plant.id) ?? null;
+      if (Array.isArray(plant.irrigation_times)) {
+        plant.irrigation_times = plant.irrigation_times.map(normaliseTime);
+      }
     }
 
     res.set('Cache-Control', 'no-store, no-cache, must-revalidate');
@@ -640,6 +646,11 @@ gardenRouter.post('/:id/plants', async (req: any, res) => {
 
     if (error) throw error;
 
+    // Normalise irrigation_times on read-back — Postgres TIME[] always returns HH:MM:SS.
+    if (Array.isArray(data.irrigation_times)) {
+      data.irrigation_times = data.irrigation_times.map(normaliseTime);
+    }
+
     // Attach last_watering — a brand-new plant has no manual entries yet, so
     // this will be a scheduled value (or null if auto_irrigation is off).
     const scheduled = lastScheduledIrrigation(auto_irrigation, irrigation_days, irrigation_times, new Date());
@@ -881,6 +892,11 @@ gardenRouter.patch('/garden-plants/:id', async (req: any, res) => {
       .single();
 
     if (error) throw error;
+
+    // Normalise irrigation_times on read-back — Postgres TIME[] always returns HH:MM:SS.
+    if (Array.isArray(data.irrigation_times)) {
+      data.irrigation_times = data.irrigation_times.map(normaliseTime);
+    }
 
     // Resolve last_watering for the single updated plant (no N+1 concern here).
     const lwMap = await resolveLastWaterings([data], new Date());
