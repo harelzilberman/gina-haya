@@ -150,9 +150,13 @@ export function PlantPassportModal({ plant, tracker, gardenName, gardenId, onClo
   const wateringCount = tracker?.watering_count ?? timeline.filter(t => t.entry_type === 'watering').length;
   const photoCount     = timeline.filter(t => t.entry_type === 'photo').length;
   const daysInGarden   = daysSince(plant.added_at) ?? 0;
-  const lastWatered     = tracker?.last_watered_at
+  // Prefer the API-resolved field (covers both manual and scheduled runs).
+  // Fall back to the legacy chain for un-redeployed API versions.
+  const lastWatered = plant.last_watering?.at
+    ?? tracker?.last_watered_at
     ?? timeline.find(t => t.entry_type === 'watering')?.created_at
     ?? null;
+  const lastWateredSource = plant.last_watering?.source ?? null;
 
   async function withBusy(key: string, fn: () => Promise<void>) {
     setBusyAction(key);
@@ -251,7 +255,10 @@ export function PlantPassportModal({ plant, tracker, gardenName, gardenId, onClo
   detailChips.push(chip('סוג גידול', locationLabel(plant.location_type), LOCATION_EMOJI(plant.location_type)));
   if (plant.location_description) detailChips.push(chip('מיקום', plant.location_description));
   if (plant.sun_exposure) detailChips.push(chip('חשיפה לשמש', plant.sun_exposure, '☀️'));
-  detailChips.push(chip('השקיה אחרונה', lastWatered ? formatHebrewDate(lastWatered) : 'טרם הושקה', '💧'));
+  const lastWateredLabel = lastWatered
+    ? `${formatHebrewDate(lastWatered)}${lastWateredSource === 'scheduled' ? ' (לפי לוח)' : ''}`
+    : 'טרם הושקה';
+  detailChips.push(chip('השקיה אחרונה', lastWateredLabel, '💧'));
   if (plant.companions) detailChips.push(chip('צמחים שכנים', plant.companions));
   if (plant.soil) detailChips.push(chip('קרקע', plant.soil));
   if (plant.plant_type) detailChips.push(chip('סוג צמח', plant.plant_type, PLANT_TYPE_EMOJI[plant.plant_type]));

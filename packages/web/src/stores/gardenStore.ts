@@ -24,6 +24,9 @@ export interface GardenPlant {
   auto_irrigation?: boolean;
   irrigation_days?: number[] | null;
   irrigation_times?: string[] | null;
+  // Resolved by the API at read time from timeline + irrigation schedule.
+  // 'manual' = a logged watering event; 'scheduled' = inferred from auto_irrigation config.
+  last_watering?: { at: string; source: 'manual' | 'scheduled' } | null;
 }
 
 export interface AddPlantData {
