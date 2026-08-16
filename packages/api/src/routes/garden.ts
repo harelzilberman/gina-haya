@@ -172,23 +172,35 @@ export const gardenRouter: IRouter = Router();
 gardenRouter.use(verifyToken);
 gardenRouter.use(attachTier);
 
+// ── Time normalisation ────────────────────────────────────────────────────────
+// Postgres TIME columns are returned as 'HH:MM:SS'. Accept that as input and
+// strip the seconds component so we always store and return 'HH:MM'.
+function normaliseTime(t: string): string {
+  return String(t).slice(0, 5);
+}
+
 // ── Shared irrigation field validator ────────────────────────────────────────
 // Used by both POST /:id/plants (create) and PATCH /garden-plants/:id (update).
 // Returns { fields } on success or { error, message } on validation failure.
 // `auto_irrigation` defaults to false when absent; arrays are nulled when false.
 function validateIrrigationFields(body: any): {
-  fields: { auto_irrigation: boolean; irrigation_days: number[] | null; irrigation_times: string[] | null };
+  fields: {
+    auto_irrigation: boolean;
+    irrigation_days: number[] | null;
+    irrigation_times: string[] | null;
+    irrigation_liters: (number | null)[] | null;
+  };
 } | { error: string; message: string } {
   const rawAuto = body.auto_irrigation;
   const autoIrrigation = rawAuto === undefined ? false : Boolean(rawAuto);
 
   // Turning off (or absent) — force arrays to null immediately, skip array validation
   if (!autoIrrigation) {
-    return { fields: { auto_irrigation: false, irrigation_days: null, irrigation_times: null } };
+    return { fields: { auto_irrigation: false, irrigation_days: null, irrigation_times: null, irrigation_liters: null } };
   }
 
-  // auto_irrigation is true — validate both arrays
-  const { irrigation_days, irrigation_times } = body;
+  // auto_irrigation is true — validate all three arrays
+  const { irrigation_days, irrigation_times, irrigation_liters: rawLiters } = body;
 
   if (
     !Array.isArray(irrigation_days) ||
@@ -202,22 +214,57 @@ function validateIrrigationFields(body: any): {
     };
   }
 
+  // Accept HH:MM or HH:MM:SS — Postgres TIME[] round-trips as HH:MM:SS.
   if (
     !Array.isArray(irrigation_times) ||
     irrigation_times.length < 1 || irrigation_times.length > 3 ||
-    !irrigation_times.every((t: any) => /^\d{2}:\d{2}$/.test(String(t)))
+    !irrigation_times.every((t: any) => /^\d{2}:\d{2}(:\d{2})?$/.test(String(t)))
   ) {
     return {
       error: 'invalid_irrigation_times',
-      message: 'irrigation_times must be 1–3 strings in HH:MM format',
+      message: 'irrigation_times must be 1–3 strings in HH:MM or HH:MM:SS format',
     };
+  }
+
+  const normalisedTimes = irrigation_times.map(t => normaliseTime(String(t)));
+
+  // irrigation_liters: optional; absent/null → null column value.
+  // Array elements may be null (volume unknown for that run).
+  // Out-of-range values are rejected; length is normalised to match times.
+  let normalisedLiters: (number | null)[] | null = null;
+  if (rawLiters !== undefined && rawLiters !== null) {
+    if (!Array.isArray(rawLiters)) {
+      return {
+        error: 'invalid_irrigation_liters',
+        message: 'irrigation_liters must be an array of numbers or null values',
+      };
+    }
+    for (const v of rawLiters) {
+      if (v !== null) {
+        const n = Number(v);
+        if (isNaN(n) || n <= 0 || n > 1000) {
+          return {
+            error: 'invalid_irrigation_liters',
+            message: 'irrigation_liters values must be null or a positive number ≤ 1000',
+          };
+        }
+      }
+    }
+    // Align length with times: pad with null if too short, truncate if too long.
+    const targetLen = normalisedTimes.length;
+    const validated: (number | null)[] = (rawLiters as any[]).map((v: any) =>
+      v === null ? null : Math.round(Number(v) * 100) / 100
+    );
+    while (validated.length < targetLen) validated.push(null);
+    normalisedLiters = validated.slice(0, targetLen);
   }
 
   return {
     fields: {
       auto_irrigation: true,
       irrigation_days: irrigation_days.map(Number),
-      irrigation_times: irrigation_times.map(String),
+      irrigation_times: normalisedTimes,
+      irrigation_liters: normalisedLiters,
     },
   };
 }
@@ -567,7 +614,7 @@ gardenRouter.post('/:id/plants', async (req: any, res) => {
     if ('error' in irrigationResult) {
       return res.status(400).json(irrigationResult);
     }
-    const { auto_irrigation, irrigation_days, irrigation_times } = irrigationResult.fields;
+    const { auto_irrigation, irrigation_days, irrigation_times, irrigation_liters } = irrigationResult.fields;
 
     const { data, error } = await db
       .from('garden_plants')
@@ -582,6 +629,9 @@ gardenRouter.post('/:id/plants', async (req: any, res) => {
         auto_irrigation,
         irrigation_days,
         irrigation_times,
+        irrigation_liters,
+        // Stamp the schedule creation time when irrigation is enabled at planting.
+        ...(auto_irrigation && { irrigation_updated_at: new Date().toISOString() }),
         ...(plantType !== undefined && { plant_type: plantType }),
         ...(variety  !== undefined && { variety }),
       })
@@ -736,10 +786,10 @@ gardenRouter.patch('/garden-plants/:id', async (req: any, res) => {
     } = req.body;
 
     // Verify ownership: garden_plants has no user_id, ownership flows through garden_id -> gardens.user_id
-    // Also fetch archived_at so we can detect a restore (non-null → null) below.
+    // Also fetch archived_at (restore detection) and current irrigation fields (change detection).
     const { data: gp, error: gpError } = await db
       .from('garden_plants')
-      .select('garden_id, archived_at')
+      .select('garden_id, archived_at, auto_irrigation, irrigation_days, irrigation_times, irrigation_liters')
       .eq('id', id)
       .single();
 
@@ -796,8 +846,11 @@ gardenRouter.patch('/garden-plants/:id', async (req: any, res) => {
       updateObj.archived_at = archived_at ?? null;
     }
 
-    // ── Auto-irrigation fields (only applied when any of the three are present) ──
-    if (auto_irrigation !== undefined || irrigation_days !== undefined || irrigation_times !== undefined) {
+    // ── Auto-irrigation fields (applied when any of the four keys are present) ──
+    if (
+      auto_irrigation !== undefined || irrigation_days !== undefined ||
+      irrigation_times !== undefined || req.body.irrigation_liters !== undefined
+    ) {
       const irrigationResult = validateIrrigationFields(req.body);
       if ('error' in irrigationResult) {
         return res.status(400).json(irrigationResult);
@@ -806,6 +859,18 @@ gardenRouter.patch('/garden-plants/:id', async (req: any, res) => {
       updateObj.auto_irrigation   = irr.auto_irrigation;
       updateObj.irrigation_days   = irr.irrigation_days;
       updateObj.irrigation_times  = irr.irrigation_times;
+      updateObj.irrigation_liters = irr.irrigation_liters;
+
+      // Stamp irrigation_updated_at only when the schedule actually changed.
+      // Compare normalised times so HH:MM vs HH:MM:SS doesn't trigger a false positive.
+      const normCurrent = (gp.irrigation_times ?? []).map((t: string) => normaliseTime(t));
+      const irrChanged = (
+        irr.auto_irrigation  !== Boolean(gp.auto_irrigation) ||
+        JSON.stringify(irr.irrigation_days)   !== JSON.stringify(gp.irrigation_days   ?? null) ||
+        JSON.stringify(irr.irrigation_times)  !== JSON.stringify(normCurrent) ||
+        JSON.stringify(irr.irrigation_liters) !== JSON.stringify(gp.irrigation_liters ?? null)
+      );
+      if (irrChanged) updateObj.irrigation_updated_at = new Date().toISOString();
     }
 
     const { data, error } = await db
