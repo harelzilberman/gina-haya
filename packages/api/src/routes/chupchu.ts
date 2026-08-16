@@ -12,6 +12,7 @@ import { getRecentCompletedTasks } from '../db/queries/tasks';
 import { getLimits } from '../config/tiers';
 import { checkAndRecordVisionUse, recordFreeRetryVisionUse } from '../services/visionQuota';
 import { logApiUsage } from '../services/apiUsage';
+import { lastScheduledIrrigation, isWateringTask } from '../utils/irrigation';
 
 const ANTHROPIC_URL = 'https://api.anthropic.com/v1/messages';
 const ANTHROPIC_HEADERS = {
@@ -561,11 +562,11 @@ chupChuRouter.post('/full-diagnosis', async (req: any, res) => {
         .single();
 
       // Suppress watering tasks for auto-irrigated plants (belt-and-braces;
-      // the full-diagnosis prompt has no per-plant context, so filtering is the primary guard)
+      // the full-diagnosis prompt has no per-plant context, so filtering is the primary guard).
+      // isWateringTask() keys on the structured `category` field — same rule as starter-task
+      // seeding in garden.ts, both importing from utils/irrigation.ts.
       if (gpRow?.auto_irrigation === true && Array.isArray(diagnosis.tasks)) {
-        diagnosis.tasks = diagnosis.tasks.filter(
-          (t: any) => !/השק/u.test(String(t.title ?? ''))
-        );
+        diagnosis.tasks = diagnosis.tasks.filter((t: any) => !isWateringTask(t));
       }
 
       // When clientPhotoKey is set the client already created a photo timeline entry,
@@ -1384,6 +1385,53 @@ chupChuRouter.post('/chat', async (req: any, res) => {
       }
     }
 
+    // ── 4c. Resolve last_watering for each active garden plant ────────────────
+    // Single batched plant_timeline query — no N+1. Attaches .last_watering to each
+    // plant object so buildPlantDetailLine can include it without extra DB calls.
+    // Lives here in the volatile / per-request section (not in any cached block).
+    const gardenPlantsList: any[] = garden?.garden_plants ?? [];
+    if (gardenPlantsList.length > 0) {
+      const plantIds = gardenPlantsList.map((p: any) => p.id);
+      const { data: wateringRows, error: wateringError } = await db
+        .from('plant_timeline')
+        .select('plant_id, created_at')
+        .in('plant_id', plantIds)
+        .eq('entry_type', 'watering')
+        .order('created_at', { ascending: false });
+
+      if (wateringError) {
+        console.error('[chupchu] plant_timeline batch query failed:', wateringError.message);
+      }
+
+      const latestManual = new Map<string, string>();
+      for (const row of (wateringRows ?? [])) {
+        if (!latestManual.has(row.plant_id)) latestManual.set(row.plant_id, row.created_at);
+      }
+
+      const now = new Date();
+      for (const p of gardenPlantsList) {
+        const manualAtStr = latestManual.get(p.id) ?? null;
+        const scheduled   = lastScheduledIrrigation(
+          p.auto_irrigation ?? false,
+          p.irrigation_days  ?? null,
+          p.irrigation_times ?? null,
+          now,
+        );
+        const manualDate = manualAtStr ? new Date(manualAtStr) : null;
+        if (manualDate && scheduled) {
+          p.last_watering = manualDate >= scheduled
+            ? { at: manualDate.toISOString(), source: 'manual' }
+            : { at: scheduled.toISOString(),  source: 'scheduled' };
+        } else if (manualDate) {
+          p.last_watering = { at: manualDate.toISOString(), source: 'manual' };
+        } else if (scheduled) {
+          p.last_watering = { at: scheduled.toISOString(), source: 'scheduled' };
+        } else {
+          p.last_watering = null;
+        }
+      }
+    }
+
     // ── 5. Fetch weather ──────────────────────────────────────────────────
     const weather = await fetchWeatherForRegion(garden?.location_region ?? null);
 
@@ -1611,6 +1659,21 @@ chupChuRouter.post('/chat', async (req: any, res) => {
         details.push(l === 'he'
           ? `השקיה אוטומטית (ימים ${days}; ${times})`
           : `auto-irrigated (days ${days}; ${times})`);
+      }
+      // Resolved last watering (computed earlier in the volatile/per-request section).
+      if (p.last_watering?.at) {
+        const daysAgo = Math.round((Date.now() - new Date(p.last_watering.at).getTime()) / 86_400_000);
+        const daysStr = daysAgo === 0
+          ? (l === 'he' ? 'היום' : 'today')
+          : daysAgo === 1
+            ? (l === 'he' ? 'אתמול' : 'yesterday')
+            : (l === 'he' ? `לפני ${daysAgo} ימים` : `${daysAgo} days ago`);
+        const sourceNote = p.last_watering.source === 'scheduled'
+          ? (l === 'he' ? ' (לפי לוח ההשקיה)' : ' (scheduled)')
+          : '';
+        details.push(l === 'he'
+          ? `השקיה אחרונה: ${daysStr}${sourceNote}`
+          : `last watered: ${daysStr}${sourceNote}`);
       }
       return details.length ? `${label} — ${details.join(', ')}` : label;
     };

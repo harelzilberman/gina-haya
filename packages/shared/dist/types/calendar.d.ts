@@ -27,5 +27,6 @@ export interface BiodynamicDay {
     moonriseTime: string | null;
     moonsetTime: string | null;
     chupChuDailySummary: string;
+    chupChuDailySummaryEn?: string;
 }
 //# sourceMappingURL=calendar.d.ts.map

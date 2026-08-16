@@ -4,6 +4,7 @@ import { verifyToken } from '../middleware/auth';
 import { attachTier } from '../middleware/tierMiddleware';
 import { getCalendarRange } from '../db/queries/calendar';
 import starterTasksData from '../../../shared/data/starter_tasks.json';
+import { lastScheduledIrrigation, isWateringTask } from '../utils/irrigation';
 
 // ── Types for starter_tasks.json ─────────────────────────────────────────────
 interface StarterTaskEntry {
@@ -90,6 +91,81 @@ async function scheduledDate(
   return favorable?.date ?? baseDate;
 }
 
+// ── last_watering resolver ────────────────────────────────────────────────────
+// Resolves last_watering for a set of plants in a single batched plant_timeline
+// query (no N+1). Returns a Map from garden_plants.id → resolved value.
+//
+// Resolution: prefer whichever is more recent between the last manual watering
+// (from plant_timeline) and the last scheduled irrigation (inferred from config).
+// plant_trackers.last_watered_at is intentionally NOT used — it is only written by
+// one of the two watering endpoints and is unreliable.
+type LastWatering = { at: string; source: 'manual' | 'scheduled' } | null;
+
+interface PlantIrrigationShape {
+  id: string;
+  auto_irrigation?: boolean | null;
+  irrigation_days?: number[] | null;
+  irrigation_times?: string[] | null;
+}
+
+async function resolveLastWaterings(
+  plants: PlantIrrigationShape[],
+  now: Date,
+): Promise<Map<string, LastWatering>> {
+  const result = new Map<string, LastWatering>();
+  if (plants.length === 0) return result;
+
+  const plantIds = plants.map(p => p.id);
+
+  // Single batched query — one round-trip for all plants.
+  const { data: wateringRows, error: wateringError } = await db
+    .from('plant_timeline')
+    .select('plant_id, created_at')
+    .in('plant_id', plantIds)
+    .eq('entry_type', 'watering')
+    .order('created_at', { ascending: false });
+
+  if (wateringError) {
+    console.error('[resolveLastWaterings] plant_timeline query failed:', wateringError.message);
+    // Non-fatal — fall back to scheduled-only resolution
+  }
+
+  // Group by plant_id, keeping only the most recent row per plant (already ordered DESC).
+  const latestManual = new Map<string, string>();
+  for (const row of (wateringRows ?? [])) {
+    if (!latestManual.has(row.plant_id)) {
+      latestManual.set(row.plant_id, row.created_at);
+    }
+  }
+
+  for (const plant of plants) {
+    const manualAtStr = latestManual.get(plant.id) ?? null;
+    const scheduled   = lastScheduledIrrigation(
+      plant.auto_irrigation ?? false,
+      plant.irrigation_days  ?? null,
+      plant.irrigation_times ?? null,
+      now,
+    );
+
+    const manualDate = manualAtStr ? new Date(manualAtStr) : null;
+    let lw: LastWatering = null;
+
+    if (manualDate && scheduled) {
+      lw = manualDate >= scheduled
+        ? { at: manualDate.toISOString(), source: 'manual' }
+        : { at: scheduled.toISOString(),  source: 'scheduled' };
+    } else if (manualDate) {
+      lw = { at: manualDate.toISOString(), source: 'manual' };
+    } else if (scheduled) {
+      lw = { at: scheduled.toISOString(), source: 'scheduled' };
+    }
+
+    result.set(plant.id, lw);
+  }
+
+  return result;
+}
+
 export const gardenRouter: IRouter = Router();
 
 // All garden routes require authentication + tier attachment
@@ -157,9 +233,22 @@ gardenRouter.get('/', async (req: any, res) => {
       .order('created_at', { ascending: true });
 
     if (error) throw error;
+
+    const gardens = data || [];
+    const allPlants: PlantIrrigationShape[] = gardens.flatMap((g: any) => g.garden_plants ?? []);
+
+    // Single batched plant_timeline query — no N+1.
+    const lastWateringsMap = await resolveLastWaterings(allPlants, new Date());
+
+    for (const garden of gardens) {
+      for (const plant of (garden.garden_plants ?? [])) {
+        plant.last_watering = lastWateringsMap.get(plant.id) ?? null;
+      }
+    }
+
     res.set('Cache-Control', 'no-store, no-cache, must-revalidate');
     res.set('Pragma', 'no-cache');
-    res.json(data || []);
+    res.json(gardens);
   } catch (err: any) {
     console.error('[GET /api/garden]', err);
     res.status(500).json({ error: err.message });
@@ -177,6 +266,13 @@ gardenRouter.get('/:id', async (req: any, res) => {
       .single();
 
     if (error || !data) return res.status(404).json({ error: 'garden_not_found' });
+
+    const plants: any[] = data.garden_plants ?? [];
+    const lastWateringsMap = await resolveLastWaterings(plants, new Date());
+    for (const plant of plants) {
+      plant.last_watering = lastWateringsMap.get(plant.id) ?? null;
+    }
+
     res.set('Cache-Control', 'no-store, no-cache, must-revalidate');
     res.set('Pragma', 'no-cache');
     res.json(data);
@@ -493,7 +589,15 @@ gardenRouter.post('/:id/plants', async (req: any, res) => {
       .single();
 
     if (error) throw error;
-    res.status(201).json(data);
+
+    // Attach last_watering — a brand-new plant has no manual entries yet, so
+    // this will be a scheduled value (or null if auto_irrigation is off).
+    const scheduled = lastScheduledIrrigation(auto_irrigation, irrigation_days, irrigation_times, new Date());
+    const lastWatering: LastWatering = scheduled
+      ? { at: scheduled.toISOString(), source: 'scheduled' }
+      : null;
+
+    res.status(201).json({ ...data, last_watering: lastWatering });
   } catch (err: any) {
     console.error('[POST /api/garden/:id/plants]', err);
     res.status(500).json({ error: err.message });
@@ -529,10 +633,10 @@ gardenRouter.post('/garden-plants/:id/starter-tasks', async (req: any, res) => {
     const userId = req.user?.id;
     if (!userId) return res.status(401).json({ error: 'Unauthorized' });
 
-    // 1. Fetch the garden_plants row (include plant_id for speciesId match)
+    // 1. Fetch the garden_plants row (include plant_id for speciesId match, auto_irrigation for task filtering)
     const { data: gp, error: gpError } = await db
       .from('garden_plants')
-      .select('id, common_name_he, plant_type, garden_id, plant_id')
+      .select('id, common_name_he, plant_type, garden_id, plant_id, auto_irrigation')
       .eq('id', gardenPlantId)
       .single();
 
@@ -560,9 +664,14 @@ gardenRouter.post('/garden-plants/:id/starter-tasks', async (req: any, res) => {
       return res.json({ ok: true, tasks: [], skipped: 'already_generated' });
     }
 
-    // 4. Resolve tasks from JSON: speciesId → Hebrew name → generic; cap at 5 by dayOffset
+    // 4. Resolve tasks from JSON: speciesId → Hebrew name → generic; cap at 5 by dayOffset.
+    // For auto-irrigated plants, filter out watering tasks — the controller handles it.
+    // We filter on the structured `category` field (not title text) via isWateringTask().
     const resolved = resolveStarterTasks(gp.plant_id ?? null, gp.common_name_he ?? '');
-    const capped = [...resolved].sort((a, b) => a.dayOffset - b.dayOffset).slice(0, 5);
+    const filtered = gp.auto_irrigation === true
+      ? resolved.filter(t => !isWateringTask(t))
+      : resolved;
+    const capped = [...filtered].sort((a, b) => a.dayOffset - b.dayOffset).slice(0, 5);
 
     // 5. Compute base dates and apply biodynamic scheduling for lunar-sensitive tasks
     function addDays(base: string, days: number): string {
@@ -707,7 +816,12 @@ gardenRouter.patch('/garden-plants/:id', async (req: any, res) => {
       .single();
 
     if (error) throw error;
-    return res.json({ success: true, plant: data });
+
+    // Resolve last_watering for the single updated plant (no N+1 concern here).
+    const lwMap = await resolveLastWaterings([data], new Date());
+    const plant = { ...data, last_watering: lwMap.get(data.id) ?? null };
+
+    return res.json({ success: true, plant });
   } catch (err: any) {
     console.error('[PATCH /api/garden/garden-plants/:id]', err);
     res.status(500).json({ error: err.message });
