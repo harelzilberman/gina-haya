@@ -9,6 +9,7 @@ import { useChupChuPanelStore } from '../../stores/chupChuPanelStore';
 import { api } from '../../api/client';
 import { supabase } from '../../lib/supabase';
 import { locationLabel } from './PlantingBase';
+import { DAY_LETTERS_HE } from '../../constants/days';
 import { EditPlantSheet } from './EditPlantSheet';
 import { NewTrackerModal } from '../tracker/NewTrackerModal';
 import { PhotoUpload } from '../tracker/PhotoUpload';
@@ -43,15 +44,10 @@ const ENTRY_META: Record<string, { color: string; emoji: string; label: string }
 
 const HEBREW_MONTHS = ['ינואר','פברואר','מרץ','אפריל','מאי','יוני','יולי','אוגוסט','ספטמבר','אוקטובר','נובמבר','דצמבר'];
 
-// Index = stored irrigation_days integer — matches the Flutter app's
-// _dayLetters constant exactly (verified via Claude Code investigation of
-// plant_passport_screen.dart / irrigation_schedule_field.dart).
-const IRRIGATION_DAY_LETTERS = ['ש', 'ו', 'ה', 'ד', 'ג', 'ב', 'א'];
-
 function irrigationBadgeText(plant: GardenPlant): string {
   const days = (plant.irrigation_days ?? [])
     .filter(d => d >= 0 && d <= 6)
-    .map(d => IRRIGATION_DAY_LETTERS[d])
+    .map(d => DAY_LETTERS_HE[d])
     .join(',');
   const times = (plant.irrigation_times ?? []).join(', ');
   const subtitle = [days, times].filter(Boolean).join(' · ');

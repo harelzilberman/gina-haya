@@ -3,6 +3,7 @@ import type { GardenPlant } from '../../stores/gardenStore';
 import { useGardenStore } from '../../stores/gardenStore';
 import { useToastStore } from '../../stores/toastStore';
 import { LOCATION_TYPES, PlantingBase } from './PlantingBase';
+import { DAY_LETTERS_HE } from '../../constants/days';
 
 const NIGHT_CARD = '#111f18';
 const BIO_CYAN   = '#00e5c3';
@@ -19,10 +20,6 @@ const PLANT_TYPES = [
 
 const SUN_EXPOSURES = ['שמש מלאה', 'חצי צל', 'צל'];
 
-// Index = stored irrigation_days integer — matches the Flutter app's
-// _dayLetters constant exactly (verified via Claude Code investigation of
-// irrigation_schedule_field.dart).
-const IRRIGATION_DAY_LETTERS = ['ש', 'ו', 'ה', 'ד', 'ג', 'ב', 'א'];
 
 const inputStyle: React.CSSProperties = {
   width: '100%', boxSizing: 'border-box',
@@ -255,7 +252,7 @@ export function EditPlantSheet({ plant, gardenId, onClose }: Props) {
             {autoIrrigation && (
               <>
                 <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px', marginBottom: '14px', justifyContent: 'flex-end' }}>
-                  {IRRIGATION_DAY_LETTERS.map((letter, i) => {
+                  {DAY_LETTERS_HE.map((letter, i) => {
                     const selected = irrigationDays.includes(i);
                     return (
                       <button

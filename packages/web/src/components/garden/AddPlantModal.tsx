@@ -4,6 +4,7 @@ import { useGardenStore } from '../../stores/gardenStore';
 import { useToastStore } from '../../stores/toastStore';
 import { LOCATION_TYPES } from './PlantingBase';
 import { PlantingBase } from './PlantingBase';
+import { DAY_LETTERS_HE } from '../../constants/days';
 
 const NIGHT_CARD = '#111f18';
 const BIO_CYAN   = '#00e5c3';
@@ -19,7 +20,6 @@ const PLANT_TYPES = [
 ];
 
 const SUN_EXPOSURES = ['שמש מלאה', 'חצי צל', 'צל'];
-const DAY_LABELS = ['א', 'ב', 'ג', 'ד', 'ה', 'ו', 'ש'];
 
 const inputStyle: React.CSSProperties = {
   width: '100%', boxSizing: 'border-box',
@@ -286,7 +286,7 @@ export function AddPlantModal({ gardenId, onClose, onAdded }: Props) {
             {autoIrrigation && (
               <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
                 <div style={{ display: 'flex', gap: '6px', justifyContent: 'flex-end' }}>
-                  {DAY_LABELS.map((d, i) => (
+                  {DAY_LETTERS_HE.map((d, i) => (
                     <button key={i} type="button" onClick={() => toggleDay(i)}
                       style={{
                         width: '28px', height: '28px', borderRadius: '50%',
