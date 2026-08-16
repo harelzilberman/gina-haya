@@ -1654,11 +1654,30 @@ chupChuRouter.post('/chat', async (req: any, res) => {
       const typeStr = p.plant_type ? (typeMap[String(p.plant_type)] ?? null) : null;
       if (typeStr)         details.push(typeStr);
       if (p.auto_irrigation && p.irrigation_days?.length && p.irrigation_times?.length) {
-        const days  = (p.irrigation_days  as number[]).map((d: number) => DAY_HE[d] ?? d).join(',');
-        const times = (p.irrigation_times as string[]).join(', ');
+        const nDays  = (p.irrigation_days as number[]).length;
+        const days   = (p.irrigation_days as number[]).map((d: number) => DAY_HE[d] ?? d).join(',');
+        const liters: (number | null)[] | null = Array.isArray(p.irrigation_liters) ? p.irrigation_liters : null;
+        const anyVolume = liters?.some((v: number | null) => v !== null);
+        const timeStrs  = (p.irrigation_times as string[]).map((t: string, i: number) => {
+          const norm = String(t).slice(0, 5);
+          const lit  = liters?.[i] ?? null;
+          return lit !== null
+            ? (l === 'he' ? `${norm} · ${lit} ליטר` : `${norm} · ${lit}L`)
+            : norm;
+        });
+        const timePart = timeStrs.join(', ');
+        let weeklyClause = '';
+        if (anyVolume) {
+          const dailyL  = (liters as (number | null)[]).reduce((s, v) => s + (v ?? 0), 0);
+          const weeklyL = dailyL * nDays;
+          const fmt = (n: number) => n % 1 === 0 ? String(n) : n.toFixed(1);
+          weeklyClause = l === 'he'
+            ? `; ~${fmt(weeklyL)} ליטר בשבוע`
+            : `; ~${fmt(weeklyL)}L/week`;
+        }
         details.push(l === 'he'
-          ? `השקיה אוטומטית (ימים ${days}; ${times})`
-          : `auto-irrigated (days ${days}; ${times})`);
+          ? `השקיה אוטומטית (ימים ${days}; ${timePart}${weeklyClause})`
+          : `auto-irrigated (days ${days}; ${timePart}${weeklyClause})`);
       }
       // Resolved last watering (computed earlier in the volatile/per-request section).
       if (p.last_watering?.at) {
