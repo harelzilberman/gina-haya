@@ -24,6 +24,8 @@ export interface GardenPlant {
   auto_irrigation?: boolean;
   irrigation_days?: number[] | null;
   irrigation_times?: string[] | null;
+  irrigation_liters?: (number | null)[] | null;
+  irrigation_updated_at?: string | null;
   // Resolved by the API at read time from timeline + irrigation schedule.
   // 'manual' = a logged watering event; 'scheduled' = inferred from auto_irrigation config.
   last_watering?: { at: string; source: 'manual' | 'scheduled' } | null;
@@ -41,6 +43,7 @@ export interface AddPlantData {
   autoIrrigation?: boolean;
   irrigationDays?: number[];
   irrigationTimes?: string[];
+  irrigationLiters?: (number | null)[] | null;
 }
 
 export interface PatchGardenPlantData {
@@ -56,6 +59,7 @@ export interface PatchGardenPlantData {
   autoIrrigation?: boolean;
   irrigationDays?: number[];
   irrigationTimes?: string[];
+  irrigationLiters?: (number | null)[] | null;
 }
 
 export interface Garden {
@@ -168,6 +172,7 @@ export const useGardenStore = create<GardenState>((set, get) => ({
       auto_irrigation:      data.autoIrrigation ?? false,
       irrigation_days:      data.irrigationDays,
       irrigation_times:     data.irrigationTimes,
+      irrigation_liters:    data.irrigationLiters,
     }, token);
     set(state => {
       const merge = (g: Garden) => ({ ...g, garden_plants: [...g.garden_plants, newPlant] });
@@ -199,6 +204,7 @@ export const useGardenStore = create<GardenState>((set, get) => ({
     if (data.autoIrrigation !== undefined) body.auto_irrigation = data.autoIrrigation;
     if (data.irrigationDays !== undefined) body.irrigation_days = data.irrigationDays;
     if (data.irrigationTimes !== undefined) body.irrigation_times = data.irrigationTimes;
+    if (data.irrigationLiters !== undefined) body.irrigation_liters = data.irrigationLiters;
 
     const { plant } = await api.patch<{ success: boolean; plant: GardenPlant }>(
       `/api/garden/garden-plants/${gardenPlantId}`,

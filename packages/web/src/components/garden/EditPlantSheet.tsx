@@ -80,9 +80,19 @@ export function EditPlantSheet({ plant, gardenId, onClose }: Props) {
   const [companions,          setCompanions]          = useState(plant.companions ?? '');
   const [autoIrrigation,      setAutoIrrigation]      = useState(plant.auto_irrigation ?? false);
   const [irrigationDays,      setIrrigationDays]      = useState<number[]>(plant.irrigation_days ?? []);
-  const [irrigationTimes,     setIrrigationTimes]     = useState<string[]>(
-    plant.irrigation_times && plant.irrigation_times.length > 0 ? plant.irrigation_times : ['06:00']
+
+  // Normalise HH:MM:SS → HH:MM on init — Postgres TIME[] round-trips with seconds.
+  const initTimes = plant.irrigation_times?.length
+    ? plant.irrigation_times.map(t => String(t).slice(0, 5))
+    : ['06:00'];
+  // Keep liters in lockstep with times: pad with '' (unknown) if lengths differ.
+  const initLitersRaw = plant.irrigation_liters ?? null;
+  const initLiters: string[] = initTimes.map((_, i) =>
+    initLitersRaw?.[i] != null ? String(initLitersRaw[i]) : ''
   );
+  const [irrigationTimes,  setIrrigationTimes]  = useState<string[]>(initTimes);
+  const [irrigationLiters, setIrrigationLiters] = useState<string[]>(initLiters);
+
   const [isSaving,            setIsSaving]            = useState(false);
   const [error,               setError]               = useState('');
 
@@ -100,14 +110,29 @@ export function EditPlantSheet({ plant, gardenId, onClose }: Props) {
     });
   }
 
-  function addIrrigationTime() {
-    if (irrigationTimes.length >= 3) return;
-    setIrrigationTimes(prev => [...prev, '06:00'].sort());
+  function updateIrrigationLiters(index: number, raw: string) {
+    setIrrigationLiters(prev => {
+      const next = [...prev];
+      next[index] = raw;
+      return next;
+    });
   }
 
-  function removeIrrigationTime(index: number) {
+  // Add/remove a (time, liters) pair atomically — keeps both arrays in lockstep.
+  // Pairs are sorted by time when adding, so the new null-liter stays aligned.
+  function addIrrigationRun() {
+    if (irrigationTimes.length >= 3) return;
+    const pairs = irrigationTimes.map((t, i) => ({ t, l: irrigationLiters[i] ?? '' }));
+    pairs.push({ t: '06:00', l: '' });
+    pairs.sort((a, b) => a.t.localeCompare(b.t));
+    setIrrigationTimes(pairs.map(p => p.t));
+    setIrrigationLiters(pairs.map(p => p.l));
+  }
+
+  function removeIrrigationRun(index: number) {
     if (irrigationTimes.length <= 1) return;
     setIrrigationTimes(prev => prev.filter((_, i) => i !== index));
+    setIrrigationLiters(prev => prev.filter((_, i) => i !== index));
   }
 
   async function handleSave(e: React.FormEvent) {
@@ -127,6 +152,16 @@ export function EditPlantSheet({ plant, gardenId, onClose }: Props) {
       }
     }
 
+    // Sort times and liters together so their indices stay aligned after sort.
+    const savePairs = irrigationTimes
+      .map((t, i) => ({ t, l: irrigationLiters[i] ?? '' }))
+      .sort((a, b) => a.t.localeCompare(b.t));
+    const sortedTimes  = savePairs.map(p => p.t);
+    const sortedLiters = savePairs.map(p => {
+      const v = parseFloat(p.l);
+      return isNaN(v) ? null : v;
+    });
+
     setIsSaving(true);
     try {
       await patchGardenPlant(plant.id, gardenId, {
@@ -139,7 +174,8 @@ export function EditPlantSheet({ plant, gardenId, onClose }: Props) {
         companions:          companions.trim() || undefined,
         autoIrrigation,
         irrigationDays:      autoIrrigation ? irrigationDays  : [],
-        irrigationTimes:     autoIrrigation ? irrigationTimes.sort() : [],
+        irrigationTimes:     autoIrrigation ? sortedTimes     : [],
+        irrigationLiters:    autoIrrigation ? sortedLiters    : null,
       });
       showToast('הפרטים עודכנו 🌱', 'info');
       onClose();
@@ -278,7 +314,7 @@ export function EditPlantSheet({ plant, gardenId, onClose }: Props) {
                     {irrigationTimes.length > 1 && (
                       <button
                         type="button"
-                        onClick={() => removeIrrigationTime(i)}
+                        onClick={() => removeIrrigationRun(i)}
                         aria-label="הסר זמן השקיה"
                         style={{ background: 'none', border: 'none', color: '#e06060', cursor: 'pointer', fontSize: '18px', lineHeight: 1, padding: '4px' }}
                       >
@@ -291,13 +327,23 @@ export function EditPlantSheet({ plant, gardenId, onClose }: Props) {
                       onChange={e => updateIrrigationTime(i, e.target.value)}
                       style={{ ...inputStyle, flex: 1, textAlign: 'center' }}
                     />
+                    <input
+                      type="text"
+                      inputMode="decimal"
+                      value={irrigationLiters[i] ?? ''}
+                      onChange={e => updateIrrigationLiters(i, e.target.value)}
+                      placeholder="כמות"
+                      aria-label="כמות מים בליטר"
+                      style={{ ...inputStyle, width: '56px', textAlign: 'center', padding: '10px 4px' }}
+                    />
+                    <span style={{ fontFamily: DM_SANS, fontSize: '11px', color: `${TEXT_MID}90`, whiteSpace: 'nowrap' }}>ל׳</span>
                   </div>
                 ))}
 
                 {irrigationTimes.length < 3 && (
                   <button
                     type="button"
-                    onClick={addIrrigationTime}
+                    onClick={addIrrigationRun}
                     style={{ background: 'none', border: 'none', color: '#1D9E75', fontFamily: DM_SANS, fontSize: '13px', cursor: 'pointer', padding: 0 }}
                   >
                     + הוסף זמן השקיה

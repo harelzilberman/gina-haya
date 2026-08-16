@@ -45,12 +45,28 @@ const ENTRY_META: Record<string, { color: string; emoji: string; label: string }
 const HEBREW_MONTHS = ['ינואר','פברואר','מרץ','אפריל','מאי','יוני','יולי','אוגוסט','ספטמבר','אוקטובר','נובמבר','דצמבר'];
 
 function irrigationBadgeText(plant: GardenPlant): string {
-  const days = (plant.irrigation_days ?? [])
-    .filter(d => d >= 0 && d <= 6)
-    .map(d => DAY_LETTERS_HE[d])
-    .join(',');
-  const times = (plant.irrigation_times ?? []).join(', ');
-  const subtitle = [days, times].filter(Boolean).join(' · ');
+  const activeDays = (plant.irrigation_days ?? []).filter(d => d >= 0 && d <= 6);
+  const times      = plant.irrigation_times ?? [];
+  const liters: (number | null)[] | null = plant.irrigation_liters ?? null;
+  const anyLiters  = liters?.some(v => v !== null) ?? false;
+
+  let subtitle: string;
+  if (anyLiters) {
+    // Volume is known — use compact "{n} ימים" to make room for the liters value.
+    const dayStr    = activeDays.length > 0 ? `${activeDays.length} ימים` : '';
+    const timeStrs  = times.map((t, i) => {
+      const norm = String(t).slice(0, 5);
+      const l    = liters?.[i] ?? null;
+      return l !== null ? `${norm}·${l}ל` : norm;
+    });
+    subtitle = [dayStr, timeStrs.join(', ')].filter(Boolean).join(' · ');
+  } else {
+    // No volume data — show full day letters.
+    const days  = activeDays.map(d => DAY_LETTERS_HE[d]).join(',');
+    const tStr  = times.map(t => String(t).slice(0, 5)).join(', ');
+    subtitle = [days, tStr].filter(Boolean).join(' · ');
+  }
+
   return `💧⏱️ השקיה אוטומטית${subtitle ? ` · ${subtitle}` : ''}`;
 }
 

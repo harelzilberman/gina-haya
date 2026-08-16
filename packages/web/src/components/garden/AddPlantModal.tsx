@@ -86,6 +86,7 @@ export function AddPlantModal({ gardenId, onClose, onAdded }: Props) {
   const [autoIrrigation,        setAutoIrrigation]       = useState(false);
   const [irrigationDays,        setIrrigationDays]       = useState<number[]>([]);
   const [irrigationTimes,       setIrrigationTimes]      = useState<string[]>(['07:00']);
+  const [irrigationLitersStr,   setIrrigationLitersStr]  = useState<string>('');
   const [isSubmitting,          setIsSubmitting]         = useState(false);
   const [error,                 setError]                = useState('');
 
@@ -118,6 +119,12 @@ export function AddPlantModal({ gardenId, onClose, onAdded }: Props) {
     setIsSubmitting(true);
     setError('');
     try {
+      // Normalise the liters string — empty means unknown (null), not zero.
+      const litersNum = parseFloat(irrigationLitersStr);
+      const irrigationLiters: (number | null)[] | undefined = autoIrrigation
+        ? [isNaN(litersNum) ? null : litersNum]
+        : undefined;
+
       const newPlant = await addPlantDetailed(gardenId, {
         plantId:             selected?.id,
         commonNameHe:        finalNameHe,
@@ -129,6 +136,7 @@ export function AddPlantModal({ gardenId, onClose, onAdded }: Props) {
         autoIrrigation,
         irrigationDays:      autoIrrigation ? irrigationDays : undefined,
         irrigationTimes:     autoIrrigation ? irrigationTimes : undefined,
+        irrigationLiters,
       });
 
       // sun_exposure / companions / soil aren't accepted at creation — patch them in
@@ -299,12 +307,24 @@ export function AddPlantModal({ gardenId, onClose, onAdded }: Props) {
                     </button>
                   ))}
                 </div>
-                <input
-                  type="time"
-                  value={irrigationTimes[0]}
-                  onChange={e => setIrrigationTimes([e.target.value])}
-                  style={{ ...inputStyle, width: 'auto', alignSelf: 'flex-end' }}
-                />
+                <div style={{ display: 'flex', alignItems: 'center', gap: '8px', alignSelf: 'flex-end' }}>
+                  <input
+                    type="time"
+                    value={irrigationTimes[0]}
+                    onChange={e => setIrrigationTimes([String(e.target.value).slice(0, 5)])}
+                    style={{ ...inputStyle, width: 'auto' }}
+                  />
+                  <input
+                    type="text"
+                    inputMode="decimal"
+                    value={irrigationLitersStr}
+                    onChange={e => setIrrigationLitersStr(e.target.value)}
+                    placeholder="כמות"
+                    aria-label="כמות מים בליטר"
+                    style={{ ...inputStyle, width: '56px', textAlign: 'center', padding: '10px 4px' }}
+                  />
+                  <span style={{ fontFamily: DM_SANS, fontSize: '11px', color: `${TEXT_MID}90`, whiteSpace: 'nowrap' }}>ל׳</span>
+                </div>
               </div>
             )}
           </div>
