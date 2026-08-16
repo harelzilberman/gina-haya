@@ -13,6 +13,41 @@ export const trackersRouter: IRouter = Router();
 trackersRouter.use(verifyToken);
 trackersRouter.use(attachTier);
 
+// ── time_of_day helpers ───────────────────────────────────────────────────
+// Canonical wire values accepted by the plant_timeline check constraint.
+// Legacy Hebrew strings (sent by old Flutter builds) are mapped to canonical.
+// Anything unrecognised normalises to null so the insert doesn't get rejected.
+const LEGACY_HE_TO_CANONICAL: Record<string, string> = {
+  '\u05D1\u05D5\u05E7\u05E8':                         'morning',  // בוקר
+  '\u05E6\u05D4\u05E8\u05D9\u05D9\u05DD':             'noon',     // צהריים
+  '\u05E2\u05E8\u05D1':                               'evening',  // ערב
+  '\u05DC\u05D9\u05DC\u05D4':                         'night',    // לילה
+};
+const CANONICAL_KEYS = new Set(['morning', 'noon', 'evening', 'night']);
+
+function normaliseTimeOfDay(raw: unknown): string | null {
+  if (raw == null) return null;
+  const s = String(raw).trim();
+  if (CANONICAL_KEYS.has(s)) return s;
+  const mapped = LEGACY_HE_TO_CANONICAL[s];
+  if (mapped) return mapped;
+  console.warn('[normaliseTimeOfDay] unrecognised time_of_day value, storing null:', JSON.stringify(s));
+  return null;
+}
+
+const CANONICAL_TO_HE: Record<string, string> = {
+  morning: '\u05D1\u05D5\u05E7\u05E8',           // בוקר
+  noon:    '\u05E6\u05D4\u05E8\u05D9\u05D9\u05DD', // צהריים
+  evening: '\u05E2\u05E8\u05D1',                  // ערב
+  night:   '\u05DC\u05D9\u05DC\u05D4',            // לילה
+};
+
+/** Build a Hebrew note like "השקיה · בוקר" or "השקיה" if time is null. */
+function buildTimelineNote(verbHe: string, canonical: string | null): string {
+  const timeHe = canonical ? CANONICAL_TO_HE[canonical] : null;
+  return timeHe ? `${verbHe} \u00B7 ${timeHe}` : verbHe;
+}
+
 // ── GET /api/trackers ──────────────────────────────────────────────────────
 trackersRouter.get('/', async (req: any, res) => {
   try {
@@ -936,6 +971,7 @@ trackersRouter.patch('/:id/water', async (req: any, res) => {
     const userId = req.user.id;
     const { id } = req.params;
     const { time_of_day, watered_at } = req.body;
+    const canonicalTimeOfDay = normaliseTimeOfDay(time_of_day);
 
     // Get current watering count
     const { data: current } = await db
@@ -991,9 +1027,9 @@ trackersRouter.patch('/:id/water', async (req: any, res) => {
         plant_id: gardenPlantId,
         user_id: userId,
         entry_type: 'watering',
-        time_of_day: time_of_day ?? null,
+        time_of_day: canonicalTimeOfDay,
         created_at: watered_at || new Date().toISOString(),
-        note: `השקיה · ${time_of_day ?? ''}`,
+        note: buildTimelineNote('\u05D4\u05E9\u05E7\u05D9\u05D4', canonicalTimeOfDay),
       }).select();
       if (tlErr) {
         console.error('[Tracker] plant_timeline insert failed (water):', tlErr.message, tlErr.details, tlErr.hint);
@@ -1004,7 +1040,7 @@ trackersRouter.patch('/:id/water', async (req: any, res) => {
       timelineError = timelineErr.message;
     }
 
-    res.json({ success: true, tracker: data, timeline_error: timelineError });
+    res.json({ success: true, tracker: data, timeline_write_failed: timelineError !== null, timeline_error: timelineError });
   } catch (err: any) {
     console.error('[Tracker] water error:', err.message);
     res.status(500).json({ error: err.message });
@@ -1017,6 +1053,7 @@ trackersRouter.patch('/:id/fertilize', async (req: any, res) => {
     const userId = req.user.id;
     const { id } = req.params;
     const { time_of_day, fertilized_at } = req.body;
+    const canonicalTimeOfDay = normaliseTimeOfDay(time_of_day);
 
     const { data, error } = await db
       .from('plant_trackers')
@@ -1057,9 +1094,9 @@ trackersRouter.patch('/:id/fertilize', async (req: any, res) => {
         plant_id: gardenPlantId,
         user_id: userId,
         entry_type: 'fertilizing',
-        time_of_day: time_of_day ?? null,
+        time_of_day: canonicalTimeOfDay,
         created_at: fertilized_at || new Date().toISOString(),
-        note: `דישון · ${time_of_day ?? ''}`,
+        note: buildTimelineNote('\u05D3\u05D9\u05E9\u05D5\u05DF', canonicalTimeOfDay),
       }).select();
       if (tlErr) {
         console.error('[Tracker] plant_timeline insert failed (fertilize):', tlErr.message, tlErr.details, tlErr.hint);
@@ -1070,7 +1107,7 @@ trackersRouter.patch('/:id/fertilize', async (req: any, res) => {
       timelineError = timelineErr.message;
     }
 
-    res.json({ success: true, tracker: data, timeline_error: timelineError });
+    res.json({ success: true, tracker: data, timeline_write_failed: timelineError !== null, timeline_error: timelineError });
   } catch (err: any) {
     console.error('[Tracker] fertilize error:', err.message);
     res.status(500).json({ error: err.message });
@@ -1132,6 +1169,7 @@ trackersRouter.post('/plant/:plantId/water', async (req: any, res) => {
   if (!userId) return res.status(401).json({ error: 'Unauthorized' });
   const { plantId } = req.params;
   const { time_of_day, watered_at } = req.body;
+  const canonicalTimeOfDay = normaliseTimeOfDay(time_of_day);
 
   let timelineError: string | null = null;
   try {
@@ -1140,9 +1178,9 @@ trackersRouter.post('/plant/:plantId/water', async (req: any, res) => {
       tracker_id: null,
       user_id: userId,
       entry_type: 'watering',
-      time_of_day: time_of_day ?? null,
+      time_of_day: canonicalTimeOfDay,
       created_at: watered_at || new Date().toISOString(),
-      note: `השקיה · ${time_of_day ?? ''}`,
+      note: buildTimelineNote('\u05D4\u05E9\u05E7\u05D9\u05D4', canonicalTimeOfDay),
     });
     if (tlErr) {
       console.error('[Tracker] plant timeline insert failed (plant water):', tlErr.message);
@@ -1153,7 +1191,7 @@ trackersRouter.post('/plant/:plantId/water', async (req: any, res) => {
     timelineError = err.message;
   }
 
-  return res.json({ success: true, timeline_error: timelineError });
+  return res.json({ success: true, timeline_write_failed: timelineError !== null, timeline_error: timelineError });
 });
 
 // ── POST /api/trackers/plant/:plantId/fertilize ───────────────────────────
@@ -1162,6 +1200,7 @@ trackersRouter.post('/plant/:plantId/fertilize', async (req: any, res) => {
   if (!userId) return res.status(401).json({ error: 'Unauthorized' });
   const { plantId } = req.params;
   const { time_of_day, fertilized_at } = req.body;
+  const canonicalTimeOfDay = normaliseTimeOfDay(time_of_day);
 
   let timelineError: string | null = null;
   try {
@@ -1170,9 +1209,9 @@ trackersRouter.post('/plant/:plantId/fertilize', async (req: any, res) => {
       tracker_id: null,
       user_id: userId,
       entry_type: 'fertilizing',
-      time_of_day: time_of_day ?? null,
+      time_of_day: canonicalTimeOfDay,
       created_at: fertilized_at || new Date().toISOString(),
-      note: `דישון · ${time_of_day ?? ''}`,
+      note: buildTimelineNote('\u05D3\u05D9\u05E9\u05D5\u05DF', canonicalTimeOfDay),
     });
     if (tlErr) {
       console.error('[Tracker] plant timeline insert failed (plant fertilize):', tlErr.message);
@@ -1182,7 +1221,7 @@ trackersRouter.post('/plant/:plantId/fertilize', async (req: any, res) => {
     timelineError = err.message;
   }
 
-  return res.json({ success: true, timeline_error: timelineError });
+  return res.json({ success: true, timeline_write_failed: timelineError !== null, timeline_error: timelineError });
 });
 
 // ── POST /api/trackers/plant/:plantId/note ────────────────────────────────
