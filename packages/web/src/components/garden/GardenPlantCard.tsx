@@ -49,7 +49,9 @@ export function GardenPlantCard({ plant, tracker, onClick }: Props) {
   const health         = tracker?.latest_checkin?.ai_analysis?.health ?? null;
   const growthStageHe  = tracker?.latest_checkin?.ai_analysis?.growthStageHe ?? null;
   const waterDays      = daysSince(tracker?.last_watered_at);
-  const showWaterBadge = tracker != null && (waterDays === null || waterDays > 3);
+  // Auto-irrigated plants are watered by their controller — suppress the manual
+  // "needs water" nudge so auto-irrigated plants don't show the badge permanently.
+  const showWaterBadge = plant.auto_irrigation !== true && tracker != null && (waterDays === null || waterDays > 3);
   const typeEmoji      = plant.plant_type ? PLANT_TYPE_EMOJI[plant.plant_type] : null;
 
   return (
