@@ -5,9 +5,10 @@
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
   "scripts": {
-    "build": "echo 'shared: no build step needed'",
+    "build": "tsc",
     "type-check": "tsc --noEmit",
-    "dev": "tsc --watch"
+    "dev": "tsc --watch",
+    "verify": "tsc && git diff --exit-code -- dist/"
   },
   "devDependencies": {
     "typescript": "^5.4.0"
