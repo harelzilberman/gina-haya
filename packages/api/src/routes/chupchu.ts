@@ -475,7 +475,7 @@ chupChuRouter.post('/full-diagnosis', async (req: any, res) => {
 
     const response = (await axios.post(ANTHROPIC_URL, {
       model: 'claude-opus-4-5',
-      max_tokens: 2048,
+      max_tokens: 4096,
       system: systemPrompt,
       messages: [{
         role: 'user',
@@ -499,6 +499,12 @@ chupChuRouter.post('/full-diagnosis', async (req: any, res) => {
     // Persist real token data — fire-and-forget
     void logApiUsage({ userId: req.user?.id, endpoint: 'vision_full_diagnosis', model: 'claude-opus-4-5', usage: response.usage });
 
+    // Stop-reason guard: a truncated response produces invalid JSON — never parse it.
+    if (response.stop_reason === 'max_tokens' || response.stop_reason === 'stop_sequence') {
+      console.warn(`[POST /api/chupchu/full-diagnosis] stop_reason=${response.stop_reason} — response truncated, returning error`);
+      return res.json({ success: false, error: 'response_truncated', stop_reason: response.stop_reason });
+    }
+
     const raw = response.content
       .filter((b: any) => b.type === 'text')
       .map((b: any) => (b as any).text)
@@ -514,13 +520,26 @@ chupChuRouter.post('/full-diagnosis', async (req: any, res) => {
         try {
           diagnosis = JSON.parse(match[0]);
         } catch {
-          console.error('[POST /api/chupchu/full-diagnosis] JSON parse failed, raw:', raw.slice(0, 200));
-          return res.json({ success: false, error: 'parse_error', raw });
+          console.error('[POST /api/chupchu/full-diagnosis] JSON parse failed, full raw:', raw);
+          return res.json({ success: false, error: 'parse_error' });
         }
       } else {
-        console.error('[POST /api/chupchu/full-diagnosis] No JSON found, raw:', raw.slice(0, 200));
-        return res.json({ success: false, error: 'parse_error', raw });
+        console.error('[POST /api/chupchu/full-diagnosis] No JSON found, full raw:', raw);
+        return res.json({ success: false, error: 'parse_error' });
       }
+    }
+
+    // Validation gate: a partial object that parses is still incomplete.
+    // These are the minimum fields buildCheckinAnalysis and the client both read.
+    if (
+      typeof diagnosis?.plant_name !== 'string' || !diagnosis.plant_name ||
+      typeof diagnosis?.health_status !== 'string' || !diagnosis.health_status ||
+      typeof diagnosis?.summary !== 'string' || !diagnosis.summary ||
+      !Array.isArray(diagnosis?.treatment_steps) ||
+      !Array.isArray(diagnosis?.tasks)
+    ) {
+      console.error('[POST /api/chupchu/full-diagnosis] Validation failed — missing required fields, diagnosis:', JSON.stringify(diagnosis));
+      return res.json({ success: false, error: 'validation_error' });
     }
 
     // ── Disagreement detection ────────────────────────────────────────────────
@@ -1023,6 +1042,12 @@ chupChuRouter.post('/starter-tasks', async (req: any, res) => {
       messages:   [{ role: 'user', content: contextParts.join('\n') }],
     }, { headers: ANTHROPIC_HEADERS, timeout: 60000 })).data;
 
+    // Stop-reason guard: a truncated array is unparseable and produces an incomplete task list.
+    if (aiRes.stop_reason === 'max_tokens' || aiRes.stop_reason === 'stop_sequence') {
+      console.warn(`[POST /api/chupchu/starter-tasks] stop_reason=${aiRes.stop_reason} — response truncated, returning error`);
+      return res.status(502).json({ error: 'response_truncated', stop_reason: aiRes.stop_reason });
+    }
+
     const raw: string = (aiRes.content as any[])
       .filter((b: any) => b.type === 'text')
       .map((b: any) => b.text as string)
@@ -1041,11 +1066,11 @@ chupChuRouter.post('/starter-tasks', async (req: any, res) => {
         try {
           tasks = JSON.parse(match[0]);
         } catch {
-          console.error('[POST /api/chupchu/starter-tasks] JSON parse fallback failed:', cleaned.slice(0, 200));
+          console.error('[POST /api/chupchu/starter-tasks] JSON parse fallback failed, full raw:', cleaned);
           return res.status(502).json({ error: 'parse_error' });
         }
       } else {
-        console.error('[POST /api/chupchu/starter-tasks] No JSON array found in response:', cleaned.slice(0, 200));
+        console.error('[POST /api/chupchu/starter-tasks] No JSON array found in response, full raw:', cleaned);
         return res.status(502).json({ error: 'parse_error' });
       }
     }
