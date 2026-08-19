@@ -150,6 +150,21 @@ journalRouter.post('/photos/:id/confirm', async (req: any, res) => {
       return res.status(400).json({ error: 'confirmedNameHe and zoneId are required' });
     }
 
+    // Verify ownership via the parent journal entry
+    const { data: photo, error: photoError } = await db
+      .from('journal_photos')
+      .select('id, journal_entries!inner(user_id)')
+      .eq('id', photoId)
+      .maybeSingle();
+    if (photoError || !photo) {
+      return res.status(404).json({ error: 'photo_not_found' });
+    }
+    const entryOwner = (photo as any).journal_entries?.user_id;
+    if (entryOwner !== userId) {
+      console.warn('[POST /journal/photos/:id/confirm] ownership check failed', { photoId, userId });
+      return res.status(403).json({ error: 'forbidden' });
+    }
+
     // 1. Mark photo as confirmed
     await db
       .from('journal_photos')
