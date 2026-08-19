@@ -7,6 +7,7 @@ import { analyzePlantImage, compressImageForClaude } from '../services/plantVisi
 import { fetchWeatherForRegion } from '../services/weather';
 import { todayInIsrael, assertStorageKey } from '@gina-haya/shared';
 import { checkAndRecordVisionUse } from '../services/visionQuota';
+import { userOwnsGardenPlant } from '../utils/ownership';
 
 export const trackersRouter: IRouter = Router();
 
@@ -1150,6 +1151,10 @@ trackersRouter.get('/plant/:plantId/timeline', async (req: any, res) => {
   const userId = req.user?.id;
   if (!userId) return res.status(401).json({ error: 'Unauthorized' });
   const { plantId } = req.params;
+  if (!(await userOwnsGardenPlant(plantId, userId))) {
+    console.warn('[GET /trackers/plant/:plantId/timeline] ownership check failed', { plantId, userId });
+    return res.status(403).json({ error: 'Forbidden' });
+  }
   const { data, error } = await db
     .from('plant_timeline')
     .select('*')
@@ -1168,6 +1173,10 @@ trackersRouter.post('/plant/:plantId/water', async (req: any, res) => {
   const userId = req.user?.id;
   if (!userId) return res.status(401).json({ error: 'Unauthorized' });
   const { plantId } = req.params;
+  if (!(await userOwnsGardenPlant(plantId, userId))) {
+    console.warn('[POST /trackers/plant/:plantId/water] ownership check failed', { plantId, userId });
+    return res.status(403).json({ error: 'Forbidden' });
+  }
   const { time_of_day, watered_at } = req.body;
   const canonicalTimeOfDay = normaliseTimeOfDay(time_of_day);
 
@@ -1199,6 +1208,10 @@ trackersRouter.post('/plant/:plantId/fertilize', async (req: any, res) => {
   const userId = req.user?.id;
   if (!userId) return res.status(401).json({ error: 'Unauthorized' });
   const { plantId } = req.params;
+  if (!(await userOwnsGardenPlant(plantId, userId))) {
+    console.warn('[POST /trackers/plant/:plantId/fertilize] ownership check failed', { plantId, userId });
+    return res.status(403).json({ error: 'Forbidden' });
+  }
   const { time_of_day, fertilized_at } = req.body;
   const canonicalTimeOfDay = normaliseTimeOfDay(time_of_day);
 
@@ -1230,6 +1243,10 @@ trackersRouter.post('/plant/:plantId/note', async (req: any, res) => {
   const userId = req.user?.id;
   if (!userId) return res.status(401).json({ error: 'Unauthorized' });
   const { plantId } = req.params;
+  if (!(await userOwnsGardenPlant(plantId, userId))) {
+    console.warn('[POST /trackers/plant/:plantId/note] ownership check failed', { plantId, userId });
+    return res.status(403).json({ error: 'Forbidden' });
+  }
   const { note } = req.body;
 
   if (!note?.trim()) return res.status(400).json({ error: 'Note required' });
@@ -1357,6 +1374,10 @@ trackersRouter.post('/plant/:plantId/timeline-photo', async (req: any, res) => {
   const userId = req.user?.id;
   if (!userId) return res.status(401).json({ error: 'Unauthorized' });
   const { plantId } = req.params;
+  if (!(await userOwnsGardenPlant(plantId, userId))) {
+    console.warn('[POST /trackers/plant/:plantId/timeline-photo] ownership check failed', { plantId, userId });
+    return res.status(403).json({ error: 'Forbidden' });
+  }
   const { file_path, note, taken_at } = req.body;
 
   if (!file_path) {

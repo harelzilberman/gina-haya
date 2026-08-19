@@ -5,6 +5,7 @@ import { attachTier } from '../middleware/tierMiddleware';
 import { getCalendarRange } from '../db/queries/calendar';
 import starterTasksData from '../../../shared/data/starter_tasks.json';
 import { lastScheduledIrrigation, isWateringTask } from '../utils/irrigation';
+import { userOwnsGarden, userOwnsGardenPlant } from '../utils/ownership';
 
 // ── Types for starter_tasks.json ─────────────────────────────────────────────
 interface StarterTaskEntry {
@@ -588,6 +589,11 @@ gardenRouter.post('/:id/plants', async (req: any, res) => {
       return res.status(400).json({ error: 'missing_field', message: 'commonNameHe is required' });
     }
 
+    if (!(await userOwnsGarden(req.params.id, req.user.id))) {
+      console.warn('[POST /api/garden/:id/plants] ownership check failed', { gardenId: req.params.id, userId: req.user.id });
+      return res.status(403).json({ error: 'Forbidden' });
+    }
+
     // Enforce per-tier plant-per-garden limit.
     // Only count active (non-archived) plants — archived plants do not consume
     // a slot and must not block new additions.
@@ -668,6 +674,11 @@ gardenRouter.post('/:id/plants', async (req: any, res) => {
 // DELETE /api/garden/:id/plants/:plantId — remove a plant
 gardenRouter.delete('/:id/plants/:plantId', async (req: any, res) => {
   try {
+    if (!(await userOwnsGarden(req.params.id, req.user.id))) {
+      console.warn('[DELETE /api/garden/:id/plants/:plantId] ownership check failed', { gardenId: req.params.id, userId: req.user.id });
+      return res.status(403).json({ error: 'Forbidden' });
+    }
+
     const { error } = await db
       .from('garden_plants')
       .delete()
