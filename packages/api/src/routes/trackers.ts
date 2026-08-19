@@ -48,6 +48,49 @@ function buildTimelineNote(verbHe: string, canonical: string | null): string {
   return timeHe ? `${verbHe} \u00B7 ${timeHe}` : verbHe;
 }
 
+// ── resolveGardenPlantId ───────────────────────────────────────────────────
+// Returns the garden_plants.id for a tracker row, or null if unresolvable.
+//
+// Resolution order:
+//   1. tracker.garden_plants_id — populated for all live trackers since mig 016;
+//      this branch is taken for every current row.
+//   2. Fallback species+garden join for hypothetical future legacy rows.
+//      Uses a multi-row query (not .single()) so ambiguity is detected and
+//      logged rather than thrown and swallowed.
+//
+// Callers MUST check the return value and skip the plant_timeline write when
+// null is returned.  Writing plant_id: null produces rows invisible to every
+// plant-scoped read path.
+async function resolveGardenPlantId(
+  trackerId: string,
+  tracker: { garden_plants_id?: string | null; plant_id?: string | null; garden_id?: string | null },
+): Promise<string | null> {
+  if (tracker.garden_plants_id) return tracker.garden_plants_id;
+
+  // Fallback: species+garden join for any row missing the FK
+  const { data: candidates, error } = await db
+    .from('garden_plants')
+    .select('id')
+    .eq('plant_id', tracker.plant_id ?? '')
+    .eq('garden_id', tracker.garden_id ?? '');
+
+  if (error) {
+    console.error(`[resolveGardenPlantId] tracker ${trackerId}: DB error:`, error.message);
+    return null;
+  }
+  if (!candidates || candidates.length === 0) {
+    console.warn(`[resolveGardenPlantId] tracker ${trackerId}: no matching garden_plants row (plant_id=${tracker.plant_id} garden_id=${tracker.garden_id})`);
+    return null;
+  }
+  if (candidates.length > 1) {
+    console.error(
+      `[resolveGardenPlantId] tracker ${trackerId}: ${candidates.length} candidates for plant_id=${tracker.plant_id} garden_id=${tracker.garden_id} — ambiguous; skipping plant_id on timeline write`,
+    );
+    return null;
+  }
+  return candidates[0].id;
+}
+
 // ── GET /api/trackers ──────────────────────────────────────────────────────
 trackersRouter.get('/', async (req: any, res) => {
   try {
@@ -998,46 +1041,33 @@ trackersRouter.patch('/:id/water', async (req: any, res) => {
 
     if (error) throw error;
 
-    // Resolve garden_plants_id: use stored FK directly, fall back to join for legacy rows
-    let gardenPlantId: string | null = (data as any)?.garden_plants_id ?? null;
-    if (!gardenPlantId) {
-      try {
-        const { data: trackerData } = await db
-          .from('plant_trackers')
-          .select('plant_id, garden_id')
-          .eq('id', id)
-          .single();
-        if (trackerData) {
-          const { data: gpData } = await db
-            .from('garden_plants')
-            .select('id')
-            .eq('plant_id', trackerData.plant_id)
-            .eq('garden_id', trackerData.garden_id)
-            .single();
-          gardenPlantId = gpData?.id ?? null;
-        }
-      } catch (_) {}
-    }
+    const gardenPlantId = await resolveGardenPlantId(id, data as any);
 
-    // Log to plant_timeline
+    // Log to plant_timeline — skip entirely if plant_id cannot be resolved,
+    // to avoid writing invisible rows (plant-scoped reads filter on plant_id).
     let timelineError: string | null = null;
-    try {
-      const { data: tlData, error: tlErr } = await db.from('plant_timeline').insert({
-        tracker_id: id,
-        plant_id: gardenPlantId,
-        user_id: userId,
-        entry_type: 'watering',
-        time_of_day: canonicalTimeOfDay,
-        created_at: watered_at || new Date().toISOString(),
-        note: buildTimelineNote('\u05D4\u05E9\u05E7\u05D9\u05D4', canonicalTimeOfDay),
-      }).select();
-      if (tlErr) {
-        console.error('[Tracker] plant_timeline insert failed (water):', tlErr.message, tlErr.details, tlErr.hint);
-        timelineError = tlErr.message;
+    if (!gardenPlantId) {
+      console.error(`[PATCH /api/trackers/:id/water] tracker ${id}: could not resolve garden_plants_id — skipping timeline write`);
+      timelineError = 'could not resolve garden_plants_id';
+    } else {
+      try {
+        const { error: tlErr } = await db.from('plant_timeline').insert({
+          tracker_id: id,
+          plant_id: gardenPlantId,
+          user_id: userId,
+          entry_type: 'watering',
+          time_of_day: canonicalTimeOfDay,
+          created_at: watered_at || new Date().toISOString(),
+          note: buildTimelineNote('\u05D4\u05E9\u05E7\u05D9\u05D4', canonicalTimeOfDay),
+        }).select();
+        if (tlErr) {
+          console.error('[Tracker] plant_timeline insert failed (water):', tlErr.message, tlErr.details, tlErr.hint);
+          timelineError = tlErr.message;
+        }
+      } catch (timelineErr: any) {
+        console.error('[Tracker] plant_timeline insert threw (water):', timelineErr.message);
+        timelineError = timelineErr.message;
       }
-    } catch (timelineErr: any) {
-      console.error('[Tracker] plant_timeline insert threw (water):', timelineErr.message);
-      timelineError = timelineErr.message;
     }
 
     res.json({ success: true, tracker: data, timeline_write_failed: timelineError !== null, timeline_error: timelineError });
@@ -1065,46 +1095,33 @@ trackersRouter.patch('/:id/fertilize', async (req: any, res) => {
 
     if (error) throw error;
 
-    // Resolve garden_plants_id: use stored FK directly, fall back to join for legacy rows
-    let gardenPlantId: string | null = (data as any)?.garden_plants_id ?? null;
-    if (!gardenPlantId) {
-      try {
-        const { data: trackerData } = await db
-          .from('plant_trackers')
-          .select('plant_id, garden_id')
-          .eq('id', id)
-          .single();
-        if (trackerData) {
-          const { data: gpData } = await db
-            .from('garden_plants')
-            .select('id')
-            .eq('plant_id', trackerData.plant_id)
-            .eq('garden_id', trackerData.garden_id)
-            .single();
-          gardenPlantId = gpData?.id ?? null;
-        }
-      } catch (_) {}
-    }
+    const gardenPlantId = await resolveGardenPlantId(id, data as any);
 
-    // Log to plant_timeline
+    // Log to plant_timeline — skip entirely if plant_id cannot be resolved,
+    // to avoid writing invisible rows (plant-scoped reads filter on plant_id).
     let timelineError: string | null = null;
-    try {
-      const { data: tlData, error: tlErr } = await db.from('plant_timeline').insert({
-        tracker_id: id,
-        plant_id: gardenPlantId,
-        user_id: userId,
-        entry_type: 'fertilizing',
-        time_of_day: canonicalTimeOfDay,
-        created_at: fertilized_at || new Date().toISOString(),
-        note: buildTimelineNote('\u05D3\u05D9\u05E9\u05D5\u05DF', canonicalTimeOfDay),
-      }).select();
-      if (tlErr) {
-        console.error('[Tracker] plant_timeline insert failed (fertilize):', tlErr.message, tlErr.details, tlErr.hint);
-        timelineError = tlErr.message;
+    if (!gardenPlantId) {
+      console.error(`[PATCH /api/trackers/:id/fertilize] tracker ${id}: could not resolve garden_plants_id — skipping timeline write`);
+      timelineError = 'could not resolve garden_plants_id';
+    } else {
+      try {
+        const { error: tlErr } = await db.from('plant_timeline').insert({
+          tracker_id: id,
+          plant_id: gardenPlantId,
+          user_id: userId,
+          entry_type: 'fertilizing',
+          time_of_day: canonicalTimeOfDay,
+          created_at: fertilized_at || new Date().toISOString(),
+          note: buildTimelineNote('\u05D3\u05D9\u05E9\u05D5\u05DF', canonicalTimeOfDay),
+        }).select();
+        if (tlErr) {
+          console.error('[Tracker] plant_timeline insert failed (fertilize):', tlErr.message, tlErr.details, tlErr.hint);
+          timelineError = tlErr.message;
+        }
+      } catch (timelineErr: any) {
+        console.error('[Tracker] plant_timeline insert threw (fertilize):', timelineErr.message);
+        timelineError = timelineErr.message;
       }
-    } catch (timelineErr: any) {
-      console.error('[Tracker] plant_timeline insert threw (fertilize):', timelineErr.message);
-      timelineError = timelineErr.message;
     }
 
     res.json({ success: true, tracker: data, timeline_write_failed: timelineError !== null, timeline_error: timelineError });
@@ -1123,10 +1140,32 @@ trackersRouter.post('/:id/note', async (req: any, res) => {
 
     if (!note?.trim()) return res.status(400).json({ error: 'Note required' });
 
+    // Fetch tracker for ownership verification and plant_id resolution.
+    // plant_id must be set on every timeline row — rows without it are invisible
+    // to the plant-scoped timeline read path.
+    const { data: tracker, error: trackerError } = await db
+      .from('plant_trackers')
+      .select('id, garden_plants_id, plant_id, garden_id')
+      .eq('id', id)
+      .eq('user_id', userId)
+      .is('deleted_at', null)
+      .single();
+
+    if (trackerError || !tracker) {
+      return res.status(404).json({ error: 'Tracker not found' });
+    }
+
+    const gardenPlantId = await resolveGardenPlantId(id, tracker as any);
+    if (!gardenPlantId) {
+      console.error(`[POST /api/trackers/:id/note] tracker ${id}: could not resolve garden_plants_id`);
+      return res.status(500).json({ error: 'Could not resolve plant link for this tracker' });
+    }
+
     const { data, error } = await db
       .from('plant_timeline')
       .insert({
         tracker_id: id,
+        plant_id: gardenPlantId,
         user_id: userId,
         entry_type: 'note',
         note: note.trim(),
@@ -1312,18 +1351,10 @@ trackersRouter.post('/:id/timeline-photo', async (req: any, res) => {
       return res.status(404).json({ error: 'Tracker not found' });
     }
 
-    // Resolve garden_plants_id: use stored FK directly, fall back to join for legacy rows
-    let gardenPlantId: string | null = (tracker as any).garden_plants_id ?? null;
+    const gardenPlantId = await resolveGardenPlantId(trackerId, tracker as any);
     if (!gardenPlantId) {
-      try {
-        const { data: gpData } = await db
-          .from('garden_plants')
-          .select('id')
-          .eq('plant_id', (tracker as any).plant_id)
-          .eq('garden_id', (tracker as any).garden_id)
-          .single();
-        gardenPlantId = gpData?.id ?? null;
-      } catch (_) {}
+      console.error(`[POST /api/trackers/:id/timeline-photo] tracker ${trackerId}: could not resolve garden_plants_id`);
+      return res.status(500).json({ error: 'Could not resolve plant link for this tracker' });
     }
 
     const { data: entry, error: insertError } = await db
