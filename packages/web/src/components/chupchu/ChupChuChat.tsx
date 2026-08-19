@@ -513,9 +513,12 @@ export function ChupChuChat({ compact, initialMessage, onInitialMessageConsumed,
   const lang = i18n.language;
 
   const [input, setInput] = useState('');
-  const messagesEndRef    = useRef<HTMLDivElement>(null);
-  const textareaRef       = useRef<HTMLTextAreaElement>(null);
-  const fileInputRef      = useRef<HTMLInputElement>(null);
+  const messagesEndRef         = useRef<HTMLDivElement>(null);
+  const textareaRef            = useRef<HTMLTextAreaElement>(null);
+  const fileInputRef           = useRef<HTMLInputElement>(null);
+  // Tracks message count at last summarisation to enforce a per-session interval.
+  // useRef so a re-render cannot reset the marker and re-fire the same window.
+  const lastSummarizedAtRef    = useRef<number>(0);
 
   const [imageFile,       setImageFile]       = useState<File | null>(null);
   const [imageBase64,     setImageBase64]     = useState<string | null>(null);
@@ -563,12 +566,17 @@ export function ChupChuChat({ compact, initialMessage, onInitialMessageConsumed,
     return () => window.removeEventListener('chupchu:plant-confirm', handlePlantConfirm);
   }, []);
 
-  // Trigger memory summarisation after each assistant reply when the conversation
-  // is long enough. Fire-and-forget — never blocks the chat response.
+  // Trigger memory summarisation at most once every SUMMARIZE_INTERVAL messages
+  // after the initial threshold. lastSummarizedAtRef is a useRef so a re-render
+  // cannot reset the marker and re-fire the same window. Fires at counts 6, 10,
+  // 14, 18, … (interval=4 means 2 full turns between each call).
+  const SUMMARIZE_INTERVAL = 4;
   useEffect(() => {
     if (!user || messages.length < 6) return;
     const last = messages[messages.length - 1];
     if (last?.role !== 'assistant') return;
+    if (messages.length - lastSummarizedAtRef.current < SUMMARIZE_INTERVAL) return;
+    lastSummarizedAtRef.current = messages.length;
     triggerSummarize(lang).catch((err: any) => {
       console.error('[ChupChu] triggerSummarize threw unexpectedly:', err?.message);
     });
