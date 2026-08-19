@@ -139,14 +139,18 @@ export const useChupChuStore = create<ChupChuState>((set, get) => ({
     if (!token) return;
     const { messages, memory } = get();
     if (messages.length < 6) return;
+    const userId = useAuthStore.getState().user?.id ?? 'unknown';
     try {
-      await fetch(`${API_BASE}/api/chupchu/memory/summarize`, {
+      const res = await fetch(`${API_BASE}/api/chupchu/memory/summarize`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
         body: JSON.stringify({ conversationHistory: messages, lang, existingMemory: memory }),
       });
-    } catch {
-      // fire-and-forget — ignore failures
+      if (!res.ok) {
+        console.error(`[triggerSummarize] HTTP ${res.status} for user ${userId}`);
+      }
+    } catch (err: any) {
+      console.error(`[triggerSummarize] network error for user ${userId}:`, err?.message);
     }
   },
 

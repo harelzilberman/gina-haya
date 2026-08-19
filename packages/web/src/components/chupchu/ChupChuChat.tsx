@@ -563,27 +563,17 @@ export function ChupChuChat({ compact, initialMessage, onInitialMessageConsumed,
     return () => window.removeEventListener('chupchu:plant-confirm', handlePlantConfirm);
   }, []);
 
+  // Trigger memory summarisation after each assistant reply when the conversation
+  // is long enough. Fire-and-forget — never blocks the chat response.
   useEffect(() => {
-    const API_BASE = import.meta.env.VITE_API_URL || 'https://powerful-embrace-production-95ea.up.railway.app';
-    const handleUnload = () => {
-      try {
-        if (messages.length < 6) return;
-        const token = useAuthStore.getState().session?.access_token;
-        if (!token) return;
-        const payload = JSON.stringify({ conversationHistory: messages, lang, existingMemory: memory });
-        if (typeof navigator.sendBeacon === 'function') {
-          navigator.sendBeacon(
-            `${API_BASE}/api/chupchu/memory/summarize`,
-            new Blob([payload], { type: 'application/json' }),
-          );
-        }
-      } catch {
-        // fire-and-forget
-      }
-    };
-    window.addEventListener('beforeunload', handleUnload);
-    return () => window.removeEventListener('beforeunload', handleUnload);
-  }, [messages, lang, memory]);
+    if (!user || messages.length < 6) return;
+    const last = messages[messages.length - 1];
+    if (last?.role !== 'assistant') return;
+    triggerSummarize(lang).catch((err: any) => {
+      console.error('[ChupChu] triggerSummarize threw unexpectedly:', err?.message);
+    });
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [messages.length]);
 
   const clearImageSelection = () => {
     setImageFile(null);
@@ -671,9 +661,6 @@ export function ChupChuChat({ compact, initialMessage, onInitialMessageConsumed,
   };
 
   const canSend = (input.trim().length > 0 || !!imageBase64) && !showLoading && !(isGuest ? showGuestWall : rateLimited);
-
-  // suppress unused warning
-  void triggerSummarize;
 
   return (
     <div dir={dir} className="chupchu-container" style={{
