@@ -514,11 +514,18 @@ export function ChupChuChat({ compact, initialMessage, onInitialMessageConsumed,
 
   const [input, setInput] = useState('');
   const messagesEndRef         = useRef<HTMLDivElement>(null);
+  // Attached to the outermost wrapper of the last assistant message so we can
+  // scroll its top into view when a new answer arrives.
+  const lastAssistantTopRef    = useRef<HTMLDivElement>(null);
   const textareaRef            = useRef<HTMLTextAreaElement>(null);
   const fileInputRef           = useRef<HTMLInputElement>(null);
   // Tracks message count at last summarisation to enforce a per-session interval.
   // useRef so a re-render cannot reset the marker and re-fire the same window.
   const lastSummarizedAtRef    = useRef<number>(0);
+  // Snapshot refs used to distinguish a genuinely new message from a content-only
+  // update (streaming tokens), so we scroll at most once per new message.
+  const prevMsgCountRef        = useRef(0);
+  const prevIsLoadingRef       = useRef(false);
 
   const [imageFile,       setImageFile]       = useState<File | null>(null);
   const [imageBase64,     setImageBase64]     = useState<string | null>(null);
@@ -546,8 +553,27 @@ export function ChupChuChat({ compact, initialMessage, onInitialMessageConsumed,
   }, [initialMessage]);
 
   useEffect(() => {
-    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
-  }, [messages, guestMessages, isLoading, guestLoading]);
+    const count = displayMessages.length;
+    const lastMsg = displayMessages[count - 1];
+    const loading = isLoading || guestLoading;
+    const countChanged = count !== prevMsgCountRef.current;
+    const loadingStarted = loading && !prevIsLoadingRef.current;
+
+    prevMsgCountRef.current = count;
+    prevIsLoadingRef.current = loading;
+
+    if (countChanged && lastMsg?.role === 'assistant') {
+      // New assistant message — anchor to its top so the user reads from line 1.
+      // block:'start' is a no-op when the scroll container isn't overflowing
+      // (short conversations), so short answers naturally stay in place.
+      lastAssistantTopRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    } else if (countChanged || loadingStarted) {
+      // New user message, or typing indicator just appeared — scroll to bottom.
+      messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+    }
+    // Content-only change (streaming tokens) — do not move the viewport so
+    // the user can freely scroll while the answer streams in.
+  }, [displayMessages, isLoading, guestLoading]);
 
   useEffect(() => {
     loadMemory().catch(() => {});
@@ -744,9 +770,15 @@ export function ChupChuChat({ compact, initialMessage, onInitialMessageConsumed,
           </>
         )}
 
-        {displayMessages.map((msg, idx) => (
-          <MessageBubble key={idx} message={msg} isRTL={isRTL} />
-        ))}
+        {displayMessages.map((msg, idx) => {
+          const isLastAssistant =
+            idx === displayMessages.length - 1 && msg.role === 'assistant';
+          return (
+            <div key={idx} ref={isLastAssistant ? lastAssistantTopRef : undefined}>
+              <MessageBubble message={msg} isRTL={isRTL} />
+            </div>
+          );
+        })}
 
         {displayPending && (
           <div style={{ opacity: 0.6 }}>
