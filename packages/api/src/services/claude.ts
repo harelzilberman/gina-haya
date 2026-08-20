@@ -718,6 +718,10 @@ export async function askChupChu(
   // Haiku is faster and cheaper but doesn't need 6 000-token headroom — 2 000 is ample.
   const maxTokens  = !image && CHAT_TEXT_MODEL.toLowerCase().includes('haiku') ? 2000 : 6000;
 
+  // Accumulates text blocks emitted alongside tool_use blocks so they are
+  // not lost when the loop continues to the next iteration.
+  const accumulatedTextSegments: string[] = [];
+
   for (let i = 0; i < MAX_TOOL_ITERATIONS; i++) {
     const response = (await axios.post(ANTHROPIC_URL, {
       model: modelToUse,
@@ -736,9 +740,14 @@ export async function askChupChu(
     void logApiUsage({ userId, endpoint: 'chupchu_chat', model: modelToUse, usage: response.usage });
 
     if (response.stop_reason === 'end_turn') {
-      const textBlock = response.content.find(b => b.type === 'text');
-      const responseText = textBlock?.type === 'text'
-        ? textBlock.text
+      const finalText = response.content
+        .filter((b): b is Anthropic.Messages.TextBlock => b.type === 'text')
+        .map(b => b.text)
+        .join('\n\n');
+      const segments = [...accumulatedTextSegments];
+      if (finalText) segments.push(finalText);
+      const responseText = segments.length > 0
+        ? segments.join('\n\n')
         : capturedTasks && capturedTasks.length > 0
           ? '💡 רוצה שאוסיף את התוכנית הזו למשימות שלך? לחץ על הכפתור למטה 🗓️'
           : null;
@@ -747,6 +756,13 @@ export async function askChupChu(
     }
 
     if (response.stop_reason === 'tool_use') {
+      // Capture any text blocks emitted in this turn before continuing the loop.
+      const turnText = response.content
+        .filter((b): b is Anthropic.Messages.TextBlock => b.type === 'text')
+        .map(b => b.text)
+        .join('\n\n');
+      if (turnText) accumulatedTextSegments.push(turnText);
+
       apiMessages.push({ role: 'assistant', content: response.content });
 
       const toolResults: Anthropic.Messages.ToolResultBlockParam[] = await Promise.all(
