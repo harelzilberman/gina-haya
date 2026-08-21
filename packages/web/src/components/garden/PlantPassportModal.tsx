@@ -104,7 +104,7 @@ export function PlantPassportModal({ plant, tracker, gardenName, gardenId, onClo
   const [showEdit,        setShowEdit]         = useState(false);
   const [showNoteInput,   setShowNoteInput]    = useState(false);
   const [noteText,        setNoteText]         = useState('');
-  const [confirmArchive,  setConfirmArchive]   = useState(false);
+  const [showEndOfSeason, setShowEndOfSeason]  = useState(false);
   const [confirmDelete,   setConfirmDelete]    = useState(false);
   const [showTrackerModal, setShowTrackerModal] = useState(false);
   const [photoUploadOpen, setPhotoUploadOpen]  = useState(false);
@@ -204,7 +204,6 @@ export function PlantPassportModal({ plant, tracker, gardenName, gardenId, onClo
     await withBusy('archive', async () => {
       await patchGardenPlant(plant.id, gardenId, { archivedAt: new Date().toISOString() });
       showToast('הצמח הועבר לעונות קודמות 🍂', 'info');
-      setConfirmArchive(false);
     });
   }
 
@@ -282,7 +281,7 @@ export function PlantPassportModal({ plant, tracker, gardenName, gardenId, onClo
           {isArchived ? (
             <button onClick={handleRestore} style={iconBtnStyle} aria-label="שחזר" disabled={busyAction === 'restore'}>↺</button>
           ) : (
-            <button onClick={() => setConfirmArchive(true)} style={iconBtnStyle} aria-label="סיים עונה">🗑</button>
+            <button onClick={() => setShowEndOfSeason(true)} style={iconBtnStyle} aria-label="סיום עונה / מחק">🗑</button>
           )}
         </div>
 
@@ -576,15 +575,46 @@ export function PlantPassportModal({ plant, tracker, gardenName, gardenId, onClo
         />
       )}
 
-      {confirmArchive && (
-        <ConfirmDialog
-          title="לסיים את העונה?"
-          message={`"${plant.common_name_he}" יעבור לרשימת העונות הקודמות. תוכל לשחזר אותו בכל עת.`}
-          confirmLabel="סיים עונה"
-          busy={busyAction === 'archive'}
-          onConfirm={handleArchive}
-          onCancel={() => setConfirmArchive(false)}
-        />
+      {showEndOfSeason && (
+        <div
+          role="dialog"
+          aria-modal="true"
+          style={{ position: 'fixed', inset: 0, zIndex: 280, display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'rgba(0,0,0,0.65)', backdropFilter: 'blur(4px)', padding: '16px' }}
+        >
+          <div style={{ background: NIGHT_CARD, border: '1px solid rgba(0,229,195,0.18)', borderRadius: '14px', padding: '22px', width: '100%', maxWidth: '340px', direction: 'rtl' }}>
+            <p style={{ fontFamily: FRANK, fontSize: '15px', fontWeight: 700, color: TEXT_MID, margin: '0 0 16px', textAlign: 'center' }}>
+              מה לעשות עם {plant.common_name_he}?
+            </p>
+
+            {/* Archive option — amber/warm, non-destructive */}
+            <button
+              onClick={() => { setShowEndOfSeason(false); handleArchive(); }}
+              disabled={!!busyAction}
+              style={{ width: '100%', textAlign: 'right', padding: '14px', borderRadius: '10px', border: '1px solid rgba(200,169,81,0.4)', background: 'rgba(200,169,81,0.08)', cursor: 'pointer', marginBottom: '10px', display: 'block' }}
+            >
+              <div style={{ fontFamily: DM_SANS, fontWeight: 700, fontSize: '14px', color: '#C8A951', marginBottom: '4px' }}>סיום עונה 🍂</div>
+              <div style={{ fontFamily: DM_SANS, fontSize: '12px', color: 'rgba(200,169,81,0.8)', lineHeight: 1.5 }}>הצמח יעבור לארכיון — התמונות, הדוחות וההיסטוריה יישמרו</div>
+            </button>
+
+            {/* Delete option — red, destructive, visually subordinate */}
+            <button
+              onClick={() => { setShowEndOfSeason(false); handleDelete(); }}
+              disabled={!!busyAction}
+              style={{ width: '100%', textAlign: 'right', padding: '14px', borderRadius: '10px', border: '1px solid rgba(220,80,80,0.35)', background: 'rgba(220,80,80,0.06)', cursor: 'pointer', marginBottom: '16px', display: 'block' }}
+            >
+              <div style={{ fontFamily: DM_SANS, fontWeight: 700, fontSize: '14px', color: '#e06060', marginBottom: '4px' }}>מחיקה לצמיתות</div>
+              <div style={{ fontFamily: DM_SANS, fontSize: '12px', color: 'rgba(220,80,80,0.7)', lineHeight: 1.5 }}>כל הנתונים יימחקו ללא אפשרות שחזור</div>
+            </button>
+
+            {/* Cancel — easy to hit, visually dominant relative to the red option */}
+            <button
+              onClick={() => setShowEndOfSeason(false)}
+              style={{ width: '100%', padding: '10px', borderRadius: '8px', border: '1px solid rgba(0,229,195,0.15)', background: 'transparent', color: `${TEXT_MID}99`, fontFamily: DM_SANS, fontSize: '13px', cursor: 'pointer' }}
+            >
+              ביטול
+            </button>
+          </div>
+        </div>
       )}
 
       {confirmDelete && (
