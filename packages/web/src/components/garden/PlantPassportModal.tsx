@@ -217,7 +217,7 @@ export function PlantPassportModal({ plant, tracker, gardenName, gardenId, onClo
 
   async function handleDelete() {
     await withBusy('delete', async () => {
-      await removePlant(gardenId, plant.plant_id);
+      await removePlant(gardenId, plant.id);
       showToast('הצמח נמחק', 'info');
       onClose();
     });

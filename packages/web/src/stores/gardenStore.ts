@@ -224,12 +224,13 @@ export const useGardenStore = create<GardenState>((set, get) => ({
     return plant;
   },
 
-  removePlant: async (gardenId, plantId) => {
+  removePlant: async (gardenId, gardenPlantId) => {
     const token = getToken();
     if (!token) throw new Error('Not authenticated');
+    // gardenPlantId is the garden_plants primary key (id), not the species FK (plant_id).
     const filter = (g: Garden) => ({
       ...g,
-      garden_plants: g.garden_plants.filter(p => p.plant_id !== plantId),
+      garden_plants: g.garden_plants.filter(p => p.id !== gardenPlantId),
     });
     set(state => ({
       gardens: state.gardens.map(g => g.id === gardenId ? filter(g) : g),
@@ -238,7 +239,7 @@ export const useGardenStore = create<GardenState>((set, get) => ({
         : state.activeGarden,
     }));
     try {
-      await api.del(`/api/garden/${gardenId}/plants/${plantId}`, token);
+      await api.del(`/api/garden/garden-plants/${gardenPlantId}`, token);
     } catch {
       get().loadGardens();
     }

@@ -164,7 +164,7 @@ export function MyPlants({ garden }: Props) {
                   <span style={{ order: 0 }}>{displayName}</span>
                   <button
                     className="my-plant-chip-x"
-                    onClick={() => handleRemove(plant.plant_id, displayName)}
+                    onClick={() => handleRemove(plant.id, displayName)}
                     style={{
                       order:             2,
                       width:             '18px',

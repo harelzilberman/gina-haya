@@ -672,7 +672,11 @@ gardenRouter.post('/:id/plants', async (req: any, res) => {
 });
 
 // DELETE /api/garden/:id/plants/:plantId — remove a plant
+// @deprecated — filters on the species FK (plant_id), not the row PK.
+// Replaced by DELETE /api/garden/garden-plants/:id (primary-key route).
+// Do NOT remove until the Flutter app no longer calls this endpoint.
 gardenRouter.delete('/:id/plants/:plantId', async (req: any, res) => {
+  console.warn('[DELETE /api/garden/:id/plants/:plantId] deprecated route called', { userId: req.user?.id });
   try {
     if (!(await userOwnsGarden(req.params.id, req.user.id))) {
       console.warn('[DELETE /api/garden/:id/plants/:plantId] ownership check failed', { gardenId: req.params.id, userId: req.user.id });
@@ -916,6 +920,41 @@ gardenRouter.patch('/garden-plants/:id', async (req: any, res) => {
     return res.json({ success: true, plant });
   } catch (err: any) {
     console.error('[PATCH /api/garden/garden-plants/:id]', err);
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// DELETE /api/garden/garden-plants/:id — remove a plant by primary key
+// This is the canonical replacement for DELETE /api/garden/:id/plants/:plantId, which
+// filtered on the species FK and would delete a non-deterministic row when a garden
+// holds two plants of the same species.
+gardenRouter.delete('/garden-plants/:id', async (req: any, res) => {
+  try {
+    const userId = req.user?.id;
+    if (!userId) return res.status(401).json({ error: 'Unauthorized' });
+    const { id } = req.params;
+
+    // Existence check first so we can return 404 vs 403 correctly.
+    const { data: gp } = await db
+      .from('garden_plants')
+      .select('id')
+      .eq('id', id)
+      .maybeSingle();
+    if (!gp) return res.status(404).json({ error: 'not_found' });
+
+    if (!(await userOwnsGardenPlant(id, userId))) {
+      return res.status(403).json({ error: 'Forbidden' });
+    }
+
+    const { error } = await db
+      .from('garden_plants')
+      .delete()
+      .eq('id', id);
+
+    if (error) throw error;
+    res.json({ success: true });
+  } catch (err: any) {
+    console.error('[DELETE /api/garden/garden-plants/:id]', err);
     res.status(500).json({ error: err.message });
   }
 });
