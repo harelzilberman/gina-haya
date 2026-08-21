@@ -7,7 +7,7 @@ export interface GardenPlant {
   plant_id: string;
   garden_id: string;
   common_name_he: string;
-  common_name_en: string;
+  common_name_en: string | null;
   notes: string;
   added_at: string;
   // Passport-ish fields — present on the API response, added here so the
@@ -85,7 +85,7 @@ interface GardenState {
   loadGardens: () => Promise<void>;
   setActiveGarden: (garden: Garden) => void;
   updateGarden: (id: string, updates: { name?: string; locationRegion?: string | null; soilType?: string | null; notes?: string | null; location?: string | null; description?: string | null }) => Promise<void>;
-  addPlant: (gardenId: string, plantId: string, commonNameHe: string, commonNameEn: string) => Promise<GardenPlant>;
+  addPlant: (gardenId: string, plantId: string, commonNameHe: string, commonNameEn: string | null) => Promise<GardenPlant>;
   addPlantDetailed: (gardenId: string, data: AddPlantData) => Promise<GardenPlant>;
   patchGardenPlant: (gardenPlantId: string, gardenId: string, data: PatchGardenPlantData) => Promise<GardenPlant>;
   removePlant: (gardenId: string, plantId: string) => Promise<void>;

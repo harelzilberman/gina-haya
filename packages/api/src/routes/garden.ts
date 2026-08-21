@@ -634,7 +634,7 @@ gardenRouter.post('/:id/plants', async (req: any, res) => {
         garden_id:            req.params.id,
         plant_id:             plantId ?? null,
         common_name_he:       commonNameHe,
-        common_name_en:       commonNameEn || '',
+        common_name_en:       commonNameEn || null,
         notes:                notes || '',
         location_type:        locationType ?? 'pot',
         location_description: locationDescription ?? null,

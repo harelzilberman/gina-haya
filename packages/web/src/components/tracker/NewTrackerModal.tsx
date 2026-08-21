@@ -64,7 +64,7 @@ export function NewTrackerModal({ onClose, onCreated, gardenPlantId }: Props) {
     if (plant) {
       setSelectedPlantId(val);
       setPlantNameHe(plant.common_name_he);
-      setPlantNameEn(plant.common_name_en);
+      setPlantNameEn(plant.common_name_en ?? '');
     }
   }
 
@@ -248,7 +248,7 @@ export function NewTrackerModal({ onClose, onCreated, gardenPlantId }: Props) {
                   <option value="">-- בחר צמח מהגינה --</option>
                   {gardenPlants.map(p => (
                     <option key={p.plant_id} value={p.plant_id}>
-                      {p.common_name_he} ({p.common_name_en})
+                      {p.common_name_he}{p.common_name_en ? ` (${p.common_name_en})` : ''}
                     </option>
                   ))}
                   <option value="__custom__">+ הזן צמח אחר</option>

@@ -277,7 +277,7 @@ journalRouter.post('/photos/:id/confirm', async (req: any, res) => {
       await db.from('garden_plants').insert({
         garden_id:      garden.id,
         common_name_he: confirmedNameHe,
-        common_name_en: confirmedNameEn || '',
+        common_name_en: confirmedNameEn || null,
         notes:          `נוסף אוטומטית על ידי צ'ופצ'ו`,
       });
     }

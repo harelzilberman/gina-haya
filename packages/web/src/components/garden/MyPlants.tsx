@@ -143,7 +143,7 @@ export function MyPlants({ garden }: Props) {
         {plants.length > 0 && (
           <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px' }}>
             {plants.map(plant => {
-              const displayName = isHe ? plant.common_name_he : plant.common_name_en;
+              const displayName = isHe ? plant.common_name_he : (plant.common_name_en || plant.common_name_he);
               return (
                 <div
                   key={plant.id}

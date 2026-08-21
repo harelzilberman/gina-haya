@@ -86,7 +86,7 @@ export function AddHarvestModal({ onClose }: Props) {
     const plant = activeGarden?.garden_plants.find(p => p.id === val);
     if (plant) {
       setPlantNameHe(plant.common_name_he);
-      setPlantNameEn(plant.common_name_en);
+      setPlantNameEn(plant.common_name_en ?? '');
       setPlantId(plant.plant_id);
       setUseCustomPlant(false);
     }

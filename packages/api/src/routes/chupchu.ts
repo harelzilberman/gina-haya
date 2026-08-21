@@ -1509,7 +1509,7 @@ chupChuRouter.post('/chat', async (req: any, res) => {
       locationRegion: garden?.location_region || null,
       soilType: garden?.soil_type || null,
       plants: garden?.garden_plants?.map((p: any) =>
-        lang === 'he' ? p.common_name_he : p.common_name_en
+        lang === 'he' ? p.common_name_he : (p.common_name_en || p.common_name_he)
       ) || [],
       todayCalendar: calendarDay ? {
         ascendingDescending: calendarDay.ascending_descending,
