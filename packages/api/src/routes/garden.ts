@@ -799,6 +799,52 @@ gardenRouter.post('/garden-plants/:id/starter-tasks', async (req: any, res) => {
   }
 });
 
+// GET /api/garden/garden-plants/:id — fetch a single garden_plants row
+// Returns the same field set as the garden list (garden_plants(*) + last_watering
+// + normalised irrigation_times) so the two are interchangeable.
+gardenRouter.get('/garden-plants/:id', async (req: any, res) => {
+  try {
+    const userId = req.user?.id;
+    if (!userId) return res.status(401).json({ error: 'Unauthorized' });
+    const { id } = req.params;
+
+    // Existence check first so we can return 404 vs 403 correctly.
+    const { data: exists } = await db
+      .from('garden_plants')
+      .select('id')
+      .eq('id', id)
+      .maybeSingle();
+    if (!exists) return res.status(404).json({ error: 'not_found' });
+
+    if (!(await userOwnsGardenPlant(id, userId))) {
+      return res.status(403).json({ error: 'Forbidden' });
+    }
+
+    // Fetch all columns — identical to garden_plants(*) in the list route.
+    const { data, error } = await db
+      .from('garden_plants')
+      .select('*')
+      .eq('id', id)
+      .single();
+
+    if (error) throw error;
+
+    // Normalise irrigation_times to HH:MM (Postgres TIME[] returns HH:MM:SS).
+    if (Array.isArray(data.irrigation_times)) {
+      data.irrigation_times = data.irrigation_times.map(normaliseTime);
+    }
+
+    // Resolve last_watering — same helper and logic as the list route.
+    const lwMap = await resolveLastWaterings([data], new Date());
+    const plant = { ...data, last_watering: lwMap.get(data.id) ?? null };
+
+    return res.json(plant);
+  } catch (err: any) {
+    console.error('[GET /api/garden/garden-plants/:id]', err);
+    res.status(500).json({ error: err.message });
+  }
+});
+
 // PATCH /api/garden/garden-plants/:id — update a garden_plants row
 gardenRouter.patch('/garden-plants/:id', async (req: any, res) => {
   try {
