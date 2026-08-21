@@ -115,30 +115,6 @@ export async function createGarden(
 }
 
 /**
- * Add a plant entry to a garden.
- */
-export async function addPlantToGarden(
-  gardenId: string,
-  plant: Omit<GardenPlant, 'addedAt'>
-): Promise<GardenPlant> {
-  const { data, error } = await db
-    .from('garden_plants')
-    .insert({
-      garden_id: gardenId,
-      plant_id: plant.plantId || null,
-      common_name_he: plant.commonNameHe,
-      common_name_en: plant.commonNameEn,
-      notes: plant.notes,
-    })
-    .select<string, GardenPlantRow>('plant_id, common_name_he, common_name_en, added_at, notes')
-    .single();
-
-  if (error) throw error;
-  if (!data) throw new Error('addPlantToGarden returned no data');
-  return toGardenPlant(data);
-}
-
-/**
  * Remove a plant entry from a garden by its plant_id.
  */
 export async function removePlantFromGarden(
