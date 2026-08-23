@@ -2,6 +2,7 @@ import axios from 'axios';
 import sharp from 'sharp';
 import { extractAndParseJson } from './jsonUtils';
 import { logApiUsage } from './apiUsage';
+import { CHUPCHU_GLOSSARY_HE } from './claude';
 
 const ANTHROPIC_URL = 'https://api.anthropic.com/v1/messages';
 const ANTHROPIC_HEADERS = {
@@ -186,6 +187,8 @@ function buildVisionSystemPrompt(context: AnalysisContext): string {
 אסור בהחלט לעטוף את התשובה ב-markdown code fences (כגון \`\`\`json או \`\`\`). החזר JSON גולמי בלבד — התו הראשון חייב להיות { והתו האחרון }.
 IMPORTANT: Return raw JSON only. No markdown, no code fences, no explanation. First character must be { and last character must be }.
 הצהרת אחריות: כלול בשדה observations הצהרה שהניתוח אינו מחליף ייעוץ מקצועי של אגרונום.`;
+
+  prompt += `\n\n${CHUPCHU_GLOSSARY_HE}`;
 
   return prompt;
 }
