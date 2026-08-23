@@ -159,12 +159,6 @@ pushRouter.post('/send-daily', async (req, res) => {
           .eq('id', sub.user_id)
           .maybeSingle();
         const pushIsHe = langErr || !langData || langData.language_preference !== 'en';
-        console.log(
-          '[PUSH_LANG_DEBUG] langData=null:%s langErr=%s resolvedLang:%s',
-          String(langData === null),
-          langErr ? `${langErr.code}:${langErr.message}` : 'none',
-          pushIsHe ? 'he' : 'en',
-        );
 
         const payload = JSON.stringify({
           title: pushIsHe ? '🌱 גינה חיה — משימות היום' : '🌱 Gina Haya — tasks today',
