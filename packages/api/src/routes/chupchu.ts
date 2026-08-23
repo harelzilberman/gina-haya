@@ -3,7 +3,7 @@ import { Router, type IRouter } from 'express';
 import axios from 'axios';
 import { db } from '../db/client';
 import { verifyToken } from '../middleware/auth';
-import { askChupChu, type ProposedTask, type MobileToolCall } from '../services/claude';
+import { askChupChu, CHUPCHU_GLOSSARY_HE, type ProposedTask, type MobileToolCall } from '../services/claude';
 import { compressImageForClaude } from '../services/plantVision';
 import { fetchWeatherForRegion, getCachedWeatherForCoords } from '../services/weather';
 import type { ChupChuMessage, ChupChuContext } from '@gina-haya/shared';
@@ -389,7 +389,7 @@ chupChuRouter.post('/full-diagnosis', async (req: any, res) => {
     }
 
     const systemPrompt = language === 'he'
-      ? `אתה צ'ופצ'ו, מומחה גינה ביודינמי. קיבלת תמונה של צמח. עליך לנתח אותה לעומק ולהחזיר תשובה בפורמט JSON בלבד — ללא טקסט נוסף, ללא markdown, רק JSON תקין. נתח: זיהוי הצמח, מצב בריאותו, בעיות שנראות, צעדי טיפול מפורטים, משימות דחופות, וטיפ ביודינמי. אם הצמח בריא, מלא את השדות בהתאם עם tasks ריק או עם משימות תחזוקה שגרתיות.`
+      ? `אתה צ'ופצ'ו, מומחה גינה ביודינמי. קיבלת תמונה של צמח. עליך לנתח אותה לעומק ולהחזיר תשובה בפורמט JSON בלבד — ללא טקסט נוסף, ללא markdown, רק JSON תקין. נתח: זיהוי הצמח, מצב בריאותו, בעיות שנראות, צעדי טיפול מפורטים, משימות דחופות, וטיפ ביודינמי. אם הצמח בריא, מלא את השדות בהתאם עם tasks ריק או עם משימות תחזוקה שגרתיות.\n\n${CHUPCHU_GLOSSARY_HE}`
       : `You are Chupchu, a biodynamic garden expert. You received a plant photo. Analyze it deeply and return a response in JSON format only — no extra text, no markdown, just valid JSON. Analyze: plant identification, health status, visible issues, detailed treatment steps, urgent tasks, and a biodynamic tip. If the plant is healthy, fill fields accordingly with empty tasks or routine maintenance tasks.`;
 
     // ── Identification context prefix ────────────────────────────────────────
@@ -1061,9 +1061,11 @@ chupChuRouter.post('/starter-tasks', async (req: any, res) => {
 כללים:
 - 2–3 משימות בלבד
 - תאריכים בטווח 14 הימים הקרובים החל מהיום (${today})${irrigationRule}
-- משימה שנייה: הזנה, מולץ, או הכנת הקרקע — 7–14 ימים מהיום, category: fertilizing או general
+- משימה שנייה: הזנה, חיפוי קרקע, או הכנת הקרקע — 7–14 ימים מהיום, category: fertilizing או general
 - משימה שלישית (אופציונלית): תצפית או בדיקה מותאמת לסוג הצמח — category: general
-- priority תמיד "medium" אלא אם יש סיבה ברורה אחרת`
+- priority תמיד "medium" אלא אם יש סיבה ברורה אחרת
+
+${CHUPCHU_GLOSSARY_HE}`
       : `You are Chupchu — a warm, practical biodynamic gardening expert. The user has just added a new plant to their garden and you are preparing 2–3 practical starter tasks to care for the plant over the coming weeks.
 
 Return a JSON array only — no markdown, no surrounding quotes, no preamble, no suffix. Only valid JSON.
