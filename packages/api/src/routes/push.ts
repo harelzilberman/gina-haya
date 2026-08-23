@@ -152,8 +152,16 @@ pushRouter.post('/send-daily', async (req, res) => {
 
         if (!tasks || tasks.length === 0) continue;
 
+        // Look up user language — fall back to Hebrew on any error.
+        const { data: langData, error: langErr } = await db
+          .from('users')
+          .select('language_preference')
+          .eq('id', sub.user_id)
+          .maybeSingle();
+        const pushIsHe = langErr || !langData || langData.language_preference !== 'en';
+
         const payload = JSON.stringify({
-          title: '🌱 גינה חיה — משימות היום',
+          title: pushIsHe ? '🌱 גינה חיה — משימות היום' : '🌱 Gina Haya — tasks today',
           body: tasks.map((t: any) => `• ${t.title}`).join('\n'),
           url: '/tasks',
         });

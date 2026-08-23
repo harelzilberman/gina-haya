@@ -240,18 +240,24 @@ export async function sendRenewalReminder(opts: {
   displayName: string;
   tierNameHe:  string;
   expiresAt:   Date;
+  language?:   'he' | 'en';
 }): Promise<void> {
-  const { email, displayName, tierNameHe, expiresAt } = opts;
+  const { email, displayName, tierNameHe, expiresAt, language } = opts;
+  // Default Hebrew — English only when explicitly set.
+  const isHe = language !== 'en';
   const name = displayName || email;
 
-  const expiryStr = expiresAt.toLocaleDateString('he-IL', {
+  const expiryStr = expiresAt.toLocaleDateString(isHe ? 'he-IL' : 'en-US', {
     year: 'numeric', month: 'long', day: 'numeric',
     timeZone: 'Asia/Jerusalem',
   });
 
   const pricingUrl = `${APP_URL}/pricing`;
 
-  const html = `
+  // NOTE: tierNameHe is the Hebrew tier name (e.g. "גנן ביתי") and is used in
+  // both language variants. English tier display names are a brand decision left
+  // for a separate pass — do not translate them here.
+  const html = isHe ? `
     <div dir="rtl" style="font-family:Arial,Helvetica,sans-serif;max-width:560px;margin:0 auto;padding:32px;background:#f9fafb;border-radius:12px;">
       <h2 style="color:#050d0a;font-size:22px;margin:0 0 8px;">🌿 המנוי שלך מסתיים בקרוב</h2>
       <p style="color:#374151;font-size:15px;margin:0 0 20px;">שלום ${name},</p>
@@ -273,12 +279,36 @@ export async function sendRenewalReminder(opts: {
         לשאלות פנה אלינו על ידי מענה למייל זה.
       </p>
     </div>
+  ` : `
+    <div style="font-family:Arial,Helvetica,sans-serif;max-width:560px;margin:0 auto;padding:32px;background:#f9fafb;border-radius:12px;">
+      <h2 style="color:#050d0a;font-size:22px;margin:0 0 8px;">🌿 Your subscription is ending soon</h2>
+      <p style="color:#374151;font-size:15px;margin:0 0 20px;">Hello ${name},</p>
+      <p style="color:#374151;font-size:15px;margin:0 0 20px;">
+        Your <strong style="color:#050d0a;">${tierNameHe}</strong> subscription on Gina Haya expires on
+        <strong style="color:#050d0a;">${expiryStr}</strong>.
+      </p>
+      <p style="color:#374151;font-size:15px;margin:0 0 28px;">
+        To continue enjoying all features, renew your subscription before it expires.
+      </p>
+      <a
+        href="${pricingUrl}"
+        style="display:inline-block;background:#00e5c3;color:#050d0a;font-weight:700;font-size:15px;padding:14px 28px;border-radius:100px;text-decoration:none;"
+      >
+        Renew your subscription
+      </a>
+      <p style="color:#9ca3af;font-size:12px;margin:32px 0 0;">
+        You received this email because you have an active annual subscription on Gina Haya.
+        For questions, reply to this email.
+      </p>
+    </div>
   `;
 
   const { error } = await resend.emails.send({
-    from:    FROM_HE,
+    from:    isHe ? FROM_HE : FROM_EN,
     to:      email,
-    subject: `המנוי שלך ב-גינה חיה מסתיים ב-${expiryStr} — חידוש מהיר`,
+    subject: isHe
+      ? `המנוי שלך ב-גינה חיה מסתיים ב-${expiryStr} — חידוש מהיר`
+      : `Your Gina Haya subscription expires on ${expiryStr} — quick renewal`,
     html,
   });
 

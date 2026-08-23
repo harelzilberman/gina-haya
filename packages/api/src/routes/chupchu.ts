@@ -988,7 +988,7 @@ chupChuRouter.post('/starter-tasks', async (req: any, res) => {
     const userId = req.user?.id;
     if (!userId) return res.status(401).json({ error: 'Unauthorized' });
 
-    const { plant_name, variety, plant_type, location_type, garden_plants_id } = req.body;
+    const { plant_name, variety, plant_type, location_type, garden_plants_id, language } = req.body;
 
     if (!plant_name || !String(plant_name).trim()) {
       return res.status(400).json({ error: 'plant_name is required' });
@@ -1017,35 +1017,39 @@ chupChuRouter.post('/starter-tasks', async (req: any, res) => {
       autoIrrigation = gpRow?.auto_irrigation === true;
     }
 
+    // Language: default Hebrew — English only when explicitly requested.
+    // Flutter sends `language` in the JSON body for all Chupchu endpoints; if the
+    // field is absent the value is undefined, which falls through to 'he'.
+    const lang: 'he' | 'en' = language === 'en' ? 'en' : 'he';
+    const isHe = lang === 'he';
+
     // Build a concise context string for the user turn
-    const plantLabel = variety
-      ? `${String(plant_name).trim()} (זן: ${String(variety).trim()})`
-      : String(plant_name).trim();
+    const plantLabel = isHe
+      ? (variety ? `${String(plant_name).trim()} (זן: ${String(variety).trim()})` : String(plant_name).trim())
+      : (variety ? `${String(plant_name).trim()} (variety: ${String(variety).trim()})` : String(plant_name).trim());
 
-    const locationMap: Record<string, string> = {
-      pot:          'עציץ',
-      garden:       'גינה פתוחה',
-      bed:          'ערוגה',
-      hydroponic:   'הידרופוניקה',
-      greenhouse:   'חממה',
-    };
-    const typeMap: Record<string, string> = {
-      annual:     'חד-שנתי',
-      perennial:  'רב-שנתי',
-      tree:       'עץ',
-      shrub:      'שיח',
-    };
+    const locationMap: Record<string, string> = isHe
+      ? { pot: 'עציץ', garden: 'גינה פתוחה', bed: 'ערוגה', hydroponic: 'הידרופוניקה', greenhouse: 'חממה' }
+      : { pot: 'pot', garden: 'open garden', bed: 'raised bed', hydroponic: 'hydroponics', greenhouse: 'greenhouse' };
+    const typeMap: Record<string, string> = isHe
+      ? { annual: 'חד-שנתי', perennial: 'רב-שנתי', tree: 'עץ', shrub: 'שיח' }
+      : { annual: 'annual', perennial: 'perennial', tree: 'tree', shrub: 'shrub' };
 
-    const contextParts: string[] = [`צמח: ${plantLabel}`];
-    if (plant_type)    contextParts.push(`סוג: ${typeMap[String(plant_type)]    ?? String(plant_type)}`);
-    if (location_type) contextParts.push(`מיקום גידול: ${locationMap[String(location_type)] ?? String(location_type)}`);
-    contextParts.push(`תאריך היום: ${today}`);
+    const contextParts: string[] = isHe ? [`צמח: ${plantLabel}`] : [`Plant: ${plantLabel}`];
+    if (plant_type)    contextParts.push(isHe ? `סוג: ${typeMap[String(plant_type)] ?? String(plant_type)}` : `Type: ${typeMap[String(plant_type)] ?? String(plant_type)}`);
+    if (location_type) contextParts.push(isHe ? `מיקום גידול: ${locationMap[String(location_type)] ?? String(location_type)}` : `Growing location: ${locationMap[String(location_type)] ?? String(location_type)}`);
+    contextParts.push(isHe ? `תאריך היום: ${today}` : `Today's date: ${today}`);
 
-    const irrigationRule = autoIrrigation
-      ? '\n- הצמח מושקה אוטומטית — אל תציע משימות השקיה'
-      : '\n- משימה ראשונה: השקיה ראשונית — היום או מחר, category: watering';
+    const irrigationRule = isHe
+      ? (autoIrrigation
+          ? '\n- הצמח מושקה אוטומטית — אל תציע משימות השקיה'
+          : '\n- משימה ראשונה: השקיה ראשונית — היום או מחר, category: watering')
+      : (autoIrrigation
+          ? '\n- The plant is auto-irrigated — do not suggest watering tasks'
+          : '\n- First task: initial watering — today or tomorrow, category: watering');
 
-    const systemPrompt = `אתה צ'ופצ'ו — מומחה גינון ביודינמי חמים ומעשי. המשתמש זה עתה הוסיף צמח חדש לגינה שלו ואתה מכין עבורו 2–3 משימות התחלתיות מעשיות לטיפוח הצמח בשבועות הקרובים.
+    const systemPrompt = isHe
+      ? `אתה צ'ופצ'ו — מומחה גינון ביודינמי חמים ומעשי. המשתמש זה עתה הוסיף צמח חדש לגינה שלו ואתה מכין עבורו 2–3 משימות התחלתיות מעשיות לטיפוח הצמח בשבועות הקרובים.
 
 החזר מערך JSON בלבד — ללא markdown, ללא גרשיים מסביב, ללא הקדמה, ללא סיומת. רק מערך JSON תקין.
 
@@ -1059,7 +1063,22 @@ chupChuRouter.post('/starter-tasks', async (req: any, res) => {
 - תאריכים בטווח 14 הימים הקרובים החל מהיום (${today})${irrigationRule}
 - משימה שנייה: הזנה, מולץ, או הכנת הקרקע — 7–14 ימים מהיום, category: fertilizing או general
 - משימה שלישית (אופציונלית): תצפית או בדיקה מותאמת לסוג הצמח — category: general
-- priority תמיד "medium" אלא אם יש סיבה ברורה אחרת`;
+- priority תמיד "medium" אלא אם יש סיבה ברורה אחרת`
+      : `You are Chupchu — a warm, practical biodynamic gardening expert. The user has just added a new plant to their garden and you are preparing 2–3 practical starter tasks to care for the plant over the coming weeks.
+
+Return a JSON array only — no markdown, no surrounding quotes, no preamble, no suffix. Only valid JSON.
+
+Each task in this structure:
+{"title":"short active title in English up to 8 words","notes":"practical instruction of 1–2 sentences in a warm, direct style","date":"YYYY-MM-DD","category":"value from the allowed list","priority":"medium"}
+
+Allowed category values only: watering | fertilizing | pruning | planting | harvesting | pest_control | composting | general
+
+Rules:
+- 2–3 tasks only
+- Dates within the next 14 days from today (${today})${irrigationRule}
+- Second task: feeding, mulching, or soil preparation — 7–14 days from today, category: fertilizing or general
+- Third task (optional): observation or check suited to the plant type — category: general
+- priority always "medium" unless there is a clear reason otherwise`;
 
     const aiRes = (await axios.post(ANTHROPIC_URL, {
       model:      'claude-haiku-4-5-20251001',

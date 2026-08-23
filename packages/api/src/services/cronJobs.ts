@@ -53,6 +53,15 @@ async function sendDailySummary() {
       // Skip if disabled
       if (settings && (!settings.enabled || !settings.daily_summary)) continue;
 
+      // Look up user language preference — fall back to Hebrew on any error.
+      // The Supabase client returns errors in the result object, not as throws.
+      const { data: userData, error: langError } = await db
+        .from('users')
+        .select('language_preference')
+        .eq('id', sub.user_id)
+        .maybeSingle();
+      const isHe = langError || !userData || userData.language_preference !== 'en';
+
       // Get today's pending tasks
       const { data: tasks } = await db
         .from('garden_tasks')
@@ -65,10 +74,14 @@ async function sendDailySummary() {
 
       // Build notification
       const taskLines = tasks.slice(0, 5).map((t: any) => `• ${t.title}`).join('\n');
-      const more = tasks.length > 5 ? `\n+ עוד ${tasks.length - 5} משימות` : '';
+      const more = tasks.length > 5
+        ? (isHe ? `\n+ עוד ${tasks.length - 5} משימות` : `\n+ ${tasks.length - 5} more tasks`)
+        : '';
 
       const payload = JSON.stringify({
-        title: `🌱 גינה חיה — ${tasks.length} משימות להיום`,
+        title: isHe
+          ? `🌱 גינה חיה — ${tasks.length} משימות להיום`
+          : `🌱 Gina Haya — ${tasks.length} tasks today`,
         body: taskLines + more,
         url: '/tasks',
       });
@@ -120,10 +133,10 @@ export async function sendAnnualRenewalReminders(): Promise<void> {
   let pushSent = 0;
 
   for (const row of expiring) {
-    // Fetch user details for the email
+    // Fetch user details for the email and language preference
     const { data: user } = await db
       .from('users')
-      .select('email, display_name')
+      .select('email, display_name, language_preference')
       .eq('id', row.user_id)
       .maybeSingle();
 
@@ -134,14 +147,17 @@ export async function sendAnnualRenewalReminders(): Promise<void> {
 
     const tierNameHe = getLimits(row.product_id)?.displayNameHe ?? row.product_id;
     const expiresAt  = new Date(row.expires_at);
+    const userLang   = (user.language_preference as 'he' | 'en') ?? 'he';
+    const renewalIsHe = userLang !== 'en';
 
     // Primary channel: email (doesn't require push permission to be active)
     try {
       await sendRenewalReminder({
-        email:      user.email,
+        email:       user.email,
         displayName: user.display_name ?? '',
         tierNameHe,
         expiresAt,
+        language:    userLang,
       });
       emailSent++;
     } catch (err) {
@@ -158,14 +174,18 @@ export async function sendAnnualRenewalReminders(): Promise<void> {
         .maybeSingle();
 
       if (pushSub?.subscription) {
-        const expiryStr = expiresAt.toLocaleDateString('he-IL', {
+        const expiryStr = expiresAt.toLocaleDateString(renewalIsHe ? 'he-IL' : 'en-US', {
           month: 'long', day: 'numeric', timeZone: 'Asia/Jerusalem',
         });
         await webpush.sendNotification(
           pushSub.subscription,
           JSON.stringify({
-            title: '🌿 המנוי השנתי שלך מסתיים בקרוב',
-            body:  `תוכנית ${tierNameHe} מסתיימת ב-${expiryStr} — לחץ לחידוש`,
+            title: renewalIsHe
+              ? '🌿 המנוי השנתי שלך מסתיים בקרוב'
+              : '🌿 Your annual subscription is ending soon',
+            body: renewalIsHe
+              ? `תוכנית ${tierNameHe} מסתיימת ב-${expiryStr} — לחץ לחידוש`
+              : `Your ${tierNameHe} plan expires on ${expiryStr} — tap to renew`,
             url:   '/pricing',
           })
         );
@@ -202,8 +222,16 @@ export async function sendSmartReminder(userId: string, message: string) {
 
     if (settings && (!settings.enabled || !settings.smart_reminders)) return;
 
+    // Look up user language preference — fall back to Hebrew on any error.
+    const { data: smartUserData, error: smartLangError } = await db
+      .from('users')
+      .select('language_preference')
+      .eq('id', userId)
+      .maybeSingle();
+    const smartIsHe = smartLangError || !smartUserData || smartUserData.language_preference !== 'en';
+
     await webpush.sendNotification(sub.subscription, JSON.stringify({
-      title: '🌙 מון — תזכורת חכמה',
+      title: smartIsHe ? '🌙 מון — תזכורת חכמה' : '🌙 Chupchu — smart reminder',
       body: message,
       url: '/tasks',
     }));
