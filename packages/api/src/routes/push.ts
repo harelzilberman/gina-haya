@@ -1,4 +1,5 @@
 import { Router, type IRouter } from 'express';
+import { timingSafeEqual } from 'crypto';
 import { verifyToken } from '../middleware/auth';
 import { db } from '../db/client';
 import webpush from 'web-push';
@@ -14,15 +15,28 @@ if (process.env.VAPID_PUBLIC_KEY && process.env.VAPID_PRIVATE_KEY) {
   );
 }
 
-pushRouter.use(verifyToken);
+// NOTE: verifyToken is applied per-route (not as a router-level middleware) so
+// that POST /send-daily can be gated by CRON_SECRET instead of a user token.
+
+// Timing-safe string comparison for the CRON_SECRET header.
+// Both inputs are converted to Buffer so timingSafeEqual can operate on them.
+// Returns false immediately (without the timing-safe comparison) when lengths
+// differ — length difference is not a secret and avoids the length-mismatch
+// exception thrown by timingSafeEqual when buffers differ in size.
+function secretsEqual(a: string, b: string): boolean {
+  const aBuf = Buffer.from(a);
+  const bBuf = Buffer.from(b);
+  if (aBuf.length !== bBuf.length) return false;
+  return timingSafeEqual(aBuf, bBuf);
+}
 
 // GET /api/push/vapid-public-key
-pushRouter.get('/vapid-public-key', (_req, res) => {
+pushRouter.get('/vapid-public-key', verifyToken, (_req, res) => {
   res.json({ key: process.env.VAPID_PUBLIC_KEY ?? '' });
 });
 
 // POST /api/push/subscribe
-pushRouter.post('/subscribe', async (req, res) => {
+pushRouter.post('/subscribe', verifyToken, async (req, res) => {
   try {
     const { subscription, settings } = req.body;
     if (!subscription) return res.status(400).json({ error: 'subscription required' });
@@ -48,7 +62,7 @@ pushRouter.post('/subscribe', async (req, res) => {
 });
 
 // DELETE /api/push/subscribe — unsubscribe
-pushRouter.delete('/subscribe', async (req, res) => {
+pushRouter.delete('/subscribe', verifyToken, async (req, res) => {
   try {
     await db.from('push_subscriptions').delete().eq('user_id', req.user!.id);
     res.json({ ok: true });
@@ -58,7 +72,7 @@ pushRouter.delete('/subscribe', async (req, res) => {
 });
 
 // GET /api/push/settings
-pushRouter.get('/settings', async (req, res) => {
+pushRouter.get('/settings', verifyToken, async (req, res) => {
   try {
     const { data } = await db
       .from('notification_settings')
@@ -72,7 +86,7 @@ pushRouter.get('/settings', async (req, res) => {
 });
 
 // PATCH /api/push/settings
-pushRouter.patch('/settings', async (req, res) => {
+pushRouter.patch('/settings', verifyToken, async (req, res) => {
   try {
     const { data, error } = await db
       .from('notification_settings')
@@ -90,8 +104,31 @@ pushRouter.patch('/settings', async (req, res) => {
   }
 });
 
-// POST /api/push/send-daily — called by a cron job or manually
+// POST /api/push/send-daily — operational endpoint, NOT a user endpoint.
+//
+// Gated by CRON_SECRET header (x-cron-secret), not a user bearer token.
+// This route deliberately does NOT use verifyToken — an external scheduler
+// (Railway cron, GitHub Actions, etc.) will have no user session to present.
+//
+// DEPLOY ORDERING: set CRON_SECRET in the Railway environment BEFORE deploying
+// this build. Any caller must send the header:
+//   x-cron-secret: <value of CRON_SECRET env var>
+//
+// Fail closed: if CRON_SECRET is unset or empty, every request is rejected.
 pushRouter.post('/send-daily', async (req, res) => {
+  const secret = process.env.CRON_SECRET;
+
+  // Fail closed — no secret configured means no access, ever.
+  if (!secret) {
+    console.error('[POST /api/push/send-daily] CRON_SECRET env var is not set — rejecting request');
+    return res.status(503).json({ error: 'cron_not_configured' });
+  }
+
+  const provided = req.headers['x-cron-secret'];
+  if (typeof provided !== 'string' || !secretsEqual(secret, provided)) {
+    return res.status(401).json({ error: 'Unauthorized' });
+  }
+
   try {
     // Get all users with push subscriptions and notifications enabled
     const { data: subs } = await db

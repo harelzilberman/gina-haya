@@ -13,6 +13,7 @@ import { getLimits } from '../config/tiers';
 import { checkAndRecordVisionUse, recordFreeRetryVisionUse } from '../services/visionQuota';
 import { logApiUsage } from '../services/apiUsage';
 import { lastScheduledIrrigation, isWateringTask } from '../utils/irrigation';
+import { userOwnsGardenPlant } from '../utils/ownership';
 
 const ANTHROPIC_URL = 'https://api.anthropic.com/v1/messages';
 const ANTHROPIC_HEADERS = {
@@ -277,6 +278,18 @@ chupChuRouter.post('/full-diagnosis', async (req: any, res) => {
       user_hint: rawUserHint,
     } = req.body;
     if (!image && !photo_storage_key) return res.status(400).json({ success: false, error: 'No image provided' });
+
+    const userId = req.user?.id;
+
+    // Ownership check: plant_id is caller-supplied — verify before the vision quota
+    // burn, before the storage download, and before any DB read or write involving it.
+    // Matches the pattern applied to /starter-tasks and /attach-diagnosis.
+    // Fails closed via userOwnsGardenPlant (returns false on DB error).
+    if (plant_id) {
+      if (!userId || !(await userOwnsGardenPlant(String(plant_id), userId))) {
+        return res.status(403).json({ success: false, error: 'Forbidden' });
+      }
+    }
 
     // Sanitise the optional identification fields.
     // user_hint: human-sourced correction — capped at 200 chars, matching the
@@ -972,10 +985,22 @@ Create an updated summary and structured facts. Return JSON only:
 // (e.g. maxStarterTasksPerMonth) rather than folding it into the chat quota.
 chupChuRouter.post('/starter-tasks', async (req: any, res) => {
   try {
+    const userId = req.user?.id;
+    if (!userId) return res.status(401).json({ error: 'Unauthorized' });
+
     const { plant_name, variety, plant_type, location_type, garden_plants_id } = req.body;
 
     if (!plant_name || !String(plant_name).trim()) {
       return res.status(400).json({ error: 'plant_name is required' });
+    }
+
+    // Ownership check: garden_plants_id is attacker-controlled — verify ownership
+    // before any read involving that id. Uses the shared helper (same as the
+    // garden-plants GET/DELETE routes) which fails closed on DB error.
+    if (garden_plants_id) {
+      if (!(await userOwnsGardenPlant(String(garden_plants_id), userId))) {
+        return res.status(403).json({ error: 'Forbidden' });
+      }
     }
 
     const today = todayInIsrael();
@@ -983,11 +1008,12 @@ chupChuRouter.post('/starter-tasks', async (req: any, res) => {
     // Check auto_irrigation so we can suppress watering tasks for drip plants
     let autoIrrigation = false;
     if (garden_plants_id) {
-      const { data: gpRow } = await db
+      const { data: gpRow, error: gpError } = await db
         .from('garden_plants')
         .select('auto_irrigation')
         .eq('id', String(garden_plants_id))
         .single();
+      if (gpError) throw gpError;
       autoIrrigation = gpRow?.auto_irrigation === true;
     }
 
