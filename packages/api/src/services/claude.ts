@@ -168,7 +168,7 @@ const CHUPCHU_SYSTEM_PROMPT_HE = `\
 ענה באיזון. קצר את התשובה ככל הצורך. חזור ישירות לעניין, ללא מילויים או תת-הוראות.
 
 ## הקשר אוטומטי
-המידע על הגינה של המשתמש, הצמחים, המשימות הממתינות והקציר האחרון מוזרקים אוטומטית לתוך ההקשר שלך לפני כל תשובה. אין צורך לקרוא לכלים כדי לקבל מידע בסיסי זה — הוא כבר כאן. השתמש בו ישירות בתשובותיך.
+המידע על הגינה של המשתמש, הצמחים, המשימות הממתינות מוזרקים אוטומטית לתוך ההקשר שלך לפני כל תשובה. אין צורך לקרוא לכלים כדי לקבל מידע בסיסי זה — הוא כבר כאן. השתמש בו ישירות בתשובותיך.
 כאשר המשתמש שואל על משימות, תמיד בדוק את רשימת המשימות הממתינות שקיבלת. כאשר הוא שואל מה לגדל, השתמש ברשימת הצמחים שלו.
 
 ## זיהוי צמחים מתמונות
@@ -239,7 +239,7 @@ const CHUPCHU_SYSTEM_PROMPT_HE = `\
 - אם המשימה קשורה לצמח או עץ ספציפי שהוזכר בשיחה, מלא את שדה plant_name בשם הצמח בעברית
 
 ## שימון בכלים
-כשאתה זקוק למידע ספציפי — נתוני לוח היום, פרטי הגינה, מזג אוויר, מידע על צמח, הוראות פרפרט, או קציר אחרון — השתמש בכלים המתאימים לפני שאתה עונה.
+כשאתה זקוק למידע ספציפי — נתוני לוח היום, פרטי הגינה, מזג אוויר, מידע על צמח, הוראות פרפרט — השתמש בכלים המתאימים לפני שאתה עונה.
 לפני מענה על שאלות גינון מפורטות — בדוק אם יש מאמר רלוונטי ב-ARTICLE_INDEX וקרא אותו עם get_article.
 כשמשתמש מתאר בעיה בצמח, חסר תזונתי, מחלה, או מזיק — חפש תמיד תחילה במאגר הידע עם search_knowledge_base, ואחר כך שלב את הממצאים עם הידע הביודינמי שלך.
 
@@ -318,7 +318,7 @@ Rules:
 - If the task relates to a specific plant or tree mentioned in the conversation, fill plant_name with the plant's name in Hebrew
 
 ## Tool use
-When you need specific information — today's calendar, the user's garden, weather, plant details, prep instructions, or recent harvests — call the appropriate tool before answering.
+When you need specific information — today's calendar, the user's garden, weather, plant details, prep instructions — call the appropriate tool before answering.
 Before answering detailed gardening questions, check whether a relevant article exists in the ARTICLE_INDEX below and read it with get_article.
 When a user describes a plant problem, nutrient deficiency, disease, or pest — always search the knowledge base first with search_knowledge_base, then combine findings with biodynamic knowledge.
 
@@ -406,11 +406,6 @@ const CHUPCHU_TOOLS: ToolWithCache[] = [
       },
       required: ['prep_name'],
     },
-  },
-  {
-    name: 'get_recent_harvests',
-    description: "Returns the user's recent harvest records: plant name, harvest date, day type, and planting score.",
-    input_schema: { type: 'object', properties: {}, required: [] },
   },
   {
     name: 'get_article',
@@ -540,7 +535,7 @@ const CHUPCHU_TOOLS: ToolWithCache[] = [
       },
       required: ['tasks'],
     },
-    // cache_control on the LAST tool caches all 13 tool definitions as a single block
+    // cache_control on the LAST tool caches all 12 tool definitions as a single block
     // (~1,150 tokens off uncached input per call once warm).
     cache_control: { type: 'ephemeral', ttl: '1h' },
   },
@@ -630,19 +625,6 @@ function handleToolCall(
       const info = BD_PREP_KNOWLEDGE[prepName];
       if (!info) return `לא נמצא מידע על פרפרט "${prepName}".`;
       return info;
-    }
-
-    case 'get_recent_harvests': {
-      const harvests = context.recentHarvests;
-      if (!harvests || harvests.length === 0) return 'No recent harvests recorded.';
-      const lines = harvests.map(h => {
-        const dateParts = h.harvestDate.split('-');
-        const dateFormatted = dateParts.length === 3
-          ? `${dateParts[2]}.${dateParts[1]}.${dateParts[0]}`
-          : h.harvestDate;
-        return `${h.plantNameHe} — ${dateFormatted} (${h.dayType}, ציון ${h.plantingScore})`;
-      });
-      return lines.join('\n');
     }
 
     case 'get_article': {

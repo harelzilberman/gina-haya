@@ -35,12 +35,6 @@ export interface ChupChuContext {
         plantCount: number;
         plantNames: string[];
     } | null;
-    recentHarvests?: Array<{
-        plantNameHe: string;
-        harvestDate: string;
-        dayType: string;
-        plantingScore: number;
-    }> | null;
     weather?: {
         tempMax: number;
         tempMin: number;

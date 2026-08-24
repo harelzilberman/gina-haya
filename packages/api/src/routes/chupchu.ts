@@ -1507,21 +1507,6 @@ chupChuRouter.post('/chat', async (req: any, res) => {
     // ── 5. Fetch weather ──────────────────────────────────────────────────
     const weather = await fetchWeatherForRegion(garden?.location_region ?? null);
 
-    // ── 5b. Fetch recent harvests ────────────────────────────────────────────
-    const { data: harvestRows } = await db
-      .from('harvests')
-      .select('plant_name_he, harvest_date, day_type, planting_score')
-      .eq('user_id', userId)
-      .order('harvest_date', { ascending: false })
-      .limit(10);
-
-    const recentHarvests = (harvestRows ?? []).map((h: any) => ({
-      plantNameHe:    h.plant_name_he,
-      harvestDate:    h.harvest_date,
-      dayType:        h.day_type,
-      plantingScore:  h.planting_score,
-    }));
-
     // ── 5c. Fetch garden map ──────────────────────────────────────────────
     const { data: mapRow } = await db
       .from('garden_maps')
@@ -1572,7 +1557,6 @@ chupChuRouter.post('/chat', async (req: any, res) => {
       } : null,
       userLanguage: lang as 'he' | 'en',
       weather: weather ?? null,
-      recentHarvests: recentHarvests.length > 0 ? recentHarvests : null,
       gardenMap: gardenMap ?? null,
     };
 
@@ -1849,16 +1833,6 @@ chupChuRouter.post('/chat', async (req: any, res) => {
         : '## Pending Tasks\nNo pending tasks at the moment.';
     }
 
-    // ── 7g. Build harvests section (inject directly, no tool call needed) ─
-    let harvestsSection = '';
-    if (context.recentHarvests && context.recentHarvests.length > 0) {
-      const header = lang === 'he' ? '## קציר אחרון' : '## Recent Harvests';
-      const harvestLines = context.recentHarvests.slice(0, 5).map((h: any) =>
-        `- ${h.plantNameHe ?? ''} (${h.harvestDate})`
-      );
-      harvestsSection = header + '\n' + harvestLines.join('\n');
-    }
-
     // ── 8. Fetch IP-based weather forecast (non-blocking) ────────────────
     let weatherSection = '';
     if (location?.lat && location?.lon) {
@@ -1971,7 +1945,6 @@ chupChuRouter.post('/chat', async (req: any, res) => {
         memorySection,
         gardenSection,
         pendingTasksSection,
-        harvestsSection,
         taskContext,
       ].filter(Boolean).join('\n\n');
       stableContextByUser.set(userId, { context: stableContext, builtAt: nowMs });
