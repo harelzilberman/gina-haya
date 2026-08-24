@@ -11,6 +11,7 @@ import {
   checkOwnsGardenPlant,
   checkOwnsGardenPlantWithExistence,
   checkOwnsResourceByUserId,
+  checkOwnsGardenScopedResource,
   checkOwnsGardenAndPlants,
 } from '../utils/ownership';
 
@@ -270,9 +271,78 @@ console.log('\n[4] checkOwnsResourceByUserId (synchronous)');
   // (there is no db_error case: the helper never queries the DB)
 }
 
+// ── Tests: checkOwnsGardenScopedResource ─────────────────────────────────────
+
+console.log('\n[5] checkOwnsGardenScopedResource');
+
+{
+  // Owner fast path — no DB call needed
+  (async () => {
+    // Use a mock that would error if ever called, to prove no DB round trip occurs.
+    const client = makeDbMock({ data: null, error: { message: 'should not be called' } });
+    const row = { id: 'tracker-1', user_id: 'user-1', garden_id: 'garden-1' };
+    const result = await checkOwnsGardenScopedResource(row, 'user-1', undefined, client);
+    assert(result.ok === true, 'owner fast path → ok: true');
+    assertEqual(result.data?.id, 'tracker-1', 'owner fast path → data.id set from row');
+  })();
+
+  // Owner fast path — row without id field
+  (async () => {
+    const client = makeDbMock({ data: null, error: { message: 'should not be called' } });
+    const row = { user_id: 'user-1', garden_id: 'garden-1' };
+    const result = await checkOwnsGardenScopedResource(row, 'user-1', undefined, client);
+    assert(result.ok === true, 'owner, no id field → ok: true');
+    assert(result.data === undefined, 'owner, no id field → data: undefined');
+  })();
+
+  // Non-owner with valid garden_id → delegates to checkOwnsGarden, garden owned → ok: true
+  (async () => {
+    const client = makeDbMock({ data: { id: 'garden-1' }, error: null });
+    const row = { id: 'tracker-1', user_id: 'user-2', garden_id: 'garden-1' };
+    const result = await checkOwnsGardenScopedResource(row, 'user-1', undefined, client);
+    assert(result.ok === true, 'non-owner, garden owned → ok: true');
+  })();
+
+  // Non-owner with valid garden_id → delegates to checkOwnsGarden, garden not owned → not_owned
+  (async () => {
+    const client = makeDbMock({ data: null, error: null });
+    const row = { id: 'tracker-1', user_id: 'user-2', garden_id: 'garden-1' };
+    const result = await checkOwnsGardenScopedResource(row, 'user-1', undefined, client);
+    assert(result.ok === false, 'non-owner, garden not owned → ok: false');
+    assertEqual(result.reason, 'not_owned', 'non-owner, garden not owned → reason: not_owned');
+  })();
+
+  // Non-owner with null garden_id → immediate denial, no DB call
+  (async () => {
+    const client = makeDbMock({ data: null, error: { message: 'should not be called' } });
+    const row = { id: 'harvest-1', user_id: 'user-2', garden_id: null };
+    const result = await checkOwnsGardenScopedResource(row, 'user-1', '[test]', client);
+    assert(result.ok === false, 'non-owner, null garden_id → ok: false');
+    assertEqual(result.reason, 'not_owned', 'non-owner, null garden_id → reason: not_owned');
+  })();
+
+  // DB error during garden check → forwarded as db_error (fail closed)
+  (async () => {
+    const client = makeDbMock({ data: null, error: { message: 'connection refused' } });
+    const row = { id: 'tracker-1', user_id: 'user-2', garden_id: 'garden-1' };
+    const result = await checkOwnsGardenScopedResource(row, 'user-1', '[test]', client);
+    assert(result.ok === false, 'db error → ok: false');
+    assertEqual(result.reason, 'db_error', 'db error → reason: db_error (not collapsed to not_owned)');
+  })();
+
+  // Malformed/missing user_id on row → falls through to garden check (deny via garden)
+  (async () => {
+    const client = makeDbMock({ data: null, error: null });
+    const row = { id: 'tracker-1', user_id: '' as string, garden_id: 'garden-1' };
+    const result = await checkOwnsGardenScopedResource(row, 'user-1', undefined, client);
+    assert(result.ok === false, 'empty user_id → ok: false');
+    assertEqual(result.reason, 'not_owned', 'empty user_id → reason: not_owned');
+  })();
+}
+
 // ── Tests: checkOwnsGardenAndPlants ──────────────────────────────────────────
 
-console.log('\n[5] checkOwnsGardenAndPlants');
+console.log('\n[6] checkOwnsGardenAndPlants');
 
 {
   // All plants owned — full success
