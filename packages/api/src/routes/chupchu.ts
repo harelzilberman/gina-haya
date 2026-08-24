@@ -1507,34 +1507,6 @@ chupChuRouter.post('/chat', async (req: any, res) => {
     // ── 5. Fetch weather ──────────────────────────────────────────────────
     const weather = await fetchWeatherForRegion(garden?.location_region ?? null);
 
-    // ── 5c. Fetch garden map ──────────────────────────────────────────────
-    const { data: mapRow } = await db
-      .from('garden_maps')
-      .select('map_data, north_angle')
-      .eq('user_id', userId)
-      .order('updated_at', { ascending: false })
-      .limit(1)
-      .single();
-
-    let gardenMap: any = null;
-    if (mapRow) {
-      const md = mapRow.map_data as { objects: any[]; plants: any[] } | null;
-      const objs   = md?.objects ?? [];
-      const plants = md?.plants ?? [];
-      const beds  = objs.filter((o: any) => ['bed','raised','pot'].includes(o.type));
-      const trees = objs.filter((o: any) => o.type === 'tree');
-      gardenMap = {
-        hasMap:      true,
-        northAngle:  mapRow.north_angle ?? 0,
-        objectCount: objs.length,
-        bedCount:    beds.length,
-        treeCount:   trees.length,
-        fruitTrees:  trees.filter((t: any) => t.isFruitTree).map((t: any) => t.fruitTreeName || 'עץ פרי'),
-        plantCount:  plants.length,
-        plantNames:  plants.map((p: any) => p.plantNameHe).filter(Boolean),
-      };
-    }
-
     // ── 6. Build ChupChu context ────────────────────────────────────────────
     const context: ChupChuContext = {
       gardenName: garden?.name || null,
@@ -1557,7 +1529,6 @@ chupChuRouter.post('/chat', async (req: any, res) => {
       } : null,
       userLanguage: lang as 'he' | 'en',
       weather: weather ?? null,
-      gardenMap: gardenMap ?? null,
     };
 
     // ── 7. Load conversation history ─────────────────────────────────────
@@ -2200,17 +2171,6 @@ chupChuRouter.post('/execute-tool', async (req: any, res) => {
           priority:      params.priority ?? 'medium',
           category:      params.category ?? 'general',
           source_action: 'chupchu',
-          created_at:    new Date().toISOString(),
-        });
-        break;
-      }
-      case 'add_map_marker': {
-        await db.from('garden_map_markers').insert({
-          user_id:       userId,
-          plant_name:    params.plant_name,
-          location_hint: params.location_hint,
-          x:             params.x ?? null,
-          y:             params.y ?? null,
           created_at:    new Date().toISOString(),
         });
         break;

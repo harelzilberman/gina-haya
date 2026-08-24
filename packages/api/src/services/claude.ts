@@ -338,7 +338,7 @@ export interface ProposedTask {
 
 // Mobile tool call — returned to client for user confirmation before execution
 export interface MobileToolCall {
-  name: 'create_task' | 'add_map_marker' | 'log_bd_prep';
+  name: 'create_task' | 'log_bd_prep';
   params: Record<string, unknown>;
   descriptionHe: string; // shown in confirmation card
 }
@@ -347,8 +347,6 @@ function mobileToolDescription(name: string, params: Record<string, unknown>): s
   switch (name) {
     case 'create_task':
       return `מוסיף משימה: ${params.title}${params.due_date ? ` ל-${params.due_date}` : ''}`;
-    case 'add_map_marker':
-      return `מסמן על המפה: ${params.plant_name} — ${params.location_hint}`;
     case 'log_bd_prep':
       return `מתעד יישום פרפרט ${params.prep_name} בתאריך ${params.date}`;
     default:
@@ -373,7 +371,7 @@ const CHUPCHU_TOOLS: ToolWithCache[] = [
   },
   {
     name: 'get_user_garden',
-    description: "Returns the user's garden details: name, soil type, location, bed count, tree count, plant list, and garden map summary.",
+    description: "Returns the user's garden details: name, soil type, location, and plant list.",
     input_schema: { type: 'object', properties: {}, required: [] },
   },
   {
@@ -454,20 +452,6 @@ const CHUPCHU_TOOLS: ToolWithCache[] = [
     },
   },
   {
-    name: 'add_map_marker',
-    description: 'Add a plant location marker to the garden map based on what the user described.',
-    input_schema: {
-      type: 'object' as const,
-      properties: {
-        plant_name:    { type: 'string', description: 'Name of the plant in Hebrew' },
-        location_hint: { type: 'string', description: 'Description of location in the garden (e.g. "ליד הגדר הצפונית")' },
-        x: { type: 'number', description: 'Optional X coordinate (0-100)' },
-        y: { type: 'number', description: 'Optional Y coordinate (0-100)' },
-      },
-      required: ['plant_name', 'location_hint'],
-    },
-  },
-  {
     name: 'log_bd_prep',
     description: 'Log that the user applied a biodynamic preparation today. Call when user says they applied or made a BD preparation.',
     input_schema: {
@@ -535,7 +519,7 @@ const CHUPCHU_TOOLS: ToolWithCache[] = [
       },
       required: ['tasks'],
     },
-    // cache_control on the LAST tool caches all 12 tool definitions as a single block
+    // cache_control on the LAST tool caches all 11 tool definitions as a single block
     // (~1,150 tokens off uncached input per call once warm).
     cache_control: { type: 'ephemeral', ttl: '1h' },
   },
@@ -566,22 +550,11 @@ function handleToolCall(
     }
 
     case 'get_user_garden': {
-      const m = context.gardenMap;
       const result: Record<string, unknown> = {
         gardenName: context.gardenName ?? null,
         soilType: context.soilType ?? null,
         plants: context.plants,
       };
-      if (m?.hasMap) {
-        result.map = {
-          bedCount: m.bedCount,
-          treeCount: m.treeCount,
-          plantCount: m.plantCount,
-          fruitTrees: m.fruitTrees,
-          plantNames: m.plantNames,
-          northAngle: m.northAngle,
-        };
-      }
       return JSON.stringify(result, null, 2);
     }
 
@@ -776,7 +749,7 @@ export async function askChupChu(
           .filter((b): b is Anthropic.Messages.ToolUseBlock => b.type === 'tool_use')
           .map(async b => {
             // Mobile voice tools — capture for client confirmation, don't execute yet
-            const MOBILE_TOOLS = ['create_task', 'add_map_marker', 'log_bd_prep'] as const;
+            const MOBILE_TOOLS = ['create_task', 'log_bd_prep'] as const;
             if ((MOBILE_TOOLS as readonly string[]).includes(b.name)) {
               const params = b.input as Record<string, unknown>;
               capturedMobileTool = {
