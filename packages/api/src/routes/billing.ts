@@ -820,45 +820,61 @@ billingRouter.post('/grow/webhook/:secret', async (req: Request, res) => {
     }
 
     // ── Resolve tier ───────────────────────────────────────────────────────
-    const tier = tierFromPayload && TIER_ORDER.includes(tierFromPayload)
-      ? tierFromPayload
-      : 'gardener_pro';
+    // Shop / unrecognised payment mode: record row, skip tier grant
+    // Non-subscription Grow purchases (e.g. credit packs) arrive with a cField3
+    // value outside the known subscription modes ('shop', or any future unknown
+    // value). These must be written to user_subscriptions for audit but must never
+    // modify subscription_tier.
+    const isShopPurchase = !VALID_PAYMENT_MODES.includes(paymentModeFromWebhook as any);
 
-    // ── approveTransaction ─────────────────────────────────────────────────
+    // Resolve tier -- never guess
+    // If cField2 is absent, empty, or not a recognised tier key, resolve to null.
+    // The subscription row is still written below so the payment is not lost.
+    // Only the tier grant is withheld. See TIER_GRANT_FAILED log for details.
+    const resolvedTier: string | null =
+      !isShopPurchase && tierFromPayload && TIER_ORDER.includes(tierFromPayload)
+        ? tierFromPayload
+        : null;
+
+    // approveTransaction
     // Skipped intentionally: we don't have paid Grow REST API access (the
     // Light API that exposes /api/v1/Transaction/approve costs 500 ILS+VAT/month).
-    // Per Grow's docs, payment completes regardless — this call is not required.
+    // Per Grow's docs, payment completes regardless -- this call is not required.
     // Future option: route through Make.com's "Approve Transaction" action
     // (same pattern as create-payment), but only if Grow support indicates it
     // is ever actually required for our account type.
-    console.log(`[grow/webhook] approveTransaction skipped — not required per Grow docs, no paid API access configured (transactionId=${transactionId})`);
+    console.log(`[grow/webhook] approveTransaction skipped -- not required per Grow docs, no paid API access configured (transactionId=${transactionId})`);
 
 
-    // ── Compute expiry and plan label from paymentMode ────────────────────
-    // recurring       → Grow manages renewal cadence; we don't track expiry.
-    // one_time_monthly → 30 days access from now.
-    // one_time_annual  → 365 days access from now.
+    // Compute expiry and plan label from paymentMode
+    // recurring       -> Grow manages renewal cadence; we don't track expiry.
+    // one_time_monthly -> 30 days access from now.
+    // one_time_annual  -> 365 days access from now.
     // base_plan_id is used as a queryable label so the renewal cron can
     // target annual purchases without guessing from date math alone.
     const now = Date.now();
     const expiresAt: string =
       paymentModeFromWebhook === 'one_time_annual'   ? new Date(now + 365 * 24 * 60 * 60 * 1000).toISOString()
       : paymentModeFromWebhook === 'one_time_monthly' ? new Date(now +  30 * 24 * 60 * 60 * 1000).toISOString()
-      : new Date(now + 33 * 24 * 60 * 60 * 1000).toISOString(); // recurring — rolling 33-day window; refreshed on every successful charge
+      : new Date(now + 33 * 24 * 60 * 60 * 1000).toISOString(); // recurring -- rolling 33-day window; refreshed on every successful charge
 
     const basePlanId: string | null =
       paymentModeFromWebhook === 'one_time_annual'   ? 'annual'
       : paymentModeFromWebhook === 'one_time_monthly' ? 'monthly_trial'
       : null;  // recurring
 
-    // ── Upsert subscription record ─────────────────────────────────────────
+    // Upsert subscription record
+    // Written for ALL Grow webhooks -- subscription and shop alike -- so no payment
+    // data is lost even when tier resolution fails.
+    // product_id stores the resolved tier when known; otherwise the raw cField2
+    // value (even if unrecognised) so forensic information is preserved.
     if (token) {
       const { error: upsertError } = await db.from('user_subscriptions').upsert(
         {
           user_id:          userId,
           platform:         'grow',
           purchase_token:   token,
-          product_id:       tier,
+          product_id:       resolvedTier ?? tierFromPayload ?? null,
           base_plan_id:     basePlanId,
           expires_at:       expiresAt,
           status:           'active',
@@ -873,73 +889,118 @@ billingRouter.post('/grow/webhook/:secret', async (req: Request, res) => {
           `[grow/webhook] user_subscriptions upsert FAILED user=${userId} token=${token}:`,
           upsertError
         );
-        // Don't abort — still try to update the users table so the tier change lands
-        // even if the subscription audit row fails (e.g. schema mismatch).
+        // Don't abort -- still attempt tier grant below even if the audit row failed.
       }
     }
 
-    // ── Update user tier ───────────────────────────────────────────────────
-    // IMPORTANT: capture the result — Supabase never throws on soft errors,
-    // it returns { error } instead.  Chaining .select() forces a non-null
-    // response so we can distinguish "0 rows matched" from a genuine update.
-    const { data: tierUpdateData, error: tierUpdateError } = await db
-      .from('users')
-      .update({
-        subscription_tier: tier,
-        updated_at:        new Date().toISOString(),
-      })
-      .eq('id', userId)
-      .select('id, subscription_tier');
-
-    if (tierUpdateError) {
-      console.error(
-        `[grow/webhook] users.update FAILED user=${userId} tier=${tier}:`,
-        tierUpdateError
+    // Shop purchase: row written above; no tier grant needed
+    if (isShopPurchase) {
+      console.log(
+        `[grow/webhook] non-subscription purchase recorded without tier grant -- ` +
+        `user=${userId} paymentMode=${paymentModeFromWebhook} transactionId=${transactionId ?? '(none)'}`
       );
-    } else if (!tierUpdateData || tierUpdateData.length === 0) {
+    } else if (resolvedTier === null) {
+      // cField2 absent or unrecognised: loud failure log, no tier written
+      // The payment is preserved in user_subscriptions above. Only the tier grant
+      // is withheld. A human must look up the transaction by transactionId and
+      // apply the correct tier manually via a direct DB update.
+      // See investigations/GROW_TIER_FALLBACK_FIX.md for reconciliation steps.
       console.error(
-        `[grow/webhook] users.update ZERO ROWS — userId=${userId} not found in users table. ` +
-        `Falling back to email lookup.`
+        `[grow/webhook] TIER_GRANT_FAILED -- cField2 absent or unrecognised; ` +
+        `subscription_tier NOT updated. Manual reconciliation required. ` +
+        `transactionId=${transactionId ?? '(none)'} cField2=${tierFromPayload ?? '(absent)'} ` +
+        `userId=${userId} sum=${(data as any).sum ?? '(unknown)'}`
       );
-      // Fallback: try matching by payer email (covers the case where cField1 UUID
-      // was somehow wrong / truncated in the Make.com scenario)
-      if (payerEmail) {
-        const { data: emailUpdateData, error: emailUpdateError } = await db
-          .from('users')
-          .update({
-            subscription_tier: tier,
-            updated_at:        new Date().toISOString(),
-          })
-          .eq('email', payerEmail)
-          .select('id, subscription_tier');
-
-        if (emailUpdateError) {
-          console.error(
-            `[grow/webhook] users.update (email fallback) FAILED email=${payerEmail}:`,
-            emailUpdateError
-          );
-        } else if (!emailUpdateData || emailUpdateData.length === 0) {
-          console.error(
-            `[grow/webhook] users.update (email fallback) ZERO ROWS — email=${payerEmail} not found either`
-          );
-        } else {
-          console.log(
-            `[grow/webhook] users.update (email fallback) OK ` +
-            `user=${emailUpdateData[0].id} new_tier=${emailUpdateData[0].subscription_tier}`
-          );
+    } else {
+      // Valid tier resolved: optional sum cross-check, then grant
+      // Pricing sums map unambiguously at current ILS prices:
+      // 18/36/54 monthly; 180/360/540 annual. Log a loud warning if the
+      // charged amount doesn't match the expected amount for this tier+mode.
+      // The tier is still granted (cField2 is treated as authoritative); the
+      // mismatch is advisory and warrants manual review.
+      const rawSum = (data as any).sum;
+      if (rawSum !== undefined && rawSum !== null) {
+        const chargedAmount = parseFloat(String(rawSum).replace(',', '.'));
+        if (!isNaN(chargedAmount)) {
+          const pricing = TIER_PRICING[resolvedTier];
+          const expectedAmount: number | null =
+            paymentModeFromWebhook === 'one_time_annual'   ? (pricing?.annual  ?? null)
+            : paymentModeFromWebhook === 'one_time_monthly' ? (pricing?.monthly ?? null)
+            :                                                   (pricing?.monthly ?? null); // recurring: monthly cadence
+          if (expectedAmount !== null && Math.abs(chargedAmount - expectedAmount) > 0.01) {
+            console.error(
+              `[grow/webhook] SUM_MISMATCH -- cField2="${resolvedTier}" expected ILS ${expectedAmount} ` +
+              `but charged ILS ${chargedAmount} (paymentMode=${paymentModeFromWebhook}). ` +
+              `Tier "${resolvedTier}" will still be granted. Manual review required. ` +
+              `transactionId=${transactionId ?? '(none)'} userId=${userId}`
+            );
+          }
         }
       }
-    } else {
-      console.log(
-        `[grow/webhook] users.update OK ` +
-        `user=${tierUpdateData[0].id} new_tier=${tierUpdateData[0].subscription_tier} ` +
-        `(${tierUpdateData.length} row(s) affected)`
-      );
+
+      // Grant the tier
+      // IMPORTANT: capture the result -- Supabase never throws on soft errors,
+      // it returns { error } instead.  Chaining .select() forces a non-null
+      // response so we can distinguish "0 rows matched" from a genuine update.
+      const { data: tierUpdateData, error: tierUpdateError } = await db
+        .from('users')
+        .update({
+          subscription_tier: resolvedTier,
+          updated_at:        new Date().toISOString(),
+        })
+        .eq('id', userId)
+        .select('id, subscription_tier');
+
+      if (tierUpdateError) {
+        console.error(
+          `[grow/webhook] users.update FAILED user=${userId} tier=${resolvedTier}:`,
+          tierUpdateError
+        );
+      } else if (!tierUpdateData || tierUpdateData.length === 0) {
+        console.error(
+          `[grow/webhook] users.update ZERO ROWS -- userId=${userId} not found in users table. ` +
+          `Falling back to email lookup.`
+        );
+        // Fallback: try matching by payer email (covers the case where cField1 UUID
+        // was somehow wrong / truncated in the Make.com scenario)
+        if (payerEmail) {
+          const { data: emailUpdateData, error: emailUpdateError } = await db
+            .from('users')
+            .update({
+              subscription_tier: resolvedTier,
+              updated_at:        new Date().toISOString(),
+            })
+            .eq('email', payerEmail)
+            .select('id, subscription_tier');
+
+          if (emailUpdateError) {
+            console.error(
+              `[grow/webhook] users.update (email fallback) FAILED email=${payerEmail}:`,
+              emailUpdateError
+            );
+          } else if (!emailUpdateData || emailUpdateData.length === 0) {
+            console.error(
+              `[grow/webhook] users.update (email fallback) ZERO ROWS -- email=${payerEmail} not found either`
+            );
+          } else {
+            console.log(
+              `[grow/webhook] users.update (email fallback) OK ` +
+              `user=${emailUpdateData[0].id} new_tier=${emailUpdateData[0].subscription_tier}`
+            );
+          }
+        }
+      } else {
+        console.log(
+          `[grow/webhook] users.update OK ` +
+          `user=${tierUpdateData[0].id} new_tier=${tierUpdateData[0].subscription_tier} ` +
+          `(${tierUpdateData.length} row(s) affected)`
+        );
+      }
     }
 
     console.log(
-      `[grow/webhook] ACCEPTED user=${userId} tier=${tier} ` +
-      `paymentMode=${paymentModeFromWebhook} expiresAt=${expiresAt ?? 'null'} transactionId=${transactionId}`
+      `[grow/webhook] ACCEPTED user=${userId} tier=${resolvedTier ?? '(none -- see logs above)'} ` +
+      `paymentMode=${paymentModeFromWebhook} expiresAt=${expiresAt} transactionId=${transactionId ?? '(none)'}`
     );
 
   } catch (err: any) {
