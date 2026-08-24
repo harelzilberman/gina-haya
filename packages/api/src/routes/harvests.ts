@@ -3,6 +3,7 @@ import { Router, type IRouter } from 'express';
 import { db } from '../db/client';
 import { verifyToken } from '../middleware/auth';
 import { todayInIsrael } from '@gina-haya/shared';
+import { checkOwnsGarden } from '../utils/ownership';
 
 export const harvestsRouter: IRouter = Router();
 
@@ -106,6 +107,18 @@ harvestsRouter.post('/', async (req: any, res) => {
 
     if (!plantNameHe || !plantNameEn) {
       return res.status(400).json({ error: 'plantNameHe and plantNameEn are required' });
+    }
+
+    // Validate gardenId ownership before the insert.
+    // Null/absent gardenId is valid — harvests without a garden are legitimate.
+    if (gardenId != null) {
+      const gardenCheck = await checkOwnsGarden(gardenId, userId, '[POST /api/harvests]');
+      if (!gardenCheck.ok) {
+        if (gardenCheck.reason === 'db_error') {
+          return res.status(500).json({ error: 'Database error' });
+        }
+        return res.status(403).json({ error: 'Forbidden' });
+      }
     }
 
     // Auto-fetch calendar data if not provided
