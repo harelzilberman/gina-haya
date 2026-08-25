@@ -1921,12 +1921,94 @@ chupChuRouter.post('/chat', async (req: any, res) => {
       stableContextByUser.set(userId, { context: stableContext, builtAt: nowMs });
     }
 
+    // ── 8c. Build garden timeline summary (volatile — Block 3) ──────────────
+    // Placed in Block 3 (not Block 2) because Block 2 is frozen in-process for
+    // 1 h with no invalidation path. A user who logs a BD prep mid-session would
+    // not see it in Chupchu's context for up to an hour if this were in Block 2.
+    // Block 3 is rebuilt on every request from a live DB query — no staleness.
+    // Also correct under Railway multi-instance: no inter-process state needed.
+    //
+    // Tolerates the table not existing: PostgREST returns code PGRST204 or
+    // a 404-class error when the table is absent. The explicit error check below
+    // catches that and falls through to gardenTimelineSection = '' so the app
+    // behaves exactly as before the migration was run.
+    let gardenTimelineSection = '';
+    if (resolvedGardenId) {
+      try {
+        const { data: timelineRows, error: timelineError } = await db
+          .from('garden_timeline')
+          .select('event_type, prep_name, event_date, time_of_day')
+          .eq('garden_id', resolvedGardenId)
+          .is('deleted_at', null)
+          .order('event_date', { ascending: false })
+          .limit(60); // fetch enough to get last-of-each-type across all 6 types × 5 prep_names
+
+        if (timelineError) {
+          // Log but do not throw — the table may not exist yet (PGRST204).
+          // Any other DB error is similarly non-fatal for this section.
+          console.warn('[Chupchu] garden_timeline query failed (table may not exist yet):', timelineError.code, timelineError.message);
+        } else if (timelineRows && timelineRows.length > 0) {
+          // Deduplicate in JS: keep first (most recent) row per (event_type, prep_name) pair.
+          // PostgREST does not support DISTINCT ON natively.
+          const seen = new Set<string>();
+          const deduped: typeof timelineRows = [];
+          for (const row of timelineRows) {
+            const key = `${row.event_type}:${row.prep_name ?? ''}`;
+            if (!seen.has(key)) {
+              seen.add(key);
+              deduped.push(row);
+            }
+          }
+
+          const today = new Date();
+          today.setHours(0, 0, 0, 0);
+
+          const formatRow = (row: (typeof deduped)[number]): string => {
+            const eventDate = new Date(row.event_date);
+            const daysAgo = Math.round((today.getTime() - eventDate.getTime()) / 86_400_000);
+            const daysStr = daysAgo === 0
+              ? (lang === 'he' ? 'היום' : 'today')
+              : daysAgo === 1
+                ? (lang === 'he' ? 'אתמול' : 'yesterday')
+                : (lang === 'he' ? `לפני ${daysAgo} ימים` : `${daysAgo} days ago`);
+
+            const timeStr = row.time_of_day ? ` (${row.time_of_day})` : '';
+
+            const eventLabel: Record<string, { he: string; en: string }> = {
+              bd_prep:       { he: 'פרפרט', en: 'BD prep' },
+              compost_turn:  { he: 'הפיכת קומפוסט', en: 'compost turned' },
+              bed_prep:      { he: 'הכנת ערוגה', en: 'bed prepared' },
+              cover_crop:    { he: 'זבל ירוק', en: 'cover crop sown' },
+              mulching:      { he: 'חיפוי קרקע', en: 'mulching' },
+              pest_treatment:{ he: 'טיפול בהדברה', en: 'pest treatment' },
+            };
+            const label = eventLabel[row.event_type]?.[lang] ?? row.event_type;
+            const prepPart = row.prep_name ? ` ${row.prep_name}` : '';
+
+            return lang === 'he'
+              ? `${label}${prepPart}: ${row.event_date} (${daysStr})${timeStr}`
+              : `${label}${prepPart}: ${row.event_date} (${daysStr})${timeStr}`;
+          };
+
+          const lines = deduped.slice(0, 6).map(formatRow);
+          gardenTimelineSection = lang === 'he'
+            ? `## אירועי גינה אחרונים\n${lines.join('\n')}`
+            : `## Recent Garden Events\n${lines.join('\n')}`;
+        }
+      } catch (timelineErr: any) {
+        // Non-fatal: treat as empty section rather than breaking the request.
+        console.warn('[Chupchu] garden_timeline section threw unexpectedly:', timelineErr.message);
+      }
+    }
+
     // Volatile context: changes on every request — must NOT be cached.
     // pastContextSection shifts every exchange; date/weather change constantly.
+    // gardenTimelineSection: volatile because user may log a prep mid-session.
     const volatileContext = [
       pastContextSection,
       dateSection,
       weatherSection,
+      gardenTimelineSection,
     ].filter(Boolean).join('\n\n');
 
     // Always prepend history (with role-alternation safety) before the current user message,
@@ -2176,12 +2258,34 @@ chupChuRouter.post('/execute-tool', async (req: any, res) => {
         break;
       }
       case 'log_bd_prep': {
-        await db.from('bd_applications').insert({
+        // Resolve garden_id: prefer explicit body field, fall back to active_garden_id.
+        // time_of_day and quantity_grams are intentionally not accepted here yet —
+        // extending the tool schema requires a coordinated Flutter update (FOLLOW-UP).
+        let bdGardenId: string | null = (req.body.gardenId as string | null) ?? null;
+        if (!bdGardenId) {
+          const { data: userRow } = await db
+            .from('users')
+            .select('active_garden_id')
+            .eq('id', userId)
+            .single();
+          bdGardenId = userRow?.active_garden_id ?? null;
+        }
+        if (!bdGardenId) {
+          console.error('[execute-tool/log_bd_prep] no garden_id resolved for user', userId);
+          return res.status(400).json({ error: 'לא נמצאה גינה פעילה. פתח את הגינה ונסה שוב.' });
+        }
+        const { error: bdInsertError } = await db.from('garden_timeline').insert({
+          garden_id:  bdGardenId,
           user_id:    userId,
+          event_type: 'bd_prep',
+          event_date: params.date,
           prep_name:  params.prep_name,
-          date:       params.date,
           created_at: new Date().toISOString(),
         });
+        if (bdInsertError) {
+          console.error('[execute-tool/log_bd_prep] insert failed:', bdInsertError.message, bdInsertError.code);
+          return res.status(500).json({ error: 'שגיאה בשמירת הפרפרט. נסה שוב.' });
+        }
         break;
       }
       default:
