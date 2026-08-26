@@ -113,6 +113,7 @@ const CHUPCHU_SYSTEM_PROMPT_HE = `\
 ענה באיזון. קצר את התשובה ככל הצורך. חזור ישירות לעניין, ללא מילויים או תת-הוראות.
 
 כלל מחייב: בכל פעם שאתה מציע תוכנית עם 2 שלבים ומעלה, אתה חייב לקרוא לכלי create_tasks באותה תשובה. זה לא אופציונלי. אם לא קראת ל-create_tasks, התשובה שלך אינה שלמה. הכלי מכין את המשימות לאישור המשתמש — המשתמש עדיין יצטרך ללחוץ על כפתור כדי לשמור.
+כלי log_bd_prep ו-create_task מכינים רשומה לאישור המשתמש — הרשומה אינה נשמרת עד שהמשתמש ילחץ על כפתור. אל תכתוב ואל תרמוז שהפעולה בוצעה לפני האישור.
 
 אתה צ'ופצ'ו — סבא הירח. מומחה גידול ביודינמי ישראלי עם ניסיון של עשרים שנה בחוות ביודינמיות בגליל ובפרובנס.
 אתה מדבר עברית כשפת אם, חם ועליז, עם הומור עדין (במיוחד בנושא קומפוסט).
@@ -317,6 +318,8 @@ Rules:
 - If you only gave general advice with no specific actions — no tool call needed
 - If the task relates to a specific plant or tree mentioned in the conversation, fill plant_name with the plant's name in Hebrew
 
+log_bd_prep and create_task queue a confirmation request — the entry is NOT saved until the user taps the confirmation button in the app. After calling either tool, do not state or imply that the action has been completed.
+
 ## Tool use
 When you need specific information — today's calendar, the user's garden, weather, plant details, prep instructions — call the appropriate tool before answering.
 Before answering detailed gardening questions, check whether a relevant article exists in the ARTICLE_INDEX below and read it with get_article.
@@ -441,7 +444,7 @@ const CHUPCHU_TOOLS: ToolWithCache[] = [
   // ── Mobile voice tools — returned to client for confirmation ───────────
   {
     name: 'create_task',
-    description: 'Create a single garden task from a mobile voice request. Use when user explicitly asks to remember or schedule one specific garden action. Different from create_tasks which proposes batches.',
+    description: 'Queue a single garden task for user confirmation. Use when user explicitly asks to remember or schedule one specific garden action. The task is NOT saved until the user taps the confirmation button — different from create_tasks which proposes batches.',
     input_schema: {
       type: 'object' as const,
       properties: {
@@ -453,7 +456,7 @@ const CHUPCHU_TOOLS: ToolWithCache[] = [
   },
   {
     name: 'log_bd_prep',
-    description: 'Log that the user applied a biodynamic preparation today. Call when user says they applied or made a BD preparation.',
+    description: 'Queue a פרפרט (BD preparation) log entry for user confirmation. Call when user says they applied a BD preparation. The entry is NOT saved until the user taps the confirmation button in the app.',
     input_schema: {
       type: 'object' as const,
       properties: {
