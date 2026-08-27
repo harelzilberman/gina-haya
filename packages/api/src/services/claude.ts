@@ -358,7 +358,7 @@ function mobileToolDescription(name: string, params: Record<string, unknown>): s
     case 'create_task':
       return `מוסיף משימה: ${params.title}${params.due_date ? ` ל-${params.due_date}` : ''}`;
     case 'log_bd_prep':
-      return `מתעד יישום פרפרט ${params.prep_name} בתאריך ${params.date}`;
+      return `מתעד יישום פרפרט ${params.prep_name} בתאריך ${(params.date as string | undefined) || todayInIsrael()}`;
     default:
       return 'ביצוע פעולה';
   }

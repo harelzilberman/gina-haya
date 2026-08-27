@@ -1953,12 +1953,11 @@ chupChuRouter.post('/chat', async (req: any, res) => {
             }
           }
 
-          const today = new Date();
-          today.setHours(0, 0, 0, 0);
+          const todayStr = todayInIsrael();
+          const todayMs  = new Date(todayStr).getTime();
 
           const formatRow = (row: (typeof deduped)[number]): string => {
-            const eventDate = new Date(row.event_date);
-            const daysAgo = Math.round((today.getTime() - eventDate.getTime()) / 86_400_000);
+            const daysAgo = Math.round((todayMs - new Date(row.event_date).getTime()) / 86_400_000);
             const daysStr = daysAgo === 0
               ? (lang === 'he' ? 'היום' : 'today')
               : daysAgo === 1
