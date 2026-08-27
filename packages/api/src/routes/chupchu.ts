@@ -1341,6 +1341,8 @@ chupChuRouter.post('/chat', async (req: any, res) => {
     const lang = (language === 'he' || language === 'en')
       ? language
       : userProfile?.language_preference || 'he';
+    console.log('[Chupchu] lang resolved:', lang,
+      '(body:', language ?? '(absent)', 'profile:', userProfile?.language_preference ?? '(null)', ')');
 
     // ── 2. Check monthly limits ───────────────────────────────────────────
     // Fix 4: use 'professional' (the real top-tier key in TIER_LIMITS) so
@@ -1919,7 +1921,7 @@ chupChuRouter.post('/chat', async (req: any, res) => {
         ? `${retryHintLine}זהה את הצמח בתמונה והחזר JSON בלבד עם המבנה הבא (ללא טקסט נוסף, ללא markdown):
 {"plant_name":"שם הצמח בעברית","plant_name_latin":"Latin species name","confidence":"high|medium|low","key_facts":["עובדה 1","עובדה 2","עובדה 3"],"summary":"1-2 משפטים בעברית","chupchu_comment":"שורה אחת חמה בסגנון צ'ופצ'ו"}`
         : `${retryHintLine}Identify the plant in the image and return ONLY JSON with this exact structure (no extra text, no markdown):
-{"plant_name":"Hebrew plant name","plant_name_latin":"Latin species name","confidence":"high|medium|low","key_facts":["fact 1","fact 2","fact 3"],"summary":"1-2 sentences","chupchu_comment":"one warm Chupchu-style line"}`;
+{"plant_name":"plant common name in English","plant_name_latin":"Latin species name","confidence":"high|medium|low","key_facts":["fact 1","fact 2","fact 3"],"summary":"1-2 sentences","chupchu_comment":"one warm Chupchu-style line"}`;
 
       messageForClaude = {
         role: 'user',
@@ -2158,9 +2160,9 @@ chupChuRouter.post('/chat', async (req: any, res) => {
               ? recognitionResult.plant_name_latin as string : null;
             const comment = typeof recognitionResult.chupchu_comment === 'string' && recognitionResult.chupchu_comment
               ? recognitionResult.chupchu_comment as string : null;
-            // Hebrew: "שם עברי (Latin)" — Hebrew name is meaningful to the reader.
-            // English: "Latin (שם עברי)" — Latin is the readable identifier; the
-            // EN schema always stores Hebrew in plant_name, so we swap the order.
+            // Hebrew: "שם עברי (Latin)" — Hebrew common name first.
+            // English: "Latin (common name)" — Latin first; EN schema now instructs
+            // the model to return an English common name in plant_name.
             const namePart = lang === 'he'
               ? (plantLatin ? `${plantName} (${plantLatin})` : plantName)
               : (plantLatin ? `${plantLatin} (${plantName})` : plantName);
