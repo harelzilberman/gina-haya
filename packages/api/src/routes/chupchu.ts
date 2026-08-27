@@ -2158,7 +2158,12 @@ chupChuRouter.post('/chat', async (req: any, res) => {
               ? recognitionResult.plant_name_latin as string : null;
             const comment = typeof recognitionResult.chupchu_comment === 'string' && recognitionResult.chupchu_comment
               ? recognitionResult.chupchu_comment as string : null;
-            const namePart = plantLatin ? `${plantName} (${plantLatin})` : plantName;
+            // Hebrew: "שם עברי (Latin)" — Hebrew name is meaningful to the reader.
+            // English: "Latin (שם עברי)" — Latin is the readable identifier; the
+            // EN schema always stores Hebrew in plant_name, so we swap the order.
+            const namePart = lang === 'he'
+              ? (plantLatin ? `${plantName} (${plantLatin})` : plantName)
+              : (plantLatin ? `${plantLatin} (${plantName})` : plantName);
             chupChuMessage.summary = lang === 'he'
               ? (comment ? `זיהיתי ${namePart} — ${comment}` : `זיהיתי ${namePart}`)
               : (comment ? `I identified ${namePart} — ${comment}` : `I identified ${namePart}`);
