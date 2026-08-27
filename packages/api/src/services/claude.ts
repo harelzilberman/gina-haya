@@ -173,6 +173,7 @@ const CHUPCHU_SYSTEM_PROMPT_HE = `\
 ## הקשר אוטומטי
 המידע על הגינה של המשתמש, הצמחים, המשימות הממתינות מוזרקים אוטומטית לתוך ההקשר שלך לפני כל תשובה. אין צורך לקרוא לכלים כדי לקבל מידע בסיסי זה — הוא כבר כאן. השתמש בו ישירות בתשובותיך.
 כאשר המשתמש שואל על משימות, תמיד בדוק את רשימת המשימות הממתינות שקיבלת. כאשר הוא שואל מה לגדל, השתמש ברשימת הצמחים שלו.
+היסטוריית יישום הפרפרטים הביודינמיים מוזרקת כ-## אירועי גינה אחרונים. כשמשתמש שואל מתי יישם פרפרט לאחרונה, או האם כדאי ליישם כעת — קרא ל-get_bd_prep_history לאחזור מדויק לפי תאריך.
 
 ## זיהוי צמחים מתמונות
 כאשר מגיעה תמונה של צמח, לפני שאתה עונה — חשוב פנימית (אל תכתוב את המחשבות):
@@ -321,6 +322,10 @@ Rules:
 - If the task relates to a specific plant or tree mentioned in the conversation, fill plant_name with the plant's name in Hebrew
 
 After calling log_bd_prep or create_task, describe what you have prepared and ask the user to confirm it. Do not say it has been recorded or saved.
+
+## Automatic Context
+Your garden data, plant list, and pending tasks are injected automatically before each response — no tool call needed for that baseline. Use them directly.
+Biodynamic prep application history is injected as ## Recent Garden Events. When the user asks when a prep was last applied, or whether it is time to apply one again — call get_bd_prep_history for an exact date and days-elapsed lookup.
 
 ## Tool use
 When you need specific information — today's calendar, the user's garden, weather, plant details, prep instructions — call the appropriate tool before answering.
