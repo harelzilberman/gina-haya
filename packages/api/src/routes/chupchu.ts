@@ -14,6 +14,7 @@ import { checkAndRecordVisionUse, recordFreeRetryVisionUse } from '../services/v
 import { logApiUsage } from '../services/apiUsage';
 import { lastScheduledIrrigation, isWateringTask } from '../utils/irrigation';
 import { userOwnsGardenPlant } from '../utils/ownership';
+import { resolveGardenId } from '../utils/garden';
 
 const ANTHROPIC_URL = 'https://api.anthropic.com/v1/messages';
 const ANTHROPIC_HEADERS = {
@@ -1415,25 +1416,17 @@ chupChuRouter.post('/chat', async (req: any, res) => {
       .eq('date', today)
       .single();
 
-    // ── 4. Fetch user's garden (active garden takes priority) ─────────────
+    // ── 4. Fetch user's garden (shared resolution helper) ────────────────
+    // On ambiguous-multiple-gardens or no-gardens, proceed with garden = null
+    // (conversation still works without garden context — never refuse chat).
     let garden: any = null;
-    const resolvedGardenId = gardenId || userProfile?.active_garden_id || null;
-    if (resolvedGardenId) {
+    const gardenResolution = await resolveGardenId(userId, gardenId);
+    if (gardenResolution.gardenId) {
       const { data } = await db
         .from('gardens')
         .select('*, garden_plants(*)')
-        .eq('id', resolvedGardenId)
+        .eq('id', gardenResolution.gardenId)
         .eq('user_id', userId)
-        .single();
-      garden = data;
-    }
-    if (!garden) {
-      const { data } = await db
-        .from('gardens')
-        .select('*, garden_plants(*)')
-        .eq('user_id', userId)
-        .order('is_default', { ascending: false })
-        .limit(1)
         .single();
       garden = data;
     }
@@ -1933,12 +1926,12 @@ chupChuRouter.post('/chat', async (req: any, res) => {
     // catches that and falls through to gardenTimelineSection = '' so the app
     // behaves exactly as before the migration was run.
     let gardenTimelineSection = '';
-    if (resolvedGardenId) {
+    if (gardenResolution.gardenId) {
       try {
         const { data: timelineRows, error: timelineError } = await db
           .from('garden_timeline')
           .select('event_type, prep_name, event_date, time_of_day')
-          .eq('garden_id', resolvedGardenId)
+          .eq('garden_id', gardenResolution.gardenId)
           .is('deleted_at', null)
           .order('event_date', { ascending: false })
           .limit(60); // fetch enough to get last-of-each-type across all 6 types × 5 prep_names
@@ -2240,6 +2233,7 @@ chupChuRouter.get('/pending-tasks', async (req: any, res) => {
 chupChuRouter.post('/execute-tool', async (req: any, res) => {
   const { tool_name, params } = req.body as { tool_name: string; params: Record<string, any> };
   const userId = req.user.id;
+  console.log('[execute-tool] body:', { tool_name, gardenId: req.body.gardenId ?? '(absent)' });
 
   try {
     switch (tool_name) {
@@ -2262,21 +2256,25 @@ chupChuRouter.post('/execute-tool', async (req: any, res) => {
         break;
       }
       case 'log_bd_prep': {
-        // Resolve garden_id: prefer explicit body field, fall back to active_garden_id.
+        // Resolve garden_id via shared helper (body → active_garden_id → is_default → only-garden).
         // time_of_day and quantity_grams are intentionally not accepted here yet —
         // extending the tool schema requires a coordinated Flutter update (FOLLOW-UP).
-        let bdGardenId: string | null = (req.body.gardenId as string | null) ?? null;
+        const { gardenId: bdGardenId, reason: gardenReason, gardens: gardenList } =
+          await resolveGardenId(userId, req.body.gardenId as string | null | undefined);
+        console.log('[execute-tool/log_bd_prep] garden resolution:', gardenReason, 'user:', userId);
+
         if (!bdGardenId) {
-          const { data: userRow } = await db
-            .from('users')
-            .select('active_garden_id')
-            .eq('id', userId)
-            .single();
-          bdGardenId = userRow?.active_garden_id ?? null;
-        }
-        if (!bdGardenId) {
-          console.error('[execute-tool/log_bd_prep] no garden_id resolved for user', userId);
-          return res.status(400).json({ error: 'לא נמצאה גינה פעילה. פתח את הגינה ונסה שוב.' });
+          if (gardenReason === 'db-error') {
+            return res.status(500).json({ error: 'שגיאת מסד נתונים בחיפוש הגינה. נסה שוב.' });
+          }
+          if (gardenReason === 'no-gardens') {
+            return res.status(400).json({ error: 'לא נמצאה גינה בחשבון. צור גינה ונסה שוב.' });
+          }
+          // ambiguous-multiple-gardens: name the gardens so the user can pick
+          const names = (gardenList ?? []).map(g => g.name).join(', ');
+          return res.status(400).json({
+            error: `נמצאו ${gardenList?.length ?? 0} גינות: ${names}. פתח את הגינה הרצויה ונסה שוב.`,
+          });
         }
         const { error: bdInsertError } = await db.from('garden_timeline').insert({
           garden_id:  bdGardenId,
