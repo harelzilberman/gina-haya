@@ -2244,10 +2244,10 @@ chupChuRouter.post('/execute-tool', async (req: any, res) => {
   try {
     switch (tool_name) {
       case 'create_task': {
-        await db.from('garden_tasks').insert({
+        const { error: taskInsertError } = await db.from('garden_tasks').insert({
           user_id:       userId,
           title:         params.title,
-          date:          params.due_date ?? new Date().toISOString().slice(0, 10),
+          date:          (params.due_date as string | undefined) || todayInIsrael(),
           type:          'custom',
           status:        'pending',
           priority:      params.priority ?? 'medium',
@@ -2255,6 +2255,10 @@ chupChuRouter.post('/execute-tool', async (req: any, res) => {
           source_action: 'chupchu',
           created_at:    new Date().toISOString(),
         });
+        if (taskInsertError) {
+          console.error('[execute-tool/create_task] insert failed:', taskInsertError.message, taskInsertError.code);
+          return res.status(500).json({ error: 'שגיאה בשמירת המשימה. נסה שוב.' });
+        }
         break;
       }
       case 'log_bd_prep': {
