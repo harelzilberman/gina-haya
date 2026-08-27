@@ -5,27 +5,38 @@ import { sendRenewalReminder } from './email';
 import { getLimits } from '@gina-haya/shared';
 
 export function startCronJobs() {
-  // Daily garden task push — 7:00am Israel time (04:00 UTC)
-  cron.schedule('0 4 * * *', async () => {
+  // Convention: wall-clock Israel time + explicit timezone.
+  // node-cron interprets the schedule in the given timezone, so IDT/IST
+  // transitions are handled automatically — no UTC arithmetic needed.
+
+  // 07:00 Israel time daily
+  const DAILY_SCHEDULE  = '0 7 * * *';
+  const RENEWAL_SCHEDULE = '0 9 * * *';
+  const TZ = 'Asia/Jerusalem';
+
+  cron.schedule(DAILY_SCHEDULE, async () => {
     console.log('[cron] Sending daily garden task notifications...');
     try {
       await sendDailySummary();
     } catch (e) {
       console.error('[cron] Daily summary failed:', e);
     }
-  }, { timezone: 'Asia/Jerusalem' });
+  }, { timezone: TZ });
 
-  // Annual subscription renewal reminders — 9:00am Israel time (06:00 UTC)
-  cron.schedule('0 6 * * *', async () => {
+  // 09:00 Israel time daily
+  cron.schedule(RENEWAL_SCHEDULE, async () => {
     console.log('[cron] Sending annual renewal reminders...');
     try {
       await sendAnnualRenewalReminders();
     } catch (e) {
       console.error('[cron] Annual renewal reminders failed:', e);
     }
-  }, { timezone: 'Asia/Jerusalem' });
+  }, { timezone: TZ });
 
-  console.log('[cron] Jobs scheduled: daily summary at 7:00am, renewal reminders at 9:00am Israel time');
+  // Derive log times from schedule strings so this line cannot drift silently.
+  const dailyHour   = DAILY_SCHEDULE.split(' ')[1];
+  const renewalHour = RENEWAL_SCHEDULE.split(' ')[1];
+  console.log(`[cron] Jobs scheduled: daily summary at ${dailyHour}:00, renewal reminders at ${renewalHour}:00 ${TZ}`);
 }
 
 async function sendDailySummary() {
