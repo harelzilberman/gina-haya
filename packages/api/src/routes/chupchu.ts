@@ -843,6 +843,12 @@ chupChuRouter.post('/memory/summarize', async (req: any, res) => {
     const convText = conversationHistory
       .slice(-20)
       .filter((m: any) => typeof m.content === 'string')
+      // Skip vision payloads and raw JSON — same predicate as buildPastContextSummary.
+      // Reuses isPastContextUnsuitable; do not inline a second copy of the predicate.
+      // sanitizeForPastContext is intentionally NOT applied here: its regex
+      // /```[\s\S]*?```/g removes fence contents, which would silently delete
+      // legitimate answer text formatted in code blocks.
+      .filter((m: any) => m.role !== 'assistant' || !isPastContextUnsuitable(String(m.content)))
       .map((m: any) => {
         const label = m.role === 'user' ? (lang === 'he' ? 'משתמש' : 'User') : (lang === 'he' ? "צ'ופצ'ו" : 'Chupchu');
         // Fix E: codepoint-safe truncation — .slice on UTF-16 code units can split surrogate pairs
