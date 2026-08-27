@@ -12,6 +12,11 @@ export interface ChupChuMessage {
   // The user-supplied correction hint that seeded this retry, if any.
   // Stored here so the client can display it on restored history cards.
   user_hint?: string | null;
+  // Prose summary built at write time from the JSON mini-card.
+  // Model-input readers (historyForClaude, buildPastContextSummary, convText)
+  // prefer this over content so Claude receives prose instead of raw JSON.
+  // content is never modified — Flutter card detection depends on it.
+  summary?: string;
 }
 
 export interface ChupChuContext {

@@ -6,6 +6,7 @@ export interface ChupChuMessage {
     recognition_photo_key?: string | null;
     is_retry?: boolean;
     user_hint?: string | null;
+    summary?: string;
 }
 export interface ChupChuContext {
     gardenName: string | null;

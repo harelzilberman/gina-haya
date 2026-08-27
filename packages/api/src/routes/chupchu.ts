@@ -189,7 +189,7 @@ chupChuRouter.get('/history', async (req: any, res) => {
         const allMessages = convRows.flatMap((r: any) => r.messages || []);
         const seen = new Set<string>();
         messages = allMessages.filter((m: any) => {
-          const key = `${m.role}:${typeof m.content === 'string' ? m.content.slice(0, 50) : JSON.stringify(m.content).slice(0, 50)}`;
+          const key = `${m.role}:${m.timestamp ?? ''}:${typeof m.content === 'string' ? m.content.slice(0, 50) : JSON.stringify(m.content).slice(0, 50)}`;
           if (seen.has(key)) return false;
           seen.add(key);
           return true;
@@ -843,16 +843,18 @@ chupChuRouter.post('/memory/summarize', async (req: any, res) => {
     const convText = conversationHistory
       .slice(-20)
       .filter((m: any) => typeof m.content === 'string')
-      // Skip vision payloads and raw JSON — same predicate as buildPastContextSummary.
-      // Reuses isPastContextUnsuitable; do not inline a second copy of the predicate.
-      // sanitizeForPastContext is intentionally NOT applied here: its regex
-      // /```[\s\S]*?```/g removes fence contents, which would silently delete
-      // legitimate answer text formatted in code blocks.
-      .filter((m: any) => m.role !== 'assistant' || !isPastContextUnsuitable(String(m.content)))
+      // For assistant turns: pass if there is a pre-built prose summary (vision turns),
+      // or if the content is not a vision payload / raw JSON. User turns always pass.
+      // isPastContextUnsuitable is still needed for the ~40 existing rows without summary,
+      // and for any turn where JSON parsing failed at write time (no summary set).
+      // sanitizeForPastContext is not applied here — turns with summary are already clean
+      // prose; others are text-only after the filter (fence regex fixed in 2904274).
+      .filter((m: any) => m.role !== 'assistant' || m.summary || !isPastContextUnsuitable(String(m.content)))
       .map((m: any) => {
         const label = m.role === 'user' ? (lang === 'he' ? 'משתמש' : 'User') : (lang === 'he' ? "צ'ופצ'ו" : 'Chupchu');
-        // Fix E: codepoint-safe truncation — .slice on UTF-16 code units can split surrogate pairs
-        const body  = Array.from(String(m.content)).slice(0, 200).join('');
+        // Fix E: codepoint-safe truncation — .slice on UTF-16 code units can split surrogate pairs.
+        // Prefer summary over raw content for assistant turns — avoids echoing vision JSON.
+        const body  = Array.from(String(m.summary ?? m.content)).slice(0, 200).join('');
         return `${label}: ${body}`;
       })
       .join('\n');
@@ -1231,11 +1233,7 @@ function buildPastContextSummary(allMessages: ChupChuMessage[], userId?: string)
   const lines: string[] = ['## היסטוריית שיחות קודמות'];
 
   for (const { msg: userMsg, idx } of picked) {
-    // Walk forward past non-conversational replies (vision JSON, code fences).
-    // Never fall back to injecting a rejected turn — omit replyText instead.
-    const cleanReply = pastMessages
-      .slice(idx + 1)
-      .find(m => m.role === 'assistant' && !isPastContextUnsuitable(String(m.content ?? '')));
+    const followingMsgs = pastMessages.slice(idx + 1);
 
     // Format date safely — guard against missing/invalid timestamps
     let date: string;
@@ -1250,9 +1248,18 @@ function buildPastContextSummary(allMessages: ChupChuMessage[], userId?: string)
     const topic = Array.from(String(userMsg.content ?? '').replace(/🌿 \[.*?\]/g, '[תמונה]')).slice(0, 120).join('');
 
     let replyText = '';
-    if (cleanReply) {
-      const cleaned = sanitizeForPastContext(String(cleanReply.content ?? ''));
-      replyText = truncateSafeCP(cleaned, 150);
+    // Prefer pre-built summary (vision turns): clean prose, no filtering needed.
+    // Fall back: walk forward past unsuitable turns (raw JSON, code fences).
+    const firstAssistant = followingMsgs.find(m => m.role === 'assistant');
+    if (firstAssistant?.summary) {
+      replyText = truncateSafeCP(firstAssistant.summary, 150);
+    } else {
+      const cleanReply = followingMsgs
+        .find(m => m.role === 'assistant' && !isPastContextUnsuitable(String(m.content ?? '')));
+      if (cleanReply) {
+        const cleaned = sanitizeForPastContext(String(cleanReply.content ?? ''));
+        replyText = truncateSafeCP(cleaned, 150);
+      }
     }
 
     lines.push(
@@ -1595,7 +1602,7 @@ chupChuRouter.post('/chat', async (req: any, res) => {
         const allMessages = convRows.flatMap((r: any) => r.messages || []);
         const seen = new Set<string>();
         existingMessages = allMessages.filter((m: any) => {
-          const key = `${m.role}:${typeof m.content === 'string' ? m.content.slice(0, 50) : JSON.stringify(m.content).slice(0, 50)}`;
+          const key = `${m.role}:${m.timestamp ?? ''}:${typeof m.content === 'string' ? m.content.slice(0, 50) : JSON.stringify(m.content).slice(0, 50)}`;
           if (seen.has(key)) return false;
           seen.add(key);
           return true;
@@ -1614,14 +1621,19 @@ chupChuRouter.post('/chat', async (req: any, res) => {
     // Fall back to DB history (for older clients or first-ever messages).
     let historyForClaude: ChupChuMessage[];
     if (Array.isArray(clientHistory) && clientHistory.length > 0) {
-      historyForClaude = (clientHistory as Array<{ role: string; content: string }>)
+      historyForClaude = (clientHistory as Array<any>)
         .slice(-20)
-        .map(m => ({
-          role: m.role as 'user' | 'assistant',
-          // Fix E: codepoint-safe truncation to avoid splitting surrogate pairs on emoji
-          content: Array.from(String(m.content ?? '')).slice(0, 500).join(''),
-          timestamp: new Date().toISOString(),
-        }));
+        .map(m => {
+          const msg: ChupChuMessage = {
+            role: m.role as 'user' | 'assistant',
+            // Fix E: codepoint-safe truncation to avoid splitting surrogate pairs on emoji
+            content: Array.from(String(m.content ?? '')).slice(0, 500).join(''),
+            timestamp: new Date().toISOString(),
+          };
+          // Preserve summary if the client round-tripped it from /history.
+          if (typeof m.summary === 'string' && m.summary) msg.summary = m.summary;
+          return msg;
+        });
     } else {
       historyForClaude = existingMessages.slice(-20);
     }
@@ -2058,8 +2070,15 @@ chupChuRouter.post('/chat', async (req: any, res) => {
     // even when the current message includes an image.
     // For image turns, messageForClaude contains the JSON recognition instruction
     // (NOT stored in DB — newUserMessage with the placeholder is stored instead).
+    //
+    // Substitute summary for content on vision turns: Claude receives prose ("I identified
+    // tomato (Solanum lycopersicum) — ...") rather than a raw JSON blob. summary is only
+    // present on messages where recognition succeeded; all others are passed through as-is.
+    const historyWithSummary = historyForClaude.map(m =>
+      m.summary ? { ...m, content: m.summary } : m
+    );
     const { response: chupChuText, proposedTasks, mobileTool } = await askChupChu(
-      [...ensureRoleAlternation(historyForClaude), messageForClaude],
+      [...ensureRoleAlternation(historyWithSummary), messageForClaude],
       context,
       stableContext || undefined,
       volatileContext || undefined,
@@ -2127,9 +2146,23 @@ chupChuRouter.post('/chat', async (req: any, res) => {
           const newRhId = rhData?.id ?? null;
 
           // Patch assistant message so restored history cards can render the photo.
-          // content stays as chupChuText — Claude-context rebuild reads only content.
+          // content stays as chupChuText — Flutter's card detection reads it.
           if (newRhId) chupChuMessage.recognition_id = newRhId;
           chupChuMessage.recognition_photo_key = photoStorageKey ?? null;
+
+          // Build a prose summary for model-input readers (historyForClaude,
+          // buildPastContextSummary, convText). content is never modified here.
+          {
+            const plantName = recognitionResult.plant_name as string;
+            const plantLatin = typeof recognitionResult.plant_name_latin === 'string' && recognitionResult.plant_name_latin
+              ? recognitionResult.plant_name_latin as string : null;
+            const comment = typeof recognitionResult.chupchu_comment === 'string' && recognitionResult.chupchu_comment
+              ? recognitionResult.chupchu_comment as string : null;
+            const namePart = plantLatin ? `${plantName} (${plantLatin})` : plantName;
+            chupChuMessage.summary = lang === 'he'
+              ? (comment ? `זיהיתי ${namePart} — ${comment}` : `זיהיתי ${namePart}`)
+              : (comment ? `I identified ${namePart} — ${comment}` : `I identified ${namePart}`);
+          }
           // Persist retry metadata onto the message so both fields survive a
           // history restore.  is_retry blocks the client from offering a second
           // retry; user_hint lets the client display the correction that was given.
