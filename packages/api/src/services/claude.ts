@@ -4,6 +4,8 @@ import Anthropic from '@anthropic-ai/sdk'; // kept for TypeScript types only —
 import type { ChupChuContext, ChupChuMessage } from '@gina-haya/shared';
 import { db } from '../db/client';
 import { logApiUsage } from './apiUsage';
+import { resolveGardenId } from '../utils/garden';
+import { todayInIsrael } from '@gina-haya/shared';
 
 const ANTHROPIC_URL = 'https://api.anthropic.com/v1/messages';
 const ANTHROPIC_HEADERS = {
@@ -479,6 +481,20 @@ const CHUPCHU_TOOLS: ToolWithCache[] = [
     },
   },
   {
+    name: 'get_bd_prep_history',
+    description: "Returns when each biodynamic preparation (500, 501, 508, etc.) was last applied in the user's garden. Call this whenever the user asks when they last applied a preparation, whether they are due to apply one again, or how long it has been since a prep was used. Always call this before advising on whether to apply a preparation — do not answer from the calendar alone.",
+    input_schema: {
+      type: 'object' as const,
+      properties: {
+        prep_name: {
+          type: 'string',
+          description: 'Optional. Filter to one preparation, e.g. "500". Omit to return all.',
+        },
+      },
+      required: [],
+    },
+  },
+  {
     name: 'create_tasks',
     description: 'REQUIRED: Call this tool every time you recommend a garden action — watering, pruning, fertilizing, planting, spraying, BD prep, or any specific task. You MUST call this in the same response where you describe the action. Do NOT wait for user confirmation. The user confirms via a UI button after you call the tool. If you suggest any garden action list — call create_tasks immediately.',
     input_schema: {
@@ -522,7 +538,7 @@ const CHUPCHU_TOOLS: ToolWithCache[] = [
       },
       required: ['tasks'],
     },
-    // cache_control on the LAST tool caches all 11 tool definitions as a single block
+    // cache_control on the LAST tool caches all 12 tool definitions as a single block
     // (~1,150 tokens off uncached input per call once warm).
     cache_control: { type: 'ephemeral', ttl: '1h' },
   },
@@ -838,6 +854,95 @@ export async function askChupChu(
                   type: 'tool_result' as const,
                   tool_use_id: b.id,
                   content: 'שגיאה בחיפוש במאגר הידע.',
+                };
+              }
+            }
+
+            if (b.name === 'get_bd_prep_history') {
+              const prepFilter = (b.input as { prep_name?: string }).prep_name?.trim() || null;
+              try {
+                if (!userId) {
+                  return {
+                    type: 'tool_result' as const,
+                    tool_use_id: b.id,
+                    content: JSON.stringify({ error: 'User not authenticated — cannot resolve garden.' }),
+                  };
+                }
+                const { gardenId: histGardenId, reason: histReason } = await resolveGardenId(userId);
+                if (!histGardenId) {
+                  return {
+                    type: 'tool_result' as const,
+                    tool_use_id: b.id,
+                    content: JSON.stringify({ error: `Cannot resolve garden: ${histReason}. No prep history available.` }),
+                  };
+                }
+
+                const baseQ = db
+                  .from('garden_timeline')
+                  .select('prep_name, event_date')
+                  .eq('garden_id', histGardenId)
+                  .eq('event_type', 'bd_prep')
+                  .is('deleted_at', null)
+                  .order('event_date', { ascending: false })
+                  .limit(60);
+
+                const { data: histRows, error: histError } = await (
+                  prepFilter ? baseQ.eq('prep_name', prepFilter) : baseQ
+                );
+
+                if (histError) {
+                  console.error('[get_bd_prep_history] DB error:', histError.message, histError.code);
+                  return {
+                    type: 'tool_result' as const,
+                    tool_use_id: b.id,
+                    content: JSON.stringify({ error: 'Database error reading prep history. Do not treat this as "never applied".' }),
+                  };
+                }
+
+                const rows = (histRows ?? []) as { prep_name: string | null; event_date: string }[];
+
+                if (rows.length === 0) {
+                  return {
+                    type: 'tool_result' as const,
+                    tool_use_id: b.id,
+                    content: JSON.stringify({ note: 'No biodynamic prep applications found in this garden.', records: {} }),
+                  };
+                }
+
+                // Dedup: keep the most recent row per prep_name (rows already ordered desc by event_date).
+                const seen = new Set<string>();
+                const deduped: { prep_name: string | null; event_date: string }[] = [];
+                for (const row of rows) {
+                  const key = row.prep_name ?? '';
+                  if (!seen.has(key)) {
+                    seen.add(key);
+                    deduped.push(row);
+                  }
+                }
+
+                // Use todayInIsrael() — not new Date() — to avoid UTC midnight off-by-one between
+                // 00:00–03:00 Israel time when the server runs in UTC.
+                const todayStr = todayInIsrael();
+                const todayMs  = new Date(todayStr).getTime();
+
+                const records: Record<string, { last_applied: string; days_ago: number }> = {};
+                for (const row of deduped) {
+                  const key     = row.prep_name ?? 'unknown';
+                  const daysAgo = Math.round((todayMs - new Date(row.event_date).getTime()) / 86_400_000);
+                  records[key]  = { last_applied: row.event_date, days_ago: daysAgo };
+                }
+
+                return {
+                  type: 'tool_result' as const,
+                  tool_use_id: b.id,
+                  content: JSON.stringify(records),
+                };
+              } catch (err: any) {
+                console.error('[get_bd_prep_history] unexpected error:', err.message);
+                return {
+                  type: 'tool_result' as const,
+                  tool_use_id: b.id,
+                  content: JSON.stringify({ error: 'Unexpected error reading prep history. Do not treat this as "never applied".' }),
                 };
               }
             }
