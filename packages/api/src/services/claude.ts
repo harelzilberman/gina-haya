@@ -455,7 +455,7 @@ const CHUPCHU_TOOLS: ToolWithCache[] = [
     input_schema: {
       type: 'object' as const,
       properties: {
-        title:    { type: 'string', description: 'Short task title in Hebrew' },
+        title:    { type: 'string', description: 'Short task title, written in the same language the user is speaking.' },
         due_date: { type: 'string', description: 'ISO date YYYY-MM-DD (optional)' },
       },
       required: ['title'],
