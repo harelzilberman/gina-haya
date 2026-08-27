@@ -1153,6 +1153,43 @@ Rules:
   }
 });
 
+// ── Past conversation context builder — sanitization helpers ────────────────
+
+// Returns true when an assistant turn is a vision payload or raw JSON that
+// should never be injected as "what I said before".
+// Matches: turns starting with ``` or {, or containing "plant_name" / "plant_name_latin".
+function isPastContextUnsuitable(content: string): boolean {
+  const trimmed = content.trimStart();
+  return (
+    trimmed.startsWith('```') ||
+    trimmed.startsWith('{')   ||
+    content.includes('"plant_name"') ||
+    content.includes('"plant_name_latin"')
+  );
+}
+
+// Remove formatting artifacts that produce bad model behaviour when injected.
+// Strips code fences (and their contents), ** bold markers, leading ✅/❌,
+// and double-quote characters (we wrap the result in "..." in the template).
+function sanitizeForPastContext(raw: string): string {
+  return raw
+    .replace(/```[\s\S]*?```/g, '')  // remove fenced code blocks and contents
+    .replace(/\*\*/g, '')            // remove bold markers
+    .replace(/^[✅❌]\s*/u, '')      // remove leading ✅ / ❌
+    .replace(/"/g, '')               // strip double-quotes — wrapper provides them
+    .trim();
+}
+
+// Truncate at maxCp codepoints, then back off to the last whitespace so the
+// fragment never ends mid-token. Returns the empty string unchanged.
+function truncateSafeCP(text: string, maxCp = 150): string {
+  const cps = Array.from(text);
+  if (cps.length <= maxCp) return text;
+  const truncated = cps.slice(0, maxCp).join('');
+  const lastSpace = truncated.lastIndexOf(' ');
+  return lastSpace > 0 ? truncated.slice(0, lastSpace) : truncated;
+}
+
 // ── Past conversation context builder ───────────────────────────────────────
 // Takes everything BEFORE the last-20-message context window (the same boundary
 // historyForClaude uses), picks up to 5 evenly-spaced user+reply pairs, and
@@ -1188,8 +1225,11 @@ function buildPastContextSummary(allMessages: ChupChuMessage[], userId?: string)
   const lines: string[] = ['## היסטוריית שיחות קודמות'];
 
   for (const { msg: userMsg, idx } of picked) {
-    // Find the next assistant reply after this user message
-    const reply = pastMessages.slice(idx + 1).find(m => m.role === 'assistant');
+    // Walk forward past non-conversational replies (vision JSON, code fences).
+    // Never fall back to injecting a rejected turn — omit replyText instead.
+    const cleanReply = pastMessages
+      .slice(idx + 1)
+      .find(m => m.role === 'assistant' && !isPastContextUnsuitable(String(m.content ?? '')));
 
     // Format date safely — guard against missing/invalid timestamps
     let date: string;
@@ -1201,8 +1241,13 @@ function buildPastContextSummary(allMessages: ChupChuMessage[], userId?: string)
     } catch { date = 'בעבר'; }
 
     // Fix E: codepoint-safe truncation to avoid splitting surrogate pairs on emoji
-    const topic     = Array.from(String(userMsg.content ?? '').replace(/🌿 \[.*?\]/g, '[תמונה]')).slice(0, 120).join('');
-    const replyText = Array.from(String(reply?.content ?? '')).slice(0, 150).join('');
+    const topic = Array.from(String(userMsg.content ?? '').replace(/🌿 \[.*?\]/g, '[תמונה]')).slice(0, 120).join('');
+
+    let replyText = '';
+    if (cleanReply) {
+      const cleaned = sanitizeForPastContext(String(cleanReply.content ?? ''));
+      replyText = truncateSafeCP(cleaned, 150);
+    }
 
     lines.push(
       `שיחה מ-${date}: המשתמש שאל: "${topic}".` +
