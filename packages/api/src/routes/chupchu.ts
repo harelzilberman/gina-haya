@@ -1175,11 +1175,11 @@ function isPastContextUnsuitable(content: string): boolean {
 }
 
 // Remove formatting artifacts that produce bad model behaviour when injected.
-// Strips code fences (and their contents), ** bold markers, leading ✅/❌,
-// and double-quote characters (we wrap the result in "..." in the template).
+// Strips code fence marker lines (preserving text between them), ** bold markers,
+// leading ✅/❌, and double-quote characters (we wrap result in "..." in template).
 function sanitizeForPastContext(raw: string): string {
   return raw
-    .replace(/```[\s\S]*?```/g, '')  // remove fenced code blocks and contents
+    .replace(/^```[^\n]*\n?/gm, '') // strip fence marker lines, keep content between them
     .replace(/\*\*/g, '')            // remove bold markers
     .replace(/^[✅❌]\s*/u, '')      // remove leading ✅ / ❌
     .replace(/"/g, '')               // strip double-quotes — wrapper provides them
