@@ -461,9 +461,9 @@ const CHUPCHU_TOOLS: ToolWithCache[] = [
       type: 'object' as const,
       properties: {
         prep_name: { type: 'string', description: 'Preparation name, e.g. "500", "501", "508", "compost"' },
-        date:      { type: 'string', description: 'ISO date YYYY-MM-DD' },
+        date:      { type: 'string', description: 'ISO date YYYY-MM-DD. Omit entirely when the user means today — the server will fill in the correct date. Supply only for an explicitly past date (e.g. "I applied 500 last Tuesday").' },
       },
-      required: ['prep_name', 'date'],
+      required: ['prep_name'],
     },
   },
   {
@@ -763,7 +763,12 @@ export async function askChupChu(
               return {
                 type: 'tool_result' as const,
                 tool_use_id: b.id,
-                content: JSON.stringify({ pending_confirmation: true }),
+                content: JSON.stringify({
+                  pending_confirmation: true,
+                  saved: false,
+                  written_to_database: false,
+                  note: 'NOTHING HAS BEEN SAVED. A confirmation card was shown to the user. The entry is written only after the user taps the button in the app. In your reply: tell the user you have prepared the entry and ask them to confirm it. Do NOT claim it was recorded or saved. For biodynamic preparations the required Hebrew term is פרפרט — never הכנה, never תכשיר.',
+                }),
               };
             }
 

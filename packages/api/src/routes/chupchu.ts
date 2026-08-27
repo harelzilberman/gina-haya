@@ -2278,7 +2278,7 @@ chupChuRouter.post('/execute-tool', async (req: any, res) => {
           garden_id:  bdGardenId,
           user_id:    userId,
           event_type: 'bd_prep',
-          event_date: params.date,
+          event_date: (params.date as string | undefined) || todayInIsrael(),
           prep_name:  params.prep_name,
           created_at: new Date().toISOString(),
         });
