@@ -113,7 +113,7 @@ const CHUPCHU_SYSTEM_PROMPT_HE = `\
 ענה באיזון. קצר את התשובה ככל הצורך. חזור ישירות לעניין, ללא מילויים או תת-הוראות.
 
 כלל מחייב: בכל פעם שאתה מציע תוכנית עם 2 שלבים ומעלה, אתה חייב לקרוא לכלי create_tasks באותה תשובה. זה לא אופציונלי. אם לא קראת ל-create_tasks, התשובה שלך אינה שלמה. הכלי מכין את המשימות לאישור המשתמש — המשתמש עדיין יצטרך ללחוץ על כפתור כדי לשמור.
-כלי log_bd_prep ו-create_task מכינים רשומה לאישור המשתמש — הרשומה אינה נשמרת עד שהמשתמש ילחץ על כפתור. אל תכתוב ואל תרמוז שהפעולה בוצעה לפני האישור.
+אחרי שקראת ל-log_bd_prep או ל-create_task, תאר מה הכנת ובקש מהמשתמש לאשר. אל תאמר שנרשם או שנשמר.
 
 אתה צ'ופצ'ו — סבא הירח. מומחה גידול ביודינמי ישראלי עם ניסיון של עשרים שנה בחוות ביודינמיות בגליל ובפרובנס.
 אתה מדבר עברית כשפת אם, חם ועליז, עם הומור עדין (במיוחד בנושא קומפוסט).
@@ -318,7 +318,7 @@ Rules:
 - If you only gave general advice with no specific actions — no tool call needed
 - If the task relates to a specific plant or tree mentioned in the conversation, fill plant_name with the plant's name in Hebrew
 
-log_bd_prep and create_task queue a confirmation request — the entry is NOT saved until the user taps the confirmation button in the app. After calling either tool, do not state or imply that the action has been completed.
+After calling log_bd_prep or create_task, describe what you have prepared and ask the user to confirm it. Do not say it has been recorded or saved.
 
 ## Tool use
 When you need specific information — today's calendar, the user's garden, weather, plant details, prep instructions — call the appropriate tool before answering.
@@ -444,7 +444,7 @@ const CHUPCHU_TOOLS: ToolWithCache[] = [
   // ── Mobile voice tools — returned to client for confirmation ───────────
   {
     name: 'create_task',
-    description: 'Queue a single garden task for user confirmation. Use when user explicitly asks to remember or schedule one specific garden action. The task is NOT saved until the user taps the confirmation button — different from create_tasks which proposes batches.',
+    description: 'Create a single garden task. Use when the user explicitly asks to remember or schedule one specific garden action. Always call this tool for such requests. Different from create_tasks, which proposes batches.',
     input_schema: {
       type: 'object' as const,
       properties: {
@@ -456,7 +456,7 @@ const CHUPCHU_TOOLS: ToolWithCache[] = [
   },
   {
     name: 'log_bd_prep',
-    description: 'Queue a פרפרט (BD preparation) log entry for user confirmation. Call when user says they applied a BD preparation. The entry is NOT saved until the user taps the confirmation button in the app.',
+    description: 'Record a פרפרט (biodynamic preparation) application to the garden log. Call this whenever the user says they applied, sprayed, or made a BD preparation. Always call this tool for such statements — do not reply without calling it.',
     input_schema: {
       type: 'object' as const,
       properties: {
@@ -718,6 +718,8 @@ export async function askChupChu(
       cache_creation: response.usage?.cache_creation_input_tokens,
       cache_read:     response.usage?.cache_read_input_tokens,
     });
+    console.log('[Chupchu] stop_reason:', response.stop_reason,
+      'tools:', (response.content || []).filter((b: any) => b.type === 'tool_use').map((b: any) => b.name));
     // Persist real token data — fire-and-forget, never blocks the chat response
     void logApiUsage({ userId, endpoint: 'chupchu_chat', model: modelToUse, usage: response.usage });
 
