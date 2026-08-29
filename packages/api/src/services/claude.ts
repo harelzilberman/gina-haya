@@ -350,10 +350,11 @@ export interface ProposedTask {
 export interface MobileToolCall {
   name: 'create_task' | 'log_bd_prep';
   params: Record<string, unknown>;
-  descriptionHe: string; // shown in confirmation card
+  descriptionHe: string; // shown in confirmation card (Hebrew)
+  descriptionEn: string; // shown in confirmation card (English)
 }
 
-function mobileToolDescription(name: string, params: Record<string, unknown>): string {
+function mobileToolDescriptionHe(name: string, params: Record<string, unknown>): string {
   switch (name) {
     case 'create_task':
       return `מוסיף משימה: ${params.title}${params.due_date ? ` ל-${params.due_date}` : ''}`;
@@ -361,6 +362,17 @@ function mobileToolDescription(name: string, params: Record<string, unknown>): s
       return `מתעד יישום פרפרט ${params.prep_name} בתאריך ${(params.date as string | undefined) || todayInIsrael()}`;
     default:
       return 'ביצוע פעולה';
+  }
+}
+
+function mobileToolDescriptionEn(name: string, params: Record<string, unknown>): string {
+  switch (name) {
+    case 'create_task':
+      return `Adding task: ${params.title}${params.due_date ? ` for ${params.due_date}` : ''}`;
+    case 'log_bd_prep':
+      return `Logging prep ${params.prep_name} on ${(params.date as string | undefined) || todayInIsrael()}`;
+    default:
+      return 'Performing action';
   }
 }
 
@@ -781,7 +793,8 @@ export async function askChupChu(
               capturedMobileTool = {
                 name: b.name as MobileToolCall['name'],
                 params,
-                descriptionHe: mobileToolDescription(b.name, params),
+                descriptionHe: mobileToolDescriptionHe(b.name, params),
+                descriptionEn: mobileToolDescriptionEn(b.name, params),
               };
               return {
                 type: 'tool_result' as const,
