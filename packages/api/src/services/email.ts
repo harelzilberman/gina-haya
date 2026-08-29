@@ -235,6 +235,60 @@ export async function sendCancellationRequestNotice(opts: {
   console.log(`[sendCancellationRequestNotice] Sent to ${ADMIN_EMAIL} for customer=${customerEmail}`);
 }
 
+// Sent to the admin whenever a billing grant (credits or tier) fails.
+// Never throws — a failed alert must not interrupt the webhook handler.
+export async function sendGrantFailureAlert(opts: {
+  context:       string;        // 'credit_grant' | 'tier_grant'
+  userId:        string;
+  userEmail:     string | undefined;
+  productOrTier: string;        // productId for credits, tier name for subscriptions
+  quantity?:     number;        // omit for tier grants
+  transactionId: string | null | undefined;
+  provider:      string;
+  errorMessage:  string;
+}): Promise<void> {
+  const { context, userId, userEmail, productOrTier, quantity, transactionId, provider, errorMessage } = opts;
+  const timestamp = new Date().toISOString();
+
+  const subject = `[Gina Haya] BILLING FAILURE — ${context} (${provider})`;
+  const html = `
+    <div style="font-family:Arial,Helvetica,sans-serif;max-width:560px;margin:0 auto;padding:32px;background:#fff3f3;border-radius:12px;border:2px solid #f87171;">
+      <h2 style="color:#991b1b;font-size:20px;margin:0 0 16px;">Billing Grant Failed</h2>
+      <p style="color:#374151;font-size:14px;margin:0 0 8px;"><strong>Time (UTC):</strong> ${timestamp}</p>
+      <p style="color:#374151;font-size:14px;margin:0 0 8px;"><strong>Context:</strong> ${context}</p>
+      <p style="color:#374151;font-size:14px;margin:0 0 8px;"><strong>Provider:</strong> ${provider}</p>
+      <p style="color:#374151;font-size:14px;margin:0 0 8px;"><strong>User ID:</strong> <code style="background:#e5e7eb;padding:2px 6px;border-radius:4px;font-size:12px;">${userId}</code></p>
+      <p style="color:#374151;font-size:14px;margin:0 0 8px;"><strong>User email:</strong> ${userEmail ?? '(not resolved)'}</p>
+      <p style="color:#374151;font-size:14px;margin:0 0 8px;"><strong>Product / tier:</strong> ${productOrTier}${quantity != null ? ` \u00d7 ${quantity}` : ''}</p>
+      <p style="color:#374151;font-size:14px;margin:0 0 8px;"><strong>Transaction ID:</strong> <code style="background:#e5e7eb;padding:2px 6px;border-radius:4px;font-size:12px;">${transactionId ?? '(none)'}</code></p>
+      <p style="color:#374151;font-size:14px;margin:0 0 20px;"><strong>Error:</strong> <code style="background:#fee2e2;padding:4px 8px;border-radius:4px;font-size:12px;">${errorMessage}</code></p>
+      <div style="background:#fef9c3;border:1px solid #eab308;border-radius:8px;padding:16px;">
+        <p style="color:#713f12;font-size:14px;margin:0;font-weight:600;">
+          Manual action required: check user_purchases (status=grant_failed) or user_subscriptions,
+          then grant credits or update subscription_tier directly in Supabase.
+        </p>
+      </div>
+    </div>
+  `;
+
+  try {
+    const { error } = await resend.emails.send({
+      from:    FROM_EN,
+      to:      ADMIN_EMAIL,
+      subject,
+      html,
+    });
+    if (error) {
+      console.error('[sendGrantFailureAlert] Resend error:', JSON.stringify(error));
+    } else {
+      console.log(`[sendGrantFailureAlert] Alert sent for context=${context} user=${userId} product/tier=${productOrTier}`);
+    }
+  } catch (err: any) {
+    // Never throw — a failed alert must not break the webhook handler.
+    console.error('[sendGrantFailureAlert] Unexpected error:', err?.message ?? String(err));
+  }
+}
+
 export async function sendRenewalReminder(opts: {
   email:       string;
   displayName: string;

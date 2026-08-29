@@ -6,7 +6,7 @@ import qs from 'qs';
 import { TIER_PRICING } from '@gina-haya/shared';
 import { db } from '../db/client';
 import { verifyToken } from '../middleware/auth';
-import { sendCancellationRequestNotice } from '../services/email';
+import { sendCancellationRequestNotice, sendGrantFailureAlert } from '../services/email';
 import { getAndroidPublisherClient } from '../services/googlePlay';
 import {
   PLAY_PRODUCT_TO_TIER,
@@ -956,6 +956,15 @@ billingRouter.post('/grow/webhook/:secret', async (req: Request, res) => {
           `[grow/webhook] users.update FAILED user=${userId} tier=${resolvedTier}:`,
           tierUpdateError
         );
+        await sendGrantFailureAlert({
+          context:       'tier_grant',
+          userId:        userId!,
+          userEmail:     payerEmail,
+          productOrTier: resolvedTier!,
+          transactionId: transactionId ?? null,
+          provider:      'grow',
+          errorMessage:  tierUpdateError.message,
+        });
       } else if (!tierUpdateData || tierUpdateData.length === 0) {
         console.error(
           `[grow/webhook] users.update ZERO ROWS -- userId=${userId} not found in users table. ` +
@@ -978,10 +987,28 @@ billingRouter.post('/grow/webhook/:secret', async (req: Request, res) => {
               `[grow/webhook] users.update (email fallback) FAILED email=${payerEmail}:`,
               emailUpdateError
             );
+            await sendGrantFailureAlert({
+              context:       'tier_grant',
+              userId:        userId!,
+              userEmail:     payerEmail,
+              productOrTier: resolvedTier!,
+              transactionId: transactionId ?? null,
+              provider:      'grow',
+              errorMessage:  `id-lookup failed; email fallback also failed: ${emailUpdateError.message}`,
+            });
           } else if (!emailUpdateData || emailUpdateData.length === 0) {
             console.error(
               `[grow/webhook] users.update (email fallback) ZERO ROWS -- email=${payerEmail} not found either`
             );
+            await sendGrantFailureAlert({
+              context:       'tier_grant',
+              userId:        userId!,
+              userEmail:     payerEmail,
+              productOrTier: resolvedTier!,
+              transactionId: transactionId ?? null,
+              provider:      'grow',
+              errorMessage:  'user not found by id or email — tier not granted',
+            });
           } else {
             console.log(
               `[grow/webhook] users.update (email fallback) OK ` +

@@ -3,6 +3,7 @@ import qs from 'qs';
 import { db } from '../db/client';
 import { verifyToken } from '../middleware/auth';
 import { PRODUCTS, type ProductId } from '../config/products';
+import { sendGrantFailureAlert } from '../services/email';
 
 export const shopRouter: IRouter = Router();
 
@@ -53,14 +54,16 @@ async function grantCredits(userId: string, productId: ProductId, quantity: numb
     .single();
 
   if (existing) {
-    await db
+    const { error: updateError } = await db
       .from('user_credits')
       .update({ total: existing.total + creditsToAdd, updated_at: new Date().toISOString() })
       .eq('id', existing.id);
+    if (updateError) throw new Error(`user_credits UPDATE failed: ${updateError.message}`);
   } else {
-    await db
+    const { error: insertError } = await db
       .from('user_credits')
       .insert({ user_id: userId, credit_type: product.type, total: creditsToAdd, used: 0 });
+    if (insertError) throw new Error(`user_credits INSERT failed: ${insertError.message}`);
   }
 }
 
@@ -230,8 +233,8 @@ shopRouter.post('/grow/webhook/:secret', async (req: Request, res) => {
       const product = PRODUCTS[item.p as ProductId];
       const qty     = Math.max(1, item.q ?? 1);
 
-      // Insert purchase audit row
-      const { error: purchaseError } = await db.from('user_purchases').insert({
+      // Insert purchase audit row — capture id so we can mark it grant_failed if needed.
+      const { data: purchaseRows, error: purchaseError } = await db.from('user_purchases').insert([{
         user_id:          userId,
         product_id:       product.id,
         quantity:         product.quantity * qty,
@@ -242,7 +245,9 @@ shopRouter.post('/grow/webhook/:secret', async (req: Request, res) => {
         payment_ref:      transactionId ?? `grow_${Date.now()}`,
         purchase_token:   transactionId ?? null,
         completed_at:     now,
-      });
+      }]).select('id');
+
+      const purchaseRowId: string | null = purchaseRows?.[0]?.id ?? null;
 
       if (purchaseError) {
         console.error(
@@ -261,6 +266,26 @@ shopRouter.post('/grow/webhook/:secret', async (req: Request, res) => {
           `[shop/webhook] Credit grant FAILED product=${product.id} user=${userId}:`,
           creditErr.message
         );
+        // Mark the purchase row so failures are queryable:
+        //   SELECT * FROM user_purchases WHERE status = 'grant_failed'
+        if (purchaseRowId) {
+          try {
+            await db.from('user_purchases').update({ status: 'grant_failed' }).eq('id', purchaseRowId);
+          } catch {
+            // Supabase may also be down — the alert below is the backstop.
+          }
+        }
+        // Alert out of band — fires even if the DB update above failed.
+        await sendGrantFailureAlert({
+          context:       'credit_grant',
+          userId,
+          userEmail:     payerEmail,
+          productOrTier: product.id,
+          quantity:      qty,
+          transactionId: transactionId ?? null,
+          provider:      'grow',
+          errorMessage:  creditErr.message,
+        });
       }
     }
 
