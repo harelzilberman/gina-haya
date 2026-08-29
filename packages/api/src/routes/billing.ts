@@ -491,11 +491,20 @@ billingRouter.post('/play/rtdn', async (req: Request, res) => {
       newTier = productTier;
     } else if (status === 'cancelled') {
       // Cancelled but not yet expired — keep access until period end
-      const { data: userData } = await db
+      const { data: userData, error: userReadError } = await db
         .from('users')
         .select('subscription_tier')
         .eq('id', subRecord.user_id)
         .single();
+      if (userReadError) {
+        // If we can't read the current tier, we fall back to 'free' below.
+        // That may briefly downgrade a cancelled-but-not-yet-expired user;
+        // the next RTDN (expiry) will set 'free' legitimately anyway.
+        console.error(
+          `[play/rtdn] users.select FAILED (cancelled branch) user=${subRecord.user_id}:`,
+          userReadError
+        );
+      }
       newTier = userData?.subscription_tier ?? 'free';
     } else {
       // expired / paused / on-hold / revoked → downgrade immediately
@@ -503,17 +512,55 @@ billingRouter.post('/play/rtdn', async (req: Request, res) => {
     }
 
     // 5. Update user_subscriptions and users tables
-    await db.from('user_subscriptions').update({
+    const { error: subUpdateError } = await db.from('user_subscriptions').update({
       status,
       expires_at:       expiresAt,
       raw_notification: sub,
       updated_at:       new Date().toISOString(),
     }).eq('purchase_token', purchaseToken);
 
-    await db.from('users').update({
+    if (subUpdateError) {
+      // Audit row — log loudly but don't alert separately.
+      // If the tier update below also fails, that alert captures everything needed to reconcile.
+      console.error(
+        `[play/rtdn] user_subscriptions UPDATE FAILED token=${purchaseToken}:`,
+        subUpdateError
+      );
+    }
+
+    const { data: tierUpdateRows, error: tierUpdateError } = await db.from('users').update({
       subscription_tier: newTier,
       updated_at:        new Date().toISOString(),
-    }).eq('id', subRecord.user_id);
+    }).eq('id', subRecord.user_id).select('id');
+
+    if (tierUpdateError) {
+      console.error(
+        `[play/rtdn] users.update FAILED user=${subRecord.user_id} tier=${newTier}:`,
+        tierUpdateError
+      );
+      await sendGrantFailureAlert({
+        context:       'tier_grant',
+        userId:        subRecord.user_id,
+        userEmail:     undefined,
+        productOrTier: `${subscriptionId} (${newTier})`,
+        transactionId: purchaseToken,
+        provider:      'google_play',
+        errorMessage:  tierUpdateError.message,
+      });
+    } else if (!tierUpdateRows || tierUpdateRows.length === 0) {
+      console.error(
+        `[play/rtdn] users.update ZERO ROWS user=${subRecord.user_id} — user record not found`
+      );
+      await sendGrantFailureAlert({
+        context:       'tier_grant',
+        userId:        subRecord.user_id,
+        userEmail:     undefined,
+        productOrTier: `${subscriptionId} (${newTier})`,
+        transactionId: purchaseToken,
+        provider:      'google_play',
+        errorMessage:  'users.update affected 0 rows — user record not found',
+      });
+    }
 
     console.log(
       `[play/rtdn] user=${subRecord.user_id} ` +
