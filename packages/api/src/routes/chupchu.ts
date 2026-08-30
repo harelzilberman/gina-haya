@@ -37,24 +37,28 @@ const inFlight = new Set<string>();
 const summarizeDailyCap = new Map<string, { date: string; count: number }>();
 const SUMMARIZE_DAILY_LIMIT = 10;
 
-// ── Block 2 (stableContext) in-process cache ──────────────────────────────────
-// Root cause of cache-bust investigation (Part 0): pendingTasksSection is rebuilt from
-// a live garden_tasks query on every message.  Since create_tasks fires on almost every
-// advice turn, the user may confirm tasks between messages, changing the pending-task list
-// → Block 2 content differs across consecutive messages → Anthropic 5-min TTL misses even
-// on rapid follow-ups.  Same applies to taskContext (completed tasks) and memorySection
-// (written by summarize calls).
+// ── Block 2 (stableContext) version-keyed in-process cache ───────────────────
+// Block 2 carries cache_control (ttl:1h) so Anthropic can reuse it across consecutive
+// messages.  For Anthropic's cache to hit, the string must be byte-identical on every
+// request within a session.  We keep an in-process cache for this purpose.
 //
-// Fix: assemble the stableContext STRING once per session and freeze it for 1 hour.
-// This matches the Anthropic ttl:3600 on Block 2 — when the string is identical, the
-// cache hits.  Claude already knows mid-session task creations from the conversation
-// itself, so stale pending-task data in the prompt is harmless within a session.
-// The cache expires on its own when the user goes cold, ensuring the next session starts
-// with fresh garden/task state.
+// Key: `${userId}:${version}` where version encodes garden/plant/task/memory state
+// computed entirely from data already loaded before the cache is consulted.
+// No extra DB queries are introduced.
+//
+// When any source column changes (plant added, task completed, memory updated,
+// garden renamed, garden switched) the key changes, the cache misses, and Block 2
+// is rebuilt fresh.  Anthropic's cache misses once per mutation then re-warms.
+//
+// Bounded at STABLE_CONTEXT_MAX_ENTRIES: version-keying creates a new entry per
+// mutation, so without a bound the map grows indefinitely.  Eviction uses insertion
+// order (Map preserves it) — the oldest key is deleted when capacity is reached.
+// The 1-hour TTL is kept as a secondary expiry so cold-user entries age out.
 interface StableContextEntry {
   context: string;
   builtAt: number;
 }
+const STABLE_CONTEXT_MAX_ENTRIES = 1000;
 const stableContextByUser = new Map<string, StableContextEntry>();
 const STABLE_CONTEXT_TTL_MS = 60 * 60 * 1000; // 1 h — mirrors Anthropic cache TTL
 
@@ -1644,13 +1648,15 @@ chupChuRouter.post('/chat', async (req: any, res) => {
 
     // ── 7b. Load user memory ─────────────────────────────────────────────
     let memorySection = '';
+    let memoryLastUpdated = ''; // hoisted for version key — set inside try below
     try {
       const { data: memory } = await db
         .from('chupchu_memory')
-        .select('summary_he, summary_en, garden_facts')
+        .select('summary_he, summary_en, garden_facts, last_updated')
         .eq('user_id', userId)
         .single();
       if (memory) {
+        memoryLastUpdated = (memory as any).last_updated ?? '';
         const summary = lang === 'he' ? memory.summary_he : memory.summary_en;
         const facts   = (memory.garden_facts as Record<string, any>) ?? {};
         if (summary) {
@@ -1683,7 +1689,7 @@ chupChuRouter.post('/chat', async (req: any, res) => {
     // ── 7d. Fetch pending tasks ───────────────────────────────────────────
     const { data: pendingTasksData } = await db
       .from('garden_tasks')
-      .select('id, title, date, priority, category, status')
+      .select('id, title, date, priority, category, status, updated_at')
       .eq('user_id', userId)
       .eq('status', 'pending')
       .order('date', { ascending: true })
@@ -1955,20 +1961,45 @@ chupChuRouter.post('/chat', async (req: any, res) => {
     const pastContextSection = buildPastContextSummary(bestHistory, userId);
     console.log('[Memory] injecting context:', pastContextSection.length > 0 ? `YES (${pastContextSection.length} chars)` : 'NO - empty');
 
-    // Stable context: per-user data that does NOT change within a session.
-    // This block is sent with cache_control (ttl:3600) so Claude can reuse cached tokens.
+    // Stable context (Block 2): cached in-process for Anthropic prompt cache stability.
+    // Key is version-derived so the cache self-invalidates when data changes — no
+    // explicit invalidation calls needed anywhere.  gardenId is in the key directly
+    // so switching gardens always produces a cache miss and the correct context.
     //
-    // We cache the assembled STRING in-process (stableContextByUser) for 1 h so that
-    // mid-session task creations, completions, and memory writes do NOT alter Block 2
-    // between consecutive messages.  A changed Block 2 string busts the Anthropic cache
-    // even when messages arrive within 5 min — this was the primary cache-miss cause.
-    // Claude knows about tasks it created from the conversation itself (not the prompt),
-    // so freezing the pending-task list mid-session is safe.
+    // Version sources — all already in memory, zero additional DB queries:
+    //   resolvedGardenId       — gardenResolution result (step 4)
+    //   garden.updated_at      — gardens select('*')
+    //   maxPlantTs             — max updated_at/added_at across garden_plants(*)
+    //   memoryLastUpdated      — chupchu_memory last_updated (added to existing select)
+    //   pendingKey             — pending task IDs + updated_at (added to existing select)
+    //   maxCompletedTs         — getRecentCompletedTasks uses select('*') → updated_at
+    const resolvedGardenId = gardenResolution.gardenId ?? 'none';
+    const maxPlantTs = ((garden?.garden_plants ?? []) as any[]).reduce(
+      (max: string, p: any) => {
+        const ts = p.updated_at ?? p.added_at ?? '';
+        return ts > max ? ts : max;
+      }, '');
+    const pendingKey = pendingTasks
+      .map((t: any) => `${t.id}:${t.updated_at ?? ''}`)
+      .join(',');
+    const maxCompletedTs = completedTasks.reduce(
+      (max, t) => (t.updated_at > max ? t.updated_at : max), '');
+    const version = [
+      resolvedGardenId,
+      garden?.updated_at ?? '',
+      maxPlantTs,
+      memoryLastUpdated,
+      pendingKey,
+      maxCompletedTs,
+    ].join('|');
+    const cacheKey = `${userId}:${version}`;
+
     const nowMs = Date.now();
-    const cachedStable = stableContextByUser.get(userId);
+    const cachedStable = stableContextByUser.get(cacheKey);
+    const cacheHit = !!(cachedStable && nowMs - cachedStable.builtAt < STABLE_CONTEXT_TTL_MS);
     let stableContext: string;
-    if (cachedStable && nowMs - cachedStable.builtAt < STABLE_CONTEXT_TTL_MS) {
-      stableContext = cachedStable.context;
+    if (cacheHit) {
+      stableContext = cachedStable!.context;
     } else {
       stableContext = [
         memorySection,
@@ -1976,8 +2007,15 @@ chupChuRouter.post('/chat', async (req: any, res) => {
         pendingTasksSection,
         taskContext,
       ].filter(Boolean).join('\n\n');
-      stableContextByUser.set(userId, { context: stableContext, builtAt: nowMs });
+      // Evict oldest entry when at capacity — Map preserves insertion order,
+      // so keys().next().value is always the entry written earliest.
+      if (stableContextByUser.size >= STABLE_CONTEXT_MAX_ENTRIES) {
+        const oldest = stableContextByUser.keys().next().value as string | undefined;
+        if (oldest !== undefined) stableContextByUser.delete(oldest);
+      }
+      stableContextByUser.set(cacheKey, { context: stableContext, builtAt: nowMs });
     }
+    console.log('[Chupchu] stable ctx:', cacheHit ? 'hit' : 'miss', 'key:', cacheKey.slice(0, 40));
 
     // ── 8c. Build garden timeline summary (volatile — Block 3) ──────────────
     // Placed in Block 3 (not Block 2) because Block 2 is frozen in-process for
