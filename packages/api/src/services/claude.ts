@@ -348,11 +348,27 @@ export interface ProposedTask {
 
 // Mobile tool call — returned to client for user confirmation before execution
 export interface MobileToolCall {
-  name: 'create_task' | 'log_bd_prep';
+  name: 'create_task' | 'log_bd_prep' | 'add_plant';
   params: Record<string, unknown>;
   descriptionHe: string; // shown in confirmation card (Hebrew)
   descriptionEn: string; // shown in confirmation card (English)
 }
+
+const LOCATION_TYPE_LABEL_HE: Record<string, string> = {
+  pot:         'עציץ',
+  garden:      'גינה פתוחה',
+  bed:         'ערוגה',
+  hydroponic:  'הידרופוניקה',
+  greenhouse:  'בית גידול',
+};
+
+const LOCATION_TYPE_LABEL_EN: Record<string, string> = {
+  pot:         'pot',
+  garden:      'open ground',
+  bed:         'bed',
+  hydroponic:  'hydroponics',
+  greenhouse:  'greenhouse',
+};
 
 function mobileToolDescriptionHe(name: string, params: Record<string, unknown>): string {
   switch (name) {
@@ -360,6 +376,13 @@ function mobileToolDescriptionHe(name: string, params: Record<string, unknown>):
       return `מוסיף משימה: ${params.title}${params.due_date ? ` ל-${params.due_date}` : ''}`;
     case 'log_bd_prep':
       return `מתעד יישום פרפרט ${params.prep_name} בתאריך ${(params.date as string | undefined) || todayInIsrael()}`;
+    case 'add_plant': {
+      const plantName  = String(params.common_name_he ?? '');
+      const variety    = params.variety ? ` (${params.variety})` : '';
+      const locationType = String(params.location_type ?? 'pot');
+      const location   = LOCATION_TYPE_LABEL_HE[locationType] ?? locationType;
+      return `מוסיף ${plantName}${variety} ל${location}`;
+    }
     default:
       return 'ביצוע פעולה';
   }
@@ -371,6 +394,13 @@ function mobileToolDescriptionEn(name: string, params: Record<string, unknown>):
       return `Adding task: ${params.title}${params.due_date ? ` for ${params.due_date}` : ''}`;
     case 'log_bd_prep':
       return `Logging prep ${params.prep_name} on ${(params.date as string | undefined) || todayInIsrael()}`;
+    case 'add_plant': {
+      const plantName  = String(params.common_name_en ?? params.common_name_he ?? '');
+      const variety    = params.variety ? ` (${params.variety})` : '';
+      const locationType = String(params.location_type ?? 'pot');
+      const location   = LOCATION_TYPE_LABEL_EN[locationType] ?? locationType;
+      return `Adding ${plantName}${variety} to ${location}`;
+    }
     default:
       return 'Performing action';
   }
@@ -512,6 +542,46 @@ const CHUPCHU_TOOLS: ToolWithCache[] = [
     },
   },
   {
+    name: 'add_plant',
+    description: "Add a plant to the user's garden. Call this when the user says they planted something, want to add a plant, or asks you to record a plant in their garden.",
+    input_schema: {
+      type: 'object' as const,
+      properties: {
+        common_name_he: {
+          type: 'string',
+          description: 'Plant name in Hebrew — required. Use the name the user said.',
+        },
+        location_type: {
+          type: 'string',
+          enum: ['pot', 'garden', 'bed', 'hydroponic', 'greenhouse'],
+          description: 'Where the plant is growing. "pot" = container or planter (עציץ); "garden" = open ground (גינה פתוחה); "bed" = raised or demarcated bed (ערוגה); "hydroponic" = water-based system; "greenhouse" = בית גידול. Must reflect what the user actually said. If the user did not state a location, ask before calling this tool.',
+        },
+        common_name_en: {
+          type: 'string',
+          description: 'Plant name in English (optional).',
+        },
+        plant_type: {
+          type: 'string',
+          enum: ['annual', 'perennial', 'tree', 'shrub'],
+          description: 'Optional plant category.',
+        },
+        variety: {
+          type: 'string',
+          description: 'Variety or cultivar name if the user mentioned one, e.g. "רומן" for romaine lettuce (optional).',
+        },
+        location_description: {
+          type: 'string',
+          description: 'Free-text location note, e.g. "צד צפוני" or "near the fence" (optional).',
+        },
+        notes: {
+          type: 'string',
+          description: 'Any additional notes about this plant (optional).',
+        },
+      },
+      required: ['common_name_he', 'location_type'],
+    },
+  },
+  {
     name: 'create_tasks',
     description: 'REQUIRED: Call this tool every time you recommend a garden action — watering, pruning, fertilizing, planting, spraying, BD prep, or any specific task. You MUST call this in the same response where you describe the action. Do NOT wait for user confirmation. The user confirms via a UI button after you call the tool. If you suggest any garden action list — call create_tasks immediately.',
     input_schema: {
@@ -555,7 +625,7 @@ const CHUPCHU_TOOLS: ToolWithCache[] = [
       },
       required: ['tasks'],
     },
-    // cache_control on the LAST tool caches all 12 tool definitions as a single block
+    // cache_control on the LAST tool caches all 13 tool definitions as a single block
     // (~1,150 tokens off uncached input per call once warm).
     cache_control: { type: 'ephemeral', ttl: '1h' },
   },
@@ -787,7 +857,7 @@ export async function askChupChu(
           .filter((b): b is Anthropic.Messages.ToolUseBlock => b.type === 'tool_use')
           .map(async b => {
             // Mobile voice tools — capture for client confirmation, don't execute yet
-            const MOBILE_TOOLS = ['create_task', 'log_bd_prep'] as const;
+            const MOBILE_TOOLS = ['create_task', 'log_bd_prep', 'add_plant'] as const;
             if ((MOBILE_TOOLS as readonly string[]).includes(b.name)) {
               const params = b.input as Record<string, unknown>;
               capturedMobileTool = {

@@ -2418,6 +2418,62 @@ chupChuRouter.post('/execute-tool', async (req: any, res) => {
         }
         break;
       }
+      case 'add_plant': {
+        const { gardenId: plantGardenId, reason: plantGardenReason, gardens: plantGardenList } =
+          await resolveGardenId(userId, req.body.gardenId as string | null | undefined);
+        console.log('[execute-tool/add_plant] garden resolution:', plantGardenReason, 'user:', userId);
+
+        if (!plantGardenId) {
+          if (plantGardenReason === 'db-error') {
+            return res.status(500).json({ error: 'שגיאת מסד נתונים בחיפוש הגינה. נסה שוב.' });
+          }
+          if (plantGardenReason === 'no-gardens') {
+            return res.status(400).json({ error: 'לא נמצאה גינה בחשבון. צור גינה ונסה שוב.' });
+          }
+          // ambiguous-multiple-gardens
+          const names = (plantGardenList ?? []).map((g: any) => g.name).join(', ');
+          return res.status(400).json({
+            error: `נמצאו ${plantGardenList?.length ?? 0} גינות: ${names}. פתח את הגינה הרצויה ונסה שוב.`,
+          });
+        }
+
+        // Normalise location_type to canonical values.
+        // garden_plants has no DB CHECK constraint (only plant_trackers does),
+        // but we normalise for data consistency with legacy aliases.
+        const LOCATION_CANONICAL = new Set(['pot', 'garden', 'bed', 'hydroponic', 'greenhouse']);
+        const LOCATION_ALIASES: Record<string, string> = {
+          balcony:      'pot',
+          container:    'pot',
+          planter:      'pot',
+          other:        'pot',
+          soil:         'garden',
+          ground:       'garden',
+          'open-ground': 'garden',
+          'raised-bed': 'bed',
+        };
+        const rawLocation = typeof params.location_type === 'string' ? params.location_type.toLowerCase() : '';
+        const normalizedLocationType =
+          LOCATION_CANONICAL.has(rawLocation) ? rawLocation :
+          (LOCATION_ALIASES[rawLocation] ?? 'pot');
+
+        const { error: plantInsertError } = await db.from('garden_plants').insert({
+          garden_id:            plantGardenId,
+          plant_id:             null,
+          common_name_he:       params.common_name_he,
+          common_name_en:       (params.common_name_en as string | undefined) || null,
+          notes:                (params.notes as string | undefined) || '',
+          location_type:        normalizedLocationType,
+          location_description: (params.location_description as string | undefined) ?? null,
+          ...(params.plant_type !== undefined && { plant_type: params.plant_type }),
+          ...(params.variety    !== undefined && { variety: params.variety }),
+        });
+        if (plantInsertError) {
+          console.error('[execute-tool/add_plant] insert failed:', plantInsertError.message, plantInsertError.code);
+          return res.status(500).json({ error: 'שגיאה בהוספת הצמח. נסה שוב.' });
+        }
+        console.log('[execute-tool/add_plant] inserted plant:', params.common_name_he, 'location:', normalizedLocationType, 'garden:', plantGardenId);
+        break;
+      }
       default:
         return res.status(400).json({ error: `Unknown tool: ${tool_name}` });
     }
