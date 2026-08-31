@@ -30,6 +30,7 @@ export function useChupChu() {
     dailyLimit:         store.dailyLimit,
     expression:         store.expression,
     proposedTasks:      store.proposedTasks,
+    pendingMobileTool:  store.pendingMobileTool,
     memory:             store.memory,
     sendMessage,
     loadHistory:        store.loadHistory,
@@ -37,6 +38,7 @@ export function useChupChu() {
     clearError:         store.clearError,
     setExpression:      store.setExpression,
     clearProposedTasks: store.clearProposedTasks,
+    clearMobileTool:    store.clearMobileTool,
     loadMemory:         store.loadMemory,
     triggerSummarize:   store.triggerSummarize,
   };

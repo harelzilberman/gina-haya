@@ -4,7 +4,7 @@ import { useTranslation } from 'react-i18next';
 import ReactMarkdown from 'react-markdown';
 import { useDirection } from '../../hooks/useDirection';
 import type { ChupChuMessage } from '@gina-haya/shared';
-import type { ChupChuExpression } from '../../stores/chupChuStore';
+import type { ChupChuExpression, MobileTool } from '../../stores/chupChuStore';
 import { useChupChu } from '../../hooks/useChupChu';
 import { useAuthStore } from '../../stores/authStore';
 import { ChupChuGreeting } from './ChupChuGreeting';
@@ -475,6 +475,181 @@ function TaskProposalCard({ tasks, isRTL, isHe, onDismiss }: TaskProposalCardPro
   );
 }
 
+// ── Mobile tool confirmation card ─────────────────────────────────────────────
+interface MobileToolConfirmCardProps {
+  tool:      MobileTool;
+  isRTL:     boolean;
+  isHe:      boolean;
+  onDismiss: () => void;
+}
+
+type MobileToolState = 'idle' | 'loading' | 'success' | 'error-retryable' | 'error-fatal';
+
+function MobileToolConfirmCard({ tool, isRTL, isHe, onDismiss }: MobileToolConfirmCardProps) {
+  const [confirmState, setConfirmState] = useState<MobileToolState>('idle');
+  const [errorMsg,     setErrorMsg]     = useState<string | null>(null);
+
+  const apiBase   = import.meta.env.VITE_API_URL || 'https://powerful-embrace-production-95ea.up.railway.app';
+  const description = isHe ? tool.descriptionHe : tool.descriptionEn;
+
+  const handleConfirm = async () => {
+    setConfirmState('loading');
+    setErrorMsg(null);
+    const authToken = useAuthStore.getState().session?.access_token;
+    const gardenId  = localStorage.getItem('active_garden_id');
+    try {
+      const res = await fetch(`${apiBase}/api/chupchu/execute-tool`, {
+        method: 'POST',
+        headers: {
+          'Content-Type':  'application/json',
+          'Authorization': `Bearer ${authToken}`,
+        },
+        body: JSON.stringify({ tool_name: tool.name, params: tool.params, gardenId }),
+      });
+      if (res.ok) {
+        setConfirmState('success');
+        setTimeout(onDismiss, 2000);
+      } else if (res.status === 400) {
+        const data = await res.json().catch(() => ({}));
+        setErrorMsg(data.error ?? (isHe ? 'שגיאה — פתח את הגינה ונסה שנית' : 'Error — open the garden and try again'));
+        setConfirmState('error-fatal');
+      } else {
+        setErrorMsg(isHe ? 'שגיאת שרת — נסה שנית' : 'Server error — please try again');
+        setConfirmState('error-retryable');
+      }
+    } catch {
+      setErrorMsg(isHe ? 'שגיאת רשת — נסה שנית' : 'Network error — please try again');
+      setConfirmState('error-retryable');
+    }
+  };
+
+  if (confirmState === 'success') {
+    return (
+      <div style={{
+        margin:          '0 16px 8px',
+        padding:         '14px 16px',
+        borderRadius:    '12px',
+        backgroundColor: NIGHT_CARD,
+        border:          `1px solid ${BIO_CYAN}`,
+        textAlign:       'center',
+        fontFamily:      DM_SANS,
+        fontSize:        '14px',
+        color:           BIO_CYAN,
+      }}>
+        {isHe ? '✓ בוצע בהצלחה' : '✓ Done'}
+      </div>
+    );
+  }
+
+  const isLoadingState = confirmState === 'loading';
+  const isFatal        = confirmState === 'error-fatal';
+  const canConfirm     = !isLoadingState && !isFatal;
+
+  return (
+    <div style={{
+      margin:          '0 16px 8px',
+      borderRadius:    '12px',
+      backgroundColor: NIGHT_CARD,
+      border:          '1px solid rgba(0,229,195,0.25)',
+      overflow:        'hidden',
+      direction:       isRTL ? 'rtl' : 'ltr',
+    }}>
+      {/* Header */}
+      <div style={{
+        display:         'flex',
+        alignItems:      'center',
+        justifyContent:  'space-between',
+        padding:         '10px 14px',
+        borderBottom:    '1px solid rgba(0,229,195,0.12)',
+        backgroundColor: 'rgba(0,229,195,0.05)',
+      }}>
+        <span style={{ fontFamily: FRANK, fontSize: '13px', fontWeight: 700, color: BIO_CYAN }}>
+          {isHe ? '✳ פעולה מוצעת' : '✳ Suggested Action'}
+        </span>
+        <button
+          onClick={onDismiss}
+          style={{
+            background: 'none', border: 'none', cursor: 'pointer',
+            color: `${TEXT_MID}55`, fontSize: '14px', padding: '0 2px',
+          }}
+        >✕</button>
+      </div>
+
+      {/* Body */}
+      <div style={{ padding: '12px 14px' }}>
+        <p style={{
+          fontFamily: DM_SANS,
+          fontSize:   '14px',
+          color:      TEXT_MID,
+          margin:     '0 0 12px',
+          lineHeight: 1.55,
+          textAlign:  isRTL ? 'right' : 'left',
+        }}>
+          {description}
+        </p>
+
+        {errorMsg && (
+          <p style={{
+            fontFamily: DM_SANS,
+            fontSize:   '12px',
+            color:      '#ff5c8a',
+            margin:     '0 0 10px',
+            textAlign:  isRTL ? 'right' : 'left',
+          }}>
+            {errorMsg}
+          </p>
+        )}
+
+        <div style={{ display: 'flex', gap: '8px' }}>
+          <button
+            onClick={handleConfirm}
+            disabled={!canConfirm}
+            style={{
+              flex:            2,
+              padding:         '9px',
+              borderRadius:    '8px',
+              border:          'none',
+              backgroundColor: canConfirm ? BIO_CYAN : 'rgba(0,229,195,0.15)',
+              color:           canConfirm ? NIGHT : `${TEXT_MID}44`,
+              fontFamily:      FRANK,
+              fontSize:        '13px',
+              fontWeight:      700,
+              cursor:          canConfirm ? 'pointer' : 'default',
+              opacity:         isLoadingState ? 0.7 : 1,
+              transition:      'opacity 0.2s, filter 0.2s',
+            }}
+            onMouseEnter={e => { if (canConfirm) (e.currentTarget as HTMLElement).style.filter = 'brightness(1.1)'; }}
+            onMouseLeave={e => { (e.currentTarget as HTMLElement).style.filter = 'none'; }}
+          >
+            {isLoadingState
+              ? (isHe ? 'שומר...' : 'Saving...')
+              : (isHe ? 'אשר ✓' : 'Confirm ✓')}
+          </button>
+          <button
+            onClick={onDismiss}
+            style={{
+              flex:            1,
+              padding:         '9px',
+              borderRadius:    '8px',
+              border:          '1px solid rgba(0,229,195,0.2)',
+              backgroundColor: 'transparent',
+              color:           TEXT_MID,
+              fontFamily:      DM_SANS,
+              fontSize:        '12px',
+              cursor:          'pointer',
+              transition:      'border-color 0.15s',
+            }}
+            onMouseEnter={e => { (e.currentTarget as HTMLElement).style.borderColor = 'rgba(0,229,195,0.4)'; }}
+            onMouseLeave={e => { (e.currentTarget as HTMLElement).style.borderColor = 'rgba(0,229,195,0.2)'; }}
+          >
+            {isHe ? 'בטל' : 'Cancel'}
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 // ── Main chat ─────────────────────────────────────────────────────────────────
 interface ChupChuChatProps {
   compact?: boolean;
@@ -499,10 +674,12 @@ export function ChupChuChat({ compact, initialMessage, onInitialMessageConsumed,
     rateLimitTier,
     expression,
     proposedTasks,
+    pendingMobileTool,
     memory,
     sendMessage,
     clearError,
     clearProposedTasks,
+    clearMobileTool,
     loadMemory,
     triggerSummarize,
   } = useChupChu();
@@ -806,6 +983,16 @@ export function ChupChuChat({ compact, initialMessage, onInitialMessageConsumed,
           item={confirmQueue[0]}
           onDone={() => setConfirmQueue(prev => prev.slice(1))}
           onDismiss={() => setConfirmQueue(prev => prev.slice(1))}
+        />
+      )}
+
+      {/* Mobile tool confirmation card */}
+      {pendingMobileTool && (
+        <MobileToolConfirmCard
+          tool={pendingMobileTool}
+          isRTL={isRTL}
+          isHe={isHe}
+          onDismiss={clearMobileTool}
         />
       )}
 

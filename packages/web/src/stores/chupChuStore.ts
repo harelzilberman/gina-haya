@@ -11,6 +11,13 @@ export interface ProposedTask {
   priority: string;
 }
 
+export interface MobileTool {
+  name: string;
+  params: Record<string, unknown>;
+  descriptionHe: string;
+  descriptionEn: string;
+}
+
 export interface ChupChuMemory {
   summary_he: string | null;
   summary_en: string | null;
@@ -86,6 +93,7 @@ interface ChupChuState {
   dailyLimit: number | null;
   expression: ChupChuExpression;
   proposedTasks: ProposedTask[] | null;
+  pendingMobileTool: MobileTool | null;
   memory: ChupChuMemory | null;
 
   sendMessage: (text: string, gardenId?: string, imageBase64?: string, imageDataUrl?: string) => Promise<void>;
@@ -94,6 +102,7 @@ interface ChupChuState {
   clearError: () => void;
   setExpression: (e: ChupChuExpression) => void;
   clearProposedTasks: () => void;
+  clearMobileTool: () => void;
   loadMemory: () => Promise<void>;
   triggerSummarize: (lang: string) => Promise<void>;
 }
@@ -113,11 +122,13 @@ export const useChupChuStore = create<ChupChuState>((set, get) => ({
   dailyLimit:          null,
   expression:          'default',
   proposedTasks:       null,
+  pendingMobileTool:   null,
   memory:              null,
 
   clearError:          () => set({ error: null }),
   setExpression:       (e) => set({ expression: e }),
   clearProposedTasks:  () => set({ proposedTasks: null }),
+  clearMobileTool:     () => set({ pendingMobileTool: null }),
 
   loadMemory: async () => {
     const token = getToken();
@@ -174,6 +185,7 @@ export const useChupChuStore = create<ChupChuState>((set, get) => ({
       error:               null,
       expression:          'thinking',
       proposedTasks:       null,
+      pendingMobileTool:   null,
     });
 
     try {
@@ -245,6 +257,7 @@ export const useChupChuStore = create<ChupChuState>((set, get) => ({
         dailyLimit:          data.dailyLimit              ?? s.dailyLimit,
         expression:          isWise ? 'wise' : 'happy',
         proposedTasks:       data.proposedTasks && data.proposedTasks.length > 0 ? data.proposedTasks : null,
+        pendingMobileTool:   data.mobileTool ?? null,
       }));
       scheduleExpressionReset(set);
     } catch (err: any) {
