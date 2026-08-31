@@ -11,6 +11,11 @@ const ANTHROPIC_HEADERS = {
   'content-type': 'application/json',
 };
 
+// Tracker check-in model — separate from claude.ts's VISION_MODEL (chat full-diagnosis).
+// Switched from claude-opus-4-5 to claude-sonnet-4-5 (commit 1 of 2).
+// Monitor Railway logs for stop_reason=max_tokens or degraded identified/health/stage values.
+const TRACKER_VISION_MODEL = process.env.TRACKER_VISION_MODEL ?? 'claude-sonnet-4-5';
+
 export async function compressImageForClaude(base64: string): Promise<{ data: string; mimeType: 'image/jpeg'; buffer: Buffer }> {
   const buffer = Buffer.from(base64, 'base64');
   const compressed = await sharp(buffer)
@@ -310,7 +315,7 @@ export async function analyzePlantImage(
 due_in_days: מתי לבצע את המשימה (1-14 ימים). priority: high=דחוף/נדרש עכשיו, medium=השבוע, low=בשבועיים הקרובים.`;
 
   const response = (await axios.post(ANTHROPIC_URL, {
-    model: 'claude-opus-4-5',
+    model: TRACKER_VISION_MODEL,
     max_tokens: 4096,
     system: systemPrompt,
     messages: [
@@ -332,17 +337,26 @@ due_in_days: מתי לבצע את המשימה (1-14 ימים). priority: high=�
   }, { headers: ANTHROPIC_HEADERS, timeout: 90000 })).data;
 
   // Persist real token data — fire-and-forget, never blocks the response
-  void logApiUsage({ userId, endpoint: 'vision_tracker_checkin', model: 'claude-opus-4-5', usage: response.usage });
+  void logApiUsage({ userId, endpoint: 'vision_tracker_checkin', model: TRACKER_VISION_MODEL, usage: response.usage });
 
   const textBlock = response.content.find(b => b.type === 'text');
   if (!textBlock || textBlock.type !== 'text') {
     throw new Error('No text response from Claude');
   }
 
-  const parsed = extractAndParseJson(textBlock.text);
-
-  if (!parsed.analysis || !parsed.growingPlan) {
-    throw new Error('Invalid response structure: missing analysis or growingPlan');
+  let parsed: any;
+  try {
+    parsed = extractAndParseJson(textBlock.text);
+    if (!parsed.analysis || !parsed.growingPlan) {
+      throw new Error('Invalid response structure: missing analysis or growingPlan');
+    }
+  } catch (parseErr: any) {
+    console.error('[plantVision] parse failed', {
+      model:       TRACKER_VISION_MODEL,
+      stop_reason: response.stop_reason,
+      raw_prefix:  textBlock.text.slice(0, 200),
+    });
+    throw parseErr;
   }
 
   // Ensure arrays exist
@@ -399,6 +413,18 @@ due_in_days: מתי לבצע את המשימה (1-14 ימים). priority: high=�
         due_in_days: Math.max(1, Math.min(30, Number(t.due_in_days) || 3)),
       };
     });
+
+  console.log('[plantVision]', {
+    model:       TRACKER_VISION_MODEL,
+    input:       response.usage?.input_tokens,
+    output:      response.usage?.output_tokens,
+    stop_reason: response.stop_reason,
+    identified:  parsed.analysis.plantIdentified,
+    health:      parsed.analysis.healthHe,
+    stage:       parsed.analysis.growthStageHe,
+    issues:      parsed.analysis.issues?.length ?? 0,
+    tasks:       tasks?.length ?? 0,
+  });
 
   return {
     analysis: parsed.analysis as PlantAnalysis,
