@@ -138,8 +138,8 @@ function buildCheckinAnalysis(diagnosis: any): { aiAnalysis: Record<string, any>
     plantIdentified:   diagnosis.plant_name        ?? '',
     plantIdentifiedEn: diagnosis.plant_name_latin  ?? '',
     confidence:        diagnosis.confidence         ?? 'medium',
-    growthStage:       'vegetative',
-    growthStageHe:     '',   // Fixed: was diagnosis.plant_name (wrong field — website has its own stage map)
+    growthStage:       diagnosis.growth_stage       ?? 'vegetative',
+    growthStageHe:     '',   // full-diagnosis prompt does not return Hebrew stage text; website STAGE_MAP is unused here
     health:            healthMap[diagnosis.health_status as string] ?? 'fair',
     healthHe:          diagnosis.health_status_label ?? '',
     issues: (diagnosis.issues ?? []).map((i: any) => ({
@@ -152,6 +152,7 @@ function buildCheckinAnalysis(diagnosis: any): { aiAnalysis: Record<string, any>
     immediateActions: (diagnosis.tasks ?? [])  // Fixed: was hardcoded []
       .filter((t: any) => t.urgency === 'today')
       .map((t: any) => t.title ?? ''),
+    progression:      diagnosis.progression ?? '',
   };
 
   const growingPlan = {
@@ -393,9 +394,72 @@ chupChuRouter.post('/full-diagnosis', async (req: any, res) => {
       }
     }
 
-    const systemPrompt = language === 'he'
+    // ── Fetch prior check-in history (only when tracker_id is present) ────────
+    // History is injected as text so the model can compare progression.
+    // A failed history read is logged and skipped — it must never break the analysis.
+    // Both ai_analysis shapes are handled:
+    //   full-diagnosis rows: have health_status (string enum) + health_status_label + summary
+    //   plantVision rows:    have healthHe + growthStageHe + observations (no health_status key)
+    // Detection: typeof ai_analysis.health_status === 'string'
+    let priorHistoryBlock = '';
+    if (tracker_id) {
+      const { data: priorRows, error: historyErr } = await db
+        .from('plant_tracker_checkins')
+        .select('created_at, checkin_date, ai_analysis')
+        .eq('tracker_id', tracker_id)
+        .order('created_at', { ascending: false })
+        .limit(2);
+
+      if (historyErr) {
+        console.error('[full-diagnosis] history fetch failed — continuing without history', {
+          tracker_id, error: historyErr.message,
+        });
+      } else if (priorRows && priorRows.length > 0) {
+        // Reverse to chronological order (oldest first) for readability
+        const rows = [...priorRows].reverse();
+        const lines = rows.map(row => {
+          const ai = row.ai_analysis as Record<string, any> | null;
+          if (!ai || typeof ai !== 'object') return null;
+          const date = (row.checkin_date ?? row.created_at ?? '').slice(0, 10);
+          // Detect shape: full-diagnosis rows have health_status string; plantVision rows have healthHe
+          const isFullDiagShape = typeof ai.health_status === 'string';
+          if (language === 'he') {
+            const statusLabel = isFullDiagShape
+              ? String(ai.health_status_label ?? ai.health_status ?? '').slice(0, 200)
+              : String(ai.healthHe ?? ai.health ?? '').slice(0, 200);
+            const detail = isFullDiagShape
+              ? String(ai.summary ?? ai.observations ?? '').slice(0, 200)
+              : String(ai.observations ?? '').slice(0, 200);
+            return `[${date}] מצב: ${statusLabel}${detail ? ` — ${detail}` : ''}`;
+          } else {
+            const statusLabel = isFullDiagShape
+              ? String(ai.health_status_label ?? ai.health_status ?? '').slice(0, 200)
+              : String(ai.health ?? ai.healthHe ?? '').slice(0, 200);
+            const detail = isFullDiagShape
+              ? String(ai.summary ?? ai.observations ?? '').slice(0, 200)
+              : String(ai.observations ?? '').slice(0, 200);
+            return `[${date}] Status: ${statusLabel}${detail ? ` — ${detail}` : ''}`;
+          }
+        }).filter((l): l is string => l !== null && l.length > 0);
+
+        if (lines.length > 0) {
+          priorHistoryBlock = language === 'he'
+            ? `\n\nבדיקות קודמות של הצמח:\n${lines.join('\n')}`
+            : `\n\nPrevious check-ins for this plant:\n${lines.join('\n')}`;
+        }
+      }
+    }
+
+    const priorHistoryInstruction = priorHistoryBlock
+      ? (language === 'he'
+        ? `\n\nכאשר קיימות בדיקות קודמות, השווה את מצב הצמח הנוכחי לקודם — האם חל שיפור, הידרדרות, או יציבות? תאר בקצרה מה השתנה ומה הדבר מרמז לגבי הטיפול.`
+        : `\n\nWhen prior check-ins are present, compare the plant's current state to the previous ones — has it improved, declined, or stayed stable? Briefly describe what changed and what that suggests for care.`)
+      : '';
+
+    const systemPrompt = (language === 'he'
       ? `אתה צ'ופצ'ו, מומחה גינה ביודינמי. קיבלת תמונה של צמח. עליך לנתח אותה לעומק ולהחזיר תשובה בפורמט JSON בלבד — ללא טקסט נוסף, ללא markdown, רק JSON תקין. נתח: זיהוי הצמח, מצב בריאותו, בעיות שנראות, צעדי טיפול מפורטים, משימות דחופות, וטיפ ביודינמי. אם הצמח בריא, מלא את השדות בהתאם עם tasks ריק או עם משימות תחזוקה שגרתיות.\n\n${CHUPCHU_GLOSSARY_HE}`
-      : `You are Chupchu, a biodynamic garden expert. You received a plant photo. Analyze it deeply and return a response in JSON format only — no extra text, no markdown, just valid JSON. Analyze: plant identification, health status, visible issues, detailed treatment steps, urgent tasks, and a biodynamic tip. If the plant is healthy, fill fields accordingly with empty tasks or routine maintenance tasks.`;
+      : `You are Chupchu, a biodynamic garden expert. You received a plant photo. Analyze it deeply and return a response in JSON format only — no extra text, no markdown, just valid JSON. Analyze: plant identification, health status, visible issues, detailed treatment steps, urgent tasks, and a biodynamic tip. If the plant is healthy, fill fields accordingly with empty tasks or routine maintenance tasks.`
+    ) + priorHistoryBlock + priorHistoryInstruction;
 
     // ── Identification context prefix ────────────────────────────────────────
     // When an established identification is supplied, it is injected before the
@@ -462,6 +526,7 @@ chupChuRouter.post('/full-diagnosis', async (req: any, res) => {
   "confidence": "high",
   "health_status": "healthy",
   "health_status_label": "תיאור קצר של המצב",
+  "growth_stage": "vegetative",
   "summary": "תיאור קצר 2-3 משפטים של מה שנראה בתמונה",
   "issues": [
     {
@@ -486,10 +551,11 @@ chupChuRouter.post('/full-diagnosis', async (req: any, res) => {
       "urgency_label": "השבוע הזה"
     }
   ],
-  "prevention_tips": ["טיפ 1", "טיפ 2", "טיפ 3"]${conflictFieldHe ? `,\n${conflictFieldHe.trimEnd()}` : ''}
+  "prevention_tips": ["טיפ 1", "טיפ 2", "טיפ 3"],
+  "progression": ""${conflictFieldHe ? `,\n${conflictFieldHe.trimEnd()}` : ''}
 }
-ערכים חוקיים: confidence = high|medium|low, health_status = healthy|stressed|diseased|pest_damage, severity = low|medium|high, urgency = today|this_week|this_month.`
-      : `${identificationPrefix}Analyze the plant in the image and return ONLY valid JSON with this exact structure: {"plant_name":"...","plant_name_latin":"...","confidence":"high","health_status":"healthy","health_status_label":"...","summary":"...","issues":[{"name":"...","severity":"low","description":"..."}],"treatment_steps":[{"step":1,"title":"...","description":"..."}],"biodynamic_tip":"...","tasks":[{"title":"...","description":"...","urgency":"this_week","urgency_label":"This week"}],"prevention_tips":["...","..."]${conflictFieldEn}}. Valid values: confidence=high|medium|low, health_status=healthy|stressed|diseased|pest_damage, severity=low|medium|high, urgency=today|this_week|this_month.`;
+ערכים חוקיים: confidence = high|medium|low, health_status = healthy|stressed|diseased|pest_damage, severity = low|medium|high, urgency = today|this_week|this_month, growth_stage = seedling|vegetative|flowering|fruiting|dormant. שדה progression: תיאור קצר של השינוי לעומת בדיקות קודמות (שיפור/הידרדרות/יציבות) — מלא אותו רק אם סופקו בדיקות קודמות בפרומפט; אחרת השאר ריק.`
+      : `${identificationPrefix}Analyze the plant in the image and return ONLY valid JSON with this exact structure: {"plant_name":"...","plant_name_latin":"...","confidence":"high","health_status":"healthy","health_status_label":"...","growth_stage":"vegetative","summary":"...","issues":[{"name":"...","severity":"low","description":"..."}],"treatment_steps":[{"step":1,"title":"...","description":"..."}],"biodynamic_tip":"...","tasks":[{"title":"...","description":"...","urgency":"this_week","urgency_label":"This week"}],"prevention_tips":["...","..."],"progression":""${conflictFieldEn}}. Valid values: confidence=high|medium|low, health_status=healthy|stressed|diseased|pest_damage, severity=low|medium|high, urgency=today|this_week|this_month, growth_stage=seedling|vegetative|flowering|fruiting|dormant. progression: short description of change vs. prior check-ins (improved/declined/stable) — fill only when prior check-ins were provided in the prompt; otherwise leave empty.`;
 
     const response = (await axios.post(ANTHROPIC_URL, {
       model: 'claude-opus-4-5',
@@ -643,13 +709,13 @@ chupChuRouter.post('/full-diagnosis', async (req: any, res) => {
             tracker_id:   tracker_id,
             user_id:      req.user.id,
             checkin_date: todayInIsrael(),
-            growth_stage: 'vegetative',
+            growth_stage: aiAnalysis.growthStage,
             ai_analysis:  aiAnalysis,
             growing_plan: growingPlan,
             photo_path:   checkinPhotoPath,
           });
           if (checkinErr) {
-            console.error('[full-diagnosis] plant_tracker_checkins insert failed:', checkinErr.message);
+            console.error('[full-diagnosis] checkin save FAILED', { tracker_id, error: checkinErr.message, code: checkinErr.code });
           } else {
             console.log('[full-diagnosis] created check-in for tracker', tracker_id);
           }
@@ -760,7 +826,7 @@ chupChuRouter.post('/attach-diagnosis', async (req: any, res) => {
             tracker_id:   validatedTrackerId,
             user_id:      userId,
             checkin_date: todayInIsrael(),
-            growth_stage: 'vegetative',
+            growth_stage: aiAnalysis.growthStage,
             ai_analysis:  aiAnalysis,
             growing_plan: growingPlan,
             photo_path:   validatedPhotoPath,
