@@ -10,7 +10,7 @@ import type { ChupChuMessage, ChupChuContext } from '@gina-haya/shared';
 import { todayInIsrael } from '@gina-haya/shared';
 import { getRecentCompletedTasks } from '../db/queries/tasks';
 import { getLimits } from '../config/tiers';
-import { checkAndRecordVisionUse, recordFreeRetryVisionUse } from '../services/visionQuota';
+import { checkVisionQuota, recordVisionUse, checkAndRecordVisionUse, recordFreeRetryVisionUse } from '../services/visionQuota';
 import { logApiUsage } from '../services/apiUsage';
 import { lastScheduledIrrigation, isWateringTask } from '../utils/irrigation';
 import { userOwnsGardenPlant } from '../utils/ownership';
@@ -373,24 +373,26 @@ chupChuRouter.post('/full-diagnosis', async (req: any, res) => {
       console.log(`[full-diagnosis] resolved image from storage key=${clientPhotoKey} size=${buf.length}b mime=${effectiveMimeType}`);
     }
 
-    // ── Vision quota gate ────────────────────────────────────────────────────
-    // Checked BEFORE any Anthropic spend.
-    // Tier not pre-loaded on this route — helper will resolve it from the DB.
+    // ── Vision quota gate (CHECK only — record happens after successful parse) ──
+    // The check runs before any Anthropic spend so we never make a call that is
+    // already over quota.  The record (INSERT into vision_uses) is deferred until
+    // after the response is parsed and validated — a transient Anthropic error,
+    // truncated response, or JSON parse failure must not burn a quota look.
+    //
     // Refusal shape: { ok: false, reason: 'vision_quota_exceeded', used, limit }
     // HTTP 200 so the app can render an upsell rather than a generic error.
-    {
-      const userId = req.user?.id;
-      if (userId) {
-        // Validate source against the allowed VisionSource values; fall back to 'full_diagnosis'.
-        const VALID_SOURCES: import('../services/visionQuota').VisionSource[] = [
-          'full_diagnosis', 'chat_image', 'tracker_checkin', 'passport_chip',
-        ];
-        const resolvedSource: import('../services/visionQuota').VisionSource =
-          VALID_SOURCES.includes(source) ? source : 'full_diagnosis';
-        const quota = await checkAndRecordVisionUse(userId, resolvedSource, plant_id ?? null);
-        if (!quota.allowed) {
-          return res.json({ ok: false, reason: 'vision_quota_exceeded', used: quota.used, limit: quota.limit });
-        }
+    //
+    // Validate source against the allowed VisionSource values; fall back to 'full_diagnosis'.
+    const VALID_SOURCES: import('../services/visionQuota').VisionSource[] = [
+      'full_diagnosis', 'chat_image', 'tracker_checkin', 'passport_chip',
+    ];
+    const resolvedSource: import('../services/visionQuota').VisionSource =
+      VALID_SOURCES.includes(source) ? source : 'full_diagnosis';
+
+    if (req.user?.id) {
+      const quotaCheck = await checkVisionQuota(req.user.id);
+      if (!quotaCheck.allowed) {
+        return res.json({ ok: false, reason: 'vision_quota_exceeded', used: quotaCheck.used, limit: quotaCheck.limit });
       }
     }
 
@@ -624,6 +626,14 @@ chupChuRouter.post('/full-diagnosis', async (req: any, res) => {
     ) {
       console.error('[POST /api/chupchu/full-diagnosis] Validation failed — missing required fields, diagnosis:', JSON.stringify(diagnosis));
       return res.json({ success: false, error: 'validation_error' });
+    }
+
+    // ── Record vision quota use — deferred to here so failures don't burn a look ─
+    // The check happened before the Anthropic call; the insert happens now that the
+    // response is fully validated.  If the insert fails, we log loudly and continue
+    // — losing a quota count beats returning an error for a response already computed.
+    if (req.user?.id) {
+      void recordVisionUse(req.user.id, resolvedSource, plant_id ?? null);
     }
 
     // ── Disagreement detection ────────────────────────────────────────────────

@@ -1,5 +1,6 @@
 import { db } from '../db/client';
 import { getLimits } from '../config/tiers';
+import { startOfCurrentMonthIsrael } from '@gina-haya/shared';
 
 // Valid values must match the CHECK constraint in migration 019.
 // 'passport_chip' is reserved for Phase 2.
@@ -19,19 +20,17 @@ export interface VisionQuotaResult {
  * Free retries (is_free_retry = true) are excluded so they do not count toward
  * the displayed quota.  Returns null on DB error.
  *
- * Uses the same filter as checkAndRecordVisionUse so the two can never drift.
+ * Uses the same filter as checkVisionQuota so the two can never drift.
  */
 export async function countVisionUsesThisMonth(userId: string): Promise<number | null> {
-  const startOfMonth = new Date();
-  startOfMonth.setDate(1);
-  startOfMonth.setHours(0, 0, 0, 0);
+  const startOfMonth = startOfCurrentMonthIsrael();
 
   const { count, error } = await db
     .from('vision_uses')
     .select('id', { count: 'exact', head: true })
     .eq('user_id', userId)
     .eq('is_free_retry', false)
-    .gte('created_at', startOfMonth.toISOString());
+    .gte('created_at', startOfMonth);
 
   if (error) {
     console.error('[visionQuota] countVisionUsesThisMonth error:', error.message);
@@ -41,32 +40,24 @@ export async function countVisionUsesThisMonth(userId: string): Promise<number |
 }
 
 /**
- * Checks whether the user is within their monthly vision-use quota, and if so,
- * inserts a vision_uses row to record the call.
+ * Read-only quota check.  Does NOT insert a vision_uses row.
  *
- * Call this BEFORE any Anthropic API spend.  On refusal, return HTTP 200 with
- * the structured body:
- *   { ok: false, reason: 'vision_quota_exceeded', used, limit }
- *
- * Free retries (is_free_retry rows) are excluded from the count so they never
- * push a user over their limit.  Use recordFreeRetryVisionUse() for those.
- *
- * @param userId        - Supabase auth user UUID
- * @param source        - Which entry point triggered the vision call
- * @param gardenPlantsId - Optional FK into garden_plants (nullable in DB)
- * @param tier          - If already resolved (e.g. from attachTier middleware),
- *                        pass it to skip the extra DB query.  Omit to auto-resolve.
+ * Returns { allowed, used, limit, effectiveTier } so the caller can decide
+ * whether to proceed.  Call recordVisionUse() after a successful Anthropic
+ * response to consume the quota credit.
  *
  * Race note: two simultaneous requests at (used = limit - 1) could both pass
  * before either INSERT commits, briefly allowing limit+1 uses.  This is an
- * acceptable trade-off for this product — no pessimistic locking needed.
+ * acceptable trade-off — no pessimistic locking needed.
+ *
+ * @param userId  - Supabase auth user UUID
+ * @param tier    - If already resolved (e.g. from attachTier middleware),
+ *                  pass it to skip the extra DB query.  Omit to auto-resolve.
  */
-export async function checkAndRecordVisionUse(
+export async function checkVisionQuota(
   userId: string,
-  source: VisionSource,
-  gardenPlantsId?: string | null,
   tier?: string,
-): Promise<VisionQuotaResult> {
+): Promise<{ allowed: boolean; used: number; limit: number | null; effectiveTier: string }> {
   // ── 1. Resolve effective tier ─────────────────────────────────────────────
   let effectiveTier = tier;
   if (!effectiveTier) {
@@ -89,59 +80,105 @@ export async function checkAndRecordVisionUse(
   // ── 2. Get limit for this tier ────────────────────────────────────────────
   const limit = getLimits(effectiveTier).maxVisionLooksPerMonth;
 
-  // null = unlimited — skip count and record immediately
+  // null = unlimited — skip counting
   if (limit === null) {
-    const { data: insertedRow, error: insertError } = await db.from('vision_uses').insert({
-      user_id:          userId,
-      source,
-      garden_plants_id: gardenPlantsId ?? null,
-    }).select('id').single();
-    if (insertError) {
-      console.error('[visionQuota] insert error (unlimited path):', insertError.message);
-    }
-    return { allowed: true, used: 0, limit: null, visionUseId: insertedRow?.id ?? null };
+    return { allowed: true, used: 0, limit: null, effectiveTier };
   }
 
-  // ── 3. Count billable uses this rolling month ─────────────────────────────
+  // ── 3. Count billable uses this rolling month (Israel midnight) ───────────
   // is_free_retry = true rows are excluded: they must not count toward the cap.
-  const startOfMonth = new Date();
-  startOfMonth.setDate(1);
-  startOfMonth.setHours(0, 0, 0, 0);
+  // Monthly window uses Israel timezone midnight (UTC+2/+3 depending on DST),
+  // not bare UTC midnight which resets 2–3 hours late for Israeli users.
+  const startOfMonth = startOfCurrentMonthIsrael();
 
   const { count, error: countError } = await db
     .from('vision_uses')
     .select('id', { count: 'exact', head: true })
     .eq('user_id', userId)
     .eq('is_free_retry', false)
-    .gte('created_at', startOfMonth.toISOString());
+    .gte('created_at', startOfMonth);
 
   if (countError) {
     // Log and fail-open: better to let an Anthropic call through than to block
     // all users due to a DB hiccup.
     console.error('[visionQuota] count error — failing open:', countError.message);
-    return { allowed: true, used: 0, limit, visionUseId: null };
+    return { allowed: true, used: 0, limit, effectiveTier };
   }
 
   const used = count ?? 0;
 
-  // ── 4. Enforce limit ──────────────────────────────────────────────────────
+  // ── 4. Enforce monthly limit ──────────────────────────────────────────────
   if (used >= limit) {
-    console.log(`[visionQuota] user ${userId} quota exceeded (${used}/${limit}, tier=${effectiveTier})`);
-    return { allowed: false, used, limit, visionUseId: null };
+    console.log(`[visionQuota] user ${userId} monthly quota exceeded (${used}/${limit}, tier=${effectiveTier})`);
+    return { allowed: false, used, limit, effectiveTier };
   }
 
-  // ── 5. Record use ─────────────────────────────────────────────────────────
+  return { allowed: true, used, limit, effectiveTier };
+}
+
+/**
+ * Inserts a vision_uses row to record a successful (billed) Anthropic call.
+ *
+ * Call this AFTER the Anthropic response has been received, parsed, and
+ * validated — not before.  A failed analysis should not consume quota.
+ *
+ * If the insert fails but the analysis succeeded, the error is logged loudly
+ * and the successful response is still returned to the caller.  Losing a quota
+ * count is better than failing a call the user already waited 30s for.
+ *
+ * @returns the new vision_uses row ID, or null on DB error.
+ */
+export async function recordVisionUse(
+  userId: string,
+  source: VisionSource,
+  gardenPlantsId?: string | null,
+): Promise<string | null> {
   const { data: insertedRow, error: insertError } = await db.from('vision_uses').insert({
     user_id:          userId,
     source,
     garden_plants_id: gardenPlantsId ?? null,
   }).select('id').single();
+
   if (insertError) {
-    // Non-fatal: the user is within quota; don't block the call over a log failure.
-    console.error('[visionQuota] insert error:', insertError.message);
+    console.error('[visionQuota] QUOTA RECORD FAILED — analysis succeeded but vision_uses insert failed:', insertError.message);
   }
 
-  return { allowed: true, used: used + 1, limit, visionUseId: insertedRow?.id ?? null };
+  return insertedRow?.id ?? null;
+}
+
+/**
+ * Convenience wrapper: check quota then, if allowed, immediately record.
+ *
+ * Use this only for call sites where check-then-record in the same step is
+ * acceptable (e.g. free-retry eligibility checks, backward-compat callers).
+ * Prefer checkVisionQuota() + recordVisionUse() separated around the Anthropic
+ * call for all new code.
+ *
+ * @param userId        - Supabase auth user UUID
+ * @param source        - Which entry point triggered the vision call
+ * @param gardenPlantsId - Optional FK into garden_plants (nullable in DB)
+ * @param tier          - If already resolved pass it to skip the extra DB query.
+ */
+export async function checkAndRecordVisionUse(
+  userId: string,
+  source: VisionSource,
+  gardenPlantsId?: string | null,
+  tier?: string,
+): Promise<VisionQuotaResult> {
+  const check = await checkVisionQuota(userId, tier);
+
+  if (!check.allowed) {
+    return { allowed: false, used: check.used, limit: check.limit, visionUseId: null };
+  }
+
+  // null = unlimited — record immediately
+  if (check.limit === null) {
+    const visionUseId = await recordVisionUse(userId, source, gardenPlantsId);
+    return { allowed: true, used: 0, limit: null, visionUseId };
+  }
+
+  const visionUseId = await recordVisionUse(userId, source, gardenPlantsId);
+  return { allowed: true, used: check.used + 1, limit: check.limit, visionUseId };
 }
 
 /**
@@ -150,7 +187,7 @@ export async function checkAndRecordVisionUse(
  * qualifies as free (no prior free retry for the same original recognition).
  *
  * The inserted row has is_free_retry = true and links back to the original via
- * retry_of_id.  The rolling-month count query in checkAndRecordVisionUse and
+ * retry_of_id.  The rolling-month count query in checkVisionQuota and
  * countVisionUsesThisMonth both exclude is_free_retry = true rows, so the user
  * is never penalised for the retry.
  *
