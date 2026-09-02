@@ -1415,6 +1415,9 @@ chupChuRouter.post('/chat', async (req: any, res) => {
     let retryOriginal: { id: string; vision_use_id: string | null; status: string; retry_of_id: string | null } | null = null;
     let retryVisionUseId: string | null = null;  // vision_uses.id charged for this turn
     let recognitionForResponse: Record<string, any> | null = null;  // set after parsing Claude response
+    // 'daily' | 'monthly' when vision quota was exceeded on an image turn that also had text.
+    // In this case we fall back to text-only rather than hard-failing the conversation.
+    let chatImageQuotaExceeded: 'daily' | 'monthly' | null = null;
 
     try {
 
@@ -1471,6 +1474,11 @@ chupChuRouter.post('/chat', async (req: any, res) => {
       }
 
       // ── Vision quota (free retry bypasses the counter) ────────────────────
+      // For paid turns: check here, record AFTER askChupChu succeeds.
+      // When quota is exhausted mid-conversation, fall back to a text-only
+      // turn rather than hard-failing — if the user also sent text we can still
+      // answer that.  Image-only turns with no text return the quota message.
+      // retryVisionUseId is set below after a successful Anthropic response.
       if (retryOriginal?.vision_use_id) {
         // Check whether a free retry already exists for this original vision use
         const { count: priorFreeCount } = await db
@@ -1480,23 +1488,27 @@ chupChuRouter.post('/chat', async (req: any, res) => {
           .eq('is_free_retry', true);
 
         if ((priorFreeCount ?? 0) === 0) {
-          // First retry for this recognition — grant it free
+          // First retry for this recognition — grant it free (no quota deducted)
           retryVisionUseId = await recordFreeRetryVisionUse(userId, 'chat_image', retryOriginal.vision_use_id);
         } else {
-          // Second retry onwards — charge normally
-          const quota = await checkAndRecordVisionUse(userId, 'chat_image', null, effectiveTier);
-          if (!quota.allowed) {
-            return res.json({ ok: false, reason: 'vision_quota_exceeded', used: quota.used, limit: quota.limit });
+          // Second retry onwards — check quota (record after success)
+          const quotaCheck = await checkVisionQuota(userId, effectiveTier);
+          if (!quotaCheck.allowed) {
+            if (!hasText) {
+              return res.json({ ok: false, reason: 'vision_quota_exceeded', used: quotaCheck.used, limit: quotaCheck.limit, limitType: quotaCheck.limitType });
+            }
+            chatImageQuotaExceeded = quotaCheck.limitType ?? 'monthly';
           }
-          retryVisionUseId = quota.visionUseId;
         }
       } else {
-        // Normal (non-retry) image turn
-        const quota = await checkAndRecordVisionUse(userId, 'chat_image', null, effectiveTier);
-        if (!quota.allowed) {
-          return res.json({ ok: false, reason: 'vision_quota_exceeded', used: quota.used, limit: quota.limit });
+        // Normal (non-retry) image turn — check quota (record after success)
+        const quotaCheck = await checkVisionQuota(userId, effectiveTier);
+        if (!quotaCheck.allowed) {
+          if (!hasText) {
+            return res.json({ ok: false, reason: 'vision_quota_exceeded', used: quotaCheck.used, limit: quotaCheck.limit, limitType: quotaCheck.limitType });
+          }
+          chatImageQuotaExceeded = quotaCheck.limitType ?? 'monthly';
         }
-        retryVisionUseId = quota.visionUseId;
       }
     } else {
       // Text-only turn: check daily quota first, then monthly.
@@ -1969,9 +1981,11 @@ chupChuRouter.post('/chat', async (req: any, res) => {
 
     // ── 9. Call Claude API ────────────────────────────────────────────────
 
-    // Compress image if provided — bail early on size errors
+    // Compress image if provided — bail early on size errors.
+    // Skipped when vision quota was exhausted (chatImageQuotaExceeded): we fall back
+    // to a text-only turn in that case so there is no image to send to Claude.
     let compressedImage: { data: string; mimeType: 'image/jpeg' } | undefined;
-    if (hasImage) {
+    if (hasImage && !chatImageQuotaExceeded) {
       try {
         const result = await compressImageForClaude(imageBase64);
         compressedImage = { data: result.data, mimeType: result.mimeType };
@@ -1999,8 +2013,10 @@ chupChuRouter.post('/chat', async (req: any, res) => {
     // On image turns we ask Claude to return a strict JSON mini-card.  The hint
     // from a retry (retryOf.userHint) is prepended so Claude re-identifies with
     // the user's correction in scope.
+    // When chatImageQuotaExceeded is set the image is NOT sent — fall through to
+    // the regular text message so Claude answers the text and explains the quota.
     let messageForClaude: ChupChuMessage = newUserMessage;
-    if (hasImage) {
+    if (hasImage && !chatImageQuotaExceeded) {
       const retryHintLine = retryOriginal && retryOf?.userHint
         ? (lang === 'he'
             ? `המשתמש אמר שהזיהוי הקודם היה שגוי, ולפי דבריו הצמח הוא: "${String(retryOf.userHint).slice(0, 200)}".\nהתייחס לכך כמידע אמין ממקור אנושי. אמת אותו מול התמונה: אם הוא מתיישב עם מה שנראה בתמונה — השתמש בו, כולל הזן/הווריאציה אם צוינו. אם הוא סותר בבירור את התמונה — ציין זאת בעדינות ב-chupchu_comment והסבר מה כן נראה.\n`
@@ -2183,11 +2199,26 @@ chupChuRouter.post('/chat', async (req: any, res) => {
     // Volatile context: changes on every request — must NOT be cached.
     // pastContextSection shifts every exchange; date/weather change constantly.
     // gardenTimelineSection: volatile because user may log a prep mid-session.
+
+    // When vision quota was exhausted on an image+text turn, inject a system
+    // note so Claude knows to explain the situation and still answer the text.
+    // Copy is bilingual so it works regardless of user's language preference.
+    const quotaNoticeSection = chatImageQuotaExceeded
+      ? (chatImageQuotaExceeded === 'daily'
+        ? (lang === 'he'
+          ? `## הגבלת תמונות\nהמשתמש שלח תמונה אך הגיע למגבלת הצפיות היומית שלו — לא ניתן לנתח תמונות כרגע. אל תראה שגיאה. תן תשובה בטקסט בלבד: הסבר בחמימות שהצפיות בתמונות שלו הסתיימו להיום ויתחדשו מחר. אם המשתמש שאל שאלה בטקסט, ענה עליה מהידע שלך גם ללא התמונה.`
+          : `## Image Quota\nThe user sent a photo but has reached their daily plant-look limit — image analysis is unavailable right now. Do not surface an error. Respond in text only: warmly explain that their plant looks are used up for today and will reset tomorrow. If the user asked a text question, answer it from your knowledge even without the photo.`)
+        : (lang === 'he'
+          ? `## הגבלת תמונות\nהמשתמש שלח תמונה אך הגיע למגבלת הצפיות החודשית שלו — לא ניתן לנתח תמונות כרגע. אל תראה שגיאה. תן תשובה בטקסט בלבד: הסבר בחמימות שהצפיות בתמונות שלו הסתיימו לחודש זה ויתחדשו בתחילת החודש הבא. אם המשתמש שאל שאלה בטקסט, ענה עליה מהידע שלך גם ללא התמונה.`
+          : `## Image Quota\nThe user sent a photo but has reached their monthly plant-look limit — image analysis is unavailable right now. Do not surface an error. Respond in text only: warmly explain that their plant looks for this month are used up and will reset at the start of next month. If the user asked a text question, answer it from your knowledge even without the photo.`))
+      : null;
+
     const volatileContext = [
       pastContextSection,
       dateSection,
       weatherSection,
       gardenTimelineSection,
+      quotaNoticeSection,
     ].filter(Boolean).join('\n\n');
 
     // Always prepend history (with role-alternation safety) before the current user message,
@@ -2216,10 +2247,21 @@ chupChuRouter.post('/chat', async (req: any, res) => {
       timestamp: new Date().toISOString(),
     };
 
+    // ── Record vision quota use — deferred to here so failures don't burn a look ─
+    // Only for real image turns where vision quota was NOT exceeded (i.e., the image
+    // was actually sent to Anthropic and quota was checked at the top of the block).
+    // Free retries have already been recorded via recordFreeRetryVisionUse.
+    // Quota-exceeded fallback turns (chatImageQuotaExceeded) are not charged.
+    if (hasImage && !chatImageQuotaExceeded && !retryVisionUseId) {
+      // retryVisionUseId is null here = this is a normal (non-free-retry) vision turn
+      retryVisionUseId = await recordVisionUse(userId, 'chat_image', null);
+    }
+
     // ── 9b. Recognition: parse JSON mini-card, upload photo, persist row ─────
     // Only runs on image turns.  Parse failure falls back to raw-text response
     // (recognitionForResponse stays null — existing chat behaviour unchanged).
-    if (hasImage) {
+    // Skipped on quota-fallback turns since compressedImage was undefined.
+    if (hasImage && !chatImageQuotaExceeded) {
       let recognitionResult: any = null;
 
       // Try direct parse, then regex-extract fallback (same pattern as full-diagnosis)
@@ -2367,8 +2409,10 @@ chupChuRouter.post('/chat', async (req: any, res) => {
     // ── 10b. Record chat_uses row ─────────────────────────────────────────────
     // Persists through history deletion — billing-adjacent quota counter.
     // Awaited with explicit error check; do NOT fire-and-forget.
-    // Image turns are gated by vision_uses (checkAndRecordVisionUse) — skip here.
-    if (!hasImage) {
+    // Real image turns (where vision_uses was charged) are skipped here.
+    // Quota-fallback turns (chatImageQuotaExceeded) count as text turns since
+    // they ran a text-model call and consumed chat context, not vision quota.
+    if (!hasImage || chatImageQuotaExceeded) {
       const { error: chatUsesErr } = await db
         .from('chat_uses')
         .insert({ user_id: userId });
