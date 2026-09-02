@@ -7,6 +7,7 @@ export interface TierLimits {
     maxChupChuPerMonth: number | null;
     maxChupChuPerDay: number | null;
     maxVisionLooksPerMonth: number | null;
+    maxVisionLooksPerDay: number | null;
     maxPlantsInChupchuContext: number;
     encyclopediaAccess: boolean;
     displayNameHe: string;

@@ -379,7 +379,9 @@ chupChuRouter.post('/full-diagnosis', async (req: any, res) => {
     // after the response is parsed and validated — a transient Anthropic error,
     // truncated response, or JSON parse failure must not burn a quota look.
     //
-    // Refusal shape: { ok: false, reason: 'vision_quota_exceeded', used, limit }
+    // Refusal shape: { ok: false, reason: 'vision_quota_exceeded', used, limit, limitType }
+    // limitType='daily'   → come back tomorrow
+    // limitType='monthly' → resets next month, or upgrade
     // HTTP 200 so the app can render an upsell rather than a generic error.
     //
     // Validate source against the allowed VisionSource values; fall back to 'full_diagnosis'.
@@ -392,7 +394,13 @@ chupChuRouter.post('/full-diagnosis', async (req: any, res) => {
     if (req.user?.id) {
       const quotaCheck = await checkVisionQuota(req.user.id);
       if (!quotaCheck.allowed) {
-        return res.json({ ok: false, reason: 'vision_quota_exceeded', used: quotaCheck.used, limit: quotaCheck.limit });
+        return res.json({
+          ok:        false,
+          reason:    'vision_quota_exceeded',
+          used:      quotaCheck.used,
+          limit:     quotaCheck.limit,
+          limitType: quotaCheck.limitType,
+        });
       }
     }
 

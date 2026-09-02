@@ -7,6 +7,7 @@ export interface TierLimits {
   maxChupChuPerMonth: number | null;
   maxChupChuPerDay: number | null;              // null = unlimited; fair-use ceiling for paid tiers
   maxVisionLooksPerMonth: number | null;         // null = unlimited
+  maxVisionLooksPerDay: number | null;           // null = unlimited; anti-abuse ceiling per calendar day (Israel time)
   maxPlantsInChupchuContext: number;             // plants shown to Claude per request (cached block 2)
   encyclopediaAccess: boolean;
   displayNameHe: string;                         // customer-facing Hebrew tier name
@@ -22,6 +23,7 @@ export const TIER_LIMITS: Record<string, TierLimits> = {
     maxChupChuPerMonth:            54,
     maxChupChuPerDay:              3,
     maxVisionLooksPerMonth:        3,
+    maxVisionLooksPerDay:          2,
     maxPlantsInChupchuContext:     30,
     encyclopediaAccess:            false,
     displayNameHe:                 'גנן מתחיל',
@@ -35,6 +37,7 @@ export const TIER_LIMITS: Record<string, TierLimits> = {
     maxChupChuPerMonth:            250,
     maxChupChuPerDay:              18,
     maxVisionLooksPerMonth:        18,
+    maxVisionLooksPerDay:          5,
     maxPlantsInChupchuContext:     30,
     encyclopediaAccess:            true,
     displayNameHe:                 'גנן ביתי',
@@ -48,6 +51,7 @@ export const TIER_LIMITS: Record<string, TierLimits> = {
     maxChupChuPerMonth:            500,
     maxChupChuPerDay:              36,
     maxVisionLooksPerMonth:        36,
+    maxVisionLooksPerDay:          8,
     maxPlantsInChupchuContext:     30,
     encyclopediaAccess:            true,
     displayNameHe:                 'גנן מתקדם',
@@ -61,6 +65,7 @@ export const TIER_LIMITS: Record<string, TierLimits> = {
     maxChupChuPerMonth:            800,
     maxChupChuPerDay:              54,
     maxVisionLooksPerMonth:        54,
+    maxVisionLooksPerDay:          12,
     maxPlantsInChupchuContext:     30,
     encyclopediaAccess:            true,
     displayNameHe:                 'גנן מקצועי',
@@ -77,6 +82,7 @@ export const TIER_LIMITS: Record<string, TierLimits> = {
     maxChupChuPerMonth:            null,
     maxChupChuPerDay:              null,
     maxVisionLooksPerMonth:        null,
+    maxVisionLooksPerDay:          null,
     maxPlantsInChupchuContext:     30,
     encyclopediaAccess:            true,
     displayNameHe:                 'בעלים',

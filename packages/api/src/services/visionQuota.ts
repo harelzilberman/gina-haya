@@ -1,6 +1,6 @@
 import { db } from '../db/client';
 import { getLimits } from '../config/tiers';
-import { startOfCurrentMonthIsrael } from '@gina-haya/shared';
+import { startOfCurrentMonthIsrael, startOfTodayIsrael } from '@gina-haya/shared';
 
 // Valid values must match the CHECK constraint in migration 019.
 // 'passport_chip' is reserved for Phase 2.
@@ -10,6 +10,9 @@ export interface VisionQuotaResult {
   allowed: boolean;
   used: number;
   limit: number | null;  // null = unlimited
+  // Discriminates daily from monthly when allowed=false.
+  // null when allowed=true or the limit is unlimited.
+  limitType: 'daily' | 'monthly' | null;
   // ID of the vision_uses row that was inserted on this call.
   // null when the quota was exceeded (no row inserted) or on DB error.
   visionUseId: string | null;
@@ -42,13 +45,21 @@ export async function countVisionUsesThisMonth(userId: string): Promise<number |
 /**
  * Read-only quota check.  Does NOT insert a vision_uses row.
  *
- * Returns { allowed, used, limit, effectiveTier } so the caller can decide
- * whether to proceed.  Call recordVisionUse() after a successful Anthropic
+ * Checks both the daily cap (Israel calendar day) and the monthly cap.
+ * Daily is checked first; if it triggers, limitType='daily' is returned so
+ * the caller can show "come back tomorrow" copy rather than "upgrade your plan".
+ *
+ * Returns { allowed, used, limit, limitType, effectiveTier } so the caller can
+ * decide whether to proceed.  Call recordVisionUse() after a successful Anthropic
  * response to consume the quota credit.
  *
  * Race note: two simultaneous requests at (used = limit - 1) could both pass
  * before either INSERT commits, briefly allowing limit+1 uses.  This is an
  * acceptable trade-off — no pessimistic locking needed.
+ *
+ * Note: the chat daily quota (chat_uses) still uses UTC midnight and is
+ * therefore inconsistent with this daily cap.  Do not change chat_uses windows
+ * here — that is a separate concern.
  *
  * @param userId  - Supabase auth user UUID
  * @param tier    - If already resolved (e.g. from attachTier middleware),
@@ -57,7 +68,7 @@ export async function countVisionUsesThisMonth(userId: string): Promise<number |
 export async function checkVisionQuota(
   userId: string,
   tier?: string,
-): Promise<{ allowed: boolean; used: number; limit: number | null; effectiveTier: string }> {
+): Promise<{ allowed: boolean; used: number; limit: number | null; limitType: 'daily' | 'monthly' | null; effectiveTier: string }> {
   // ── 1. Resolve effective tier ─────────────────────────────────────────────
   let effectiveTier = tier;
   if (!effectiveTier) {
@@ -77,43 +88,65 @@ export async function checkVisionQuota(
     effectiveTier = 'professional';
   }
 
-  // ── 2. Get limit for this tier ────────────────────────────────────────────
-  const limit = getLimits(effectiveTier).maxVisionLooksPerMonth;
+  // ── 2. Get limits for this tier ───────────────────────────────────────────
+  const tierLimits    = getLimits(effectiveTier);
+  const monthlyLimit  = tierLimits.maxVisionLooksPerMonth;
+  const dailyLimit    = tierLimits.maxVisionLooksPerDay;
 
-  // null = unlimited — skip counting
-  if (limit === null) {
-    return { allowed: true, used: 0, limit: null, effectiveTier };
+  // null monthly = unlimited — skip counting entirely
+  if (monthlyLimit === null) {
+    return { allowed: true, used: 0, limit: null, limitType: null, effectiveTier };
   }
 
-  // ── 3. Count billable uses this rolling month (Israel midnight) ───────────
-  // is_free_retry = true rows are excluded: they must not count toward the cap.
-  // Monthly window uses Israel timezone midnight (UTC+2/+3 depending on DST),
+  // ── 3. Count billable uses today and this month (Israel timezone) ─────────
+  // is_free_retry = true rows are excluded: they must not count toward caps.
+  // Both windows use Israel timezone midnight (UTC+2/+3 depending on DST),
   // not bare UTC midnight which resets 2–3 hours late for Israeli users.
+  const startOfDay   = startOfTodayIsrael();
   const startOfMonth = startOfCurrentMonthIsrael();
 
-  const { count, error: countError } = await db
-    .from('vision_uses')
-    .select('id', { count: 'exact', head: true })
-    .eq('user_id', userId)
-    .eq('is_free_retry', false)
-    .gte('created_at', startOfMonth);
+  // Two parallel count queries to avoid two round-trips serialised.
+  const [dailyResult, monthlyResult] = await Promise.all([
+    dailyLimit !== null
+      ? db
+          .from('vision_uses')
+          .select('id', { count: 'exact', head: true })
+          .eq('user_id', userId)
+          .eq('is_free_retry', false)
+          .gte('created_at', startOfDay)
+      : Promise.resolve({ count: 0, error: null }),
+    db
+      .from('vision_uses')
+      .select('id', { count: 'exact', head: true })
+      .eq('user_id', userId)
+      .eq('is_free_retry', false)
+      .gte('created_at', startOfMonth),
+  ]);
 
-  if (countError) {
-    // Log and fail-open: better to let an Anthropic call through than to block
-    // all users due to a DB hiccup.
-    console.error('[visionQuota] count error — failing open:', countError.message);
-    return { allowed: true, used: 0, limit, effectiveTier };
+  if (dailyResult.error) {
+    console.error('[visionQuota] daily count error — failing open:', dailyResult.error.message);
+  }
+  if (monthlyResult.error) {
+    console.error('[visionQuota] monthly count error — failing open:', monthlyResult.error.message);
+    return { allowed: true, used: 0, limit: monthlyLimit, limitType: null, effectiveTier };
   }
 
-  const used = count ?? 0;
+  const usedToday = dailyResult.count ?? 0;
+  const usedMonth = monthlyResult.count ?? 0;
 
-  // ── 4. Enforce monthly limit ──────────────────────────────────────────────
-  if (used >= limit) {
-    console.log(`[visionQuota] user ${userId} monthly quota exceeded (${used}/${limit}, tier=${effectiveTier})`);
-    return { allowed: false, used, limit, effectiveTier };
+  // ── 4. Daily check (runs first — "come back tomorrow" beats "upgrade") ─────
+  if (dailyLimit !== null && usedToday >= dailyLimit) {
+    console.log(`[visionQuota] user ${userId} daily quota exceeded (${usedToday}/${dailyLimit}, tier=${effectiveTier})`);
+    return { allowed: false, used: usedToday, limit: dailyLimit, limitType: 'daily', effectiveTier };
   }
 
-  return { allowed: true, used, limit, effectiveTier };
+  // ── 5. Monthly check ──────────────────────────────────────────────────────
+  if (usedMonth >= monthlyLimit) {
+    console.log(`[visionQuota] user ${userId} monthly quota exceeded (${usedMonth}/${monthlyLimit}, tier=${effectiveTier})`);
+    return { allowed: false, used: usedMonth, limit: monthlyLimit, limitType: 'monthly', effectiveTier };
+  }
+
+  return { allowed: true, used: usedMonth, limit: monthlyLimit, limitType: null, effectiveTier };
 }
 
 /**
@@ -168,17 +201,17 @@ export async function checkAndRecordVisionUse(
   const check = await checkVisionQuota(userId, tier);
 
   if (!check.allowed) {
-    return { allowed: false, used: check.used, limit: check.limit, visionUseId: null };
+    return { allowed: false, used: check.used, limit: check.limit, limitType: check.limitType, visionUseId: null };
   }
 
   // null = unlimited — record immediately
   if (check.limit === null) {
     const visionUseId = await recordVisionUse(userId, source, gardenPlantsId);
-    return { allowed: true, used: 0, limit: null, visionUseId };
+    return { allowed: true, used: 0, limit: null, limitType: null, visionUseId };
   }
 
   const visionUseId = await recordVisionUse(userId, source, gardenPlantsId);
-  return { allowed: true, used: check.used + 1, limit: check.limit, visionUseId };
+  return { allowed: true, used: check.used + 1, limit: check.limit, limitType: null, visionUseId };
 }
 
 /**
