@@ -68,7 +68,7 @@ export async function countVisionUsesThisMonth(userId: string): Promise<number |
 export async function checkVisionQuota(
   userId: string,
   tier?: string,
-): Promise<{ allowed: boolean; used: number; limit: number | null; limitType: 'daily' | 'monthly' | null; effectiveTier: string }> {
+): Promise<{ allowed: boolean; used: number; limit: number | null; limitType: 'daily' | 'monthly' | null; effectiveTier: string; monthlyRemaining: number | null }> {
   // ── 1. Resolve effective tier ─────────────────────────────────────────────
   let effectiveTier = tier;
   if (!effectiveTier) {
@@ -93,9 +93,9 @@ export async function checkVisionQuota(
   const monthlyLimit  = tierLimits.maxVisionLooksPerMonth;
   const dailyLimit    = tierLimits.maxVisionLooksPerDay;
 
-  // null monthly = unlimited — skip counting entirely
+  // null monthly = unlimited — skip counting entirely (no refusal possible)
   if (monthlyLimit === null) {
-    return { allowed: true, used: 0, limit: null, limitType: null, effectiveTier };
+    return { allowed: true, used: 0, limit: null, limitType: null, effectiveTier, monthlyRemaining: null };
   }
 
   // ── 3. Count billable uses today and this month (Israel timezone) ─────────
@@ -128,25 +128,30 @@ export async function checkVisionQuota(
   }
   if (monthlyResult.error) {
     console.error('[visionQuota] monthly count error — failing open:', monthlyResult.error.message);
-    return { allowed: true, used: 0, limit: monthlyLimit, limitType: null, effectiveTier };
+    // monthlyRemaining unknown — null signals the client should not rely on it
+    return { allowed: true, used: 0, limit: monthlyLimit, limitType: null, effectiveTier, monthlyRemaining: null };
   }
 
   const usedToday = dailyResult.count ?? 0;
   const usedMonth = monthlyResult.count ?? 0;
+  // monthlyRemaining is computed once and reused by both the daily and monthly refusal paths.
+  // Never negative — a race that allows limit+1 uses cannot produce a negative remaining count.
+  const monthlyRemaining = Math.max(0, monthlyLimit - usedMonth);
 
   // ── 4. Daily check (runs first — "come back tomorrow" beats "upgrade") ─────
+  // usedMonth is already known, so monthlyRemaining costs no extra query here.
   if (dailyLimit !== null && usedToday >= dailyLimit) {
     console.log(`[visionQuota] user ${userId} daily quota exceeded (${usedToday}/${dailyLimit}, tier=${effectiveTier})`);
-    return { allowed: false, used: usedToday, limit: dailyLimit, limitType: 'daily', effectiveTier };
+    return { allowed: false, used: usedToday, limit: dailyLimit, limitType: 'daily', effectiveTier, monthlyRemaining };
   }
 
   // ── 5. Monthly check ──────────────────────────────────────────────────────
   if (usedMonth >= monthlyLimit) {
     console.log(`[visionQuota] user ${userId} monthly quota exceeded (${usedMonth}/${monthlyLimit}, tier=${effectiveTier})`);
-    return { allowed: false, used: usedMonth, limit: monthlyLimit, limitType: 'monthly', effectiveTier };
+    return { allowed: false, used: usedMonth, limit: monthlyLimit, limitType: 'monthly', effectiveTier, monthlyRemaining: 0 };
   }
 
-  return { allowed: true, used: usedMonth, limit: monthlyLimit, limitType: null, effectiveTier };
+  return { allowed: true, used: usedMonth, limit: monthlyLimit, limitType: null, effectiveTier, monthlyRemaining };
 }
 
 /**

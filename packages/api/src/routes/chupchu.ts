@@ -395,11 +395,13 @@ chupChuRouter.post('/full-diagnosis', async (req: any, res) => {
       const quotaCheck = await checkVisionQuota(req.user.id);
       if (!quotaCheck.allowed) {
         return res.json({
-          ok:        false,
-          reason:    'vision_quota_exceeded',
-          used:      quotaCheck.used,
-          limit:     quotaCheck.limit,
-          limitType: quotaCheck.limitType,
+          ok:               false,
+          reason:           'vision_quota_exceeded',
+          used:             quotaCheck.used,
+          limit:            quotaCheck.limit,
+          limitType:        quotaCheck.limitType,
+          tier:             quotaCheck.effectiveTier,
+          monthlyRemaining: quotaCheck.monthlyRemaining,
         });
       }
     }
@@ -1495,7 +1497,7 @@ chupChuRouter.post('/chat', async (req: any, res) => {
           const quotaCheck = await checkVisionQuota(userId, effectiveTier);
           if (!quotaCheck.allowed) {
             if (!hasText) {
-              return res.json({ ok: false, reason: 'vision_quota_exceeded', used: quotaCheck.used, limit: quotaCheck.limit, limitType: quotaCheck.limitType });
+              return res.json({ ok: false, reason: 'vision_quota_exceeded', used: quotaCheck.used, limit: quotaCheck.limit, limitType: quotaCheck.limitType, tier: quotaCheck.effectiveTier, monthlyRemaining: quotaCheck.monthlyRemaining });
             }
             chatImageQuotaExceeded = quotaCheck.limitType ?? 'monthly';
           }
@@ -1505,7 +1507,7 @@ chupChuRouter.post('/chat', async (req: any, res) => {
         const quotaCheck = await checkVisionQuota(userId, effectiveTier);
         if (!quotaCheck.allowed) {
           if (!hasText) {
-            return res.json({ ok: false, reason: 'vision_quota_exceeded', used: quotaCheck.used, limit: quotaCheck.limit, limitType: quotaCheck.limitType });
+            return res.json({ ok: false, reason: 'vision_quota_exceeded', used: quotaCheck.used, limit: quotaCheck.limit, limitType: quotaCheck.limitType, tier: quotaCheck.effectiveTier, monthlyRemaining: quotaCheck.monthlyRemaining });
           }
           chatImageQuotaExceeded = quotaCheck.limitType ?? 'monthly';
         }
