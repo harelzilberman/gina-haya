@@ -2496,16 +2496,45 @@ chupChuRouter.post('/execute-tool', async (req: any, res) => {
   try {
     switch (tool_name) {
       case 'create_task': {
+        const rawPlantName = typeof params.plant_name === 'string' ? params.plant_name.trim() : '';
+
+        // Resolve garden_plants_id from plant_name — best-effort, never blocks the task insert.
+        let gardenPlantsId: string | null = null;
+        if (rawPlantName) {
+          const { gardenId: taskGardenId } = await resolveGardenId(userId, req.body.gardenId as string | null | undefined);
+          if (taskGardenId) {
+            const { data: plants, error: plantLookupError } = await db
+              .from('garden_plants')
+              .select('id, common_name_he, common_name_en')
+              .eq('garden_id', taskGardenId)
+              .is('archived_at', null);
+            if (plantLookupError) {
+              console.warn('[execute-tool/create_task] plant lookup error:', plantLookupError.message);
+            } else {
+              const matched = (plants ?? []).filter(
+                p => p.common_name_he === rawPlantName || p.common_name_en === rawPlantName
+              );
+              if (matched.length === 1) {
+                gardenPlantsId = matched[0].id;
+              } else {
+                console.log('[execute-tool/create_task] plant_name not uniquely matched:', rawPlantName, 'count:', matched.length);
+              }
+            }
+          }
+        }
+
         const { error: taskInsertError } = await db.from('garden_tasks').insert({
-          user_id:       userId,
-          title:         params.title,
-          date:          (params.due_date as string | undefined) || todayInIsrael(),
-          type:          'custom',
-          status:        'pending',
-          priority:      params.priority ?? 'medium',
-          category:      params.category ?? 'general',
-          source_action: 'chupchu',
-          created_at:    new Date().toISOString(),
+          user_id:          userId,
+          title:            params.title,
+          date:             (params.due_date as string | undefined) || todayInIsrael(),
+          type:             'custom',
+          status:           'pending',
+          priority:         params.priority ?? 'medium',
+          category:         params.category ?? 'general',
+          source_action:    'chupchu',
+          plant_name:       rawPlantName || null,
+          garden_plants_id: gardenPlantsId,
+          created_at:       new Date().toISOString(),
         });
         if (taskInsertError) {
           console.error('[execute-tool/create_task] insert failed:', taskInsertError.message, taskInsertError.code);
