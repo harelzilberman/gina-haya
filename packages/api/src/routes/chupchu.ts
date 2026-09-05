@@ -7,7 +7,7 @@ import { askChupChu, CHUPCHU_GLOSSARY_HE, type ProposedTask, type MobileToolCall
 import { compressImageForClaude } from '../services/plantVision';
 import { fetchWeatherForRegion, getCachedWeatherForCoords } from '../services/weather';
 import type { ChupChuMessage, ChupChuContext } from '@gina-haya/shared';
-import { todayInIsrael } from '@gina-haya/shared';
+import { todayInIsrael, startOfTodayIsrael, startOfCurrentMonthIsrael } from '@gina-haya/shared';
 import { getRecentCompletedTasks } from '../db/queries/tasks';
 import { getLimits } from '../config/tiers';
 import { checkVisionQuota, recordVisionUse, checkAndRecordVisionUse, recordFreeRetryVisionUse } from '../services/visionQuota';
@@ -1522,11 +1522,8 @@ chupChuRouter.post('/chat', async (req: any, res) => {
       // Text-only turn: check daily quota first, then monthly.
       // Both checks are skipped entirely when LAUNCH_FREE_MODE is active (alpha testing bypass).
       if (!LAUNCH_FREE_MODE && (monthlyLimit !== null || dailyLimit !== null)) {
-        const startOfMonth = new Date();
-        startOfMonth.setDate(1);
-        startOfMonth.setHours(0, 0, 0, 0);
-        const startOfDay = new Date();
-        startOfDay.setHours(0, 0, 0, 0);
+        const startOfMonth = startOfCurrentMonthIsrael();
+        const startOfDay   = startOfTodayIsrael();
 
         // Count from chat_uses — survives history deletion (see migration 029).
         // Two separate queries: daily and monthly. Errors are logged and
@@ -1535,14 +1532,14 @@ chupChuRouter.post('/chat', async (req: any, res) => {
           .from('chat_uses')
           .select('id', { count: 'exact', head: true })
           .eq('user_id', userId)
-          .gte('created_at', startOfDay.toISOString());
+          .gte('created_at', startOfDay);
         if (countTodayErr) console.error('[chat limit] daily count query failed:', countTodayErr.message);
 
         const { count: countMonth, error: countMonthErr } = await db
           .from('chat_uses')
           .select('id', { count: 'exact', head: true })
           .eq('user_id', userId)
-          .gte('created_at', startOfMonth.toISOString());
+          .gte('created_at', startOfMonth);
         if (countMonthErr) console.error('[chat limit] monthly count query failed:', countMonthErr.message);
 
         const messagesUsedToday     = countToday  ?? 0;
@@ -2430,19 +2427,16 @@ chupChuRouter.post('/chat', async (req: any, res) => {
     }
 
     // ── 11. Count usage ───────────────────────────────────────────────────
-    const startOfMonth = new Date();
-    startOfMonth.setDate(1);
-    startOfMonth.setHours(0, 0, 0, 0);
-    const startOfDay = new Date();
-    startOfDay.setHours(0, 0, 0, 0);
+    const startOfMonthMs = new Date(startOfCurrentMonthIsrael()).getTime();
+    const startOfDayMs   = new Date(startOfTodayIsrael()).getTime();
 
     let messagesUsedThisMonth = 0;
     let messagesUsedToday = 0;
     for (const m of updatedMessages) {
       if (m.role !== 'user') continue;
-      const ts = new Date(m.timestamp);
-      if (ts >= startOfMonth) messagesUsedThisMonth++;
-      if (ts >= startOfDay)   messagesUsedToday++;
+      const tsMs = new Date(m.timestamp).getTime();
+      if (tsMs >= startOfMonthMs) messagesUsedThisMonth++;
+      if (tsMs >= startOfDayMs)   messagesUsedToday++;
     }
 
     res.json({
