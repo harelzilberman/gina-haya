@@ -409,10 +409,9 @@ chupChuRouter.post('/full-diagnosis', async (req: any, res) => {
     // ── Fetch prior check-in history (only when tracker_id is present) ────────
     // History is injected as text so the model can compare progression.
     // A failed history read is logged and skipped — it must never break the analysis.
-    // Both ai_analysis shapes are handled:
-    //   full-diagnosis rows: have health_status (string enum) + health_status_label + summary
-    //   plantVision rows:    have healthHe + growthStageHe + observations (no health_status key)
-    // Detection: typeof ai_analysis.health_status === 'string'
+    // All stored ai_analysis rows use healthHe + health + observations — both
+    // buildCheckinAnalysis (full-diagnosis path) and analyzePlantImage (tracker path)
+    // write these fields; neither stores health_status.
     let priorHistoryBlock = '';
     if (tracker_id) {
       const { data: priorRows, error: historyErr } = await db
@@ -433,23 +432,13 @@ chupChuRouter.post('/full-diagnosis', async (req: any, res) => {
           const ai = row.ai_analysis as Record<string, any> | null;
           if (!ai || typeof ai !== 'object') return null;
           const date = (row.checkin_date ?? row.created_at ?? '').slice(0, 10);
-          // Detect shape: full-diagnosis rows have health_status string; plantVision rows have healthHe
-          const isFullDiagShape = typeof ai.health_status === 'string';
           if (language === 'he') {
-            const statusLabel = isFullDiagShape
-              ? String(ai.health_status_label ?? ai.health_status ?? '').slice(0, 200)
-              : String(ai.healthHe ?? ai.health ?? '').slice(0, 200);
-            const detail = isFullDiagShape
-              ? String(ai.summary ?? ai.observations ?? '').slice(0, 200)
-              : String(ai.observations ?? '').slice(0, 200);
+            const statusLabel = String(ai.healthHe ?? ai.health ?? '').slice(0, 200);
+            const detail = String(ai.observations ?? '').slice(0, 200);
             return `[${date}] מצב: ${statusLabel}${detail ? ` — ${detail}` : ''}`;
           } else {
-            const statusLabel = isFullDiagShape
-              ? String(ai.health_status_label ?? ai.health_status ?? '').slice(0, 200)
-              : String(ai.health ?? ai.healthHe ?? '').slice(0, 200);
-            const detail = isFullDiagShape
-              ? String(ai.summary ?? ai.observations ?? '').slice(0, 200)
-              : String(ai.observations ?? '').slice(0, 200);
+            const statusLabel = String(ai.health ?? ai.healthHe ?? '').slice(0, 200);
+            const detail = String(ai.observations ?? '').slice(0, 200);
             return `[${date}] Status: ${statusLabel}${detail ? ` — ${detail}` : ''}`;
           }
         }).filter((l): l is string => l !== null && l.length > 0);
