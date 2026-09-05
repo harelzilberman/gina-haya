@@ -57,9 +57,6 @@ export async function countVisionUsesThisMonth(userId: string): Promise<number |
  * before either INSERT commits, briefly allowing limit+1 uses.  This is an
  * acceptable trade-off — no pessimistic locking needed.
  *
- * Note: the chat daily quota (chat_uses) still uses UTC midnight and is
- * therefore inconsistent with this daily cap.  Do not change chat_uses windows
- * here — that is a separate concern.
  *
  * @param userId  - Supabase auth user UUID
  * @param tier    - If already resolved (e.g. from attachTier middleware),

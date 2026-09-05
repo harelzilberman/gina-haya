@@ -1446,6 +1446,13 @@ chupChuRouter.post('/chat', async (req: any, res) => {
     const tierLimits = getLimits(effectiveTier);
     const monthlyLimit = tierLimits.maxChupChuPerMonth;
     const dailyLimit   = tierLimits.maxChupChuPerDay;
+
+    // Pre-turn DB counts — set inside the text quota gate and carried forward to
+    // the success response so both the 429 and the 200 use the same source of truth.
+    // Defaults to 0; stays 0 for image turns (vision counter, not chat counter).
+    let savedCountToday  = 0;
+    let savedCountMonth  = 0;
+
     if (hasImage) {
       // ── Retry validation (one-hop max, ownership, not already retried) ──────
       if (retryOf?.recognitionId) {
@@ -1534,6 +1541,12 @@ chupChuRouter.post('/chat', async (req: any, res) => {
         const messagesUsedToday     = countToday  ?? 0;
         const messagesUsedThisMonth = countMonth  ?? 0;
 
+        // Save for the success response — ensures the 200 and 429 report the
+        // same DB-sourced count rather than a potentially-drifted conversation
+        // message count (section 11 below).
+        savedCountToday  = messagesUsedToday;
+        savedCountMonth  = messagesUsedThisMonth;
+
         // Daily limit check runs first.
         if (dailyLimit !== null && messagesUsedToday >= dailyLimit) {
           return res.status(429).json({
@@ -1542,7 +1555,8 @@ chupChuRouter.post('/chat', async (req: any, res) => {
             tier,
             messagesUsedThisMonth,
             monthlyLimit,
-            messagesUsedToday,
+            // Belt-and-braces clamp: used must never exceed limit in the 429 payload.
+            messagesUsedToday:    Math.min(messagesUsedToday, dailyLimit),
             dailyLimit,
           });
         }
@@ -1552,8 +1566,8 @@ chupChuRouter.post('/chat', async (req: any, res) => {
           return res.status(429).json({
             error:                'rate_limit_exceeded',
             limitType:            'monthly',
-            tier,
-            messagesUsedThisMonth,
+            // Belt-and-braces clamp.
+            messagesUsedThisMonth: Math.min(messagesUsedThisMonth, monthlyLimit),
             monthlyLimit,
             messagesUsedToday,
             dailyLimit,
@@ -2416,16 +2430,29 @@ chupChuRouter.post('/chat', async (req: any, res) => {
     }
 
     // ── 11. Count usage ───────────────────────────────────────────────────
-    const startOfMonthMs = new Date(startOfCurrentMonthIsrael()).getTime();
-    const startOfDayMs   = new Date(startOfTodayIsrael()).getTime();
-
-    let messagesUsedThisMonth = 0;
-    let messagesUsedToday = 0;
-    for (const m of updatedMessages) {
-      if (m.role !== 'user') continue;
-      const tsMs = new Date(m.timestamp).getTime();
-      if (tsMs >= startOfMonthMs) messagesUsedThisMonth++;
-      if (tsMs >= startOfDayMs)   messagesUsedToday++;
+    // For text turns the pre-turn DB count (savedCount*) is used here (+1 for
+    // this turn) — the same source the quota gate read before the AI call.
+    // This prevents the 200 and 429 from reporting different numbers when the
+    // conversation-message count (updatedMessages) drifts from chat_uses (e.g.
+    // image turns add to the conversation but not to chat_uses).
+    // For image turns and LAUNCH_FREE_MODE / unlimited tiers (where the gate was
+    // skipped), fall back to counting from the conversation history.
+    let messagesUsedThisMonth: number;
+    let messagesUsedToday: number;
+    if (!hasImage && !LAUNCH_FREE_MODE && (monthlyLimit !== null || dailyLimit !== null)) {
+      messagesUsedToday     = savedCountToday  + 1;
+      messagesUsedThisMonth = savedCountMonth  + 1;
+    } else {
+      const startOfMonthMs = new Date(startOfCurrentMonthIsrael()).getTime();
+      const startOfDayMs   = new Date(startOfTodayIsrael()).getTime();
+      messagesUsedToday     = 0;
+      messagesUsedThisMonth = 0;
+      for (const m of updatedMessages) {
+        if (m.role !== 'user') continue;
+        const tsMs = new Date(m.timestamp).getTime();
+        if (tsMs >= startOfMonthMs) messagesUsedThisMonth++;
+        if (tsMs >= startOfDayMs)   messagesUsedToday++;
+      }
     }
 
     res.json({
