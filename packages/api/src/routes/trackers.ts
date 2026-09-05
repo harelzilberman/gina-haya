@@ -1071,7 +1071,19 @@ trackersRouter.patch('/:id/water', async (req: any, res) => {
       }
     }
 
-    res.json({ success: true, tracker: data, timeline_write_failed: timelineError !== null, timeline_error: timelineError });
+    if (timelineError !== null) {
+      // Tracker update committed; timeline insert failed.  207 signals partial
+      // success so the client does not insert the entry optimistically — it would
+      // disappear on next load.  Tracker data is preserved and returned so the
+      // client can still update its local tracker state.
+      return res.status(207).json({
+        ok:                    false,
+        timeline_write_failed: true,
+        timeline_error:        timelineError,
+        tracker:               data,
+      });
+    }
+    res.json({ success: true, tracker: data });
   } catch (err: any) {
     console.error('[Tracker] water error:', err.message);
     res.status(500).json({ error: err.message });
@@ -1125,7 +1137,17 @@ trackersRouter.patch('/:id/fertilize', async (req: any, res) => {
       }
     }
 
-    res.json({ success: true, tracker: data, timeline_write_failed: timelineError !== null, timeline_error: timelineError });
+    if (timelineError !== null) {
+      // Tracker update committed; timeline insert failed.  207 signals partial
+      // success so the client does not insert the entry optimistically.
+      return res.status(207).json({
+        ok:                    false,
+        timeline_write_failed: true,
+        timeline_error:        timelineError,
+        tracker:               data,
+      });
+    }
+    res.json({ success: true, tracker: data });
   } catch (err: any) {
     console.error('[Tracker] fertilize error:', err.message);
     res.status(500).json({ error: err.message });
@@ -1239,7 +1261,11 @@ trackersRouter.post('/plant/:plantId/water', async (req: any, res) => {
     timelineError = err.message;
   }
 
-  return res.json({ success: true, timeline_write_failed: timelineError !== null, timeline_error: timelineError });
+  if (timelineError !== null) {
+    // Timeline is the only write on this path — no partial state to preserve.
+    return res.status(500).json({ error: 'timeline_write_failed', detail: timelineError });
+  }
+  return res.json({ success: true });
 });
 
 // ── POST /api/trackers/plant/:plantId/fertilize ───────────────────────────
@@ -1273,7 +1299,11 @@ trackersRouter.post('/plant/:plantId/fertilize', async (req: any, res) => {
     timelineError = err.message;
   }
 
-  return res.json({ success: true, timeline_write_failed: timelineError !== null, timeline_error: timelineError });
+  if (timelineError !== null) {
+    // Timeline is the only write on this path — no partial state to preserve.
+    return res.status(500).json({ error: 'timeline_write_failed', detail: timelineError });
+  }
+  return res.json({ success: true });
 });
 
 // ── POST /api/trackers/plant/:plantId/note ────────────────────────────────
