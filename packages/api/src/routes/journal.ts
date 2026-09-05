@@ -3,6 +3,7 @@ import axios from 'axios';
 import { db } from '../db/client';
 import { verifyToken } from '../middleware/auth';
 import { attachTier } from '../middleware/tierMiddleware';
+import { logApiUsage } from '../services/apiUsage';
 
 const ANTHROPIC_URL = 'https://api.anthropic.com/v1/messages';
 const ANTHROPIC_HEADERS = {
@@ -94,6 +95,9 @@ journalRouter.post('/photos/:id/identify', async (req: any, res) => {
         ],
       }],
     }, { headers: ANTHROPIC_HEADERS, timeout: 30000 })).data;
+
+    // Persist token data — fire-and-forget, never blocks the response
+    void logApiUsage({ userId, endpoint: 'journal_identify', model: 'claude-haiku-4-5-20251001', usage: aiRes.usage });
 
     // 5. Parse the JSON response
     const raw     = aiRes.content[0].type === 'text' ? aiRes.content[0].text : '';

@@ -1007,6 +1007,9 @@ Create an updated summary and structured facts. Return JSON only:
       messages: [{ role: 'user', content: summaryPrompt }],
     }, { headers: ANTHROPIC_HEADERS, timeout: 90000 })).data;
 
+    // Persist token data — fire-and-forget, never blocks the response
+    void logApiUsage({ userId, endpoint: 'memory_summarize', model: 'claude-haiku-4-5-20251001', usage: aiRes.usage });
+
     // Fix A: short-circuit before any parse attempt if the model hit the token limit.
     // Mirrors the stop_reason handling in services/claude.ts:820.
     if (aiRes.stop_reason === 'max_tokens') {
@@ -1187,6 +1190,9 @@ Rules:
       system:     systemPrompt,
       messages:   [{ role: 'user', content: contextParts.join('\n') }],
     }, { headers: ANTHROPIC_HEADERS, timeout: 60000 })).data;
+
+    // Persist token data — fire-and-forget, never blocks the response
+    void logApiUsage({ userId, endpoint: 'starter_tasks', model: 'claude-haiku-4-5-20251001', usage: aiRes.usage });
 
     // Stop-reason guard: a truncated array is unparseable and produces an incomplete task list.
     if (aiRes.stop_reason === 'max_tokens' || aiRes.stop_reason === 'stop_sequence') {
