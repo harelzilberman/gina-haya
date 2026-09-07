@@ -44,7 +44,7 @@ export const PLANT_TABLE: PlantTableEntry[] = [
     "germinationDays": "7",
     "daysToTransplant": null,
     "daysToHarvest": "120-160",
-    "images": ["/images/plants/Carrot_stage1_00001_.png", "/images/plants/Carrot_stage2_00001_.png", "/images/plants/Carrot_stage3_00001_.png"]
+    "images": ["/images/plants/Carrot_stage1_00001_.webp", "/images/plants/Carrot_stage2_00001_.webp", "/images/plants/Carrot_stage3_00001_.webp"]
   },
   {
     "nameHe": "כוסברה",
@@ -237,7 +237,7 @@ export const PLANT_TABLE: PlantTableEntry[] = [
     "germinationDays": "7-8",
     "daysToTransplant": "35",
     "daysToHarvest": "90-120",
-    "images": ["/images/plants/Eggplant_stage1_00001_.png", "/images/plants/Eggplant_stage2_00001_.png", "/images/plants/Eggplant_stage3_00001_.png"]
+    "images": ["/images/plants/Eggplant_stage1_00001_.webp", "/images/plants/Eggplant_stage2_00001_.webp", "/images/plants/Eggplant_stage3_00001_.webp"]
   },
   {
     "nameHe": "עגבניה",
@@ -450,7 +450,7 @@ export const PLANT_TABLE: PlantTableEntry[] = [
     "germinationDays": "8-16",
     "daysToTransplant": "30",
     "daysToHarvest": "120-160",
-    "images": ["/images/plants/Onion_stage1_00001_.png", "/images/plants/Onion_stage2_00001_.png", "/images/plants/Onion_stage3_00001_.png"]
+    "images": ["/images/plants/Onion_stage1_00001_.webp", "/images/plants/Onion_stage2_00001_.webp", "/images/plants/Onion_stage3_00001_.webp"]
   },
   {
     "nameHe": "בצל ירוק",
@@ -478,7 +478,7 @@ export const PLANT_TABLE: PlantTableEntry[] = [
     "germinationDays": "8-16",
     "daysToTransplant": "30",
     "daysToHarvest": "60",
-    "images": ["/images/plants/Spring_Onion_stage1_00001_.png", "/images/plants/Spring_Onion_stage2_00001_.png", "/images/plants/Spring_Onion_stage3_00001_.png"]
+    "images": ["/images/plants/Spring_Onion_stage1_00001_.webp", "/images/plants/Spring_Onion_stage2_00001_.webp", "/images/plants/Spring_Onion_stage3_00001_.webp"]
   },
   {
     "nameHe": "לוף",
@@ -506,7 +506,7 @@ export const PLANT_TABLE: PlantTableEntry[] = [
     "germinationDays": "8-10",
     "daysToTransplant": "60",
     "daysToHarvest": "90",
-    "images": ["/images/plants/Leek_stage1_00001_.png", "/images/plants/Leek_stage2_00001_.png", "/images/plants/Leek_stage3_00001_.png"]
+    "images": ["/images/plants/Leek_stage1_00001_.webp", "/images/plants/Leek_stage2_00001_.webp", "/images/plants/Leek_stage3_00001_.webp"]
   },
   {
     "nameHe": "שום",
@@ -550,7 +550,7 @@ export const PLANT_TABLE: PlantTableEntry[] = [
     "germinationDays": "7-16",
     "daysToTransplant": "30",
     "daysToHarvest": "45",
-    "images": ["/images/plants/Basil_stage1_00001_.png", "/images/plants/Basil_stage2_00001_.png", "/images/plants/Basil_stage3_00001_.png"]
+    "images": ["/images/plants/Basil_stage1_00001_.webp", "/images/plants/Basil_stage2_00001_.webp", "/images/plants/Basil_stage3_00001_.webp"]
   },
   {
     "nameHe": "תירס",
@@ -594,7 +594,7 @@ export const PLANT_TABLE: PlantTableEntry[] = [
     "germinationDays": "4-5",
     "daysToTransplant": "14",
     "daysToHarvest": "60-70",
-    "images": ["/images/plants/Pumpkin_stage1_00001_.png", "/images/plants/Pumpkin_stage2_00001_.png", "/images/plants/Pumpkin_stage3_00001_.png"]
+    "images": ["/images/plants/Pumpkin_stage1_00001_.webp", "/images/plants/Pumpkin_stage2_00001_.webp", "/images/plants/Pumpkin_stage3_00001_.webp"]
   },
   {
     "nameHe": "דלעת ערמונים",
@@ -655,7 +655,7 @@ export const PLANT_TABLE: PlantTableEntry[] = [
     "germinationDays": "6",
     "daysToTransplant": "14",
     "daysToHarvest": "30-60",
-    "images": ["/images/plants/Cucumber_stage1_00001_.png", "/images/plants/Cucumber_stage2_00001_.png", "/images/plants/Cucumber_stage3_00001_.png"]
+    "images": ["/images/plants/Cucumber_stage1_00001_.webp", "/images/plants/Cucumber_stage2_00001_.webp", "/images/plants/Cucumber_stage3_00001_.webp"]
   },
   {
     "nameHe": "קישוא",
@@ -698,7 +698,7 @@ export const PLANT_TABLE: PlantTableEntry[] = [
     "germinationDays": "6",
     "daysToTransplant": "14",
     "daysToHarvest": "30-60",
-    "images": ["/images/plants/Watermelon_stage1_00001_.png", "/images/plants/Watermelon_stage2_00001_.png", "/images/plants/Watermelon_stage3_00001_.png"]
+    "images": ["/images/plants/Watermelon_stage1_00001_.webp", "/images/plants/Watermelon_stage2_00001_.webp", "/images/plants/Watermelon_stage3_00001_.webp"]
   },
   {
     "nameHe": "מלון",
@@ -721,7 +721,7 @@ export const PLANT_TABLE: PlantTableEntry[] = [
     "germinationDays": "6",
     "daysToTransplant": "14",
     "daysToHarvest": "35-50",
-    "images": ["/images/plants/Melon_stage1_00001_.png", "/images/plants/Melon_stage2_00001_.png", "/images/plants/Melon_stage3_00001_.png"]
+    "images": ["/images/plants/Melon_stage1_00001_.webp", "/images/plants/Melon_stage2_00001_.webp", "/images/plants/Melon_stage3_00001_.webp"]
   },
   {
     "nameHe": "תות שדה",
@@ -764,7 +764,7 @@ export const PLANT_TABLE: PlantTableEntry[] = [
     "germinationDays": null,
     "daysToTransplant": null,
     "daysToHarvest": "100-120",
-    "images": ["/images/plants/Sweet_Potato_stage1_00001_.png", "/images/plants/Sweet_Potato_stage2_00001_.png", "/images/plants/Sweet_Potato_stage3_00001_.png"]
+    "images": ["/images/plants/Sweet_Potato_stage1_00001_.webp", "/images/plants/Sweet_Potato_stage2_00001_.webp", "/images/plants/Sweet_Potato_stage3_00001_.webp"]
   },
   {
     "nameHe": "ארטישוק",
@@ -784,7 +784,7 @@ export const PLANT_TABLE: PlantTableEntry[] = [
     "germinationDays": null,
     "daysToTransplant": null,
     "daysToHarvest": "120",
-    "images": ["/images/plants/Artichoke_stage1_00001_.png", "/images/plants/Artichoke_stage2_00001_.png", "/images/plants/Artichoke_stage3_00001_.png"]
+    "images": ["/images/plants/Artichoke_stage1_00001_.webp", "/images/plants/Artichoke_stage2_00001_.webp", "/images/plants/Artichoke_stage3_00001_.webp"]
   },
   {
     "nameHe": "ארטישוק ירושלמי",
@@ -844,7 +844,7 @@ export const PLANT_TABLE: PlantTableEntry[] = [
     "germinationDays": "5",
     "daysToTransplant": null,
     "daysToHarvest": "120",
-    "images": ["/images/plants/Sunflower_stage1_00001_.png", "/images/plants/Sunflower_stage2_00001_.png", "/images/plants/Sunflower_stage3_00001_.png"]
+    "images": ["/images/plants/Sunflower_stage1_00001_.webp", "/images/plants/Sunflower_stage2_00001_.webp", "/images/plants/Sunflower_stage3_00001_.webp"]
   },
   {
     "nameHe": "חסה",
@@ -873,7 +873,7 @@ export const PLANT_TABLE: PlantTableEntry[] = [
     "germinationDays": "7-8",
     "daysToTransplant": "30",
     "daysToHarvest": "35-60",
-    "images": ["/images/plants/Lettuce_stage1_00001_.png", "/images/plants/Lettuce_stage2_00001_.png", "/images/plants/Lettuce_stage3_00001_.png"]
+    "images": ["/images/plants/Lettuce_stage1_00001_.webp", "/images/plants/Lettuce_stage2_00001_.webp", "/images/plants/Lettuce_stage3_00001_.webp"]
   },
   {
     "nameHe": "כרוב סיני",
@@ -965,7 +965,7 @@ export const PLANT_TABLE: PlantTableEntry[] = [
     "germinationDays": "7-8",
     "daysToTransplant": "30",
     "daysToHarvest": "60-90",
-    "images": ["/images/plants/Broccoli_stage1_00001_.png", "/images/plants/Broccoli_stage2_00001_.png", "/images/plants/Broccoli_stage3_00001_.png"]
+    "images": ["/images/plants/Broccoli_stage1_00001_.webp", "/images/plants/Broccoli_stage2_00001_.webp", "/images/plants/Broccoli_stage3_00001_.webp"]
   },
   {
     "nameHe": "כרובית",
@@ -989,7 +989,7 @@ export const PLANT_TABLE: PlantTableEntry[] = [
     "germinationDays": "7-8",
     "daysToTransplant": "30",
     "daysToHarvest": "60-90",
-    "images": ["/images/plants/Cauliflower_stage1_00001_.png", "/images/plants/Cauliflower_stage2_00001_.png", "/images/plants/Cauliflower_stage3_00001_.png"]
+    "images": ["/images/plants/Cauliflower_stage1_00001_.webp", "/images/plants/Cauliflower_stage2_00001_.webp", "/images/plants/Cauliflower_stage3_00001_.webp"]
   },
   {
     "nameHe": "כרוב",
@@ -1015,7 +1015,7 @@ export const PLANT_TABLE: PlantTableEntry[] = [
     "germinationDays": "5-8",
     "daysToTransplant": "30",
     "daysToHarvest": "60-120",
-    "images": ["/images/plants/Cabbage_stage1_00001_.png", "/images/plants/Cabbage_stage2_00001_.png", "/images/plants/Cabbage_stage3_00001_.png"]
+    "images": ["/images/plants/Cabbage_stage1_00001_.webp", "/images/plants/Cabbage_stage2_00001_.webp", "/images/plants/Cabbage_stage3_00001_.webp"]
   },
   {
     "nameHe": "כרוב אדום",
@@ -1133,7 +1133,7 @@ export const PLANT_TABLE: PlantTableEntry[] = [
     "germinationDays": "5",
     "daysToTransplant": "30",
     "daysToHarvest": "45-60",
-    "images": ["/images/plants/Kohlrabi_stage1_00001_.png", "/images/plants/Kohlrabi_stage2_00001_.png", "/images/plants/Kohlrabi_stage3_00001_.png"]
+    "images": ["/images/plants/Kohlrabi_stage1_00001_.webp", "/images/plants/Kohlrabi_stage2_00001_.webp", "/images/plants/Kohlrabi_stage3_00001_.webp"]
   },
   {
     "nameHe": "קייל",
@@ -1154,7 +1154,7 @@ export const PLANT_TABLE: PlantTableEntry[] = [
     "germinationDays": "5-8",
     "daysToTransplant": "30",
     "daysToHarvest": "60-120",
-    "images": ["/images/plants/Kale_stage1_00001_.png", "/images/plants/Kale_stage2_00001_.png", "/images/plants/Kale_stage3_00001_.png"]
+    "images": ["/images/plants/Kale_stage1_00001_.webp", "/images/plants/Kale_stage2_00001_.webp", "/images/plants/Kale_stage3_00001_.webp"]
   },
   {
     "nameHe": "רוקולה",
@@ -1185,43 +1185,43 @@ export const PLANT_TABLE: PlantTableEntry[] = [
   },
 
   // House plants
-  { nameHe: "מונסטרה", nameEn: "Monstera", family: "אראליים", ediblePart: "עלה", bdDayType: "leaf", plantingMonths: [], spacingCm: 60, rowSpacingCm: null, placementSpacingCm: 60, plantsPerSqm: null, rowsPerBed: null, method: null, germinationDays: null, daysToTransplant: null, daysToHarvest: null, images: ["/images/plants/Monstera - Monstera deliciosa_stage1.png", "/images/plants/Monstera - Monstera deliciosa_stage2.png", "/images/plants/Monstera - Monstera deliciosa_stage3.png"] },
-  { nameHe: "פילודנדרון עלה כינור", nameEn: "Fiddle Leaf Fig", family: "תותיים", ediblePart: "עלה", bdDayType: "leaf", plantingMonths: [], spacingCm: 60, rowSpacingCm: null, placementSpacingCm: 60, plantsPerSqm: null, rowsPerBed: null, method: null, germinationDays: null, daysToTransplant: null, daysToHarvest: null, images: ["/images/plants/Fiddle Leaf Fig - Ficus lyrata_stage1.png", "/images/plants/Fiddle Leaf Fig - Ficus lyrata_stage2.png", "/images/plants/Fiddle Leaf Fig - Ficus lyrata_stage3.png"] },
-  { nameHe: "פוטוס", nameEn: "Pothos", family: "אראליים", ediblePart: "עלה", bdDayType: "leaf", plantingMonths: [], spacingCm: 30, rowSpacingCm: null, placementSpacingCm: 30, plantsPerSqm: null, rowsPerBed: null, method: null, germinationDays: null, daysToTransplant: null, daysToHarvest: null, images: ["/images/plants/Pothos - Epipremnum aureum_stage1.png", "/images/plants/Pothos - Epipremnum aureum_stage2.png", "/images/plants/Pothos - Epipremnum aureum_stage3.png"] },
-  { nameHe: "צמח עכביש", nameEn: "Spider Plant", family: "שושניים", ediblePart: "עלה", bdDayType: "leaf", plantingMonths: [], spacingCm: 30, rowSpacingCm: null, placementSpacingCm: 30, plantsPerSqm: null, rowsPerBed: null, method: null, germinationDays: null, daysToTransplant: null, daysToHarvest: null, images: ["/images/plants/Spider Plant_stage1.png", "/images/plants/Spider Plant_stage2.png", "/images/plants/Spider Plant_stage3.png"] },
-  { nameHe: "שלום שלום", nameEn: "Peace Lily", family: "אראליים", ediblePart: "פרח", bdDayType: "flower", plantingMonths: [], spacingCm: 40, rowSpacingCm: null, placementSpacingCm: 40, plantsPerSqm: null, rowsPerBed: null, method: null, germinationDays: null, daysToTransplant: null, daysToHarvest: null, images: ["/images/plants/Peace Lily - Spathiphyllum wallisii_stage1.png", "/images/plants/Peace Lily - Spathiphyllum wallisii_stage2.png", "/images/plants/Peace Lily - Spathiphyllum wallisii_stage3.png"] },
-  { nameHe: "גומי גומי", nameEn: "Rubber Plant", family: "תותיים", ediblePart: "עלה", bdDayType: "leaf", plantingMonths: [], spacingCm: 50, rowSpacingCm: null, placementSpacingCm: 50, plantsPerSqm: null, rowsPerBed: null, method: null, germinationDays: null, daysToTransplant: null, daysToHarvest: null, images: ["/images/plants/Rubber Plant - Ficus elastica_stage1.png", "/images/plants/Rubber Plant - Ficus elastica_stage2.png", "/images/plants/Rubber Plant - Ficus elastica_stage3.png"] },
-  { nameHe: "לשון חמות", nameEn: "Snake Plant", family: "שושניים", ediblePart: "עלה", bdDayType: "leaf", plantingMonths: [], spacingCm: 30, rowSpacingCm: null, placementSpacingCm: 30, plantsPerSqm: null, rowsPerBed: null, method: null, germinationDays: null, daysToTransplant: null, daysToHarvest: null, images: ["/images/plants/Snake Plant - Sansevieria trifasciata_stage1.png", "/images/plants/Snake Plant - Sansevieria trifasciata_stage2.png", "/images/plants/Snake Plant - Sansevieria trifasciata_stage3.png"] },
-  { nameHe: "ZZ פלנט", nameEn: "ZZ Plant", family: "אראליים", ediblePart: "עלה", bdDayType: "leaf", plantingMonths: [], spacingCm: 40, rowSpacingCm: null, placementSpacingCm: 40, plantsPerSqm: null, rowsPerBed: null, method: null, germinationDays: null, daysToTransplant: null, daysToHarvest: null, images: ["/images/plants/ZZ Plant - Chlorophytum comosum_stage1.png", "/images/plants/ZZ Plant - Chlorophytum comosum_stage2.png", "/images/plants/ZZ Plant - Chlorophytum comosum_stage3.png"] },
+  { nameHe: "מונסטרה", nameEn: "Monstera", family: "אראליים", ediblePart: "עלה", bdDayType: "leaf", plantingMonths: [], spacingCm: 60, rowSpacingCm: null, placementSpacingCm: 60, plantsPerSqm: null, rowsPerBed: null, method: null, germinationDays: null, daysToTransplant: null, daysToHarvest: null, images: ["/images/plants/Monstera - Monstera deliciosa_stage1.webp", "/images/plants/Monstera - Monstera deliciosa_stage2.webp", "/images/plants/Monstera - Monstera deliciosa_stage3.webp"] },
+  { nameHe: "פילודנדרון עלה כינור", nameEn: "Fiddle Leaf Fig", family: "תותיים", ediblePart: "עלה", bdDayType: "leaf", plantingMonths: [], spacingCm: 60, rowSpacingCm: null, placementSpacingCm: 60, plantsPerSqm: null, rowsPerBed: null, method: null, germinationDays: null, daysToTransplant: null, daysToHarvest: null, images: ["/images/plants/Fiddle Leaf Fig - Ficus lyrata_stage1.webp", "/images/plants/Fiddle Leaf Fig - Ficus lyrata_stage2.webp", "/images/plants/Fiddle Leaf Fig - Ficus lyrata_stage3.webp"] },
+  { nameHe: "פוטוס", nameEn: "Pothos", family: "אראליים", ediblePart: "עלה", bdDayType: "leaf", plantingMonths: [], spacingCm: 30, rowSpacingCm: null, placementSpacingCm: 30, plantsPerSqm: null, rowsPerBed: null, method: null, germinationDays: null, daysToTransplant: null, daysToHarvest: null, images: ["/images/plants/Pothos - Epipremnum aureum_stage1.webp", "/images/plants/Pothos - Epipremnum aureum_stage2.webp", "/images/plants/Pothos - Epipremnum aureum_stage3.webp"] },
+  { nameHe: "צמח עכביש", nameEn: "Spider Plant", family: "שושניים", ediblePart: "עלה", bdDayType: "leaf", plantingMonths: [], spacingCm: 30, rowSpacingCm: null, placementSpacingCm: 30, plantsPerSqm: null, rowsPerBed: null, method: null, germinationDays: null, daysToTransplant: null, daysToHarvest: null, images: ["/images/plants/Spider Plant_stage1.webp", "/images/plants/Spider Plant_stage2.webp", "/images/plants/Spider Plant_stage3.webp"] },
+  { nameHe: "שלום שלום", nameEn: "Peace Lily", family: "אראליים", ediblePart: "פרח", bdDayType: "flower", plantingMonths: [], spacingCm: 40, rowSpacingCm: null, placementSpacingCm: 40, plantsPerSqm: null, rowsPerBed: null, method: null, germinationDays: null, daysToTransplant: null, daysToHarvest: null, images: ["/images/plants/Peace Lily - Spathiphyllum wallisii_stage1.webp", "/images/plants/Peace Lily - Spathiphyllum wallisii_stage2.webp", "/images/plants/Peace Lily - Spathiphyllum wallisii_stage3.webp"] },
+  { nameHe: "גומי גומי", nameEn: "Rubber Plant", family: "תותיים", ediblePart: "עלה", bdDayType: "leaf", plantingMonths: [], spacingCm: 50, rowSpacingCm: null, placementSpacingCm: 50, plantsPerSqm: null, rowsPerBed: null, method: null, germinationDays: null, daysToTransplant: null, daysToHarvest: null, images: ["/images/plants/Rubber Plant - Ficus elastica_stage1.webp", "/images/plants/Rubber Plant - Ficus elastica_stage2.webp", "/images/plants/Rubber Plant - Ficus elastica_stage3.webp"] },
+  { nameHe: "לשון חמות", nameEn: "Snake Plant", family: "שושניים", ediblePart: "עלה", bdDayType: "leaf", plantingMonths: [], spacingCm: 30, rowSpacingCm: null, placementSpacingCm: 30, plantsPerSqm: null, rowsPerBed: null, method: null, germinationDays: null, daysToTransplant: null, daysToHarvest: null, images: ["/images/plants/Snake Plant - Sansevieria trifasciata_stage1.webp", "/images/plants/Snake Plant - Sansevieria trifasciata_stage2.webp", "/images/plants/Snake Plant - Sansevieria trifasciata_stage3.webp"] },
+  { nameHe: "ZZ פלנט", nameEn: "ZZ Plant", family: "אראליים", ediblePart: "עלה", bdDayType: "leaf", plantingMonths: [], spacingCm: 40, rowSpacingCm: null, placementSpacingCm: 40, plantsPerSqm: null, rowsPerBed: null, method: null, germinationDays: null, daysToTransplant: null, daysToHarvest: null, images: ["/images/plants/ZZ Plant - Chlorophytum comosum_stage1.webp", "/images/plants/ZZ Plant - Chlorophytum comosum_stage2.webp", "/images/plants/ZZ Plant - Chlorophytum comosum_stage3.webp"] },
   // Succulents
-  { nameHe: "אגבה", nameEn: "Agave", family: "שושניים", ediblePart: "עלה", bdDayType: "leaf", plantingMonths: [], spacingCm: 100, rowSpacingCm: null, placementSpacingCm: 100, plantsPerSqm: null, rowsPerBed: null, method: null, germinationDays: null, daysToTransplant: null, daysToHarvest: null, images: ["/images/plants/Agave - Agave americana_stage1.png", "/images/plants/Agave - Agave americana_stage2.png", "/images/plants/Agave - Agave americana_stage3.png"] },
-  { nameHe: "אלוורה", nameEn: "Aloe Vera", family: "שושניים", ediblePart: "עלה", bdDayType: "leaf", plantingMonths: [], spacingCm: 40, rowSpacingCm: null, placementSpacingCm: 40, plantsPerSqm: null, rowsPerBed: null, method: null, germinationDays: null, daysToTransplant: null, daysToHarvest: null, images: ["/images/plants/Aloe Vera - Aloe barbadensis miller_stage1.png", "/images/plants/Aloe Vera - Aloe barbadensis miller_stage2.png", "/images/plants/Aloe Vera - Aloe barbadensis miller_stage3.png"] },
-  { nameHe: "אכוורייה", nameEn: "Echeveria", family: "חטבות", ediblePart: "עלה", bdDayType: "leaf", plantingMonths: [], spacingCm: 15, rowSpacingCm: null, placementSpacingCm: 15, plantsPerSqm: null, rowsPerBed: null, method: null, germinationDays: null, daysToTransplant: null, daysToHarvest: null, images: ["/images/plants/Echeveria - Echeveria elegans_stage1.png", "/images/plants/Echeveria - Echeveria elegans_stage2.png", "/images/plants/Echeveria - Echeveria elegans_stage3.png"] },
-  { nameHe: "האוורתייה", nameEn: "Haworthia", family: "שושניים", ediblePart: "עלה", bdDayType: "leaf", plantingMonths: [], spacingCm: 10, rowSpacingCm: null, placementSpacingCm: 10, plantsPerSqm: null, rowsPerBed: null, method: null, germinationDays: null, daysToTransplant: null, daysToHarvest: null, images: ["/images/plants/Haworthia - Haworthia fasciata_stage1.png", "/images/plants/Haworthia - Haworthia fasciata_stage2.png", "/images/plants/Haworthia - Haworthia fasciata_stage3.png"] },
-  { nameHe: "ג'ייד", nameEn: "Jade Plant", family: "חטבות", ediblePart: "עלה", bdDayType: "leaf", plantingMonths: [], spacingCm: 30, rowSpacingCm: null, placementSpacingCm: 30, plantsPerSqm: null, rowsPerBed: null, method: null, germinationDays: null, daysToTransplant: null, daysToHarvest: null, images: ["/images/plants/Jade Plant - Crassula ovata_stage1.png", "/images/plants/Jade Plant - Crassula ovata_stage2.png", "/images/plants/Jade Plant - Crassula ovata_stage3.png"] },
-  { nameHe: "שרשרת פנינים", nameEn: "String of Pearls", family: "מורכבים", ediblePart: "עלה", bdDayType: "leaf", plantingMonths: [], spacingCm: 20, rowSpacingCm: null, placementSpacingCm: 20, plantsPerSqm: null, rowsPerBed: null, method: null, germinationDays: null, daysToTransplant: null, daysToHarvest: null, images: ["/images/plants/String of Pearls - Senecio rowleyanus_stage1.png", "/images/plants/String of Pearls - Senecio rowleyanus_stage2.png", "/images/plants/String of Pearls - Senecio rowleyanus_stage3.png"] },
-  { nameHe: "סדום", nameEn: "Sedum", family: "חטבות", ediblePart: "עלה", bdDayType: "leaf", plantingMonths: [], spacingCm: 20, rowSpacingCm: null, placementSpacingCm: 20, plantsPerSqm: null, rowsPerBed: null, method: null, germinationDays: null, daysToTransplant: null, daysToHarvest: null, images: ["/images/plants/Sedum - Sedum spectabile_stage1.png", "/images/plants/Sedum - Sedum spectabile_stage2.png", "/images/plants/Sedum - Sedum spectabile_stage3.png"] },
+  { nameHe: "אגבה", nameEn: "Agave", family: "שושניים", ediblePart: "עלה", bdDayType: "leaf", plantingMonths: [], spacingCm: 100, rowSpacingCm: null, placementSpacingCm: 100, plantsPerSqm: null, rowsPerBed: null, method: null, germinationDays: null, daysToTransplant: null, daysToHarvest: null, images: ["/images/plants/Agave - Agave americana_stage1.webp", "/images/plants/Agave - Agave americana_stage2.webp", "/images/plants/Agave - Agave americana_stage3.webp"] },
+  { nameHe: "אלוורה", nameEn: "Aloe Vera", family: "שושניים", ediblePart: "עלה", bdDayType: "leaf", plantingMonths: [], spacingCm: 40, rowSpacingCm: null, placementSpacingCm: 40, plantsPerSqm: null, rowsPerBed: null, method: null, germinationDays: null, daysToTransplant: null, daysToHarvest: null, images: ["/images/plants/Aloe Vera - Aloe barbadensis miller_stage1.webp", "/images/plants/Aloe Vera - Aloe barbadensis miller_stage2.webp", "/images/plants/Aloe Vera - Aloe barbadensis miller_stage3.webp"] },
+  { nameHe: "אכוורייה", nameEn: "Echeveria", family: "חטבות", ediblePart: "עלה", bdDayType: "leaf", plantingMonths: [], spacingCm: 15, rowSpacingCm: null, placementSpacingCm: 15, plantsPerSqm: null, rowsPerBed: null, method: null, germinationDays: null, daysToTransplant: null, daysToHarvest: null, images: ["/images/plants/Echeveria - Echeveria elegans_stage1.webp", "/images/plants/Echeveria - Echeveria elegans_stage2.webp", "/images/plants/Echeveria - Echeveria elegans_stage3.webp"] },
+  { nameHe: "האוורתייה", nameEn: "Haworthia", family: "שושניים", ediblePart: "עלה", bdDayType: "leaf", plantingMonths: [], spacingCm: 10, rowSpacingCm: null, placementSpacingCm: 10, plantsPerSqm: null, rowsPerBed: null, method: null, germinationDays: null, daysToTransplant: null, daysToHarvest: null, images: ["/images/plants/Haworthia - Haworthia fasciata_stage1.webp", "/images/plants/Haworthia - Haworthia fasciata_stage2.webp", "/images/plants/Haworthia - Haworthia fasciata_stage3.webp"] },
+  { nameHe: "ג'ייד", nameEn: "Jade Plant", family: "חטבות", ediblePart: "עלה", bdDayType: "leaf", plantingMonths: [], spacingCm: 30, rowSpacingCm: null, placementSpacingCm: 30, plantsPerSqm: null, rowsPerBed: null, method: null, germinationDays: null, daysToTransplant: null, daysToHarvest: null, images: ["/images/plants/Jade Plant - Crassula ovata_stage1.webp", "/images/plants/Jade Plant - Crassula ovata_stage2.webp", "/images/plants/Jade Plant - Crassula ovata_stage3.webp"] },
+  { nameHe: "שרשרת פנינים", nameEn: "String of Pearls", family: "מורכבים", ediblePart: "עלה", bdDayType: "leaf", plantingMonths: [], spacingCm: 20, rowSpacingCm: null, placementSpacingCm: 20, plantsPerSqm: null, rowsPerBed: null, method: null, germinationDays: null, daysToTransplant: null, daysToHarvest: null, images: ["/images/plants/String of Pearls - Senecio rowleyanus_stage1.webp", "/images/plants/String of Pearls - Senecio rowleyanus_stage2.webp", "/images/plants/String of Pearls - Senecio rowleyanus_stage3.webp"] },
+  { nameHe: "סדום", nameEn: "Sedum", family: "חטבות", ediblePart: "עלה", bdDayType: "leaf", plantingMonths: [], spacingCm: 20, rowSpacingCm: null, placementSpacingCm: 20, plantsPerSqm: null, rowsPerBed: null, method: null, germinationDays: null, daysToTransplant: null, daysToHarvest: null, images: ["/images/plants/Sedum - Sedum spectabile_stage1.webp", "/images/plants/Sedum - Sedum spectabile_stage2.webp", "/images/plants/Sedum - Sedum spectabile_stage3.webp"] },
   // Cacti
-  { nameHe: "קקטוס אוזני ארנב", nameEn: "Bunny Ears Cactus", family: "קקטוסיים", ediblePart: "פרי", bdDayType: "fruit", plantingMonths: [], spacingCm: 30, rowSpacingCm: null, placementSpacingCm: 30, plantsPerSqm: null, rowsPerBed: null, method: null, germinationDays: null, daysToTransplant: null, daysToHarvest: null, images: ["/images/plants/Bunny Ears Cactus - Opuntia microdasys_stage1.png", "/images/plants/Bunny Ears Cactus - Opuntia microdasys_stage2.png", "/images/plants/Bunny Ears Cactus - Opuntia microdasys_stage3.png"] },
-  { nameHe: "קקטוס חג המולד", nameEn: "Christmas Cactus", family: "קקטוסיים", ediblePart: "פרח", bdDayType: "flower", plantingMonths: [], spacingCm: 30, rowSpacingCm: null, placementSpacingCm: 30, plantsPerSqm: null, rowsPerBed: null, method: null, germinationDays: null, daysToTransplant: null, daysToHarvest: null, images: ["/images/plants/Christmas Cactus - Schlumbergera bridgesii_stage1.png", "/images/plants/Christmas Cactus - Schlumbergera bridgesii_stage2.png", "/images/plants/Christmas Cactus - Schlumbergera bridgesii_stage3.png"] },
-  { nameHe: "קקטוס חבית זהב", nameEn: "Golden Barrel Cactus", family: "קקטוסיים", ediblePart: "פרח", bdDayType: "flower", plantingMonths: [], spacingCm: 50, rowSpacingCm: null, placementSpacingCm: 50, plantsPerSqm: null, rowsPerBed: null, method: null, germinationDays: null, daysToTransplant: null, daysToHarvest: null, images: ["/images/plants/Golden Barrel Cactus - Echinocactus grusonii_stage1.png", "/images/plants/Golden Barrel Cactus - Echinocactus grusonii_stage2.png", "/images/plants/Golden Barrel Cactus - Echinocactus grusonii_stage3.png"] },
-  { nameHe: "צבר", nameEn: "Prickly Pear", family: "קקטוסיים", ediblePart: "פרי", bdDayType: "fruit", plantingMonths: [], spacingCm: 100, rowSpacingCm: null, placementSpacingCm: 100, plantsPerSqm: null, rowsPerBed: null, method: null, germinationDays: null, daysToTransplant: null, daysToHarvest: null, images: [null, "/images/plants/Prickly Pear - Opuntia ficus-indica_stage2.png", "/images/plants/Prickly Pear - Opuntia ficus-indica_stage3.png"] },
+  { nameHe: "קקטוס אוזני ארנב", nameEn: "Bunny Ears Cactus", family: "קקטוסיים", ediblePart: "פרי", bdDayType: "fruit", plantingMonths: [], spacingCm: 30, rowSpacingCm: null, placementSpacingCm: 30, plantsPerSqm: null, rowsPerBed: null, method: null, germinationDays: null, daysToTransplant: null, daysToHarvest: null, images: ["/images/plants/Bunny Ears Cactus - Opuntia microdasys_stage1.webp", "/images/plants/Bunny Ears Cactus - Opuntia microdasys_stage2.webp", "/images/plants/Bunny Ears Cactus - Opuntia microdasys_stage3.webp"] },
+  { nameHe: "קקטוס חג המולד", nameEn: "Christmas Cactus", family: "קקטוסיים", ediblePart: "פרח", bdDayType: "flower", plantingMonths: [], spacingCm: 30, rowSpacingCm: null, placementSpacingCm: 30, plantsPerSqm: null, rowsPerBed: null, method: null, germinationDays: null, daysToTransplant: null, daysToHarvest: null, images: ["/images/plants/Christmas Cactus - Schlumbergera bridgesii_stage1.webp", "/images/plants/Christmas Cactus - Schlumbergera bridgesii_stage2.webp", "/images/plants/Christmas Cactus - Schlumbergera bridgesii_stage3.webp"] },
+  { nameHe: "קקטוס חבית זהב", nameEn: "Golden Barrel Cactus", family: "קקטוסיים", ediblePart: "פרח", bdDayType: "flower", plantingMonths: [], spacingCm: 50, rowSpacingCm: null, placementSpacingCm: 50, plantsPerSqm: null, rowsPerBed: null, method: null, germinationDays: null, daysToTransplant: null, daysToHarvest: null, images: ["/images/plants/Golden Barrel Cactus - Echinocactus grusonii_stage1.webp", "/images/plants/Golden Barrel Cactus - Echinocactus grusonii_stage2.webp", "/images/plants/Golden Barrel Cactus - Echinocactus grusonii_stage3.webp"] },
+  { nameHe: "צבר", nameEn: "Prickly Pear", family: "קקטוסיים", ediblePart: "פרי", bdDayType: "fruit", plantingMonths: [], spacingCm: 100, rowSpacingCm: null, placementSpacingCm: 100, plantsPerSqm: null, rowsPerBed: null, method: null, germinationDays: null, daysToTransplant: null, daysToHarvest: null, images: [null, "/images/plants/Prickly Pear - Opuntia ficus-indica_stage2.webp", "/images/plants/Prickly Pear - Opuntia ficus-indica_stage3.webp"] },
   // Medicinal
-  { nameHe: "אשווגנדה", nameEn: "Ashwagandha", family: "סולניים", ediblePart: "שורש", bdDayType: "root", plantingMonths: [], spacingCm: 60, rowSpacingCm: null, placementSpacingCm: 60, plantsPerSqm: null, rowsPerBed: null, method: null, germinationDays: null, daysToTransplant: null, daysToHarvest: null, images: ["/images/plants/Ashwagandha - Withania somnifera_stage1.png", "/images/plants/Ashwagandha - Withania somnifera_stage2.png", "/images/plants/Ashwagandha - Withania somnifera_stage3.png"] },
-  { nameHe: "שן הארי", nameEn: "Dandelion", family: "מורכבים", ediblePart: "עלה", bdDayType: "leaf", plantingMonths: [], spacingCm: 20, rowSpacingCm: null, placementSpacingCm: 20, plantsPerSqm: null, rowsPerBed: null, method: null, germinationDays: null, daysToTransplant: null, daysToHarvest: null, images: ["/images/plants/Dandelion - Taraxacum officinale_stage1.png", "/images/plants/Dandelion - Taraxacum officinale_stage2.png", "/images/plants/Dandelion - Taraxacum officinale_stage3.png"] },
-  { nameHe: "אכינאצאה", nameEn: "Echinacea", family: "מורכבים", ediblePart: "פרח", bdDayType: "flower", plantingMonths: [], spacingCm: 45, rowSpacingCm: null, placementSpacingCm: 45, plantsPerSqm: null, rowsPerBed: null, method: null, germinationDays: null, daysToTransplant: null, daysToHarvest: null, images: ["/images/plants/Echinacea - Echinacea purpurea_stage1.png", "/images/plants/Echinacea - Echinacea purpurea_stage2.png", "/images/plants/Echinacea - Echinacea purpurea_stage3.png"] },
-  { nameHe: "סמבוק", nameEn: "Elderberry", family: "פרחוניים", ediblePart: "פרי", bdDayType: "fruit", plantingMonths: [], spacingCm: 200, rowSpacingCm: null, placementSpacingCm: 200, plantsPerSqm: null, rowsPerBed: null, method: null, germinationDays: null, daysToTransplant: null, daysToHarvest: null, images: [null, "/images/plants/Elderberry - Sambucus nigra_stage2.png", "/images/plants/Elderberry - Sambucus nigra_stage3.png"] },
-  { nameHe: "בזיליקום קדוש", nameEn: "Holy Basil (Tulsi)", family: "שפתניים", ediblePart: "עלה", bdDayType: "leaf", plantingMonths: [], spacingCm: 30, rowSpacingCm: null, placementSpacingCm: 30, plantsPerSqm: null, rowsPerBed: null, method: null, germinationDays: null, daysToTransplant: null, daysToHarvest: null, images: ["/images/plants/Holy Basil (Tulsi) - Ocimum tenuiflorum_stage1.png", "/images/plants/Holy Basil (Tulsi) - Ocimum tenuiflorum_stage2.png", "/images/plants/Holy Basil (Tulsi) - Ocimum tenuiflorum_stage3.png"] },
-  { nameHe: "מליסה", nameEn: "Lemon Balm", family: "שפתניים", ediblePart: "עלה", bdDayType: "leaf", plantingMonths: [], spacingCm: 40, rowSpacingCm: null, placementSpacingCm: 40, plantsPerSqm: null, rowsPerBed: null, method: null, germinationDays: null, daysToTransplant: null, daysToHarvest: null, images: ["/images/plants/Lemon Balm - Melissa officinalis_stage1.png", "/images/plants/Lemon Balm - Melissa officinalis_stage2.png", "/images/plants/Lemon Balm - Melissa officinalis_stage3.png"] },
-  { nameHe: "גדילן מצוי", nameEn: "Milk Thistle", family: "מורכבים", ediblePart: "זרע", bdDayType: "fruit", plantingMonths: [], spacingCm: 60, rowSpacingCm: null, placementSpacingCm: 60, plantsPerSqm: null, rowsPerBed: null, method: null, germinationDays: null, daysToTransplant: null, daysToHarvest: null, images: ["/images/plants/Milk Thistle - Silybum marianum_stage1.png", "/images/plants/Milk Thistle - Silybum marianum_stage2.png", "/images/plants/Milk Thistle - Silybum marianum_stage3.png"] },
-  { nameHe: "סרפד", nameEn: "Nettle", family: "סרפדיים", ediblePart: "עלה", bdDayType: "leaf", plantingMonths: [], spacingCm: 30, rowSpacingCm: null, placementSpacingCm: 30, plantsPerSqm: null, rowsPerBed: null, method: null, germinationDays: null, daysToTransplant: null, daysToHarvest: null, images: ["/images/plants/Nettle - Urtica dioica_stage1.png", "/images/plants/Nettle - Urtica dioica_stage2.png", "/images/plants/Nettle - Urtica dioica_stage3.png"] },
-  { nameHe: "פסיפלורה", nameEn: "Passionflower", family: "פסיפלוריים", ediblePart: "פרי", bdDayType: "fruit", plantingMonths: [], spacingCm: 90, rowSpacingCm: null, placementSpacingCm: 90, plantsPerSqm: null, rowsPerBed: null, method: null, germinationDays: null, daysToTransplant: null, daysToHarvest: null, images: ["/images/plants/Passionflower - Passiflora incarnata_stage1.png", "/images/plants/Passionflower - Passiflora incarnata_stage2.png", "/images/plants/Passionflower - Passiflora incarnata_stage3.png"] },
-  { nameHe: "נענע פלפל", nameEn: "Peppermint", family: "שפתניים", ediblePart: "עלה", bdDayType: "leaf", plantingMonths: [], spacingCm: 30, rowSpacingCm: null, placementSpacingCm: 30, plantsPerSqm: null, rowsPerBed: null, method: null, germinationDays: null, daysToTransplant: null, daysToHarvest: null, images: ["/images/plants/Peppermint - Mentha piperita_stage1.png", "/images/plants/Peppermint - Mentha piperita_stage2.png", "/images/plants/Peppermint - Mentha piperita_stage3.png"] },
-  { nameHe: "ורד הכלב", nameEn: "Rosehip", family: "ורדניים", ediblePart: "פרי", bdDayType: "fruit", plantingMonths: [], spacingCm: 100, rowSpacingCm: null, placementSpacingCm: 100, plantsPerSqm: null, rowsPerBed: null, method: null, germinationDays: null, daysToTransplant: null, daysToHarvest: null, images: ["/images/plants/Rosa canina - Rosa canina_stage1.png", "/images/plants/Rosa canina - Rosa canina_stage2.png", "/images/plants/Rosa canina - Rosa canina_stage3.png"] },
-  { nameHe: "היפריקום", nameEn: "St. John's Wort", family: "היפריקומיים", ediblePart: "פרח", bdDayType: "flower", plantingMonths: [], spacingCm: 45, rowSpacingCm: null, placementSpacingCm: 45, plantsPerSqm: null, rowsPerBed: null, method: null, germinationDays: null, daysToTransplant: null, daysToHarvest: null, images: ["/images/plants/St. John's Wort - Hypericum perforatum_stage1.png", "/images/plants/St. John's Wort - Hypericum perforatum_stage2.png", "/images/plants/St. John's Wort - Hypericum perforatum_stage3.png"] },
-  { nameHe: "כורכום", nameEn: "Turmeric", family: "זנגביליים", ediblePart: "שורש", bdDayType: "root", plantingMonths: [], spacingCm: 30, rowSpacingCm: null, placementSpacingCm: 30, plantsPerSqm: null, rowsPerBed: null, method: null, germinationDays: null, daysToTransplant: null, daysToHarvest: null, images: ["/images/plants/Turmeric - Curcuma longa_stage1.png", "/images/plants/Turmeric - Curcuma longa_stage2.png", "/images/plants/Turmeric - Curcuma longa_stage3.png"] },
-  { nameHe: "ולריאן", nameEn: "Valerian", family: "ולריאניים", ediblePart: "שורש", bdDayType: "root", plantingMonths: [], spacingCm: 30, rowSpacingCm: null, placementSpacingCm: 30, plantsPerSqm: null, rowsPerBed: null, method: null, germinationDays: null, daysToTransplant: null, daysToHarvest: null, images: ["/images/plants/Valerian - Valeriana officinalis_stage1.png", "/images/plants/Valerian - Valeriana officinalis_stage2.png", "/images/plants/Valerian - Valeriana officinalis_stage3.png"] },
-  { nameHe: "ירוקה", nameEn: "Yarrow", family: "מורכבים", ediblePart: "פרח", bdDayType: "flower", plantingMonths: [], spacingCm: 30, rowSpacingCm: null, placementSpacingCm: 30, plantsPerSqm: null, rowsPerBed: null, method: null, germinationDays: null, daysToTransplant: null, daysToHarvest: null, images: ["/images/plants/Yarrow - Achillea millefolium_stage1.png", "/images/plants/Yarrow - Achillea millefolium_stage2.png", "/images/plants/Yarrow - Achillea millefolium_stage3.png"] },
+  { nameHe: "אשווגנדה", nameEn: "Ashwagandha", family: "סולניים", ediblePart: "שורש", bdDayType: "root", plantingMonths: [], spacingCm: 60, rowSpacingCm: null, placementSpacingCm: 60, plantsPerSqm: null, rowsPerBed: null, method: null, germinationDays: null, daysToTransplant: null, daysToHarvest: null, images: ["/images/plants/Ashwagandha - Withania somnifera_stage1.webp", "/images/plants/Ashwagandha - Withania somnifera_stage2.webp", "/images/plants/Ashwagandha - Withania somnifera_stage3.webp"] },
+  { nameHe: "שן הארי", nameEn: "Dandelion", family: "מורכבים", ediblePart: "עלה", bdDayType: "leaf", plantingMonths: [], spacingCm: 20, rowSpacingCm: null, placementSpacingCm: 20, plantsPerSqm: null, rowsPerBed: null, method: null, germinationDays: null, daysToTransplant: null, daysToHarvest: null, images: ["/images/plants/Dandelion - Taraxacum officinale_stage1.webp", "/images/plants/Dandelion - Taraxacum officinale_stage2.webp", "/images/plants/Dandelion - Taraxacum officinale_stage3.webp"] },
+  { nameHe: "אכינאצאה", nameEn: "Echinacea", family: "מורכבים", ediblePart: "פרח", bdDayType: "flower", plantingMonths: [], spacingCm: 45, rowSpacingCm: null, placementSpacingCm: 45, plantsPerSqm: null, rowsPerBed: null, method: null, germinationDays: null, daysToTransplant: null, daysToHarvest: null, images: ["/images/plants/Echinacea - Echinacea purpurea_stage1.webp", "/images/plants/Echinacea - Echinacea purpurea_stage2.webp", "/images/plants/Echinacea - Echinacea purpurea_stage3.webp"] },
+  { nameHe: "סמבוק", nameEn: "Elderberry", family: "פרחוניים", ediblePart: "פרי", bdDayType: "fruit", plantingMonths: [], spacingCm: 200, rowSpacingCm: null, placementSpacingCm: 200, plantsPerSqm: null, rowsPerBed: null, method: null, germinationDays: null, daysToTransplant: null, daysToHarvest: null, images: [null, "/images/plants/Elderberry - Sambucus nigra_stage2.webp", "/images/plants/Elderberry - Sambucus nigra_stage3.webp"] },
+  { nameHe: "בזיליקום קדוש", nameEn: "Holy Basil (Tulsi)", family: "שפתניים", ediblePart: "עלה", bdDayType: "leaf", plantingMonths: [], spacingCm: 30, rowSpacingCm: null, placementSpacingCm: 30, plantsPerSqm: null, rowsPerBed: null, method: null, germinationDays: null, daysToTransplant: null, daysToHarvest: null, images: ["/images/plants/Holy Basil (Tulsi) - Ocimum tenuiflorum_stage1.webp", "/images/plants/Holy Basil (Tulsi) - Ocimum tenuiflorum_stage2.webp", "/images/plants/Holy Basil (Tulsi) - Ocimum tenuiflorum_stage3.webp"] },
+  { nameHe: "מליסה", nameEn: "Lemon Balm", family: "שפתניים", ediblePart: "עלה", bdDayType: "leaf", plantingMonths: [], spacingCm: 40, rowSpacingCm: null, placementSpacingCm: 40, plantsPerSqm: null, rowsPerBed: null, method: null, germinationDays: null, daysToTransplant: null, daysToHarvest: null, images: ["/images/plants/Lemon Balm - Melissa officinalis_stage1.webp", "/images/plants/Lemon Balm - Melissa officinalis_stage2.webp", "/images/plants/Lemon Balm - Melissa officinalis_stage3.webp"] },
+  { nameHe: "גדילן מצוי", nameEn: "Milk Thistle", family: "מורכבים", ediblePart: "זרע", bdDayType: "fruit", plantingMonths: [], spacingCm: 60, rowSpacingCm: null, placementSpacingCm: 60, plantsPerSqm: null, rowsPerBed: null, method: null, germinationDays: null, daysToTransplant: null, daysToHarvest: null, images: ["/images/plants/Milk Thistle - Silybum marianum_stage1.webp", "/images/plants/Milk Thistle - Silybum marianum_stage2.webp", "/images/plants/Milk Thistle - Silybum marianum_stage3.webp"] },
+  { nameHe: "סרפד", nameEn: "Nettle", family: "סרפדיים", ediblePart: "עלה", bdDayType: "leaf", plantingMonths: [], spacingCm: 30, rowSpacingCm: null, placementSpacingCm: 30, plantsPerSqm: null, rowsPerBed: null, method: null, germinationDays: null, daysToTransplant: null, daysToHarvest: null, images: ["/images/plants/Nettle - Urtica dioica_stage1.webp", "/images/plants/Nettle - Urtica dioica_stage2.webp", "/images/plants/Nettle - Urtica dioica_stage3.webp"] },
+  { nameHe: "פסיפלורה", nameEn: "Passionflower", family: "פסיפלוריים", ediblePart: "פרי", bdDayType: "fruit", plantingMonths: [], spacingCm: 90, rowSpacingCm: null, placementSpacingCm: 90, plantsPerSqm: null, rowsPerBed: null, method: null, germinationDays: null, daysToTransplant: null, daysToHarvest: null, images: ["/images/plants/Passionflower - Passiflora incarnata_stage1.webp", "/images/plants/Passionflower - Passiflora incarnata_stage2.webp", "/images/plants/Passionflower - Passiflora incarnata_stage3.webp"] },
+  { nameHe: "נענע פלפל", nameEn: "Peppermint", family: "שפתניים", ediblePart: "עלה", bdDayType: "leaf", plantingMonths: [], spacingCm: 30, rowSpacingCm: null, placementSpacingCm: 30, plantsPerSqm: null, rowsPerBed: null, method: null, germinationDays: null, daysToTransplant: null, daysToHarvest: null, images: ["/images/plants/Peppermint - Mentha piperita_stage1.webp", "/images/plants/Peppermint - Mentha piperita_stage2.webp", "/images/plants/Peppermint - Mentha piperita_stage3.webp"] },
+  { nameHe: "ורד הכלב", nameEn: "Rosehip", family: "ורדניים", ediblePart: "פרי", bdDayType: "fruit", plantingMonths: [], spacingCm: 100, rowSpacingCm: null, placementSpacingCm: 100, plantsPerSqm: null, rowsPerBed: null, method: null, germinationDays: null, daysToTransplant: null, daysToHarvest: null, images: ["/images/plants/Rosa canina - Rosa canina_stage1.webp", "/images/plants/Rosa canina - Rosa canina_stage2.webp", "/images/plants/Rosa canina - Rosa canina_stage3.webp"] },
+  { nameHe: "היפריקום", nameEn: "St. John's Wort", family: "היפריקומיים", ediblePart: "פרח", bdDayType: "flower", plantingMonths: [], spacingCm: 45, rowSpacingCm: null, placementSpacingCm: 45, plantsPerSqm: null, rowsPerBed: null, method: null, germinationDays: null, daysToTransplant: null, daysToHarvest: null, images: ["/images/plants/St. John's Wort - Hypericum perforatum_stage1.webp", "/images/plants/St. John's Wort - Hypericum perforatum_stage2.webp", "/images/plants/St. John's Wort - Hypericum perforatum_stage3.webp"] },
+  { nameHe: "כורכום", nameEn: "Turmeric", family: "זנגביליים", ediblePart: "שורש", bdDayType: "root", plantingMonths: [], spacingCm: 30, rowSpacingCm: null, placementSpacingCm: 30, plantsPerSqm: null, rowsPerBed: null, method: null, germinationDays: null, daysToTransplant: null, daysToHarvest: null, images: ["/images/plants/Turmeric - Curcuma longa_stage1.webp", "/images/plants/Turmeric - Curcuma longa_stage2.webp", "/images/plants/Turmeric - Curcuma longa_stage3.webp"] },
+  { nameHe: "ולריאן", nameEn: "Valerian", family: "ולריאניים", ediblePart: "שורש", bdDayType: "root", plantingMonths: [], spacingCm: 30, rowSpacingCm: null, placementSpacingCm: 30, plantsPerSqm: null, rowsPerBed: null, method: null, germinationDays: null, daysToTransplant: null, daysToHarvest: null, images: ["/images/plants/Valerian - Valeriana officinalis_stage1.webp", "/images/plants/Valerian - Valeriana officinalis_stage2.webp", "/images/plants/Valerian - Valeriana officinalis_stage3.webp"] },
+  { nameHe: "ירוקה", nameEn: "Yarrow", family: "מורכבים", ediblePart: "פרח", bdDayType: "flower", plantingMonths: [], spacingCm: 30, rowSpacingCm: null, placementSpacingCm: 30, plantsPerSqm: null, rowsPerBed: null, method: null, germinationDays: null, daysToTransplant: null, daysToHarvest: null, images: ["/images/plants/Yarrow - Achillea millefolium_stage1.webp", "/images/plants/Yarrow - Achillea millefolium_stage2.webp", "/images/plants/Yarrow - Achillea millefolium_stage3.webp"] },
 ];
 
 export function getPlantByName(nameHe: string): PlantTableEntry | undefined {

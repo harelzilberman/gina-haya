@@ -61,7 +61,7 @@ function buildImagePaths(nameEn: string): (string | null)[] {
   const entry = PLANT_TABLE.find(p => p.nameEn.toLowerCase() === nameEn.toLowerCase());
   if (entry?.images) return entry.images;
   const key = nameEn.replace(/\s+/g, '_');
-  return [1, 2, 3].map(n => `/images/plants/${key}_stage${n}_00001_.png`);
+  return [1, 2, 3].map(n => `/images/plants/${key}_stage${n}_00001_.webp`);
 }
 
 function PlantPhotoGallery({
