@@ -77,6 +77,12 @@ function PlantPhotoGallery({
   const [loaded,   setLoaded]   = useState<Record<number, boolean>>({});
   const [errored,  setErrored]  = useState<Record<number, boolean>>({});
 
+  // Determine which slots have real URLs to attempt
+  const urlSlots = [0, 1, 2].filter(i => (imagePaths[i] ?? null) !== null);
+  // Hide the whole gallery once every URL slot has errored (no renders exist for this plant)
+  const allFailed = urlSlots.length > 0 && urlSlots.every(i => errored[i]);
+  if (allFailed) return null;
+
   return (
     <>
       {/* Lightbox */}
