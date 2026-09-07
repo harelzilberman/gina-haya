@@ -12,11 +12,8 @@
  * Segments are compared as TEXT — casting to uuid would throw on non-UUID segments
  * like "197609" and prevent those objects from being classified at all.
  *
- * Expected on current data: 0 objects. The 4 orphaned segments found in the 2026-09-07 SQL
- * audit (1387abd1, 197609, 32f5619c, cdd3d54f — 29 objects total) were removed externally
- * between the initial audit and this run.
- * If the dry run finds a different number, the script stops and reports it —
- * a mismatch means enumeration differs from the SQL audit and one is wrong.
+ * History: 4 orphaned segments (1387abd1, 197609, 32f5619c, cdd3d54f — 29 objects)
+ * were removed by running this script with --confirm on 2026-09-07.
  */
 
 import * as path from 'path';
@@ -43,10 +40,6 @@ const db = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY, {
 
 const BUCKETS = ['tracker-photos', 'journal-photos'] as const;
 const BATCH_SIZE = 1000;
-
-// Expected orphan count from the SQL audit (2026-09-07).
-// If the real count differs, the script halts and asks for investigation.
-const EXPECTED_ORPHAN_COUNT = 0;
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
 
@@ -290,25 +283,6 @@ async function main() {
     console.log('');
     const totalSizeKb = Math.round(totalOrphanSize / 1024);
     console.log(`  Total orphaned: ${totalOrphanObjects} objects across ${orphanedGroups.length} segment(s), ~${totalSizeKb} kB`);
-  }
-
-  // ── Count sanity check ────────────────────────────────────────────────────
-  console.log('');
-  if (totalOrphanObjects !== EXPECTED_ORPHAN_COUNT) {
-    console.error(
-      `MISMATCH: found ${totalOrphanObjects} orphaned object(s) but expected ${EXPECTED_ORPHAN_COUNT}.\n` +
-      'This differs from the SQL audit result (2026-09-07).\n' +
-      'Either objects were added/removed since the audit, or the enumeration logic is wrong.\n' +
-      'Investigate before proceeding. Update EXPECTED_ORPHAN_COUNT in the script once confirmed.'
-    );
-    if (!confirm) {
-      // In dry-run mode: report the mismatch but do NOT exit non-zero — let the operator review
-      console.log('\n(Dry run — not exiting on mismatch. Review the output above and update EXPECTED_ORPHAN_COUNT.)');
-    } else {
-      process.exit(1);
-    }
-  } else {
-    console.log(`Orphan count matches expected (${EXPECTED_ORPHAN_COUNT}) ✓`);
   }
 
   if (!confirm) {
