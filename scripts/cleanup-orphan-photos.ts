@@ -12,7 +12,9 @@
  * Segments are compared as TEXT — casting to uuid would throw on non-UUID segments
  * like "197609" and prevent those objects from being classified at all.
  *
- * Expected on current data: 29 objects across 4 segments.
+ * Expected on current data: 0 objects. The 4 orphaned segments found in the 2026-09-07 SQL
+ * audit (1387abd1, 197609, 32f5619c, cdd3d54f — 29 objects total) were removed externally
+ * between the initial audit and this run.
  * If the dry run finds a different number, the script stops and reports it —
  * a mismatch means enumeration differs from the SQL audit and one is wrong.
  */
@@ -44,7 +46,7 @@ const BATCH_SIZE = 1000;
 
 // Expected orphan count from the SQL audit (2026-09-07).
 // If the real count differs, the script halts and asks for investigation.
-const EXPECTED_ORPHAN_COUNT = 29;
+const EXPECTED_ORPHAN_COUNT = 0;
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
 
@@ -69,9 +71,24 @@ interface StorageObject {
 }
 
 /**
+ * Safely join a storage prefix and an item name, never producing a leading slash.
+ * Supabase .list('', ...) at the root level returns item names with no prefix;
+ * concatenating '' + '/' + name would yield '/name' — a path that cannot be removed.
+ */
+function joinPath(prefix: string, name: string): string {
+  const p = prefix === '' ? name : `${prefix}/${name}`;
+  if (p.startsWith('/') || p.includes('//')) {
+    throw new Error(`[storage] Invalid path constructed: "${p}" (prefix="${prefix}", name="${name}")`);
+  }
+  return p;
+}
+
+/**
  * Recursively list all objects under a storage prefix.
  * .list() is NOT recursive — folder entries have id === null.
  * Paginates with limit=1000 until a short page confirms we have everything.
+ *
+ * Uses joinPath() so an empty prefix at root level does not produce leading slashes.
  */
 async function listAllObjects(
   bucket: string,
@@ -98,7 +115,7 @@ async function listAllObjects(
       if (!data || data.length === 0) break;
 
       for (const item of data) {
-        const fullPath = currentPrefix ? `${currentPrefix}/${item.name}` : item.name;
+        const fullPath = joinPath(currentPrefix, item.name);
         if (item.id === null) {
           // Folder entry — recurse
           queue.push(fullPath);
