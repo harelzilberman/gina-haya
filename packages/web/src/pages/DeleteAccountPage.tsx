@@ -35,7 +35,10 @@ export function DeleteAccountPage() {
                 שים לב: מחיקת החשבון היא בלתי הפיכה
               </p>
               <p style={{ color: '#9a3412', margin: 0, lineHeight: 1.65 }}>
-                מחיקת החשבון מסירה לצמיתות את הפרופיל שלך, הגינות, הצמחים, המעקבים, נתוני ציר הזמן, היסטוריית השיחות עם צ'ופצ'ו, ורשומות השימוש. לא ניתן לשחזר את המידע לאחר המחיקה.
+                מחיקת החשבון מסירה לצמיתות את הפרופיל שלך, הגינות, הצמחים, המעקבים, נתוני ציר הזמן, התמונות ששמורות בשרתינו, והיסטוריית השיחות עם צ'ופצ'ו. לא ניתן לשחזר את המידע לאחר המחיקה.
+              </p>
+              <p style={{ color: '#9a3412', margin: '8px 0 0', lineHeight: 1.65 }}>
+                רשומות שימוש ורשומות תשלום נשמרות ללא מזהה החשבון שלך, לצורכי חשבונאות ותפעול.
               </p>
             </div>
 
@@ -130,7 +133,10 @@ export function DeleteAccountPage() {
                 Important: Account deletion is permanent and irreversible
               </p>
               <p style={{ color: '#9a3412', margin: 0, lineHeight: 1.65 }}>
-                Deleting your account permanently removes your profile, gardens, plants, trackers, timeline data, chat history with Chupchu, and usage records. This action cannot be undone.
+                Deleting your account permanently removes your profile, gardens, plants, trackers, timeline data, the photos stored on our servers, and your chat history with Chupchu. This action cannot be undone.
+              </p>
+              <p style={{ color: '#9a3412', margin: '8px 0 0', lineHeight: 1.65 }}>
+                Usage and payment records are kept without your account identifier, for accounting and operational purposes.
               </p>
             </div>
 

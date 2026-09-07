@@ -3,7 +3,8 @@ const SAGE  = '#4A9C68';
 const CREAM = '#FDF6EC';
 
 const CONTACT_EMAIL = 'gina.haya.contact@gmail.com';
-const LAST_UPDATED  = 'July 23, 2026 / 23 ביולי 2026';
+const LAST_UPDATED_HE = '7 בספטמבר 2026';
+const LAST_UPDATED_EN = 'September 7, 2026';
 
 interface Section { title: string; body: string | string[] }
 
@@ -12,20 +13,22 @@ const HE_SECTIONS: Section[] = [
     title: 'מה אנחנו אוספים ולמה',
     body: [
       'פרטי חשבון: כתובת דוא"ל ושם (אם סופקו) — לצורך כניסה לחשבון וניהולו. ניתן להתחבר עם דוא"ל+סיסמה או חשבון Google.',
-      'מיקום מקורב — אופציונלי, ברשותך בלבד; משמש לנתוני מזג אוויר מקומי ולוח ביודינמי. לא נשמרת היסטוריית מיקומים.',
-      'תמונות צמחים — תמונות שאתה צולם נשארות במכשירך; תמונה מועלית לשרתינו רק כשאתה מבקש ניתוח AI, ומשמשת אך ורק לצורך הפקת הניתוח.',
+      'נתוני הגינה שלך: הגינות והצמחים שהוספת, פרטי גידול (מיקום, סוג גידול, השקיה), משימות טיפול, יומן אירועים והערות שכתבת. אלה הנתונים שמאפשרים לאפליקציה לעבוד, והם נשמרים בשרתינו.',
+      'תמונות צמחים — תמונות שאתה מצלם נשמרות במכשירך. כשאתה מבקש ניתוח AI, התמונה נשלחת לשרתינו ומשם ל-Anthropic לצורך הפקת הניתוח. תמונה שנותחה נשמרת אצלנו כל עוד החשבון פעיל, כדי שנוכל להציג את היסטוריית הצמח ולהשוות בין ניתוחים לאורך זמן, ונמחקת עם מחיקת החשבון. תמונות שלא נשלחו לניתוח נשארות במכשירך בלבד.',
+      'דוחות ניתוח ומעקב — תוצאות הניתוחים, מצב הצמח לאורך זמן והשוואות בין בדיקות.',
       'הודעות שיחה עם צ\'ופצ\'ו — נשמרות לשמירת המשכיות השיחה; מעובדות ע"י ממשק Anthropic\'s Claude API, שהוא ספק שירות ה-AI שלנו.',
+      'מיקום מקורב — אופציונלי, ברשותך בלבד; משמש לנתוני מזג אוויר מקומי ולוח ביודינמי. לא נשמרת היסטוריית מיקומים.',
       'מצב מנוי/רכישה — מנויים מטופלים ע"י Google Play; אנו מקבלים ושומרים את סטטוס המנוי (לא פרטי כרטיס האשראי שלך, שאנו אף פעם לא רואים).',
       'מונים בסיסיים (כגון מספר ניתוחי AI שנוצלו) — לאכיפת מגבלות תוכנית.',
     ],
   },
   {
     title: 'מה אנחנו לא עושים',
-    body: 'אנחנו לא מוכרים את נתוניך האישיים. אנחנו לא עובדים עם רשתות פרסום. אנחנו לא חולקים מידע עם צדדים שלישיים למעט ספקי שירות המעבדים נתונים מטעמנו (ראה סעיף הבא).',
+    body: 'אנחנו לא מוכרים את נתוניך האישיים. אנחנו לא עובדים עם רשתות פרסום. אנחנו לא משתמשים בנתוניך לאימון מודלי AI. אנחנו לא חולקים מידע עם צדדים שלישיים למעט ספקי שירות המעבדים נתונים מטעמנו (ראה סעיף הבא).',
   },
   {
     title: 'ספקי שירות',
-    body: 'אנחנו עובדים עם ספקי השירות הבאים, שמעבדים נתונים מטעמנו בלבד: Supabase (אחסון מסד נתונים ואימות זהות), Anthropic (עיבוד AI — שיחות עם צ\'ופצ\'ו), Google Play (תשלומים ומנויים), Railway (אחסון שרת).',
+    body: 'אנחנו עובדים עם ספקי השירות הבאים, שמעבדים נתונים מטעמנו ולפי הוראותינו בלבד: Supabase (אחסון מסד נתונים, אימות זהות ואחסון תמונות), Anthropic (עיבוד AI — שיחות עם צ\'ופצ\'ו ותמונות צמחים הנשלחות לניתוח), Google Play (תשלומים ומנויים), Railway (אחסון שרת). חלק מספקי השירות מעבדים נתונים מחוץ לישראל; ההעברה נעשית לצורך אספקת השירות בלבד.',
   },
   {
     title: 'אחסון ואבטחה',
@@ -33,11 +36,11 @@ const HE_SECTIONS: Section[] = [
   },
   {
     title: 'שמירת נתונים ומחיקה',
-    body: 'הנתונים נשמרים כל עוד החשבון פעיל. משתמשים יכולים לבקש מחיקה מלאה של החשבון והנתונים בכל עת — ראה דף מחיקת חשבון. המחיקה מושלמת תוך 30 יום.',
+    body: 'הנתונים נשמרים כל עוד החשבון פעיל, כולל תמונות שנשלחו לניתוח. משתמשים יכולים לבקש מחיקת חשבון בכל עת — ראה דף מחיקת חשבון. עם מחיקת החשבון נמחקות גם התמונות ששמורות בשרתינו. רשומות שימוש ורשומות תשלום נשמרות ללא מזהה החשבון, לצורכי חשבונאות ותפעול. המחיקה מושלמת תוך 30 יום.',
   },
   {
     title: 'גיל מינימלי',
-    body: 'השירות מיועד למשתמשים בני 18 ומעלה. אנחנו לא אוספים ביודעת מידע מילדים מתחת לגיל 18.',
+    body: 'השירות מיועד למשתמשים בני 18 ומעלה. אנחנו לא אוספים ביודעין מידע מילדים מתחת לגיל 18.',
   },
   {
     title: 'שינויים במדיניות',
@@ -54,20 +57,22 @@ const EN_SECTIONS: Section[] = [
     title: 'What we collect and why',
     body: [
       'Account details: email address and name (if provided) — for login and account management. Sign-in via email/password or Google account.',
-      'Location (approximate) — optional, with your permission; used for local weather and biodynamic calendar data. No location history is stored.',
-      'Plant photos — photos you take stay on your device; a photo is uploaded to our servers only when you request AI analysis, and is used solely to produce that analysis.',
+      'Your garden data: the gardens and plants you add, growing details (location, growing type, irrigation), care tasks, activity timeline and any notes you write. This is the data that makes the app work, and it is stored on our servers.',
+      "Plant photos — photos you take stay on your device. When you request an AI analysis, the photo is sent to our servers and from there to Anthropic to produce the analysis. An analysed photo is retained by us while your account is active, so we can show you the plant's history and compare analyses over time, and is deleted when your account is deleted. Photos you never submit for analysis remain on your device only.",
+      'Analysis and tracking records — analysis results, plant health over time, and comparisons between check-ins.',
       'Chat messages with Chupchu (צ\'ופצ\'ו) — stored to provide conversation continuity; processed by Anthropic\'s Claude API as our AI service provider.',
+      'Location (approximate) — optional, with your permission; used for local weather and biodynamic calendar data. No location history is stored.',
       'Purchase/subscription state — subscriptions are processed by Google Play; we receive and store subscription status only (not your payment card details, which we never see).',
       'Basic usage counters (e.g. number of AI analyses used) — for enforcing plan limits.',
     ],
   },
   {
     title: 'What we do NOT do',
-    body: 'We do not sell your personal data. We do not work with advertising networks. We do not share your information with third parties except service providers processing on our behalf (see next section).',
+    body: 'We do not sell your personal data. We do not work with advertising networks. We do not use your data to train AI models. We do not share your information with third parties except service providers processing on our behalf (see next section).',
   },
   {
     title: 'Service providers',
-    body: 'We work with the following service providers, who process data on our behalf only: Supabase (database storage and authentication), Anthropic (AI processing — Chupchu conversations), Google Play (payments and subscriptions), Railway (server hosting).',
+    body: 'We work with the following service providers, who process data on our behalf and on our instructions only: Supabase (database storage, authentication and image storage), Anthropic (AI processing — Chupchu conversations and plant photos submitted for analysis), Google Play (payments and subscriptions), Railway (server hosting). Some service providers process data outside Israel; any such transfer is made solely to provide the service.',
   },
   {
     title: 'Storage & security',
@@ -75,7 +80,7 @@ const EN_SECTIONS: Section[] = [
   },
   {
     title: 'Retention & deletion',
-    body: 'Data is kept while the account is active. Users may request full account and data deletion at any time — see the Account Deletion page. Deletion is completed within 30 days.',
+    body: 'Data is kept while the account is active, including photos submitted for analysis. Users may request account deletion at any time — see the Account Deletion page. When an account is deleted, the photos stored on our servers are deleted with it. Usage and payment records are kept without your account identifier, for accounting and operational purposes. Deletion is completed within 30 days.',
   },
   {
     title: 'Children',
@@ -130,7 +135,7 @@ export function PrivacyPolicyPage() {
               מדיניות פרטיות — גינה חיה
             </h1>
             <p style={{ fontSize: '13px', color: NAVY, opacity: 0.55, marginBottom: '20px' }}>
-              עודכן לאחרונה: {LAST_UPDATED}
+              עודכן לאחרונה: {LAST_UPDATED_HE}
             </p>
             <p style={{ color: '#475569', lineHeight: 1.75, marginBottom: '32px' }}>
               גינה חיה מחויבת לשמור על פרטיותך. מסמך זה מסביר בשפה פשוטה מה אנחנו אוספים, איך אנחנו משתמשים בזה, ומה הזכויות שלך.
@@ -169,7 +174,7 @@ export function PrivacyPolicyPage() {
               Privacy Policy — Gina Haya
             </h1>
             <p style={{ fontSize: '13px', color: NAVY, opacity: 0.55, marginBottom: '20px' }}>
-              Last updated: {LAST_UPDATED}
+              Last updated: {LAST_UPDATED_EN}
             </p>
             <p style={{ color: '#475569', lineHeight: 1.75, marginBottom: '32px' }}>
               Gina Haya is committed to protecting your privacy. This document explains in plain language what we collect, how we use it, and what your rights are.
