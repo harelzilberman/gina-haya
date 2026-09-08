@@ -724,17 +724,38 @@ async function main() {
   //   grow        → accounting fields only (transactionId, sum, paymentDate,
   //                 asmachta, processId, productData, statusCode, cField2/cField3)
   //   google_play → full payload minus externalAccountIdentifiers
-  //   anything else → NULL (ELSE NULL is deliberate — an unrecognised provider must
-  //                 not pass through with its payload intact). Deletion is aborted
-  //                 so the provider can be handled explicitly before retrying.
+  //   anything else → platform check below aborts before any write. ELSE NULL in
+  //                 the UPDATE is an unreachable backstop in case the check is ever
+  //                 bypassed; it is the safer failure if that happens.
   console.log('');
   console.log('── PII strip (user_subscriptions.raw_notification) ───────────');
 
   {
-    const KNOWN_PLATFORMS = new Set(['grow', 'google_play']);
     const stripClient = await pool.connect();
     try {
-      // ── a. Redact ───────────────────────────────────────────────────────────
+      // ── a. Pre-flight: reject unknown platforms before touching any row ──────
+      const platformCheckResult = await stripClient.query<{ platform: string; cnt: string }>(`
+        SELECT platform, count(*) AS cnt
+        FROM public.user_subscriptions
+        WHERE user_id = $1
+          AND platform NOT IN ('grow', 'google_play')
+        GROUP BY platform
+      `, [user.id]);
+
+      if (platformCheckResult.rows.length > 0) {
+        const detail = platformCheckResult.rows
+          .map(r => `${r.platform} (${r.cnt} row(s))`)
+          .join(', ');
+        console.error(
+          `\nABORT: user_subscriptions contains rows with unrecognised platform(s): ${detail}\n` +
+          '  No changes were made. The account was not deleted.\n' +
+          '  Add handling for this platform in the strip query and retry.'
+        );
+        await pool.end();
+        process.exit(1);
+      }
+
+      // ── b. Redact ───────────────────────────────────────────────────────────
       const stripResult = await stripClient.query<{ id: string; platform: string }>(`
         UPDATE public.user_subscriptions
         SET raw_notification = (
@@ -756,28 +777,13 @@ async function main() {
               )
             )
             WHEN 'google_play' THEN raw_notification - 'externalAccountIdentifiers'
-            ELSE NULL
+            ELSE NULL  -- unreachable: platform check above already aborted; safer than pass-through
           END
         ),
         updated_at = now()
         WHERE user_id = $1
         RETURNING id, platform
       `, [user.id]);
-
-      // Unknown platform: ELSE NULL already nuked the payload, but abort so the
-      // provider gets explicit handling before the account is actually removed.
-      const unknownRows = stripResult.rows.filter(r => !KNOWN_PLATFORMS.has(r.platform));
-      if (unknownRows.length > 0) {
-        const unknownPlatforms = [...new Set(unknownRows.map(r => r.platform))];
-        console.error(
-          `\nABORT: ${unknownRows.length} row(s) with unrecognised platform(s): ` +
-          unknownPlatforms.join(', ') + '\n' +
-          '  raw_notification set to NULL for these rows (no PII retained).\n' +
-          '  The auth row was NOT deleted. Add handling for this platform and retry.'
-        );
-        await pool.end();
-        process.exit(1);
-      }
 
       if (stripResult.rows.length === 0) {
         console.log('  No user_subscriptions rows — nothing to strip');
@@ -788,7 +794,7 @@ async function main() {
         console.log(`  ${stripResult.rows.length} row(s) updated`);
       }
 
-      // ── b. Verify no PII key survived ──────────────────────────────────────
+      // ── c. Verify no PII key survived ──────────────────────────────────────
       const verifyResult = await stripClient.query<{
         payer_email: string; payer_phone: string; full_name: string; payer_name: string;
         card_suffix: string; card_exp: string; grow_uuid: string; play_uuid: string;
@@ -838,7 +844,7 @@ async function main() {
         process.exit(1);
       }
 
-      // ── c. Assert accounting fields survived on Grow rows ───────────────────
+      // ── d. Assert accounting fields survived on Grow rows ───────────────────
       const accountingResult = await stripClient.query<{
         id: string; has_asmachta: boolean; has_transaction_id: boolean;
       }>(`
