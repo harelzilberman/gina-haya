@@ -131,8 +131,10 @@ async function main() {
         const extIds = rn?.externalAccountIdentifiers;
         console.log('  Before (PII masked):');
         console.log(`    subscriptionState:          ${rn?.subscriptionState ?? '(null)'}`);
+        console.log(`    latestOrderId:              ${rn?.latestOrderId ? maskPii(String(rn.latestOrderId)) : '(not present)'}`);
         console.log(`    externalAccountIdentifiers: ${extIds ? maskPii(JSON.stringify(extIds)) : '(not present)'}`);
-        console.log('  After: externalAccountIdentifiers removed');
+        console.log('  After: allow-list rebuild — keeps startTime, regionCode, subscriptionState,');
+        console.log('         acknowledgementState, lineItems[productId/expiryTime/offerDetails] only');
       }
     }
 
@@ -165,7 +167,25 @@ async function main() {
               )
             )
           )
-          WHEN 'google_play' THEN raw_notification - 'externalAccountIdentifiers'
+          WHEN 'google_play' THEN jsonb_build_object(
+            'startTime',            raw_notification->>'startTime',
+            'regionCode',           raw_notification->>'regionCode',
+            'subscriptionState',    raw_notification->>'subscriptionState',
+            'acknowledgementState', raw_notification->>'acknowledgementState',
+            'lineItems', COALESCE(
+              (SELECT jsonb_agg(
+                 jsonb_build_object(
+                   'productId',    elem->>'productId',
+                   'expiryTime',   elem->>'expiryTime',
+                   'offerDetails', elem->'offerDetails'
+                 )
+               )
+               FROM jsonb_array_elements(
+                 COALESCE(raw_notification->'lineItems', '[]'::jsonb)
+               ) AS elem),
+              '[]'::jsonb
+            )
+          )
           ELSE NULL
         END
       ),
@@ -184,7 +204,8 @@ async function main() {
 
     const verifyResult = await client.query<{
       payer_email: string; payer_phone: string; full_name: string; payer_name: string;
-      card_suffix: string; card_exp: string; grow_uuid: string; play_uuid: string; total: string;
+      card_suffix: string; card_exp: string; grow_uuid: string; play_uuid: string;
+      play_latest_order_id: string; play_gpa_token: string; total: string;
     }>(`
       SELECT
         count(*) FILTER (WHERE raw_notification->'data' ? 'payerEmail')               AS payer_email,
@@ -195,6 +216,8 @@ async function main() {
         count(*) FILTER (WHERE raw_notification->'data' ? 'cardExp')                  AS card_exp,
         count(*) FILTER (WHERE raw_notification->'data'->'customFields' ? 'cField1')  AS grow_uuid,
         count(*) FILTER (WHERE raw_notification ? 'externalAccountIdentifiers')       AS play_uuid,
+        count(*) FILTER (WHERE raw_notification ? 'latestOrderId')                    AS play_latest_order_id,
+        count(*) FILTER (WHERE raw_notification::text ILIKE '%GPA.%')                 AS play_gpa_token,
         count(*)                                                                      AS total
       FROM public.user_subscriptions
       WHERE user_id IS NULL
@@ -202,10 +225,16 @@ async function main() {
 
     const v = verifyResult.rows[0];
     const checks: [string, string][] = [
-      ['payer_email', v.payer_email], ['payer_phone', v.payer_phone],
-      ['full_name',   v.full_name],   ['payer_name',  v.payer_name],
-      ['card_suffix', v.card_suffix], ['card_exp',    v.card_exp],
-      ['grow_uuid',   v.grow_uuid],   ['play_uuid',   v.play_uuid],
+      ['payer_email',          v.payer_email],
+      ['payer_phone',          v.payer_phone],
+      ['full_name',            v.full_name],
+      ['payer_name',           v.payer_name],
+      ['card_suffix',          v.card_suffix],
+      ['card_exp',             v.card_exp],
+      ['grow_uuid',            v.grow_uuid],
+      ['play_uuid',            v.play_uuid],
+      ['play_latest_order_id', v.play_latest_order_id],
+      ['play_gpa_token',       v.play_gpa_token],
     ];
 
     for (const [key, val] of checks) {
