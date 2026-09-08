@@ -225,6 +225,61 @@ async function listAllObjects(
   return results;
 }
 
+// ── Audit log helpers ─────────────────────────────────────────────────────────
+
+/**
+ * Write one row to deletion_audit_log.
+ * Non-fatal: on any error, logs a warning and returns without throwing.
+ * Failing a deletion because a log row could not be written is the wrong trade.
+ */
+async function writeAuditRow(fields: {
+  row_id:   string;
+  user_id:  string;
+  action:   string;
+  metadata: Record<string, unknown>;
+}): Promise<void> {
+  try {
+    await pool.query(
+      `INSERT INTO deletion_audit_log (table_name, row_id, user_id, action, source, metadata)
+       VALUES ($1, $2, $3, $4, $5, $6)`,
+      [
+        'auth.users',
+        fields.row_id,
+        fields.user_id,
+        fields.action,
+        'scripts/delete-account.ts',
+        JSON.stringify(fields.metadata),
+      ]
+    );
+  } catch (err: any) {
+    console.warn(`[audit] WARNING: failed to write audit row (action=${fields.action}): ${err.message}`);
+    console.warn('[audit] Continuing — audit write failure is non-fatal.');
+  }
+}
+
+/**
+ * Query deletion_audit_log for prior account deletion events on a given UUID.
+ * Returns rows in chronological order; empty array if none found or on query error.
+ */
+async function queryPriorDeletion(uuid: string): Promise<
+  Array<{ action: string; created_at: string; metadata: Record<string, unknown> | null }>
+> {
+  try {
+    const result = await pool.query<{
+      action: string; created_at: string; metadata: Record<string, unknown> | null;
+    }>(
+      `SELECT action, created_at, metadata
+       FROM deletion_audit_log
+       WHERE row_id = $1 AND action LIKE 'account_deletion_%'
+       ORDER BY created_at`,
+      [uuid]
+    );
+    return result.rows;
+  } catch {
+    return [];
+  }
+}
+
 // ── Table existence check (PostgREST) ─────────────────────────────────────────
 
 /**
@@ -531,6 +586,46 @@ async function main() {
   try {
     user = await resolveUser(target);
   } catch (err: any) {
+    // Before reporting the error, check whether this UUID was already deleted.
+    // Only possible when the input is a UUID — we have no row_id to query by email.
+    if (isUuid(target)) {
+      const priorRows = await queryPriorDeletion(target);
+      const completeRow = priorRows.find(r => r.action === 'account_deletion_complete');
+      const startedRow  = priorRows.find(r => r.action === 'account_deletion_started');
+
+      if (completeRow) {
+        console.log('');
+        console.log('── Prior deletion found ───────────────────────────────────');
+        console.log('  This account was already deleted.');
+        console.log(`  Completed at: ${completeRow.created_at}`);
+        if (completeRow.metadata && Object.keys(completeRow.metadata).length > 0) {
+          console.log('  What was removed:');
+          for (const [k, v] of Object.entries(completeRow.metadata)) {
+            console.log(`    ${k}: ${typeof v === 'object' ? JSON.stringify(v) : v}`);
+          }
+        }
+        await pool.end();
+        process.exit(0);
+      }
+
+      if (startedRow) {
+        console.log('');
+        console.log('── Prior deletion found ───────────────────────────────────');
+        console.log('  A deletion was started for this account but did not complete.');
+        console.log(`  Started at: ${startedRow.created_at}`);
+        console.log('  No completion row exists — the account should be investigated.');
+        console.log('  Re-run with --confirm to attempt completion, or query the DB to confirm state.');
+        if (startedRow.metadata && Object.keys(startedRow.metadata).length > 0) {
+          console.log('  Pre-deletion snapshot:');
+          for (const [k, v] of Object.entries(startedRow.metadata)) {
+            console.log(`    ${k}: ${typeof v === 'object' ? JSON.stringify(v) : v}`);
+          }
+        }
+        await pool.end();
+        process.exit(1);
+      }
+    }
+
     console.error(`ERROR resolving user: ${err.message}`);
     await pool.end();
     process.exit(1);
@@ -626,6 +721,27 @@ async function main() {
     process.exit(0);
   }
 
+  // ── Audit write 1: record that deletion has started ───────────────────────
+  // Written before any irreversible action (step 7 storage removal).
+  // Captures the step-5 inventory — last moment this information exists intact.
+  console.log('');
+  console.log('── Audit log ─────────────────────────────────────────────');
+  await writeAuditRow({
+    row_id:   user.id,
+    user_id:  user.id,
+    action:   'account_deletion_started',
+    metadata: {
+      storage_object_count: Object.values(beforeStorage).reduce((a, b) => a + b, 0),
+      storage_per_bucket:   beforeStorage,
+      table_row_counts:     beforeCounts,
+    },
+  });
+  console.log('  account_deletion_started written ✓');
+
+  // Accumulators used for Write 2 metadata (populated during steps 7 and 8.5).
+  let storageRemovedCount       = 0;
+  let subscriptionsStrippedCount = 0;
+
   // ── 6. Enumerate storage ──────────────────────────────────────────────────
   console.log('');
   console.log('── Storage enumeration ───────────────────────────────────');
@@ -685,6 +801,7 @@ async function main() {
     }
 
     console.log(`  ${bucket}: ${totalRemoved} confirmed removed, ${totalFailed} unconfirmed`);
+    storageRemovedCount += totalRemoved;
 
     if (totalFailed > 0) {
       console.error(
@@ -784,6 +901,8 @@ async function main() {
         WHERE user_id = $1
         RETURNING id, platform
       `, [user.id]);
+
+      subscriptionsStrippedCount = stripResult.rows.length;
 
       if (stripResult.rows.length === 0) {
         console.log('  No user_subscriptions rows — nothing to strip');
@@ -896,6 +1015,19 @@ async function main() {
   }
 
   console.log('  auth.users row deleted ✓ (DB cascades fired)');
+
+  // ── Audit write 2: record completion before post-verify ───────────────────
+  // Placed here so a crash during post-verification still leaves this row.
+  await writeAuditRow({
+    row_id:   user.id,
+    user_id:  user.id,
+    action:   'account_deletion_complete',
+    metadata: {
+      storage_removed_count:        storageRemovedCount,
+      subscriptions_stripped_count: subscriptionsStrippedCount,
+    },
+  });
+  console.log('  account_deletion_complete written ✓');
 
   // ── 10. Post-verify ───────────────────────────────────────────────────────
   console.log('');
