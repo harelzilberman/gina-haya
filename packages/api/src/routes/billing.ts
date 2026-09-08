@@ -462,6 +462,15 @@ billingRouter.post('/play/rtdn', async (req: Request, res) => {
       return;
     }
 
+    // Guard: if user_id is null the account was deleted and raw_notification was already
+    // redacted. Do NOT overwrite it with a fresh Google payload (which would re-introduce
+    // latestOrderId, externalAccountIdentifiers, and other PII fields).
+    if (subRecord.user_id === null) {
+      console.log('[play/rtdn] Deleted account (user_id=null) — skipping raw_notification write');
+      res.json({ received: true });
+      return;
+    }
+
     // 4. Fetch current state from Google (source of truth; don't trust notificationType alone)
     let sub: any;
     try {
