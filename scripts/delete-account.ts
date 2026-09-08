@@ -893,7 +893,25 @@ async function main() {
                 )
               )
             )
-            WHEN 'google_play' THEN raw_notification - 'externalAccountIdentifiers'
+            WHEN 'google_play' THEN jsonb_build_object(
+              'startTime',            raw_notification->>'startTime',
+              'regionCode',           raw_notification->>'regionCode',
+              'subscriptionState',    raw_notification->>'subscriptionState',
+              'acknowledgementState', raw_notification->>'acknowledgementState',
+              'lineItems', COALESCE(
+                (SELECT jsonb_agg(
+                   jsonb_build_object(
+                     'productId',    elem->>'productId',
+                     'expiryTime',   elem->>'expiryTime',
+                     'offerDetails', elem->'offerDetails'
+                   )
+                 )
+                 FROM jsonb_array_elements(
+                   COALESCE(raw_notification->'lineItems', '[]'::jsonb)
+                 ) AS elem),
+                '[]'::jsonb
+              )
+            )
             ELSE NULL  -- unreachable: platform check above already aborted; safer than pass-through
           END
         ),
@@ -917,6 +935,7 @@ async function main() {
       const verifyResult = await stripClient.query<{
         payer_email: string; payer_phone: string; full_name: string; payer_name: string;
         card_suffix: string; card_exp: string; grow_uuid: string; play_uuid: string;
+        play_latest_order_id: string; play_gpa_token: string;
         uuid_anywhere: string; total: string;
       }>(`
         SELECT
@@ -928,6 +947,8 @@ async function main() {
           count(*) FILTER (WHERE raw_notification->'data' ? 'cardExp')                  AS card_exp,
           count(*) FILTER (WHERE raw_notification->'data'->'customFields' ? 'cField1')  AS grow_uuid,
           count(*) FILTER (WHERE raw_notification ? 'externalAccountIdentifiers')       AS play_uuid,
+          count(*) FILTER (WHERE raw_notification ? 'latestOrderId')                    AS play_latest_order_id,
+          count(*) FILTER (WHERE raw_notification::text ILIKE '%GPA.%')                 AS play_gpa_token,
           count(*) FILTER (WHERE raw_notification::text ILIKE '%' || $2 || '%')         AS uuid_anywhere,
           count(*)                                                                      AS total
         FROM public.user_subscriptions
@@ -936,15 +957,17 @@ async function main() {
 
       const v = verifyResult.rows[0];
       const piiCounts: Record<string, number> = {
-        payer_email:   Number(v.payer_email),
-        payer_phone:   Number(v.payer_phone),
-        full_name:     Number(v.full_name),
-        payer_name:    Number(v.payer_name),
-        card_suffix:   Number(v.card_suffix),
-        card_exp:      Number(v.card_exp),
-        grow_uuid:     Number(v.grow_uuid),
-        play_uuid:     Number(v.play_uuid),
-        uuid_anywhere: Number(v.uuid_anywhere),
+        payer_email:          Number(v.payer_email),
+        payer_phone:          Number(v.payer_phone),
+        full_name:            Number(v.full_name),
+        payer_name:           Number(v.payer_name),
+        card_suffix:          Number(v.card_suffix),
+        card_exp:             Number(v.card_exp),
+        grow_uuid:            Number(v.grow_uuid),
+        play_uuid:            Number(v.play_uuid),
+        play_latest_order_id: Number(v.play_latest_order_id),
+        play_gpa_token:       Number(v.play_gpa_token),
+        uuid_anywhere:        Number(v.uuid_anywhere),
       };
 
       for (const [key, count] of Object.entries(piiCounts)) {
