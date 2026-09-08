@@ -715,6 +715,164 @@ async function main() {
     console.log(`  ${bucket}: verified empty ✓`);
   }
 
+  // ── 8.5. Strip PII from user_subscriptions.raw_notification ──────────────────
+  //
+  // Must run BEFORE deleteUser: once the auth row is gone, user_id becomes NULL
+  // and the rows can no longer be found by user_id.
+  //
+  // Known platforms and what survives the strip:
+  //   grow        → accounting fields only (transactionId, sum, paymentDate,
+  //                 asmachta, processId, productData, statusCode, cField2/cField3)
+  //   google_play → full payload minus externalAccountIdentifiers
+  //   anything else → NULL (ELSE NULL is deliberate — an unrecognised provider must
+  //                 not pass through with its payload intact). Deletion is aborted
+  //                 so the provider can be handled explicitly before retrying.
+  console.log('');
+  console.log('── PII strip (user_subscriptions.raw_notification) ───────────');
+
+  {
+    const KNOWN_PLATFORMS = new Set(['grow', 'google_play']);
+    const stripClient = await pool.connect();
+    try {
+      // ── a. Redact ───────────────────────────────────────────────────────────
+      const stripResult = await stripClient.query<{ id: string; platform: string }>(`
+        UPDATE public.user_subscriptions
+        SET raw_notification = (
+          CASE platform
+            WHEN 'grow' THEN jsonb_build_object(
+              'status', raw_notification->>'status',
+              'data', jsonb_build_object(
+                'statusCode',    raw_notification->'data'->>'statusCode',
+                'transactionId', raw_notification->'data'->>'transactionId',
+                'sum',           raw_notification->'data'->>'sum',
+                'paymentDate',   raw_notification->'data'->>'paymentDate',
+                'asmachta',      raw_notification->'data'->>'asmachta',
+                'processId',     raw_notification->'data'->>'processId',
+                'productData',   raw_notification->'data'->'productData',
+                'customFields', jsonb_build_object(
+                  'cField2', raw_notification->'data'->'customFields'->>'cField2',
+                  'cField3', raw_notification->'data'->'customFields'->>'cField3'
+                )
+              )
+            )
+            WHEN 'google_play' THEN raw_notification - 'externalAccountIdentifiers'
+            ELSE NULL
+          END
+        ),
+        updated_at = now()
+        WHERE user_id = $1
+        RETURNING id, platform
+      `, [user.id]);
+
+      // Unknown platform: ELSE NULL already nuked the payload, but abort so the
+      // provider gets explicit handling before the account is actually removed.
+      const unknownRows = stripResult.rows.filter(r => !KNOWN_PLATFORMS.has(r.platform));
+      if (unknownRows.length > 0) {
+        const unknownPlatforms = [...new Set(unknownRows.map(r => r.platform))];
+        console.error(
+          `\nABORT: ${unknownRows.length} row(s) with unrecognised platform(s): ` +
+          unknownPlatforms.join(', ') + '\n' +
+          '  raw_notification set to NULL for these rows (no PII retained).\n' +
+          '  The auth row was NOT deleted. Add handling for this platform and retry.'
+        );
+        await pool.end();
+        process.exit(1);
+      }
+
+      if (stripResult.rows.length === 0) {
+        console.log('  No user_subscriptions rows — nothing to strip');
+      } else {
+        for (const r of stripResult.rows) {
+          console.log(`  stripped ${r.platform} row ${r.id}`);
+        }
+        console.log(`  ${stripResult.rows.length} row(s) updated`);
+      }
+
+      // ── b. Verify no PII key survived ──────────────────────────────────────
+      const verifyResult = await stripClient.query<{
+        payer_email: string; payer_phone: string; full_name: string; payer_name: string;
+        card_suffix: string; card_exp: string; grow_uuid: string; play_uuid: string;
+        uuid_anywhere: string; total: string;
+      }>(`
+        SELECT
+          count(*) FILTER (WHERE raw_notification->'data' ? 'payerEmail')               AS payer_email,
+          count(*) FILTER (WHERE raw_notification->'data' ? 'payerPhone')               AS payer_phone,
+          count(*) FILTER (WHERE raw_notification->'data' ? 'fullName')                 AS full_name,
+          count(*) FILTER (WHERE raw_notification->'data' ? 'payerName')                AS payer_name,
+          count(*) FILTER (WHERE raw_notification->'data' ? 'cardSuffix')               AS card_suffix,
+          count(*) FILTER (WHERE raw_notification->'data' ? 'cardExp')                  AS card_exp,
+          count(*) FILTER (WHERE raw_notification->'data'->'customFields' ? 'cField1')  AS grow_uuid,
+          count(*) FILTER (WHERE raw_notification ? 'externalAccountIdentifiers')       AS play_uuid,
+          count(*) FILTER (WHERE raw_notification::text ILIKE '%' || $2 || '%')         AS uuid_anywhere,
+          count(*)                                                                      AS total
+        FROM public.user_subscriptions
+        WHERE user_id = $1
+      `, [user.id, user.id]);
+
+      const v = verifyResult.rows[0];
+      const piiCounts: Record<string, number> = {
+        payer_email:   Number(v.payer_email),
+        payer_phone:   Number(v.payer_phone),
+        full_name:     Number(v.full_name),
+        payer_name:    Number(v.payer_name),
+        card_suffix:   Number(v.card_suffix),
+        card_exp:      Number(v.card_exp),
+        grow_uuid:     Number(v.grow_uuid),
+        play_uuid:     Number(v.play_uuid),
+        uuid_anywhere: Number(v.uuid_anywhere),
+      };
+
+      for (const [key, count] of Object.entries(piiCounts)) {
+        console.log(`  ${pad(key, 22)} ${count === 0 ? '✓ 0' : `✗ ${count} — STILL PRESENT`}`);
+      }
+      console.log(`  ${pad('total rows checked', 22)} ${v.total}`);
+
+      const piiRemaining = Object.entries(piiCounts).filter(([, n]) => n > 0);
+      if (piiRemaining.length > 0) {
+        console.error(
+          `\nABORT: PII verification FAILED — ` +
+          piiRemaining.map(([k, n]) => `${k}: ${n}`).join(', ') + '\n' +
+          '  The auth row was NOT deleted. Fix the strip query and retry.'
+        );
+        await pool.end();
+        process.exit(1);
+      }
+
+      // ── c. Assert accounting fields survived on Grow rows ───────────────────
+      const accountingResult = await stripClient.query<{
+        id: string; has_asmachta: boolean; has_transaction_id: boolean;
+      }>(`
+        SELECT id,
+               (raw_notification->'data'->>'asmachta')      IS NOT NULL AS has_asmachta,
+               (raw_notification->'data'->>'transactionId') IS NOT NULL AS has_transaction_id
+        FROM public.user_subscriptions
+        WHERE user_id = $1 AND platform = 'grow'
+      `, [user.id]);
+
+      for (const row of accountingResult.rows) {
+        if (!row.has_asmachta || !row.has_transaction_id) {
+          console.error(
+            `\nABORT: Grow row ${row.id} lost accounting fields ` +
+            `(asmachta=${row.has_asmachta ? '✓' : '✗'}, ` +
+            `transactionId=${row.has_transaction_id ? '✓' : '✗'}).\n` +
+            '  Strip was destructive — fix before retrying.'
+          );
+          await pool.end();
+          process.exit(1);
+        }
+      }
+
+      if (accountingResult.rows.length > 0) {
+        console.log(`  accounting fields OK on ${accountingResult.rows.length} Grow row(s) ✓`);
+      }
+
+      console.log('  PII strip verified ✓ — proceeding to auth deletion');
+
+    } finally {
+      stripClient.release();
+    }
+  }
+
   // ── 9. Delete auth user (hard delete) ─────────────────────────────────────
   console.log('');
   console.log('── Deleting auth.users row ───────────────────────────────');
