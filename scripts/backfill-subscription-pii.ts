@@ -181,7 +181,7 @@ async function main() {
                  )
                )
                FROM jsonb_array_elements(
-                 COALESCE(raw_notification->'lineItems', '[]'::jsonb)
+                 COALESCE(NULLIF(raw_notification->'lineItems', 'null'::jsonb), '[]'::jsonb)
                ) AS elem),
               '[]'::jsonb
             )
