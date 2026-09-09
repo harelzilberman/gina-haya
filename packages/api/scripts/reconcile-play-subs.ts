@@ -202,6 +202,24 @@ async function main() {
     }
 
     const googleStatus = mapSubscriptionState(googleState);
+
+    // Skip rows whose state maps to 'unknown' — this means Google returned a state
+    // string not in mapSubscriptionState's switch. Writing 'unknown' to the DB would
+    // overwrite a good status. Log the unmapped value so a new Google state is
+    // discoverable rather than silently absorbed.
+    if (googleStatus === 'unknown') {
+      const reason = `Unmapped subscriptionState '${googleState}' — skipping to avoid writing unknown status`;
+      console.log(`  [skip] id=${row.id}  ${reason}`);
+      needsReview.push({
+        row,
+        googleStatus: '(unmapped)',
+        googleExpiry: null,
+        wouldChange:  false,
+        needsReview:  reason,
+      });
+      continue;
+    }
+
     const lineItem     = (googleSub.lineItems as any[])?.[0] ?? {};
     const googleExpiry = (lineItem.expiryTime as string) ?? null;
 
