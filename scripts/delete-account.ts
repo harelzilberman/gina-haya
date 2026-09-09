@@ -130,8 +130,6 @@ const INTENTIONALLY_RETAINED: Record<string, string> = {
     'SET NULL — payment/subscription history kept for accounting; user_id nulled by migration 038',
   'deletion_audit_log':
     'no FK — admin audit trail; stale user_id is expected and harmless',
-  'chupchu_conversations_backup_20260827':
-    'point-in-time backup snapshot (2026-08-27); not a live table, not maintained per-user',
 };
 
 // Tables that hold data but CANNOT be scoped to a specific user via any DB query.
@@ -471,20 +469,29 @@ async function preflightFK(): Promise<void> {
 
 // ── Step 3: coverage assertion ────────────────────────────────────────────────
 
-async function coverageAssertion(): Promise<boolean> {
+async function coverageAssertion(isConfirmRun: boolean): Promise<{ ok: boolean; hasStale: boolean }> {
   const client = await pool.connect();
   try {
-    // Query every public table that has a user-identifying column.
-    // This is the live truth — not a hardcoded list.
-    const result = await client.query<{ table_name: string }>(`
-      select distinct table_name
-      from information_schema.columns
-      where table_schema = 'public'
-        and column_name in ('user_id', 'owner_id', 'created_by', 'user_uuid')
-      order by table_name
+    // Single query: all public base tables, tagged with whether they have a
+    // user-identifying column.  Using one query for both the uncovered-table
+    // check and the stale-entry check avoids a second round-trip.
+    const result = await client.query<{ table_name: string; has_user_column: boolean }>(`
+      SELECT
+        t.table_name,
+        bool_or(c.column_name IS NOT NULL) AS has_user_column
+      FROM information_schema.tables t
+      LEFT JOIN information_schema.columns c
+        ON  c.table_schema = 'public'
+        AND c.table_name   = t.table_name
+        AND c.column_name  IN ('user_id', 'owner_id', 'created_by', 'user_uuid')
+      WHERE t.table_schema = 'public'
+        AND t.table_type   = 'BASE TABLE'
+      GROUP BY t.table_name
+      ORDER BY t.table_name
     `);
 
-    const liveUserTables = result.rows.map(r => r.table_name);
+    const allLiveTables  = new Set(result.rows.map(r => r.table_name));
+    const liveUserTables = result.rows.filter(r => r.has_user_column).map(r => r.table_name);
     console.log(`  Live tables with user columns (${liveUserTables.length}): ${liveUserTables.join(', ')}`);
 
     const inventoryTables  = new Set(TABLE_INVENTORY.map(e => e.table));
@@ -509,7 +516,43 @@ async function coverageAssertion(): Promise<boolean> {
         '  Add each to TABLE_INVENTORY with the correct count strategy and after-deletion\n' +
         '  expectation, OR to INTENTIONALLY_RETAINED with a one-line reason.'
       );
-      return false;
+      return { ok: false, hasStale: false };
+    }
+
+    // ── Stale-entry check ─────────────────────────────────────────────────────
+    // Cross-check INTENTIONALLY_RETAINED and NOT_USER_SCOPABLE against the live
+    // table list.  A stale entry names a table that no longer exists.
+    //
+    // Failure behaviour is intentionally different from TABLE_INVENTORY:
+    //   TABLE_INVENTORY missing → hard abort in ALL runs.
+    //     Reason: if a table is absent we cannot verify its rows were deleted —
+    //     the verification is impossible, making the deletion untrustworthy.
+    //   INTENTIONALLY_RETAINED / NOT_USER_SCOPABLE stale → exit non-zero in dry
+    //     run, but CONTINUE in --confirm.
+    //     Reason: a dropped table cannot be retaining anyone's data.  The entry
+    //     is cosmetic and cannot make a deletion unsafe.  Blocking a live
+    //     deletion request (a privacy obligation with a 30-day commitment) over
+    //     an out-of-date comment would be the wrong failure.
+    //   Do not "fix" this asymmetry by making both hard-fail.
+    const staleRetained   = Object.keys(INTENTIONALLY_RETAINED).filter(t => !allLiveTables.has(t));
+    const staleUnscopable = NOT_USER_SCOPABLE.map(e => e.table).filter(t => !allLiveTables.has(t));
+    const hasStale = staleRetained.length > 0 || staleUnscopable.length > 0;
+
+    if (hasStale) {
+      console.log('');
+      console.log('  STALE ENTRIES — listed as retained but no longer in the database:');
+      for (const t of staleRetained) {
+        console.log(`    [INTENTIONALLY_RETAINED]  ${pad(t, 44)} ${INTENTIONALLY_RETAINED[t]}`);
+      }
+      for (const t of staleUnscopable) {
+        const e = NOT_USER_SCOPABLE.find(x => x.table === t)!;
+        console.log(`    [NOT_USER_SCOPABLE]       ${pad(t, 44)} ${e.reason}`);
+      }
+      if (isConfirmRun) {
+        console.log('  ↳ stale entries are cosmetic — deletion will proceed');
+      } else {
+        console.log('  ↳ remove stale entries from their list to clear this warning');
+      }
     }
 
     console.log('');
@@ -524,7 +567,7 @@ async function coverageAssertion(): Promise<boolean> {
     }
     console.log('');
     console.log('  Coverage ✓ — no uncovered tables');
-    return true;
+    return { ok: true, hasStale };
   } finally {
     client.release();
   }
@@ -651,9 +694,14 @@ async function main() {
   // ── 3. Coverage assertion ─────────────────────────────────────────────────
   console.log('');
   console.log('── Coverage assertion ────────────────────────────────────');
-  const coverageOk = await coverageAssertion();
+  const { ok: coverageOk, hasStale } = await coverageAssertion(confirm);
   if (!coverageOk) {
     console.error('\nAborting: fix UNCOVERED TABLES before proceeding.');
+    await pool.end();
+    process.exit(1);
+  }
+  if (hasStale && !confirm) {
+    console.error('\nAborting dry run: remove stale entries before proceeding (see STALE ENTRIES above).');
     await pool.end();
     process.exit(1);
   }
