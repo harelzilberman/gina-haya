@@ -329,16 +329,34 @@ billingRouter.post('/play/verify', verifyToken, async (req: any, res) => {
     const expiresAt: string | null = lineItem.expiryTime ?? null;
     const status = mapSubscriptionState(sub.subscriptionState);
 
-    // Security: reject token already claimed by a different user
+    // Security: reject token already claimed by a different live user.
+    // Three cases — keep them explicit; the distinction is the whole point:
+    //   A. existing.user_id === userId     → same user re-registering; fall through (idempotent)
+    //   B. existing.user_id !== null/userId → different live user; 409
+    //   C. existing.user_id === null        → orphaned row (prior owner deleted their account);
+    //                                         adopt it — the upsert below re-associates the row
+    //                                         with the new user and repopulates raw_notification.
     const { data: existing } = await db
       .from('user_subscriptions')
-      .select('user_id')
+      .select('id, user_id')
       .eq('purchase_token', purchaseToken)
       .maybeSingle();
 
-    if (existing && existing.user_id !== userId) {
-      res.status(409).json({ error: 'Purchase token already associated with another account' });
-      return;
+    if (existing) {
+      if (existing.user_id === null) {
+        // Case C — adopt
+        const maskedToken = purchaseToken.slice(0, 12) + '…';
+        console.log(
+          `[play/verify] adopting orphaned subscription row ` +
+          `row=${existing.id} user=${userId} token=${maskedToken}`
+        );
+        // Fall through to upsert; upsert writes user_id so no separate UPDATE is needed.
+      } else if (existing.user_id !== userId) {
+        // Case B — real conflict
+        res.status(409).json({ error: 'Purchase token already associated with another account' });
+        return;
+      }
+      // Case A — same user, fall through
     }
 
     // Upsert subscription record (idempotent — safe to call twice with same token)

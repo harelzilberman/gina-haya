@@ -69,15 +69,56 @@ assert(!isActiveState('SUBSCRIPTION_STATE_EXPIRED'),        'EXPIRED is not acti
 assert(!isActiveState('SUBSCRIPTION_STATE_PAUSED'),         'PAUSED is not active -> tier=free');
 assert(!isActiveState(null),                                'null is not active');
 
-// ── Test 6: Cross-user token check logic (409 scenario) ──────────────────────
-console.log('\nTest 6: Cross-user token check (409 scenario)');
-function simulateCrossUserCheck(existingUserId: string | null, requestUserId: string): 409 | 'ok' {
-  if (existingUserId && existingUserId !== requestUserId) return 409;
-  return 'ok';
+// ── Test 6: Cross-user token check — three-way branch ────────────────────────
+//
+// Mirrors the three-way branch in POST /api/billing/play/verify (billing.ts).
+//
+// The argument is the full row object (or null if no row exists) — NOT just the
+// user_id field.  The previous test passed null for both "no row" and "orphaned
+// row (user_id=null)", which made them indistinguishable and missed Case C.
+//
+// Cases:
+//   A — row exists, same user_id  → ok (idempotent upsert)
+//   B — row exists, different live user_id  → 409
+//   C — row exists, user_id IS NULL (orphaned / deleted account)  → ok (adopt)
+//   D — no row at all  → ok (fresh insert)
+console.log('\nTest 6: Cross-user token check — three-way branch');
+function simulateCrossUserCheck(
+  existingRow: { id: string; user_id: string | null } | null,
+  requestUserId: string
+): { status: 409 | 'ok'; adopted: boolean } {
+  if (!existingRow) {
+    // Case D: no row — proceed to upsert as a fresh insert
+    return { status: 'ok', adopted: false };
+  }
+  if (existingRow.user_id === null) {
+    // Case C: orphaned row (previous owner deleted their account).
+    // Adopt the row — upsert re-associates it with the new user.
+    return { status: 'ok', adopted: true };
+  }
+  if (existingRow.user_id !== requestUserId) {
+    // Case B: token belongs to a different live user. Real conflict.
+    return { status: 409, adopted: false };
+  }
+  // Case A: same user re-registering — idempotent upsert.
+  return { status: 'ok', adopted: false };
 }
-assertEqual(simulateCrossUserCheck('user-A', 'user-B'), 409,  'different user -> 409');
-assertEqual(simulateCrossUserCheck('user-A', 'user-A'), 'ok', 'same user -> ok (idempotent)');
-assertEqual(simulateCrossUserCheck(null,     'user-B'), 'ok', 'no existing record -> ok');
+
+// Case A — same user re-registering → ok, not adopted
+const caseA = simulateCrossUserCheck({ id: 'row-1', user_id: 'user-A' }, 'user-A');
+assert(caseA.status === 'ok'   && !caseA.adopted, 'Case A: same user -> ok, not adopted');
+
+// Case B — different live user → 409
+const caseB = simulateCrossUserCheck({ id: 'row-1', user_id: 'user-A' }, 'user-B');
+assert(caseB.status === 409    && !caseB.adopted, 'Case B: different live user -> 409');
+
+// Case C — orphaned row (user_id = null) → ok, adopted
+const caseC = simulateCrossUserCheck({ id: 'row-1', user_id: null }, 'user-B');
+assert(caseC.status === 'ok'   &&  caseC.adopted, 'Case C: orphaned row -> ok, adopted');
+
+// Case D — no row at all → ok, not adopted (distinct from Case C)
+const caseD = simulateCrossUserCheck(null, 'user-B');
+assert(caseD.status === 'ok'   && !caseD.adopted, 'Case D: no existing row -> ok, not adopted');
 
 // ── Test 7: Expired subscription -> tier 'free' ───────────────────────────────
 console.log('\nTest 7: Expired state -> free tier');
