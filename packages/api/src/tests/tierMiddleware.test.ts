@@ -1,3 +1,5 @@
+export {};
+
 /**
  * Unit tests for stale-active subscription detection logic in tierMiddleware.ts.
  * Self-contained — no server, DB, or email sending required.
