@@ -289,6 +289,62 @@ export async function sendGrantFailureAlert(opts: {
   }
 }
 
+// Sent to the admin when a cron job encounters an error, changes rows, or
+// finds rows needing manual review. Never throws.
+export async function sendCronJobAlert(opts: {
+  jobName:      string;
+  context:      'error' | 'changed_rows' | 'needs_review';
+  detail:       string;        // short summary line
+  changedCount?: number;
+  reviewCount?:  number;
+  errorMessage?: string;
+}): Promise<void> {
+  const { jobName, context, detail, changedCount, reviewCount, errorMessage } = opts;
+  const timestamp = new Date().toISOString();
+
+  const contextLabel: Record<string, string> = {
+    error:        'JOB ERROR',
+    changed_rows: 'ROWS CHANGED (RTDN drift corrected)',
+    needs_review: 'ROWS NEED MANUAL REVIEW',
+  };
+  const subject = `[Gina Haya] CRON ALERT — ${jobName}: ${contextLabel[context] ?? context}`;
+
+  const html = `
+    <div style="font-family:Arial,Helvetica,sans-serif;max-width:560px;margin:0 auto;padding:32px;background:#fff3f3;border-radius:12px;border:2px solid #f87171;">
+      <h2 style="color:#991b1b;font-size:20px;margin:0 0 16px;">Cron Job Alert</h2>
+      <p style="color:#374151;font-size:14px;margin:0 0 8px;"><strong>Time (UTC):</strong> ${timestamp}</p>
+      <p style="color:#374151;font-size:14px;margin:0 0 8px;"><strong>Job:</strong> <code style="background:#e5e7eb;padding:2px 6px;border-radius:4px;font-size:12px;">${jobName}</code></p>
+      <p style="color:#374151;font-size:14px;margin:0 0 8px;"><strong>Event:</strong> ${contextLabel[context] ?? context}</p>
+      <p style="color:#374151;font-size:14px;margin:0 0 8px;"><strong>Detail:</strong> ${detail}</p>
+      ${changedCount != null ? `<p style="color:#374151;font-size:14px;margin:0 0 8px;"><strong>Rows changed:</strong> ${changedCount}</p>` : ''}
+      ${reviewCount  != null ? `<p style="color:#374151;font-size:14px;margin:0 0 8px;"><strong>Rows needing review:</strong> ${reviewCount}</p>` : ''}
+      ${errorMessage ? `<p style="color:#374151;font-size:14px;margin:0 0 20px;"><strong>Error:</strong> <code style="background:#fee2e2;padding:4px 8px;border-radius:4px;font-size:12px;">${errorMessage}</code></p>` : ''}
+      <div style="background:#fef9c3;border:1px solid #eab308;border-radius:8px;padding:16px;">
+        <p style="color:#713f12;font-size:14px;margin:0;font-weight:600;">
+          Check the job_runs table and user_subscriptions in Supabase for details.
+        </p>
+      </div>
+    </div>
+  `;
+
+  try {
+    const { error } = await resend.emails.send({
+      from:    FROM_EN,
+      to:      ADMIN_EMAIL,
+      subject,
+      html,
+    });
+    if (error) {
+      console.error('[sendCronJobAlert] Resend error:', JSON.stringify(error));
+    } else {
+      console.log(`[sendCronJobAlert] Alert sent: job=${jobName} context=${context}`);
+    }
+  } catch (err: any) {
+    // Never throw — a failed alert must not break the cron runner.
+    console.error('[sendCronJobAlert] Unexpected error:', err?.message ?? String(err));
+  }
+}
+
 export async function sendRenewalReminder(opts: {
   email:       string;
   displayName: string;

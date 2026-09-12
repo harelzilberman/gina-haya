@@ -1,8 +1,9 @@
 import cron from 'node-cron';
 import { db } from '../db/client';
 import webpush from 'web-push';
-import { sendRenewalReminder } from './email';
+import { sendRenewalReminder, sendCronJobAlert } from './email';
 import { getLimits } from '@gina-haya/shared';
+import { reconcilePlaySubs } from './reconcilePlaySubs';
 
 export function startCronJobs() {
   // Convention: wall-clock Israel time + explicit timezone.
@@ -10,8 +11,9 @@ export function startCronJobs() {
   // transitions are handled automatically — no UTC arithmetic needed.
 
   // 07:00 Israel time daily
-  const DAILY_SCHEDULE  = '0 7 * * *';
-  const RENEWAL_SCHEDULE = '0 9 * * *';
+  const DAILY_SCHEDULE     = '0 7 * * *';
+  const RENEWAL_SCHEDULE   = '0 9 * * *';
+  const RECONCILE_SCHEDULE = '30 3 * * *';  // 03:30 — low-traffic, no collision with existing jobs
   const TZ = 'Asia/Jerusalem';
 
   cron.schedule(DAILY_SCHEDULE, async () => {
@@ -33,10 +35,168 @@ export function startCronJobs() {
     }
   }, { timezone: TZ });
 
+  // 03:30 Israel time daily — reconcile Google Play subscriptions against live API data.
+  // This is insurance against silent RTDN delivery failure (the Pub/Sub topic lost its
+  // subscription for weeks in a prior incident; nothing is drifting today).
+  cron.schedule(RECONCILE_SCHEDULE, async () => {
+    console.log('[cron/reconcile] Starting Play subscription reconcile...');
+    try {
+      await runReconcilePlaySubs();
+    } catch (e) {
+      console.error('[cron/reconcile] Unexpected error outside runReconcilePlaySubs:', e);
+    }
+  }, { timezone: TZ });
+
   // Derive log times from schedule strings so this line cannot drift silently.
-  const dailyHour   = DAILY_SCHEDULE.split(' ')[1];
-  const renewalHour = RENEWAL_SCHEDULE.split(' ')[1];
-  console.log(`[cron] Jobs scheduled: daily summary at ${dailyHour}:00, renewal reminders at ${renewalHour}:00 ${TZ}`);
+  const dailyHour     = DAILY_SCHEDULE.split(' ')[1];
+  const renewalHour   = RENEWAL_SCHEDULE.split(' ')[1];
+  const reconcileMin  = RECONCILE_SCHEDULE.split(' ')[0];
+  const reconcileHour = RECONCILE_SCHEDULE.split(' ')[1];
+  console.log(
+    `[cron] Jobs scheduled: daily summary at ${dailyHour}:00, renewal reminders at ${renewalHour}:00, ` +
+    `Play reconcile at ${reconcileHour}:${reconcileMin} ${TZ}`
+  );
+}
+
+// ---------------------------------------------------------------------------
+// runReconcilePlaySubs — the scheduled reconcile job
+// ---------------------------------------------------------------------------
+async function runReconcilePlaySubs(): Promise<void> {
+  const JOB_NAME   = 'reconcile_play_subs';
+  const instanceId = process.env.RAILWAY_REPLICA_ID ?? process.env.RAILWAY_SERVICE_ID ?? 'default';
+
+  // ------------------------------------------------------------------
+  // 1. Claim the distributed lock
+  //    A single atomic conditional UPDATE. If another instance started
+  //    the job within the last hour, the WHERE clause matches no row
+  //    and data will be empty — log and return immediately.
+  // ------------------------------------------------------------------
+  const lockThreshold = new Date(Date.now() - 60 * 60 * 1000).toISOString(); // 1 hour ago
+
+  const { data: claimed, error: claimError } = await db
+    .from('job_runs')
+    .update({
+      last_started_at: new Date().toISOString(),
+      instance_id:     instanceId,
+      updated_at:      new Date().toISOString(),
+    })
+    .eq('job_name', JOB_NAME)
+    .or(`last_started_at.is.null,last_started_at.lt.${lockThreshold}`)
+    .select();
+
+  if (claimError) {
+    console.error(`[cron/reconcile] Lock claim query failed: ${claimError.message}`);
+    // Do not proceed — we cannot guarantee exclusive execution.
+    return;
+  }
+
+  if (!claimed || claimed.length === 0) {
+    // Another instance holds the lock. This is the expected outcome on one of
+    // two instances during a rolling deploy. Not an error.
+    console.log('[cron/reconcile] Lock held by another instance — skipping this run.');
+    return;
+  }
+
+  console.log(`[cron/reconcile] Lock claimed by instance=${instanceId}`);
+
+  // ------------------------------------------------------------------
+  // 2. Run the reconcile (targeted: stale active/grace rows only)
+  //    staleOnly=true means we query only status IN ('active','grace_period')
+  //    AND expires_at < now() - 25h. Today this returns zero rows; the
+  //    steady-state cost is one DB query and no Google API calls.
+  //    apply=true: this job IS the correction mechanism.
+  // ------------------------------------------------------------------
+  let lastStatus: 'ok' | 'error' | 'skipped' = 'ok';
+  let lastDetail = '';
+
+  try {
+    const result = await reconcilePlaySubs({ apply: true, staleOnly: true });
+
+    const examined    = result.rows.length;
+    const changed     = result.changed;
+    const orphans     = result.orphans.length;
+    const reviewCount = result.needsReview.length;
+
+    lastStatus = 'ok';
+    lastDetail =
+      `checked=${examined} changed=${changed} orphans=${orphans} needs_review=${reviewCount}`;
+
+    console.log(`[cron/reconcile] Done. ${lastDetail}`);
+
+    // ------------------------------------------------------------------
+    // 3. Alert when something noteworthy happened.
+    //    Clean zero-row runs are the normal case — do not alert on them.
+    // ------------------------------------------------------------------
+    if (changed > 0) {
+      // Rows were actually changed — RTDN delivery must have failed for these subs.
+      // This is exactly the scenario the job exists to catch.
+      try {
+        await sendCronJobAlert({
+          jobName:      JOB_NAME,
+          context:      'changed_rows',
+          detail:       `Reconcile corrected ${changed} subscription row(s). RTDN delivery may have failed.`,
+          changedCount: changed,
+          reviewCount,
+        });
+      } catch (alertErr: any) {
+        console.error('[cron/reconcile] Alert (changed_rows) send failed:', alertErr?.message);
+      }
+    }
+
+    if (reviewCount > 0) {
+      const reviewSummary = result.needsReview
+        .map(r => `id=${r.row.id}: ${r.needsReview}`)
+        .join('; ');
+      try {
+        await sendCronJobAlert({
+          jobName:     JOB_NAME,
+          context:     'needs_review',
+          detail:      reviewSummary,
+          reviewCount,
+        });
+      } catch (alertErr: any) {
+        console.error('[cron/reconcile] Alert (needs_review) send failed:', alertErr?.message);
+      }
+    }
+
+  } catch (err: any) {
+    // The reconcile threw (DB failure, missing credentials, etc.).
+    // Record error heartbeat, then alert. Never rethrow.
+    lastStatus = 'error';
+    lastDetail = err?.message ?? String(err);
+    console.error(`[cron/reconcile] Job threw: ${lastDetail}`);
+
+    try {
+      await sendCronJobAlert({
+        jobName:      JOB_NAME,
+        context:      'error',
+        detail:       'Reconcile job threw an exception. See error message.',
+        errorMessage: lastDetail,
+      });
+    } catch (alertErr: any) {
+      console.error('[cron/reconcile] Alert (error) send failed:', alertErr?.message);
+    }
+  }
+
+  // ------------------------------------------------------------------
+  // 4. Write heartbeat — MUST happen on every exit path: success,
+  //    zero rows, or error. A job that dies without writing its finish
+  //    time is the silent failure this table was built to prevent.
+  // ------------------------------------------------------------------
+  try {
+    await db
+      .from('job_runs')
+      .update({
+        last_finished_at: new Date().toISOString(),
+        last_status:      lastStatus,
+        last_detail:      lastDetail,
+        updated_at:       new Date().toISOString(),
+      })
+      .eq('job_name', JOB_NAME);
+  } catch (heartbeatErr: any) {
+    // Log but do not throw — a heartbeat failure must not crash the cron runner.
+    console.error(`[cron/reconcile] Failed to write heartbeat: ${heartbeatErr?.message}`);
+  }
 }
 
 async function sendDailySummary() {
@@ -115,6 +275,45 @@ async function sendDailySummary() {
 export async function sendAnnualRenewalReminders(): Promise<void> {
   const now = new Date();
   const in7Days = new Date(now.getTime() + 7 * 24 * 60 * 60 * 1000);
+
+  // ------------------------------------------------------------------
+  // Cross-check: verify the Play reconcile job is still running.
+  // If its last_finished_at is older than 48 hours, alert the admin.
+  //
+  // This catches "the reconcile job stopped running" — it does NOT catch
+  // "node-cron itself died and ALL jobs stopped." That residual gap
+  // requires an external uptime monitor (e.g. pointing at /api/health/jobs).
+  // ------------------------------------------------------------------
+  try {
+    const { data: reconcileJob } = await db
+      .from('job_runs')
+      .select('last_finished_at, last_status')
+      .eq('job_name', 'reconcile_play_subs')
+      .maybeSingle();
+
+    if (reconcileJob) {
+      const staleAt = new Date(Date.now() - 48 * 60 * 60 * 1000);
+      const lastFinished = reconcileJob.last_finished_at
+        ? new Date(reconcileJob.last_finished_at)
+        : null;
+      const isStale = !lastFinished || lastFinished < staleAt;
+
+      if (isStale) {
+        console.error(
+          `[cron/renewal] WATCHDOG: reconcile_play_subs has not finished in >48h ` +
+          `(last_finished_at=${reconcileJob.last_finished_at ?? 'never'})`
+        );
+        await sendCronJobAlert({
+          jobName:  'reconcile_play_subs',
+          context:  'error',
+          detail:   `Watchdog: job has not finished in >48 hours. RTDN drift may be accumulating undetected.`,
+          errorMessage: `last_finished_at=${reconcileJob.last_finished_at ?? 'never'} last_status=${reconcileJob.last_status ?? 'never'}`,
+        });
+      }
+    }
+  } catch (watchdogErr: any) {
+    console.error('[cron/renewal] Watchdog check failed:', watchdogErr?.message);
+  }
 
   // Find active annual Grow subscriptions expiring within the next 7 days.
   // base_plan_id = 'annual' is the queryable label set by the webhook handler.
