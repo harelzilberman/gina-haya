@@ -61,6 +61,35 @@ app.get('/health', (_req, res) => {
   res.json({ status: 'ok', timestamp: new Date().toISOString() });
 });
 
+// Unauthenticated liveness endpoint for scheduled jobs.
+// Returns each job's last known finish time and a stale flag (>48h since last finish).
+// No user data, no business metrics — suitable for an external uptime monitor.
+app.get('/api/health/jobs', async (_req, res) => {
+  try {
+    const { data: jobs, error } = await db
+      .from('job_runs')
+      .select('job_name, last_finished_at, last_status');
+
+    if (error) {
+      res.status(500).json({ error: 'db_error', detail: error.message });
+      return;
+    }
+
+    const staleThreshold = new Date(Date.now() - 48 * 60 * 60 * 1000);
+    const result = (jobs ?? []).map((j: any) => ({
+      job_name:        j.job_name,
+      last_finished_at: j.last_finished_at ?? null,
+      last_status:     j.last_status ?? null,
+      stale:           !j.last_finished_at || new Date(j.last_finished_at) < staleThreshold,
+    }));
+
+    res.json({ jobs: result, timestamp: new Date().toISOString() });
+  } catch (err: any) {
+    res.status(500).json({ error: 'internal_error', detail: err?.message });
+  }
+});
+
+import { db } from './db/client';
 import { authRouter }    from './routes/auth';
 import { gardenRouter }  from './routes/garden';
 import { plantsRouter }  from './routes/plants';
