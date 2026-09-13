@@ -17,7 +17,7 @@ export function PlayBadge({ source, loading = 'eager' }: PlayBadgeProps) {
         <source srcSet="/images/app/google-play-badge-en.svg" type="image/svg+xml" />
         <img
           src="/images/app/google-play-badge-en.png"
-          alt="הורידו את גינה חיה ב-Google Play"
+          alt={'\u05d4\u05d5\u05e8\u05d9\u05d3\u05d5 \u05d0\u05ea \u05d2\u05d9\u05e0\u05d4 \u05d7\u05d9\u05d4 \u05d1-Google Play'}
           width={478}
           height={142}
           loading={loading}
