@@ -122,12 +122,16 @@ const LP_CSS = `
 ::-webkit-scrollbar-track { background: ${NIGHT}; }
 ::-webkit-scrollbar-thumb { background: rgba(0,229,195,0.25); border-radius: 3px; }
 
-@media (max-width: 900px) {
-  /* Two-column flex wraps before this point; phone stays full size once stacked */
-}
-@media (max-width: 480px) {
-  /* Further shrink frame on very small phones */
-  .lp-hero-phone-col { max-width: 160px !important; }
+@media (max-width: 600px) {
+  /* Trust row below the badge fold; drop it on small phones */
+  .lp-trust { display: none !important; }
+  /* Safety net: clamp subhead to 1 line so it never blows the budget */
+  .lp-sub {
+    overflow: hidden;
+    display: -webkit-box;
+    -webkit-line-clamp: 1;
+    -webkit-box-orient: vertical;
+  }
 }
 @media (max-width: 768px) {
   .lp-step-connector { display: none !important; }
@@ -774,7 +778,7 @@ export function LandingPage() {
           maxWidth: '1200px',
           margin: '0 auto',
           width: '100%',
-          padding: 'clamp(40px, 8vw, 120px) clamp(20px, 5vw, 60px) clamp(40px, 6vw, 80px)',
+          padding: 'clamp(20px, 5vw, 120px) clamp(20px, 5vw, 60px) clamp(32px, 6vw, 80px)',
           display: 'flex',
           flexDirection: 'row',
           alignItems: 'center',
@@ -803,7 +807,7 @@ export function LandingPage() {
                 background: '#08150f',
                 border: '1.5px solid rgba(0,229,195,0.22)',
                 padding: '8px',
-                maxWidth: 'clamp(190px, 80vw, 300px)',
+                maxWidth: 'clamp(150px, 50vw, 300px)',
                 margin: '0 auto',
               }}
             >
@@ -831,7 +835,7 @@ export function LandingPage() {
           }}>
 
             {/* Amber eyebrow pill */}
-            <div className="lp-eyebrow" style={{ marginBottom: '28px' }}>
+            <div className="lp-eyebrow" style={{ marginBottom: 'clamp(14px, 3vw, 28px)' }}>
               <span style={{
                 display: 'inline-flex', alignItems: 'center', gap: '8px',
                 background: 'rgba(255,184,48,0.08)',
@@ -848,14 +852,14 @@ export function LandingPage() {
             </div>
 
             {/* Headline */}
-            <h1 style={{ margin: '0 0 24px', lineHeight: 1.12 }}>
+            <h1 style={{ margin: '0 0 clamp(12px, 2vw, 24px)', lineHeight: 1.12 }}>
               <span
                 className="lp-hero-line1"
                 style={{
                   display: 'block',
                   fontFamily: FRANK,
                   fontWeight: 700,
-                  fontSize: 'clamp(42px, 6.5vw, 96px)',
+                  fontSize: 'clamp(30px, 6.5vw, 96px)',
                   color: TEXT,
                   textShadow: '0 0 60px rgba(0,229,195,0.15)',
                 }}
@@ -868,7 +872,7 @@ export function LandingPage() {
                   display: 'block',
                   fontFamily: FRANK,
                   fontWeight: 700,
-                  fontSize: 'clamp(44px, 7vw, 100px)',
+                  fontSize: 'clamp(32px, 7vw, 100px)',
                   background: `linear-gradient(135deg, ${BIO_CYAN} 0%, ${BIO_LIME} 60%, ${BIO_CYAN} 100%)`,
                   WebkitBackgroundClip: 'text',
                   WebkitTextFillColor: 'transparent',
@@ -880,26 +884,27 @@ export function LandingPage() {
               </span>
             </h1>
 
-            {/* Subhead */}
+            {/* Subhead — shortened to single line on mobile (≤600px CSS clips via -webkit-line-clamp) */}
             <p
               className="lp-sub"
               style={{
                 fontFamily: DM_SANS, fontWeight: 300, fontSize: 'clamp(15px, 2vw, 19px)',
-                lineHeight: 1.75, color: TEXT_MID, maxWidth: '540px', marginBottom: '40px',
+                lineHeight: 1.75, color: TEXT_MID, maxWidth: '540px',
+                marginBottom: 'clamp(20px, 4vw, 40px)',
               }}
             >
               {isHe
-                ? '\u05d4\u05dc\u05d5\u05d7 \u05d4\u05d1\u05d9\u05d5\u05d3\u05d9\u05e0\u05de\u05d9, \u05e6\u0027\u05d5\u05e4\u05e6\u0027\u05d5 \u05dc\u05d0\u05d1\u05d7\u05d5\u05df \u05e6\u05de\u05d7\u05d9\u05dd \u05d1\u05e6\u05d9\u05dc\u05d5\u05dd, \u05d5\u05de\u05e2\u05e7\u05d1 \u05e9\u05dc\u05dd \u05e9\u05dc \u05d4\u05d2\u05d9\u05e0\u05d4 \u2014 \u05d4\u05db\u05dc \u05d1\u05d8\u05dc\u05e4\u05d5\u05df \u05d0\u05d7\u05d3.'
-                : 'The biodynamic calendar, plant diagnosis by photo with ChupChu, and full garden tracking\u00a0\u2014 all in one phone.'}
+                ? '\u05dc\u05d5\u05d7 \u05d1\u05d9\u05d5\u05d3\u05d9\u05e0\u05de\u05d9, \u05e6\u0027\u05d5\u05e4\u05e6\u0027\u05d5 \u05d5\u05de\u05e2\u05e7\u05d1 \u05d2\u05d9\u05e0\u05d4.'
+                : 'Calendar, ChupChu & garden tracker.'}
             </p>
 
             {/* Play badge — only button-weight CTA */}
-            <div className="lp-ctas" style={{ marginBottom: '16px' }}>
+            <div className="lp-ctas" style={{ marginBottom: 'clamp(8px, 1.5vw, 16px)' }}>
               <PlayBadge source="hero" loading="eager" />
             </div>
 
             {/* Low-emphasis signup link */}
-            <div style={{ marginBottom: '48px' }}>
+            <div style={{ marginBottom: 'clamp(20px, 4vw, 48px)' }}>
               <Link
                 to="/signup"
                 style={{
