@@ -68,7 +68,6 @@ const LP_CSS = `
 .lp-hero-line2 { opacity:0; animation: fadeUp  0.8s ease 0.4s forwards; }
 .lp-sub        { opacity:0; animation: fadeUp  0.6s ease 0.6s forwards; }
 .lp-ctas       { opacity:0; animation: fadeUp  0.6s ease 0.8s forwards; }
-.lp-trust      { opacity:0; animation: fadeUp  0.5s ease 1.0s forwards; }
 .lp-card       { opacity:0; animation: scaleIn 0.9s ease 0.5s forwards; }
 
 .lp-feat-card {
@@ -123,8 +122,6 @@ const LP_CSS = `
 ::-webkit-scrollbar-thumb { background: rgba(0,229,195,0.25); border-radius: 3px; }
 
 @media (max-width: 600px) {
-  /* Trust row below the badge fold; drop it on small phones */
-  .lp-trust { display: none !important; }
   /* Safety net: clamp subhead to 1 line so it never blows the budget */
   .lp-sub {
     overflow: hidden;
@@ -904,39 +901,19 @@ export function LandingPage() {
             </div>
 
             {/* Low-emphasis signup link */}
-            <div style={{ marginBottom: 'clamp(20px, 4vw, 48px)' }}>
-              <Link
-                to="/signup"
-                style={{
-                  fontFamily: DM_SANS, fontSize: '13px', color: MUTED,
-                  textDecoration: 'none', transition: 'color 0.2s',
-                }}
-                onMouseEnter={e => { (e.currentTarget as HTMLElement).style.color = BIO_CYAN; }}
-                onMouseLeave={e => { (e.currentTarget as HTMLElement).style.color = MUTED; }}
-              >
-                {isHe
-                  ? '\u05d0\u05d5 \u05d4\u05ea\u05d7\u05d9\u05dc\u05d5 \u05d1\u05d3\u05e4\u05d3\u05e4\u05df \u2190'
-                  : 'Or start in the browser \u2192'}
-              </Link>
-            </div>
-
-            {/* Trust row */}
-            <div className="lp-trust" style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-              <div style={{ display: 'flex' }}>
-                {['#4a7c59', '#7dc084', '#00e5c3'].map((c, i) => (
-                  <div key={i} style={{
-                    width: '28px', height: '28px', borderRadius: '50%',
-                    background: c, border: `2px solid ${NIGHT}`,
-                    marginInlineStart: i > 0 ? '-8px' : '0',
-                  }} />
-                ))}
-              </div>
-              <span style={{ fontFamily: DM_SANS, fontSize: '13px', color: MUTED }}>
-                {isHe
-                  ? '+2,000 \u05d2\u05d9\u05e0\u05d0\u05d9\u05dd \u05db\u05d1\u05e8 \u05d2\u05d3\u05dc\u05d9\u05dd \u05d1\u05d7\u05d5\u05db\u05de\u05d4'
-                  : '+2,000 gardeners already growing wisely'}
-              </span>
-            </div>
+            <Link
+              to="/signup"
+              style={{
+                fontFamily: DM_SANS, fontSize: '13px', color: MUTED,
+                textDecoration: 'none', transition: 'color 0.2s',
+              }}
+              onMouseEnter={e => { (e.currentTarget as HTMLElement).style.color = BIO_CYAN; }}
+              onMouseLeave={e => { (e.currentTarget as HTMLElement).style.color = MUTED; }}
+            >
+              {isHe
+                ? '\u05d0\u05d5 \u05d4\u05ea\u05d7\u05d9\u05dc\u05d5 \u05d1\u05d3\u05e4\u05d3\u05e4\u05df \u2190'
+                : 'Or start in the browser \u2192'}
+            </Link>
 
           </div>
         </div>
