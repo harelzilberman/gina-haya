@@ -173,7 +173,7 @@ export function AppPage() {
             color: TEXT, lineHeight: 1.15, marginBottom: '20px',
           }}>
             {isHe
-              ? <>\u05d2\u05d9\u05e0\u05d4 \u05d7\u05d9\u05d4{' '}<span style={{ color: BIO_CYAN }}>\u05d1\u05db\u05d9\u05e1 \u05e9\u05dc\u05da</span></>
+              ? <>{'\u05d2\u05d9\u05e0\u05d4 \u05d7\u05d9\u05d4'}{' '}<span style={{ color: BIO_CYAN }}>{'\u05d1\u05db\u05d9\u05e1 \u05e9\u05dc\u05da'}</span></>
               : <>Gina Haya{' '}<span style={{ color: BIO_CYAN }}>in your pocket</span></>
             }
           </h1>
@@ -212,7 +212,7 @@ export function AppPage() {
               fontSize: 'clamp(24px, 3.5vw, 40px)', color: TEXT, lineHeight: 1.25,
             }}>
               {isHe
-                ? <>\u05db\u05dc \u05d4\u05db\u05dc\u05d9\u05dd \u05e9\u05dc{' '}<span style={{ color: BIO_CYAN }}>\u05d2\u05e0\u05df \u05d1\u05d9\u05d5\u05d3\u05d9\u05e0\u05de\u05d9</span></>
+                ? <>{'\u05db\u05dc \u05d4\u05db\u05dc\u05d9\u05dd \u05e9\u05dc'}{' '}<span style={{ color: BIO_CYAN }}>{'\u05d2\u05e0\u05df \u05d1\u05d9\u05d5\u05d3\u05d9\u05e0\u05de\u05d9'}</span></>
                 : <>All the tools of a{' '}<span style={{ color: BIO_CYAN }}>biodynamic gardener</span></>
               }
             </h2>
@@ -466,8 +466,8 @@ export function AppPage() {
             lineHeight: 1.2, marginBottom: '16px',
           }}>
             {isHe
-              ? <>\u05d4\u05d5\u05e8\u05d9\u05d3\u05d5 \u05e2\u05db\u05e9\u05d9\u05d5 — \u05d1\u05d7\u05d9\u05e0\u05dd</>
-              : <>Download now — it's free</>
+              ? '\u05d4\u05d5\u05e8\u05d9\u05d3\u05d5 \u05e2\u05db\u05e9\u05d9\u05d5 \u2014 \u05d1\u05d7\u05d9\u05e0\u05dd'
+              : "Download now — it's free"
             }
           </h2>
           <p style={{
@@ -475,8 +475,8 @@ export function AppPage() {
             color: TEXT_MID, lineHeight: 1.7, marginBottom: '36px',
           }}>
             {isHe
-              ? '\u05d0\u05dc\u05e4\u05d9 \u05d2\u05e0\u05e0\u05d9\u05dd \u05e2\u05d5\u05d1\u05d3\u05d9\u05dd \u05db\u05d1\u05e8 \u05e2\u05dd \u05d2\u05d9\u05e0\u05d4 \u05d7\u05d9\u05d4. \u05d4\u05e6\u05d8\u05e8\u05e4\u05d5.'
-              : 'Thousands of gardeners already work with Gina Haya. Join them.'}
+              ? '\u05d4\u05d5\u05e8\u05d9\u05d3\u05d5 \u05d7\u05d9\u05e0\u05dd \u2014 \u05d4\u05ea\u05d7\u05d9\u05dc\u05d5 \u05e2\u05dd \u05d4\u05d2\u05d9\u05e0\u05d4 \u05d4\u05e8\u05d0\u05e9\u05d5\u05e0\u05d4 \u05e9\u05dc\u05db\u05dd \u05d4\u05d9\u05d5\u05dd'
+              : 'Free to download \u2014 start your first garden today'}
           </p>
           <div style={{ display: 'flex', justifyContent: 'center' }}>
             <PlayBadge source="app_page_footer" loading="lazy" />
@@ -485,7 +485,7 @@ export function AppPage() {
             fontFamily: DM_SANS, fontSize: '12px', color: MUTED, marginTop: '16px',
           }}>
             {isHe
-              ? <><bdi>Android</bdi> \u05d1\u05dc\u05d1\u05d3. \u05d2\u05e8\u05e1\u05ea iOS \u05d1\u05ea\u05db\u05e0\u05d5\u05df.</>
+              ? <><bdi>Android</bdi>{' '}{'\u05d1\u05dc\u05d1\u05d3. \u05d2\u05e8\u05e1\u05ea iOS \u05d1\u05ea\u05db\u05e0\u05d5\u05df.'}</>
               : <>Android only. iOS coming soon.</>
             }
           </p>
