@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { ChupChuChat } from '../components/chupchu/ChupChuChat';
-import { api } from '../api/client';
+import { PlayBadge } from '../components/ui/PlayBadge';
 
 // ── Design tokens ──────────────────────────────────────────────────────────
 const NIGHT      = '#050d0a';
@@ -592,26 +592,22 @@ function SectionLabel({ children }: { children: React.ReactNode }) {
   );
 }
 
-// ── Mobile app "coming soon" waitlist section ─────────────────────────────
-const APP_FEATURE_PILLS_HE = ['דרכון צמח', 'לוח ירח', 'אבחון AI'];
-const APP_FEATURE_PILLS_EN = ['Plant Passport', 'Moon Calendar', 'AI Diagnosis'];
+// ── App live download section ──────────────────────────────────────────────
+const APP_BENEFITS_HE = [
+  '\u05d0\u05d1\u05d7\u05d5\u05df \u05e6\u05de\u05d7\u05d9\u05dd \u05d1\u05e6\u05d9\u05dc\u05d5\u05dd \u05e2\u05dd \u05e6\u0027\u05d5\u05e4\u05e6\u0027\u05d5',
+  '\u05dc\u05d5\u05d7 \u05d1\u05d9\u05d5\u05d3\u05d9\u05e0\u05de\u05d9 \u05dc\u05e4\u05d9 \u05e0\u05ea\u05d5\u05e0\u05d9\u05dd \u05d0\u05e1\u05d8\u05e8\u05d5\u05e0\u05d5\u05de\u05d9\u05d9\u05dd \u05d0\u05de\u05d9\u05ea\u05d9\u05d9\u05dd',
+  '\u05de\u05e2\u05e7\u05d1 \u05d0\u05d7\u05e8\u05d9 \u05db\u05dc \u05e6\u05de\u05d7 \u05d1\u05d2\u05d9\u05e0\u05d4',
+  '\u05ea\u05d6\u05db\u05d5\u05e8\u05d5\u05ea \u05d4\u05e9\u05e7\u05d9\u05d4 \u05d5\u05de\u05e9\u05d9\u05de\u05d5\u05ea',
+];
+const APP_BENEFITS_EN = [
+  'Plant diagnosis by photo with Chupchu',
+  'Biodynamic calendar with real astronomical data',
+  'Full tracker for every plant in your garden',
+  'Watering reminders and task notifications',
+];
 
-function MobileAppComingSoon({ isHe }: { isHe: boolean }) {
-  const [email, setEmail] = useState('');
-  const [status, setStatus] = useState<'idle' | 'loading' | 'done' | 'error'>('idle');
-  const pills = isHe ? APP_FEATURE_PILLS_HE : APP_FEATURE_PILLS_EN;
-
-  async function handleSubmit(e: React.FormEvent) {
-    e.preventDefault();
-    if (status === 'loading' || status === 'done') return;
-    setStatus('loading');
-    try {
-      await api.post('/api/waitlist', { email, source: 'landing_page', locale: isHe ? 'he' : 'en' });
-      setStatus('done');
-    } catch {
-      setStatus('error');
-    }
-  }
+function AppLiveSection({ isHe }: { isHe: boolean }) {
+  const benefits = isHe ? APP_BENEFITS_HE : APP_BENEFITS_EN;
 
   return (
     <section
@@ -623,39 +619,57 @@ function MobileAppComingSoon({ isHe }: { isHe: boolean }) {
         overflow: 'hidden',
       }}
     >
+      {/* Ambient glow */}
+      <div style={{
+        position: 'absolute', inset: 0, pointerEvents: 'none',
+        background: 'radial-gradient(ellipse 60% 50% at 50% 50%, rgba(255,184,48,0.04) 0%, transparent 70%)',
+      }} />
+
       <div style={{ maxWidth: '1100px', margin: '0 auto', padding: '0 28px' }}>
         <div style={{
           display: 'flex',
-          flexDirection: isHe ? 'row-reverse' : 'row',
+          flexDirection: 'row',           // image always on visual left
           alignItems: 'center',
           gap: '56px',
           flexWrap: 'wrap',
         }}>
-          {/* Image */}
-          <Reveal style={{ flex: '1 1 380px', maxWidth: '480px', width: '100%' }}>
-            <img
-              src="/marketing/chupchu-app-coming-soon.jpg"
-              alt={isHe ? "צ'ופצ'ו והירח — האפליקציה בדרך" : 'ChupChu and the moon — the app is on its way'}
-              style={{
-                width: '100%', height: 'auto', display: 'block',
-                borderRadius: '20px',
-                border: '1px solid rgba(0,229,195,0.15)',
-                boxShadow: '0 24px 80px rgba(0,0,0,0.5)',
-              }}
-            />
+          {/* Phone mockup — visual left */}
+          <Reveal style={{ flex: '0 1 260px', maxWidth: '300px', width: '100%' }}>
+            <div style={{
+              position: 'relative',
+              borderRadius: '32px',
+              background: '#0a1a0d',
+              border: '2px solid rgba(0,229,195,0.22)',
+              boxShadow: '0 32px 80px rgba(0,0,0,0.6), 0 0 0 6px rgba(0,229,195,0.05)',
+              overflow: 'hidden',
+              aspectRatio: '9/19',
+            }}>
+              <img
+                src="/images/app/screenshot-home.png"
+                alt={isHe
+                  ? '\u05d2\u05d9\u05e0\u05d4 \u05d7\u05d9\u05d4 — \u05de\u05e1\u05da \u05d4\u05d1\u05d9\u05ea'
+                  : 'Gina Haya — home screen'}
+                loading="eager"
+                style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }}
+              />
+            </div>
           </Reveal>
 
-          {/* Text + form */}
-          <Reveal delay={150} style={{ flex: '1 1 360px', maxWidth: '480px', direction: isHe ? 'rtl' : 'ltr' }}>
+          {/* Text content */}
+          <Reveal delay={150} style={{ flex: '1 1 360px', maxWidth: '520px', direction: isHe ? 'rtl' : 'ltr' }}>
+            {/* Badge */}
             <div style={{
               display: 'inline-flex', alignItems: 'center', gap: '8px',
               background: 'rgba(255,184,48,0.08)',
-              border: `1px solid rgba(255,184,48,0.3)`,
+              border: '1px solid rgba(255,184,48,0.3)',
               borderRadius: '100px', padding: '6px 16px', marginBottom: '22px',
               fontFamily: DM_SANS, fontSize: '12px', fontWeight: 600, color: BIO_AMBER,
             }}>
               <span style={{ width: '6px', height: '6px', borderRadius: '50%', background: BIO_AMBER, boxShadow: `0 0 6px ${BIO_AMBER}`, display: 'inline-block' }} />
-              {isHe ? 'האפליקציה בדרך' : 'The App Is Coming'}
+              {/* זמינה עכשיו ב-Google Play */}
+              {isHe
+                ? '\u05d6\u05de\u05d9\u05e0\u05d4 \u05e2\u05db\u05e9\u05d9\u05d5 \u05d1\u002d\u05d2\u05d5\u05d2\u05dc \u05e4\u05dc\u05d9\u05d9'
+                : 'Now live on Google Play'}
             </div>
 
             <h2 style={{
@@ -663,79 +677,40 @@ function MobileAppComingSoon({ isHe }: { isHe: boolean }) {
               fontSize: 'clamp(28px, 3.5vw, 46px)', color: TEXT,
               lineHeight: 1.2, marginBottom: '16px',
             }}>
-              {isHe ? 'הגינה שלך, חכמה יותר' : 'Your Garden, Smarter'}
+              {/* הגינה שלך, בכיס שלך */}
+              {isHe
+                ? '\u05d4\u05d2\u05d9\u05e0\u05d4 \u05e9\u05dc\u05da\u002c \u05d1\u05db\u05d9\u05e1 \u05e9\u05dc\u05da'
+                : 'Your garden, in your pocket'}
             </h2>
 
-            <p style={{
-              fontFamily: DM_SANS, fontWeight: 300, fontSize: '17px',
-              lineHeight: 1.75, color: TEXT_MID, marginBottom: '24px',
-            }}>
-              {isHe
-                ? 'עוזר AI אישי לכל גנן — מהזרע ועד הפריחה.'
-                : 'A personal AI assistant for every gardener — from seed to bloom.'}
-            </p>
-
-            <div style={{ display: 'flex', gap: '10px', flexWrap: 'wrap', marginBottom: '28px' }}>
-              {pills.map(p => (
-                <span key={p} style={{
-                  fontFamily: DM_SANS, fontSize: '13px', fontWeight: 600,
-                  color: BIO_CYAN, background: 'rgba(0,229,195,0.08)',
-                  border: '1px solid rgba(0,229,195,0.2)',
-                  borderRadius: '100px', padding: '6px 16px',
+            <ul style={{ listStyle: 'none', padding: 0, margin: '0 0 32px', display: 'flex', flexDirection: 'column', gap: '10px' }}>
+              {benefits.map(b => (
+                <li key={b} style={{
+                  fontFamily: DM_SANS, fontSize: '15px', color: TEXT_MID,
+                  display: 'flex', gap: '10px', alignItems: 'flex-start',
                 }}>
-                  {p}
-                </span>
+                  <span style={{ color: BIO_AMBER, flexShrink: 0, marginTop: '2px', fontSize: '13px' }}>✦</span>
+                  {b}
+                </li>
               ))}
+            </ul>
+
+            <div style={{ display: 'flex', alignItems: 'center', gap: '4px', flexWrap: 'wrap' }}>
+              <PlayBadge source="hero" loading="eager" />
+              <Link
+                to="/app"
+                style={{
+                  fontFamily: DM_SANS, fontSize: '13px', color: MUTED,
+                  textDecoration: 'none', padding: '4px 8px',
+                  transition: 'color 0.2s',
+                }}
+                onMouseEnter={e => { (e.currentTarget as HTMLElement).style.color = BIO_CYAN; }}
+                onMouseLeave={e => { (e.currentTarget as HTMLElement).style.color = MUTED; }}
+              >
+                {/* פרטים נוספים ← */}
+                {isHe ? '\u05e4\u05e8\u05d8\u05d9\u05dd \u05e0\u05d5\u05e1\u05e4\u05d9\u05dd \u2190' : 'Learn more →'}
+              </Link>
             </div>
-
-            {status === 'done' ? (
-              <p style={{
-                fontFamily: DM_SANS, fontSize: '15px', color: BIO_LIME,
-                border: '1px solid rgba(170,255,0,0.3)', background: 'rgba(170,255,0,0.06)',
-                borderRadius: '12px', padding: '14px 18px',
-              }}>
-                {isHe
-                  ? '🌱 נרשמתם בהצלחה! נעדכן אתכם כשהאפליקציה תושק.'
-                  : "🌱 You're on the list! We'll email you when the app launches."}
-              </p>
-            ) : (
-              <form onSubmit={handleSubmit} style={{ display: 'flex', gap: '10px', flexWrap: 'wrap' }}>
-                <input
-                  type="email"
-                  required
-                  value={email}
-                  onChange={e => setEmail(e.target.value)}
-                  placeholder={isHe ? 'האימייל שלך' : 'Your email'}
-                  dir={isHe ? 'rtl' : 'ltr'}
-                  style={{
-                    flex: '1 1 220px',
-                    fontFamily: DM_SANS, fontSize: '15px', color: TEXT,
-                    background: NIGHT_CARD, border: '1px solid rgba(0,229,195,0.2)',
-                    borderRadius: '100px', padding: '13px 22px', outline: 'none',
-                  }}
-                />
-                <button
-                  type="submit"
-                  disabled={status === 'loading'}
-                  className="lp-cta-primary"
-                  style={{
-                    fontFamily: SYNE, fontWeight: 700, fontSize: '15px',
-                    backgroundColor: BIO_AMBER, color: NIGHT, border: 'none',
-                    padding: '13px 30px', borderRadius: '100px', cursor: 'pointer',
-                    boxShadow: '0 4px 24px rgba(255,184,48,0.3)', letterSpacing: '0.02em',
-                    opacity: status === 'loading' ? 0.7 : 1,
-                  }}
-                >
-                  {isHe ? 'הצטרפו לרשימת ההמתנה' : 'Join the Waitlist'}
-                </button>
-              </form>
-            )}
-
-            {status === 'error' && (
-              <p style={{ fontFamily: DM_SANS, fontSize: '13px', color: BIO_ROSE, marginTop: '10px' }}>
-                {isHe ? 'משהו השתבש, נסו שוב.' : 'Something went wrong, please try again.'}
-              </p>
-            )}
           </Reveal>
         </div>
       </div>
@@ -934,8 +909,8 @@ export function LandingPage() {
 
       </section>
 
-      {/* ══ MOBILE APP COMING SOON ═══════════════════════════════════════ */}
-      <MobileAppComingSoon isHe={isHe} />
+      {/* ══ APP DOWNLOAD ═════════════════════════════════════════════════ */}
+      <AppLiveSection isHe={isHe} />
 
       {/* ══ FEATURES ══════════════════════════════════════════════════════ */}
       <section

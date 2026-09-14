@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
+import { useParams, useNavigate, Link } from 'react-router-dom';
 import ReactMarkdown from 'react-markdown';
 import { useTranslation } from 'react-i18next';
 import { ARTICLES } from '../data/articlesIndex';
@@ -697,6 +697,65 @@ export function ArticlePage() {
                   <ReactMarkdown key={i} components={MD}>{sectionMd}</ReactMarkdown>
                 );
               })}
+            </div>
+          </div>
+
+          {/* App CTA card */}
+          <div style={{
+            background: CREAM,
+            padding: '0 24px 8px',
+          }}>
+            <div style={{
+              maxWidth: '760px', margin: '0 auto',
+              borderTop: `1px dashed ${DASHED}`,
+              padding: '36px 0 8px',
+            }}>
+              <Link
+                to="/app"
+                style={{
+                  display: 'flex', alignItems: 'center',
+                  gap: '16px', flexWrap: 'wrap',
+                  background: 'rgba(200,133,26,0.06)',
+                  border: `1px solid rgba(200,133,26,0.22)`,
+                  borderRadius: '14px', padding: '20px 24px',
+                  textDecoration: 'none',
+                  transition: 'border-color 0.2s, background-color 0.2s',
+                  direction: lang === 'he' ? 'rtl' : 'ltr',
+                }}
+                onMouseEnter={e => { const el = e.currentTarget as HTMLElement; el.style.borderColor = 'rgba(200,133,26,0.45)'; el.style.backgroundColor = 'rgba(200,133,26,0.1)'; }}
+                onMouseLeave={e => { const el = e.currentTarget as HTMLElement; el.style.borderColor = 'rgba(200,133,26,0.22)'; el.style.backgroundColor = 'rgba(200,133,26,0.06)'; }}
+              >
+                <div style={{ fontSize: '32px', flexShrink: 0 }}>🌱</div>
+                <div style={{ flex: 1, minWidth: '180px' }}>
+                  <p style={{
+                    fontFamily: C_SERIF, fontSize: '15px', fontWeight: 600,
+                    color: INK, margin: '0 0 4px',
+                  }}>
+                    {lang === 'he'
+                      ? /* גינה חיה — עכשיו גם באפליקציה */
+                        '\u05d2\u05d9\u05e0\u05d4 \u05d7\u05d9\u05d4 \u2014 \u05e2\u05db\u05e9\u05d9\u05d5 \u05d2\u05dd \u05d1\u05d0\u05e4\u05dc\u05d9\u05e7\u05e6\u05d9\u05d4'
+                      : 'Gina Haya — now also as an app'}
+                  </p>
+                  <p style={{
+                    fontFamily: C_SANS, fontSize: '13px',
+                    color: INK_L, margin: 0, lineHeight: 1.55,
+                  }}>
+                    {lang === 'he'
+                      ? /* לוח ביודינמי, אבחון צמחים עם צ'ופצ'ו ומעקב גינה — בטלפון */
+                        '\u05dc\u05d5\u05d7 \u05d1\u05d9\u05d5\u05d3\u05d9\u05e0\u05de\u05d9\u002c \u05d0\u05d1\u05d7\u05d5\u05df \u05e6\u05de\u05d7\u05d9\u05dd \u05e2\u05dd \u05e6\u0027\u05d5\u05e4\u05e6\u0027\u05d5 \u05d5\u05de\u05e2\u05e7\u05d1 \u05d2\u05d9\u05e0\u05d4 \u2014 \u05d1\u05d8\u05dc\u05e4\u05d5\u05df'
+                      : 'Biodynamic calendar, plant diagnosis with Chupchu and garden tracker — on your phone'}
+                  </p>
+                </div>
+                <span style={{
+                  fontFamily: C_SANS, fontSize: '13px', fontWeight: 600,
+                  color: AMBER, flexShrink: 0, whiteSpace: 'nowrap',
+                }}>
+                  {lang === 'he'
+                    ? /* לפרטים ← */
+                      '\u05dc\u05e4\u05e8\u05d8\u05d9\u05dd \u2190'
+                    : 'Learn more →'}
+                </span>
+              </Link>
             </div>
           </div>
 

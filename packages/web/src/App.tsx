@@ -27,6 +27,8 @@ import { AboutPage } from './pages/AboutPage';
 import { AdminTemplatesPage } from './pages/AdminTemplatesPage';
 import { AdminKnowledgePage } from './pages/AdminKnowledgePage';
 import { AdminWaitlistPage } from './pages/AdminWaitlistPage';
+import { AppPage } from './pages/AppPage';
+import { AndroidInstallBar } from './components/ui/AndroidInstallBar';
 import { ProtectedRoute } from './components/auth/ProtectedRoute';
 import { OnboardingWizard } from './components/auth/OnboardingWizard';
 import { WelcomeScreen } from './components/auth/WelcomeScreen';
@@ -128,7 +130,8 @@ export default function App() {
     location.pathname.startsWith('/articles/') ||
     location.pathname === '/pricing' ||
     location.pathname === '/shop' ||
-    location.pathname === '/help';
+    location.pathname === '/help' ||
+    location.pathname === '/app';
   if (!isAuthReady && !isPublicContentPath) {
     return (
       <div className="min-h-screen flex items-center justify-center"
@@ -164,6 +167,7 @@ export default function App() {
           <Route path="/shop" element={<ShopPage />} />
           <Route path="/help" element={<HelpPage />} />
           <Route path="/about" element={<AboutPage />} />
+          <Route path="/app" element={<AppPage />} />
 
           {/* Protected pages */}
           <Route
@@ -243,6 +247,7 @@ export default function App() {
       {isUpgradeOpen && <UpgradeModal />}
       <ToastContainer />
       <LaunchBadge />
+      <AndroidInstallBar />
 
       {/* Floating ChupChu bubble — hidden on /chupchu page itself */}
       {!isChupChuPage && (

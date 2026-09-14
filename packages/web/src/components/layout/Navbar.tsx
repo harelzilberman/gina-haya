@@ -318,6 +318,12 @@ export function Navbar() {
               {isHebrew ? 'עזרה' : 'Help'}
             </Link>
 
+            {/* 9. The App — plain link */}
+            <Link to="/app" className="gina-nav-link" style={{ ...navLinkStyle(isHebrew), color: BIO_AMBER }}>
+              {/* האפליקציה */}
+              {isHebrew ? '\u05d4\u05d0\u05e4\u05dc\u05d9\u05e7\u05e6\u05d9\u05d4' : 'The App'}
+            </Link>
+
           </div>
         )}
 
@@ -328,6 +334,7 @@ export function Navbar() {
           {!user ? (
             <>
               {[
+                { label: isHebrew ? '\u05d4\u05d0\u05e4\u05dc\u05d9\u05e7\u05e6\u05d9\u05d4' : 'The App', to: '/app'     },
                 { label: isHebrew ? 'אודות' : 'About',   to: '/about'   },
                 { label: isHebrew ? 'תמחור' : 'Pricing', to: '/pricing' },
                 { label: isHebrew ? 'חנות'  : 'Shop',    to: '/shop'    },
@@ -482,6 +489,10 @@ export function Navbar() {
               <Link to="/pricing"  onClick={() => setMobileOpen(false)} style={mobileSub}>{isHebrew ? 'תמחור'         : 'Pricing'}</Link>
               <Link to="/about"    onClick={() => setMobileOpen(false)} style={mobileSub}>{isHebrew ? 'אודות'          : 'About'}</Link>
               <Link to="/help"     onClick={() => setMobileOpen(false)} style={mobileLink}>{isHebrew ? 'עזרה'          : 'Help'}</Link>
+              <Link to="/app"      onClick={() => setMobileOpen(false)} style={{ ...mobileLink, color: BIO_AMBER }}>
+                {/* האפליקציה */}
+                {isHebrew ? '\u05d4\u05d0\u05e4\u05dc\u05d9\u05e7\u05e6\u05d9\u05d4' : 'The App'}
+              </Link>
               <div style={{ height: '1px', backgroundColor: 'rgba(0,229,195,0.1)', margin: '8px 0' }} />
               <button onClick={handleSignOut}
                 style={{ fontFamily: DM_SANS, fontSize: '16px', color: 'rgba(255,100,100,0.8)', background: 'none', border: 'none', cursor: 'pointer', textAlign: 'start', padding: '10px 0' }}>
@@ -494,6 +505,10 @@ export function Navbar() {
             <>
               <Link to="/login"   onClick={() => setMobileOpen(false)} style={{ fontFamily: DM_SANS, fontSize: '16px', color: TEXT_MID, textDecoration: 'none', padding: '10px 0' }}>{t('nav.login')}</Link>
               <Link to="/signup"  onClick={() => setMobileOpen(false)} style={{ fontFamily: FRANK, fontSize: '16px', fontWeight: 700, color: BIO_CYAN, textDecoration: 'none', padding: '10px 0' }}>{t('nav.signup')}</Link>
+              <Link to="/app"     onClick={() => setMobileOpen(false)} style={{ fontFamily: DM_SANS, fontSize: '16px', color: BIO_AMBER, textDecoration: 'none', padding: '10px 0' }}>
+                {/* האפליקציה */}
+                {isHebrew ? '\u05d4\u05d0\u05e4\u05dc\u05d9\u05e7\u05e6\u05d9\u05d4' : 'The App'}
+              </Link>
               <Link to="/pricing" onClick={() => setMobileOpen(false)} style={{ fontFamily: DM_SANS, fontSize: '16px', color: TEXT_MID, textDecoration: 'none', padding: '10px 0' }}>{isHebrew ? 'תמחור' : 'Pricing'}</Link>
               <Link to="/shop"    onClick={() => setMobileOpen(false)} style={{ fontFamily: DM_SANS, fontSize: '16px', color: TEXT_MID, textDecoration: 'none', padding: '10px 0' }}>{isHebrew ? 'חנות' : 'Shop'}</Link>
               <Link to="/help"    onClick={() => setMobileOpen(false)} style={{ fontFamily: DM_SANS, fontSize: '16px', color: TEXT_MID, textDecoration: 'none', padding: '10px 0' }}>{isHebrew ? 'עזרה' : 'Help'}</Link>

@@ -1,5 +1,6 @@
 import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
+import { PlayBadge } from '../ui/PlayBadge';
 
 const NIGHT    = '#050d0a';
 const BIO_CYAN = '#00e5c3';
@@ -87,6 +88,22 @@ export function Footer() {
                 {item.label}
               </Link>
             ))}
+          </div>
+        </div>
+
+        {/* App */}
+        <div>
+          <p style={{ fontFamily: DM_SANS, fontWeight: 700, fontSize: '10px', letterSpacing: '0.18em',
+            textTransform: 'uppercase', color: BIO_CYAN, marginBottom: '16px' }}>
+            {/* האפליקציה */}
+            {isHebrew ? '\u05d4\u05d0\u05e4\u05dc\u05d9\u05e7\u05e6\u05d9\u05d4' : 'The App'}
+          </p>
+          <Link to="/app" style={{ ...linkStyle, display: 'block', marginBottom: '12px' }} onMouseEnter={hoverIn} onMouseLeave={hoverOut}>
+            {/* מידע על האפליקציה */}
+            {isHebrew ? '\u05de\u05d9\u05d3\u05e2 \u05e2\u05dc \u05d4\u05d0\u05e4\u05dc\u05d9\u05e7\u05e6\u05d9\u05d4' : 'About the app'}
+          </Link>
+          <div style={{ marginInlineStart: '-12px' }}>
+            <PlayBadge source="footer" loading="lazy" />
           </div>
         </div>
 
