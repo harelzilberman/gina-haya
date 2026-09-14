@@ -123,10 +123,13 @@ const LP_CSS = `
 ::-webkit-scrollbar-thumb { background: rgba(0,229,195,0.25); border-radius: 3px; }
 
 @media (max-width: 900px) {
-  .lp-hero-chupchu-col { display: none !important; }
+  /* Two-column flex wraps before this point; phone stays full size once stacked */
+}
+@media (max-width: 480px) {
+  /* Further shrink frame on very small phones */
+  .lp-hero-phone-col { max-width: 160px !important; }
 }
 @media (max-width: 768px) {
-  .lp-hero-chupchu { display: none !important; }
   .lp-step-connector { display: none !important; }
   .lp-chupchu-demo-wrap { max-width: 100%; }
 }
@@ -732,11 +735,6 @@ export function LandingPage() {
     return () => { document.body.style.backgroundColor = prev; };
   }, []);
 
-  function scrollToFeatures(e: React.MouseEvent) {
-    e.preventDefault();
-    document.getElementById('features')?.scrollIntoView({ behavior: 'smooth' });
-  }
-
   return (
     <div style={{ backgroundColor: NIGHT, minHeight: '100vh' }}>
       <style>{LP_CSS}</style>
@@ -744,19 +742,20 @@ export function LandingPage() {
       <AuroraBands />
 
       {/* ══ HERO ══════════════════════════════════════════════════════════ */}
+      {/*
+        Navbar is 64px; App.tsx adds 8px gap → paddingTop: 72px on <main>.
+        Using calc(100vh - 72px) so the section fills exactly the visible
+        viewport below the navbar on all screen sizes.
+      */}
       <section
         style={{
           position: 'relative',
           zIndex: 1,
-          minHeight: '100vh',
+          minHeight: 'calc(100vh - 72px)',
           display: 'flex',
-          flexDirection: 'row',
+          flexDirection: 'column',
           justifyContent: 'center',
-          alignItems: 'flex-start',
-          textAlign: 'start',
-          gap: '60px',
-          flexWrap: 'wrap',
-          padding: '120px 60px 80px',
+          alignItems: 'stretch',
           backgroundColor: NIGHT,
           backgroundImage: [
             'linear-gradient(to bottom, rgba(5,13,10,0.72) 0%, rgba(5,13,10,0.55) 50%, rgba(5,13,10,0.82) 100%)',
@@ -765,148 +764,306 @@ export function LandingPage() {
           backgroundSize: 'auto, cover',
           backgroundPosition: 'center, center',
           backgroundRepeat: 'no-repeat, no-repeat',
+          overflow: 'hidden',
         }}
       >
-        {/* ── Left: text content ─────────────────────────────────────────── */}
-        <div style={{ flex: '1 1 440px', maxWidth: '580px', direction: isHe ? 'rtl' : 'ltr' }}>
+        {/* Two-column inner — direction:ltr keeps phone always on visual left.
+            On mobile (flex-wrap triggers) columns stack: text first, phone below. */}
+        <div style={{
+          direction: 'ltr',
+          maxWidth: '1200px',
+          margin: '0 auto',
+          width: '100%',
+          padding: 'clamp(40px, 8vw, 120px) clamp(20px, 5vw, 60px) clamp(40px, 6vw, 80px)',
+          display: 'flex',
+          flexDirection: 'row',
+          alignItems: 'center',
+          gap: 'clamp(32px, 5vw, 64px)',
+          flexWrap: 'wrap',
+          boxSizing: 'border-box' as const,
+        }}>
 
-          {/* Eyebrow pill */}
-          <div className="lp-eyebrow" style={{ marginBottom: '28px' }}>
-            <span style={{
-              display: 'inline-flex', alignItems: 'center', gap: '8px',
-              background: 'rgba(0,229,195,0.08)',
-              border: '1px solid rgba(0,229,195,0.2)',
-              borderRadius: '100px', padding: '6px 18px',
-              fontFamily: DM_SANS, fontSize: '12px', fontWeight: 600,
-              letterSpacing: '0.12em', color: BIO_CYAN,
-            }}>
-              <span style={{ width: '6px', height: '6px', borderRadius: '50%', background: BIO_CYAN, boxShadow: `0 0 6px ${BIO_CYAN}`, display: 'inline-block' }} />
-              {isHe ? 'לוח ביודינמי · מרץ 2026' : 'Biodynamic Calendar · March 2026'}
-            </span>
-          </div>
-
-          {/* Headline */}
-          <h1 style={{ margin: '0 0 24px', lineHeight: 1.12 }}>
-            <span
-              className="lp-hero-line1"
-              style={{
-                display: 'block',
-                fontFamily: FRANK,
-                fontWeight: 700,
-                fontSize: 'clamp(42px, 6.5vw, 96px)',
-                color: TEXT,
-                textShadow: '0 0 60px rgba(0,229,195,0.15)',
-              }}
-            >
-              {isHe ? 'הגינה שלך' : 'Your Garden'}
-            </span>
-            <span
-              className="lp-hero-line2"
-              style={{
-                display: 'block',
-                fontFamily: FRANK,
-                fontWeight: 700,
-                fontSize: 'clamp(44px, 7vw, 100px)',
-                background: `linear-gradient(135deg, ${BIO_CYAN} 0%, ${BIO_LIME} 60%, ${BIO_CYAN} 100%)`,
-                WebkitBackgroundClip: 'text',
-                WebkitTextFillColor: 'transparent',
-                backgroundClip: 'text',
-                filter: 'drop-shadow(0 0 30px rgba(0,229,195,0.3))',
-              }}
-            >
-              {isHe ? 'חיה ונושמת' : 'Alive & Breathing'}
-            </span>
-          </h1>
-
-          {/* Sub */}
-          <p
-            className="lp-sub"
+          {/* ── LEFT column: phone mockup (~45%) ──────────────────────────── */}
+          {/*   On mobile: flex-wrap pushes this below the text column.
+                order:2 ensures it always renders after the text regardless of DOM order. */}
+          <div
+            className="lp-hero-phone-col"
             style={{
-              fontFamily: DM_SANS, fontWeight: 300, fontSize: 'clamp(15px, 2vw, 19px)',
-              lineHeight: 1.75, color: TEXT_MID, maxWidth: '540px', marginBottom: '40px',
+              flex: '0 1 380px',
+              maxWidth: '380px',
+              order: 2,
+              width: '100%',
             }}
           >
-            {isHe
-              ? 'הביאו את חוכמת החקלאות הביודינמית לגינה הביתית שלכם. לוחות ירח, תכנון חכם, וניתוח מבוסס בינה מלאכותית — לכל גנן, בכל רמה.'
-              : 'Bring the wisdom of biodynamic agriculture to your home garden. Moon calendars, smart planning, and AI-powered analysis — for every gardener, at every level.'}
-          </p>
-
-          {/* CTAs */}
-          <div
-            className="lp-ctas"
-            style={{ display: 'flex', gap: '14px', flexWrap: 'wrap', justifyContent: 'flex-start', marginBottom: '48px' }}
-          >
-            <Link
-              to="/signup"
-              className="lp-cta-primary"
+            {/* maxWidth clamps frame to ~190px on mobile (180-200px target) */}
+            <div
+              className="lp-card"
               style={{
-                display: 'inline-block', fontFamily: SYNE, fontWeight: 700,
-                fontSize: '15px', backgroundColor: BIO_CYAN, color: NIGHT,
-                padding: '13px 36px', borderRadius: '100px', textDecoration: 'none',
-                boxShadow: `0 4px 24px rgba(0,229,195,0.3)`, letterSpacing: '0.02em',
+                borderRadius: '28px',
+                background: '#08150f',
+                border: '1.5px solid rgba(0,229,195,0.22)',
+                padding: '8px',
+                maxWidth: 'clamp(190px, 80vw, 300px)',
+                margin: '0 auto',
               }}
             >
-              {isHe ? 'התחל בחינם' : 'Start for Free'}
-            </Link>
-
-            <a
-              href="#features"
-              onClick={scrollToFeatures}
-              className="lp-cta-outline"
-              style={{
-                display: 'inline-block', fontFamily: DM_SANS, fontWeight: 500,
-                fontSize: '15px', color: TEXT_MID, padding: '12px 30px',
-                borderRadius: '100px', border: `1px solid rgba(0,229,195,0.25)`,
-                textDecoration: 'none', backgroundColor: 'transparent',
-              }}
-            >
-              {isHe ? 'ראה איך זה עובד' : 'See How It Works'}
-            </a>
-          </div>
-
-          {/* Trust row */}
-          <div className="lp-trust" style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-            <div style={{ display: 'flex' }}>
-              {['#4a7c59', '#7dc084', '#00e5c3'].map((c, i) => (
-                <div key={i} style={{
-                  width: '28px', height: '28px', borderRadius: '50%',
-                  background: c, border: `2px solid ${NIGHT}`,
-                  marginInlineStart: i > 0 ? '-8px' : '0',
-                }} />
-              ))}
+              <div style={{ borderRadius: '20px', overflow: 'hidden', aspectRatio: '9/19.5' }}>
+                <img
+                  src="/images/app/screenshot-home.png"
+                  alt={isHe
+                    ? '\u05d2\u05d9\u05e0\u05d4 \u05d7\u05d9\u05d4 \u2014 \u05de\u05e1\u05da \u05d4\u05d1\u05d9\u05ea'
+                    : 'Gina Haya \u2014 home screen'}
+                  width={390} height={844}
+                  loading="eager"
+                  style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }}
+                />
+              </div>
             </div>
-            <span style={{ fontFamily: DM_SANS, fontSize: '13px', color: MUTED }}>
-              {isHe ? '+2,000 גינאים כבר גדלים בחוכמה' : '+2,000 gardeners already growing wisely'}
-            </span>
           </div>
 
-        </div>
-
-        {/* ── Right: ChupChu widget ──────────────────────────────────────── */}
-        <div
-          className="lp-hero-chupchu-col"
-          style={{
-            flex: '1 1 360px',
-            maxWidth: '420px',
-            width: '100%',
-            animation: 'lp-float 6s ease-in-out infinite',
-            position: 'relative',
-          }}
-        >
-          {/* Glowing border ring */}
+          {/* ── RIGHT column: text content (~55%) ─────────────────────────── */}
+          {/* order:1 keeps text above phone when flex-wrap stacks on mobile */}
           <div style={{
-            position: 'absolute',
-            inset: '-2px',
-            borderRadius: '20px',
-            background: 'linear-gradient(135deg, rgba(0,229,195,0.4), rgba(170,255,0,0.2), rgba(0,229,195,0.1))',
-            zIndex: 0,
-            filter: 'blur(1px)',
-          }} />
-          <div style={{ position: 'relative', zIndex: 1 }}>
-            <ChupChuChat compact />
+            flex: '1 1 300px',
+            maxWidth: '600px',
+            direction: isHe ? 'rtl' : 'ltr',
+            order: 1,
+          }}>
+
+            {/* Amber eyebrow pill */}
+            <div className="lp-eyebrow" style={{ marginBottom: '28px' }}>
+              <span style={{
+                display: 'inline-flex', alignItems: 'center', gap: '8px',
+                background: 'rgba(255,184,48,0.08)',
+                border: '1px solid rgba(255,184,48,0.28)',
+                borderRadius: '100px', padding: '6px 18px',
+                fontFamily: DM_SANS, fontSize: '12px', fontWeight: 600,
+                letterSpacing: '0.08em', color: BIO_AMBER,
+              }}>
+                <span style={{ width: '6px', height: '6px', borderRadius: '50%', background: BIO_AMBER, boxShadow: `0 0 6px ${BIO_AMBER}`, display: 'inline-block' }} />
+                {isHe
+                  ? '\u05d6\u05de\u05d9\u05e0\u05d4 \u05e2\u05db\u05e9\u05d9\u05d5 \u05d1\u002d\u05d2\u05d5\u05d2\u05dc \u05e4\u05dc\u05d9\u05d9'
+                  : 'Now live on Google Play'}
+              </span>
+            </div>
+
+            {/* Headline */}
+            <h1 style={{ margin: '0 0 24px', lineHeight: 1.12 }}>
+              <span
+                className="lp-hero-line1"
+                style={{
+                  display: 'block',
+                  fontFamily: FRANK,
+                  fontWeight: 700,
+                  fontSize: 'clamp(42px, 6.5vw, 96px)',
+                  color: TEXT,
+                  textShadow: '0 0 60px rgba(0,229,195,0.15)',
+                }}
+              >
+                {isHe ? '\u05d4\u05d2\u05d9\u05e0\u05d4 \u05e9\u05dc\u05da' : 'Your Garden'}
+              </span>
+              <span
+                className="lp-hero-line2"
+                style={{
+                  display: 'block',
+                  fontFamily: FRANK,
+                  fontWeight: 700,
+                  fontSize: 'clamp(44px, 7vw, 100px)',
+                  background: `linear-gradient(135deg, ${BIO_CYAN} 0%, ${BIO_LIME} 60%, ${BIO_CYAN} 100%)`,
+                  WebkitBackgroundClip: 'text',
+                  WebkitTextFillColor: 'transparent',
+                  backgroundClip: 'text',
+                  filter: 'drop-shadow(0 0 30px rgba(0,229,195,0.3))',
+                }}
+              >
+                {isHe ? '\u05d7\u05d9\u05d4 \u05d5\u05e0\u05d5\u05e9\u05de\u05ea' : 'Alive & Breathing'}
+              </span>
+            </h1>
+
+            {/* Subhead */}
+            <p
+              className="lp-sub"
+              style={{
+                fontFamily: DM_SANS, fontWeight: 300, fontSize: 'clamp(15px, 2vw, 19px)',
+                lineHeight: 1.75, color: TEXT_MID, maxWidth: '540px', marginBottom: '40px',
+              }}
+            >
+              {isHe
+                ? '\u05d4\u05dc\u05d5\u05d7 \u05d4\u05d1\u05d9\u05d5\u05d3\u05d9\u05e0\u05de\u05d9, \u05e6\u0027\u05d5\u05e4\u05e6\u0027\u05d5 \u05dc\u05d0\u05d1\u05d7\u05d5\u05df \u05e6\u05de\u05d7\u05d9\u05dd \u05d1\u05e6\u05d9\u05dc\u05d5\u05dd, \u05d5\u05de\u05e2\u05e7\u05d1 \u05e9\u05dc\u05dd \u05e9\u05dc \u05d4\u05d2\u05d9\u05e0\u05d4 \u2014 \u05d4\u05db\u05dc \u05d1\u05d8\u05dc\u05e4\u05d5\u05df \u05d0\u05d7\u05d3.'
+                : 'The biodynamic calendar, plant diagnosis by photo with ChupChu, and full garden tracking\u00a0\u2014 all in one phone.'}
+            </p>
+
+            {/* Play badge — only button-weight CTA */}
+            <div className="lp-ctas" style={{ marginBottom: '16px' }}>
+              <PlayBadge source="hero" loading="eager" />
+            </div>
+
+            {/* Low-emphasis signup link */}
+            <div style={{ marginBottom: '48px' }}>
+              <Link
+                to="/signup"
+                style={{
+                  fontFamily: DM_SANS, fontSize: '13px', color: MUTED,
+                  textDecoration: 'none', transition: 'color 0.2s',
+                }}
+                onMouseEnter={e => { (e.currentTarget as HTMLElement).style.color = BIO_CYAN; }}
+                onMouseLeave={e => { (e.currentTarget as HTMLElement).style.color = MUTED; }}
+              >
+                {isHe
+                  ? '\u05d0\u05d5 \u05d4\u05ea\u05d7\u05d9\u05dc\u05d5 \u05d1\u05d3\u05e4\u05d3\u05e4\u05df \u2190'
+                  : 'Or start in the browser \u2192'}
+              </Link>
+            </div>
+
+            {/* Trust row */}
+            <div className="lp-trust" style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+              <div style={{ display: 'flex' }}>
+                {['#4a7c59', '#7dc084', '#00e5c3'].map((c, i) => (
+                  <div key={i} style={{
+                    width: '28px', height: '28px', borderRadius: '50%',
+                    background: c, border: `2px solid ${NIGHT}`,
+                    marginInlineStart: i > 0 ? '-8px' : '0',
+                  }} />
+                ))}
+              </div>
+              <span style={{ fontFamily: DM_SANS, fontSize: '13px', color: MUTED }}>
+                {isHe
+                  ? '+2,000 \u05d2\u05d9\u05e0\u05d0\u05d9\u05dd \u05db\u05d1\u05e8 \u05d2\u05d3\u05dc\u05d9\u05dd \u05d1\u05d7\u05d5\u05db\u05de\u05d4'
+                  : '+2,000 gardeners already growing wisely'}
+              </span>
+            </div>
+
           </div>
         </div>
 
+      </section>
+
+      {/* ══ CHUPCHU DEMO ═════════════════════════════════════════════════ */}
+      <section
+        className="lp-chupchu-section"
+        style={{
+          padding:         '100px 24px',
+          backgroundColor: NIGHT_MID,
+          borderTop:       '1px solid rgba(0,229,195,0.08)',
+          borderBottom:    '1px solid rgba(0,229,195,0.08)',
+          textAlign:       'center',
+          direction:       isHe ? 'rtl' : 'ltr',
+        }}
+      >
+        {/* Ambient orbs */}
+        <div className="lp-chupchu-orb" style={{
+          width: '400px', height: '400px',
+          background: 'rgba(0,229,195,0.07)',
+          top: '-100px', left: '10%',
+        }} />
+        <div className="lp-chupchu-orb" style={{
+          width: '300px', height: '300px',
+          background: 'rgba(170,255,0,0.05)',
+          bottom: '-80px', right: '15%',
+        }} />
+
+        {/* Eyebrow */}
+        <div className="lp-chupchu-badge">
+          <img src="/chupchu_final.png" alt="" style={{ width: '20px', height: '20px', objectFit: 'contain' }} />
+          {isHe
+            ? '\u05e0\u05e1\u05d5 \u05d1\u05d7\u05d9\u05e0\u05dd \u2014 \u05dc\u05dc\u05d0 \u05d4\u05e8\u05e9\u05de\u05d4'
+            : 'Try free \u2014 no signup needed'}
+        </div>
+
+        {/* Heading */}
+        <h2 style={{
+          fontFamily: FRANK,
+          fontSize:   'clamp(28px, 4vw, 44px)',
+          fontWeight: 700,
+          color:      TEXT,
+          margin:     '0 0 12px',
+          lineHeight: 1.2,
+        }}>
+          {isHe
+            ? <>{'\u05e9\u05d0\u05dc\u05d5 \u05d0\u05ea \u05e6\u0027\u05d5\u05e4\u05e6\u0027\u05d5'}<span style={{ color: BIO_CYAN }}>{' \u05e2\u05db\u05e9\u05d9\u05d5'}</span></>
+            : <>{'Ask ChupChu'}<span style={{ color: BIO_CYAN }}>{' now'}</span></>
+          }
+        </h2>
+
+        <p style={{
+          fontFamily: DM_SANS,
+          fontSize:   '16px',
+          color:      TEXT_MID,
+          margin:     '0 auto 48px',
+          maxWidth:   '480px',
+          lineHeight: 1.65,
+        }}>
+          {isHe
+            ? '\u05d4\u05de\u05d3\u05e8\u05d9\u05da \u05d4\u05d1\u05d9\u05d5\u05d3\u05d9\u05e0\u05de\u05d9 \u05e9\u05dc\u05db\u05dd \u2014 \u05e9\u05d5\u05d0\u05dc, \u05de\u05e0\u05d7\u05d4, \u05d5\u05de\u05db\u05d9\u05e8 \u05d0\u05ea \u05d4\u05d2\u05d9\u05e0\u05d4 \u05e9\u05dc\u05db\u05dd.'
+            : 'Your biodynamic guide \u2014 ask, get advice, and grow better.'}
+          <br />
+          <span style={{ color: MUTED, fontSize: '13px' }}>
+            {isHe
+              ? '3 \u05e9\u05d0\u05dc\u05d5\u05ea \u05d7\u05d9\u05e0\u05dd, \u05dc\u05dc\u05d0 \u05e6\u05d5\u05e8\u05da \u05d1\u05d4\u05e8\u05e9\u05de\u05d4'
+              : '3 free questions, no registration required'}
+          </span>
+        </p>
+
+        {/* Suggested question chips */}
+        {isHe && (
+          <div style={{
+            display: 'flex', flexWrap: 'wrap', gap: '10px',
+            justifyContent: 'center', marginBottom: '32px',
+            position: 'relative', zIndex: 1,
+          }}>
+            {[
+              '\u05de\u05ea\u05d9 \u05d4\u05d6\u05de\u05df \u05d4\u05e0\u05db\u05d5\u05df \u05dc\u05e9\u05ea\u05d5\u05dc \u05e2\u05d2\u05d1\u05e0\u05d9\u05d5\u05ea?',
+              '\u05d0\u05d9\u05da \u05de\u05db\u05d9\u05e0\u05d9\u05dd \u05ea\u05d4 \u05e7\u05d5\u05de\u05e4\u05d5\u05e1\u05d8?',
+              '\u05de\u05d4 \u05d6\u05d4 \u05d9\u05d5\u05dd \u05e9\u05d5\u05e8\u05e9 \u05d1\u05dc\u05d5\u05d7 \u05d4\u05d1\u05d9\u05d5\u05d3\u05d9\u05e0\u05de\u05d9?',
+              '\u05d0\u05d9\u05da \u05dc\u05d4\u05d3\u05d1\u05d9\u05e8 \u05db\u05e0\u05d9\u05de\u05d5\u05ea \u05d1\u05e6\u05d5\u05e8\u05d4 \u05d8\u05d1\u05e2\u05d9\u05ea?',
+            ].map(q => (
+              <button
+                key={q}
+                onClick={() => {
+                  const el = document.querySelector('.chupchu-textarea') as HTMLTextAreaElement | null;
+                  if (el) {
+                    const nativeInputValueSetter = Object.getOwnPropertyDescriptor(
+                      window.HTMLTextAreaElement.prototype, 'value'
+                    )?.set;
+                    nativeInputValueSetter?.call(el, q);
+                    el.dispatchEvent(new Event('input', { bubbles: true }));
+                    el.focus();
+                    el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                  }
+                }}
+                style={{
+                  padding: '8px 16px',
+                  background: 'rgba(0,229,195,0.06)',
+                  border: '1px solid rgba(0,229,195,0.2)',
+                  borderRadius: '100px',
+                  fontFamily: DM_SANS, fontSize: '13px',
+                  color: TEXT_MID, cursor: 'pointer',
+                  transition: 'border-color 0.2s, color 0.2s, background-color 0.2s',
+                  direction: 'rtl',
+                }}
+                onMouseEnter={e => {
+                  const el = e.currentTarget as HTMLElement;
+                  el.style.borderColor = BIO_CYAN;
+                  el.style.color = BIO_CYAN;
+                  el.style.backgroundColor = 'rgba(0,229,195,0.1)';
+                }}
+                onMouseLeave={e => {
+                  const el = e.currentTarget as HTMLElement;
+                  el.style.borderColor = 'rgba(0,229,195,0.2)';
+                  el.style.color = TEXT_MID;
+                  el.style.backgroundColor = 'rgba(0,229,195,0.06)';
+                }}
+              >
+                {q}
+              </button>
+            ))}
+          </div>
+        )}
+
+        {/* Embedded chat widget */}
+        <div className="lp-chupchu-demo-wrap">
+          <ChupChuChat compact />
+        </div>
       </section>
 
       {/* ══ APP DOWNLOAD ═════════════════════════════════════════════════ */}
@@ -1123,123 +1280,6 @@ export function LandingPage() {
           </div>
         </div>
       </section>
-
-      {/* ══ CHUPCHU DEMO — removed; ChupChu is now in the hero ═══════════ */}
-      {false && <section
-        className="lp-chupchu-section"
-        style={{
-          padding:         '100px 24px',
-          backgroundColor: NIGHT_MID,
-          borderTop:       '1px solid rgba(0,229,195,0.08)',
-          borderBottom:    '1px solid rgba(0,229,195,0.08)',
-          textAlign:       'center',
-          direction:       'rtl',
-        }}
-      >
-        {/* Ambient orbs */}
-        <div className="lp-chupchu-orb" style={{
-          width: '400px', height: '400px',
-          background: 'rgba(0,229,195,0.07)',
-          top: '-100px', left: '10%',
-        }} />
-        <div className="lp-chupchu-orb" style={{
-          width: '300px', height: '300px',
-          background: 'rgba(170,255,0,0.05)',
-          bottom: '-80px', right: '15%',
-        }} />
-
-        {/* Eyebrow */}
-        <div className="lp-chupchu-badge">
-          <img src="/chupchu_final.png" alt="" style={{ width: '20px', height: '20px', objectFit: 'contain' }} />
-          נסו בחינם — ללא הרשמה
-        </div>
-
-        {/* Heading */}
-        <h2 style={{
-          fontFamily: FRANK,
-          fontSize:   'clamp(28px, 4vw, 44px)',
-          fontWeight: 700,
-          color:      TEXT,
-          margin:     '0 0 12px',
-          lineHeight: 1.2,
-        }}>
-          שאלו את צ'ופצ'ו
-          <span style={{ color: BIO_CYAN }}> עכשיו</span>
-        </h2>
-
-        <p style={{
-          fontFamily: DM_SANS,
-          fontSize:   '16px',
-          color:      TEXT_MID,
-          margin:     '0 auto 48px',
-          maxWidth:   '480px',
-          lineHeight: 1.65,
-        }}>
-          המדריך הביודינמי שלכם — שואל, מנחה, ומכיר את הגינה שלכם.
-          <br />
-          <span style={{ color: MUTED, fontSize: '13px' }}>3 שאלות חינם, ללא צורך בהרשמה</span>
-        </p>
-
-        {/* Suggested question chips */}
-        <div style={{
-          display: 'flex', flexWrap: 'wrap', gap: '10px',
-          justifyContent: 'center', marginBottom: '32px',
-          position: 'relative', zIndex: 1,
-        }}>
-          {[
-            'מתי הזמן הנכון לשתול עגבניות?',
-            'איך מכינים תה קומפוסט?',
-            'מה זה יום שורש בלוח הביודינמי?',
-            'איך להדביר כנימות בצורה טבעית?',
-          ].map(q => (
-            <button
-              key={q}
-              onClick={() => {
-                const el = document.querySelector('.chupchu-textarea') as HTMLTextAreaElement | null;
-                if (el) {
-                  // React-controlled input: set nativeInputValueSetter then fire input event
-                  const nativeInputValueSetter = Object.getOwnPropertyDescriptor(
-                    window.HTMLTextAreaElement.prototype, 'value'
-                  )?.set;
-                  nativeInputValueSetter?.call(el, q);
-                  el.dispatchEvent(new Event('input', { bubbles: true }));
-                  el.focus();
-                  el.scrollIntoView({ behavior: 'smooth', block: 'center' });
-                }
-              }}
-              style={{
-                padding: '8px 16px',
-                background: 'rgba(0,229,195,0.06)',
-                border: '1px solid rgba(0,229,195,0.2)',
-                borderRadius: '100px',
-                fontFamily: DM_SANS, fontSize: '13px',
-                color: TEXT_MID, cursor: 'pointer',
-                transition: 'border-color 0.2s, color 0.2s, background-color 0.2s',
-                direction: 'rtl',
-              }}
-              onMouseEnter={e => {
-                const el = e.currentTarget as HTMLElement;
-                el.style.borderColor = BIO_CYAN;
-                el.style.color = BIO_CYAN;
-                el.style.backgroundColor = 'rgba(0,229,195,0.1)';
-              }}
-              onMouseLeave={e => {
-                const el = e.currentTarget as HTMLElement;
-                el.style.borderColor = 'rgba(0,229,195,0.2)';
-                el.style.color = TEXT_MID;
-                el.style.backgroundColor = 'rgba(0,229,195,0.06)';
-              }}
-            >
-              {q}
-            </button>
-          ))}
-        </div>
-
-        {/* Embedded chat widget */}
-        <div className="lp-chupchu-demo-wrap">
-          <ChupChuChat compact />
-        </div>
-      </section>}
 
       {/* ══ PRICING ═══════════════════════════════════════════════════════ */}
       <section
