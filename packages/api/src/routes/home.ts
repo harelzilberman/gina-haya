@@ -1,6 +1,7 @@
 import { Router } from 'express';
 import { db } from '../db/client';
 import { verifyToken } from '../middleware/auth';
+import { todayInIsrael } from '@gina-haya/shared';
 
 export const homeRouter = Router();
 
@@ -8,7 +9,7 @@ export const homeRouter = Router();
 // Returns all home screen sections in one payload
 homeRouter.get('/summary', verifyToken, async (req: any, res) => {
   const userId = req.user.id;
-  const today = new Date().toISOString().split('T')[0];
+  const today = todayInIsrael();
 
   try {
     // ── 1. Today's tasks ──────────────────────────────────────────────────
