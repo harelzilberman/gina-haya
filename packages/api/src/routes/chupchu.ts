@@ -1876,12 +1876,20 @@ chupChuRouter.post('/chat', async (req: any, res) => {
       }
       // Resolved last watering (computed earlier in the volatile/per-request section).
       if (p.last_watering?.at) {
-        const daysAgo = Math.round((Date.now() - new Date(p.last_watering.at).getTime()) / 86_400_000);
-        const daysStr = daysAgo === 0
+        // Compare Israel calendar dates, not float-rounded hour deltas.
+        // Date-only strings (YYYY-MM-DD) are parsed as UTC midnight by the spec,
+        // so the subtraction correctly counts full calendar days.
+        const todayIsrael  = todayInIsrael(); // "YYYY-MM-DD"
+        const eventIsrael  = new Date(p.last_watering.at)
+          .toLocaleDateString('sv-SE', { timeZone: 'Asia/Jerusalem' }); // "YYYY-MM-DD"
+        const calDays = Math.round(
+          (new Date(todayIsrael).getTime() - new Date(eventIsrael).getTime()) / 86_400_000
+        );
+        const daysStr = calDays === 0
           ? (l === 'he' ? 'היום' : 'today')
-          : daysAgo === 1
+          : calDays === 1
             ? (l === 'he' ? 'אתמול' : 'yesterday')
-            : (l === 'he' ? `לפני ${daysAgo} ימים` : `${daysAgo} days ago`);
+            : (l === 'he' ? `לפני ${calDays} ימים` : `${calDays} days ago`);
         const sourceNote = p.last_watering.source === 'scheduled'
           ? (l === 'he' ? ' (לפי לוח ההשקיה)' : ' (scheduled)')
           : '';
