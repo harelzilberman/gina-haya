@@ -345,6 +345,54 @@ export async function sendCronJobAlert(opts: {
   }
 }
 
+const OPERATOR_EMAIL = 'gina.haya.contact@gmail.com';
+
+// Sent to the operator when a user submits an in-app deletion request.
+// Plain-text only — this is an internal operational alert, not a user-facing email.
+// Never throws on send failure; the caller already wraps in try/catch and the row
+// is already committed before this is called, so a failed send must not unwind anything.
+export async function sendDeletionRequestAlert(opts: {
+  userId:      string;
+  email:       string;
+  requestedAt: string;
+}): Promise<void> {
+  const { userId, email, requestedAt } = opts;
+
+  const subject = `[Gina Haya] Account Deletion Request — ${email}`;
+  const text = [
+    'A user has submitted an account deletion request via the app.',
+    '',
+    `User ID:      ${userId}`,
+    `Email:        ${email}`,
+    `Requested at: ${requestedAt}`,
+    '',
+    'Complete the deletion within 30 days using the admin script:',
+    `  cd packages/api`,
+    `  pnpm exec tsx ../scripts/delete-account.ts ${userId} --confirm`,
+    '',
+    'Check the full pending queue:',
+    "  SELECT id, email, requested_at,",
+    "         EXTRACT(DAY FROM now() - requested_at)::int AS days_elapsed",
+    "  FROM   deletion_requests",
+    "  WHERE  status = 'pending'",
+    "  ORDER  BY requested_at;",
+  ].join('\n');
+
+  const { error } = await resend.emails.send({
+    from:    FROM_EN,
+    to:      OPERATOR_EMAIL,
+    subject,
+    text,
+  });
+
+  if (error) {
+    console.error('[sendDeletionRequestAlert] Resend error:', JSON.stringify(error));
+    throw new Error(`Failed to send deletion request alert: ${error.message}`);
+  }
+
+  console.log(`[sendDeletionRequestAlert] Alert sent for user=${userId} email=${email}`);
+}
+
 export async function sendRenewalReminder(opts: {
   email:       string;
   displayName: string;
