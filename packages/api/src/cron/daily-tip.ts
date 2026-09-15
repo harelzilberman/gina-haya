@@ -1,11 +1,8 @@
 import { db } from '../db/client';
 import { getCalendarDay } from '../db/queries/calendar';
 import { sendDailyTip, type EmailUser } from '../services/email';
-import { ISRAEL_TIMEZONE } from '@gina-haya/shared';
+import { todayInIsrael } from '@gina-haya/shared';
 
-function todayISO(): string {
-  return new Date().toLocaleDateString('en-CA', { timeZone: ISRAEL_TIMEZONE });
-}
 
 function sleep(ms: number): Promise<void> {
   return new Promise(resolve => setTimeout(resolve, ms));
@@ -15,7 +12,7 @@ export async function sendDailyTipToAllUsers(): Promise<void> {
   console.log('[daily-tip cron] Starting daily tip send...');
 
   // Fetch today's calendar data
-  const today = todayISO();
+  const today = todayInIsrael();
   const calendarDay = await getCalendarDay(today);
 
   if (!calendarDay) {

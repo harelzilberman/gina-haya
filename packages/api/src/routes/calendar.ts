@@ -2,18 +2,15 @@ import { Router, type IRouter } from 'express';
 import { spawn } from 'child_process';
 import { getCalendarDay, getCalendarRange } from '../db/queries/calendar';
 import { db } from '../db/client';
-import { ISRAEL_TIMEZONE } from '@gina-haya/shared';
+import { todayInIsrael } from '@gina-haya/shared';
 
 export const calendarRouter: IRouter = Router();
 
-function todayISO(): string {
-  return new Date().toLocaleDateString('en-CA', { timeZone: ISRAEL_TIMEZONE });
-}
 
 // GET /api/calendar/today — no auth required
 calendarRouter.get('/today', async (_req, res) => {
   try {
-    const day = await getCalendarDay(todayISO());
+    const day = await getCalendarDay(todayInIsrael());
     if (!day) return res.status(404).json({ error: 'No calendar data for today' });
     res.json(day);
   } catch (err: any) {
@@ -25,7 +22,7 @@ calendarRouter.get('/today', async (_req, res) => {
 // GET /api/calendar/week — next 7 days, no auth required
 calendarRouter.get('/week', async (_req, res) => {
   try {
-    const from = todayISO();
+    const from = todayInIsrael();
     const toDate = new Date(from + 'T00:00:00');
     toDate.setDate(toDate.getDate() + 6);
     const to = toDate.toISOString().slice(0, 10);

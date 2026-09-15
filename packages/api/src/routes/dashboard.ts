@@ -2,14 +2,11 @@ import { Router, type IRouter } from 'express';
 import { db } from '../db/client';
 import { verifyToken } from '../middleware/auth';
 import { getCalendarDay } from '../db/queries/calendar';
-import { ISRAEL_TIMEZONE } from '@gina-haya/shared';
+import { todayInIsrael } from '@gina-haya/shared';
 
 export const dashboardRouter: IRouter = Router();
 dashboardRouter.use(verifyToken);
 
-function todayISO(): string {
-  return new Date().toLocaleDateString('en-CA', { timeZone: ISRAEL_TIMEZONE });
-}
 
 const DAY_TYPE_AFFINITY: Record<string, string[]> = {
   fruit: [
@@ -61,7 +58,7 @@ function getAction(dayType: string): string {
 dashboardRouter.get('/today-actions', async (req: any, res) => {
   try {
     const userId = req.user.id;
-    const today = todayISO();
+    const today = todayInIsrael();
 
     // 1. Calendar data
     const calendarDay = await getCalendarDay(today);

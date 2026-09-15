@@ -1,6 +1,6 @@
 import { Router, type IRouter } from 'express';
 import { verifyToken } from '../middleware/auth';
-import { ISRAEL_TIMEZONE } from '@gina-haya/shared';
+import { todayInIsrael } from '@gina-haya/shared';
 import {
   getTasksForWeek, getTasksForRange, updateTaskStatus, updateTask,
   createCustomTask, deleteTask,
@@ -10,15 +10,12 @@ import { db } from '../db/client';
 export const tasksRouter: IRouter = Router();
 tasksRouter.use(verifyToken);
 
-function todayISO(): string {
-  return new Date().toLocaleDateString('en-CA', { timeZone: ISRAEL_TIMEZONE });
-}
 
 // GET /api/tasks/week — get this week's tasks
 // ?include_archived=true — include tasks linked to archived plants (for Passport view)
 tasksRouter.get('/week', async (req, res) => {
   try {
-    const today = todayISO();
+    const today = todayInIsrael();
     const end = new Date(today + 'T00:00:00');
     end.setDate(end.getDate() + 6);
     const includeArchived = req.query.include_archived === 'true';
