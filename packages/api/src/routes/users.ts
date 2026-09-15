@@ -5,6 +5,7 @@ import { verifyToken } from '../middleware/auth';
 import { attachTier } from '../middleware/tierMiddleware';
 import { getLimits } from '../config/tiers';
 import { countVisionUsesThisMonth } from '../services/visionQuota';
+import { sendDeletionRequestAlert } from '../services/email';
 
 export const usersRouter: IRouter = Router();
 
@@ -57,6 +58,75 @@ usersRouter.post('/push-token', async (req, res) => {
   }
 
   return res.json({ ok: true });
+});
+
+// ── POST /api/users/deletion-request ───────────────────────────────────────
+//
+// Records the authenticated user's account deletion request in the
+// deletion_requests queue.  Does NOT delete any data — see scripts/delete-account.ts.
+//
+// Idempotent: if a pending row already exists for this user, returns it rather
+// than creating a duplicate.  The DB also enforces this via a partial unique
+// index on (user_id) WHERE status = 'pending'.
+//
+// Rate limiting: the codebase has no per-user rate limiter; only the global
+// 500 req/15 min IP limiter from index.ts applies here.  The DB uniqueness
+// constraint prevents queue duplication regardless of call frequency.
+//
+// No request body — user_id and email come exclusively from the verified token.
+//
+// Failure contract: a Supabase insert error returns 500 with an error field.
+// The client MUST treat any non-2xx as "request not recorded" and inform the
+// user to try again or use the email path.
+usersRouter.post('/deletion-request', async (req, res) => {
+  const userId = req.user!.id;
+  const email  = req.user!.email;  // sourced from verifyToken → auth.getUser, not the request body
+
+  // Check for an existing pending row first.  Re-requesting must be safe: return
+  // the existing record rather than erroring or inserting a duplicate.
+  const { data: existing, error: existingErr } = await db
+    .from('deletion_requests' as any)
+    .select('status, requested_at')
+    .eq('user_id', userId)
+    .eq('status', 'pending')
+    .maybeSingle();
+
+  if (existingErr) {
+    console.error('[POST /api/users/deletion-request] existing-check failed:', existingErr.message);
+    return res.status(500).json({ error: 'Failed to check existing deletion requests' });
+  }
+
+  if (existing) {
+    return res.json({ status: (existing as any).status, requested_at: (existing as any).requested_at });
+  }
+
+  // No pending row — insert one.
+  // CRITICAL: check error explicitly and return non-2xx on failure.
+  // A silent failure here means the user believes their deletion is queued when it is not.
+  const { data: inserted, error: insertErr } = await db
+    .from('deletion_requests' as any)
+    .insert({ user_id: userId, email })
+    .select('status, requested_at')
+    .single();
+
+  if (insertErr || !inserted) {
+    console.error('[POST /api/users/deletion-request] insert failed:', insertErr?.message ?? 'no data returned');
+    return res.status(500).json({ error: 'Failed to record deletion request' });
+  }
+
+  // Notify the operator.  Best-effort: the row is already committed; a send
+  // failure must not fail the request or unwind anything.
+  try {
+    await sendDeletionRequestAlert({
+      userId,
+      email,
+      requestedAt: (inserted as any).requested_at,
+    });
+  } catch (notifyErr: any) {
+    console.error('[POST /api/users/deletion-request] operator notify failed (non-fatal):', notifyErr.message);
+  }
+
+  return res.json({ status: (inserted as any).status, requested_at: (inserted as any).requested_at });
 });
 
 // ── GET /api/users/usage ────────────────────────────────────────────────────
