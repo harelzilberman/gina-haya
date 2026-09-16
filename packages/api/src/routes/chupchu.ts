@@ -1576,13 +1576,30 @@ chupChuRouter.post('/chat', async (req: any, res) => {
       }
     }
 
-    // ── 3. Fetch today's calendar ─────────────────────────────────────────
+    // ── 3. Fetch today's and tomorrow's calendar ──────────────────────────
+    // Both days are fetched in one query so the biodynamicSection injected
+    // into Block 3 can cover today and tomorrow without a second round-trip.
+    // A separate single-row fetch was previously used; replaced here to fix
+    // the silent-error gap (INV-03: error field was discarded) and to fetch
+    // tomorrow at no extra cost.
     const today = todayInIsrael();
-    const { data: calendarDay } = await db
+    // Compute tomorrow in Israel time: parse YYYY-MM-DD, add 1 UTC day.
+    const _todayParts = today.split('-').map(Number);
+    const _tomorrowD  = new Date(Date.UTC(_todayParts[0], _todayParts[1] - 1, _todayParts[2] + 1));
+    const tomorrow    = _tomorrowD.toISOString().split('T')[0];
+
+    const { data: calendarRows, error: calendarError } = await db
       .from('biodynamic_calendar')
       .select('*')
-      .eq('date', today)
-      .single();
+      .in('date', [today, tomorrow])
+      .order('date', { ascending: true });
+
+    if (calendarError) {
+      console.error('[Chupchu] biodynamic_calendar fetch failed:', calendarError.message);
+    }
+
+    const calendarDay      = (calendarRows ?? []).find((r: any) => r.date === today)     ?? null;
+    const calendarTomorrow = (calendarRows ?? []).find((r: any) => r.date === tomorrow)  ?? null;
 
     // ── 4. Fetch user's garden (shared resolution helper) ────────────────
     // On ambiguous-multiple-gardens or no-gardens, proceed with garden = null
@@ -1677,16 +1694,23 @@ chupChuRouter.post('/chat', async (req: any, res) => {
         lang === 'he' ? p.common_name_he : (p.common_name_en || p.common_name_he)
       ) || [],
       todayCalendar: calendarDay ? {
-        ascendingDescending: calendarDay.ascending_descending,
-        nodeActive: calendarDay.node_active,
-        nodeBlackoutEnd: calendarDay.node_blackout_end,
-        dayType: calendarDay.day_type,
-        moonSign: calendarDay.moon_sign,
-        plantingScore: calendarDay.planting_score,
-        scoreColour: calendarDay.score_colour,
-        prep500Recommended: calendarDay.prep_500_recommended,
-        prep501Recommended: calendarDay.prep_501_recommended,
-        perigeeActive: calendarDay.perigee_active,
+        ascendingDescending:    calendarDay.ascending_descending,
+        ascendingDescendingHe:  calendarDay.ascending_descending_he ?? '',
+        nodeActive:             calendarDay.node_active,
+        nodeBlackoutEnd:        calendarDay.node_blackout_end ?? null,
+        dayType:                calendarDay.day_type,
+        dayTypeHe:              calendarDay.day_type_he ?? '',
+        moonSign:               calendarDay.moon_sign,
+        moonSignHe:             calendarDay.moon_sign_he ?? '',
+        moonPhaseNameHe:        calendarDay.moon_phase_name_he ?? '',
+        plantingScore:          calendarDay.planting_score,
+        scoreColour:            calendarDay.score_colour,
+        prep500Recommended:     calendarDay.prep_500_recommended,
+        prep501Recommended:     calendarDay.prep_501_recommended,
+        perigeeActive:          calendarDay.perigee_active,
+        dayTypeChangeTime:      calendarDay.day_type_change_time ?? null,
+        monDailySummary:        calendarDay.mon_daily_summary ?? '',
+        monDailySummaryEn:      calendarDay.mon_daily_summary_en ?? null,
       } : null,
       userLanguage: lang as 'he' | 'en',
       weather: weather ?? null,
@@ -2059,6 +2083,67 @@ chupChuRouter.post('/chat', async (req: any, res) => {
     const dateSection = lang === 'he'
       ? `## תאריך היום\nהיום הוא ${todayFormatted}. השתמש בתאריך זה לחישוב "מחר", "השבוע" וכו'.`
       : `## Today's Date\nToday is ${todayFormatted}. Use this to calculate "tomorrow", "this week" etc.`;
+
+    // ── Build biodynamic context section (volatile — Block 3) ────────────────
+    // Injects today and tomorrow so the model never needs to infer day type.
+    // Placed in Block 3 (not Block 2) because biodynamic data changes daily.
+    // Root cause of INV-03: no biodynamic data was present in any prompt block;
+    // the model produced plausible-sounding values from training knowledge.
+    // An explicit "no data" message when the row is absent prevents silent gaps.
+    const _isHeBio = lang === 'he';
+    const _noDataMsg = _isHeBio
+      ? 'אין נתוני לוח ביודינמי לתאריך זה.'
+      : 'No biodynamic data available for this date.';
+
+    const _formatChangeTime = (ts: string | null | undefined): string | null => {
+      if (!ts) return null;
+      try {
+        return new Date(ts).toLocaleTimeString('he-IL', {
+          hour: '2-digit', minute: '2-digit',
+          timeZone: 'Asia/Jerusalem', hour12: false,
+        });
+      } catch { return null; }
+    };
+
+    const _formatBioDay = (row: any, isHe: boolean): string => {
+      const lines: string[] = [];
+      const dayTypeStr  = isHe ? (row.day_type_he  || row.day_type)  : row.day_type;
+      const moonSignStr = isHe ? (row.moon_sign_he || row.moon_sign) : row.moon_sign;
+      const ascStr      = isHe
+        ? (row.ascending_descending_he || row.ascending_descending)
+        : row.ascending_descending;
+      lines.push(isHe
+        ? `יום ${dayTypeStr} — ${moonSignStr}, ${ascStr}, ציון שתילה: ${row.planting_score} (${row.score_colour})`
+        : `${dayTypeStr} day — ${moonSignStr}, ${ascStr}, planting score: ${row.planting_score} (${row.score_colour})`);
+
+      const changeTime = _formatChangeTime(row.day_type_change_time);
+      if (changeTime) {
+        lines.push(isHe
+          ? `(שינוי סוג יום ב-${changeTime} שעון ישראל)`
+          : `(day type changes at ${changeTime} Israel time)`);
+      }
+
+      const flags: string[] = [];
+      if (row.node_active)           flags.push(isHe ? 'מעבר קשר — הימנע משתילה' : 'node crossing — avoid planting');
+      if (row.perigee_active)        flags.push(isHe ? 'פריגי פעיל'               : 'perigee active');
+      if (row.prep_500_recommended)  flags.push(isHe ? 'מומלץ פרפרט 500'          : 'prep 500 recommended');
+      if (row.prep_501_recommended)  flags.push(isHe ? 'מומלץ פרפרט 501'          : 'prep 501 recommended');
+      if (flags.length > 0) lines.push(flags.join(', '));
+
+      const summary = isHe
+        ? (row.mon_daily_summary || '')
+        : (row.mon_daily_summary_en || row.mon_daily_summary || '');
+      if (summary) lines.push(summary);
+
+      return lines.join('\n');
+    };
+
+    const _todayBioStr    = calendarDay      ? _formatBioDay(calendarDay,      _isHeBio) : _noDataMsg;
+    const _tomorrowBioStr = calendarTomorrow ? _formatBioDay(calendarTomorrow, _isHeBio) : _noDataMsg;
+
+    const biodynamicSection = _isHeBio
+      ? `## לוח ביודינמי\n**היום (${today}):**\n${_todayBioStr}\n\n**מחר (${tomorrow}):**\n${_tomorrowBioStr}`
+      : `## Biodynamic Calendar\n**Today (${today}):**\n${_todayBioStr}\n\n**Tomorrow (${tomorrow}):**\n${_tomorrowBioStr}`;
 
     // ── 8b. Build past conversation context (messages older than the current window)
     // Prefer client history when it is longer than what's in DB — this survives silent

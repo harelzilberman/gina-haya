@@ -15,15 +15,22 @@ export interface ChupChuContext {
     plants: string[];
     todayCalendar: {
         ascendingDescending: string;
+        ascendingDescendingHe?: string;
         nodeActive: boolean;
         nodeBlackoutEnd: string | null;
         dayType: string;
+        dayTypeHe?: string;
         moonSign: string;
+        moonSignHe?: string;
+        moonPhaseNameHe?: string;
         plantingScore: number;
         scoreColour: string;
         prep500Recommended: boolean;
         prep501Recommended: boolean;
         perigeeActive: boolean;
+        dayTypeChangeTime?: string | null;
+        monDailySummary?: string;
+        monDailySummaryEn?: string | null;
     } | null;
     userLanguage: 'he' | 'en';
     gardenMap?: {
