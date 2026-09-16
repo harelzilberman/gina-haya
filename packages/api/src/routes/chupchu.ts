@@ -2029,8 +2029,15 @@ chupChuRouter.post('/chat', async (req: any, res) => {
           lang as 'he' | 'en',
         );
       } catch (err: any) {
-        console.error('[Chupchu] Weather fetch failed:', err.message);
+        console.error(`[Chupchu] Weather fetch failed at ${_weatherCoords.lat},${_weatherCoords.lon}:`, err.message);
+        weatherSection = lang === 'he'
+          ? '## מזג אוויר\nנתוני מזג אוויר אינם זמינים כרגע.'
+          : '## Weather\nWeather data is not available right now.';
       }
+    } else {
+      weatherSection = lang === 'he'
+        ? '## מזג אוויר\nנתוני מזג אוויר אינם זמינים כרגע (לא נמצא מיקום).'
+        : '## Weather\nWeather data is not available right now (no location found).';
     }
 
     // ── 9. Call Claude API ────────────────────────────────────────────────
