@@ -2317,6 +2317,7 @@ chupChuRouter.post('/chat', async (req: any, res) => {
     const volatileContext = [
       pastContextSection,
       dateSection,
+      biodynamicSection,
       weatherSection,
       gardenTimelineSection,
       quotaNoticeSection,
