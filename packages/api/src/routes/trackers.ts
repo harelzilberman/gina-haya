@@ -718,9 +718,14 @@ trackersRouter.post('/:id/checkin', async (req: any, res) => {
       perigeeActive:        calendarDay.perigee_active,
     } : undefined;
 
-    // Fetch weather
+    // Fetch weather — prefer exact garden coordinates when set.
+    // tracker is fetched with select('*, gardens(*)'): select-all on gardens,
+    // so latitude/longitude are present once migration 041 has been applied.
     const garden = tracker.gardens as any;
-    const weather = await fetchWeatherForRegion(garden?.location_region ?? null);
+    const _trackerCoords = (garden?.latitude != null && garden?.longitude != null)
+      ? { lat: Number(garden.latitude), lon: Number(garden.longitude) }
+      : null;
+    const weather = await fetchWeatherForRegion(garden?.location_region ?? null, _trackerCoords);
 
     // Get previous checkin for comparison
     const { data: previousCheckins } = await db

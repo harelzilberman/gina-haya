@@ -1683,7 +1683,13 @@ chupChuRouter.post('/chat', async (req: any, res) => {
     }
 
     // ── 5. Fetch weather ──────────────────────────────────────────────────
-    const weather = await fetchWeatherForRegion(garden?.location_region ?? null);
+    // Pass exact garden coordinates when available (set by Flutter via PATCH /api/garden/:id).
+    // Garden is fetched with select('*') above, so latitude/longitude are present.
+    // Falls back to location_region centroid when coords are null (unchanged behaviour).
+    const _gardenCoords = (garden?.latitude != null && garden?.longitude != null)
+      ? { lat: Number(garden.latitude), lon: Number(garden.longitude) }
+      : null;
+    const weather = await fetchWeatherForRegion(garden?.location_region ?? null, _gardenCoords);
 
     // ── 6. Build ChupChu context ────────────────────────────────────────────
     const context: ChupChuContext = {
