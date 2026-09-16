@@ -131,6 +131,51 @@ export async function getCachedWeatherForCoords(lat: number, lon: number, city: 
   return data;
 }
 
+/**
+ * Resolve the best available coordinates for a weather fetch.
+ *
+ * Priority:
+ *   1. Garden exact coordinates (latitude / longitude) — set deliberately by the user
+ *   2. REGION_COORDS[garden.location_region] — regional centroid
+ *   3. Geo-IP fallback (lat / lon from the request) — where the phone is, not the garden
+ *   4. null — no location available at all
+ *
+ * The returned `city` label follows the same priority:
+ *   garden.name → garden.location_region → fallback.city → 'Unknown'
+ */
+export function resolveGardenWeatherCoords(
+  garden: {
+    latitude?: number | null;
+    longitude?: number | null;
+    location_region?: string | null;
+    name?: string | null;
+  } | null | undefined,
+  fallback?: { lat?: number | null; lon?: number | null; city?: string | null } | null,
+): { lat: number; lon: number; city: string } | null {
+  const city =
+    garden?.name?.trim() ||
+    garden?.location_region?.trim() ||
+    fallback?.city?.trim() ||
+    'Unknown';
+
+  // 1. Garden exact coordinates
+  if (garden?.latitude != null && garden?.longitude != null) {
+    return { lat: Number(garden.latitude), lon: Number(garden.longitude), city };
+  }
+  // 2. Region centroid
+  if (garden?.location_region) {
+    const centroid = REGION_COORDS[garden.location_region];
+    if (centroid) {
+      return { lat: centroid.lat, lon: centroid.lon, city };
+    }
+  }
+  // 3. Geo-IP fallback
+  if (fallback?.lat != null && fallback?.lon != null) {
+    return { lat: Number(fallback.lat), lon: Number(fallback.lon), city };
+  }
+  return null;
+}
+
 export async function fetchWeatherForRegion(
   locationRegion: string | null,
   coords?: { lat: number; lon: number } | null,
