@@ -643,18 +643,25 @@ function handleToolCall(
 ): string {
   switch (name) {
     case 'get_today_calendar': {
-      const cal = context.todayCalendar;
-      if (!cal) return 'אין נתוני לוח ביודינמי להיום. ענה על סמך עקרונות כלליים בלבד.';
+      const cal  = context.todayCalendar;
+      const isHe = context.userLanguage === 'he';
+      if (!cal) return isHe
+        ? 'אין נתוני לוח ביודינמי להיום. ענה על סמך עקרונות כלליים בלבד.'
+        : 'No biodynamic calendar data available for today. Answer from general principles only.';
       return JSON.stringify({
-        ascendingDescending: cal.ascendingDescending,
-        nodeActive: cal.nodeActive,
-        dayType: cal.dayType,
-        moonSign: cal.moonSign,
-        plantingScore: cal.plantingScore,
-        scoreColour: cal.scoreColour,
-        prep500Recommended: cal.prep500Recommended,
-        prep501Recommended: cal.prep501Recommended,
-        perigeeActive: cal.perigeeActive,
+        dayType:             isHe ? (cal.dayTypeHe             || cal.dayType)             : cal.dayType,
+        moonSign:            isHe ? (cal.moonSignHe            || cal.moonSign)            : cal.moonSign,
+        ascendingDescending: isHe ? (cal.ascendingDescendingHe || cal.ascendingDescending) : cal.ascendingDescending,
+        plantingScore:       cal.plantingScore,
+        scoreColour:         cal.scoreColour,
+        nodeActive:          cal.nodeActive,
+        perigeeActive:       cal.perigeeActive,
+        prep500Recommended:  cal.prep500Recommended,
+        prep501Recommended:  cal.prep501Recommended,
+        dayTypeChangeTime:   cal.dayTypeChangeTime ?? null,
+        dailySummary:        isHe
+          ? (cal.monDailySummary     || '')
+          : (cal.monDailySummaryEn   || cal.monDailySummary || ''),
       }, null, 2);
     }
 
@@ -894,7 +901,7 @@ export async function askChupChu(
             if (b.name === 'get_upcoming_bd_days') {
               const { day_type, count = 3 } = b.input as { day_type: string; count?: number };
               try {
-                const today = new Date().toISOString().split('T')[0];
+                const today = todayInIsrael(); // was: new Date().toISOString().split('T')[0] — UTC, off-by-one on Israel evenings
                 const { data } = await db
                   .from('biodynamic_calendar')
                   .select('date, day_type, planting_score, moon_sign')
