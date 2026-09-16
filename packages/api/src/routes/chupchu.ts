@@ -5,7 +5,7 @@ import { db } from '../db/client';
 import { verifyToken } from '../middleware/auth';
 import { askChupChu, CHUPCHU_GLOSSARY_HE, type ProposedTask, type MobileToolCall } from '../services/claude';
 import { compressImageForClaude } from '../services/plantVision';
-import { fetchWeatherForRegion, getCachedWeatherForCoords } from '../services/weather';
+import { fetchWeatherForRegion, getCachedWeatherForCoords, resolveGardenWeatherCoords } from '../services/weather';
 import type { ChupChuMessage, ChupChuContext } from '@gina-haya/shared';
 import { todayInIsrael, startOfTodayIsrael, startOfCurrentMonthIsrael } from '@gina-haya/shared';
 import { getRecentCompletedTasks } from '../db/queries/tasks';
@@ -2011,13 +2011,21 @@ chupChuRouter.post('/chat', async (req: any, res) => {
     }
 
     // ── 8. Fetch IP-based weather forecast (non-blocking) ────────────────
+    // Source priority: garden exact coords → region centroid → geo-IP.
+    // Geo-IP is where the phone is; the garden doesn't move.
     let weatherSection = '';
-    if (location?.lat && location?.lon) {
+    const _weatherCoords = resolveGardenWeatherCoords(
+      garden,
+      location?.lat && location?.lon
+        ? { lat: Number(location.lat), lon: Number(location.lon), city: String(location.city || '') }
+        : null,
+    );
+    if (_weatherCoords) {
       try {
         weatherSection = await getCachedWeatherForCoords(
-          Number(location.lat),
-          Number(location.lon),
-          String(location.city || 'Unknown'),
+          _weatherCoords.lat,
+          _weatherCoords.lon,
+          _weatherCoords.city,
           lang as 'he' | 'en',
         );
       } catch (err: any) {
