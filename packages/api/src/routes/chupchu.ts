@@ -2010,7 +2010,7 @@ chupChuRouter.post('/chat', async (req: any, res) => {
         : '## Pending Tasks\nNo pending tasks at the moment.';
     }
 
-    // ── 8. Fetch IP-based weather forecast (non-blocking) ────────────────
+    // ── 8. Fetch weather forecast for prompt ─────────────────────────────
     // Source priority: garden exact coords → region centroid → geo-IP.
     // Geo-IP is where the phone is; the garden doesn't move.
     let weatherSection = '';
