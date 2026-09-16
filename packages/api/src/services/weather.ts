@@ -36,6 +36,8 @@ const WEATHER_CODE_EN: Record<number, string> = {
 
 export interface WeatherData {
   locationRegion: string;
+  /** true when real garden coordinates were used; false when a region centroid or default was used */
+  isExactLocation: boolean;
   tempMax: number;
   tempMin: number;
   tempCurrent: number;
@@ -123,28 +125,41 @@ export async function getCachedWeatherForCoords(lat: number, lon: number, city: 
 }
 
 export async function fetchWeatherForRegion(
-  locationRegion: string | null
+  locationRegion: string | null,
+  coords?: { lat: number; lon: number } | null,
 ): Promise<WeatherData | null> {
-  const region = locationRegion ?? 'default';
-  const coords = REGION_COORDS[region] ?? REGION_COORDS['default'];
+  // Resolution order: explicit garden coordinates → region centroid → default.
+  // Callers that pass only locationRegion continue to work unchanged.
+  const isExact = !!(coords?.lat != null && coords?.lon != null);
+  const resolved = isExact
+    ? { lat: coords!.lat, lon: coords!.lon }
+    : (REGION_COORDS[locationRegion ?? ''] ?? REGION_COORDS['default']);
 
-  const cacheKey = `${coords.lat},${coords.lon}`;
-  const cached = cache.get(cacheKey);
+  const region   = locationRegion ?? 'default';
+  const cacheKey = `${resolved.lat},${resolved.lon}`;
+  const cached   = cache.get(cacheKey);
   if (cached && Date.now() - cached.fetchedAt < CACHE_TTL_MS) {
-    return { ...cached.data, locationRegion: region };
+    return { ...cached.data, locationRegion: region, isExactLocation: isExact };
   }
 
   try {
     const url = new URL('https://api.open-meteo.com/v1/forecast');
-    url.searchParams.set('latitude',  String(coords.lat));
-    url.searchParams.set('longitude', String(coords.lon));
+    url.searchParams.set('latitude',  String(resolved.lat));
+    url.searchParams.set('longitude', String(resolved.lon));
     url.searchParams.set('daily',     'temperature_2m_max,temperature_2m_min,precipitation_sum,uv_index_max,sunrise,sunset,moonrise,moonset');
     url.searchParams.set('hourly',    'temperature_2m,relative_humidity_2m,wind_speed_10m');
     url.searchParams.set('current',   'temperature_2m,relative_humidity_2m,wind_speed_10m,precipitation,weather_code');
     url.searchParams.set('timezone',  'Asia/Jerusalem');
     url.searchParams.set('forecast_days', '2');
 
-    const res = await fetch(url.toString());
+    const controller = new AbortController();
+    const timeout    = setTimeout(() => {
+      controller.abort();
+      console.error('[fetchWeatherForRegion] Open-Meteo request timed out after 10 s');
+    }, 10_000);
+
+    const res = await fetch(url.toString(), { signal: controller.signal });
+    clearTimeout(timeout);
     if (!res.ok) return null;
 
     const json = await res.json() as any;
@@ -155,6 +170,7 @@ export async function fetchWeatherForRegion(
 
     const data: WeatherData = {
       locationRegion:        region,
+      isExactLocation:       isExact,
       tempCurrent:           Math.round(cur.temperature_2m * 10) / 10,
       humidity:              Math.round(cur.relative_humidity_2m),
       windSpeed:             Math.round(cur.wind_speed_10m * 10) / 10,
@@ -174,7 +190,8 @@ export async function fetchWeatherForRegion(
 
     cache.set(cacheKey, { data, fetchedAt: Date.now() });
     return data;
-  } catch {
+  } catch (err: any) {
+    console.error('[fetchWeatherForRegion] fetch failed:', err?.message ?? err);
     return null;
   }
 }
