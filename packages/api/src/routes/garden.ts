@@ -417,27 +417,63 @@ gardenRouter.post('/', async (req: any, res) => {
 });
 
 // PATCH /api/garden/:id — update a garden
+//
+// Accepts any subset of the editable garden fields.  If latitude and longitude
+// are both present they are validated and written with coords_updated_at = now().
+// If only one coordinate is supplied without the other, a 400 is returned — a
+// partial coordinate pair is useless and likely indicates a client bug.
 gardenRouter.patch('/:id', async (req: any, res) => {
   try {
-    const { name, locationRegion, soilType, notes, location, description } = req.body;
+    const { name, locationRegion, soilType, notes, location, description, latitude, longitude } = req.body;
+
+    // Coordinates: must be supplied as a pair, and within valid geographic ranges.
+    const hasLat = latitude  !== undefined && latitude  !== null;
+    const hasLon = longitude !== undefined && longitude !== null;
+    if (hasLat !== hasLon) {
+      return res.status(400).json({
+        error: 'invalid_coords',
+        message: 'latitude and longitude must be supplied together',
+      });
+    }
+    if (hasLat) {
+      const lat = Number(latitude);
+      const lon = Number(longitude);
+      if (!Number.isFinite(lat) || lat < -90  || lat > 90) {
+        return res.status(400).json({ error: 'invalid_coords', message: 'latitude must be between -90 and 90' });
+      }
+      if (!Number.isFinite(lon) || lon < -180 || lon > 180) {
+        return res.status(400).json({ error: 'invalid_coords', message: 'longitude must be between -180 and 180' });
+      }
+    }
+
+    const updates: Record<string, unknown> = { updated_at: new Date().toISOString() };
+    if (name          !== undefined) updates.name            = name;
+    if (locationRegion !== undefined) updates.location_region = locationRegion;
+    if (location       !== undefined) updates.location        = location;
+    if (description    !== undefined) updates.description     = description;
+    if (soilType       !== undefined) updates.soil_type       = soilType;
+    if (notes          !== undefined) updates.notes           = notes;
+    if (hasLat) {
+      updates.latitude           = Number(latitude);
+      updates.longitude          = Number(longitude);
+      updates.coords_updated_at  = new Date().toISOString();
+    }
 
     const { data, error } = await db
       .from('gardens')
-      .update({
-        ...(name !== undefined && { name }),
-        ...(locationRegion !== undefined && { location_region: locationRegion }),
-        ...(location !== undefined && { location }),
-        ...(description !== undefined && { description }),
-        ...(soilType !== undefined && { soil_type: soilType }),
-        ...(notes !== undefined && { notes }),
-        updated_at: new Date().toISOString(),
-      })
+      .update(updates)
       .eq('id', req.params.id)
-      .eq('user_id', req.user.id)
+      .eq('user_id', req.user.id)   // ownership verified from token — never trusted from body
       .select()
       .single();
 
-    if (error) throw error;
+    if (error) {
+      console.error('[PATCH /api/garden/:id] DB error:', error.message);
+      return res.status(500).json({ error: error.message });
+    }
+    if (!data) {
+      return res.status(404).json({ error: 'garden_not_found' });
+    }
     res.json(data);
   } catch (err: any) {
     console.error('[PATCH /api/garden/:id]', err);
