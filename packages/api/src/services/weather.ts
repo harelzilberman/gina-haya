@@ -84,7 +84,14 @@ async function fetchWeatherForCoords(lat: number, lon: number, city: string, lan
   url.searchParams.set('timezone',  'auto');
   url.searchParams.set('forecast_days', '7');
 
-  const res = await fetch(url.toString());
+  const controller = new AbortController();
+  const timeout    = setTimeout(() => {
+    controller.abort();
+    console.error('[fetchWeatherForCoords] Open-Meteo request timed out after 10 s');
+  }, 10_000);
+
+  const res = await fetch(url.toString(), { signal: controller.signal });
+  clearTimeout(timeout);
   if (!res.ok) throw new Error(`Open-Meteo error: ${res.status}`);
   const json = await res.json() as any;
 
