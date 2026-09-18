@@ -1,14 +1,16 @@
+import { Link } from 'react-router-dom';
+
 const NAVY         = '#1B2A4A';
 const SAGE         = '#4A9C68';
 const CREAM        = '#FDF6EC';
 const WARN_BG      = '#fff7ed';
 const WARN_BORDER  = '#f97316';
 
-const CONTACT_EMAIL       = 'gina.haya.contact@gmail.com';
-const SUBJECT_HE          = 'בקשת מחיקת חשבון — גינה חיה';
-const SUBJECT_EN          = 'Account Deletion Request — Gina Haya';
-const SUBJECT_PARTIAL_HE  = 'בקשת מחיקת נתונים — גינה חיה';
-const SUBJECT_PARTIAL_EN  = 'Data Deletion Request — Gina Haya';
+const CONTACT_EMAIL      = 'gina.haya.contact@gmail.com';
+const SUBJECT_HE         = 'בקשת מחיקת חשבון — גינה חיה';
+const SUBJECT_EN         = 'Account Deletion Request — Gina Haya';
+const SUBJECT_PARTIAL_HE = 'בקשת מחיקת נתונים — גינה חיה';
+const SUBJECT_PARTIAL_EN = 'Data Deletion Request — Gina Haya';
 
 function mailtoHref(subject: string) {
   return `mailto:${CONTACT_EMAIL}?subject=${encodeURIComponent(subject)}`;
@@ -27,29 +29,21 @@ export function DeleteAccountPage() {
             </h1>
 
             {/* Warning box */}
-            <div style={{
-              backgroundColor: WARN_BG, border: `1px solid ${WARN_BORDER}`,
-              borderRadius: '10px', padding: '16px 20px', marginBottom: '28px',
-            }}>
+            <div style={{ backgroundColor: WARN_BG, border: `1px solid ${WARN_BORDER}`, borderRadius: '10px', padding: '16px 20px', marginBottom: '28px' }}>
               <p style={{ color: '#9a3412', fontWeight: 600, margin: '0 0 6px' }}>
                 שים לב: מחיקת החשבון היא בלתי הפיכה
               </p>
               <p style={{ color: '#9a3412', margin: 0, lineHeight: 1.65 }}>
-                מחיקת החשבון מסירה לצמיתות את הפרופיל שלך, הגינות, הצמחים, המעקבים, נתוני ציר הזמן, התמונות ששמורות בשרתינו, והיסטוריית השיחות עם צ'ופצ'ו. לא ניתן לשחזר את המידע לאחר המחיקה.
+                מחיקת החשבון מסירה לצמיתות: גינות, צמחים, תמונות, רשומות יומן, היסטוריית טיפול ושיחות עם צ'ופצ'ו. לא ניתן לשחזר את המידע לאחר המחיקה.
               </p>
               <p style={{ color: '#9a3412', margin: '8px 0 0', lineHeight: 1.65 }}>
-                רשומות שימוש ורשומות תשלום נשמרות ללא מזהה החשבון שלך, לצורכי חשבונאות ותפעול.
+                החשבון ממשיך לפעול כרגיל עד לסיום עיבוד הבקשה (עד 30 יום). רשומות שימוש ורשומות תשלום נשמרות ללא מזהה החשבון שלך, לצורכי חשבונאות ותפעול.
               </p>
             </div>
 
             {/* Subscriptions note */}
-            <div style={{
-              backgroundColor: '#f0fdf4', border: `1px solid ${SAGE}40`,
-              borderRadius: '10px', padding: '16px 20px', marginBottom: '28px',
-            }}>
-              <p style={{ color: NAVY, fontWeight: 600, margin: '0 0 6px' }}>
-                מנויים ב-Google Play
-              </p>
+            <div style={{ backgroundColor: '#f0fdf4', border: `1px solid ${SAGE}40`, borderRadius: '10px', padding: '16px 20px', marginBottom: '28px' }}>
+              <p style={{ color: NAVY, fontWeight: 600, margin: '0 0 6px' }}>מנויים ב-Google Play</p>
               <p style={{ color: '#475569', margin: 0, lineHeight: 1.65 }}>
                 מנויים פעילים מנוהלים ע"י Google Play — לא ע"י גינה חיה. מחיקת חשבון גינה חיה <strong>אינה מבטלת</strong> מנוי Google Play. כדי להימנע מחיוב עתידי, יש לבטל את המנוי ב-Google Play לפני בקשת מחיקת החשבון.
               </p>
@@ -59,15 +53,20 @@ export function DeleteAccountPage() {
               כיצד לבקש מחיקת חשבון
             </h2>
             <p style={{ color: '#475569', lineHeight: 1.7, marginBottom: '20px' }}>
-              שלח/י אימייל לכתובת הבאה <strong>מכתובת הדוא"ל הרשומה בחשבונך</strong> עם הבקשה למחיקת חשבון. אנחנו נאשר את קבלת הבקשה ונשלים את המחיקה תוך 30 יום.
+              ניתן לשלוח בקשה ישירות מדף זה (כשמחובר/ת לחשבון), או לשלוח אימייל לכתובת הבאה <strong>מכתובת הדוא"ל הרשומה בחשבונך</strong>. אנחנו נאשר את קבלת הבקשה ונשלים את המחיקה תוך 30 יום.
             </p>
+
+            {/* Sign-in prompt (shown before form is wired) */}
+            <div style={{ backgroundColor: '#f8fafc', border: '1px solid #e2e8f0', borderRadius: '10px', padding: '16px 20px', marginBottom: '24px' }}>
+              <p style={{ color: '#475569', margin: 0, lineHeight: 1.65 }}>
+                <Link to="/login" style={{ color: SAGE, textDecoration: 'underline' }}>התחבר/י לחשבונך</Link>
+                {' '}כדי לשלוח בקשה ישירות מהדף הזה, או שלח/י בקשה בדוא"ל מהכתובת הרשומה בחשבונך.
+              </p>
+            </div>
+
             <a
               href={mailtoHref(SUBJECT_HE)}
-              style={{
-                display: 'inline-block', backgroundColor: '#dc2626', color: '#ffffff',
-                textDecoration: 'none', fontWeight: 600, fontSize: '15px',
-                padding: '12px 24px', borderRadius: '10px', marginBottom: '8px',
-              }}
+              style={{ display: 'inline-block', backgroundColor: '#dc2626', color: '#ffffff', textDecoration: 'none', fontWeight: 600, fontSize: '15px', padding: '12px 24px', borderRadius: '10px', marginBottom: '8px' }}
             >
               שלח בקשת מחיקה בדוא"ל
             </a>
@@ -76,17 +75,13 @@ export function DeleteAccountPage() {
             </p>
 
             <p style={{ color: '#475569', fontSize: '14px', marginTop: '24px', lineHeight: 1.65 }}>
-              לשאלות נוספות ניתן לפנות אלינו גם ב-{' '}
-              <a href={`mailto:${CONTACT_EMAIL}`} style={{ color: SAGE }}>
-                {CONTACT_EMAIL}
-              </a>
+              לשאלות נוספות:{' '}
+              <a href={`mailto:${CONTACT_EMAIL}`} style={{ color: SAGE }}>{CONTACT_EMAIL}</a>
             </p>
 
             {/* Partial deletion */}
             <div style={{ marginTop: '36px', paddingTop: '28px', borderTop: '1px solid #e2e8f0' }}>
-              <h2 style={{ fontSize: '18px', fontWeight: 700, color: NAVY, marginBottom: '12px' }}>
-                מחיקת נתונים חלקית
-              </h2>
+              <h2 style={{ fontSize: '18px', fontWeight: 700, color: NAVY, marginBottom: '12px' }}>מחיקת נתונים חלקית</h2>
               <p style={{ color: '#475569', lineHeight: 1.7, marginBottom: '16px' }}>
                 ניתן למחוק תוכן ספציפי — גינות, צמחים, תמונות, מעקבים — ישירות מתוך האפליקציה בכל עת. מחיקה כזו מסירה את הנתונים משרתינו מיידית.
               </p>
@@ -95,11 +90,7 @@ export function DeleteAccountPage() {
               </p>
               <a
                 href={mailtoHref(SUBJECT_PARTIAL_HE)}
-                style={{
-                  display: 'inline-block', backgroundColor: NAVY, color: '#ffffff',
-                  textDecoration: 'none', fontWeight: 600, fontSize: '14px',
-                  padding: '10px 20px', borderRadius: '10px', marginBottom: '8px',
-                }}
+                style={{ display: 'inline-block', backgroundColor: NAVY, color: '#ffffff', textDecoration: 'none', fontWeight: 600, fontSize: '14px', padding: '10px 20px', borderRadius: '10px', marginBottom: '8px' }}
               >
                 שלח בקשת מחיקת נתונים חלקית
               </a>
@@ -125,29 +116,21 @@ export function DeleteAccountPage() {
             </h1>
 
             {/* Warning box */}
-            <div style={{
-              backgroundColor: WARN_BG, border: `1px solid ${WARN_BORDER}`,
-              borderRadius: '10px', padding: '16px 20px', marginBottom: '28px',
-            }}>
+            <div style={{ backgroundColor: WARN_BG, border: `1px solid ${WARN_BORDER}`, borderRadius: '10px', padding: '16px 20px', marginBottom: '28px' }}>
               <p style={{ color: '#9a3412', fontWeight: 600, margin: '0 0 6px' }}>
                 Important: Account deletion is permanent and irreversible
               </p>
               <p style={{ color: '#9a3412', margin: 0, lineHeight: 1.65 }}>
-                Deleting your account permanently removes your profile, gardens, plants, trackers, timeline data, the photos stored on our servers, and your chat history with Chupchu. This action cannot be undone.
+                Deleting your account permanently removes: gardens, plants, photos, journal entries, care history, and Chupchu conversations. This action cannot be undone.
               </p>
               <p style={{ color: '#9a3412', margin: '8px 0 0', lineHeight: 1.65 }}>
-                Usage and payment records are kept without your account identifier, for accounting and operational purposes.
+                Your account continues to work normally until the request is processed (up to 30 days). Usage and payment records are kept without your account identifier, for accounting and operational purposes.
               </p>
             </div>
 
             {/* Subscriptions note */}
-            <div style={{
-              backgroundColor: '#f0fdf4', border: `1px solid ${SAGE}40`,
-              borderRadius: '10px', padding: '16px 20px', marginBottom: '28px',
-            }}>
-              <p style={{ color: NAVY, fontWeight: 600, margin: '0 0 6px' }}>
-                Google Play subscriptions
-              </p>
+            <div style={{ backgroundColor: '#f0fdf4', border: `1px solid ${SAGE}40`, borderRadius: '10px', padding: '16px 20px', marginBottom: '28px' }}>
+              <p style={{ color: NAVY, fontWeight: 600, margin: '0 0 6px' }}>Google Play subscriptions</p>
               <p style={{ color: '#475569', margin: 0, lineHeight: 1.65 }}>
                 Active subscriptions are managed by Google Play — not by Gina Haya. Deleting your Gina Haya account <strong>does not cancel</strong> a Google Play subscription. To avoid future charges, cancel your subscription in Google Play before requesting account deletion.
               </p>
@@ -157,15 +140,20 @@ export function DeleteAccountPage() {
               How to request deletion
             </h2>
             <p style={{ color: '#475569', lineHeight: 1.7, marginBottom: '20px' }}>
-              Send an email from <strong>the address registered on your account</strong> with a deletion request. We will confirm receipt and complete the deletion within 30 days.
+              You can submit a request directly on this page (when signed in), or send an email from <strong>the address registered on your account</strong>. We will confirm receipt and complete the deletion within 30 days.
             </p>
+
+            {/* Sign-in prompt (shown before form is wired) */}
+            <div style={{ backgroundColor: '#f8fafc', border: '1px solid #e2e8f0', borderRadius: '10px', padding: '16px 20px', marginBottom: '24px' }}>
+              <p style={{ color: '#475569', margin: 0, lineHeight: 1.65 }}>
+                <Link to="/login" style={{ color: SAGE, textDecoration: 'underline' }}>Sign in to your account</Link>
+                {' '}to submit a request directly on this page, or send a request by email from the address registered on your account.
+              </p>
+            </div>
+
             <a
               href={mailtoHref(SUBJECT_EN)}
-              style={{
-                display: 'inline-block', backgroundColor: '#dc2626', color: '#ffffff',
-                textDecoration: 'none', fontWeight: 600, fontSize: '15px',
-                padding: '12px 24px', borderRadius: '10px', marginBottom: '8px',
-              }}
+              style={{ display: 'inline-block', backgroundColor: '#dc2626', color: '#ffffff', textDecoration: 'none', fontWeight: 600, fontSize: '15px', padding: '12px 24px', borderRadius: '10px', marginBottom: '8px' }}
             >
               Send deletion request by email
             </a>
@@ -174,17 +162,13 @@ export function DeleteAccountPage() {
             </p>
 
             <p style={{ color: '#475569', fontSize: '14px', marginTop: '24px', lineHeight: 1.65 }}>
-              For other questions contact us at{' '}
-              <a href={`mailto:${CONTACT_EMAIL}`} style={{ color: SAGE }}>
-                {CONTACT_EMAIL}
-              </a>
+              For other questions:{' '}
+              <a href={`mailto:${CONTACT_EMAIL}`} style={{ color: SAGE }}>{CONTACT_EMAIL}</a>
             </p>
 
             {/* Partial deletion */}
             <div style={{ marginTop: '36px', paddingTop: '28px', borderTop: '1px solid #e2e8f0' }}>
-              <h2 style={{ fontSize: '18px', fontWeight: 700, color: NAVY, marginBottom: '12px' }}>
-                Partial data deletion
-              </h2>
+              <h2 style={{ fontSize: '18px', fontWeight: 700, color: NAVY, marginBottom: '12px' }}>Partial data deletion</h2>
               <p style={{ color: '#475569', lineHeight: 1.7, marginBottom: '16px' }}>
                 You can delete specific content — gardens, plants, photos, trackers — directly inside the app at any time. Such deletions remove the data from our servers immediately.
               </p>
@@ -193,11 +177,7 @@ export function DeleteAccountPage() {
               </p>
               <a
                 href={mailtoHref(SUBJECT_PARTIAL_EN)}
-                style={{
-                  display: 'inline-block', backgroundColor: NAVY, color: '#ffffff',
-                  textDecoration: 'none', fontWeight: 600, fontSize: '14px',
-                  padding: '10px 20px', borderRadius: '10px', marginBottom: '8px',
-                }}
+                style={{ display: 'inline-block', backgroundColor: NAVY, color: '#ffffff', textDecoration: 'none', fontWeight: 600, fontSize: '14px', padding: '10px 20px', borderRadius: '10px', marginBottom: '8px' }}
               >
                 Send partial data deletion request
               </a>
