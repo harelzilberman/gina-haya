@@ -1,4 +1,7 @@
+import { useState } from 'react';
 import { Link } from 'react-router-dom';
+import { useAuthStore } from '../stores/authStore';
+import { api } from '../api/client';
 
 const NAVY         = '#1B2A4A';
 const SAGE         = '#4A9C68';
@@ -12,11 +15,178 @@ const SUBJECT_EN         = 'Account Deletion Request — Gina Haya';
 const SUBJECT_PARTIAL_HE = 'בקשת מחיקת נתונים — גינה חיה';
 const SUBJECT_PARTIAL_EN = 'Data Deletion Request — Gina Haya';
 
+/** Word the user must type to unlock the button, per language. */
+const CONFIRM_WORD_HE = 'מחק';
+const CONFIRM_WORD_EN = 'delete';
+
+type Status = 'idle' | 'loading' | 'success' | 'error_401' | 'error_server' | 'error_network';
+
 function mailtoHref(subject: string) {
   return `mailto:${CONTACT_EMAIL}?subject=${encodeURIComponent(subject)}`;
 }
 
+/* ── Signed-in form (both languages share one component) ── */
+
+interface FormProps {
+  lang: 'he' | 'en';
+  email: string;
+  confirmInput: string;
+  setConfirmInput: (v: string) => void;
+  status: Status;
+  requestedAt: string | null;
+  onSubmit: () => void;
+}
+
+function SignedInForm({ lang, email, confirmInput, setConfirmInput, status, requestedAt, onSubmit }: FormProps) {
+  const confirmWord = lang === 'he' ? CONFIRM_WORD_HE : CONFIRM_WORD_EN;
+  const inputMatches = confirmInput === confirmWord;
+  const isHe = lang === 'he';
+
+  const dateStr = requestedAt
+    ? new Date(requestedAt).toLocaleString(isHe ? 'he-IL' : 'en-GB', { dateStyle: 'long', timeStyle: 'short' })
+    : null;
+
+  if (status === 'success') {
+    return (
+      <div style={{ backgroundColor: '#f0fdf4', border: `1px solid ${SAGE}40`, borderRadius: '10px', padding: '20px 24px', marginBottom: '24px' }}>
+        <p style={{ color: NAVY, fontWeight: 700, margin: '0 0 8px' }}>
+          {isHe ? 'הבקשה התקבלה ✓' : 'Request received ✓'}
+        </p>
+        <p style={{ color: '#475569', margin: 0, lineHeight: 1.65 }}>
+          {isHe
+            ? 'בקשת מחיקת החשבון נרשמה ותטופל תוך 30 יום. החשבון ימשיך לפעול כרגיל עד לסיום התהליך.'
+            : 'Your deletion request has been recorded and will be processed within 30 days. Your account will continue to work normally until the process is complete.'}
+        </p>
+        {dateStr && (
+          <p style={{ color: '#94a3b8', fontSize: '13px', margin: '8px 0 0' }}>
+            {isHe ? `נשלחה ב: ${dateStr}` : `Submitted: ${dateStr}`}
+          </p>
+        )}
+      </div>
+    );
+  }
+
+  return (
+    <div style={{ marginBottom: '24px' }}>
+      {/* Account display */}
+      <div style={{ backgroundColor: '#f8fafc', border: '1px solid #e2e8f0', borderRadius: '10px', padding: '14px 18px', marginBottom: '16px' }}>
+        <p style={{ color: '#475569', margin: 0, fontSize: '14px' }}>
+          {isHe ? 'מחובר/ת בתור: ' : 'Signed in as: '}
+          <strong style={{ color: NAVY }}>{email}</strong>
+        </p>
+      </div>
+
+      {/* Error states — a failed request must never look like success */}
+      {status === 'error_401' && (
+        <div style={{ backgroundColor: WARN_BG, border: `1px solid ${WARN_BORDER}`, borderRadius: '8px', padding: '12px 16px', marginBottom: '12px' }}>
+          <p style={{ color: '#9a3412', margin: 0, fontSize: '14px' }}>
+            {isHe ? 'פג תוקף החיבור — יש להתחבר מחדש כדי לשלוח את הבקשה.' : 'Your session has expired — please sign in again to submit the request.'}
+          </p>
+        </div>
+      )}
+      {(status === 'error_server' || status === 'error_network') && (
+        <div style={{ backgroundColor: WARN_BG, border: `1px solid ${WARN_BORDER}`, borderRadius: '8px', padding: '12px 16px', marginBottom: '12px' }}>
+          <p style={{ color: '#9a3412', margin: 0, fontSize: '14px' }}>
+            {isHe ? 'שגיאה בשליחת הבקשה. הבקשה לא נשלחה — יש לנסות שוב.' : 'The request could not be sent. Please try again.'}
+          </p>
+        </div>
+      )}
+
+      {/* Confirmation word input */}
+      <p style={{ color: '#475569', lineHeight: 1.65, marginBottom: '10px', fontSize: '14px' }}>
+        {isHe
+          ? <>כדי לאשר, הקלד/י <strong style={{ color: '#dc2626' }}>{confirmWord}</strong> בשדה למטה:</>
+          : <>To confirm, type <strong style={{ color: '#dc2626' }}>{confirmWord}</strong> below:</>}
+      </p>
+      <input
+        type="text"
+        value={confirmInput}
+        onChange={e => setConfirmInput(e.target.value)}
+        placeholder={confirmWord}
+        dir={isHe ? 'rtl' : 'ltr'}
+        style={{
+          width: '100%', padding: '10px 14px', fontSize: '15px', boxSizing: 'border-box',
+          border: '1.5px solid #cbd5e1', borderRadius: '8px', outline: 'none',
+          fontFamily: 'inherit', marginBottom: '14px', direction: isHe ? 'rtl' : 'ltr',
+        }}
+      />
+      <button
+        onClick={onSubmit}
+        disabled={!inputMatches || status === 'loading'}
+        style={{
+          display: 'inline-block', backgroundColor: '#dc2626', color: '#ffffff',
+          border: 'none', fontWeight: 600, fontSize: '15px',
+          padding: '12px 24px', borderRadius: '10px', cursor: inputMatches && status !== 'loading' ? 'pointer' : 'not-allowed',
+          opacity: inputMatches && status !== 'loading' ? 1 : 0.4, transition: 'opacity 0.15s',
+        }}
+      >
+        {status === 'loading'
+          ? (isHe ? 'שולח...' : 'Sending…')
+          : (isHe ? 'שלח בקשת מחיקת חשבון' : 'Submit account deletion request')}
+      </button>
+    </div>
+  );
+}
+
+/* ── Sign-in prompt for anonymous visitors ── */
+
+function SignInPrompt({ lang }: { lang: 'he' | 'en' }) {
+  return (
+    <div style={{ backgroundColor: '#f8fafc', border: '1px solid #e2e8f0', borderRadius: '10px', padding: '16px 20px', marginBottom: '24px' }}>
+      <p style={{ color: '#475569', margin: 0, lineHeight: 1.65 }}>
+        {lang === 'he' ? (
+          <>
+            <Link to="/login" style={{ color: SAGE, textDecoration: 'underline' }}>התחבר/י לחשבונך</Link>
+            {' '}כדי לשלוח בקשה ישירות מהדף הזה, או שלח/י בקשה בדוא"ל מהכתובת הרשומה בחשבונך.
+          </>
+        ) : (
+          <>
+            <Link to="/login" style={{ color: SAGE, textDecoration: 'underline' }}>Sign in to your account</Link>
+            {' '}to submit a request directly on this page, or send a request by email from the address registered on your account.
+          </>
+        )}
+      </p>
+    </div>
+  );
+}
+
+/* ── Page ── */
+
 export function DeleteAccountPage() {
+  const { session, user } = useAuthStore();
+  const [confirmInput, setConfirmInput] = useState('');
+  const [status, setStatus] = useState<Status>('idle');
+  const [requestedAt, setRequestedAt] = useState<string | null>(null);
+
+  const email = user?.email ?? null;
+  const token = session?.access_token ?? null;
+  const isSignedIn = !!token && !!email;
+
+  async function handleSubmit() {
+    if (!token) return;
+    setStatus('loading');
+    try {
+      const data = await api.post<{ requested_at: string }>(
+        '/api/users/deletion-request', {}, token
+      );
+      setRequestedAt(data.requested_at ?? null);
+      setStatus('success');
+    } catch (err: any) {
+      // TypeError = network failure (fetch threw before getting a response)
+      if (err.name === 'TypeError') {
+        setStatus('error_network');
+      } else if (
+        err.message?.includes('HTTP 401') ||
+        err.errorCode === 'unauthorized' ||
+        err.errorData?.status === 401
+      ) {
+        setStatus('error_401');
+      } else {
+        setStatus('error_server');
+      }
+    }
+  }
+
   return (
     <div className="min-h-screen" style={{ backgroundColor: CREAM }}>
       <div style={{ maxWidth: '680px', margin: '0 auto', padding: '48px 24px 80px' }}>
@@ -56,17 +226,29 @@ export function DeleteAccountPage() {
               ניתן לשלוח בקשה ישירות מדף זה (כשמחובר/ת לחשבון), או לשלוח אימייל לכתובת הבאה <strong>מכתובת הדוא"ל הרשומה בחשבונך</strong>. אנחנו נאשר את קבלת הבקשה ונשלים את המחיקה תוך 30 יום.
             </p>
 
-            {/* Sign-in prompt (shown before form is wired) */}
-            <div style={{ backgroundColor: '#f8fafc', border: '1px solid #e2e8f0', borderRadius: '10px', padding: '16px 20px', marginBottom: '24px' }}>
-              <p style={{ color: '#475569', margin: 0, lineHeight: 1.65 }}>
-                <Link to="/login" style={{ color: SAGE, textDecoration: 'underline' }}>התחבר/י לחשבונך</Link>
-                {' '}כדי לשלוח בקשה ישירות מהדף הזה, או שלח/י בקשה בדוא"ל מהכתובת הרשומה בחשבונך.
-              </p>
-            </div>
+            {/* Signed-in form or prompt */}
+            {isSignedIn ? (
+              <SignedInForm
+                lang="he"
+                email={email}
+                confirmInput={confirmInput}
+                setConfirmInput={setConfirmInput}
+                status={status}
+                requestedAt={requestedAt}
+                onSubmit={handleSubmit}
+              />
+            ) : (
+              <SignInPrompt lang="he" />
+            )}
 
+            {/* Email alternative — always visible */}
+            <p style={{ color: '#475569', lineHeight: 1.7, marginBottom: '8px' }}>
+              {isSignedIn ? 'אפשרות נוספת: ' : ''}
+              שלח/י בקשה בדוא"ל <strong>מכתובת הדוא"ל הרשומה בחשבונך</strong>:
+            </p>
             <a
               href={mailtoHref(SUBJECT_HE)}
-              style={{ display: 'inline-block', backgroundColor: '#dc2626', color: '#ffffff', textDecoration: 'none', fontWeight: 600, fontSize: '15px', padding: '12px 24px', borderRadius: '10px', marginBottom: '8px' }}
+              style={{ display: 'inline-block', backgroundColor: isSignedIn ? NAVY : '#dc2626', color: '#ffffff', textDecoration: 'none', fontWeight: 600, fontSize: isSignedIn ? '14px' : '15px', padding: isSignedIn ? '10px 20px' : '12px 24px', borderRadius: '10px', marginBottom: '8px' }}
             >
               שלח בקשת מחיקה בדוא"ל
             </a>
@@ -143,17 +325,29 @@ export function DeleteAccountPage() {
               You can submit a request directly on this page (when signed in), or send an email from <strong>the address registered on your account</strong>. We will confirm receipt and complete the deletion within 30 days.
             </p>
 
-            {/* Sign-in prompt (shown before form is wired) */}
-            <div style={{ backgroundColor: '#f8fafc', border: '1px solid #e2e8f0', borderRadius: '10px', padding: '16px 20px', marginBottom: '24px' }}>
-              <p style={{ color: '#475569', margin: 0, lineHeight: 1.65 }}>
-                <Link to="/login" style={{ color: SAGE, textDecoration: 'underline' }}>Sign in to your account</Link>
-                {' '}to submit a request directly on this page, or send a request by email from the address registered on your account.
-              </p>
-            </div>
+            {/* Signed-in form or prompt */}
+            {isSignedIn ? (
+              <SignedInForm
+                lang="en"
+                email={email}
+                confirmInput={confirmInput}
+                setConfirmInput={setConfirmInput}
+                status={status}
+                requestedAt={requestedAt}
+                onSubmit={handleSubmit}
+              />
+            ) : (
+              <SignInPrompt lang="en" />
+            )}
 
+            {/* Email alternative — always visible */}
+            <p style={{ color: '#475569', lineHeight: 1.7, marginBottom: '8px' }}>
+              {isSignedIn ? 'Alternatively, ' : ''}
+              send an email from <strong>the address registered on your account</strong>:
+            </p>
             <a
               href={mailtoHref(SUBJECT_EN)}
-              style={{ display: 'inline-block', backgroundColor: '#dc2626', color: '#ffffff', textDecoration: 'none', fontWeight: 600, fontSize: '15px', padding: '12px 24px', borderRadius: '10px', marginBottom: '8px' }}
+              style={{ display: 'inline-block', backgroundColor: isSignedIn ? NAVY : '#dc2626', color: '#ffffff', textDecoration: 'none', fontWeight: 600, fontSize: isSignedIn ? '14px' : '15px', padding: isSignedIn ? '10px 20px' : '12px 24px', borderRadius: '10px', marginBottom: '8px' }}
             >
               Send deletion request by email
             </a>
