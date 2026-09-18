@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { useAuthStore } from '../stores/authStore';
 import { api } from '../api/client';
@@ -157,6 +157,18 @@ export function DeleteAccountPage() {
   const [confirmInput, setConfirmInput] = useState('');
   const [status, setStatus] = useState<Status>('idle');
   const [requestedAt, setRequestedAt] = useState<string | null>(null);
+
+  useEffect(() => {
+    const prev = document.title;
+    document.title = 'מחיקת חשבון — גינה חיה | Account Deletion';
+    const meta = document.querySelector<HTMLMetaElement>('meta[name="description"]');
+    const prevDesc = meta?.content ?? '';
+    if (meta) meta.content = 'בקשת מחיקת חשבון גינה חיה — הנתונים יוסרו תוך 30 יום. Request Gina Haya account deletion — data removed within 30 days.';
+    return () => {
+      document.title = prev;
+      if (meta) meta.content = prevDesc;
+    };
+  }, []);
 
   const email = user?.email ?? null;
   const token = session?.access_token ?? null;
