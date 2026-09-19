@@ -787,8 +787,7 @@ billingRouter.post('/grow/webhook/:secret', async (req: Request, res) => {
       ? req.body.toString('utf8')
       : '';
 
-  console.log('[grow/webhook] content-type:', req.headers['content-type']);
-  console.log('[grow/webhook] raw body (first 500):', rawText.slice(0, 500));
+  console.log('[grow/webhook] content-type:', req.headers['content-type'], 'body-bytes:', rawText.length);
 
   if (!rawText) {
     console.warn('[grow/webhook] Empty body received');
@@ -807,13 +806,13 @@ billingRouter.post('/grow/webhook/:secret', async (req: Request, res) => {
       parsedBody = qs.parse(rawText, { allowDots: false, depth: 10 });
       console.log('[grow/webhook] parsed as form-urlencoded (qs)');
     } catch {
-      console.error('[grow/webhook] body is unparseable, raw:', rawText);
+      console.error('[grow/webhook] body is unparseable, body-bytes:', rawText.length);
       res.status(400).json({ error: 'Unparseable body' });
       return;
     }
   }
 
-  console.log('[grow/webhook] parsed body:', JSON.stringify(parsedBody));
+  console.log('[grow/webhook] parsed ok, top-level keys:', Object.keys(parsedBody).join(','));
 
   try {
     // ── Unified extraction (same shape from both wire formats) ─────────────
@@ -823,7 +822,7 @@ billingRouter.post('/grow/webhook/:secret', async (req: Request, res) => {
     const data = envelope?.data;
 
     if (!data || typeof data !== 'object') {
-      console.warn('[grow/webhook] Missing or non-object data field:', JSON.stringify(envelope));
+      console.warn('[grow/webhook] Missing or non-object data field — envelope keys:', Object.keys(envelope ?? {}).join(','));
       res.json({ received: true });
       return;
     }
@@ -864,7 +863,7 @@ billingRouter.post('/grow/webhook/:secret', async (req: Request, res) => {
         .maybeSingle();
 
       if (existingRow) {
-        console.log(`[grow/webhook] Duplicate transactionId=${token}, already processed — skipping`);
+        console.log('[grow/webhook] Duplicate token already processed — skipping');
         res.json({ received: true });
         return;
       }
@@ -886,8 +885,8 @@ billingRouter.post('/grow/webhook/:secret', async (req: Request, res) => {
 
     if (!userId) {
       console.warn(
-        '[grow/webhook] Could not resolve user ' +
-        `cField1=${internalUserId} payerEmail=${payerEmail} — acking without action`
+        '[grow/webhook] Could not resolve user — ' +
+        `cField1=${internalUserId ? '[set]' : '[unset]'} payerEmail=${payerEmail ? '[set]' : '[unset]'} — acking without action`
       );
       res.json({ received: true });
       return;
@@ -1058,7 +1057,7 @@ billingRouter.post('/grow/webhook/:secret', async (req: Request, res) => {
 
           if (emailUpdateError) {
             console.error(
-              `[grow/webhook] users.update (email fallback) FAILED email=${payerEmail}:`,
+              `[grow/webhook] users.update (email fallback) FAILED userId=${userId}:`,
               emailUpdateError
             );
             await sendGrantFailureAlert({
@@ -1072,7 +1071,7 @@ billingRouter.post('/grow/webhook/:secret', async (req: Request, res) => {
             });
           } else if (!emailUpdateData || emailUpdateData.length === 0) {
             console.error(
-              `[grow/webhook] users.update (email fallback) ZERO ROWS -- email=${payerEmail} not found either`
+              `[grow/webhook] users.update (email fallback) ZERO ROWS -- userId=${userId} not found either`
             );
             await sendGrantFailureAlert({
               context:       'tier_grant',
@@ -1101,7 +1100,7 @@ billingRouter.post('/grow/webhook/:secret', async (req: Request, res) => {
 
     console.log(
       `[grow/webhook] ACCEPTED user=${userId} tier=${resolvedTier ?? '(none -- see logs above)'} ` +
-      `paymentMode=${paymentModeFromWebhook} expiresAt=${expiresAt} transactionId=${transactionId ?? '(none)'}`
+      `paymentMode=${paymentModeFromWebhook} expiresAt=${expiresAt}`
     );
 
   } catch (err: any) {
