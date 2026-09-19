@@ -18,9 +18,15 @@ import {
 
 export const billingRouter: IRouter = Router();
 
-const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
-  apiVersion: '2026-02-25.clover',
-});
+let _stripe: Stripe | null = null;
+function getStripe(): Stripe {
+  if (!_stripe) {
+    const key = process.env.STRIPE_SECRET_KEY;
+    if (!key) throw new Error('STRIPE_SECRET_KEY is not set');
+    _stripe = new Stripe(key, { apiVersion: '2026-02-25.clover' });
+  }
+  return _stripe;
+}
 
 const PRICE_IDS: Record<string, string> = {
   gardener_pro: process.env.STRIPE_PRICE_GARDENER_PRO!,
@@ -45,7 +51,7 @@ billingRouter.post('/create-checkout', verifyToken, async (req: any, res) => {
 
     const origin = req.headers.origin ?? 'http://localhost:5173';
 
-    const session = await stripe.checkout.sessions.create({
+    const session = await getStripe().checkout.sessions.create({
       mode: 'subscription',
       payment_method_types: ['card'],
       line_items: [{ price: priceId, quantity: 1 }],
@@ -71,7 +77,7 @@ billingRouter.post('/webhook', async (req: Request, res) => {
 
   let event: Stripe.Event;
   try {
-    event = stripe.webhooks.constructEvent(req.body as Buffer, sig, webhookSecret);
+    event = getStripe().webhooks.constructEvent(req.body as Buffer, sig, webhookSecret);
   } catch (err: any) {
     console.error('[webhook] signature verification failed:', err.message);
     res.status(400).send(`Webhook Error: ${err.message}`);
@@ -130,7 +136,7 @@ billingRouter.get('/status', verifyToken, async (req: any, res) => {
     let isActive = tier !== 'free';
     if (data.stripe_customer_id && tier !== 'free') {
       try {
-        const subs = await stripe.subscriptions.list({
+        const subs = await getStripe().subscriptions.list({
           customer: data.stripe_customer_id,
           status: 'active',
           limit: 1,
@@ -244,7 +250,7 @@ billingRouter.post('/cancel', verifyToken, async (req: any, res) => {
       return;
     }
 
-    const subs = await stripe.subscriptions.list({
+    const subs = await getStripe().subscriptions.list({
       customer: data.stripe_customer_id,
       status: 'active',
       limit: 1,
@@ -255,7 +261,7 @@ billingRouter.post('/cancel', verifyToken, async (req: any, res) => {
       return;
     }
 
-    const cancelled = await stripe.subscriptions.update(subs.data[0].id, {
+    const cancelled = await getStripe().subscriptions.update(subs.data[0].id, {
       cancel_at_period_end: true,
     });
 
