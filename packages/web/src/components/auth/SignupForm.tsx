@@ -42,12 +42,18 @@ export function SignupForm() {
   const [displayName,       setDisplayName]       = useState('');
   const [email,             setEmail]             = useState('');
   const [password,          setPassword]          = useState('');
+  const [passwordErr,       setPasswordErr]       = useState<string | null>(null);
   const [agreedToTerms,     setAgreedToTerms]     = useState(false);
   const [showVerification,  setShowVerification]  = useState(false);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     clearError();
+    if (password.length < MIN_PASSWORD_LENGTH) {
+      setPasswordErr('הסיסמה חייבת להכיל לפחות 8 תווים');
+      return;
+    }
+    setPasswordErr(null);
     await signUp(email, password, displayName);
     const { error: storeError, session, user } = useAuthStore.getState();
     if (!storeError && user && !session) {
@@ -144,9 +150,21 @@ export function SignupForm() {
               required
               minLength={MIN_PASSWORD_LENGTH}
               value={password}
-              onChange={e => setPassword(e.target.value)}
-              style={inputStyle}
+              onChange={e => { setPassword(e.target.value); if (passwordErr) setPasswordErr(null); }}
+              style={{
+                ...inputStyle,
+                borderColor: passwordErr ? 'rgba(192,57,43,0.7)' : undefined,
+              }}
             />
+            {passwordErr ? (
+              <p style={{ fontFamily: DM_SANS, fontSize: '12px', color: '#E07070', margin: '4px 0 0' }}>
+                {passwordErr}
+              </p>
+            ) : (
+              <p style={{ fontFamily: DM_SANS, fontSize: '12px', color: `${TEXT_MID}50`, margin: '4px 0 0' }}>
+                לפחות 8 תווים
+              </p>
+            )}
           </div>
 
           <label style={{
