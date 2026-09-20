@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { api } from '../../api/client';
 import { useAuthStore } from '../../stores/authStore';
 import type { Credits } from '../../hooks/useCredits';
@@ -35,7 +36,13 @@ function validateFullName(v: string): string | null {
 }
 
 function validatePhone(v: string): string | null {
-  return ISRAELI_MOBILE_RE.test(v) ? null : 'מספר טלפון נייד ישראלי לא תקין (לדוגמה: 0501234567)';
+  return ISRAELI_MOBILE_RE.test(v) ? null : 'מספר נייד לא תקין — לדוגמה 0501234567';
+}
+
+function normalizePhone(raw: string): string {
+  const digits = raw.replace(/\D/g, '');
+  if (digits.startsWith('972')) return '0' + digits.slice(3);
+  return digits;
 }
 
 const PULSE_CSS = `
@@ -47,21 +54,31 @@ const PULSE_CSS = `
 `;
 
 export function CheckoutModal({ cart, onClose }: Props) {
-  const { session } = useAuthStore();
-  const [step, setStep]           = useState<Step>('summary');
-  const [fullName, setFullName]   = useState('');
+  const { session, isAuthReady } = useAuthStore();
+  const navigate = useNavigate();
+  const [step, setStep]               = useState<Step>('summary');
+  const [fullName, setFullName]       = useState('');
   const [fullNameErr, setFullNameErr] = useState<string | null>(null);
-  const [phone, setPhone]         = useState('');
-  const [phoneErr, setPhoneErr]   = useState<string | null>(null);
-  const [error, setError]         = useState('');
+  const [phone, setPhone]             = useState('');
+  const [phoneErr, setPhoneErr]       = useState<string | null>(null);
+  const [error, setError]             = useState('');
 
-  const total          = cart.reduce((sum, item) => sum + item.price, 0);
-  const isFullNameValid = validateFullName(fullName) === null;
-  const isPhoneValid    = ISRAELI_MOBILE_RE.test(phone);
-  const isFormValid     = isFullNameValid && isPhoneValid;
+  const total = cart.reduce((sum, item) => sum + item.price, 0);
 
   async function handlePay() {
-    if (!session?.access_token || !isFormValid) return;
+    // Validate both fields and surface errors to the user
+    const nameErr = validateFullName(fullName);
+    const pErr    = validatePhone(phone);
+    setFullNameErr(nameErr);
+    setPhoneErr(pErr);
+    if (nameErr || pErr) return;
+
+    // Safety net — should not be reachable since the auth gate hides the form
+    if (!session?.access_token) {
+      setError('כדי לשלם יש להתחבר לחשבון.');
+      return;
+    }
+
     setStep('processing');
     setError('');
 
@@ -160,126 +177,160 @@ export function CheckoutModal({ cart, onClose }: Props) {
             {/* ── Details: name + phone ── */}
             {step === 'details' && (
               <div style={{ display: 'flex', flexDirection: 'column', gap: '18px' }}>
-                <p style={{ fontFamily: ASST, fontSize: '14px', color: `${PARCH}CC`, margin: 0 }}>
-                  לצורך עיבוד התשלום נדרשים שם מלא ומספר טלפון נייד ישראלי.
-                </p>
 
-                {/* Full name */}
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
-                  <label
-                    htmlFor="shop-fullname"
-                    style={{ fontFamily: ASST, fontSize: '13px', fontWeight: 600, color: PARCH }}
-                  >
-                    שם מלא
-                  </label>
-                  <input
-                    id="shop-fullname"
-                    type="text"
-                    dir="rtl"
-                    placeholder="ישראל ישראלי"
-                    value={fullName}
-                    onChange={e => {
-                      setFullName(e.target.value);
-                      if (e.target.value.length > 0) setFullNameErr(validateFullName(e.target.value));
-                      else setFullNameErr(null);
-                    }}
-                    onBlur={() => {
-                      if (fullName.length > 0) setFullNameErr(validateFullName(fullName));
-                    }}
-                    style={{
-                      width: '100%', boxSizing: 'border-box',
-                      padding: '11px 14px', borderRadius: '8px',
-                      border: fullNameErr
-                        ? '1px solid rgba(192,57,43,0.7)'
-                        : isFullNameValid && fullName.length > 0
-                        ? `1px solid ${SAGE}88`
-                        : '1px solid rgba(0,229,195,0.2)',
-                      backgroundColor: 'rgba(9,20,16,0.6)',
-                      fontFamily: ASST, fontSize: '15px', color: PARCH,
-                      outline: 'none',
-                    }}
-                  />
-                  {fullNameErr && (
-                    <p style={{ fontFamily: ASST, fontSize: '12px', color: '#C0372A', margin: 0 }}>
-                      {fullNameErr}
-                    </p>
-                  )}
-                </div>
-
-                {/* Phone */}
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
-                  <label
-                    htmlFor="shop-phone"
-                    style={{ fontFamily: ASST, fontSize: '13px', fontWeight: 600, color: PARCH }}
-                  >
-                    מספר טלפון נייד
-                  </label>
-                  <input
-                    id="shop-phone"
-                    type="tel"
-                    dir="ltr"
-                    inputMode="numeric"
-                    placeholder="0501234567"
-                    value={phone}
-                    onChange={e => {
-                      const v = e.target.value.replace(/\D/g, '').slice(0, 10);
-                      setPhone(v);
-                      if (v.length > 0) setPhoneErr(validatePhone(v));
-                      else setPhoneErr(null);
-                    }}
-                    onBlur={() => {
-                      if (phone.length > 0) setPhoneErr(validatePhone(phone));
-                    }}
-                    style={{
-                      width: '100%', boxSizing: 'border-box',
-                      padding: '11px 14px', borderRadius: '8px',
-                      border: phoneErr
-                        ? '1px solid rgba(192,57,43,0.7)'
-                        : isPhoneValid
-                        ? `1px solid ${SAGE}88`
-                        : '1px solid rgba(0,229,195,0.2)',
-                      backgroundColor: 'rgba(9,20,16,0.6)',
-                      fontFamily: ASST, fontSize: '15px', color: PARCH,
-                      outline: 'none', letterSpacing: '0.06em',
-                    }}
-                  />
-                  {phoneErr && (
-                    <p style={{ fontFamily: ASST, fontSize: '12px', color: '#C0372A', margin: 0 }}>
-                      {phoneErr}
-                    </p>
-                  )}
-                </div>
-
-                {error && (
-                  <p style={{ fontFamily: ASST, fontSize: '13px', color: '#E06060', margin: 0 }}>
-                    {error}
+                {!isAuthReady ? (
+                  /* Auth still initializing */
+                  <p style={{ fontFamily: ASST, fontSize: '14px', color: `${PARCH}88`, margin: 0, textAlign: 'center', padding: '24px 0' }}>
+                    טוען...
                   </p>
+
+                ) : !session ? (
+                  /* Not signed in — prompt login; cart is already saved in localStorage */
+                  <div style={{ textAlign: 'center', padding: '16px 0', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '20px' }}>
+                    <p style={{ fontFamily: ASST, fontSize: '15px', color: PARCH, margin: 0, lineHeight: 1.6 }}>
+                      כדי להשלים רכישה צריך להתחבר לחשבון.
+                    </p>
+                    <button
+                      onClick={() => navigate('/login?next=/shop')}
+                      style={{
+                        padding: '12px 32px',
+                        backgroundColor: GOLD, color: EARTH,
+                        border: 'none', borderRadius: '10px',
+                        fontFamily: FRANK, fontSize: '16px', fontWeight: 700,
+                        cursor: 'pointer', transition: 'filter 0.2s',
+                      }}
+                      onMouseEnter={e => { (e.currentTarget as HTMLElement).style.filter = 'brightness(1.1)'; }}
+                      onMouseLeave={e => { (e.currentTarget as HTMLElement).style.filter = 'none'; }}
+                    >
+                      התחברות
+                    </button>
+                  </div>
+
+                ) : (
+                  /* Authenticated — show the payment form */
+                  <>
+                    <p style={{ fontFamily: ASST, fontSize: '14px', color: `${PARCH}CC`, margin: 0 }}>
+                      לצורך עיבוד התשלום נדרשים שם מלא ומספר טלפון נייד ישראלי.
+                    </p>
+
+                    {/* Full name */}
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
+                      <label
+                        htmlFor="shop-fullname"
+                        style={{ fontFamily: ASST, fontSize: '13px', fontWeight: 600, color: PARCH }}
+                      >
+                        שם מלא
+                      </label>
+                      <input
+                        id="shop-fullname"
+                        type="text"
+                        dir="rtl"
+                        placeholder="ישראל ישראלי"
+                        value={fullName}
+                        onChange={e => {
+                          setFullName(e.target.value);
+                          if (e.target.value.length > 0) setFullNameErr(validateFullName(e.target.value));
+                          else setFullNameErr(null);
+                        }}
+                        onBlur={() => {
+                          if (fullName.length > 0) setFullNameErr(validateFullName(fullName));
+                        }}
+                        style={{
+                          width: '100%', boxSizing: 'border-box',
+                          padding: '11px 14px', borderRadius: '8px',
+                          border: fullNameErr
+                            ? '1px solid rgba(192,57,43,0.7)'
+                            : validateFullName(fullName) === null && fullName.length > 0
+                            ? `1px solid ${SAGE}88`
+                            : '1px solid rgba(0,229,195,0.2)',
+                          backgroundColor: 'rgba(9,20,16,0.6)',
+                          fontFamily: ASST, fontSize: '15px', color: PARCH,
+                          outline: 'none',
+                        }}
+                      />
+                      {fullNameErr && (
+                        <p style={{ fontFamily: ASST, fontSize: '12px', color: '#C0372A', margin: 0 }}>
+                          {fullNameErr}
+                        </p>
+                      )}
+                    </div>
+
+                    {/* Phone */}
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
+                      <label
+                        htmlFor="shop-phone"
+                        style={{ fontFamily: ASST, fontSize: '13px', fontWeight: 600, color: PARCH }}
+                      >
+                        מספר טלפון נייד
+                      </label>
+                      <input
+                        id="shop-phone"
+                        type="tel"
+                        dir="ltr"
+                        inputMode="numeric"
+                        autoComplete="tel-national"
+                        placeholder="0501234567"
+                        value={phone}
+                        onChange={e => {
+                          const v = normalizePhone(e.target.value).slice(0, 10);
+                          setPhone(v);
+                          if (v.length > 0) setPhoneErr(validatePhone(v));
+                          else setPhoneErr(null);
+                        }}
+                        onBlur={() => {
+                          if (phone.length > 0) setPhoneErr(validatePhone(phone));
+                        }}
+                        style={{
+                          width: '100%', boxSizing: 'border-box',
+                          padding: '11px 14px', borderRadius: '8px',
+                          border: phoneErr
+                            ? '1px solid rgba(192,57,43,0.7)'
+                            : ISRAELI_MOBILE_RE.test(phone)
+                            ? `1px solid ${SAGE}88`
+                            : '1px solid rgba(0,229,195,0.2)',
+                          backgroundColor: 'rgba(9,20,16,0.6)',
+                          fontFamily: ASST, fontSize: '15px', color: PARCH,
+                          outline: 'none', letterSpacing: '0.06em',
+                        }}
+                      />
+                      {phoneErr && (
+                        <p style={{ fontFamily: ASST, fontSize: '12px', color: '#C0372A', margin: 0 }}>
+                          {phoneErr}
+                        </p>
+                      )}
+                    </div>
+
+                    {error && (
+                      <p style={{ fontFamily: ASST, fontSize: '13px', color: '#E06060', margin: 0 }}>
+                        {error}
+                      </p>
+                    )}
+
+                    <button
+                      onClick={handlePay}
+                      style={{
+                        width: '100%', padding: '13px',
+                        backgroundColor: GOLD,
+                        color: EARTH,
+                        border: 'none', borderRadius: '10px',
+                        fontFamily: FRANK, fontSize: '16px', fontWeight: 700,
+                        cursor: 'pointer',
+                        transition: 'filter 0.2s',
+                      }}
+                      onMouseEnter={e => { (e.currentTarget as HTMLElement).style.filter = 'brightness(1.1)'; }}
+                      onMouseLeave={e => { (e.currentTarget as HTMLElement).style.filter = 'none'; }}
+                    >
+                      לתשלום ←
+                    </button>
+
+                    <p style={{
+                      fontFamily: ASST, fontSize: '11px',
+                      color: `${PARCH}40`, textAlign: 'center', margin: 0,
+                    }}>
+                      תועבר לעמוד התשלום של גרו לביצוע הרכישה
+                    </p>
+                  </>
                 )}
-
-                <button
-                  onClick={handlePay}
-                  disabled={!isFormValid}
-                  style={{
-                    width: '100%', padding: '13px',
-                    backgroundColor: isFormValid ? GOLD : `${GOLD}44`,
-                    color: EARTH,
-                    border: 'none', borderRadius: '10px',
-                    fontFamily: FRANK, fontSize: '16px', fontWeight: 700,
-                    cursor: isFormValid ? 'pointer' : 'default',
-                    transition: 'filter 0.2s',
-                  }}
-                  onMouseEnter={e => { if (isFormValid) (e.currentTarget as HTMLElement).style.filter = 'brightness(1.1)'; }}
-                  onMouseLeave={e => { (e.currentTarget as HTMLElement).style.filter = 'none'; }}
-                >
-                  לתשלום ←
-                </button>
-
-                <p style={{
-                  fontFamily: ASST, fontSize: '11px',
-                  color: `${PARCH}40`, textAlign: 'center', margin: 0,
-                }}>
-                  תועבר לעמוד התשלום של גרו לביצוע הרכישה
-                </p>
               </div>
             )}
 
