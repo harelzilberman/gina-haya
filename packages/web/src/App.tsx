@@ -250,7 +250,7 @@ export default function App() {
       {showWelcomeScreen && <WelcomeScreen />}
       {isUpgradeOpen && <UpgradeModal />}
       <ToastContainer />
-      <LaunchBadge />
+      {!isCheckoutRoute(location.pathname) && <LaunchBadge />}
       {!isCheckoutRoute(location.pathname) && <AndroidInstallBar />}
 
       {/* Floating ChupChu bubble — hidden on /chupchu page itself */}
