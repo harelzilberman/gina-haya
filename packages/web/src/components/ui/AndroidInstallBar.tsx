@@ -1,5 +1,10 @@
 import { useState, useEffect } from 'react';
+import { useLocation } from 'react-router-dom';
 import { PlayBadge } from './PlayBadge';
+
+function isCheckoutRoute(pathname: string): boolean {
+  return pathname === '/shop' || pathname.startsWith('/shop/');
+}
 
 const STORAGE_KEY = 'android-install-bar-dismissed';
 const DISMISS_DAYS = 14;
@@ -32,6 +37,7 @@ function dismiss(): void {
 }
 
 export function AndroidInstallBar() {
+  const location = useLocation();
   const [visible, setVisible] = useState(false);
 
   useEffect(() => {
@@ -41,6 +47,9 @@ export function AndroidInstallBar() {
       setVisible(true);
     }
   }, []);
+
+  // Also hide on shop/checkout routes to prevent occluding the checkout modal
+  if (isCheckoutRoute(location.pathname)) return null;
 
   useEffect(() => {
     if (!visible) return;

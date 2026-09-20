@@ -47,6 +47,10 @@ import { useChupChu } from './hooks/useChupChu';
 import { supabase } from './lib/supabase';
 import { Analytics } from '@vercel/analytics/react';
 
+function isCheckoutRoute(pathname: string): boolean {
+  return pathname === '/shop' || pathname.startsWith('/shop/');
+}
+
 export default function App() {
   const { i18n } = useTranslation();
   const location = useLocation();
@@ -247,10 +251,10 @@ export default function App() {
       {isUpgradeOpen && <UpgradeModal />}
       <ToastContainer />
       <LaunchBadge />
-      <AndroidInstallBar />
+      {!isCheckoutRoute(location.pathname) && <AndroidInstallBar />}
 
       {/* Floating ChupChu bubble — hidden on /chupchu page itself */}
-      {!isChupChuPage && (
+      {!isChupChuPage && !isCheckoutRoute(location.pathname) && (
         <>
           {isChupChuPanelOpen && (
             <>
