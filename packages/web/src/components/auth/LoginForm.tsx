@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { useAuthStore } from '../../stores/authStore';
-import { mapAuthError, MIN_PASSWORD_LENGTH } from '../../utils/authErrors';
+import { mapAuthError } from '../../utils/authErrors';
 import { supabase } from '../../lib/supabase';
 import { EmailVerificationScreen } from './EmailVerificationScreen';
 
@@ -132,7 +132,6 @@ export function LoginForm() {
             type="password"
             required
             autoComplete="current-password"
-            minLength={MIN_PASSWORD_LENGTH}
             value={password}
             onChange={e => setPassword(e.target.value)}
             style={inputStyle}
