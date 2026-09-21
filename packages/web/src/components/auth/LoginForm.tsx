@@ -39,10 +39,16 @@ export function LoginForm() {
   const [email,            setEmail]           = useState('');
   const [password,         setPassword]        = useState('');
   const [showVerification, setShowVerification] = useState(false);
+  const [localError,       setLocalError]      = useState<string | null>(null);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     clearError();
+    setLocalError(null);
+    if (!password) {
+      setLocalError(lang === 'he' ? 'נא להזין סיסמה' : 'Please enter your password');
+      return;
+    }
     await signIn(email, password);
     const { error: storeError } = useAuthStore.getState();
     if (storeError?.includes('Email not confirmed')) {
@@ -76,7 +82,7 @@ export function LoginForm() {
     <>
       <style>{FORM_CSS}</style>
 
-      {error && (
+      {(localError || error) && (
         <div style={{
           marginBottom:    '16px',
           borderRadius:    '8px',
@@ -87,7 +93,7 @@ export function LoginForm() {
           fontSize:        '13px',
           color:           '#E07070',
         }}>
-          {mapAuthError(error, lang)}
+          {localError ?? (error ? mapAuthError(error, lang) : null)}
         </div>
       )}
 
@@ -130,10 +136,9 @@ export function LoginForm() {
           <input
             className="auth-input"
             type="password"
-            required
             autoComplete="current-password"
             value={password}
-            onChange={e => setPassword(e.target.value)}
+            onChange={e => { setPassword(e.target.value); setLocalError(null); }}
             style={inputStyle}
           />
         </div>
