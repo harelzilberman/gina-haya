@@ -8,6 +8,7 @@ import { supabase } from '../lib/supabase';
 import { usePushNotifications } from '../hooks/usePushNotifications';
 import { usePlanLimit, TIER_DISPLAY } from '../hooks/usePlanLimit';
 import { useCredits } from '../hooks/useCredits';
+import { MIN_PASSWORD_LENGTH, mapAuthError } from '../utils/authErrors';
 
 const EARTH  = '#050d0a';
 const GOLD   = '#00e5c3';
@@ -64,7 +65,7 @@ export function SettingsPage() {
   const { t, i18n } = useTranslation('settings');
   const isHe = i18n.language === 'he';
   const navigate = useNavigate();
-  const { profile, session } = useAuthStore();
+  const { profile, session, user } = useAuthStore();
   const { show: showToast }  = useToastStore();
   const { isSubscribed, permission, subscribe, unsubscribe, isLoading: pushLoading } = usePushNotifications();
   const { tier, display: tierDisplay } = usePlanLimit();
@@ -78,6 +79,15 @@ export function SettingsPage() {
   );
   const [isSaving, setIsSaving] = useState(false);
   const [usage, setUsage] = useState<UsageData | null>(null);
+
+  // Change-password section — only visible for email/password identities
+  // (detected via user.identities: OAuth-only users have no 'email' provider entry)
+  const hasPasswordIdentity = user?.identities?.some(i => i.provider === 'email') ?? false;
+  const [newPassword, setNewPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
+  const [passwordError, setPasswordError] = useState<string | null>(null);
+  const [passwordSuccess, setPasswordSuccess] = useState(false);
+  const [isSavingPassword, setIsSavingPassword] = useState(false);
 
   useEffect(() => {
     if (!session?.access_token) return;
@@ -104,6 +114,31 @@ export function SettingsPage() {
       showToast(err.message || t('saveError'), 'error');
     } finally {
       setIsSaving(false);
+    }
+  }
+
+  async function handleChangePassword() {
+    setPasswordError(null);
+    setPasswordSuccess(false);
+    if (newPassword.length < MIN_PASSWORD_LENGTH) {
+      setPasswordError(isHe ? 'הסיסמה חייבת להכיל לפחות 8 תווים' : 'Password must be at least 8 characters');
+      return;
+    }
+    if (newPassword !== confirmPassword) {
+      setPasswordError(isHe ? 'הסיסמאות אינן תואמות' : 'Passwords do not match');
+      return;
+    }
+    setIsSavingPassword(true);
+    try {
+      const { error } = await supabase.auth.updateUser({ password: newPassword });
+      if (error) throw error;
+      setPasswordSuccess(true);
+      setNewPassword('');
+      setConfirmPassword('');
+    } catch (err: any) {
+      setPasswordError(mapAuthError(err, isHe ? 'he' : 'en'));
+    } finally {
+      setIsSavingPassword(false);
     }
   }
 
@@ -281,6 +316,115 @@ export function SettingsPage() {
             </button>
 
           </div>
+
+          {/* Change password section — hidden for OAuth-only users */}
+          {hasPasswordIdentity && (
+            <div style={{
+              background:    'rgba(9,20,16,0.7)',
+              border:        '1px solid rgba(0,229,195,0.15)',
+              borderRadius:  '16px',
+              padding:       '28px 24px',
+              backdropFilter:'blur(8px)',
+              marginTop:     '16px',
+            }}>
+              <h2 style={{
+                fontFamily: FRANK, fontWeight: 600, fontSize: '16px',
+                color: PARCH, margin: '0 0 20px',
+              }}>
+                {isHe ? 'שינוי סיסמה' : 'Change password'}
+              </h2>
+
+              {passwordError && (
+                <div style={{
+                  marginBottom: '16px', borderRadius: '8px',
+                  padding: '10px 14px',
+                  backgroundColor: 'rgba(192,57,43,0.15)',
+                  border: '1px solid rgba(192,57,43,0.35)',
+                  fontFamily: ASSIST, fontSize: '13px', color: '#E07070',
+                }}>
+                  {passwordError}
+                </div>
+              )}
+
+              {passwordSuccess && (
+                <div style={{
+                  marginBottom: '16px', borderRadius: '8px',
+                  padding: '10px 14px',
+                  backgroundColor: 'rgba(0,229,195,0.08)',
+                  border: '1px solid rgba(0,229,195,0.3)',
+                  fontFamily: ASSIST, fontSize: '13px', color: GOLD,
+                }}>
+                  {isHe ? 'הסיסמה עודכנה' : 'Password updated'}
+                </div>
+              )}
+
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
+                <div>
+                  <label style={{
+                    display: 'block', fontFamily: ASSIST, fontSize: '13px',
+                    color: `${PARCH}80`, marginBottom: '6px',
+                  }}>
+                    {isHe ? 'סיסמה חדשה' : 'New password'}
+                  </label>
+                  <input
+                    type="password"
+                    autoComplete="new-password"
+                    value={newPassword}
+                    onChange={e => { setNewPassword(e.target.value); setPasswordError(null); setPasswordSuccess(false); }}
+                    placeholder={isHe ? 'לפחות 8 תווים' : 'At least 8 characters'}
+                    style={{
+                      width: '100%', boxSizing: 'border-box',
+                      backgroundColor: 'rgba(5,13,10,0.6)',
+                      border: '1px solid rgba(0,229,195,0.2)',
+                      borderRadius: '8px', padding: '10px 14px',
+                      fontFamily: ASSIST, fontSize: '14px', color: PARCH,
+                    }}
+                  />
+                </div>
+
+                <div>
+                  <label style={{
+                    display: 'block', fontFamily: ASSIST, fontSize: '13px',
+                    color: `${PARCH}80`, marginBottom: '6px',
+                  }}>
+                    {isHe ? 'אימות סיסמה' : 'Confirm password'}
+                  </label>
+                  <input
+                    type="password"
+                    autoComplete="new-password"
+                    value={confirmPassword}
+                    onChange={e => { setConfirmPassword(e.target.value); setPasswordError(null); setPasswordSuccess(false); }}
+                    style={{
+                      width: '100%', boxSizing: 'border-box',
+                      backgroundColor: 'rgba(5,13,10,0.6)',
+                      border: '1px solid rgba(0,229,195,0.2)',
+                      borderRadius: '8px', padding: '10px 14px',
+                      fontFamily: ASSIST, fontSize: '14px', color: PARCH,
+                    }}
+                  />
+                </div>
+
+                <button
+                  onClick={handleChangePassword}
+                  disabled={isSavingPassword}
+                  style={{
+                    width: '100%', padding: '11px',
+                    borderRadius: '8px', border: 'none',
+                    backgroundColor: GOLD,
+                    fontFamily: FRANK, fontWeight: 600, fontSize: '14px',
+                    color: EARTH,
+                    cursor: isSavingPassword ? 'default' : 'pointer',
+                    opacity: isSavingPassword ? 0.7 : 1,
+                    transition: 'filter 0.2s',
+                  }}
+                  onMouseEnter={e => { if (!isSavingPassword) (e.currentTarget as HTMLElement).style.filter = 'brightness(1.1)'; }}
+                  onMouseLeave={e => { (e.currentTarget as HTMLElement).style.filter = 'none'; }}
+                >
+                  {isSavingPassword ? '...' : (isHe ? 'עדכון סיסמה' : 'Update password')}
+                </button>
+              </div>
+            </div>
+          )}
 
           {/* My Plan section */}
           <div style={{
