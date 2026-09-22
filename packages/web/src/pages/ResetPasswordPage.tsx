@@ -1,53 +1,153 @@
 import { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { supabase } from '../lib/supabase';
+import { Link } from 'react-router-dom';
+import { createClient } from '@supabase/supabase-js';
 import { PasswordResetForm } from '../components/auth/PasswordResetForm';
 import { MIN_PASSWORD_LENGTH, mapAuthError } from '../utils/authErrors';
 
-type Stage = 'email-form' | 'verifying' | 'set-password' | 'invalid' | 'success';
+// ── Dedicated client with detectSessionInUrl: false ──────────────────────────
+// The shared singleton (detectSessionInUrl: true) processes and clears the URL
+// hash asynchronously via _initialize(). A separate client here ensures nothing
+// consumes the URL before we read it, and we do all auth ops through this one.
+const pageSupabase = createClient(
+  import.meta.env.VITE_SUPABASE_URL as string,
+  import.meta.env.VITE_SUPABASE_ANON_KEY as string,
+  { auth: { detectSessionInUrl: false, persistSession: true, autoRefreshToken: true } },
+);
+
+type PageState = 'checking' | 'confirm' | 'set-password' | 'invalid' | 'request' | 'done';
+
+interface AuthParams {
+  access_token: string | null;
+  refresh_token: string | null;
+  token_hash: string | null;
+  type: string | null;
+  code: string | null;
+  error: string | null;
+  error_code: string | null;
+  error_description: string | null;
+}
+
+// Capture auth params synchronously before any async Supabase processing
+// can clear the URL, then immediately remove tokens from the address bar.
+function captureAndCleanUrl(): AuthParams {
+  const search = new URLSearchParams(window.location.search);
+  const hash = new URLSearchParams(window.location.hash.replace(/^#/, ''));
+  const get = (k: string): string | null => search.get(k) ?? hash.get(k);
+
+  const params: AuthParams = {
+    access_token:      get('access_token'),
+    refresh_token:     get('refresh_token'),
+    token_hash:        get('token_hash'),
+    type:              get('type'),
+    code:              get('code'),
+    error:             get('error'),
+    error_code:        get('error_code'),
+    error_description: get('error_description'),
+  };
+
+  if (Object.values(params).some(Boolean)) {
+    history.replaceState(null, '', window.location.pathname);
+  }
+
+  return params;
+}
 
 export function ResetPasswordPage() {
-  const navigate = useNavigate();
+  // ── 1. Capture URL params on first render (synchronous) ────────────────────
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  const [authParams] = useState<AuthParams>(captureAndCleanUrl);
 
-  // Detect recovery link: PKCE sends ?code=, implicit sends #type=recovery
-  const isRecoveryLink =
-    new URLSearchParams(window.location.search).has('code') ||
-    window.location.hash.includes('type=recovery');
+  // ── 2. Derive initial page state from captured params ─────────────────────
+  const [pageState, setPageState] = useState<PageState>(() => {
+    if (authParams.error || authParams.error_code) {
+      console.error('[reset-password] error param', authParams.error_code, authParams.error_description);
+      return 'invalid';
+    }
+    if (authParams.token_hash && authParams.type === 'recovery') return 'confirm';
+    if (
+      (authParams.access_token && authParams.refresh_token && authParams.type === 'recovery') ||
+      authParams.code
+    ) return 'checking';
+    return 'request';
+  });
 
-  const [stage, setStage] = useState<Stage>(isRecoveryLink ? 'verifying' : 'email-form');
-  const [newPassword, setNewPassword] = useState('');
+  const [newPassword, setNewPassword]       = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [validationError, setValidationError] = useState<string | null>(null);
-  const [serverError, setServerError] = useState<string | null>(null);
-  const [isLoading, setIsLoading] = useState(false);
+  const [serverError, setServerError]         = useState<string | null>(null);
+  const [isLoading, setIsLoading]             = useState(false);
 
+  // ── 3. Exchange implicit token or PKCE code ────────────────────────────────
   useEffect(() => {
-    if (!isRecoveryLink) return;
+    if (pageState !== 'checking') return;
+    let cancelled = false;
 
-    let settled = false;
+    (async () => {
+      try {
+        let error: { message: string } | null = null;
 
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((event) => {
-      if (settled) return;
-      if (event === 'PASSWORD_RECOVERY') {
-        settled = true;
-        setStage('set-password');
+        if (authParams.code) {
+          ({ error } = await pageSupabase.auth.exchangeCodeForSession(authParams.code));
+        } else if (authParams.access_token && authParams.refresh_token) {
+          ({ error } = await pageSupabase.auth.setSession({
+            access_token:  authParams.access_token,
+            refresh_token: authParams.refresh_token,
+          }));
+        }
+
+        if (cancelled) return;
+        if (error) {
+          console.error('[reset-password] token exchange failed', error.message);
+          setPageState('invalid');
+        } else {
+          setPageState('set-password');
+        }
+      } catch (err: any) {
+        if (!cancelled) {
+          console.error('[reset-password] token exchange threw', err);
+          setPageState('invalid');
+        }
       }
-    });
+    })();
 
-    // If no PASSWORD_RECOVERY fires within 15 s, the link is invalid/expired
-    const timeout = setTimeout(() => {
-      if (!settled) {
-        settled = true;
-        setStage(s => s === 'verifying' ? 'invalid' : s);
-      }
-    }, 15000);
-
-    return () => {
-      subscription.unsubscribe();
-      clearTimeout(timeout);
-    };
+    return () => { cancelled = true; };
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
+  // ── 4. Belt-and-braces: PASSWORD_RECOVERY listener ────────────────────────
+  useEffect(() => {
+    const { data: { subscription } } = pageSupabase.auth.onAuthStateChange((event) => {
+      if (event === 'PASSWORD_RECOVERY') {
+        setPageState(prev =>
+          prev === 'checking' || prev === 'confirm' || prev === 'request' ? 'set-password' : prev
+        );
+      }
+    });
+    return () => subscription.unsubscribe();
+  }, []);
+
+  // ── 5. confirm → verifyOtp (on button tap — not on load) ──────────────────
+  const handleConfirm = async () => {
+    setIsLoading(true);
+    try {
+      const { error } = await pageSupabase.auth.verifyOtp({
+        token_hash: authParams.token_hash!,
+        type: 'recovery',
+      });
+      if (error) {
+        console.error('[reset-password] verifyOtp failed', error.message);
+        setPageState('invalid');
+      } else {
+        setPageState('set-password');
+      }
+    } catch (err: any) {
+      console.error('[reset-password] verifyOtp threw', err);
+      setPageState('invalid');
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  // ── 6. set-password → done ─────────────────────────────────────────────────
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setValidationError(null);
@@ -64,10 +164,11 @@ export function ResetPasswordPage() {
 
     setIsLoading(true);
     try {
-      const { error } = await supabase.auth.updateUser({ password: newPassword });
+      const { error } = await pageSupabase.auth.updateUser({ password: newPassword });
       if (error) throw error;
-      setStage('success');
+      setPageState('done');
     } catch (err: any) {
+      console.error('[reset-password] updateUser failed', err);
       setServerError(mapAuthError(err, 'he'));
     } finally {
       setIsLoading(false);
@@ -77,6 +178,7 @@ export function ResetPasswordPage() {
   return (
     <div className="min-h-screen bg-cream flex items-center justify-center px-4 py-12">
       <div className="w-full max-w-sm">
+
         {/* Brand */}
         <div className="text-center mb-8">
           <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-sage/10 mb-3">
@@ -88,24 +190,32 @@ export function ResetPasswordPage() {
 
         <div className="bg-white rounded-2xl border border-sage/25 shadow-sm px-6 py-8">
 
-          {/* State: email-form — request a reset link */}
-          {stage === 'email-form' && (
-            <>
-              <h2 className="text-lg font-semibold text-navy mb-6 text-center">איפוס סיסמה</h2>
-              <PasswordResetForm />
-            </>
-          )}
-
-          {/* State: verifying — consumed the code, waiting for PASSWORD_RECOVERY */}
-          {stage === 'verifying' && (
+          {/* checking — exchanging token */}
+          {pageState === 'checking' && (
             <div dir="rtl" className="text-center space-y-4 py-4">
               <div className="text-3xl animate-pulse">🔗</div>
               <p className="text-navy font-medium">מאמת את הקישור…</p>
             </div>
           )}
 
-          {/* State: set-password — PASSWORD_RECOVERY fired, show new-password form */}
-          {stage === 'set-password' && (
+          {/* confirm — token_hash: show button to avoid burning token on scan */}
+          {pageState === 'confirm' && (
+            <div dir="rtl" className="text-center space-y-6 py-4">
+              <div className="text-3xl">🔑</div>
+              <p className="text-navy font-medium">קישור האיפוס אומת.</p>
+              <p className="text-sm text-gray-500">לחצו להמשיך לאיפוס הסיסמה.</p>
+              <button
+                onClick={handleConfirm}
+                disabled={isLoading}
+                className="w-full rounded-full bg-sage py-2.5 text-sm font-medium text-white transition hover:bg-sage/90 disabled:opacity-60"
+              >
+                {isLoading ? '…' : 'המשך לאיפוס סיסמה'}
+              </button>
+            </div>
+          )}
+
+          {/* set-password */}
+          {pageState === 'set-password' && (
             <div dir="rtl">
               <h2 className="text-lg font-semibold text-navy mb-6 text-center">הגדרת סיסמה חדשה</h2>
 
@@ -144,37 +254,48 @@ export function ResetPasswordPage() {
                   disabled={isLoading}
                   className="w-full rounded-full bg-sage py-2.5 text-sm font-medium text-white transition hover:bg-sage/90 disabled:opacity-60"
                 >
-                  {isLoading ? '...' : 'שמירת סיסמה חדשה'}
+                  {isLoading ? '…' : 'שמירת סיסמה חדשה'}
                 </button>
               </form>
             </div>
           )}
 
-          {/* State: invalid — link expired or bad token */}
-          {stage === 'invalid' && (
+          {/* invalid */}
+          {pageState === 'invalid' && (
             <div dir="rtl" className="text-center space-y-4 py-4">
               <div className="text-3xl">⚠️</div>
-              <p className="text-navy font-medium">הקישור לא תקין או שפג תוקפו</p>
+              <p className="text-navy font-medium">הקישור לאיפוס הסיסמה אינו תקין או שפג תוקפו.</p>
               <button
-                onClick={() => setStage('email-form')}
-                className="text-sm text-sage hover:underline"
+                onClick={() => setPageState('request')}
+                className="mt-2 text-sm text-sage hover:underline"
               >
-                לבקשת קישור חדש
+                שלחו לי קישור חדש
               </button>
             </div>
           )}
 
-          {/* State: success — password updated */}
-          {stage === 'success' && (
+          {/* request — send-link form (no auth params present, or navigated from invalid) */}
+          {pageState === 'request' && (
+            <>
+              <h2 className="text-lg font-semibold text-navy mb-6 text-center">איפוס סיסמה</h2>
+              <PasswordResetForm />
+            </>
+          )}
+
+          {/* done */}
+          {pageState === 'done' && (
             <div dir="rtl" className="text-center space-y-4 py-4">
               <div className="text-3xl">✅</div>
-              <p className="text-navy font-medium">הסיסמה עודכנה</p>
-              <button
-                onClick={() => navigate('/')}
-                className="w-full rounded-full bg-sage py-2.5 text-sm font-medium text-white transition hover:bg-sage/90"
+              <p className="text-navy font-medium">הסיסמה עודכנה בהצלחה!</p>
+              <p className="text-sm text-gray-500">
+                ניתן להתחבר עכשיו עם הסיסמה החדשה, גם באפליקציה.
+              </p>
+              <Link
+                to="/login"
+                className="block w-full rounded-full bg-sage py-2.5 text-sm font-medium text-white text-center transition hover:bg-sage/90"
               >
-                המשך לדף הבית
-              </button>
+                התחברות
+              </Link>
             </div>
           )}
 
