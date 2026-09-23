@@ -1,4 +1,4 @@
-const CACHE = 'gina-haya-v1';
+const CACHE = 'gina-haya-v2';
 
 self.addEventListener('install', e => {
   self.skipWaiting();
@@ -12,18 +12,48 @@ self.addEventListener('activate', e => {
   );
 });
 
+/**
+ * Returns true for requests that are safe to cache:
+ *  - GET only
+ *  - http: or https: protocol (never chrome-extension:, data:, blob:, etc.)
+ *  - Same origin, or a static CDN host we explicitly allow
+ *  - Not a Supabase or Railway API call (dynamic / user-specific)
+ */
+function isCacheable(request) {
+  if (request.method !== 'GET') return false;
+
+  let url;
+  try {
+    url = new URL(request.url);
+  } catch {
+    return false;
+  }
+
+  if (url.protocol !== 'http:' && url.protocol !== 'https:') return false;
+
+  // Never cache dynamic API endpoints
+  if (url.pathname.includes('/api/')) return false;
+  if (url.hostname.includes('supabase.co')) return false;
+  if (url.hostname.includes('railway.app')) return false;
+
+  // Allow same-origin requests
+  if (url.origin === self.location.origin) return true;
+
+  return false;
+}
+
 self.addEventListener('fetch', e => {
-  // Skip non-GET and API requests — always go to network
-  if (e.request.method !== 'GET') return;
-  if (e.request.url.includes('/api/')) return;
+  if (!isCacheable(e.request)) return;
 
   e.respondWith(
     fetch(e.request)
       .then(response => {
-        // Cache successful responses for static assets
-        if (response.ok && !e.request.url.includes('supabase')) {
+        // Only cache opaque-free successful responses
+        if (response.ok && response.type === 'basic') {
           const clone = response.clone();
-          caches.open(CACHE).then(cache => cache.put(e.request, clone));
+          caches.open(CACHE)
+            .then(cache => cache.put(e.request, clone))
+            .catch(() => { /* caching failure must never surface */ });
         }
         return response;
       })
