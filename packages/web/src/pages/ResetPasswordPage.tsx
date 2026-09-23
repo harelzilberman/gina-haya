@@ -38,7 +38,8 @@ export function ResetPasswordPage() {
 
   const [newPassword, setNewPassword]         = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
-  const [validationError, setValidationError] = useState<string | null>(null);
+  const [passwordErr, setPasswordErr]         = useState<string | null>(null);
+  const [confirmErr, setConfirmErr]           = useState<string | null>(null);
   const [serverError, setServerError]         = useState<string | null>(null);
   const [isLoading, setIsLoading]             = useState(false);
 
@@ -115,17 +116,23 @@ export function ResetPasswordPage() {
   // ── 6. set-password → done ─────────────────────────────────────────────────
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setValidationError(null);
     setServerError(null);
 
+    // Validate both fields and show all errors at once
+    let hasError = false;
     if (newPassword.length < MIN_PASSWORD_LENGTH) {
-      setValidationError('הסיסמה חייבת להכיל לפחות 8 תווים');
-      return;
+      setPasswordErr(`הסיסמה חייבת להכיל לפחות ${MIN_PASSWORD_LENGTH} תווים`);
+      hasError = true;
+    } else {
+      setPasswordErr(null);
     }
     if (newPassword !== confirmPassword) {
-      setValidationError('הסיסמאות אינן תואמות');
-      return;
+      setConfirmErr('הסיסמאות אינן תואמות');
+      hasError = true;
+    } else {
+      setConfirmErr(null);
     }
+    if (hasError) return;
 
     setIsLoading(true);
     try {
@@ -184,9 +191,9 @@ export function ResetPasswordPage() {
             <div dir="rtl">
               <h2 className="text-lg font-semibold text-navy mb-6 text-center">הגדרת סיסמה חדשה</h2>
 
-              {(validationError || serverError) && (
+              {serverError && (
                 <div className="mb-4 rounded-lg bg-red-50 border border-red-200 px-4 py-3 text-sm text-red-700">
-                  {validationError || serverError}
+                  {serverError}
                 </div>
               )}
 
@@ -197,10 +204,24 @@ export function ResetPasswordPage() {
                     type="password"
                     autoComplete="new-password"
                     value={newPassword}
-                    onChange={e => setNewPassword(e.target.value)}
-                    className="w-full rounded-lg border border-sage/30 bg-white px-4 py-2.5 text-sm text-navy placeholder-gray-400 focus:border-sage focus:outline-none focus:ring-1 focus:ring-sage"
+                    onChange={e => {
+                      const v = e.target.value;
+                      setNewPassword(v);
+                      if (passwordErr && v.length >= MIN_PASSWORD_LENGTH) setPasswordErr(null);
+                      // keep confirm error in sync as the user corrects the password field
+                      if (confirmErr && v === confirmPassword) setConfirmErr(null);
+                    }}
+                    className={`w-full rounded-lg border bg-white px-4 py-2.5 text-sm text-navy placeholder-gray-400 focus:outline-none focus:ring-1 ${
+                      passwordErr
+                        ? 'border-red-400 focus:border-red-400 focus:ring-red-200'
+                        : 'border-sage/30 focus:border-sage focus:ring-sage'
+                    }`}
                   />
-                  <p className="mt-1 text-xs text-gray-400">לפחות 8 תווים</p>
+                  {passwordErr ? (
+                    <p className="mt-1 text-xs text-red-600">{passwordErr}</p>
+                  ) : (
+                    <p className="mt-1 text-xs text-gray-400">לפחות {MIN_PASSWORD_LENGTH} תווים</p>
+                  )}
                 </div>
 
                 <div>
@@ -209,9 +230,25 @@ export function ResetPasswordPage() {
                     type="password"
                     autoComplete="new-password"
                     value={confirmPassword}
-                    onChange={e => setConfirmPassword(e.target.value)}
-                    className="w-full rounded-lg border border-sage/30 bg-white px-4 py-2.5 text-sm text-navy placeholder-gray-400 focus:border-sage focus:outline-none focus:ring-1 focus:ring-sage"
+                    onChange={e => {
+                      const v = e.target.value;
+                      setConfirmPassword(v);
+                      if (confirmErr && v === newPassword) setConfirmErr(null);
+                    }}
+                    onBlur={() => {
+                      if (confirmPassword && confirmPassword !== newPassword) {
+                        setConfirmErr('הסיסמאות אינן תואמות');
+                      }
+                    }}
+                    className={`w-full rounded-lg border bg-white px-4 py-2.5 text-sm text-navy placeholder-gray-400 focus:outline-none focus:ring-1 ${
+                      confirmErr
+                        ? 'border-red-400 focus:border-red-400 focus:ring-red-200'
+                        : 'border-sage/30 focus:border-sage focus:ring-sage'
+                    }`}
                   />
+                  {confirmErr && (
+                    <p className="mt-1 text-xs text-red-600">{confirmErr}</p>
+                  )}
                 </div>
 
                 <button

@@ -147,8 +147,6 @@ export function SignupForm() {
               className="auth-signup-input"
               type="password"
               autoComplete="new-password"
-              required
-              minLength={MIN_PASSWORD_LENGTH}
               value={password}
               onChange={e => { setPassword(e.target.value); if (passwordErr) setPasswordErr(null); }}
               style={{
