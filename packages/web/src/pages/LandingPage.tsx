@@ -12,7 +12,6 @@ const NIGHT_CARD = '#111f18';
 const BIO_CYAN   = '#00e5c3';
 const BIO_LIME   = '#aaff00';
 const BIO_AMBER  = '#ffb830';
-const BIO_ROSE   = '#ff5c8a';
 const BIO_VIOLET = '#a78bfa';
 const TEXT       = '#e8f5ee';
 const TEXT_MID   = '#b0cfbf';
@@ -21,8 +20,6 @@ const SYNE       = "'Syne', sans-serif";
 const DM_SANS    = "'DM Sans', 'Assistant', 'Heebo', sans-serif";
 const FRANK      = '"Frank Ruhl Libre", Georgia, serif';
 
-// Leaf-vein SVG tile background (data URL)
-const LEAF_VEIN_BG = `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cpath d='M80 0 Q85 40 80 80 Q75 120 80 160 M80 80 Q110 60 140 40 M80 80 Q50 60 20 40 M80 80 Q115 100 130 130 M80 80 Q45 100 30 130' stroke='%2300e5c3' stroke-width='0.5' fill='none' opacity='0.07'/%3E%3C/svg%3E")`;
 
 // ── Global CSS ─────────────────────────────────────────────────────────────
 const LP_CSS = `
@@ -349,14 +346,6 @@ function AuroraBands() {
   );
 }
 
-// ── Helpers ────────────────────────────────────────────────────────────────
-function scoreColor(score: number) {
-  if (score >= 8) return BIO_CYAN;
-  if (score >= 6) return BIO_LIME;
-  if (score >= 4) return BIO_AMBER;
-  return BIO_ROSE;
-}
-
 function useScrollReveal(threshold = 0.12) {
   const ref = useRef<HTMLDivElement>(null);
   const [visible, setVisible] = useState(false);
@@ -395,19 +384,6 @@ function Reveal({
     </div>
   );
 }
-
-// ── Data ───────────────────────────────────────────────────────────────────
-interface TodayPreview { score: number; dayType: string; }
-
-const DAY_TYPE_LABELS_HE: Record<string, string> = {
-  fruit: 'יום פרי', flower: 'יום פרח', root: 'יום שורש', leaf: 'יום עלה',
-};
-const DAY_TYPE_LABELS_EN: Record<string, string> = {
-  fruit: 'Fruit Day', flower: 'Flower Day', root: 'Root Day', leaf: 'Leaf Day',
-};
-const DAY_TYPE_COLORS: Record<string, string> = {
-  fruit: BIO_AMBER, flower: BIO_ROSE, root: '#c8a96e', leaf: BIO_LIME,
-};
 
 interface Feature { icon: string; title: string; body: string; accent: string; }
 
@@ -485,103 +461,6 @@ const STEPS_EN = [
   { n: '2', title: 'Ask ChupChu', body: 'Ask questions about your garden, get personalized advice for your space and season.' },
   { n: '3', title: 'Grow in Harmony', body: 'Plan sowing, watering, and care by nature\'s rhythms. Your garden will flourish.' },
 ];
-
-// ── Live biodynamic card ───────────────────────────────────────────────────
-function TodayPreviewCard({ isHe }: { isHe: boolean }) {
-  const [data, setData] = useState<TodayPreview | null>(null);
-
-  useEffect(() => {
-    fetch('/api/calendar/today')
-      .then(r => r.json())
-      .then(d => setData({ score: d.score ?? 7, dayType: d.dayType ?? 'fruit' }))
-      .catch(() => setData({ score: 7, dayType: 'fruit' }));
-  }, []);
-
-  const preview = data ?? { score: 7, dayType: 'fruit' };
-  const dayLabels = isHe ? DAY_TYPE_LABELS_HE : DAY_TYPE_LABELS_EN;
-  const dayColor  = DAY_TYPE_COLORS[preview.dayType] ?? BIO_AMBER;
-  const sc        = scoreColor(preview.score);
-
-  const dateFormatted = new Date().toLocaleDateString(
-    isHe ? 'he-IL' : 'en-US',
-    { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric', timeZone: 'Asia/Jerusalem' },
-  );
-
-  return (
-    <div
-      className="lp-card"
-      style={{
-        background: `linear-gradient(135deg, ${NIGHT_CARD} 0%, ${NIGHT_LIFT} 100%)`,
-        backdropFilter: 'blur(20px)',
-        WebkitBackdropFilter: 'blur(20px)',
-        border: `1px solid rgba(0,229,195,0.18)`,
-        borderRadius: '20px',
-        padding: '28px 24px',
-        maxWidth: '290px',
-        width: '100%',
-        textAlign: 'center',
-        boxShadow: '0 24px 80px rgba(0,0,0,0.5), 0 0 0 1px rgba(0,229,195,0.08)',
-        animation: 'lp-glow-pulse 4s ease-in-out infinite',
-      }}
-    >
-      <p style={{
-        fontFamily: DM_SANS, fontSize: '10px', fontWeight: 700,
-        letterSpacing: '0.2em', textTransform: 'uppercase' as const,
-        color: BIO_CYAN, marginBottom: '16px',
-      }}>
-        {isHe ? 'היום בגינה שלך' : 'Today in Your Garden'}
-      </p>
-
-      <p style={{ fontFamily: FRANK, fontSize: '12px', color: TEXT_MID, marginBottom: '20px', opacity: 0.7 }}>
-        {dateFormatted}
-      </p>
-
-      {/* Moon */}
-      <div style={{
-        display: 'flex', alignItems: 'center', justifyContent: 'center',
-        gap: '8px', marginBottom: '16px',
-      }}>
-        <span style={{ fontSize: '20px' }}>🌕</span>
-        <span style={{ fontFamily: DM_SANS, fontSize: '13px', color: TEXT_MID }}>
-          {isHe ? 'ירח מלא' : 'Full Moon'}
-        </span>
-      </div>
-
-      {/* Day type chip */}
-      <div style={{
-        display: 'inline-flex', alignItems: 'center',
-        backgroundColor: `${dayColor}18`,
-        border: `1px solid ${dayColor}44`,
-        borderRadius: '100px', padding: '5px 16px', marginBottom: '18px',
-      }}>
-        <span style={{ fontFamily: DM_SANS, fontSize: '13px', fontWeight: 600, color: dayColor }}>
-          {dayLabels[preview.dayType] ?? preview.dayType}
-        </span>
-      </div>
-
-      {/* Score */}
-      <div style={{ position: 'relative', display: 'inline-flex', alignItems: 'center', justifyContent: 'center' }}>
-        <svg width="80" height="80" viewBox="0 0 80 80" style={{ transform: 'rotate(-90deg)' }}>
-          <circle cx="40" cy="40" r="32" fill="none" stroke={`${sc}22`} strokeWidth="6" />
-          <circle
-            cx="40" cy="40" r="32" fill="none" stroke={sc} strokeWidth="6"
-            strokeLinecap="round" strokeDasharray="201"
-            strokeDashoffset={201 - (201 * preview.score / 10)}
-            style={{ transition: 'stroke-dashoffset 1s ease' }}
-          />
-        </svg>
-        <div style={{ position: 'absolute', textAlign: 'center' }}>
-          <span style={{ fontFamily: SYNE, fontWeight: 700, fontSize: '24px', color: sc }}>
-            {preview.score}
-          </span>
-          <span style={{ fontFamily: DM_SANS, fontSize: '11px', color: MUTED, display: 'block' }}>
-            /10
-          </span>
-        </div>
-      </div>
-    </div>
-  );
-}
 
 // ── Section label ──────────────────────────────────────────────────────────
 function SectionLabel({ children }: { children: React.ReactNode }) {

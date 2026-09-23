@@ -84,7 +84,7 @@ export function getMoonTilt(phaseAngle: number, lat: number): number {
   return baseTilt + phaseTilt;
 }
 
-export function drawMoon(canvas: HTMLCanvasElement, phasePct: number, phaseAngle: number, tiltDeg: number, lat = 31.7) {
+export function drawMoon(canvas: HTMLCanvasElement, phasePct: number, phaseAngle: number, tiltDeg: number, _lat = 31.7) {
   const ctx = canvas.getContext('2d');
   if (!ctx) return;
   const size = canvas.offsetWidth || 165;

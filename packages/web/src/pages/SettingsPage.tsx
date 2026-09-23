@@ -6,7 +6,7 @@ import { useAuthStore } from '../stores/authStore';
 import { useToastStore } from '../stores/toastStore';
 import { supabase } from '../lib/supabase';
 import { usePushNotifications } from '../hooks/usePushNotifications';
-import { usePlanLimit, TIER_DISPLAY } from '../hooks/usePlanLimit';
+import { usePlanLimit } from '../hooks/usePlanLimit';
 import { useCredits } from '../hooks/useCredits';
 import { MIN_PASSWORD_LENGTH, mapAuthError } from '../utils/authErrors';
 

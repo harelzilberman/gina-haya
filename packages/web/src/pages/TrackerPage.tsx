@@ -22,7 +22,7 @@ export function TrackerPage() {
   const isHe = i18n.language === 'he';
   const navigate = useNavigate();
   const { trackers, isLoading, loadTrackers, updateTrackerName } = useTrackerStore();
-  const { activeGarden, loadGardens } = useGardenStore();
+  const { loadGardens } = useGardenStore();
   const { tier, limits } = usePlanLimit();
 
   const [showNewTracker, setShowNewTracker] = useState(false);

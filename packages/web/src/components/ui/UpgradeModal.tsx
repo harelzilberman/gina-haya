@@ -11,7 +11,6 @@ const EARTH    = '#050d0a';
 const SOIL     = '#111f18';
 const GOLD     = '#00e5c3';
 const SAGE     = '#4A9C68';
-const CLAY     = '#9B7A48';
 const PARCH    = '#b0cfbf';
 const FRANK    = '"Frank Ruhl Libre", Georgia, serif';
 const ASSIST   = "'DM Sans', 'Assistant', 'Heebo', sans-serif";
@@ -83,10 +82,6 @@ const validateFullName = (v: string): string | null => {
 };
 
 export function UpgradeModal() {
-  if (import.meta.env.PROD && import.meta.env.VITE_LAUNCH_FREE_MODE === 'true') {
-    return null;
-  }
-
   const { close, billingPeriod, targetTier } = useUpgradeModalStore();
   const { session }              = useAuthStore();
   const { tier: currentTier }   = useTier();
@@ -102,6 +97,10 @@ export function UpgradeModal() {
   const [phoneError,  setPhoneError]  = useState<string | null>(null);
   // recurring: true = monthly auto-renewal (default); false = one-time trial charge.
   const [recurring,   setRecurring]   = useState(true);
+
+  if (import.meta.env.PROD && import.meta.env.VITE_LAUNCH_FREE_MODE === 'true') {
+    return null;
+  }
 
   const resetCheckoutStep = () => {
     setPendingGrowTier(null);

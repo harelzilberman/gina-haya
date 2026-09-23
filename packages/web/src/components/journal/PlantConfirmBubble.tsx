@@ -7,7 +7,6 @@ const NIGHT      = '#050d0a';
 const NIGHT_CARD = '#111f18';
 const NIGHT_LIFT = '#0e1e17';
 const BIO_CYAN   = '#00e5c3';
-const BIO_LIME   = '#aaff00';
 const TEXT       = '#e8f5ee';
 const TEXT_MID   = '#b0cfbf';
 const MUTED      = '#6b9080';

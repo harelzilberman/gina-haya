@@ -3,7 +3,6 @@ import { useSearchParams, useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { getLimits } from '@gina-haya/shared';
 import { useAuthStore } from '../stores/authStore';
-import { useUpgradeModalStore } from '../stores/upgradeModalStore';
 import { useTier } from '../hooks/useTier';
 import { api } from '../api/client';
 
@@ -54,7 +53,6 @@ export function BillingPage() {
   const status = searchParams.get('status');
   const { session, loadProfile } = useAuthStore();
   const { tier, monthlyPrice, canUpgradeTo } = useTier();
-  const { open: openUpgradeModal } = useUpgradeModalStore();
   const navigate = useNavigate();
 
   const [showCancelConfirm, setShowCancelConfirm] = useState(false);

@@ -9,7 +9,6 @@ function isCheckoutRoute(pathname: string): boolean {
 const STORAGE_KEY = 'android-install-bar-dismissed';
 const DISMISS_DAYS = 14;
 
-const NIGHT      = '#050d0a';
 const BIO_CYAN   = '#00e5c3';
 const TEXT       = '#e8f5ee';
 const TEXT_MID   = '#b0cfbf';
@@ -48,15 +47,15 @@ export function AndroidInstallBar() {
     }
   }, []);
 
-  // Also hide on shop/checkout routes to prevent occluding the checkout modal
-  if (isCheckoutRoute(location.pathname)) return null;
-
   useEffect(() => {
     if (!visible) return;
     const prev = document.body.style.paddingBottom;
     document.body.style.paddingBottom = `${BAR_HEIGHT}px`;
     return () => { document.body.style.paddingBottom = prev; };
   }, [visible]);
+
+  // Also hide on shop/checkout routes to prevent occluding the checkout modal
+  if (isCheckoutRoute(location.pathname)) return null;
 
   if (!visible) return null;
 

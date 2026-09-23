@@ -1,4 +1,4 @@
-﻿import { useNavigate } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 
 const EARTH = '#050d0a';
@@ -62,7 +62,7 @@ function getContent(
       if (currentTier === 'grower') {
         return {
           title: '30 × ×™×ª×•×—×™× ×‘×—×•×“×© â€” ×›×œ ×”×›×‘×•×“! ðŸ”¬',
-          body:  `×”×’×¢×ª ×œ×ž×’×‘×œ×” ×”×—×•×“×©×™×ª.\n×”×ž×’×‘×œ×” ×ž×ª××¤×¡×ª ×‘-${resetLabel}.\n×¦×¨×™×š ×¢×•×“? ×¨×›×•×© ×—×‘×™×œ×ª × ×™×ª×•×—×™× ×‘×—× ×•×ª.`,
+          body:  `×”×’×¢×ª ×œ×ž×’×‘×œ×” ×”×—×•×“×©×™×ª.\n×”×ž×’×‘×œ×” ×ž×ª××¤×¡×ª ×‘-${resetLabel}.\n×¦×¨×™×š ×¢×•×“? ×¨×›×•×© ×—×‘×™×œ×ª × ×™×ª×•×—×™× ×‘×—× ×•×ª.`,
           image: '/chupchu_wise.png',
           primaryLabel:  '×œ×—× ×•×ª',
           primaryTo:     '/shop',
@@ -117,13 +117,13 @@ function getContent(
 }
 
 export function UpgradeModal({ isOpen, onClose, limitType, currentTier = 'free', resetsAt }: Props) {
-  if (import.meta.env.PROD && import.meta.env.VITE_LAUNCH_FREE_MODE === 'true') {
-    return null;
-  }
-
   const navigate = useNavigate();
   const { i18n } = useTranslation();
   const isHe = i18n.language === 'he';
+
+  if (import.meta.env.PROD && import.meta.env.VITE_LAUNCH_FREE_MODE === 'true') {
+    return null;
+  }
 
   if (!isOpen) return null;
 

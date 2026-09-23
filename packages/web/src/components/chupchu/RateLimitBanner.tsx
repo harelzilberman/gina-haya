@@ -38,7 +38,7 @@ export function RateLimitBanner({ tier }: Props) {
   let emoji = '🌙';
   let headline = '';
   let body = '';
-  let showUpgrade = !isPaidTier;
+  const showUpgrade = !isPaidTier;
 
   if (isPaidTier) {
     emoji    = '⚙️';

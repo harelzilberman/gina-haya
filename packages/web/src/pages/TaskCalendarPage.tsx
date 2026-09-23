@@ -12,7 +12,6 @@ import {
   useSensors,
 } from '@dnd-kit/core';
 import { CSS } from '@dnd-kit/utilities';
-import { Link } from 'react-router-dom';
 import { useAuthStore } from '../stores/authStore';
 import { tasksApi, type GardenTask } from '../api/tasks';
 import { calendarApi } from '../api/calendar';

@@ -169,8 +169,6 @@ const WOOD_PRODUCTS = [
   },
 ] as const;
 
-type WoodProduct = typeof WOOD_PRODUCTS[number];
-
 interface BiodynamicProduct {
   id: string;
   nameHe: string;

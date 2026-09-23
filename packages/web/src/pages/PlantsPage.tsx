@@ -11,10 +11,7 @@ import { AdBanner } from '../components/ui/AdBanner';
 const NIGHT      = '#050d0a';
 const NIGHT_CARD = '#111f18';
 const BIO_CYAN   = '#00e5c3';
-const BIO_LIME   = '#aaff00';
-const TEXT       = '#e8f5ee';
 const TEXT_MID   = '#b0cfbf';
-const MUTED      = '#6b9080';
 const FRANK      = '"Frank Ruhl Libre", Georgia, serif';
 const DM_SANS    = "'DM Sans', 'Assistant', 'Heebo', sans-serif";
 

@@ -7,7 +7,6 @@ import { ARTICLES } from '../data/articlesIndex';
 // ── Tokens ────────────────────────────────────────────────────────────────────
 const PAGE_BG  = '#050c05';
 const GOLD     = '#c8a84b';
-const GOLD_DIM = 'rgba(180,150,60,0.4)';
 const TITLE_C  = '#f0e4c0';
 const SERIF    = 'Georgia, serif';
 const SANS     = '"Assistant", "Heebo", sans-serif';

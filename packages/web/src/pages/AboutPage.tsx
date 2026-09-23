@@ -6,7 +6,6 @@ const FRANK     = '"Frank Ruhl Libre", Georgia, serif';
 const PLAYFAIR  = '"Playfair Display", Georgia, serif';
 const FOREST    = '#050d0a';
 const GOLD      = '#00e5c3';
-const PARCHMENT = '#b0cfbf';
 const LEAF_GREEN = '#B0D8A8';
 
 const HE_STORY_PARAS = [

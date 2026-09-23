@@ -121,7 +121,6 @@ const SUBJECT_MODAL_CSS = `
 `;
 
 function VideoCard({ video, onClick }: { video: Video; onClick: () => void }) {
-  const { t } = useTranslation('guides');
   const [hovered, setHovered] = useState(false);
 
   const thumbnailUrl = video.youtubeId

@@ -44,7 +44,6 @@ import { useGardenSwitcherStore } from './stores/gardenSwitcherStore';
 import { useOnboardingStore } from './stores/onboardingStore';
 import { useChupChuPanelStore } from './stores/chupChuPanelStore';
 import { useChupChu } from './hooks/useChupChu';
-import { supabase } from './lib/supabase';
 import { Analytics } from '@vercel/analytics/react';
 
 function isCheckoutRoute(pathname: string): boolean {
@@ -55,7 +54,7 @@ export default function App() {
   const { i18n } = useTranslation();
   const location = useLocation();
   const isChupChuPage = location.pathname === '/chupchu';
-  const { user, profile, isAuthReady, loadProfile, markOnboardingComplete } = useAuthStore();
+  const { user, profile, isAuthReady, loadProfile } = useAuthStore();
   const { initFromAuth } = useGardenSwitcherStore();
   const { isComplete, showWelcomeScreen } = useOnboardingStore();
   const { isOpen: isUpgradeOpen } = useUpgradeModalStore();

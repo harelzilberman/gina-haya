@@ -1,6 +1,5 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useTranslation } from 'react-i18next';
 import { useGardenSwitcherStore } from '../stores/gardenSwitcherStore';
 import { usePlanLimit } from '../hooks/usePlanLimit';
 import { useToastStore } from '../stores/toastStore';
@@ -12,7 +11,6 @@ import { useAuthStore } from '../stores/authStore';
 const EARTH = '#050d0a';
 const GOLD  = '#00e5c3';
 const PARCH = '#b0cfbf';
-const SAGE  = '#4A9C68';
 const FRANK = '"Frank Ruhl Libre", Georgia, serif';
 const ASST  = "'DM Sans', 'Assistant', 'Heebo', sans-serif";
 
@@ -28,8 +26,6 @@ interface ConfirmDelete {
 
 export function GardensPage() {
   const navigate = useNavigate();
-  const { i18n } = useTranslation('common');
-  const isHe = i18n.language === 'he';
   const { session, profile: authProfile, isAuthReady } = useAuthStore();
   const { gardens, activeGardenId, switchGarden, deleteGarden, setDefaultGarden, loadGardens } = useGardenSwitcherStore();
   const { tier, limits } = usePlanLimit();
