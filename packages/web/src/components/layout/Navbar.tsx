@@ -468,10 +468,24 @@ export function Navbar() {
         <div style={{ position: 'fixed', top: '64px', insetInlineStart: 0, insetInlineEnd: 0, zIndex: 99,
           background: `linear-gradient(180deg, rgba(5,13,10,0.97) 0%, rgba(5,13,10,0.99) 100%)`,
           backdropFilter: 'blur(20px)', borderBottom: '1px solid rgba(0,229,195,0.1)',
-          padding: '16px 24px 24px', display: 'flex', flexDirection: 'column', gap: '2px' }}>
+          padding: '16px 24px 24px', display: 'flex', flexDirection: 'column', gap: '2px',
+          maxHeight: 'calc(100vh - 64px)', overflowY: 'auto', WebkitOverflowScrolling: 'touch' as any }}>
 
           {user && (
             <>
+              {/* Account section — first so it is always visible without scrolling */}
+              <div style={mobileSection}>{isHebrew ? 'חשבון' : 'Account'}</div>
+              <Link to="/billing"  onClick={() => setMobileOpen(false)} style={mobileSub}>{isHebrew ? 'חיוב ותוכניות' : 'Billing & Plans'}</Link>
+              <Link to="/settings" onClick={() => setMobileOpen(false)} style={mobileSub}>{isHebrew ? 'הגדרות'         : 'Settings'}</Link>
+              <button onClick={handleSignOut}
+                style={{ fontFamily: DM_SANS, fontSize: '14px', color: 'rgba(255,100,100,0.8)', background: 'none',
+                  border: 'none', cursor: 'pointer', textAlign: 'start', padding: '10px 0',
+                  paddingInlineStart: '16px', borderBottom: '1px solid rgba(0,229,195,0.05)' }}>
+                {isHebrew ? 'התנתקות' : 'Sign out'}
+              </button>
+              <div style={{ height: '1px', backgroundColor: 'rgba(0,229,195,0.1)', margin: '8px 0' }} />
+
+              {/* Navigation */}
               <Link to="/"         onClick={() => setMobileOpen(false)} style={mobileLink}>{isHebrew ? 'בית'           : 'Home'}</Link>
               <div style={mobileSection}>{isHebrew ? 'גינה' : 'Garden'}</div>
               <Link to="/gardens"  onClick={() => setMobileOpen(false)} style={mobileSub}>{isHebrew ? 'הגינות שלי'  : 'My Gardens'}</Link>
@@ -493,11 +507,6 @@ export function Navbar() {
                 {/* האפליקציה */}
                 {isHebrew ? '\u05d4\u05d0\u05e4\u05dc\u05d9\u05e7\u05e6\u05d9\u05d4' : 'The App'}
               </Link>
-              <div style={{ height: '1px', backgroundColor: 'rgba(0,229,195,0.1)', margin: '8px 0' }} />
-              <button onClick={handleSignOut}
-                style={{ fontFamily: DM_SANS, fontSize: '16px', color: 'rgba(255,100,100,0.8)', background: 'none', border: 'none', cursor: 'pointer', textAlign: 'start', padding: '10px 0' }}>
-                {t('nav.signout')}
-              </button>
             </>
           )}
 
