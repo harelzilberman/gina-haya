@@ -24,10 +24,10 @@ export function RateLimitBanner({ tier }: Props) {
   }));
 
   // Determine which variant to show:
-  // • Paid-tier daily cap (gardener_pro / professional) — fair-use ceiling, no upsell
+  // • Paid-tier daily cap (gardener_pro / advanced / professional) — fair-use ceiling, no upsell
   // • Free-tier daily cap — come back tomorrow, soft upsell
-  // • Free-tier monthly cap (or grower monthly) — full upsell
-  const isPaidTier  = tier === 'gardener_pro' || tier === 'professional';
+  // • Free-tier monthly cap — full upsell
+  const isPaidTier  = tier === 'gardener_pro' || tier === 'advanced' || tier === 'professional';
   // For free tier distinguish daily vs monthly: if rateLimitType is available use it directly,
   // otherwise fall back to comparing used count vs monthly cap.
   const isDaily = isPaidTier

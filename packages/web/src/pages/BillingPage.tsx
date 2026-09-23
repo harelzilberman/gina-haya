@@ -24,18 +24,21 @@ const TIER_NAMES_EN: Record<string, string> = {
   professional: 'Professional',
 };
 
+// Feature lists derived from @gina-haya/shared limits — kept in sync automatically.
+const _b = { f: getLimits('free'), g: getLimits('gardener_pro'), a: getLimits('advanced'), p: getLimits('professional') };
+
 const TIER_FEATURES_HE: Record<string, string[]> = {
-  free:         ['לוח ביודינמי יומי', 'אנציקלופדיית צמחים', 'גינה אחת', "שיחה עם צ'ופצ'ו (20/חודש)", 'פרסומות'],
-  grower:       ['גישה מלאה לאפליקציה', '5 אבחנות צמחים / חודש', "שיחה עם צ'ופצ'ו (50/חודש)"],
-  gardener_pro: ['ללא פרסומות', 'אבחנות ללא הגבלה', "שיחה עם צ'ופצ'ו ללא הגבלה", 'גינות מרובות'],
-  professional: ['לוח לקוחות', 'white-label', 'תמיכה מועדפת'],
+  free:         ['לוח ביודינמי יומי', 'אנציקלופדיית צמחים', 'גינה אחת', `${_b.f.maxChupChuPerMonth} שיחות עם צ'ופצ'ו לחודש`, `${_b.f.maxVisionLooksPerMonth} ניתוחי AI לחודש`],
+  gardener_pro: [`${_b.g.maxGardens} גינות`, `עד ${_b.g.maxTrackers} מעקבי גידול`, `${_b.g.maxVisionLooksPerMonth} ניתוחי AI לחודש`, `${_b.g.maxChupChuPerMonth} שיחות לחודש`, 'אנציקלופדיה מלאה'],
+  advanced:     [`${_b.a.maxGardens} גינות`, 'מעקבי גידול ללא הגבלה', `${_b.a.maxVisionLooksPerMonth} ניתוחי AI לחודש`, `${_b.a.maxChupChuPerMonth} שיחות לחודש`, 'ייצוא PDF'],
+  professional: [`${_b.p.maxGardens} גינות`, 'מעקבי גידול ללא הגבלה', `${_b.p.maxVisionLooksPerMonth} ניתוחי AI לחודש`, `${_b.p.maxChupChuPerMonth} שיחות לחודש`, 'תמיכה מועדפת'],
 };
 
 const TIER_FEATURES_EN: Record<string, string[]> = {
-  free:         ['Daily biodynamic calendar', 'Plant encyclopedia', 'One garden', 'Chupchu chat (20/month)', 'Ads'],
-  grower:       ['Full app access', '5 plant diagnoses/month', 'Chupchu chat (50/month)'],
-  gardener_pro: ['No ads', 'Unlimited diagnoses', 'Unlimited Chupchu chat', 'Multiple gardens'],
-  professional: ['Client dashboard', 'White-label', 'Priority support'],
+  free:         ['Daily biodynamic calendar', 'Plant encyclopedia', '1 garden', `${_b.f.maxChupChuPerMonth} ChupChu chats/month`, `${_b.f.maxVisionLooksPerMonth} AI analyses/month`],
+  gardener_pro: [`${_b.g.maxGardens} gardens`, `Up to ${_b.g.maxTrackers} trackers`, `${_b.g.maxVisionLooksPerMonth} AI analyses/month`, `${_b.g.maxChupChuPerMonth} chats/month`, 'Full encyclopedia'],
+  advanced:     [`${_b.a.maxGardens} gardens`, 'Unlimited trackers', `${_b.a.maxVisionLooksPerMonth} AI analyses/month`, `${_b.a.maxChupChuPerMonth} chats/month`, 'PDF export'],
+  professional: [`${_b.p.maxGardens} gardens`, 'Unlimited trackers', `${_b.p.maxVisionLooksPerMonth} AI analyses/month`, `${_b.p.maxChupChuPerMonth} chats/month`, 'Priority support'],
 };
 
 const cardStyle = (highlight?: boolean): React.CSSProperties => ({

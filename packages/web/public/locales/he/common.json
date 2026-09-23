@@ -38,9 +38,9 @@
     "current": "עברית"
   },
   "tier": {
-    "free": "חינם",
-    "grower": "גנן מתחיל",
-    "gardener_pro": "גנן מקצועי",
-    "professional": "מקצוען"
+    "free": "גנן מתחיל",
+    "gardener_pro": "גנן ביתי",
+    "advanced": "גנן מתקדם",
+    "professional": "גנן מקצועי"
   }
 }

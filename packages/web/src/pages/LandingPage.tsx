@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
+import { getLimits, TIER_PRICING } from '@gina-haya/shared';
 import { ChupChuChat } from '../components/chupchu/ChupChuChat';
 import { PlayBadge } from '../components/ui/PlayBadge';
 
@@ -404,25 +405,31 @@ interface PricingPlan {
   cta: string; highlight: boolean; badge: string; accent: string;
 }
 
+// Limits pulled from @gina-haya/shared — single source of truth for all pricing.
+const _FL = getLimits('free');
+const _GL = getLimits('gardener_pro');
+const _AL = getLimits('advanced');
+const _PL = getLimits('professional');
+
 const PRICING_HE: PricingPlan[] = [
   {
-    name: 'חינם לתמיד', price: null,
-    features: ['לוח ביודינמי בסיסי', "5 שאלות לצ'ופצ'ו בחודש", 'אנציקלופדיה בסיסית'],
+    name: _FL.displayNameHe, price: null,
+    features: ['לוח ביודינמי יומי', `${_FL.maxChupChuPerMonth} שיחות עם צ'ופצ'ו לחודש`, `${_FL.maxVisionLooksPerMonth} ניתוחי AI`, 'גינה אחת'],
     cta: 'התחל עכשיו', highlight: false, badge: '', accent: MUTED,
   },
   {
-    name: 'Grower', price: '9',
-    features: ['לוח ביודינמי מלא', "30 שאלות לצ'ופצ'ו", 'גינה אישית', 'התראות יומיות'],
-    cta: 'בחר תוכנית', highlight: false, badge: '', accent: BIO_CYAN,
-  },
-  {
-    name: 'Gardener Pro', price: '14',
-    features: ['הכל ב-Grower', 'שאלות ללא הגבלה', 'דוחות חודשיים', 'תמיכה מועדפת'],
+    name: _GL.displayNameHe, price: String(TIER_PRICING.gardener_pro.monthly),
+    features: ['לוח ביודינמי מלא', `${_GL.maxGardens} גינות`, `עד ${_GL.maxTrackers} מעקבי גידול`, `${_GL.maxVisionLooksPerMonth} ניתוחי AI לחודש`, `${_GL.maxChupChuPerMonth} שיחות עם צ'ופצ'ו לחודש`, 'אנציקלופדיה מלאה'],
     cta: 'בחר תוכנית', highlight: true, badge: 'הכי פופולרי', accent: BIO_CYAN,
   },
   {
-    name: 'Professional', price: '49',
-    features: ['הכל ב-Pro', 'API גישה', 'לוגו מותאם אישית', 'תמיכה ייעודית'],
+    name: _AL.displayNameHe, price: String(TIER_PRICING.advanced.monthly),
+    features: [`הכל ב${_GL.displayNameHe}`, `${_AL.maxGardens} גינות`, 'מעקבי גידול ללא הגבלה', `${_AL.maxVisionLooksPerMonth} ניתוחי AI לחודש`, `${_AL.maxChupChuPerMonth} שיחות לחודש`, 'ייצוא PDF'],
+    cta: 'בחר תוכנית', highlight: false, badge: '', accent: BIO_CYAN,
+  },
+  {
+    name: _PL.displayNameHe, price: String(TIER_PRICING.professional.monthly),
+    features: [`הכל ב${_AL.displayNameHe}`, `${_PL.maxGardens} גינות`, `${_PL.maxVisionLooksPerMonth} ניתוחי AI לחודש`, `${_PL.maxChupChuPerMonth} שיחות לחודש`, 'תמיכה מועדפת'],
     cta: 'בחר תוכנית', highlight: false, badge: '', accent: BIO_VIOLET,
   },
 ];
@@ -430,22 +437,22 @@ const PRICING_HE: PricingPlan[] = [
 const PRICING_EN: PricingPlan[] = [
   {
     name: 'Free Forever', price: null,
-    features: ['Basic biodynamic calendar', '5 ChupChu questions/month', 'Basic encyclopedia'],
+    features: ['Daily biodynamic calendar', `${_FL.maxChupChuPerMonth} ChupChu chats/month`, `${_FL.maxVisionLooksPerMonth} AI analyses`, '1 garden'],
     cta: 'Start Now', highlight: false, badge: '', accent: MUTED,
   },
   {
-    name: 'Grower', price: '9',
-    features: ['Full biodynamic calendar', '30 ChupChu questions', 'Personal garden', 'Daily alerts'],
-    cta: 'Choose Plan', highlight: false, badge: '', accent: BIO_CYAN,
-  },
-  {
-    name: 'Gardener Pro', price: '14',
-    features: ['Everything in Grower', 'Unlimited questions', 'Monthly reports', 'Priority support'],
+    name: 'Gardener', price: String(TIER_PRICING.gardener_pro.monthly),
+    features: ['Full biodynamic calendar', `${_GL.maxGardens} gardens`, `Up to ${_GL.maxTrackers} trackers`, `${_GL.maxVisionLooksPerMonth} AI analyses/month`, `${_GL.maxChupChuPerMonth} ChupChu chats/month`, 'Full encyclopedia'],
     cta: 'Choose Plan', highlight: true, badge: 'Most Popular', accent: BIO_CYAN,
   },
   {
-    name: 'Professional', price: '49',
-    features: ['Everything in Pro', 'API access', 'Custom logo', 'Dedicated support'],
+    name: 'Advanced', price: String(TIER_PRICING.advanced.monthly),
+    features: ['Everything in Gardener', `${_AL.maxGardens} gardens`, 'Unlimited trackers', `${_AL.maxVisionLooksPerMonth} AI analyses/month`, `${_AL.maxChupChuPerMonth} chats/month`, 'PDF export'],
+    cta: 'Choose Plan', highlight: false, badge: '', accent: BIO_CYAN,
+  },
+  {
+    name: 'Professional', price: String(TIER_PRICING.professional.monthly),
+    features: ['Everything in Advanced', `${_PL.maxGardens} gardens`, `${_PL.maxVisionLooksPerMonth} AI analyses/month`, `${_PL.maxChupChuPerMonth} chats/month`, 'Priority support'],
     cta: 'Choose Plan', highlight: false, badge: '', accent: BIO_VIOLET,
   },
 ];

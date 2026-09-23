@@ -38,8 +38,8 @@
   },
   "tier": {
     "free": "Free",
-    "grower": "Grower",
-    "gardener_pro": "Gardener Pro",
+    "gardener_pro": "Gardener",
+    "advanced": "Advanced",
     "professional": "Professional"
   }
 }
