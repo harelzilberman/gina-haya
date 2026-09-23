@@ -1,83 +1,48 @@
 import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { createClient } from '@supabase/supabase-js';
+import { supabase, initialAuthParams } from '../lib/supabase';
 import { PasswordResetForm } from '../components/auth/PasswordResetForm';
 import { MIN_PASSWORD_LENGTH, mapAuthError } from '../utils/authErrors';
 
-// ── Dedicated client with detectSessionInUrl: false ──────────────────────────
-// The shared singleton (detectSessionInUrl: true) processes and clears the URL
-// hash asynchronously via _initialize(). A separate client here ensures nothing
-// consumes the URL before we read it, and we do all auth ops through this one.
-const pageSupabase = createClient(
-  import.meta.env.VITE_SUPABASE_URL as string,
-  import.meta.env.VITE_SUPABASE_ANON_KEY as string,
-  { auth: { detectSessionInUrl: false, persistSession: true, autoRefreshToken: true } },
-);
-
 type PageState = 'checking' | 'confirm' | 'set-password' | 'invalid' | 'request' | 'done';
 
-interface AuthParams {
-  access_token: string | null;
-  refresh_token: string | null;
-  token_hash: string | null;
-  type: string | null;
-  code: string | null;
-  error: string | null;
-  error_code: string | null;
-  error_description: string | null;
-}
-
-// Capture auth params synchronously before any async Supabase processing
-// can clear the URL, then immediately remove tokens from the address bar.
-function captureAndCleanUrl(): AuthParams {
-  const search = new URLSearchParams(window.location.search);
-  const hash = new URLSearchParams(window.location.hash.replace(/^#/, ''));
-  const get = (k: string): string | null => search.get(k) ?? hash.get(k);
-
-  const params: AuthParams = {
-    access_token:      get('access_token'),
-    refresh_token:     get('refresh_token'),
-    token_hash:        get('token_hash'),
-    type:              get('type'),
-    code:              get('code'),
-    error:             get('error'),
-    error_code:        get('error_code'),
-    error_description: get('error_description'),
-  };
-
-  if (Object.values(params).some(Boolean)) {
-    history.replaceState(null, '', window.location.pathname);
-  }
-
-  return params;
-}
+// Coerce null to an empty-params object so the rest of the file stays uniform.
+const ap = initialAuthParams ?? {
+  access_token: null, refresh_token: null, token_hash: null,
+  type: null, code: null, error: null, error_code: null, error_description: null,
+};
 
 export function ResetPasswordPage() {
-  // ── 1. Capture URL params on first render (synchronous) ────────────────────
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  const [authParams] = useState<AuthParams>(captureAndCleanUrl);
+  // ── 1. Remove tokens from the address bar (DOM side-effect → useEffect) ───
+  useEffect(() => {
+    if (initialAuthParams) {
+      history.replaceState(null, '', window.location.pathname);
+    }
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
-  // ── 2. Derive initial page state from captured params ─────────────────────
+  // ── 2. Resolve initial page state from the module-load snapshot ───────────
+  // initialAuthParams was captured in supabase.ts before createClient ran,
+  // so it is immune to the singleton's detectSessionInUrl processing.
   const [pageState, setPageState] = useState<PageState>(() => {
-    if (authParams.error || authParams.error_code) {
-      console.error('[reset-password] error param', authParams.error_code, authParams.error_description);
+    if (ap.error || ap.error_code) {
+      console.error('[reset-password] error param', ap.error_code, ap.error_description);
       return 'invalid';
     }
-    if (authParams.token_hash && authParams.type === 'recovery') return 'confirm';
+    if (ap.token_hash && ap.type === 'recovery') return 'confirm';
     if (
-      (authParams.access_token && authParams.refresh_token && authParams.type === 'recovery') ||
-      authParams.code
+      (ap.access_token && ap.refresh_token && ap.type === 'recovery') ||
+      ap.code
     ) return 'checking';
     return 'request';
   });
 
-  const [newPassword, setNewPassword]       = useState('');
+  const [newPassword, setNewPassword]         = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [validationError, setValidationError] = useState<string | null>(null);
   const [serverError, setServerError]         = useState<string | null>(null);
   const [isLoading, setIsLoading]             = useState(false);
 
-  // ── 3. Exchange implicit token or PKCE code ────────────────────────────────
+  // ── 3. Exchange implicit token (access_token) or PKCE code ────────────────
   useEffect(() => {
     if (pageState !== 'checking') return;
     let cancelled = false;
@@ -86,12 +51,12 @@ export function ResetPasswordPage() {
       try {
         let error: { message: string } | null = null;
 
-        if (authParams.code) {
-          ({ error } = await pageSupabase.auth.exchangeCodeForSession(authParams.code));
-        } else if (authParams.access_token && authParams.refresh_token) {
-          ({ error } = await pageSupabase.auth.setSession({
-            access_token:  authParams.access_token,
-            refresh_token: authParams.refresh_token,
+        if (ap.code) {
+          ({ error } = await supabase.auth.exchangeCodeForSession(ap.code));
+        } else if (ap.access_token && ap.refresh_token) {
+          ({ error } = await supabase.auth.setSession({
+            access_token:  ap.access_token,
+            refresh_token: ap.refresh_token,
           }));
         }
 
@@ -113,9 +78,9 @@ export function ResetPasswordPage() {
     return () => { cancelled = true; };
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
-  // ── 4. Belt-and-braces: PASSWORD_RECOVERY listener ────────────────────────
+  // ── 4. Belt-and-braces: PASSWORD_RECOVERY event ───────────────────────────
   useEffect(() => {
-    const { data: { subscription } } = pageSupabase.auth.onAuthStateChange((event) => {
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event) => {
       if (event === 'PASSWORD_RECOVERY') {
         setPageState(prev =>
           prev === 'checking' || prev === 'confirm' || prev === 'request' ? 'set-password' : prev
@@ -125,12 +90,12 @@ export function ResetPasswordPage() {
     return () => subscription.unsubscribe();
   }, []);
 
-  // ── 5. confirm → verifyOtp (on button tap — not on load) ──────────────────
+  // ── 5. confirm → verifyOtp (on tap — never on load to protect against scanners) ──
   const handleConfirm = async () => {
     setIsLoading(true);
     try {
-      const { error } = await pageSupabase.auth.verifyOtp({
-        token_hash: authParams.token_hash!,
+      const { error } = await supabase.auth.verifyOtp({
+        token_hash: ap.token_hash!,
         type: 'recovery',
       });
       if (error) {
@@ -164,7 +129,7 @@ export function ResetPasswordPage() {
 
     setIsLoading(true);
     try {
-      const { error } = await pageSupabase.auth.updateUser({ password: newPassword });
+      const { error } = await supabase.auth.updateUser({ password: newPassword });
       if (error) throw error;
       setPageState('done');
     } catch (err: any) {
@@ -190,7 +155,7 @@ export function ResetPasswordPage() {
 
         <div className="bg-white rounded-2xl border border-sage/25 shadow-sm px-6 py-8">
 
-          {/* checking — exchanging token */}
+          {/* checking — exchanging token/code */}
           {pageState === 'checking' && (
             <div dir="rtl" className="text-center space-y-4 py-4">
               <div className="text-3xl animate-pulse">🔗</div>
@@ -198,7 +163,7 @@ export function ResetPasswordPage() {
             </div>
           )}
 
-          {/* confirm — token_hash: show button to avoid burning token on scan */}
+          {/* confirm — token_hash flow: verify only on user tap */}
           {pageState === 'confirm' && (
             <div dir="rtl" className="text-center space-y-6 py-4">
               <div className="text-3xl">🔑</div>
@@ -274,7 +239,7 @@ export function ResetPasswordPage() {
             </div>
           )}
 
-          {/* request — send-link form (no auth params present, or navigated from invalid) */}
+          {/* request — send-link form */}
           {pageState === 'request' && (
             <>
               <h2 className="text-lg font-semibold text-navy mb-6 text-center">איפוס סיסמה</h2>
