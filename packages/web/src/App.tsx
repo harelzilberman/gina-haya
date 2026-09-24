@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
-import { Routes, Route, Navigate, useLocation } from 'react-router-dom';
+import { Routes, Route, Navigate, useLocation, useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { LoginPage } from './pages/LoginPage';
 import { SignupPage } from './pages/SignupPage';
@@ -40,6 +40,7 @@ import { LaunchBadge } from './components/ui/LaunchBadge';
 import { ChupChuChat } from './components/chupchu/ChupChuChat';
 import { useUpgradeModalStore } from './stores/upgradeModalStore';
 import { useAuthStore } from './stores/authStore';
+import { readPurchaseIntent } from './utils/purchaseIntent';
 import { useGardenSwitcherStore } from './stores/gardenSwitcherStore';
 import { useOnboardingStore } from './stores/onboardingStore';
 import { useChupChuPanelStore } from './stores/chupChuPanelStore';
@@ -48,6 +49,40 @@ import { Analytics } from '@vercel/analytics/react';
 
 function isCheckoutRoute(pathname: string): boolean {
   return pathname === '/shop' || pathname.startsWith('/shop/');
+}
+
+/**
+ * Handles the email-confirmation case: after a user confirms their email and
+ * lands back on the site (often at "/"), if a purchase intent was saved before
+ * signup, navigate to /pricing so PricingPage can open the upgrade modal.
+ *
+ * Fires once on the login → authenticated transition per page lifecycle.
+ */
+function PurchaseIntentHandler() {
+  const { user, isAuthReady } = useAuthStore();
+  const navigate = useNavigate();
+  // undefined = "not yet observed", null = "observed as logged-out", string = userId
+  const prevUserIdRef = useRef<string | null | undefined>(undefined);
+
+  useEffect(() => {
+    if (!isAuthReady) return;
+
+    const prevId  = prevUserIdRef.current;
+    const currId  = user?.id ?? null;
+    prevUserIdRef.current = currId;
+
+    // Only fire on the null/unknown → userId transition (login event).
+    // If prevId was already a userId, the user was already logged in — skip.
+    if (prevId !== undefined && prevId !== null) return;
+    if (currId === null) return;
+
+    const intent = readPurchaseIntent();
+    if (intent && window.location.pathname !== intent.returnTo) {
+      navigate(intent.returnTo, { replace: true });
+    }
+  }, [user, isAuthReady, navigate]);
+
+  return null;
 }
 
 export default function App() {
@@ -381,6 +416,7 @@ export default function App() {
           📧 צור קשר
         </a>
       </div>
+      <PurchaseIntentHandler />
       <Analytics />
     </div>
   );

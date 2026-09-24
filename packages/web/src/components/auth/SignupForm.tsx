@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useLocation } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { useDirection } from '../../hooks/useDirection';
 import { useAuthStore } from '../../stores/authStore';
@@ -38,6 +38,9 @@ export function SignupForm() {
   const lang: 'he' | 'en' = i18n.language === 'en' ? 'en' : 'he';
   const { dir } = useDirection();
   const { signUp, signInWithGoogle, isLoading, error, clearError } = useAuthStore();
+  const location = useLocation();
+  const nextParam = new URLSearchParams(location.search).get('next');
+  const loginTo = nextParam ? `/login?next=${encodeURIComponent(nextParam)}` : '/login';
 
   const [displayName,       setDisplayName]       = useState('');
   const [email,             setEmail]             = useState('');
@@ -247,7 +250,7 @@ export function SignupForm() {
 
         <p style={{ marginTop: '12px', textAlign: 'center', fontFamily: DM_SANS, fontSize: '13px', color: `${TEXT_MID}55` }}>
           {t('signup.hasAccount')}{' '}
-          <Link to="/login" style={{ color: BIO_CYAN, fontWeight: 500, textDecoration: 'none' }}
+          <Link to={loginTo} style={{ color: BIO_CYAN, fontWeight: 500, textDecoration: 'none' }}
             onMouseEnter={e => { (e.currentTarget as HTMLElement).style.opacity = '0.8'; }}
             onMouseLeave={e => { (e.currentTarget as HTMLElement).style.opacity = '1'; }}
           >

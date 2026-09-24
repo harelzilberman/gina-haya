@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { useUpgradeModalStore } from '../../stores/upgradeModalStore';
 import { useAuthStore } from '../../stores/authStore';
@@ -6,6 +7,7 @@ import { useTier } from '../../hooks/useTier';
 import { api } from '../../api/client';
 import { getLimits, TIER_PRICING, TIER_ORDER } from '@gina-haya/shared';
 import type { SubscriptionTier } from '@gina-haya/shared';
+import { savePurchaseIntent } from '../../utils/purchaseIntent';
 
 const EARTH    = '#050d0a';
 const SOIL     = '#111f18';
@@ -88,10 +90,11 @@ const validateFullName = (v: string): string | null => {
 
 export function UpgradeModal() {
   const { close, billingPeriod, targetTier } = useUpgradeModalStore();
-  const { session }              = useAuthStore();
+  const { session, profile }     = useAuthStore();
   const { tier: currentTier }   = useTier();
   const { i18n, t }              = useTranslation('billing');
   const isHe                    = i18n.language === 'he';
+  const navigate                 = useNavigate();
   const [loading, setLoading] = useState<string | null>(null);
 
   // Grow-only checkout collection state.
@@ -119,7 +122,16 @@ export function UpgradeModal() {
 
   // Called when a tier card's upgrade button is clicked.
   const handleUpgrade = (targetTier: SubscriptionTier) => {
-    if (targetTier === 'free' || !session?.access_token) return;
+    if (targetTier === 'free') return;
+
+    if (!session?.access_token) {
+      // Defensive: should not normally be reachable (PricingPage guards unauthenticated
+      // clicks before opening this modal), but never fail silently.
+      savePurchaseIntent({ tier: targetTier, billingPeriod, returnTo: '/pricing' });
+      close();
+      navigate('/login?next=/pricing');
+      return;
+    }
 
     if (PAYMENT_PROVIDER === 'grow') {
       // All payments go through Grow regardless of UI language.
@@ -156,7 +168,15 @@ export function UpgradeModal() {
 
   // Called when user confirms name + phone and clicks pay (Grow path only).
   const handleGrowConfirm = async () => {
-    if (!pendingGrowTier || !session?.access_token) return;
+    if (!pendingGrowTier) return;
+
+    if (!session?.access_token) {
+      // Defensive: should never be reachable normally, but never fail silently.
+      savePurchaseIntent({ tier: pendingGrowTier, billingPeriod, returnTo: '/pricing' });
+      close();
+      navigate('/login?next=/pricing');
+      return;
+    }
 
     const nameErr  = validateFullName(fullName);
     const phoneErr = validatePhone(phone);
@@ -299,26 +319,30 @@ export function UpgradeModal() {
                 flexDirection: 'column',
                 gap:           '10px',
               }}>
-                {/* Current plan row */}
-                <div style={{
-                  display:         'flex',
-                  alignItems:      'center',
-                  justifyContent:  'space-between',
-                  padding:         '12px 16px',
-                  borderRadius:    '8px',
-                  background:      'rgba(255,255,255,0.03)',
-                  border:          '1px solid rgba(176,207,191,0.1)',
-                }}>
-                  <span style={{ fontFamily: ASSIST, fontSize: '13px', color: `${PARCH}66` }}>
-                    תוכנית נוכחית
-                  </span>
-                  <span style={{ fontFamily: ASSIST, fontSize: '14px', color: `${PARCH}88`, fontWeight: 600 }}>
-                    {getLimits(currentTier).displayNameHe}
-                  </span>
-                </div>
+                {/* Current plan row — only shown when there is a logged-in user */}
+                {profile && (
+                  <div style={{
+                    display:         'flex',
+                    alignItems:      'center',
+                    justifyContent:  'space-between',
+                    padding:         '12px 16px',
+                    borderRadius:    '8px',
+                    background:      'rgba(255,255,255,0.03)',
+                    border:          '1px solid rgba(176,207,191,0.1)',
+                  }}>
+                    <span style={{ fontFamily: ASSIST, fontSize: '13px', color: `${PARCH}66` }}>
+                      תוכנית נוכחית
+                    </span>
+                    <span style={{ fontFamily: ASSIST, fontSize: '14px', color: `${PARCH}88`, fontWeight: 600 }}>
+                      {getLimits(currentTier).displayNameHe}
+                    </span>
+                  </div>
+                )}
 
-                {/* Arrow */}
-                <div style={{ textAlign: 'center', color: GOLD, fontSize: '18px', lineHeight: 1 }}>↓</div>
+                {/* Arrow — only shown when current plan is visible */}
+                {profile && (
+                  <div style={{ textAlign: 'center', color: GOLD, fontSize: '18px', lineHeight: 1 }}>↓</div>
+                )}
 
                 {/* New plan row */}
                 <div style={{

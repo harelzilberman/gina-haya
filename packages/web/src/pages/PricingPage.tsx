@@ -1,8 +1,11 @@
-import { useState } from 'react';
-import { Link } from 'react-router-dom';
+import { useState, useEffect } from 'react';
+import { Link, useNavigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { useAuthStore } from '../stores/authStore';
 import { useUpgradeModalStore } from '../stores/upgradeModalStore';
-import { getLimits, TIER_PRICING } from '@gina-haya/shared';
+import { useToastStore } from '../stores/toastStore';
+import { getLimits, TIER_PRICING, TIER_ORDER } from '@gina-haya/shared';
+import { savePurchaseIntent, readPurchaseIntent, clearPurchaseIntent } from '../utils/purchaseIntent';
 
 const NIGHT      = '#050d0a';
 const NIGHT_MID  = '#091410';
@@ -151,13 +154,40 @@ function ComingSoonToast({ visible }: { visible: boolean }) {
 }
 
 export function PricingPage() {
-  const { profile } = useAuthStore();
+  const { profile, user } = useAuthStore();
   const { open: openUpgradeModal } = useUpgradeModalStore();
+  const { show: showGlobalToast } = useToastStore();
+  const navigate = useNavigate();
+  const { i18n } = useTranslation();
+  const isHe = i18n.language === 'he';
   const [isAnnual, setIsAnnual] = useState(false);
   const [openFaq, setOpenFaq] = useState<number | null>(null);
   const [toastVisible, setToastVisible] = useState(false);
 
   const currentTier = (profile?.subscription_tier ?? 'free') as ActiveTier;
+
+  // After login/signup (including email confirmation), process any pending purchase intent.
+  useEffect(() => {
+    if (!user) return;
+    const intent = readPurchaseIntent();
+    if (!intent) return;
+
+    clearPurchaseIntent();
+
+    const currentIdx = (TIER_ORDER as ReadonlyArray<string>).indexOf(currentTier);
+    const intentIdx  = (TIER_ORDER as ReadonlyArray<string>).indexOf(intent.tier);
+
+    if (intentIdx !== -1 && currentIdx !== -1 && currentIdx >= intentIdx) {
+      showGlobalToast(
+        isHe ? 'כבר יש לך את התוכנית הזו' : 'You already have this plan',
+        'info',
+      );
+      return;
+    }
+
+    openUpgradeModal('purchase_intent', intent.billingPeriod, intent.tier);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [user]);
 
   function showToast() {
     setToastVisible(true);
@@ -189,9 +219,18 @@ export function PricingPage() {
     return p.monthly * 12 - p.annual;
   }
 
+  const handleUpgradeClick = (tier: string) => {
+    if (!user) {
+      savePurchaseIntent({ tier, billingPeriod: isAnnual ? 'annual' : 'monthly', returnTo: '/pricing' });
+      navigate('/login?next=/pricing');
+      return;
+    }
+    openUpgradeModal('pricing_page', isAnnual ? 'annual' : 'monthly', tier);
+  };
+
   const upgradeBtn = (label: string, tier: string) => (
     <button
-      onClick={() => openUpgradeModal('pricing_page', isAnnual ? 'annual' : 'monthly', tier)}
+      onClick={() => handleUpgradeClick(tier)}
       style={{
         display: 'block', width: '100%',
         fontFamily: FRANK, fontSize: '15px', fontWeight: 700,

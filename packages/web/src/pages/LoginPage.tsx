@@ -3,6 +3,7 @@ import { useNavigate, useLocation } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { LoginForm } from '../components/auth/LoginForm';
 import { useAuthStore } from '../stores/authStore';
+import { readPurchaseIntent } from '../utils/purchaseIntent';
 
 const NIGHT      = '#050d0a';
 const NIGHT_CARD = '#111f18';
@@ -20,10 +21,18 @@ const PAGE_CSS = `
 `;
 
 export function LoginPage() {
-  const { t } = useTranslation('auth');
+  const { t, i18n } = useTranslation('auth');
+  const isHe = i18n.language === 'he';
   const { user } = useAuthStore();
   const navigate = useNavigate();
   const location = useLocation();
+
+  const purchaseIntent = readPurchaseIntent();
+  const intentMsg = purchaseIntent
+    ? (isHe
+        ? 'כדי להשלים את הרכישה, יש להתחבר או להירשם'
+        : 'To complete your purchase, please sign in or sign up')
+    : null;
 
   useEffect(() => {
     if (user) {
@@ -72,6 +81,26 @@ export function LoginPage() {
         zIndex:          1,
       }}>
         <div style={{ width: '100%', maxWidth: '368px' }}>
+
+          {/* Purchase-intent banner */}
+          {intentMsg && (
+            <div
+              dir={isHe ? 'rtl' : 'ltr'}
+              style={{
+                backgroundColor: 'rgba(0,229,195,0.1)',
+                border:          '1px solid rgba(0,229,195,0.3)',
+                borderRadius:    '10px',
+                padding:         '12px 16px',
+                marginBottom:    '16px',
+                fontFamily:      DM_SANS,
+                fontSize:        '14px',
+                color:           BIO_CYAN,
+                textAlign:       'center',
+              }}
+            >
+              {intentMsg}
+            </div>
+          )}
 
           {/* Logo */}
           <div style={{ textAlign: 'center', marginBottom: '28px' }}>
