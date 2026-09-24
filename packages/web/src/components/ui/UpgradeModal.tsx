@@ -16,6 +16,10 @@ const FRANK    = '"Frank Ruhl Libre", Georgia, serif';
 const ASSIST   = "'DM Sans', 'Assistant', 'Heebo', sans-serif";
 const PLAYFAIR = '"Playfair Display", Georgia, serif';
 
+// Payment provider switch — set to 'grow' to route all checkout through Grow.
+// Change to 'stripe' only when Stripe price IDs are configured in the API.
+const PAYMENT_PROVIDER = 'grow' as const;
+
 const MODAL_CSS = `
 @keyframes upgrade-modal-in {
   from { opacity: 0; transform: scale(0.96); }
@@ -70,22 +74,24 @@ const TIER_FEATURES_LIST: Record<string, string[]> = {
 };
 
 const ISRAELI_MOBILE_RE = /^05\d{8}$/;
+// Validators return i18n keys (resolved via t() at render time).
 const validatePhone = (v: string): string | null =>
-  ISRAELI_MOBILE_RE.test(v) ? null : 'מספר טלפון נייד ישראלי לא תקין (לדוגמה: 0501234567)';
+  ISRAELI_MOBILE_RE.test(v) ? null : 'grow.phoneError';
 
 // Grow requires first + last name, each at least 2 characters.
 const validateFullName = (v: string): string | null => {
   const words = v.trim().split(/\s+/);
   return words.length >= 2 && words.every(w => w.length >= 2)
     ? null
-    : 'נדרש שם מלא — שם פרטי ושם משפחה (לפחות 2 תווים כל אחד)';
+    : 'grow.fullNameError';
 };
 
 export function UpgradeModal() {
   const { close, billingPeriod, targetTier } = useUpgradeModalStore();
   const { session }              = useAuthStore();
   const { tier: currentTier }   = useTier();
-  const { i18n }                 = useTranslation();
+  const { i18n, t }              = useTranslation('billing');
+  const isHe                    = i18n.language === 'he';
   const [loading, setLoading] = useState<string | null>(null);
 
   // Grow-only checkout collection state.
@@ -115,14 +121,15 @@ export function UpgradeModal() {
   const handleUpgrade = (targetTier: SubscriptionTier) => {
     if (targetTier === 'free' || !session?.access_token) return;
 
-    if (i18n.language === 'he') {
-      // Hebrew/Israeli users → Grow path.
-      // Show the phone collection step; don't call the API yet.
+    if (PAYMENT_PROVIDER === 'grow') {
+      // All payments go through Grow regardless of UI language.
+      // Show the name+phone collection step; don't call the API yet.
       setPendingGrowTier(targetTier);
       return;
     }
 
-    // Non-Hebrew → Stripe.
+    // Stripe path — only reachable when PAYMENT_PROVIDER is changed to 'stripe'
+    // and Stripe price IDs are configured in the API.
     setLoading(targetTier);
     api.post<{ checkoutUrl?: string }>(
       '/api/billing/create-checkout',
@@ -236,7 +243,7 @@ export function UpgradeModal() {
                 margin:     '0 0 4px',
               }}>
                 {pendingGrowTier
-                  ? 'השלמת הרכישה'
+                  ? t('grow.checkoutTitle')
                   : targetTier
                   ? 'אישור שדרוג'
                   : 'שדרג את התוכנית שלך'}
@@ -391,11 +398,11 @@ export function UpgradeModal() {
               </div>
             </div>
 
-          ) : /* ── Step 2: Name + phone collection step (Grow / Hebrew only) ── */
+          ) : /* ── Step 2: Name + phone collection step (Grow — all languages) ── */
           pendingGrowTier ? (
-            <div dir="rtl" style={{ padding: '28px', display: 'flex', flexDirection: 'column', gap: '20px' }}>
+            <div dir={isHe ? 'rtl' : 'ltr'} style={{ padding: '28px', display: 'flex', flexDirection: 'column', gap: '20px' }}>
               <p style={{ fontFamily: ASSIST, fontSize: '14px', color: `${PARCH}CC`, margin: 0 }}>
-                לצורך עיבוד התשלום נדרשים שם מלא ומספר טלפון נייד ישראלי.
+                {t('grow.paymentNote')}
               </p>
 
               {/* Full name */}
@@ -404,13 +411,13 @@ export function UpgradeModal() {
                   htmlFor="grow-fullname"
                   style={{ fontFamily: ASSIST, fontSize: '13px', fontWeight: 600, color: PARCH }}
                 >
-                  שם מלא
+                  {t('grow.fullNameLabel')}
                 </label>
                 <input
                   id="grow-fullname"
                   type="text"
-                  dir="rtl"
-                  placeholder="ישראל ישראלי"
+                  dir={isHe ? 'rtl' : 'ltr'}
+                  placeholder={t('grow.fullNamePlaceholder')}
                   value={fullName}
                   onChange={e => {
                     setFullName(e.target.value);
@@ -439,18 +446,18 @@ export function UpgradeModal() {
                 />
                 {fullNameErr && (
                   <p style={{ fontFamily: ASSIST, fontSize: '12px', color: '#C0372A', margin: 0 }}>
-                    {fullNameErr}
+                    {t(fullNameErr)}
                   </p>
                 )}
               </div>
 
-              {/* Phone */}
+              {/* Phone — Grow requires an Israeli mobile number (05XXXXXXXX) */}
               <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
                 <label
                   htmlFor="grow-phone"
                   style={{ fontFamily: ASSIST, fontSize: '13px', fontWeight: 600, color: PARCH }}
                 >
-                  מספר טלפון נייד
+                  {t('grow.phoneLabel')}
                 </label>
                 <input
                   id="grow-phone"
@@ -488,7 +495,7 @@ export function UpgradeModal() {
                 />
                 {phoneError && (
                   <p style={{ fontFamily: ASSIST, fontSize: '12px', color: '#C0372A', margin: 0 }}>
-                    {phoneError}
+                    {t(phoneError)}
                   </p>
                 )}
               </div>
@@ -502,11 +509,7 @@ export function UpgradeModal() {
                   background:   'rgba(0,229,195,0.07)',
                 }}>
                   <p style={{ fontFamily: ASSIST, fontSize: '13px', color: `${PARCH}BB`, margin: 0, lineHeight: 1.55 }}>
-                    מנוי שנתי — תשלום חד פעמי מראש של{' '}
-                    <strong style={{ color: GOLD }}>
-                      ₪{TIER_PRICING[pendingGrowTier]?.annual}
-                    </strong>{' '}
-                    לשנה, ללא חידוש אוטומטי. נשלח לך תזכורת לפני שהמנוי יסתיים.
+                    {t('grow.annualNote', { price: TIER_PRICING[pendingGrowTier]?.annual })}
                   </p>
                 </div>
               ) : (
@@ -515,13 +518,13 @@ export function UpgradeModal() {
                   {([
                     {
                       value:    true,
-                      title:    'מנוי חודשי מתחדש',
-                      subtitle: `התשלום של ₪${TIER_PRICING[pendingGrowTier]?.monthly} יתבצע אוטומטית כל חודש עד לביטול המנוי`,
+                      title:    t('grow.recurringTitle'),
+                      subtitle: t('grow.recurringSubtitle', { price: TIER_PRICING[pendingGrowTier]?.monthly }),
                     },
                     {
                       value:    false,
-                      title:    'תשלום חד פעמי',
-                      subtitle: `נסו את התוכנית לחודש אחד (₪${TIER_PRICING[pendingGrowTier]?.monthly}), ללא חידוש אוטומטי`,
+                      title:    t('grow.oneTimeTitle'),
+                      subtitle: t('grow.oneTimeSubtitle', { price: TIER_PRICING[pendingGrowTier]?.monthly }),
                     },
                   ] as const).map(opt => {
                     const active = recurring === opt.value;
@@ -543,7 +546,7 @@ export function UpgradeModal() {
                             ? 'rgba(0,229,195,0.07)'
                             : 'rgba(9,20,16,0.4)',
                           cursor:          'pointer',
-                          textAlign:       'right',
+                          textAlign:       isHe ? 'right' : 'left',
                           width:           '100%',
                           transition:      'border-color 0.15s, background 0.15s',
                         }}
@@ -586,6 +589,13 @@ export function UpgradeModal() {
                 </div>
               )}
 
+              {/* English-only: disclose ILS + Grow as payment processor */}
+              {!isHe && (
+                <p style={{ fontFamily: ASSIST, fontSize: '11px', color: `${PARCH}55`, margin: 0, lineHeight: 1.5 }}>
+                  Payment is processed in ILS (₪) by Grow, an Israeli payment provider.
+                </p>
+              )}
+
               <div style={{ display: 'flex', gap: '10px' }}>
                 <button
                   onClick={resetCheckoutStep}
@@ -601,7 +611,7 @@ export function UpgradeModal() {
                     cursor:          'pointer',
                   }}
                 >
-                  חזרה
+                  {t('grow.backButton')}
                 </button>
                 <button
                   onClick={handleGrowConfirm}
@@ -625,7 +635,7 @@ export function UpgradeModal() {
                   }}
                   onMouseLeave={e => { (e.currentTarget as HTMLElement).style.filter = 'none'; }}
                 >
-                  {loading === pendingGrowTier ? '...' : 'לתשלום'}
+                  {loading === pendingGrowTier ? '...' : t('grow.payButton')}
                 </button>
               </div>
             </div>

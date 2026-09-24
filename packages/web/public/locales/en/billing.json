@@ -18,5 +18,21 @@
     "success": "🎉 Upgrade successful! Welcome to the {{name}} plan.",
     "cancelled": "No problem — you stayed on the {{name}} plan. You can upgrade whenever you want.",
     "cancelledAt": "Your subscription will be cancelled on {{date}}. You can continue using it until then."
+  },
+  "grow": {
+    "checkoutTitle": "Complete Purchase",
+    "paymentNote": "To process your payment, we need your full name and an Israeli mobile phone number.",
+    "fullNameLabel": "Full name",
+    "fullNamePlaceholder": "Jane Smith",
+    "fullNameError": "Full name required — first and last name (at least 2 characters each)",
+    "phoneLabel": "Mobile phone number",
+    "phoneError": "An Israeli mobile number is required (e.g. 0501234567)",
+    "payButton": "Pay",
+    "backButton": "Back",
+    "annualNote": "Annual plan — one-time upfront payment of ₪{{price}}, no auto-renewal. We'll send you a reminder before the subscription ends.",
+    "recurringTitle": "Monthly recurring subscription",
+    "recurringSubtitle": "₪{{price}} will be charged automatically each month until cancelled",
+    "oneTimeTitle": "One-time payment",
+    "oneTimeSubtitle": "Try the plan for one month (₪{{price}}), no auto-renewal"
   }
 }
