@@ -20,87 +20,9 @@ interface Props {
   resetsAt?: string;
 }
 
-interface Content {
-  title: string;
-  body: string;
-  image: string;
-  primaryLabel: string;
-  primaryTo: string;
-  secondaryLabel?: string;
-  secondaryTo?: string;
-}
-
-function getContent(
-  limitType: UpgradeLimitType,
-  currentTier: string,
-  resetsAt?: string,
-): Content {
-  const resetLabel = resetsAt
-    ? new Date(resetsAt).toLocaleDateString('he-IL', { day: 'numeric', month: 'long' })
-    : '×ª×—×™×œ×ª ×”×—×•×“×© ×”×‘×';
-
-  switch (limitType) {
-    case 'plants':
-      return {
-        title:  '×”×’×™× ×” ×©×œ×š ×’×“×œ×”! ðŸŒ±',
-        body:   '×”×•×¡×¤×ª 10 ×¦×ž×—×™× â€” ×”×ž×§×¡×™×ž×•× ×‘×—×©×‘×•×Ÿ ×—×™× ×ž×™.\n×©×“×¨×’ ×œ×’× ×Ÿ ×›×“×™ ×œ×”×•×¡×™×£ ×¦×ž×—×™× ×œ×œ× ×”×’×‘×œ×”.',
-        image:  '/chupchu_happy.png',
-        primaryLabel:   '×©×“×¨×’ ×¢×›×©×™×•',
-        primaryTo:      '/pricing',
-      };
-
-    case 'trackers':
-      return {
-        title: '×ž×¢×§×‘ ×”×’×™×“×•×œ ×©×œ×š ×ž×ž×ª×™×Ÿ! ðŸŒ¿',
-        body:  '×‘×—×©×‘×•×Ÿ ×—×™× ×ž×™ × ×™×ª×Ÿ ×œ× ×”×œ ×ž×¢×§×‘ ×’×™×“×•×œ ××—×“.\n×©×“×¨×’ ×œ×’× ×Ÿ ×œ×ž×¢×§×‘×™× ×œ×œ× ×”×’×‘×œ×” â€” â‚ª18 ×‘×œ×‘×“ ×œ×—×•×“×©.',
-        image: '/chupchu_thinking.png',
-        primaryLabel:  '×©×“×¨×’ ×¢×›×©×™×•',
-        primaryTo:     '/pricing',
-      };
-
-    case 'analysis':
-      return {
-        title: '× ×™×¦×œ×ª ××ª ×”× ×™×ª×•×— ×”×—×™× ×ž×™ ×©×œ×š! ðŸ”¬',
-        body:  '×§×™×‘×œ×ª ×˜×¢×™×ž×” ×©×œ ×”× ×™×ª×•×—. ×¨×•×¦×” ×¢×•×“?\n×©×“×¨×’ ×œ×’× ×Ÿ ×œ× ×™×ª×•×—×™× ×œ×œ× ×”×’×‘×œ×”, ××• ×¨×›×•×© ×—×‘×™×œ×” ×‘×—× ×•×ª.',
-        image: '/chupchu_surprised.png',
-        primaryLabel:   '×©×“×¨×’ ×œ×’× ×Ÿ',
-        primaryTo:      '/pricing',
-        secondaryLabel: '×¨×›×•×© ×—×‘×™×œ×”',
-        secondaryTo:    '/shop',
-      };
-
-    case 'chupchu':
-      return {
-        title: '×¦\'×•×¤×¦\'×• ×¢×™×™×£ ×§×¦×ª... ðŸŒ™',
-        body:  '×”×©×ª×ž×©×ª ×‘-20 ×”×©×™×—×•×ª ×”×—×™× ×ž×™×•×ª ×”×—×•×“×©×™×•×ª.\n×©×“×¨×’ ×œ×’× ×Ÿ ×›×“×™ ×œ×§×‘×œ 50 ×©×™×—×•×ª ×œ×—×•×“×© â€” â‚ª18 ×‘×œ×‘×“.',
-        image: '/chupchu_thinking.png',
-        primaryLabel:  '×©×“×¨×’ ×¢×›×©×™×•',
-        primaryTo:     '/pricing',
-      };
-
-    case 'gardens':
-      return {
-        title: '×’×™× ×•×ª ×ž×¨×•×‘×•×ª â€” ×ª×›×•× ×ª ×ž×§×¦×•×¢× ×™×! ðŸ¡',
-        body:  '× ×™×”×•×œ ×ž×¡×¤×¨ ×’×™× ×•×ª ×–×ž×™×Ÿ ×‘×ª×›× ×™×ª ×”×ž×§×¦×•×¢×™×ª.\n×©×“×¨×’ ×œ-â‚ª54 ×œ×—×•×“×© ×•×§×‘×œ 13 ×’×™× ×•×ª + ××¤×©×¨×•×ª ×œ×—×‘×™×œ×•×ª × ×•×¡×¤×•×ª.',
-        image: '/chupchu_wise.png',
-        primaryLabel:  '×©×“×¨×’ ×¢×›×©×™×•',
-        primaryTo:     '/pricing',
-      };
-
-    case 'encyclopedia':
-      return {
-        title: '×”×× ×¦×™×§×œ×•×¤×“×™×” ×”×‘×™×•×“×™× ×ž×™×ª ðŸ“–',
-        body:  '×”×’×™×©×” ×”×ž×œ××” ×œ×× ×¦×™×§×œ×•×¤×“×™×” ×–×ž×™× ×” ×‘×ª×›× ×™×•×ª ×’× ×Ÿ ×•×ž×§×¦×•×¢×™.\n×©×“×¨×’ ×œ×’× ×Ÿ ×‘-â‚ª18 ×œ×—×•×“×© ×•×’×œ×” ××ª ×ž×œ×•× ×”×™×“×¢.',
-        image: '/chupchu_wise.png',
-        primaryLabel:  '×©×“×¨×’ ×œ×’× ×Ÿ',
-        primaryTo:     '/pricing',
-      };
-  }
-}
-
-export function UpgradeModal({ isOpen, onClose, limitType, currentTier = 'free', resetsAt }: Props) {
+export function UpgradeModal({ isOpen, onClose, limitType }: Props) {
   const navigate = useNavigate();
-  const { i18n } = useTranslation();
+  const { t, i18n } = useTranslation('billing');
   const isHe = i18n.language === 'he';
 
   if (import.meta.env.PROD && import.meta.env.VITE_LAUNCH_FREE_MODE === 'true') {
@@ -109,12 +31,20 @@ export function UpgradeModal({ isOpen, onClose, limitType, currentTier = 'free',
 
   if (!isOpen) return null;
 
-  const c = getContent(limitType, currentTier, resetsAt);
+  const title         = t(`upgradeLimit.${limitType}.title`);
+  const body          = t(`upgradeLimit.${limitType}.body`);
+  const primaryLabel  = t(`upgradeLimit.${limitType}.primaryLabel`);
+  const secondaryLabel = limitType === 'analysis'
+    ? t('upgradeLimit.analysis.secondaryLabel')
+    : null;
+  const dismissLabel  = t('upgradeLimit.dismiss');
 
   function go(to: string) {
     onClose();
     navigate(to);
   }
+
+  const headingFont = isHe ? FRANK : ASST;
 
   return (
     <div
@@ -156,22 +86,22 @@ export function UpgradeModal({ isOpen, onClose, limitType, currentTier = 'free',
             display: 'flex', alignItems: 'center', justifyContent: 'center',
             overflow: 'hidden', position: 'relative',
           }}>
-            <span style={{ position: 'absolute', fontSize: '28px' }}>ðŸŒ•</span>
+            <span style={{ position: 'absolute', fontSize: '28px' }}>🌕</span>
             <img
-              src={c.image}
+              src="/chupchu_happy.png"
               alt=""
               style={{ width: '100%', height: '100%', objectFit: 'cover', position: 'relative', zIndex: 1 }}
               onError={e => { (e.currentTarget as HTMLImageElement).style.display = 'none'; }}
             />
           </div>
-          <h2 style={{ fontFamily: FRANK, fontSize: '19px', color: GOLD, margin: 0, flex: 1 }}>
-            {c.title}
+          <h2 style={{ fontFamily: headingFont, fontSize: '19px', color: GOLD, margin: 0, flex: 1 }}>
+            {title}
           </h2>
           <button
             onClick={onClose}
             style={{ background: 'none', border: 'none', color: 'rgba(176,207,191,0.4)', cursor: 'pointer', fontSize: '18px', padding: '4px', flexShrink: 0 }}
           >
-            âœ•
+            ✕
           </button>
         </div>
 
@@ -181,37 +111,37 @@ export function UpgradeModal({ isOpen, onClose, limitType, currentTier = 'free',
             fontFamily: ASST, fontSize: '15px', color: `${PARCH}CC`,
             margin: '0 0 24px', lineHeight: 1.7, whiteSpace: 'pre-line',
           }}>
-            {c.body}
+            {body}
           </p>
 
           <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
             {/* Primary CTA */}
             <button
-              onClick={() => go(c.primaryTo)}
+              onClick={() => go('/pricing')}
               style={{
                 width: '100%', padding: '13px',
                 backgroundColor: GOLD, color: EARTH,
                 border: 'none', borderRadius: '10px',
-                fontFamily: FRANK, fontSize: '16px', fontWeight: 700,
+                fontFamily: headingFont, fontSize: '16px', fontWeight: 700,
                 cursor: 'pointer', transition: 'filter 0.2s',
               }}
               onMouseEnter={e => { (e.currentTarget as HTMLElement).style.filter = 'brightness(1.1)'; }}
               onMouseLeave={e => { (e.currentTarget as HTMLElement).style.filter = 'none'; }}
             >
-              {c.primaryLabel}
+              {primaryLabel}
             </button>
 
-            {/* Secondary CTA (optional) */}
-            {c.secondaryLabel && c.secondaryTo && (
+            {/* Secondary CTA (analysis only) */}
+            {secondaryLabel && (
               <button
-                onClick={() => go(c.secondaryTo!)}
+                onClick={() => go('/shop')}
                 style={{
                   width: '100%', padding: '12px',
                   backgroundColor: 'transparent',
                   color: GOLD,
                   border: `1px solid rgba(0,229,195,0.4)`,
                   borderRadius: '10px',
-                  fontFamily: FRANK, fontSize: '15px', fontWeight: 600,
+                  fontFamily: headingFont, fontSize: '15px', fontWeight: 600,
                   cursor: 'pointer', transition: 'border-color 0.2s, background-color 0.2s',
                 }}
                 onMouseEnter={e => {
@@ -223,7 +153,7 @@ export function UpgradeModal({ isOpen, onClose, limitType, currentTier = 'free',
                   (e.currentTarget as HTMLElement).style.backgroundColor = 'transparent';
                 }}
               >
-                {c.secondaryLabel}
+                {secondaryLabel}
               </button>
             )}
 
@@ -239,7 +169,7 @@ export function UpgradeModal({ isOpen, onClose, limitType, currentTier = 'free',
                 cursor: 'pointer',
               }}
             >
-              ×¡×’×•×¨
+              {dismissLabel}
             </button>
           </div>
         </div>

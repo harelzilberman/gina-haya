@@ -6,6 +6,12 @@
   "upgradeTitle": "Upgrade to {{name}}",
   "upgradeDesc": "Get access to advanced features and full support",
   "upgradeCta": "See all plans",
+  "tierNames": {
+    "free": "Free",
+    "gardener_pro": "Gardener Pro",
+    "advanced": "Advanced",
+    "professional": "Professional"
+  },
   "cancel": {
     "title": "Cancel subscription",
     "desc": "Cancellation takes effect at the end of the current billing period.",
@@ -35,5 +41,118 @@
     "oneTimeTitle": "One-time payment",
     "oneTimeSubtitle": "Try the plan for one month (₪{{price}}), no auto-renewal",
     "providerDisclaimer": "Payment is processed in ILS (₪) by Grow, an Israeli payment provider. An Israeli credit card and an Israeli mobile number are required."
+  },
+  "pricing": {
+    "header": "Choose your plan",
+    "subtitle": "Grow a healthy garden with the right tools",
+    "toggleMonthly": "Monthly",
+    "toggleAnnual": "Annual",
+    "toggleSave": "Save ~17%",
+    "currentPlanBadge": "Your current plan",
+    "mostPopular": "Most Popular",
+    "forever": "/ forever",
+    "perMonth": "/ month",
+    "annualTotal": "₪{{annual}} / year — save ₪{{savings}}",
+    "startFree": "Start Free",
+    "upgradeTo": "Upgrade to {{name}}",
+    "launchBanner": "🌿 Gina Haya is completely free during the launch period! All features open to everyone until further notice.",
+    "comingSoonToast": "🌿 Payments coming soon — we'll let you know!",
+    "faqTitle": "FAQ",
+    "shopLink": "Prefer no subscription? ← Browse the shop",
+    "gardenPackTitle": "➕ Garden Pack Add-on — Professional only",
+    "gardenPackDesc": "10 extra gardens for ₪19/month. Multiple packs can be purchased.",
+    "gardenPackExample": "Example: {{total}} gardens = ₪{{base}} + ₪19 + ₪19 = ₪{{sum}}/month",
+    "gardenPackBtn": "Add Pack",
+    "providerNote": "Payment is processed in ILS (₪) by Grow, an Israeli payment provider. An Israeli credit card and an Israeli mobile number are required.",
+    "features": {
+      "dailyCalendar": "Daily biodynamic calendar",
+      "moonPhase": "Moon phase + sowing score",
+      "oneGarden": "1 garden — up to {{plants}} plants",
+      "taskBoard": "Basic task board",
+      "articles": "All articles and guides",
+      "chupchu": "ChupChu — {{chats}} chats/month",
+      "trackerPreview": "1 growth tracker — preview",
+      "aiAnalyses": "{{analyses}} AI analyses/month",
+      "moreTrackers": "More trackers",
+      "annualPlan": "Annual plan",
+      "encyclopedia": "Full encyclopedia",
+      "allFree": "Everything in Free",
+      "gardens": "{{gardens}} gardens — up to {{plants}} plants each",
+      "upToTrackers": "Up to {{trackers}} growth trackers",
+      "unlimitedTrackers": "Unlimited growth trackers",
+      "pdfExport": "PDF export per garden",
+      "earlyAccess": "Early access to features",
+      "allGardenerPro": "Everything in Gardener Pro",
+      "allAdvanced": "Everything in Advanced",
+      "prioritySupport": "Priority support",
+      "advancedStats": "Advanced statistics"
+    },
+    "faq": {
+      "q1": "Can I upgrade or downgrade my plan?",
+      "a1": "Yes, at any time. The change takes effect at the start of the next billing month.",
+      "q2": "Is there a contract?",
+      "a2": "No. You can cancel at any time without penalties.",
+      "q3": "What's the difference between AI analysis and growth tracking?",
+      "a3": "Growth tracking is a plant history with photos over time. AI analysis is a one-time image scan with a detailed report and suggested tasks.",
+      "q4": "What is a garden pack?",
+      "a4": "For Professional users, each pack adds 10 extra gardens to the account. There's no limit on the number of packs.",
+      "q5": "Does the annual subscription include a discount?",
+      "a5": "Yes — annual payment saves about two months compared to paying monthly."
+    }
+  },
+  "modal": {
+    "confirmTitle": "Confirm Upgrade",
+    "selectTitle": "Upgrade Your Plan",
+    "confirmSubtitleMonthly": "{{name}} — ₪{{price}} / month",
+    "confirmSubtitleAnnual": "{{name}} — ₪{{price}} / year",
+    "planTransition": "{{from}} → {{to}}",
+    "selectSubtitle": "Choose the plan that's right for you",
+    "currentPlan": "Current plan",
+    "upgradingTo": "Upgrading to",
+    "perYear": "/ year",
+    "perMonth": "/ month",
+    "annualOneTime": "Annual one-time payment — no auto-renewal",
+    "cancel": "Cancel",
+    "continueToPayment": "Continue to payment",
+    "mostPopular": "Most Popular",
+    "currentPlanBadge": "Your current plan",
+    "free": "Free",
+    "currentPlanLabel": "Current plan",
+    "notAvailable": "Not available",
+    "upgradeNow": "Upgrade now"
+  },
+  "upgradeLimit": {
+    "dismiss": "Later",
+    "plants": {
+      "title": "Your garden is growing! 🌱",
+      "body": "You've reached the plant limit for the free account.\nUpgrade to Gardener Pro to add plants without limits.",
+      "primaryLabel": "Upgrade now"
+    },
+    "trackers": {
+      "title": "Growth tracker is full! 🌿",
+      "body": "The free account supports one growth tracker.\nUpgrade to Gardener Pro for unlimited trackers — ₪18/month.",
+      "primaryLabel": "Upgrade now"
+    },
+    "analysis": {
+      "title": "You've used your free AI analysis! 🔬",
+      "body": "You got a preview of the analysis. Want more?\nUpgrade to Gardener Pro for unlimited analyses, or buy a pack in the shop.",
+      "primaryLabel": "Upgrade to Gardener",
+      "secondaryLabel": "Buy a pack"
+    },
+    "chupchu": {
+      "title": "ChupChu needs a rest... 🌙",
+      "body": "You've used all 20 of your free monthly conversations.\nUpgrade to Gardener Pro for 50 conversations/month — ₪18 only.",
+      "primaryLabel": "Upgrade now"
+    },
+    "gardens": {
+      "title": "Multiple gardens — Professional plan! 🏡",
+      "body": "Managing multiple gardens is available on the Professional plan.\nUpgrade for ₪54/month and get 13 gardens + the option to add more packs.",
+      "primaryLabel": "Upgrade now"
+    },
+    "encyclopedia": {
+      "title": "The Biodynamic Encyclopedia 📖",
+      "body": "Full access to the encyclopedia is available on Gardener and Professional plans.\nUpgrade to Gardener for ₪18/month and unlock all the knowledge.",
+      "primaryLabel": "Upgrade to Gardener"
+    }
   }
 }

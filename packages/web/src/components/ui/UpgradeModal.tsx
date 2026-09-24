@@ -16,7 +16,6 @@ const SAGE     = '#4A9C68';
 const PARCH    = '#b0cfbf';
 const FRANK    = '"Frank Ruhl Libre", Georgia, serif';
 const ASSIST   = "'DM Sans', 'Assistant', 'Heebo', sans-serif";
-const PLAYFAIR = '"Playfair Display", Georgia, serif';
 
 // Payment provider switch — set to 'grow' to route all checkout through Grow.
 // Change to 'stripe' only when Stripe price IDs are configured in the API.
@@ -35,44 +34,17 @@ const MODAL_CSS = `
 .upgrade-modal-scroll::-webkit-scrollbar-thumb { background: rgba(0,229,195,0.2); border-radius: 2px; }
 `;
 
-// Feature lists: marketing copy with numbers interpolated from getLimits() so they
-// stay in sync with @gina-haya/shared whenever limits change.
+// Limit constants — shared across both languages.
 const _f = getLimits('free');
 const _g = getLimits('gardener_pro');
 const _a = getLimits('advanced');
 const _p = getLimits('professional');
 
-const TIER_FEATURES_LIST: Record<string, string[]> = {
-  free: [
-    'לוח ביודינמי יומי',
-    `גינה אחת (עד ${_f.maxPlantsPerGarden} צמחים)`,
-    `צ'ופצ'ו — ${_f.maxChupChuPerMonth} שיחות לחודש`,
-    `${_f.maxVisionLooksPerMonth} ניתוחי AI לחודש`,
-    'מעקב גידול אחד — טעימה',
-  ],
-  gardener_pro: [
-    'הכל בחינמי',
-    `${_g.maxGardens} גינות — עד ${_g.maxPlantsPerGarden} צמחים כל אחת`,
-    `עד ${_g.maxTrackers} מעקבי גידול`,
-    `${_g.maxVisionLooksPerMonth} ניתוחי AI לחודש`,
-    `צ'ופצ'ו — ${_g.maxChupChuPerMonth} שיחות לחודש`,
-    'אנציקלופדיה מלאה',
-  ],
-  advanced: [
-    'הכל בגנן ביתי',
-    `${_a.maxGardens} גינות — עד ${_a.maxPlantsPerGarden} צמחים כל אחת`,
-    'מעקבי גידול ללא הגבלה',
-    `${_a.maxVisionLooksPerMonth} ניתוחי AI לחודש`,
-    `צ'ופצ'ו — ${_a.maxChupChuPerMonth} שיחות לחודש`,
-    'ייצוא PDF',
-  ],
-  professional: [
-    'הכל בגנן מתקדם',
-    `${_p.maxGardens} גינות — עד ${_p.maxPlantsPerGarden} צמחים כל אחת`,
-    `${_p.maxVisionLooksPerMonth} ניתוחי AI לחודש`,
-    `צ'ופצ'ו — ${_p.maxChupChuPerMonth} שיחות לחודש`,
-    'תמיכה מועדפת',
-  ],
+const TIER_NAMES_EN: Record<string, string> = {
+  free:         'Free',
+  gardener_pro: 'Gardener Pro',
+  advanced:     'Advanced',
+  professional: 'Professional',
 };
 
 const ISRAELI_MOBILE_RE = /^05\d{8}$/;
@@ -118,6 +90,46 @@ export function UpgradeModal() {
   if (import.meta.env.PROD && import.meta.env.VITE_LAUNCH_FREE_MODE === 'true') {
     return null;
   }
+
+  // Returns display name for a tier in the current UI language.
+  const tierDisplayName = (tier: string) =>
+    isHe ? getLimits(tier as SubscriptionTier).displayNameHe : (TIER_NAMES_EN[tier] ?? tier);
+
+  // Feature lists — generated here so t() runs at render time for correct language.
+  const TIER_FEATURES: Record<string, string[]> = {
+    free: [
+      t('pricing.features.dailyCalendar'),
+      t('pricing.features.oneGarden', { plants: _f.maxPlantsPerGarden }),
+      t('pricing.features.chupchu', { chats: _f.maxChupChuPerMonth }),
+      t('pricing.features.aiAnalyses', { analyses: _f.maxVisionLooksPerMonth }),
+      t('pricing.features.trackerPreview'),
+    ],
+    gardener_pro: [
+      t('pricing.features.allFree'),
+      t('pricing.features.gardens', { gardens: _g.maxGardens, plants: _g.maxPlantsPerGarden }),
+      t('pricing.features.upToTrackers', { trackers: _g.maxTrackers }),
+      t('pricing.features.aiAnalyses', { analyses: _g.maxVisionLooksPerMonth }),
+      t('pricing.features.chupchu', { chats: _g.maxChupChuPerMonth }),
+      t('pricing.features.encyclopedia'),
+    ],
+    advanced: [
+      t('pricing.features.allGardenerPro'),
+      t('pricing.features.gardens', { gardens: _a.maxGardens, plants: _a.maxPlantsPerGarden }),
+      t('pricing.features.unlimitedTrackers'),
+      t('pricing.features.aiAnalyses', { analyses: _a.maxVisionLooksPerMonth }),
+      t('pricing.features.chupchu', { chats: _a.maxChupChuPerMonth }),
+      t('pricing.features.pdfExport'),
+    ],
+    professional: [
+      t('pricing.features.allAdvanced'),
+      t('pricing.features.gardens', { gardens: _p.maxGardens, plants: _p.maxPlantsPerGarden }),
+      t('pricing.features.aiAnalyses', { analyses: _p.maxVisionLooksPerMonth }),
+      t('pricing.features.chupchu', { chats: _p.maxChupChuPerMonth }),
+      t('pricing.features.prioritySupport'),
+    ],
+  };
+
+  const headingFont = isHe ? FRANK : ASSIST;
 
   const resetCheckoutStep = () => {
     setPendingGrowTier(null);
@@ -264,7 +276,7 @@ export function UpgradeModal() {
           }}>
             <div>
               <h2 style={{
-                fontFamily: FRANK,
+                fontFamily: headingFont,
                 fontWeight: 700,
                 fontSize:   '22px',
                 color:      GOLD,
@@ -273,8 +285,8 @@ export function UpgradeModal() {
                 {pendingGrowTier
                   ? t('grow.checkoutTitle')
                   : targetTier
-                  ? 'אישור שדרוג'
-                  : 'שדרג את התוכנית שלך'}
+                  ? t('modal.confirmTitle')
+                  : t('modal.selectTitle')}
               </h2>
               <p style={{
                 fontFamily: ASSIST,
@@ -284,11 +296,11 @@ export function UpgradeModal() {
               }}>
                 {pendingGrowTier
                   ? billingPeriod === 'annual'
-                    ? `תוכנית ${getLimits(pendingGrowTier).displayNameHe} — ₪${TIER_PRICING[pendingGrowTier]?.annual} / שנה`
-                    : `תוכנית ${getLimits(pendingGrowTier).displayNameHe} — ₪${TIER_PRICING[pendingGrowTier]?.monthly} / חודש`
+                    ? t('modal.confirmSubtitleAnnual', { name: tierDisplayName(pendingGrowTier), price: TIER_PRICING[pendingGrowTier]?.annual })
+                    : t('modal.confirmSubtitleMonthly', { name: tierDisplayName(pendingGrowTier), price: TIER_PRICING[pendingGrowTier]?.monthly })
                   : targetTier
-                  ? `${getLimits(currentTier).displayNameHe} → ${getLimits(targetTier).displayNameHe}`
-                  : 'בחר את התוכנית המתאימה לך'}
+                  ? t('modal.planTransition', { from: tierDisplayName(currentTier), to: tierDisplayName(targetTier) })
+                  : t('modal.selectSubtitle')}
               </p>
             </div>
             {/* Close button */}
@@ -319,7 +331,7 @@ export function UpgradeModal() {
 
           {/* ── Step 1: Order confirmation (when targetTier is pre-set) ── */}
           {!pendingGrowTier && targetTier ? (
-            <div dir="rtl" style={{ padding: '28px', display: 'flex', flexDirection: 'column', gap: '20px' }}>
+            <div dir={isHe ? 'rtl' : 'ltr'} style={{ padding: '28px', display: 'flex', flexDirection: 'column', gap: '20px' }}>
 
               {/* Current → New plan summary */}
               <div style={{
@@ -339,10 +351,10 @@ export function UpgradeModal() {
                     border:          '1px solid rgba(176,207,191,0.1)',
                   }}>
                     <span style={{ fontFamily: ASSIST, fontSize: '13px', color: `${PARCH}66` }}>
-                      תוכנית נוכחית
+                      {t('modal.currentPlan')}
                     </span>
                     <span style={{ fontFamily: ASSIST, fontSize: '14px', color: `${PARCH}88`, fontWeight: 600 }}>
-                      {getLimits(currentTier).displayNameHe}
+                      {tierDisplayName(currentTier)}
                     </span>
                   </div>
                 )}
@@ -363,16 +375,16 @@ export function UpgradeModal() {
                   border:          `1.5px solid ${GOLD}99`,
                 }}>
                   <span style={{ fontFamily: ASSIST, fontSize: '13px', color: `${PARCH}CC` }}>
-                    שדרוג ל
+                    {t('modal.upgradingTo')}
                   </span>
                   <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start', gap: '2px' }}>
-                    <span style={{ fontFamily: FRANK, fontSize: '16px', color: GOLD, fontWeight: 700 }}>
-                      {getLimits(targetTier).displayNameHe}
+                    <span style={{ fontFamily: headingFont, fontSize: '16px', color: GOLD, fontWeight: 700 }}>
+                      {tierDisplayName(targetTier)}
                     </span>
                     <span style={{ fontFamily: ASSIST, fontSize: '12px', color: `${PARCH}99` }}>
                       {billingPeriod === 'annual'
-                        ? `₪${TIER_PRICING[targetTier]?.annual} / שנה`
-                        : `₪${TIER_PRICING[targetTier]?.monthly} / חודש`}
+                        ? `₪${TIER_PRICING[targetTier]?.annual} ${t('modal.perYear')}`
+                        : `₪${TIER_PRICING[targetTier]?.monthly} ${t('modal.perMonth')}`}
                     </span>
                   </div>
                 </div>
@@ -381,7 +393,7 @@ export function UpgradeModal() {
               {/* Billing period note */}
               {billingPeriod === 'annual' && (
                 <p style={{ fontFamily: ASSIST, fontSize: '12px', color: `${PARCH}66`, margin: 0 }}>
-                  תשלום שנתי חד פעמי — ללא חידוש אוטומטי
+                  {t('modal.annualOneTime')}
                 </p>
               )}
 
@@ -401,7 +413,7 @@ export function UpgradeModal() {
                     cursor:          'pointer',
                   }}
                 >
-                  ביטול
+                  {t('modal.cancel')}
                 </button>
                 <button
                   onClick={() => handleUpgrade(targetTier as SubscriptionTier)}
@@ -412,7 +424,7 @@ export function UpgradeModal() {
                     borderRadius:    '8px',
                     border:          'none',
                     backgroundColor: loading !== targetTier ? GOLD : `${GOLD}44`,
-                    fontFamily:      FRANK,
+                    fontFamily:      headingFont,
                     fontWeight:      600,
                     fontSize:        '15px',
                     color:           EARTH,
@@ -425,7 +437,7 @@ export function UpgradeModal() {
                   }}
                   onMouseLeave={e => { (e.currentTarget as HTMLElement).style.filter = 'none'; }}
                 >
-                  {loading === targetTier ? '...' : 'המשך לתשלום'}
+                  {loading === targetTier ? '...' : t('modal.continueToPayment')}
                 </button>
               </div>
             </div>
@@ -712,7 +724,7 @@ export function UpgradeModal() {
                         top:             '-12px',
                         left:            '50%',
                         transform:       'translateX(-50%)',
-                        fontFamily:      FRANK,
+                        fontFamily:      headingFont,
                         fontWeight:      700,
                         fontSize:        '11px',
                         padding:         '3px 12px',
@@ -721,7 +733,7 @@ export function UpgradeModal() {
                         color:           EARTH,
                         whiteSpace:      'nowrap',
                       }}>
-                        הכי פופולרי
+                        {t('modal.mostPopular')}
                       </span>
                     )}
                     {isCurrent && (
@@ -740,35 +752,36 @@ export function UpgradeModal() {
                         color:           SAGE,
                         whiteSpace:      'nowrap',
                       }}>
-                        התוכנית הנוכחית שלך
+                        {t('modal.currentPlanBadge')}
                       </span>
                     )}
 
                     {/* Name & price */}
                     <div>
                       <p style={{
-                        fontFamily: FRANK,
+                        fontFamily: headingFont,
                         fontWeight: 700,
                         fontSize:   '16px',
                         color:      isPro ? GOLD : PARCH,
                         margin:     '0 0 4px',
                       }}>
-                        {getLimits(tier).displayNameHe}
+                        {tierDisplayName(tier)}
                       </p>
                       <p style={{
-                        fontFamily: PLAYFAIR,
-                        fontStyle:  'italic',
+                        fontFamily: ASSIST,
                         fontSize:   '15px',
                         color:      isPro ? GOLD : `${PARCH}BB`,
                         margin:     0,
                       }}>
-                        {TIER_PRICING[tier]?.monthly != null ? `₪${TIER_PRICING[tier].monthly} / חודש` : 'חינם'}
+                        {TIER_PRICING[tier]?.monthly != null
+                          ? `₪${TIER_PRICING[tier].monthly} ${t('modal.perMonth')}`
+                          : t('modal.free')}
                       </p>
                     </div>
 
                     {/* Features */}
                     <ul style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: '7px', margin: 0, padding: 0, listStyle: 'none' }}>
-                      {TIER_FEATURES_LIST[tier].map(feature => (
+                      {(TIER_FEATURES[tier] ?? []).map(feature => (
                         <li key={feature} style={{ display: 'flex', alignItems: 'flex-start', gap: '6px', fontFamily: ASSIST, fontSize: '12px', color: `${PARCH}AA` }}>
                           <span style={{ color: SAGE, flexShrink: 0, marginTop: '1px' }}>✓</span>
                           {feature}
@@ -788,7 +801,7 @@ export function UpgradeModal() {
                         backgroundColor: 'rgba(255,255,255,0.03)',
                         border:          '1px solid rgba(255,255,255,0.06)',
                       }}>
-                        {isCurrent ? 'תוכנית נוכחית' : 'חינמי'}
+                        {isCurrent ? t('modal.currentPlanLabel') : t('modal.free')}
                       </div>
                     ) : isDowngrade ? (
                       <div style={{
@@ -800,7 +813,7 @@ export function UpgradeModal() {
                         color:           `${PARCH}33`,
                         backgroundColor: 'rgba(255,255,255,0.03)',
                       }}>
-                        לא זמין
+                        {t('modal.notAvailable')}
                       </div>
                     ) : (
                       <button
@@ -812,7 +825,7 @@ export function UpgradeModal() {
                           borderRadius:    '8px',
                           border:          isPro ? 'none' : `1px solid ${GOLD}55`,
                           backgroundColor: isPro ? GOLD : 'transparent',
-                          fontFamily:      FRANK,
+                          fontFamily:      headingFont,
                           fontWeight:      600,
                           fontSize:        '13px',
                           color:           isPro ? EARTH : GOLD,
@@ -833,7 +846,7 @@ export function UpgradeModal() {
                           if (!isPro) el.style.backgroundColor = 'transparent';
                         }}
                       >
-                        {loading === tier ? '...' : 'שדרג עכשיו'}
+                        {loading === tier ? '...' : t('modal.upgradeNow')}
                       </button>
                     )}
                   </div>
