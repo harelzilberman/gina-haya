@@ -76,9 +76,17 @@ const TIER_FEATURES_LIST: Record<string, string[]> = {
 };
 
 const ISRAELI_MOBILE_RE = /^05\d{8}$/;
+
+/** Strip spaces/dashes/dots/parens; convert +972 or bare 972 prefix to leading 0. */
+function normalizeIsraeliPhone(raw: string): string {
+  let n = raw.replace(/[\s\-.()]/g, '');
+  n = n.replace(/^\+972/, '0').replace(/^972/, '0');
+  return n;
+}
+
 // Validators return i18n keys (resolved via t() at render time).
 const validatePhone = (v: string): string | null =>
-  ISRAELI_MOBILE_RE.test(v) ? null : 'grow.phoneError';
+  ISRAELI_MOBILE_RE.test(normalizeIsraeliPhone(v)) ? null : 'grow.phoneError';
 
 // Grow requires first + last name, each at least 2 characters.
 const validateFullName = (v: string): string | null => {
@@ -193,7 +201,7 @@ export function UpgradeModal() {
           // Keep recurring boolean for any other code that may read it
           recurring:   paymentMode === 'recurring',
           fullName:    fullName.trim(),
-          phone,
+          phone:       normalizeIsraeliPhone(phone),
         },
         session.access_token,
       );
@@ -206,7 +214,7 @@ export function UpgradeModal() {
   };
 
   const isFullNameValid = validateFullName(fullName) === null;
-  const isPhoneValid    = ISRAELI_MOBILE_RE.test(phone);
+  const isPhoneValid    = ISRAELI_MOBILE_RE.test(normalizeIsraeliPhone(phone));
   const isFormValid     = isFullNameValid && isPhoneValid;
 
   return (
@@ -487,11 +495,13 @@ export function UpgradeModal() {
                   id="grow-phone"
                   type="tel"
                   dir="ltr"
-                  inputMode="numeric"
+                  inputMode="tel"
                   placeholder="0501234567"
                   value={phone}
                   onChange={e => {
-                    const v = e.target.value.replace(/\D/g, '').slice(0, 10);
+                    // Keep only characters that can appear in a phone number (digits, +, spaces,
+                    // dashes, dots, parens); normalisation happens at validate/send time.
+                    const v = e.target.value.replace(/[^\d+\s\-.()]/g, '').slice(0, 20);
                     setPhone(v);
                     if (v.length > 0) setPhoneError(validatePhone(v));
                     else setPhoneError(null);

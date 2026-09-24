@@ -366,6 +366,13 @@ shopRouter.post('/purchase', async (req: any, res) => {
 //   cartJson    → cField2  (compact cart: [{p, q}, ...])
 //   purchaseType→ cField3  (always 'shop')
 const ISRAELI_MOBILE_RE = /^05\d{8}$/;
+
+/** Strip spaces/dashes/dots/parens; convert +972 or bare 972 prefix to leading 0. */
+function normalizeIsraeliPhone(raw: string): string {
+  let n = raw.replace(/[\s\-.()]/g, '');
+  n = n.replace(/^\+972/, '0').replace(/^972/, '0');
+  return n;
+}
 const SHOP_CART_MAX     = 7;
 const SHOP_QTY_MAX      = 10;
 
@@ -386,7 +393,8 @@ shopRouter.post('/grow/create-payment', async (req: any, res) => {
     const validatedName = nameParts.join(' ');
 
     // Validate phone
-    if (!phone || !ISRAELI_MOBILE_RE.test(phone)) {
+    const normalizedPhone = normalizeIsraeliPhone(phone ?? '');
+    if (!normalizedPhone || !ISRAELI_MOBILE_RE.test(normalizedPhone)) {
       res.status(400).json({ error: 'נדרש מספר טלפון נייד ישראלי תקין (לדוגמה: 0501234567)' });
       return;
     }
@@ -432,7 +440,7 @@ shopRouter.post('/grow/create-payment', async (req: any, res) => {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
         fullName:     validatedName,
-        phone,
+        phone:        normalizedPhone,
         email:        req.user.email,
         sum:          total,
         userId:       req.user.id,

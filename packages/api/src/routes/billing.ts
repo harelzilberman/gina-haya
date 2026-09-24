@@ -629,6 +629,13 @@ billingRouter.post('/play/rtdn', async (req: Request, res) => {
 // The browser never touches Grow directly — Grow blocks cross-origin requests.
 const ISRAELI_MOBILE_RE = /^05\d{8}$/;
 
+/** Strip spaces/dashes/dots/parens; convert +972 or bare 972 prefix to leading 0. */
+function normalizeIsraeliPhone(raw: string): string {
+  let n = raw.replace(/[\s\-.()]/g, '');
+  n = n.replace(/^\+972/, '0').replace(/^972/, '0');
+  return n;
+}
+
 const VALID_PAYMENT_MODES = ['recurring', 'one_time_monthly', 'one_time_annual'] as const;
 type PaymentMode = typeof VALID_PAYMENT_MODES[number];
 
@@ -687,7 +694,8 @@ billingRouter.post('/grow/create-payment', verifyToken, async (req: any, res) =>
     const validatedName = nameParts.join(' ');
 
     // Validate phone — Grow requires a valid Israeli mobile number (05XXXXXXXX).
-    if (!phone || !ISRAELI_MOBILE_RE.test(phone)) {
+    const normalizedPhone = normalizeIsraeliPhone(phone ?? '');
+    if (!normalizedPhone || !ISRAELI_MOBILE_RE.test(normalizedPhone)) {
       res.status(400).json({ error: 'Valid Israeli mobile phone number required (e.g. 0501234567)' });
       return;
     }
@@ -701,7 +709,7 @@ billingRouter.post('/grow/create-payment', verifyToken, async (req: any, res) =>
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
         fullName:    validatedName,
-        phone,
+        phone:       normalizedPhone,
         email:       req.user.email,
         sum:         amount,
         userId:      req.user.id,
