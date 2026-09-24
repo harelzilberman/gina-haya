@@ -33,6 +33,7 @@
     "recurringTitle": "Monthly recurring subscription",
     "recurringSubtitle": "₪{{price}} will be charged automatically each month until cancelled",
     "oneTimeTitle": "One-time payment",
-    "oneTimeSubtitle": "Try the plan for one month (₪{{price}}), no auto-renewal"
+    "oneTimeSubtitle": "Try the plan for one month (₪{{price}}), no auto-renewal",
+    "providerDisclaimer": "Payment is processed in ILS (₪) by Grow, an Israeli payment provider. An Israeli credit card and an Israeli mobile number are required."
   }
 }

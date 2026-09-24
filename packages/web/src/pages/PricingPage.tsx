@@ -505,6 +505,15 @@ export function PricingPage() {
           </div>
         </div>
 
+        {/* ── English-only payment provider note ── */}
+        {!isHe && (
+          <div style={{ maxWidth: '1160px', margin: '0 auto', padding: '0 20px 8px', textAlign: 'center' }}>
+            <p style={{ fontFamily: ASST, fontSize: '12px', color: MUTED, margin: 0, lineHeight: 1.5 }}>
+              Payment is processed in ILS (₪) by Grow, an Israeli payment provider. An Israeli credit card and an Israeli mobile number are required.
+            </p>
+          </div>
+        )}
+
         {/* ── Garden pack addon ── */}
         <div style={{ maxWidth: '1160px', margin: '0 auto', padding: '0 20px 16px', animation: 'pricingFadeIn 0.5s ease 0.2s both' }}>
           <div style={{

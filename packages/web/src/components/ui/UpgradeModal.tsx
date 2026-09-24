@@ -616,7 +616,7 @@ export function UpgradeModal() {
               {/* English-only: disclose ILS + Grow as payment processor */}
               {!isHe && (
                 <p style={{ fontFamily: ASSIST, fontSize: '11px', color: `${PARCH}55`, margin: 0, lineHeight: 1.5 }}>
-                  Payment is processed in ILS (₪) by Grow, an Israeli payment provider.
+                  {t('grow.providerDisclaimer')}
                 </p>
               )}
 
