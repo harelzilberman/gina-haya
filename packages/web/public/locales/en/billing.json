@@ -129,35 +129,35 @@
     "plants": {
       "title": "Your garden is growing! 🌱",
       "body": "You've reached the plant limit for the free account.\nUpgrade to Gardener Pro to add plants without limits.",
-      "primaryLabel": "Upgrade now"
+      "primaryLabel": "Upgrade to {{tier}}"
     },
     "trackers": {
       "title": "Growth tracker is full! 🌿",
       "body": "The free account supports one growth tracker.\nUpgrade to Gardener Pro for unlimited trackers — ₪18/month.",
-      "primaryLabel": "Upgrade now"
+      "primaryLabel": "Upgrade to {{tier}}"
     },
     "analysis": {
       "title": "You've used your free AI analysis! 🔬",
       "body": "You got a preview of the analysis. Want more?\nUpgrade to Gardener Pro for unlimited analyses, or buy a pack in the shop.",
       "dailyTitle": "Daily analysis limit reached 🔬",
       "dailyBody": "You've used today's free analyses. Your limit resets tomorrow morning.\nUpgrade to Gardener Pro for more analyses every day.",
-      "primaryLabel": "Upgrade to Gardener Pro",
+      "primaryLabel": "Upgrade to {{tier}}",
       "secondaryLabel": "Buy a pack"
     },
     "chupchu": {
       "title": "ChupChu needs a rest... 🌙",
       "body": "You've used all 20 of your free monthly conversations.\nUpgrade to Gardener Pro for 50 conversations/month — ₪18 only.",
-      "primaryLabel": "Upgrade now"
+      "primaryLabel": "Upgrade to {{tier}}"
     },
     "gardens": {
       "title": "Multiple gardens — Professional plan! 🏡",
       "body": "Managing multiple gardens is available on the Professional plan.\nUpgrade for ₪54/month and get 13 gardens + the option to add more packs.",
-      "primaryLabel": "Upgrade now"
+      "primaryLabel": "Upgrade to {{tier}}"
     },
     "encyclopedia": {
       "title": "The Biodynamic Encyclopedia 📖",
-      "body": "Full access to the encyclopedia is available on Gardener and Professional plans.\nUpgrade to Gardener for ₪18/month and unlock all the knowledge.",
-      "primaryLabel": "Upgrade to Gardener"
+      "body": "Full access to the encyclopedia is available on Gardener Pro and Professional plans.\nUpgrade to Gardener Pro for ₪18/month and unlock all the knowledge.",
+      "primaryLabel": "Upgrade to {{tier}}"
     }
   }
 }

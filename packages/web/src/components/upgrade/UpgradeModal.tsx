@@ -10,6 +10,16 @@ const FRANK = '"Frank Ruhl Libre", Georgia, serif';
 export type UpgradeLimitType =
   | 'plants' | 'trackers' | 'analysis' | 'chupchu' | 'gardens' | 'encyclopedia';
 
+// Which tier each limit type upgrades to — used to resolve the tier display name.
+const UPGRADE_TIER: Record<UpgradeLimitType, string> = {
+  plants:      'gardener_pro',
+  trackers:    'gardener_pro',
+  analysis:    'gardener_pro',
+  chupchu:     'gardener_pro',
+  gardens:     'professional',
+  encyclopedia:'gardener_pro',
+};
+
 interface Props {
   isOpen: boolean;
   onClose: () => void;
@@ -35,13 +45,15 @@ export function UpgradeModal({ isOpen, onClose, limitType, scope }: Props) {
 
   const isDaily = limitType === 'analysis' && scope === 'daily';
 
+  const tierName = t(`tierNames.${UPGRADE_TIER[limitType]}`);
+
   const title         = isDaily
     ? t('upgradeLimit.analysis.dailyTitle')
     : t(`upgradeLimit.${limitType}.title`);
   const body          = isDaily
     ? t('upgradeLimit.analysis.dailyBody')
     : t(`upgradeLimit.${limitType}.body`);
-  const primaryLabel  = t(`upgradeLimit.${limitType}.primaryLabel`);
+  const primaryLabel  = t(`upgradeLimit.${limitType}.primaryLabel`, { tier: tierName });
   const secondaryLabel = (limitType === 'analysis' && !isDaily)
     ? t('upgradeLimit.analysis.secondaryLabel')
     : null;
