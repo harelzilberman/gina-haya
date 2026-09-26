@@ -18,9 +18,11 @@ interface Props {
   current?: number;
   limit?: number;
   resetsAt?: string;
+  /** 'daily' → show "resets tomorrow" copy; 'monthly' → show upgrade copy (default) */
+  scope?: 'daily' | 'monthly';
 }
 
-export function UpgradeModal({ isOpen, onClose, limitType }: Props) {
+export function UpgradeModal({ isOpen, onClose, limitType, scope }: Props) {
   const navigate = useNavigate();
   const { t, i18n } = useTranslation('billing');
   const isHe = i18n.language === 'he';
@@ -31,10 +33,16 @@ export function UpgradeModal({ isOpen, onClose, limitType }: Props) {
 
   if (!isOpen) return null;
 
-  const title         = t(`upgradeLimit.${limitType}.title`);
-  const body          = t(`upgradeLimit.${limitType}.body`);
+  const isDaily = limitType === 'analysis' && scope === 'daily';
+
+  const title         = isDaily
+    ? t('upgradeLimit.analysis.dailyTitle')
+    : t(`upgradeLimit.${limitType}.title`);
+  const body          = isDaily
+    ? t('upgradeLimit.analysis.dailyBody')
+    : t(`upgradeLimit.${limitType}.body`);
   const primaryLabel  = t(`upgradeLimit.${limitType}.primaryLabel`);
-  const secondaryLabel = limitType === 'analysis'
+  const secondaryLabel = (limitType === 'analysis' && !isDaily)
     ? t('upgradeLimit.analysis.secondaryLabel')
     : null;
   const dismissLabel  = t('upgradeLimit.dismiss');

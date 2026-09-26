@@ -246,7 +246,12 @@ export const useTrackerStore = create<TrackerState>((set, get) => ({
         const data = await res.json().catch(() => ({}));
         const err: any = new Error(data.error || 'forbidden');
         err.errorCode = data.error;
-        err.limitData = { limit: data.limit, current: data.current, resetsAt: data.resets_at };
+        err.limitData = {
+          limit:    data.limit,
+          current:  data.current,
+          resetsAt: data.resets_at,
+          scope:    data.scope ?? (data.limitType === 'daily' ? 'daily' : 'monthly'),
+        };
         throw err;
       }
       if (res.status === 429) {
@@ -269,6 +274,18 @@ export const useTrackerStore = create<TrackerState>((set, get) => ({
       }
 
       const body = await res.json();
+      // Backward compat: old server returned HTTP 200 with { ok: false, reason: 'vision_quota_exceeded' }
+      if (body.ok === false && body.reason === 'vision_quota_exceeded') {
+        const err: any = new Error('analysis_limit_reached');
+        err.errorCode = 'analysis_limit_reached';
+        err.limitData = {
+          limit:    body.limit,
+          current:  body.used,
+          resetsAt: undefined,
+          scope:    body.limitType === 'daily' ? 'daily' : 'monthly',
+        };
+        throw err;
+      }
       return { checkin_id: body.checkin_id as string, used_credit: !!(body.used_credit) };
     } catch (err: any) {
       clearTimeout(timer);

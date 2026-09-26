@@ -6,7 +6,7 @@ import { attachTier } from '../middleware/tierMiddleware';
 import { analyzePlantImage, compressImageForClaude } from '../services/plantVision';
 import { fetchWeatherForRegion } from '../services/weather';
 import { todayInIsrael, assertStorageKey } from '@gina-haya/shared';
-import { checkAndRecordVisionUse } from '../services/visionQuota';
+import { checkAndRecordVisionUse, buildVisionQuotaError } from '../services/visionQuota';
 import { userOwnsGardenPlant } from '../utils/ownership';
 
 export const trackersRouter: IRouter = Router();
@@ -681,12 +681,13 @@ trackersRouter.post('/:id/checkin', async (req: any, res) => {
       }
     }
 
-    // Vision quota gate — consume quota slot before any Anthropic spend
+    // Vision quota gate — consume quota slot before any Anthropic spend.
+    // Returns HTTP 403 (not 200) so the web/mobile can distinguish it from success.
     {
       const gardenPlantsId: string | null = (tracker as any).garden_plants_id ?? null;
       const quota = await checkAndRecordVisionUse(userId, 'tracker_checkin', gardenPlantsId, req.tier);
       if (!quota.allowed) {
-        return res.json({ ok: false, reason: 'vision_quota_exceeded', used: quota.used, limit: quota.limit });
+        return res.status(403).json(buildVisionQuotaError(quota));
       }
     }
 

@@ -10,7 +10,7 @@ import type { ChupChuMessage, ChupChuContext } from '@gina-haya/shared';
 import { todayInIsrael, startOfTodayIsrael, startOfCurrentMonthIsrael } from '@gina-haya/shared';
 import { getRecentCompletedTasks } from '../db/queries/tasks';
 import { getLimits } from '../config/tiers';
-import { checkVisionQuota, recordVisionUse, checkAndRecordVisionUse, recordFreeRetryVisionUse } from '../services/visionQuota';
+import { checkVisionQuota, recordVisionUse, checkAndRecordVisionUse, recordFreeRetryVisionUse, buildVisionQuotaError } from '../services/visionQuota';
 import { logApiUsage } from '../services/apiUsage';
 import { lastScheduledIrrigation, isWateringTask } from '../utils/irrigation';
 import { userOwnsGardenPlant } from '../utils/ownership';
@@ -221,11 +221,11 @@ chupChuRouter.post('/analyze-image', async (req: any, res) => {
     const { image, mimeType = 'image/jpeg', language = 'he' } = req.body;
     if (!image) return res.status(400).json({ error: 'No image provided' });
 
-    // ── Vision quota gate (same shape as full-diagnosis) ─────────────────────
+    // ── Vision quota gate ────────────────────────────────────────────────────
     if (userId) {
       const quota = await checkAndRecordVisionUse(userId, 'chat_image', null);
       if (!quota.allowed) {
-        return res.json({ ok: false, reason: 'vision_quota_exceeded', used: quota.used, limit: quota.limit });
+        return res.status(403).json(buildVisionQuotaError(quota));
       }
     }
 
@@ -394,12 +394,9 @@ chupChuRouter.post('/full-diagnosis', async (req: any, res) => {
     if (req.user?.id) {
       const quotaCheck = await checkVisionQuota(req.user.id);
       if (!quotaCheck.allowed) {
-        return res.json({
-          ok:               false,
-          reason:           'vision_quota_exceeded',
-          used:             quotaCheck.used,
-          limit:            quotaCheck.limit,
-          limitType:        quotaCheck.limitType,
+        return res.status(403).json({
+          ...buildVisionQuotaError(quotaCheck),
+          // full-diagnosis callers also get tier/monthlyRemaining for richer upsell context
           tier:             quotaCheck.effectiveTier,
           monthlyRemaining: quotaCheck.monthlyRemaining,
         });

@@ -43,8 +43,9 @@ export function PhotoUpload({ trackerId, plantNameHe, onClose, onComplete }: Pro
   const [notes,        setNotes]        = useState('');
   const [error,        setError]        = useState('');
   const [dragOver,     setDragOver]     = useState(false);
-  const [upgradeOpen,  setUpgradeOpen]  = useState(false);
+  const [upgradeOpen,    setUpgradeOpen]    = useState(false);
   const [upgradeResetsAt, setUpgradeResetsAt] = useState<string | undefined>();
+  const [upgradeScope,   setUpgradeScope]   = useState<'daily' | 'monthly'>('monthly');
   // Retry state after analysis failure
   const [pendingCheckinId, setPendingCheckinId] = useState<string | null>(null);
   const [pendingCredit,    setPendingCredit]    = useState(false);
@@ -128,6 +129,7 @@ export function PhotoUpload({ trackerId, plantNameHe, onClose, onComplete }: Pro
       } catch (err: any) {
         if (err.errorCode === 'analysis_limit_reached') {
           setUpgradeResetsAt(err.limitData?.resetsAt);
+          setUpgradeScope(err.limitData?.scope ?? 'monthly');
           setUpgradeOpen(true);
         } else if (err.message === 'limit_exceeded') {
           setError(t('errors.limit_exceeded'));
@@ -364,6 +366,7 @@ export function PhotoUpload({ trackerId, plantNameHe, onClose, onComplete }: Pro
         limitType="analysis"
         currentTier={profile?.subscription_tier ?? 'free'}
         resetsAt={upgradeResetsAt}
+        scope={upgradeScope}
       />
     </>
   );

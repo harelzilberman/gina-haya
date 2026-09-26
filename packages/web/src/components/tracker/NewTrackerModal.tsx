@@ -50,6 +50,8 @@ export function NewTrackerModal({ onClose, onCreated, gardenPlantId }: Props) {
   const [isAnalyzing,          setIsAnalyzing]          = useState(false);
   const [error,                setError]                = useState('');
   const [upgradeOpen,          setUpgradeOpen]          = useState(false);
+  const [upgradeScope,         setUpgradeScope]         = useState<'daily' | 'monthly'>('monthly');
+  const [upgradeLimitType,     setUpgradeLimitType]     = useState<'trackers' | 'analysis'>('trackers');
   // Populated after phase-1 succeeds so analysis can be retried without re-uploading
   const [pendingTrackerId,     setPendingTrackerId]     = useState<string | null>(null);
   const [pendingCheckinId,     setPendingCheckinId]     = useState<string | null>(null);
@@ -160,6 +162,7 @@ export function NewTrackerModal({ onClose, onCreated, gardenPlantId }: Props) {
       await runAnalysis(tracker.id, checkinId, compressedBase64, usedCredit, wasAutoIdentified);
     } catch (err: any) {
       if (err.errorCode === 'tracker_limit_reached' || err.message === 'limit_exceeded') {
+        setUpgradeLimitType('trackers');
         setUpgradeOpen(true);
       } else {
         setError(friendlyError(err));
@@ -202,6 +205,11 @@ export function NewTrackerModal({ onClose, onCreated, gardenPlantId }: Props) {
   function handleCheckinError(err: any) {
     console.error('[NewTrackerModal] checkin create failed', err);
     if (err.errorCode === 'tracker_limit_reached' || err.message === 'limit_exceeded') {
+      setUpgradeLimitType('trackers');
+      setUpgradeOpen(true);
+    } else if (err.errorCode === 'analysis_limit_reached') {
+      setUpgradeLimitType('analysis');
+      setUpgradeScope(err.limitData?.scope ?? 'monthly');
       setUpgradeOpen(true);
     } else {
       setError(friendlyError(err));
@@ -335,8 +343,9 @@ export function NewTrackerModal({ onClose, onCreated, gardenPlantId }: Props) {
         <UpgradeModal
           isOpen={upgradeOpen}
           onClose={() => { setUpgradeOpen(false); onClose(); }}
-          limitType="trackers"
+          limitType={upgradeLimitType}
           currentTier={profile?.subscription_tier ?? 'free'}
+          scope={upgradeScope}
         />
 
         {!isAnalyzing && !upgradeOpen && !canRetry && (

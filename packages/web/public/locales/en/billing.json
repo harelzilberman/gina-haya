@@ -136,6 +136,8 @@
     "analysis": {
       "title": "You've used your free AI analysis! 🔬",
       "body": "You got a preview of the analysis. Want more?\nUpgrade to Gardener Pro for unlimited analyses, or buy a pack in the shop.",
+      "dailyTitle": "Daily analysis limit reached 🔬",
+      "dailyBody": "You've used today's free analyses. Your limit resets tomorrow morning.\nUpgrade to Gardener Pro for more analyses every day.",
       "primaryLabel": "Upgrade to Gardener",
       "secondaryLabel": "Buy a pack"
     },

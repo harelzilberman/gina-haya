@@ -1,6 +1,6 @@
 import { db } from '../db/client';
 import { getLimits } from '../config/tiers';
-import { startOfCurrentMonthIsrael, startOfTodayIsrael } from '@gina-haya/shared';
+import { startOfCurrentMonthIsrael, startOfTodayIsrael, todayInIsrael, israelDateToUTCMidnight } from '@gina-haya/shared';
 
 // Valid values must match the CHECK constraint in migration 019.
 // 'passport_chip' is reserved for Phase 2.
@@ -228,6 +228,55 @@ export async function checkAndRecordVisionUse(
  *
  * Returns the new vision_uses row ID, or null on DB error.
  */
+/**
+ * Builds the unified HTTP 403 payload for a vision-quota refusal.
+ *
+ * New canonical shape (web + new mobile):
+ *   { error: 'analysis_limit_reached', scope: 'daily'|'monthly', limit, current, resets_at }
+ *
+ * Backward-compat fields kept for old Flutter clients that read `ok`/`reason`/`limitType`:
+ *   { ok: false, reason: 'vision_quota_exceeded', used, limitType }
+ *
+ * resets_at is computed in Israel timezone:
+ *   daily   → midnight at the start of TOMORROW in Israel time
+ *   monthly → midnight at the start of NEXT MONTH in Israel time
+ */
+export function buildVisionQuotaError(
+  quota: Pick<VisionQuotaResult, 'used' | 'limit' | 'limitType'>,
+): object {
+  const today = todayInIsrael(); // "YYYY-MM-DD"
+  const [y, m, d] = today.split('-').map(Number);
+
+  let resetsAt: string;
+  if (quota.limitType === 'daily') {
+    // Tomorrow in Israel time — handle month/year roll-over via Date UTC
+    const tomorrowDate = new Date(Date.UTC(y, m - 1, d + 1));
+    resetsAt = israelDateToUTCMidnight(tomorrowDate.toISOString().slice(0, 10));
+  } else {
+    // First of next month
+    const nextMonthStr = m === 12
+      ? `${y + 1}-01-01`
+      : `${y}-${String(m + 1).padStart(2, '0')}-01`;
+    resetsAt = israelDateToUTCMidnight(nextMonthStr);
+  }
+
+  const scope = quota.limitType ?? 'monthly';
+
+  return {
+    // ── New canonical shape ───────────────────────────────────────────────
+    error:     'analysis_limit_reached',
+    scope,
+    limit:     quota.limit,
+    current:   quota.used,
+    resets_at: resetsAt,
+    // ── Backward compat for old Flutter builds ────────────────────────────
+    ok:        false,
+    reason:    'vision_quota_exceeded',
+    used:      quota.used,
+    limitType: quota.limitType,
+  };
+}
+
 export async function recordFreeRetryVisionUse(
   userId: string,
   source: VisionSource,
