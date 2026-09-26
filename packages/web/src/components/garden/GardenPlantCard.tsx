@@ -1,3 +1,4 @@
+import { useTranslation } from 'react-i18next';
 import type { GardenPlant } from '../../stores/gardenStore';
 import type { Tracker } from '../../stores/trackerStore';
 import { PlantingBase } from './PlantingBase';
@@ -45,6 +46,9 @@ interface Props {
 }
 
 export function GardenPlantCard({ plant, tracker, onClick }: Props) {
+  const { t, i18n } = useTranslation('garden');
+  const isHe = i18n.language === 'he';
+
   const locationType   = tracker?.location_type ?? plant.location_type ?? 'pot';
   const health         = tracker?.latest_checkin?.ai_analysis?.health ?? null;
   const growthStageHe  = tracker?.latest_checkin?.ai_analysis?.growthStageHe ?? null;
@@ -53,6 +57,9 @@ export function GardenPlantCard({ plant, tracker, onClick }: Props) {
   // "needs water" nudge so auto-irrigated plants don't show the badge permanently.
   const showWaterBadge = plant.auto_irrigation !== true && tracker != null && (waterDays === null || waterDays > 3);
   const typeEmoji      = plant.plant_type ? PLANT_TYPE_EMOJI[plant.plant_type] : null;
+
+  // Display name: English when UI is English (if available), otherwise Hebrew
+  const displayName = !isHe && plant.common_name_en ? plant.common_name_en : plant.common_name_he;
 
   return (
     <button
@@ -98,7 +105,7 @@ export function GardenPlantCard({ plant, tracker, onClick }: Props) {
       {showWaterBadge && (
         <span
           aria-hidden="true"
-          title="צריך השקיה"
+          title={t('passport.needsWater')}
           style={{
             position: 'absolute', top: '8px', insetInlineStart: '8px',
             fontSize: '13px', lineHeight: 1,
@@ -130,7 +137,7 @@ export function GardenPlantCard({ plant, tracker, onClick }: Props) {
       {/* Name + variety */}
       <div style={{ minHeight: '34px' }}>
         <p style={{ fontFamily: FRANK, fontWeight: 600, fontSize: '13px', color: TEXT_MID, margin: 0, lineHeight: 1.25 }}>
-          {plant.common_name_he}
+          {displayName}
         </p>
         {plant.variety && (
           <p style={{ fontFamily: DM_SANS, fontSize: '10px', color: `${TEXT_MID}70`, margin: '1px 0 0' }}>
@@ -156,6 +163,7 @@ export function GardenPlantCard({ plant, tracker, onClick }: Props) {
 }
 
 export function AddPlantCard({ onClick }: { onClick: () => void }) {
+  const { t } = useTranslation('garden');
   return (
     <button
       onClick={onClick}
@@ -183,7 +191,7 @@ export function AddPlantCard({ onClick }: { onClick: () => void }) {
     >
       <span style={{ fontSize: '28px', color: BIO_CYAN }}>+</span>
       <span style={{ fontFamily: FRANK, fontSize: '13px', fontWeight: 600, color: BIO_CYAN }}>
-        הוסף צמח
+        {t('plants.addPlant')}
       </span>
     </button>
   );

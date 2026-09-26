@@ -32,7 +32,22 @@
     "analyzing": "צ'ופצ'ו מנתח את הצמח...",
     "analyzeRetry": "הניתוח נכשל. לחץ לנסות שוב",
     "retryButton": "נסה שוב",
-    "saved": "המעקב נשמר"
+    "saved": "המעקב נשמר",
+    "title": "בדיקת {{name}}",
+    "analyzingSubtitle": "ניתוח חכם עם בינה מלאכותית",
+    "analyzingEta": "זה לוקח כ-15 שניות",
+    "noImageError": "יש לבחור תמונה תחילה",
+    "invalidFileType": "קבצים מותרים: JPG, PNG, WEBP בלבד",
+    "imageTooLarge": "התמונה גדולה מדי. אנא בחר תמונה קטנה מ-{{size}}",
+    "usedCredit": "השתמשת במגבלה החודשית — משתמש בקרדיט שרכשת 🔬",
+    "preview": "תצוגה מקדימה",
+    "clickToReplace": "לחץ להחלפת תמונה",
+    "uploadPrompt": "צלם או העלה תמונה של הצמח",
+    "dropHere": "גרור ושחרר כאן",
+    "notesLabel": "הערות נוספות (אופציונלי)",
+    "notesPlaceholder": "מה שמת לב? האם יש בעיה ספציפית שמטרידה אותך?",
+    "submitButton": "נתח עם צ'ופצ'ו 🌱",
+    "sizeHint": "JPG / PNG / WEBP · עד {{size}}"
   },
   "errors": {
     "network": "לא ניתן להתחבר לשרת. בדוק את החיבור לאינטרנט ונסה שוב.",

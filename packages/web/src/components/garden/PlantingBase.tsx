@@ -3,17 +3,24 @@
 // bed / hydroponic trough / greenhouse) — kept as simple inline SVG here instead of canvas painters.
 
 export const LOCATION_TYPES = [
-  { value: 'pot',        labelHe: 'עציץ',  emoji: '🪴' },
-  { value: 'garden',     labelHe: 'גינה',  emoji: '🌿' },
-  { value: 'bed',        labelHe: 'ערוגה', emoji: '🟫' },
-  { value: 'hydroponic', labelHe: 'הידרופוני', emoji: '💧' },
-  { value: 'greenhouse', labelHe: 'חממה', emoji: '🏡' },
+  { value: 'pot',        labelHe: 'עציץ',       i18nKey: 'locationType.pot',        emoji: '🪴' },
+  { value: 'garden',     labelHe: 'גינה',       i18nKey: 'locationType.garden',     emoji: '🌿' },
+  { value: 'bed',        labelHe: 'ערוגה',      i18nKey: 'locationType.bed',        emoji: '🟫' },
+  { value: 'hydroponic', labelHe: 'הידרופוני',  i18nKey: 'locationType.hydroponic', emoji: '💧' },
+  { value: 'greenhouse', labelHe: 'חממה',       i18nKey: 'locationType.greenhouse', emoji: '🏡' },
 ] as const;
 
 export type LocationType = typeof LOCATION_TYPES[number]['value'];
 
-export function locationLabel(value: string | null | undefined): string {
-  return LOCATION_TYPES.find(l => l.value === value)?.labelHe ?? 'עציץ';
+/** Returns the translated location label using the garden namespace t() fn. Falls back to Hebrew. */
+export function locationLabel(
+  value: string | null | undefined,
+  t?: (key: string, opts?: { defaultValue: string }) => string,
+): string {
+  const entry = LOCATION_TYPES.find(l => l.value === value);
+  if (!entry) return LOCATION_TYPES[0].labelHe; // fallback: pot label
+  if (t) return t(entry.i18nKey, { defaultValue: entry.labelHe });
+  return entry.labelHe;
 }
 
 interface Props {

@@ -17,12 +17,6 @@ const PLAYFAIR = '"Playfair Display", Georgia, serif';
 
 const NOISE_BG = `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='250' height='250'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.75' numOctaves='4' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='250' height='250' filter='url(%23n)' opacity='0.55'/%3E%3C/svg%3E")`;
 
-const TIER_NAMES_EN: Record<string, string> = {
-  free:         'Free',
-  gardener_pro: 'Gardener Pro',
-  advanced:     'Advanced',
-  professional: 'Professional',
-};
 
 // Feature lists derived from @gina-haya/shared limits — kept in sync automatically.
 const _b = { f: getLimits('free'), g: getLimits('gardener_pro'), a: getLimits('advanced'), p: getLimits('professional') };
@@ -133,18 +127,18 @@ export function BillingPage() {
         setShowCancelConfirm(false);
       }
     } catch {
-      setCancelError(isHe ? 'אירעה שגיאה. אנא נסה שוב מאוחר יותר.' : 'Something went wrong. Please try again later.');
+      setCancelError(t('cancel.error'));
     } finally {
       setCancelling(false);
     }
   };
 
   const tierFeatures = isHe ? TIER_FEATURES_HE : TIER_FEATURES_EN;
-  const tierName  = isHe ? getLimits(tier).displayNameHe : (TIER_NAMES_EN[tier] ?? tier);
+  const tierName  = isHe ? getLimits(tier).displayNameHe : t(`tierNames.${tier}`, { defaultValue: tier });
   const features  = tierFeatures[tier] ?? [];
   const nextTier  = canUpgradeTo;
   const nextName  = nextTier
-    ? (isHe ? getLimits(nextTier).displayNameHe : (TIER_NAMES_EN[nextTier] ?? nextTier))
+    ? (isHe ? getLimits(nextTier).displayNameHe : t(`tierNames.${nextTier}`, { defaultValue: nextTier }))
     : null;
 
   return (
@@ -168,7 +162,7 @@ export function BillingPage() {
 
           {/* Page title */}
           <h1 style={{
-            fontFamily: FRANK,
+            fontFamily: isHe ? FRANK : ASSIST,
             fontWeight: 700,
             fontSize:   '2rem',
             color:      GOLD,
@@ -192,7 +186,7 @@ export function BillingPage() {
               gap:             '10px',
             }}>
               <span style={{ animation: 'spin 1s linear infinite', display: 'inline-block' }}>⟳</span>
-              {isHe ? 'מעדכן את המנוי שלך...' : 'Updating your subscription…'}
+              {t('status.polling')}
               <style>{`@keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }`}</style>
             </div>
           )}
@@ -205,9 +199,7 @@ export function BillingPage() {
               fontSize:        '14px',
               color:           `${PARCH}CC`,
             }}>
-              {isHe
-                ? 'התשלום התקבל — העדכון עשוי לקחת עוד רגע. רענן את הדף בעוד כמה שניות.'
-                : 'Payment received — the update may take a moment. Refresh the page in a few seconds.'}
+              {t('status.pollTimedOut')}
             </div>
           )}
           {!polling && !pollTimedOut && tier !== 'free' && status === 'success' && (
@@ -256,7 +248,7 @@ export function BillingPage() {
                 <p style={{ fontFamily: ASSIST, fontSize: '11px', fontWeight: 600, letterSpacing: '0.1em', textTransform: 'uppercase', color: `${PARCH}44`, margin: '0 0 4px' }}>
                   {t('currentPlan')}
                 </p>
-                <h2 style={{ fontFamily: FRANK, fontWeight: 700, fontSize: '26px', color: GOLD, margin: 0 }}>
+                <h2 style={{ fontFamily: isHe ? FRANK : ASSIST, fontWeight: 700, fontSize: '26px', color: GOLD, margin: 0 }}>
                   {tierName}
                 </h2>
               </div>
@@ -282,7 +274,7 @@ export function BillingPage() {
           {/* Upgrade */}
           {nextTier && (
             <div style={cardStyle()}>
-              <h3 style={{ fontFamily: FRANK, fontWeight: 600, fontSize: '18px', color: PARCH, margin: '0 0 6px' }}>
+              <h3 style={{ fontFamily: isHe ? FRANK : ASSIST, fontWeight: 600, fontSize: '18px', color: PARCH, margin: '0 0 6px' }}>
                 {t('upgradeTitle', { name: nextName })}
               </h3>
               <p style={{ fontFamily: ASSIST, fontSize: '13px', color: `${PARCH}66`, margin: '0 0 16px' }}>
@@ -296,7 +288,7 @@ export function BillingPage() {
                   borderRadius:    '8px',
                   border:          'none',
                   backgroundColor: GOLD,
-                  fontFamily:      FRANK,
+                  fontFamily:      isHe ? FRANK : ASSIST,
                   fontWeight:      600,
                   fontSize:        '15px',
                   color:           EARTH,
@@ -314,7 +306,7 @@ export function BillingPage() {
           {/* Cancel */}
           {tier !== 'free' && !cancelledAt && (
             <div id="cancel-subscription" style={cardStyle()}>
-              <h3 style={{ fontFamily: FRANK, fontWeight: 600, fontSize: '16px', color: PARCH, margin: '0 0 6px' }}>
+              <h3 style={{ fontFamily: isHe ? FRANK : ASSIST, fontWeight: 600, fontSize: '16px', color: PARCH, margin: '0 0 6px' }}>
                 {t('cancel.title')}
               </h3>
               <p style={{ fontFamily: ASSIST, fontSize: '13px', color: `${PARCH}66`, margin: '0 0 14px' }}>
@@ -385,7 +377,7 @@ export function BillingPage() {
                         borderRadius:    '8px',
                         border:          'none',
                         backgroundColor: '#C0372A',
-                        fontFamily:      FRANK,
+                        fontFamily:      isHe ? FRANK : ASSIST,
                         fontWeight:      600,
                         fontSize:        '13px',
                         color:           '#fff',

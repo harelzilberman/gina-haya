@@ -24,14 +24,19 @@ const CHUPCHU_PULSE_CSS = `
 `;
 
 interface Props {
-  trackerId:   string;
-  plantNameHe: string;
-  onClose:     () => void;
-  onComplete:  (result: CheckinResult) => void;
+  trackerId:    string;
+  plantNameHe:  string;
+  plantNameEn?: string;
+  onClose:      () => void;
+  onComplete:   (result: CheckinResult) => void;
 }
 
-export function PhotoUpload({ trackerId, plantNameHe, onClose, onComplete }: Props) {
-  const { t } = useTranslation('tracker');
+export function PhotoUpload({ trackerId, plantNameHe, plantNameEn, onClose, onComplete }: Props) {
+  const { t, i18n } = useTranslation('tracker');
+  const isHe = i18n.language === 'he';
+  const dir   = isHe ? 'rtl' : 'ltr';
+  const headingFont = isHe ? FRANK : DM_SANS;
+
   const { createCheckin, analyzeCheckin, isAnalyzing } = useTrackerStore();
   const { profile } = useAuthStore();
   const { show: showToast } = useToastStore();
@@ -50,14 +55,16 @@ export function PhotoUpload({ trackerId, plantNameHe, onClose, onComplete }: Pro
   const [pendingCheckinId, setPendingCheckinId] = useState<string | null>(null);
   const [pendingCredit,    setPendingCredit]    = useState(false);
 
+  const displayName = !isHe && plantNameEn ? plantNameEn : plantNameHe;
+
   async function processFile(file: File) {
     setError('');
     if (!ACCEPTED_TYPES.includes(file.type)) {
-      setError('קבצים מותרים: JPG, PNG, WEBP בלבד');
+      setError(t('checkin.invalidFileType'));
       return;
     }
     if (file.size > MAX_PHOTO_SIZE_BYTES) {
-      setError(`התמונה גדולה מדי. אנא בחר תמונה קטנה מ-${MAX_PHOTO_SIZE_LABEL}`);
+      setError(t('checkin.imageTooLarge', { size: MAX_PHOTO_SIZE_LABEL }));
       return;
     }
     try {
@@ -101,7 +108,7 @@ export function PhotoUpload({ trackerId, plantNameHe, onClose, onComplete }: Pro
     try {
       const result = await analyzeCheckin(trackerId, checkinId, base64, 'image/jpeg', priorCredit);
       if (result.used_credit) {
-        showToast('השתמשת במגבלה החודשית — משתמש בקרדיט שרכשת 🔬', 'info');
+        showToast(t('checkin.usedCredit'), 'info');
       }
       onComplete(result);
     } catch (err: any) {
@@ -112,7 +119,7 @@ export function PhotoUpload({ trackerId, plantNameHe, onClose, onComplete }: Pro
   }
 
   async function handleSubmit() {
-    if (!imageBase64) { setError('יש לבחור תמונה תחילה'); return; }
+    if (!imageBase64) { setError(t('checkin.noImageError')); return; }
     if (submittingRef.current) return;
     submittingRef.current = true;
     setError('');
@@ -183,13 +190,13 @@ export function PhotoUpload({ trackerId, plantNameHe, onClose, onComplete }: Pro
             maxWidth:        '460px',
             maxHeight:       '90vh',
             overflowY:       'auto',
-            direction:       'rtl',
+            direction:       dir,
           }}
         >
           {/* Header */}
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
-            <h2 style={{ fontFamily: FRANK, fontSize: '18px', color: BIO_CYAN, margin: 0 }}>
-              בדיקת {plantNameHe}
+            <h2 style={{ fontFamily: headingFont, fontSize: '18px', color: BIO_CYAN, margin: 0 }}>
+              {t('checkin.title', { name: displayName })}
             </h2>
             {!isAnalyzing && (
               <button
@@ -205,14 +212,14 @@ export function PhotoUpload({ trackerId, plantNameHe, onClose, onComplete }: Pro
           {isAnalyzing ? (
             <div style={{ textAlign: 'center', padding: '32px 0' }}>
               <div className="mon-pulse" style={{ fontSize: '64px', marginBottom: '20px' }}>🌱</div>
-              <p style={{ fontFamily: FRANK, fontSize: '20px', color: BIO_CYAN, marginBottom: '8px' }}>
+              <p style={{ fontFamily: headingFont, fontSize: '20px', color: BIO_CYAN, marginBottom: '8px' }}>
                 {t('checkin.analyzing')}
               </p>
               <p style={{ fontFamily: DM_SANS, fontSize: '14px', color: `${TEXT_MID}60`, marginBottom: '4px' }}>
-                ניתוח חכם עם בינה מלאכותית
+                {t('checkin.analyzingSubtitle')}
               </p>
               <p style={{ fontFamily: DM_SANS, fontSize: '13px', color: `${TEXT_MID}40` }}>
-                זה לוקח כ-15 שניות
+                {t('checkin.analyzingEta')}
               </p>
             </div>
           ) : canRetry ? (
@@ -226,7 +233,7 @@ export function PhotoUpload({ trackerId, plantNameHe, onClose, onComplete }: Pro
                 style={{
                   padding: '10px 28px', borderRadius: '8px', border: 'none',
                   background: BIO_CYAN, color: '#050d0a',
-                  fontFamily: FRANK, fontWeight: 700, fontSize: '15px', cursor: 'pointer',
+                  fontFamily: headingFont, fontWeight: 700, fontSize: '15px', cursor: 'pointer',
                 }}
               >
                 {t('checkin.retryButton')}
@@ -260,33 +267,33 @@ export function PhotoUpload({ trackerId, plantNameHe, onClose, onComplete }: Pro
                   <>
                     <img
                       src={preview}
-                      alt="תצוגה מקדימה"
+                      alt={t('checkin.preview')}
                       style={{ width: '100%', maxHeight: '260px', objectFit: 'cover', display: 'block' }}
                     />
                     <div style={{
                       position:        'absolute',
                       bottom:          '8px',
-                      right:           '8px',
+                      insetInlineEnd:  '8px',
                       backgroundColor: 'rgba(9,20,16,0.85)',
                       borderRadius:    '6px',
                       padding:         '4px 8px',
                     }}>
                       <span style={{ fontFamily: DM_SANS, fontSize: '11px', color: `${TEXT_MID}70` }}>
-                        לחץ להחלפת תמונה
+                        {t('checkin.clickToReplace')}
                       </span>
                     </div>
                   </>
                 ) : (
                   <div style={{ textAlign: 'center', padding: '32px 24px' }}>
                     <div style={{ fontSize: '40px', marginBottom: '12px' }}>📸</div>
-                    <p style={{ fontFamily: FRANK, fontSize: '15px', color: TEXT_MID, marginBottom: '6px' }}>
-                      צלם או העלה תמונה של הצמח
+                    <p style={{ fontFamily: headingFont, fontSize: '15px', color: TEXT_MID, marginBottom: '6px' }}>
+                      {t('checkin.uploadPrompt')}
                     </p>
                     <p style={{ fontFamily: DM_SANS, fontSize: '12px', color: `${TEXT_MID}45` }}>
-                      {`JPG / PNG / WEBP עד ${MAX_PHOTO_SIZE_LABEL}`}
+                      {t('checkin.sizeHint', { size: MAX_PHOTO_SIZE_LABEL })}
                     </p>
                     <p style={{ fontFamily: DM_SANS, fontSize: '12px', color: `${TEXT_MID}45`, marginTop: '4px' }}>
-                      גרור ושחרר כאן
+                      {t('checkin.dropHere')}
                     </p>
                   </div>
                 )}
@@ -302,13 +309,17 @@ export function PhotoUpload({ trackerId, plantNameHe, onClose, onComplete }: Pro
 
               {/* Notes */}
               <div style={{ marginBottom: '20px' }}>
-                <label style={{ display: 'block', fontFamily: DM_SANS, fontSize: '13px', color: `${TEXT_MID}70`, marginBottom: '6px', textAlign: 'right' }}>
-                  הערות נוספות (אופציונלי)
+                <label style={{
+                  display: 'block', fontFamily: DM_SANS, fontSize: '13px',
+                  color: `${TEXT_MID}70`, marginBottom: '6px',
+                  textAlign: isHe ? 'right' : 'left',
+                }}>
+                  {t('checkin.notesLabel')}
                 </label>
                 <textarea
                   value={notes}
                   onChange={e => setNotes(e.target.value)}
-                  placeholder="מה שמת לב? האם יש בעיה ספציפית שמטרידה אותך?"
+                  placeholder={t('checkin.notesPlaceholder')}
                   rows={3}
                   style={{
                     width:           '100%',
@@ -320,7 +331,7 @@ export function PhotoUpload({ trackerId, plantNameHe, onClose, onComplete }: Pro
                     fontSize:        '14px',
                     color:           TEXT_MID,
                     outline:         'none',
-                    direction:       'rtl',
+                    direction:       dir,
                     resize:          'vertical',
                     boxSizing:       'border-box',
                   }}
@@ -328,7 +339,7 @@ export function PhotoUpload({ trackerId, plantNameHe, onClose, onComplete }: Pro
               </div>
 
               {error && !canRetry && (
-                <p style={{ fontFamily: DM_SANS, fontSize: '13px', color: '#e06060', textAlign: 'right', marginBottom: '16px' }}>
+                <p style={{ fontFamily: DM_SANS, fontSize: '13px', color: '#e06060', textAlign: isHe ? 'right' : 'left', marginBottom: '16px' }}>
                   {error}
                 </p>
               )}
@@ -344,7 +355,7 @@ export function PhotoUpload({ trackerId, plantNameHe, onClose, onComplete }: Pro
                   color:           '#050d0a',
                   border:          'none',
                   borderRadius:    '8px',
-                  fontFamily:      FRANK,
+                  fontFamily:      headingFont,
                   fontSize:        '16px',
                   fontWeight:      700,
                   cursor:          (imageBase64 && !isAnalyzing) ? 'pointer' : 'not-allowed',
@@ -353,7 +364,7 @@ export function PhotoUpload({ trackerId, plantNameHe, onClose, onComplete }: Pro
                 onMouseEnter={e => { if (imageBase64 && !isAnalyzing) (e.currentTarget as HTMLElement).style.filter = 'brightness(1.1)'; }}
                 onMouseLeave={e => { (e.currentTarget as HTMLElement).style.filter = 'none'; }}
               >
-                נתח עם צ'ופצ'ו 🌱
+                {t('checkin.submitButton')}
               </button>
             </>
           )}

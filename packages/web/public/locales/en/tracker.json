@@ -32,7 +32,22 @@
     "analyzing": "Chupchu is analyzing your plant...",
     "analyzeRetry": "Analysis failed. Tap to retry",
     "retryButton": "Retry",
-    "saved": "Tracker saved"
+    "saved": "Tracker saved",
+    "title": "Checking {{name}}",
+    "analyzingSubtitle": "AI-powered smart analysis",
+    "analyzingEta": "This takes about 15 seconds",
+    "noImageError": "Please select an image first",
+    "invalidFileType": "Allowed formats: JPG, PNG, WEBP only",
+    "imageTooLarge": "Image too large. Please select an image smaller than {{size}}",
+    "usedCredit": "Monthly limit reached — using your purchased credit 🔬",
+    "preview": "Preview",
+    "clickToReplace": "Click to replace image",
+    "uploadPrompt": "Take or upload a photo of the plant",
+    "dropHere": "Drag and drop here",
+    "notesLabel": "Additional notes (optional)",
+    "notesPlaceholder": "What did you notice? Any specific issue?",
+    "submitButton": "Analyze with Chupchu 🌱",
+    "sizeHint": "JPG / PNG / WEBP · max {{size}}"
   },
   "errors": {
     "network": "Can't reach the server. Check your internet connection and try again.",

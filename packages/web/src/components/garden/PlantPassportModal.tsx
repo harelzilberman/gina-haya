@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import type { GardenPlant } from '../../stores/gardenStore';
 import { useGardenStore } from '../../stores/gardenStore';
 import type { Tracker, TimelineEntry, CheckinResult } from '../../stores/trackerStore';
@@ -31,40 +32,20 @@ const HEALTH_STYLE: Record<string, { bg: string; fg: string }> = {
 
 const PLANT_TYPE_EMOJI: Record<string, string> = { tree: '🌳', shrub: '🌳', perennial: '🔁', annual: '🌱' };
 
-const ENTRY_META: Record<string, { color: string; emoji: string; label: string }> = {
-  watering:       { color: '#1D9E75', emoji: '💧', label: 'השקיה' },
-  fertilizing:    { color: '#4A9A50', emoji: '🌿', label: 'דישון' },
-  note:           { color: '#C8A951', emoji: '📝', label: 'הערה' },
-  photo:          { color: '#378ADD', emoji: '📸', label: 'תמונה' },
-  chupchu:          { color: '#7F77DD', emoji: '🤖', label: "צ'ופצ'ו" },
-  chupchu_analysis: { color: '#7F77DD', emoji: '🤖', label: "צ'ופצ'ו" },
-  tracker_report:   { color: '#C8A951', emoji: '📋', label: 'דוח מעקב' },
-  task:           { color: '#C8A951', emoji: '✅', label: 'משימה' },
+// Legacy Hebrew sun-exposure values → canonical enum keys.
+const SUN_EXPOSURE_LEGACY: Record<string, string> = {
+  '\u05E9\u05DE\u05E9 \u05DE\u05DC\u05D0\u05D4': 'full_sun',
+  '\u05D7\u05E6\u05D9 \u05E6\u05DC': 'partial_shade',
+  '\u05E6\u05DC': 'shade',
 };
 
-const HEBREW_MONTHS = ['ינואר','פברואר','מרץ','אפריל','מאי','יוני','יולי','אוגוסט','ספטמבר','אוקטובר','נובמבר','דצמבר'];
-
-function irrigationBadgeText(plant: GardenPlant): string {
-  const activeDays = (plant.irrigation_days ?? []).filter(d => d >= 0 && d <= 6);
-  const times      = plant.irrigation_times ?? [];
-  const liters: (number | null)[] | null = plant.irrigation_liters ?? null;
-
-  // One format: time[·volume] pairs, then day letters.
-  // Volume appended only when recorded; null entries produce no dangling separator.
-  const timeStrs = times.map((t, i) => {
-    const norm = String(t).slice(0, 5);
-    const l    = liters?.[i] ?? null;
-    return l !== null ? `${norm}·${l}ל` : norm;
-  });
-  const days    = activeDays.map(d => DAY_LETTERS_HE[d]).join(',');
-  const subtitle = [timeStrs.join(', '), days].filter(Boolean).join(' · ');
-
-  return `💧⏱️ השקיה אוטומטית${subtitle ? ` · ${subtitle}` : ''}`;
+function normaliseSunExposure(v: string | null | undefined): string {
+  if (!v) return '';
+  return SUN_EXPOSURE_LEGACY[v] ?? v;
 }
 
-function formatHebrewDate(iso: string): string {
-  const d = new Date(iso);
-  return `${d.getDate()} ב${HEBREW_MONTHS[d.getMonth()]} ${d.getFullYear()}`;
+function formatDate(iso: string, locale: string): string {
+  return new Intl.DateTimeFormat(locale, { day: 'numeric', month: 'long', year: 'numeric' }).format(new Date(iso));
 }
 
 function daysSince(iso: string | null | undefined): number | null {
@@ -90,29 +71,38 @@ interface Props {
 }
 
 export function PlantPassportModal({ plant, tracker, gardenName, gardenId, onClose }: Props) {
+  const { t, i18n } = useTranslation('garden');
+  const isHe = i18n.language === 'he';
+  const dir = isHe ? 'rtl' : 'ltr';
+  const locale = isHe ? 'he-IL' : 'en-US';
+  const headingFont = isHe ? FRANK : DM_SANS;
+
   const { patchGardenPlant, removePlant } = useGardenStore();
   const { getPlantTimeline, logWater, logFertilize, addNote, loadTrackers } = useTrackerStore();
   const { session } = useAuthStore();
   const { show: showToast } = useToastStore();
   const { open: openChupChu } = useChupChuPanelStore();
 
-  const [timeline,        setTimeline]        = useState<TimelineEntry[]>([]);
-  const [loadingTimeline, setLoadingTimeline]  = useState(true);
-  const [tasks,           setTasks]            = useState<TaskRow[]>([]);
-  const [loadingTasks,    setLoadingTasks]     = useState(true);
-  const [busyAction,      setBusyAction]       = useState<string | null>(null);
-  const [showEdit,        setShowEdit]         = useState(false);
-  const [showNoteInput,   setShowNoteInput]    = useState(false);
-  const [noteText,        setNoteText]         = useState('');
-  const [showEndOfSeason, setShowEndOfSeason]  = useState(false);
-  const [confirmDelete,   setConfirmDelete]    = useState(false);
+  const [timeline,         setTimeline]         = useState<TimelineEntry[]>([]);
+  const [loadingTimeline,  setLoadingTimeline]  = useState(true);
+  const [tasks,            setTasks]            = useState<TaskRow[]>([]);
+  const [loadingTasks,     setLoadingTasks]     = useState(true);
+  const [busyAction,       setBusyAction]       = useState<string | null>(null);
+  const [showEdit,         setShowEdit]         = useState(false);
+  const [showNoteInput,    setShowNoteInput]    = useState(false);
+  const [noteText,         setNoteText]         = useState('');
+  const [showEndOfSeason,  setShowEndOfSeason]  = useState(false);
+  const [confirmDelete,    setConfirmDelete]    = useState(false);
   const [showTrackerModal, setShowTrackerModal] = useState(false);
-  const [photoUploadOpen, setPhotoUploadOpen]  = useState(false);
-  const [analysisResult,  setAnalysisResult]   = useState<CheckinResult | null>(null);
+  const [photoUploadOpen,  setPhotoUploadOpen]  = useState(false);
+  const [analysisResult,   setAnalysisResult]   = useState<CheckinResult | null>(null);
 
   const isArchived = !!plant.archived_at;
   const health     = tracker?.latest_checkin?.ai_analysis ?? null;
   const healthStyle = health ? (HEALTH_STYLE[health.health] ?? HEALTH_STYLE.good) : null;
+
+  // Display name: prefer English when UI is English and English name exists.
+  const displayName = !isHe && plant.common_name_en ? plant.common_name_en : plant.common_name_he;
 
   async function refreshTimeline() {
     setLoadingTimeline(true);
@@ -142,7 +132,7 @@ export function PlantPassportModal({ plant, tracker, gardenName, gardenId, onClo
           `/api/tasks/range?from=${from}&to=${to}&include_archived=true`,
           session.access_token
         );
-        setTasks((all ?? []).filter(t => t.garden_plants_id === plant.id));
+        setTasks((all ?? []).filter(tr => tr.garden_plants_id === plant.id));
       } catch {
         // non-fatal
       } finally {
@@ -151,14 +141,12 @@ export function PlantPassportModal({ plant, tracker, gardenName, gardenId, onClo
     })();
   }, [plant.id, session?.access_token]);
 
-  const wateringCount = tracker?.watering_count ?? timeline.filter(t => t.entry_type === 'watering').length;
-  const photoCount     = timeline.filter(t => t.entry_type === 'photo').length;
+  const wateringCount = tracker?.watering_count ?? timeline.filter(e => e.entry_type === 'watering').length;
+  const photoCount     = timeline.filter(e => e.entry_type === 'photo').length;
   const daysInGarden   = daysSince(plant.added_at) ?? 0;
-  // Prefer the API-resolved field (covers both manual and scheduled runs).
-  // Fall back to the legacy chain for un-redeployed API versions.
   const lastWatered = plant.last_watering?.at
     ?? tracker?.last_watered_at
-    ?? timeline.find(t => t.entry_type === 'watering')?.created_at
+    ?? timeline.find(e => e.entry_type === 'watering')?.created_at
     ?? null;
   const lastWateredSource = plant.last_watering?.source ?? null;
 
@@ -167,7 +155,7 @@ export function PlantPassportModal({ plant, tracker, gardenName, gardenId, onClo
     try {
       await fn();
     } catch (err: any) {
-      showToast(err.message || 'משהו השתבש', 'error');
+      showToast(err.message || t('passport.errorToast'), 'error');
     } finally {
       setBusyAction(null);
     }
@@ -176,7 +164,7 @@ export function PlantPassportModal({ plant, tracker, gardenName, gardenId, onClo
   async function handleWater() {
     await withBusy('water', async () => {
       await logWater(plant.id, tracker?.id ?? null);
-      showToast('נרשמה השקיה 💧', 'info');
+      showToast(t('passport.waterToast'), 'info');
       refreshTimeline();
     });
   }
@@ -184,7 +172,7 @@ export function PlantPassportModal({ plant, tracker, gardenName, gardenId, onClo
   async function handleFertilize() {
     await withBusy('fertilize', async () => {
       await logFertilize(plant.id, tracker?.id ?? null);
-      showToast('נרשם דישון 🌿', 'info');
+      showToast(t('passport.fertilizeToast'), 'info');
       refreshTimeline();
     });
   }
@@ -195,7 +183,7 @@ export function PlantPassportModal({ plant, tracker, gardenName, gardenId, onClo
       await addNote(plant.id, noteText.trim(), tracker?.id ?? null);
       setNoteText('');
       setShowNoteInput(false);
-      showToast('ההערה נשמרה 📝', 'info');
+      showToast(t('passport.noteToast'), 'info');
       refreshTimeline();
     });
   }
@@ -203,21 +191,21 @@ export function PlantPassportModal({ plant, tracker, gardenName, gardenId, onClo
   async function handleArchive() {
     await withBusy('archive', async () => {
       await patchGardenPlant(plant.id, gardenId, { archivedAt: new Date().toISOString() });
-      showToast('הצמח הועבר לעונות קודמות 🍂', 'info');
+      showToast(t('passport.archiveToast'), 'info');
     });
   }
 
   async function handleRestore() {
     await withBusy('restore', async () => {
       await patchGardenPlant(plant.id, gardenId, { archivedAt: null });
-      showToast('הצמח שוחזר 🌱', 'info');
+      showToast(t('passport.restoreToast'), 'info');
     });
   }
 
   async function handleDelete() {
     await withBusy('delete', async () => {
       await removePlant(gardenId, plant.id);
-      showToast('הצמח נמחק', 'info');
+      showToast(t('passport.deleteToast'), 'info');
       onClose();
     });
   }
@@ -225,21 +213,21 @@ export function PlantPassportModal({ plant, tracker, gardenName, gardenId, onClo
   async function toggleTask(task: TaskRow) {
     if (!session?.access_token) return;
     const newStatus = task.status === 'completed' ? 'pending' : 'completed';
-    setTasks(prev => prev.map(t => t.id === task.id ? { ...t, status: newStatus } : t));
+    setTasks(prev => prev.map(tr => tr.id === task.id ? { ...tr, status: newStatus } : tr));
     try {
       await api.patch(`/api/tasks/${task.id}`, { status: newStatus }, session.access_token);
     } catch {
-      setTasks(prev => prev.map(t => t.id === task.id ? { ...t, status: task.status } : t));
+      setTasks(prev => prev.map(tr => tr.id === task.id ? { ...tr, status: task.status } : tr));
     }
   }
 
   async function deleteTask(taskId: string) {
     if (!session?.access_token) return;
-    setTasks(prev => prev.filter(t => t.id !== taskId));
+    setTasks(prev => prev.filter(tr => tr.id !== taskId));
     try {
       await api.del(`/api/tasks/${taskId}`, session.access_token);
     } catch {
-      // best-effort — a stale row reappearing on next load is an acceptable failure mode
+      // best-effort
     }
   }
 
@@ -254,48 +242,59 @@ export function PlantPassportModal({ plant, tracker, gardenName, gardenId, onClo
     </div>
   );
 
+  // Build detail chips with translated labels
   const detailChips: React.ReactNode[] = [];
-  detailChips.push(chip('סוג גידול', locationLabel(plant.location_type), LOCATION_EMOJI(plant.location_type)));
-  if (plant.location_description) detailChips.push(chip('מיקום', plant.location_description));
-  if (plant.sun_exposure) detailChips.push(chip('חשיפה לשמש', plant.sun_exposure, '☀️'));
+  detailChips.push(chip(t('passport.locationType'), locationLabel(plant.location_type, t), LOCATION_EMOJI(plant.location_type)));
+  if (plant.location_description) detailChips.push(chip(t('passport.locationPlace'), plant.location_description));
+  if (plant.sun_exposure) {
+    const sunKey = normaliseSunExposure(plant.sun_exposure);
+    detailChips.push(chip(t('passport.sunExposure'), t(`sunExposure.${sunKey}`, { defaultValue: plant.sun_exposure }), '☀️'));
+  }
   const lastWateredLabel = lastWatered
-    ? `${formatHebrewDate(lastWatered)}${lastWateredSource === 'scheduled' ? ' (לפי לוח)' : ''}`
-    : 'טרם הושקה';
-  detailChips.push(chip('השקיה אחרונה', lastWateredLabel, '💧'));
-  if (plant.companions) detailChips.push(chip('צמחים שכנים', plant.companions));
-  if (plant.soil) detailChips.push(chip('קרקע', plant.soil));
-  if (plant.plant_type) detailChips.push(chip('סוג צמח', plant.plant_type, PLANT_TYPE_EMOJI[plant.plant_type]));
+    ? `${formatDate(lastWatered, locale)}${lastWateredSource === 'scheduled' ? ' ' + t('passport.scheduledSuffix') : ''}`
+    : t('passport.notWateredYet');
+  detailChips.push(chip(t('passport.lastWatered'), lastWateredLabel, '💧'));
+  if (plant.companions) detailChips.push(chip(t('passport.companions'), plant.companions));
+  if (plant.soil) detailChips.push(chip(t('passport.soil'), plant.soil));
+  if (plant.plant_type) {
+    detailChips.push(chip(
+      t('passport.plantType'),
+      t(`plantType.${plant.plant_type}`, { defaultValue: plant.plant_type }),
+      PLANT_TYPE_EMOJI[plant.plant_type]
+    ));
+  }
 
   return (
     <div
       role="dialog"
       aria-modal="true"
-      style={{ position: 'fixed', inset: 0, zIndex: 220, background: NIGHT, overflowY: 'auto', direction: 'rtl' }}
+      dir={dir}
+      style={{ position: 'fixed', inset: 0, zIndex: 220, background: NIGHT, overflowY: 'auto' }}
     >
       <div style={{ maxWidth: '520px', margin: '0 auto', padding: '16px 16px 60px' }}>
 
         {/* Top bar */}
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '6px' }}>
-          <button onClick={onClose} style={iconBtnStyle} aria-label="סגור">✕</button>
+          <button onClick={onClose} style={iconBtnStyle} aria-label="Close">✕</button>
           <span style={{ fontFamily: DM_SANS, fontSize: '12px', color: `${TEXT_MID}82` }}>{gardenName}</span>
           {isArchived ? (
-            <button onClick={handleRestore} style={iconBtnStyle} aria-label="שחזר" disabled={busyAction === 'restore'}>↺</button>
+            <button onClick={handleRestore} style={iconBtnStyle} aria-label="Restore" disabled={busyAction === 'restore'}>↺</button>
           ) : (
-            <button onClick={() => setShowEndOfSeason(true)} style={iconBtnStyle} aria-label="סיום עונה / מחק">🗑</button>
+            <button onClick={() => setShowEndOfSeason(true)} style={iconBtnStyle} aria-label="End season / Delete">🗑</button>
           )}
         </div>
 
         {/* Hero */}
         <div style={{ textAlign: 'center', padding: '12px 0 20px' }}>
           <div style={{ fontSize: '56px', lineHeight: 1 }}>🌱</div>
-          <h1 style={{ fontFamily: FRANK, fontSize: '22px', fontWeight: 700, color: TEXT_MID, margin: '10px 0 2px' }}>
-            {plant.common_name_he}
+          <h1 style={{ fontFamily: headingFont, fontSize: '22px', fontWeight: 700, color: TEXT_MID, margin: '10px 0 2px' }}>
+            {displayName}
           </h1>
           {plant.variety && (
             <p style={{ fontFamily: DM_SANS, fontSize: '13px', color: `${TEXT_MID}88`, margin: '0 0 4px' }}>{plant.variety}</p>
           )}
-          <p style={{ fontFamily: DM_SANS, fontSize: '12px', color: `${TEXT_MID}78`, margin: '0 0 10px' }}>
-            {locationLabel(plant.location_type)}{plant.location_description ? ` · ${plant.location_description}` : ''}
+          <p style={{ fontFamily: DM_SANS, fontSize: '12px', color: `${TEXT_MID}78`, margin: '0 0 10px', direction: 'ltr' }}>
+            {locationLabel(plant.location_type, t)}{plant.location_description ? ` · ${plant.location_description}` : ''}
           </p>
           <div style={{ display: 'flex', justifyContent: 'center', gap: '8px', flexWrap: 'wrap' }}>
             {healthStyle && (
@@ -307,23 +306,12 @@ export function PlantPassportModal({ plant, tracker, gardenName, gardenId, onClo
               </span>
             )}
             {plant.auto_irrigation && (
-              <button
-                type="button"
-                onClick={() => { if (!isArchived) setShowEdit(true); }}
-                style={{
-                  fontFamily: DM_SANS, fontSize: '11px', fontWeight: 600, padding: '4px 10px', borderRadius: '50px',
-                  background: '#DCEEFB', color: '#1565C0', border: 'none',
-                  cursor: isArchived ? 'default' : 'pointer',
-                  maxWidth: '260px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
-                }}
-              >
-                {irrigationBadgeText(plant)}
-              </button>
+              <IrrigationBadge plant={plant} onEditClick={() => { if (!isArchived) setShowEdit(true); }} isArchived={isArchived} tGarden={t} isHe={isHe} />
             )}
           </div>
         </div>
 
-        {/* Latest-report summary — shown at top when a report exists */}
+        {/* Latest-report summary */}
         {tracker && health && (
           <div style={{ padding: '12px 14px', marginBottom: '14px', borderRadius: '12px', background: NIGHT_CARD, border: '1px solid rgba(0,229,195,0.24)' }}>
             <p style={{ fontFamily: DM_SANS, fontSize: '13px', color: TEXT_MID, margin: '0 0 4px', fontWeight: 600 }}>
@@ -331,7 +319,7 @@ export function PlantPassportModal({ plant, tracker, gardenName, gardenId, onClo
             </p>
             {tracker.latest_checkin?.checkin_date && (
               <p style={{ fontFamily: DM_SANS, fontSize: '11px', color: `${TEXT_MID}74`, margin: '0 0 4px' }}>
-                {formatHebrewDate(tracker.latest_checkin.checkin_date)}
+                {formatDate(tracker.latest_checkin.checkin_date, locale)}
               </p>
             )}
             <p style={{
@@ -351,24 +339,24 @@ export function PlantPassportModal({ plant, tracker, gardenName, gardenId, onClo
           }}>
             <span>🍂</span>
             <span style={{ fontFamily: DM_SANS, fontSize: '12.5px', color: '#C8A040' }}>
-              העונה הסתיימה ב{formatHebrewDate(plant.archived_at)}
+              {t('passport.endedSeason', { date: formatDate(plant.archived_at, locale) })}
             </span>
           </div>
         )}
 
         {/* Chupchu bar */}
         <button
-          onClick={() => openChupChu(`ספר לי על ה${plant.common_name_he} שלי`)}
+          onClick={() => openChupChu(t('passport.openChupChu', { name: plant.common_name_he }))}
           style={{
             display: 'flex', alignItems: 'center', gap: '10px', width: '100%',
             padding: '11px 14px', marginBottom: '14px', borderRadius: '12px',
             background: 'rgba(0,229,195,0.08)', border: '1px solid rgba(0,229,195,0.25)',
-            cursor: 'pointer', textAlign: 'right',
+            cursor: 'pointer', textAlign: isHe ? 'right' : 'left',
           }}
         >
           <span style={{ fontSize: '20px' }}>🤖</span>
           <span style={{ fontFamily: DM_SANS, fontSize: '13px', color: BIO_CYAN, flex: 1 }}>
-            שאל את צ'ופצ'ו על {plant.common_name_he}
+            {t('passport.askChupChu', { name: displayName })}
           </span>
           <span style={{ color: `${BIO_CYAN}80` }}>‹</span>
         </button>
@@ -376,15 +364,15 @@ export function PlantPassportModal({ plant, tracker, gardenName, gardenId, onClo
         {/* Quick actions */}
         {!isArchived && (
           <div style={{ display: 'flex', gap: '8px', marginBottom: '18px' }}>
-            <QuickAction emoji="💧" label="השקיתי" busy={busyAction === 'water'} onClick={handleWater} />
-            <QuickAction emoji="🌿" label="דישנתי" busy={busyAction === 'fertilize'} onClick={handleFertilize} />
+            <QuickAction emoji="💧" label={t('quickAction.water')} busy={busyAction === 'water'} onClick={handleWater} />
+            <QuickAction emoji="🌿" label={t('quickAction.fertilize')} busy={busyAction === 'fertilize'} onClick={handleFertilize} />
             <QuickAction
-              emoji="📸" label="צלם"
+              emoji="📸" label={t('quickAction.photo')}
               disabled={!tracker}
-              title={!tracker ? 'התחל מעקב כדי לצלם ולנתח' : undefined}
+              title={!tracker ? t('passport.needsTrackerToPhoto') : undefined}
               onClick={() => setPhotoUploadOpen(true)}
             />
-            <QuickAction emoji="📝" label="הערה" onClick={() => setShowNoteInput(v => !v)} />
+            <QuickAction emoji="📝" label={t('quickAction.note')} onClick={() => setShowNoteInput(v => !v)} />
           </div>
         )}
 
@@ -393,26 +381,28 @@ export function PlantPassportModal({ plant, tracker, gardenName, gardenId, onClo
             <input
               value={noteText}
               onChange={e => setNoteText(e.target.value)}
-              placeholder="מה קורה עם הצמח?"
+              placeholder={t('passport.notePlaceholder')}
               style={{
                 flex: 1, boxSizing: 'border-box', backgroundColor: NIGHT_CARD, border: '1px solid rgba(0,229,195,0.2)',
-                borderRadius: '8px', padding: '10px 12px', fontFamily: DM_SANS, fontSize: '13px', color: TEXT_MID, direction: 'rtl',
+                borderRadius: '8px', padding: '10px 12px', fontFamily: DM_SANS, fontSize: '13px', color: TEXT_MID,
+                direction: dir,
               }}
             />
             <button
               onClick={handleSaveNote}
               disabled={busyAction === 'note'}
-              style={{ padding: '0 16px', borderRadius: '8px', border: 'none', background: BIO_CYAN, color: '#050d0a', fontFamily: FRANK, fontWeight: 700, cursor: 'pointer' }}
+              style={{ padding: '0 16px', borderRadius: '8px', border: 'none', background: BIO_CYAN, color: '#050d0a', fontFamily: headingFont, fontWeight: 700, cursor: 'pointer' }}
             >
-              שמור
+              {t('passport.saveNote')}
             </button>
           </div>
         )}
 
         {/* Details grid */}
         <SectionHeader
-          title="פרטי הצמח"
-          action={!isArchived ? { label: 'עריכה ✎', onClick: () => setShowEdit(true) } : undefined}
+          title={t('passport.plantDetails')}
+          action={!isArchived ? { label: t('passport.editAction'), onClick: () => setShowEdit(true) } : undefined}
+          headingFont={headingFont}
         />
         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px', marginBottom: '20px' }}>
           {detailChips}
@@ -420,33 +410,33 @@ export function PlantPassportModal({ plant, tracker, gardenName, gardenId, onClo
 
         {/* Stats row */}
         <div style={{ display: 'flex', justifyContent: 'space-around', marginBottom: '22px', padding: '14px 0', borderTop: '1px solid rgba(0,229,195,0.16)', borderBottom: '1px solid rgba(0,229,195,0.16)' }}>
-          <Stat value={daysInGarden} label="ימים בגינה" />
-          <Stat value={wateringCount} label="השקיות" />
-          <Stat value={photoCount} label="תמונות" />
+          <Stat value={daysInGarden} label={t('passport.daysInGarden')} headingFont={headingFont} />
+          <Stat value={wateringCount} label={t('passport.wateringCount')} headingFont={headingFont} />
+          <Stat value={photoCount} label={t('passport.photoCount')} headingFont={headingFont} />
         </div>
 
-        {/* Tracker section — only non-summary states (summary lives at top) */}
+        {/* Tracker section */}
         {(!tracker && !isArchived) || (tracker && !health) ? (
           <>
-            <SectionHeader title="מעקב גידול" />
+            <SectionHeader title={t('passport.growthTracker')} headingFont={headingFont} />
             {tracker ? (
               <p style={{ fontFamily: DM_SANS, fontSize: '13px', color: `${TEXT_MID}82`, marginBottom: '20px' }}>
-                עדיין לא בוצע ניתוח. צלם תמונה לניתוח ראשון!
+                {t('passport.noAnalysis')}
               </p>
             ) : (
               <div style={{
                 padding: '18px', marginBottom: '20px', borderRadius: '12px', textAlign: 'center',
                 background: 'rgba(74,156,104,0.1)', border: '1px solid rgba(74,156,104,0.3)',
               }}>
-                <p style={{ fontFamily: FRANK, fontSize: '15px', color: '#4A9C68', margin: '0 0 4px' }}>התחל מעקב חכם</p>
+                <p style={{ fontFamily: headingFont, fontSize: '15px', color: '#4A9C68', margin: '0 0 4px' }}>{t('passport.smartTracker')}</p>
                 <p style={{ fontFamily: DM_SANS, fontSize: '12.5px', color: `${TEXT_MID}88`, margin: '0 0 12px' }}>
-                  קבל ניתוח AI, המלצות ביודינמיות ותזכורות מותאמות
+                  {t('passport.smartTrackerDesc')}
                 </p>
                 <button
                   onClick={() => setShowTrackerModal(true)}
-                  style={{ padding: '9px 22px', borderRadius: '8px', border: 'none', background: '#4A9C68', color: '#fff', fontFamily: FRANK, fontWeight: 700, cursor: 'pointer' }}
+                  style={{ padding: '9px 22px', borderRadius: '8px', border: 'none', background: '#4A9C68', color: '#fff', fontFamily: headingFont, fontWeight: 700, cursor: 'pointer' }}
                 >
-                  התחל
+                  {t('passport.start')}
                 </button>
               </div>
             )}
@@ -454,21 +444,16 @@ export function PlantPassportModal({ plant, tracker, gardenName, gardenId, onClo
         ) : null}
 
         {/* Tasks section */}
-        <SectionHeader title={isArchived ? 'משימות העונה' : 'משימות קרובות'} />
+        <SectionHeader title={isArchived ? t('passport.pastSeasonTasks') : t('passport.upcomingTasks')} headingFont={headingFont} />
         <div style={{ marginBottom: '20px' }}>
           {loadingTasks ? (
-            <p style={{ fontFamily: DM_SANS, fontSize: '12px', color: `${TEXT_MID}74` }}>טוען...</p>
+            <p style={{ fontFamily: DM_SANS, fontSize: '12px', color: `${TEXT_MID}74` }}>{t('passport.loading')}</p>
           ) : tasks.length === 0 ? (
-            <p style={{ fontFamily: DM_SANS, fontSize: '12px', color: `${TEXT_MID}74` }}>אין משימות</p>
+            <p style={{ fontFamily: DM_SANS, fontSize: '12px', color: `${TEXT_MID}74` }}>{t('passport.noTasks')}</p>
           ) : (
             tasks.slice(0, 5).map(task => (
               <div key={task.id} style={{ display: 'flex', alignItems: 'center', gap: '10px', padding: '8px 4px' }}>
-                <input
-                  type="checkbox"
-                  checked={task.status === 'completed'}
-                  disabled={isArchived}
-                  onChange={() => toggleTask(task)}
-                />
+                <input type="checkbox" checked={task.status === 'completed'} disabled={isArchived} onChange={() => toggleTask(task)} />
                 <span style={{
                   flex: 1, fontFamily: DM_SANS, fontSize: '13px',
                   color: task.status === 'completed' ? `${TEXT_MID}66` : TEXT_MID,
@@ -485,37 +470,39 @@ export function PlantPassportModal({ plant, tracker, gardenName, gardenId, onClo
           )}
           {tasks.length > 5 && (
             <p style={{ fontFamily: DM_SANS, fontSize: '11px', color: `${TEXT_MID}74`, marginTop: '4px' }}>
-              ועוד {tasks.length - 5} משימות...
+              {t('passport.moreTasks', { count: tasks.length - 5 })}
             </p>
           )}
         </div>
 
         {/* Timeline */}
-        <SectionHeader title="כל ההיסטוריה" />
+        <SectionHeader title={t('passport.allHistory')} headingFont={headingFont} />
         <div>
           {loadingTimeline ? (
-            <p style={{ fontFamily: DM_SANS, fontSize: '12px', color: `${TEXT_MID}74` }}>טוען...</p>
+            <p style={{ fontFamily: DM_SANS, fontSize: '12px', color: `${TEXT_MID}74` }}>{t('passport.loading')}</p>
           ) : timeline.length === 0 ? (
-            <p style={{ fontFamily: DM_SANS, fontSize: '12px', color: `${TEXT_MID}74` }}>אין עדיין היסטוריה</p>
+            <p style={{ fontFamily: DM_SANS, fontSize: '12px', color: `${TEXT_MID}74` }}>{t('passport.noHistory')}</p>
           ) : (
             timeline.map((entry, i) => {
-              const meta = ENTRY_META[entry.entry_type] ?? ENTRY_META.note;
+              const color = ENTRY_COLOR[entry.entry_type] ?? '#C8A951';
+              const emoji = ENTRY_EMOJI[entry.entry_type] ?? '📝';
+              const label = t(`entryType.${entry.entry_type}`, { defaultValue: entry.entry_type });
               return (
                 <div key={entry.id} style={{ display: 'flex', gap: '10px', paddingBottom: i === timeline.length - 1 ? 0 : '14px' }}>
                   <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', width: '10px' }}>
-                    <div style={{ width: '10px', height: '10px', borderRadius: '50%', background: meta.color, flexShrink: 0 }} />
+                    <div style={{ width: '10px', height: '10px', borderRadius: '50%', background: color, flexShrink: 0 }} />
                     {i !== timeline.length - 1 && <div style={{ flex: 1, width: '2px', background: 'rgba(176,207,191,0.25)', marginTop: '2px' }} />}
                   </div>
                   <div style={{ flex: 1, paddingBottom: '4px' }}>
                     <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '2px' }}>
                       <span style={{
                         fontFamily: DM_SANS, fontSize: '10px', fontWeight: 600, padding: '2px 8px', borderRadius: '50px',
-                        background: `${meta.color}22`, color: meta.color,
+                        background: `${color}22`, color,
                       }}>
-                        {meta.emoji} {meta.label}
+                        {emoji} {label}
                       </span>
-                      <span style={{ fontFamily: DM_SANS, fontSize: '10.5px', color: `${TEXT_MID}74` }}>
-                        {formatHebrewDate(entry.created_at)}
+                      <span style={{ fontFamily: DM_SANS, fontSize: '10.5px', color: `${TEXT_MID}74`, direction: 'ltr' }}>
+                        {formatDate(entry.created_at, locale)}
                       </span>
                     </div>
                     {entry.note && (
@@ -537,7 +524,7 @@ export function PlantPassportModal({ plant, tracker, gardenName, gardenId, onClo
             onClick={() => setConfirmDelete(true)}
             style={{ marginTop: '24px', width: '100%', padding: '11px', borderRadius: '8px', border: '1px solid rgba(220,80,80,0.35)', background: 'transparent', color: '#e06060', fontFamily: DM_SANS, fontSize: '13px', cursor: 'pointer' }}
           >
-            מחק לצמיתות
+            {t('passport.deleteForever')}
           </button>
         )}
       </div>
@@ -557,6 +544,7 @@ export function PlantPassportModal({ plant, tracker, gardenName, gardenId, onClo
         <PhotoUpload
           trackerId={tracker.id}
           plantNameHe={plant.common_name_he}
+          plantNameEn={plant.common_name_en ?? undefined}
           onClose={() => setPhotoUploadOpen(false)}
           onComplete={(result) => { setPhotoUploadOpen(false); setAnalysisResult(result); refreshTimeline(); }}
         />
@@ -577,41 +565,38 @@ export function PlantPassportModal({ plant, tracker, gardenName, gardenId, onClo
 
       {showEndOfSeason && (
         <div
-          role="dialog"
-          aria-modal="true"
+          role="dialog" aria-modal="true"
+          dir={dir}
           style={{ position: 'fixed', inset: 0, zIndex: 280, display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'rgba(0,0,0,0.65)', backdropFilter: 'blur(4px)', padding: '16px' }}
         >
-          <div style={{ background: NIGHT_CARD, border: '1px solid rgba(0,229,195,0.18)', borderRadius: '14px', padding: '22px', width: '100%', maxWidth: '340px', direction: 'rtl' }}>
-            <p style={{ fontFamily: FRANK, fontSize: '15px', fontWeight: 700, color: TEXT_MID, margin: '0 0 16px', textAlign: 'center' }}>
-              מה לעשות עם {plant.common_name_he}?
+          <div style={{ background: NIGHT_CARD, border: '1px solid rgba(0,229,195,0.18)', borderRadius: '14px', padding: '22px', width: '100%', maxWidth: '340px' }}>
+            <p style={{ fontFamily: headingFont, fontSize: '15px', fontWeight: 700, color: TEXT_MID, margin: '0 0 16px', textAlign: 'center' }}>
+              {t('passport.endOfSeasonTitle', { name: displayName })}
             </p>
 
-            {/* Archive option — amber/warm, non-destructive */}
             <button
               onClick={() => { setShowEndOfSeason(false); handleArchive(); }}
               disabled={!!busyAction}
-              style={{ width: '100%', textAlign: 'right', padding: '14px', borderRadius: '10px', border: '1px solid rgba(200,169,81,0.4)', background: 'rgba(200,169,81,0.08)', cursor: 'pointer', marginBottom: '10px', display: 'block' }}
+              style={{ width: '100%', textAlign: isHe ? 'right' : 'left', padding: '14px', borderRadius: '10px', border: '1px solid rgba(200,169,81,0.4)', background: 'rgba(200,169,81,0.08)', cursor: 'pointer', marginBottom: '10px', display: 'block' }}
             >
-              <div style={{ fontFamily: DM_SANS, fontWeight: 700, fontSize: '14px', color: '#C8A951', marginBottom: '4px' }}>סיום עונה 🍂</div>
-              <div style={{ fontFamily: DM_SANS, fontSize: '12px', color: 'rgba(200,169,81,0.8)', lineHeight: 1.5 }}>הצמח יעבור לארכיון — התמונות, הדוחות וההיסטוריה יישמרו</div>
+              <div style={{ fontFamily: DM_SANS, fontWeight: 700, fontSize: '14px', color: '#C8A951', marginBottom: '4px' }}>{t('passport.archive')}</div>
+              <div style={{ fontFamily: DM_SANS, fontSize: '12px', color: 'rgba(200,169,81,0.8)', lineHeight: 1.5 }}>{t('passport.archiveDesc')}</div>
             </button>
 
-            {/* Delete option — red, destructive, visually subordinate */}
             <button
               onClick={() => { setShowEndOfSeason(false); handleDelete(); }}
               disabled={!!busyAction}
-              style={{ width: '100%', textAlign: 'right', padding: '14px', borderRadius: '10px', border: '1px solid rgba(220,80,80,0.35)', background: 'rgba(220,80,80,0.06)', cursor: 'pointer', marginBottom: '16px', display: 'block' }}
+              style={{ width: '100%', textAlign: isHe ? 'right' : 'left', padding: '14px', borderRadius: '10px', border: '1px solid rgba(220,80,80,0.35)', background: 'rgba(220,80,80,0.06)', cursor: 'pointer', marginBottom: '16px', display: 'block' }}
             >
-              <div style={{ fontFamily: DM_SANS, fontWeight: 700, fontSize: '14px', color: '#e06060', marginBottom: '4px' }}>מחיקה לצמיתות</div>
-              <div style={{ fontFamily: DM_SANS, fontSize: '12px', color: 'rgba(220,80,80,0.7)', lineHeight: 1.5 }}>כל הנתונים יימחקו ללא אפשרות שחזור</div>
+              <div style={{ fontFamily: DM_SANS, fontWeight: 700, fontSize: '14px', color: '#e06060', marginBottom: '4px' }}>{t('passport.deleteForever')}</div>
+              <div style={{ fontFamily: DM_SANS, fontSize: '12px', color: 'rgba(220,80,80,0.7)', lineHeight: 1.5 }}>{t('passport.deleteForeverDesc')}</div>
             </button>
 
-            {/* Cancel — easy to hit, visually dominant relative to the red option */}
             <button
               onClick={() => setShowEndOfSeason(false)}
               style={{ width: '100%', padding: '10px', borderRadius: '8px', border: '1px solid rgba(0,229,195,0.15)', background: 'transparent', color: `${TEXT_MID}99`, fontFamily: DM_SANS, fontSize: '13px', cursor: 'pointer' }}
             >
-              ביטול
+              {t('cancel', { ns: 'garden', defaultValue: 'ביטול' })}
             </button>
           </div>
         </div>
@@ -619,23 +604,92 @@ export function PlantPassportModal({ plant, tracker, gardenName, gardenId, onClo
 
       {confirmDelete && (
         <ConfirmDialog
-          title="למחוק לצמיתות?"
-          message={`פעולה זו לא ניתנת לביטול. כל ההיסטוריה של "${plant.common_name_he}" תימחק.`}
-          confirmLabel="מחק לצמיתות"
+          title={t('passport.confirmDeleteTitle')}
+          message={t('passport.confirmDeleteMessage', { name: displayName })}
+          confirmLabel={t('passport.confirmDeleteButton')}
           danger
           busy={busyAction === 'delete'}
           onConfirm={handleDelete}
           onCancel={() => setConfirmDelete(false)}
+          isHe={isHe}
+          headingFont={headingFont}
         />
       )}
     </div>
   );
 }
 
-// Resolves a Supabase Storage path (from the 'tracker-photos' bucket) into a
-// signed URL, mirroring CheckinPhoto in tracker/CheckinHistory.tsx. Falls back
-// to a placeholder icon while loading, or if the path is legacy/unresolvable
-// (e.g. the old mobile-only local-file-path timeline entries).
+// ── Entry type maps ───────────────────────────────────────────────────────────
+const ENTRY_COLOR: Record<string, string> = {
+  watering:         '#1D9E75',
+  fertilizing:      '#4A9A50',
+  note:             '#C8A951',
+  photo:            '#378ADD',
+  chupchu:          '#7F77DD',
+  chupchu_analysis: '#7F77DD',
+  tracker_report:   '#C8A951',
+  task:             '#C8A951',
+};
+const ENTRY_EMOJI: Record<string, string> = {
+  watering:         '💧',
+  fertilizing:      '🌿',
+  note:             '📝',
+  photo:            '📸',
+  chupchu:          '🤖',
+  chupchu_analysis: '🤖',
+  tracker_report:   '📋',
+  task:             '✅',
+};
+
+// ── IrrigationBadge ───────────────────────────────────────────────────────────
+function IrrigationBadge({ plant, onEditClick, isArchived, tGarden, isHe }: {
+  plant: GardenPlant;
+  onEditClick: () => void;
+  isArchived: boolean;
+  tGarden: (key: string, opts?: any) => string;
+  isHe: boolean;
+}) {
+  const activeDays = (plant.irrigation_days ?? []).filter(d => d >= 0 && d <= 6);
+  const times      = plant.irrigation_times ?? [];
+  const liters     = plant.irrigation_liters ?? null;
+
+  // Build time·volume strings — wrapped in dir="ltr" for bidi safety
+  const timeNodes: React.ReactNode[] = times.map((t, i) => {
+    const norm = String(t).slice(0, 5);
+    const l    = liters?.[i] ?? null;
+    const text = l !== null ? `${norm}·${l}L` : norm;
+    return <bdi key={i} dir="ltr">{text}</bdi>;
+  });
+
+  const dayLetters = activeDays.map(d => DAY_LETTERS_HE[d]).join(',');
+
+  return (
+    <button
+      type="button"
+      onClick={() => { if (!isArchived) onEditClick(); }}
+      style={{
+        fontFamily: DM_SANS, fontSize: '11px', fontWeight: 600, padding: '4px 10px', borderRadius: '50px',
+        background: '#DCEEFB', color: '#1565C0', border: 'none',
+        cursor: isArchived ? 'default' : 'pointer',
+        maxWidth: '260px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
+        display: 'inline-flex', alignItems: 'center', gap: '4px',
+      }}
+    >
+      <span>{tGarden('passport.autoIrrigation')}</span>
+      {timeNodes.length > 0 && (
+        <>
+          <span> · </span>
+          {timeNodes.reduce<React.ReactNode[]>((acc, node, i) => (
+            i === 0 ? [node] : [...acc, <span key={`sep${i}`}>, </span>, node]
+          ), [])}
+        </>
+      )}
+      {dayLetters && <span dir="ltr"> · {dayLetters}</span>}
+    </button>
+  );
+}
+
+// ── Supabase-signed photo for timeline ────────────────────────────────────────
 function TimelinePhoto({ photoPath }: { photoPath: string }) {
   const [url, setUrl] = useState<string | null>(null);
   const [failed, setFailed] = useState(false);
@@ -655,20 +709,12 @@ function TimelinePhoto({ photoPath }: { photoPath: string }) {
     return () => { cancelled = true; };
   }, [photoPath]);
 
-  // Suppress broken placeholders for local mobile paths that can't be resolved.
   if (failed) return null;
-
   if (url) {
     return (
-      <img
-        src={url}
-        alt=""
-        style={{ width: '80px', height: '80px', borderRadius: '8px', objectFit: 'cover', marginTop: '4px', display: 'block' }}
-      />
+      <img src={url} alt="" style={{ width: '80px', height: '80px', borderRadius: '8px', objectFit: 'cover', marginTop: '4px', display: 'block' }} />
     );
   }
-
-  // Still loading — show a subtle spinner placeholder.
   return (
     <div style={{ width: '80px', height: '80px', borderRadius: '8px', background: 'rgba(55,138,221,0.12)', border: '1px solid rgba(55,138,221,0.3)', display: 'flex', alignItems: 'center', justifyContent: 'center', marginTop: '4px' }}>
       <span style={{ fontSize: '22px' }}>…</span>
@@ -708,10 +754,10 @@ function QuickAction({ emoji, label, onClick, busy, disabled, title }: {
   );
 }
 
-function SectionHeader({ title, action }: { title: string; action?: { label: string; onClick: () => void } }) {
+function SectionHeader({ title, action, headingFont }: { title: string; action?: { label: string; onClick: () => void }; headingFont: string }) {
   return (
     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '10px' }}>
-      <h3 style={{ fontFamily: FRANK, fontSize: '14px', color: TEXT_MID, margin: 0 }}>{title}</h3>
+      <h3 style={{ fontFamily: headingFont, fontSize: '14px', color: TEXT_MID, margin: 0 }}>{title}</h3>
       {action && (
         <button onClick={action.onClick} style={{ background: 'none', border: 'none', color: BIO_CYAN, fontFamily: DM_SANS, fontSize: '12px', cursor: 'pointer' }}>
           {action.label}
@@ -721,31 +767,34 @@ function SectionHeader({ title, action }: { title: string; action?: { label: str
   );
 }
 
-function Stat({ value, label }: { value: number; label: string }) {
+function Stat({ value, label, headingFont }: { value: number; label: string; headingFont: string }) {
   return (
     <div style={{ textAlign: 'center' }}>
-      <div style={{ fontFamily: FRANK, fontSize: '20px', fontWeight: 700, color: BIO_CYAN }}>{value}</div>
+      <div style={{ fontFamily: headingFont, fontSize: '20px', fontWeight: 700, color: BIO_CYAN }}>{value}</div>
       <div style={{ fontFamily: DM_SANS, fontSize: '10.5px', color: `${TEXT_MID}82` }}>{label}</div>
     </div>
   );
 }
 
-function ConfirmDialog({ title, message, confirmLabel, onConfirm, onCancel, busy, danger }: {
-  title: string; message: string; confirmLabel: string; onConfirm: () => void; onCancel: () => void; busy?: boolean; danger?: boolean;
+function ConfirmDialog({ title, message, confirmLabel, onConfirm, onCancel, busy, danger, isHe, headingFont }: {
+  title: string; message: string; confirmLabel: string; onConfirm: () => void; onCancel: () => void;
+  busy?: boolean; danger?: boolean; isHe: boolean; headingFont: string;
 }) {
+  const { t } = useTranslation();
   return (
     <div
       role="dialog" aria-modal="true"
+      dir={isHe ? 'rtl' : 'ltr'}
       style={{ position: 'fixed', inset: 0, zIndex: 280, display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'rgba(0,0,0,0.65)', backdropFilter: 'blur(4px)', padding: '16px' }}
     >
-      <div style={{ background: NIGHT_CARD, border: '1px solid rgba(0,229,195,0.2)', borderRadius: '12px', padding: '22px', width: '100%', maxWidth: '340px', textAlign: 'center', direction: 'rtl' }}>
-        <p style={{ fontFamily: FRANK, fontSize: '16px', color: danger ? '#e06060' : BIO_CYAN, margin: '0 0 8px' }}>{title}</p>
+      <div style={{ background: NIGHT_CARD, border: '1px solid rgba(0,229,195,0.2)', borderRadius: '12px', padding: '22px', width: '100%', maxWidth: '340px', textAlign: 'center' }}>
+        <p style={{ fontFamily: headingFont, fontSize: '16px', color: danger ? '#e06060' : BIO_CYAN, margin: '0 0 8px' }}>{title}</p>
         <p style={{ fontFamily: DM_SANS, fontSize: '13px', color: `${TEXT_MID}93`, margin: '0 0 18px', lineHeight: 1.6 }}>{message}</p>
         <div style={{ display: 'flex', gap: '10px' }}>
           <button onClick={onCancel} disabled={busy} style={{ flex: 1, padding: '10px', borderRadius: '8px', border: '1px solid rgba(0,229,195,0.25)', background: 'transparent', color: `${TEXT_MID}93`, fontFamily: DM_SANS, fontSize: '13px', cursor: 'pointer' }}>
-            ביטול
+            {t('button.cancel')}
           </button>
-          <button onClick={onConfirm} disabled={busy} style={{ flex: 1, padding: '10px', borderRadius: '8px', border: 'none', background: danger ? '#e06060' : BIO_CYAN, color: danger ? '#fff' : '#050d0a', fontFamily: FRANK, fontWeight: 700, fontSize: '13px', cursor: 'pointer' }}>
+          <button onClick={onConfirm} disabled={busy} style={{ flex: 1, padding: '10px', borderRadius: '8px', border: 'none', background: danger ? '#e06060' : BIO_CYAN, color: danger ? '#fff' : '#050d0a', fontFamily: headingFont, fontWeight: 700, fontSize: '13px', cursor: 'pointer' }}>
             {busy ? '...' : confirmLabel}
           </button>
         </div>

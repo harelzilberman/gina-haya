@@ -18,12 +18,15 @@
     "button": "Cancel subscription",
     "confirm": "Are you sure? The subscription will be cancelled at the end of the current period.",
     "yes": "Yes, cancel",
-    "no": "No, keep it"
+    "no": "No, keep it",
+    "error": "Something went wrong. Please try again later."
   },
   "status": {
     "success": "🎉 Upgrade successful! Welcome to the {{name}} plan.",
     "cancelled": "No problem — you stayed on the {{name}} plan. You can upgrade whenever you want.",
-    "cancelledAt": "Your subscription will be cancelled on {{date}}. You can continue using it until then."
+    "cancelledAt": "Your subscription will be cancelled on {{date}}. You can continue using it until then.",
+    "polling": "Updating your subscription…",
+    "pollTimedOut": "Payment received — the update may take a moment. Refresh the page in a few seconds."
   },
   "grow": {
     "checkoutTitle": "Complete Purchase",
@@ -138,7 +141,7 @@
       "body": "You got a preview of the analysis. Want more?\nUpgrade to Gardener Pro for unlimited analyses, or buy a pack in the shop.",
       "dailyTitle": "Daily analysis limit reached 🔬",
       "dailyBody": "You've used today's free analyses. Your limit resets tomorrow morning.\nUpgrade to Gardener Pro for more analyses every day.",
-      "primaryLabel": "Upgrade to Gardener",
+      "primaryLabel": "Upgrade to Gardener Pro",
       "secondaryLabel": "Buy a pack"
     },
     "chupchu": {

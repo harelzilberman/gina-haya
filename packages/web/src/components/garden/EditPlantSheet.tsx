@@ -1,8 +1,10 @@
 import { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import type { GardenPlant } from '../../stores/gardenStore';
 import { useGardenStore } from '../../stores/gardenStore';
 import { useToastStore } from '../../stores/toastStore';
-import { LOCATION_TYPES, PlantingBase } from './PlantingBase';
+import { LOCATION_TYPES, locationLabel } from './PlantingBase';
+import { PlantingBase } from './PlantingBase';
 import { DAY_LETTERS_HE } from '../../constants/days';
 
 const NIGHT_CARD = '#111f18';
@@ -11,27 +13,33 @@ const TEXT_MID   = '#b0cfbf';
 const FRANK      = '"Frank Ruhl Libre", Georgia, serif';
 const DM_SANS    = "'DM Sans', 'Assistant', 'Heebo', sans-serif";
 
-const PLANT_TYPES = [
-  { value: 'annual',    labelHe: 'חד-שנתי' },
-  { value: 'perennial', labelHe: 'רב-שנתי' },
-  { value: 'tree',      labelHe: 'עץ' },
-  { value: 'shrub',     labelHe: 'שיח' },
-];
+const PLANT_TYPE_VALUES = ['annual', 'perennial', 'tree', 'shrub'] as const;
+const SUN_EXPOSURE_VALUES = ['full_sun', 'partial_shade', 'shade'] as const;
 
-const SUN_EXPOSURES = ['שמש מלאה', 'חצי צל', 'צל'];
+// Legacy Hebrew values stored in DB — map to canonical enum keys.
+const SUN_EXPOSURE_LEGACY: Record<string, string> = {
+  '\u05E9\u05DE\u05E9 \u05DE\u05DC\u05D0\u05D4': 'full_sun',
+  '\u05D7\u05E6\u05D9 \u05E6\u05DC': 'partial_shade',
+  '\u05E6\u05DC': 'shade',
+};
 
+function normaliseSunExposure(v: string): string {
+  return SUN_EXPOSURE_LEGACY[v] ?? v;
+}
 
 const inputStyle: React.CSSProperties = {
   width: '100%', boxSizing: 'border-box',
   backgroundColor: 'rgba(9,20,16,0.85)', border: '1px solid rgba(0,229,195,0.2)',
   borderRadius: '6px', padding: '10px 12px', fontFamily: DM_SANS, fontSize: '14px',
-  color: TEXT_MID, outline: 'none', direction: 'rtl',
+  color: TEXT_MID, outline: 'none',
 };
 
-const labelStyle: React.CSSProperties = {
-  display: 'block', fontFamily: DM_SANS, fontSize: '12px', color: `${TEXT_MID}80`,
-  marginBottom: '6px', textAlign: 'right',
-};
+function labelStyle(isHe: boolean): React.CSSProperties {
+  return {
+    display: 'block', fontFamily: DM_SANS, fontSize: '12px', color: `${TEXT_MID}80`,
+    marginBottom: '6px', textAlign: isHe ? 'right' : 'left',
+  };
+}
 
 function ChipRow({ options, value, onChange }: {
   options: { value: string; label: string; icon?: React.ReactNode }[];
@@ -39,7 +47,7 @@ function ChipRow({ options, value, onChange }: {
   onChange: (v: string) => void;
 }) {
   return (
-    <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px', justifyContent: 'flex-end' }}>
+    <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px' }}>
       {options.map(opt => (
         <button
           key={opt.value}
@@ -68,6 +76,12 @@ interface Props {
 }
 
 export function EditPlantSheet({ plant, gardenId, onClose }: Props) {
+  const { t, i18n } = useTranslation('garden');
+  const isHe = i18n.language === 'he';
+  const dir = isHe ? 'rtl' : 'ltr';
+  const headingFont = isHe ? FRANK : DM_SANS;
+  const ls = labelStyle(isHe);
+
   const { patchGardenPlant } = useGardenStore();
   const { show: showToast } = useToastStore();
 
@@ -75,17 +89,15 @@ export function EditPlantSheet({ plant, gardenId, onClose }: Props) {
   const [locationType,        setLocationType]        = useState(plant.location_type ?? 'pot');
   const [locationDescription, setLocationDescription] = useState(plant.location_description ?? '');
   const [plantType,           setPlantType]           = useState(plant.plant_type ?? '');
-  const [sunExposure,         setSunExposure]         = useState(plant.sun_exposure ?? '');
+  const [sunExposure,         setSunExposure]         = useState(normaliseSunExposure(plant.sun_exposure ?? ''));
   const [soil,                setSoil]                = useState(plant.soil ?? '');
   const [companions,          setCompanions]          = useState(plant.companions ?? '');
   const [autoIrrigation,      setAutoIrrigation]      = useState(plant.auto_irrigation ?? false);
   const [irrigationDays,      setIrrigationDays]      = useState<number[]>(plant.irrigation_days ?? []);
 
-  // Normalise HH:MM:SS → HH:MM on init — Postgres TIME[] round-trips with seconds.
   const initTimes = plant.irrigation_times?.length
     ? plant.irrigation_times.map(t => String(t).slice(0, 5))
     : ['06:00'];
-  // Keep liters in lockstep with times: pad with '' (unknown) if lengths differ.
   const initLitersRaw = plant.irrigation_liters ?? null;
   const initLiters: string[] = initTimes.map((_, i) =>
     initLitersRaw?.[i] != null ? String(initLitersRaw[i]) : ''
@@ -93,8 +105,8 @@ export function EditPlantSheet({ plant, gardenId, onClose }: Props) {
   const [irrigationTimes,  setIrrigationTimes]  = useState<string[]>(initTimes);
   const [irrigationLiters, setIrrigationLiters] = useState<string[]>(initLiters);
 
-  const [isSaving,            setIsSaving]            = useState(false);
-  const [error,               setError]               = useState('');
+  const [isSaving, setIsSaving] = useState(false);
+  const [error,    setError]    = useState('');
 
   function toggleIrrigationDay(day: number) {
     setIrrigationDays(prev =>
@@ -103,23 +115,13 @@ export function EditPlantSheet({ plant, gardenId, onClose }: Props) {
   }
 
   function updateIrrigationTime(index: number, value: string) {
-    setIrrigationTimes(prev => {
-      const next = [...prev];
-      next[index] = value;
-      return next;
-    });
+    setIrrigationTimes(prev => { const next = [...prev]; next[index] = value; return next; });
   }
 
   function updateIrrigationLiters(index: number, raw: string) {
-    setIrrigationLiters(prev => {
-      const next = [...prev];
-      next[index] = raw;
-      return next;
-    });
+    setIrrigationLiters(prev => { const next = [...prev]; next[index] = raw; return next; });
   }
 
-  // Add/remove a (time, liters) pair atomically — keeps both arrays in lockstep.
-  // Pairs are sorted by time when adding, so the new null-liter stays aligned.
   function addIrrigationRun() {
     if (irrigationTimes.length >= 3) return;
     const pairs = irrigationTimes.map((t, i) => ({ t, l: irrigationLiters[i] ?? '' }));
@@ -139,28 +141,16 @@ export function EditPlantSheet({ plant, gardenId, onClose }: Props) {
     e.preventDefault();
     setError('');
 
-    // Mirrors the app's IrrigationScheduleField.validate() — same two checks,
-    // same messages (only enforced when the toggle is on).
     if (autoIrrigation) {
-      if (irrigationDays.length === 0) {
-        setError('יש לבחור לפחות יום אחד להשקיה');
-        return;
-      }
-      if (irrigationTimes.length === 0 || irrigationTimes.length > 3) {
-        setError('יש להגדיר 1–3 זמני השקיה');
-        return;
-      }
+      if (irrigationDays.length === 0) { setError(t('editPlant.errorNoDays')); return; }
+      if (irrigationTimes.length === 0 || irrigationTimes.length > 3) { setError(t('editPlant.errorTimesRange')); return; }
     }
 
-    // Sort times and liters together so their indices stay aligned after sort.
     const savePairs = irrigationTimes
       .map((t, i) => ({ t, l: irrigationLiters[i] ?? '' }))
       .sort((a, b) => a.t.localeCompare(b.t));
     const sortedTimes  = savePairs.map(p => p.t);
-    const sortedLiters = savePairs.map(p => {
-      const v = parseFloat(p.l);
-      return isNaN(v) ? null : v;
-    });
+    const sortedLiters = savePairs.map(p => { const v = parseFloat(p.l); return isNaN(v) ? null : v; });
 
     setIsSaving(true);
     try {
@@ -177,10 +167,10 @@ export function EditPlantSheet({ plant, gardenId, onClose }: Props) {
         irrigationTimes:     autoIrrigation ? sortedTimes     : [],
         irrigationLiters:    autoIrrigation ? sortedLiters    : null,
       });
-      showToast('הפרטים עודכנו 🌱', 'info');
+      showToast(t('editPlant.savedToast'), 'info');
       onClose();
     } catch (err: any) {
-      setError(err.message || 'משהו השתבש, נסה שוב');
+      setError(err.message || t('editPlant.errorGeneric'));
     } finally {
       setIsSaving(false);
     }
@@ -190,6 +180,7 @@ export function EditPlantSheet({ plant, gardenId, onClose }: Props) {
     <div
       role="dialog"
       aria-modal="true"
+      dir={dir}
       style={{
         position: 'fixed', inset: 0, zIndex: 260, display: 'flex',
         alignItems: 'flex-end', justifyContent: 'center',
@@ -201,12 +192,12 @@ export function EditPlantSheet({ plant, gardenId, onClose }: Props) {
         backgroundColor: NIGHT_CARD, border: '1px solid rgba(0,229,195,0.2)',
         borderTopLeftRadius: '16px', borderTopRightRadius: '16px',
         padding: '20px 22px calc(20px + env(safe-area-inset-bottom))',
-        width: '100%', maxWidth: '460px', maxHeight: '85vh', overflowY: 'auto', direction: 'rtl',
+        width: '100%', maxWidth: '460px', maxHeight: '85vh', overflowY: 'auto',
       }}>
         <div style={{ width: '36px', height: '4px', borderRadius: '2px', background: 'rgba(0,229,195,0.25)', margin: '0 auto 16px' }} />
 
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '18px' }}>
-          <h2 style={{ fontFamily: FRANK, fontSize: '18px', color: BIO_CYAN, margin: 0 }}>עריכת פרטי הצמח</h2>
+          <h2 style={{ fontFamily: headingFont, fontSize: '18px', color: BIO_CYAN, margin: 0 }}>{t('editPlant.title')}</h2>
           <button onClick={onClose} disabled={isSaving}
             style={{ background: 'none', border: 'none', color: `${TEXT_MID}50`, cursor: 'pointer', fontSize: '20px' }}>
             ✕
@@ -215,56 +206,59 @@ export function EditPlantSheet({ plant, gardenId, onClose }: Props) {
 
         <form onSubmit={handleSave}>
           <div style={{ marginBottom: '14px' }}>
-            <label style={labelStyle}>זן / גיוון</label>
-            <input type="text" value={variety} onChange={e => setVariety(e.target.value)} style={inputStyle} />
+            <label style={ls}>{t('editPlant.varietyLabel')}</label>
+            <input type="text" value={variety} onChange={e => setVariety(e.target.value)}
+              style={{ ...inputStyle, direction: dir }} />
           </div>
 
           <div style={{ marginBottom: '16px' }}>
-            <label style={labelStyle}>סוג גידול</label>
+            <label style={ls}>{t('editPlant.locationTypeLabel')}</label>
             <ChipRow
               value={locationType}
               onChange={setLocationType}
-              options={LOCATION_TYPES.map(l => ({ value: l.value, label: l.labelHe, icon: <span>{l.emoji}</span> }))}
+              options={LOCATION_TYPES.map(l => ({ value: l.value, label: locationLabel(l.value, t), icon: <span>{l.emoji}</span> }))}
             />
-            <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: '10px' }}>
+            <div style={{ display: 'flex', justifyContent: isHe ? 'flex-end' : 'flex-start', marginTop: '10px' }}>
               <PlantingBase type={locationType} width={72} height={28} />
             </div>
           </div>
 
           <div style={{ marginBottom: '16px' }}>
-            <label style={labelStyle}>סוג צמח</label>
-            <ChipRow value={plantType} onChange={setPlantType} options={PLANT_TYPES.map(p => ({ value: p.value, label: p.labelHe }))} />
+            <label style={ls}>{t('editPlant.plantTypeLabel')}</label>
+            <ChipRow value={plantType} onChange={setPlantType}
+              options={PLANT_TYPE_VALUES.map(v => ({ value: v, label: t(`plantType.${v}`) }))} />
           </div>
 
           <div style={{ marginBottom: '14px' }}>
-            <label style={labelStyle}>תיאור מיקום</label>
-            <input type="text" value={locationDescription} onChange={e => setLocationDescription(e.target.value)} style={inputStyle} />
+            <label style={ls}>{t('editPlant.locationDescLabel')}</label>
+            <input type="text" value={locationDescription} onChange={e => setLocationDescription(e.target.value)}
+              style={{ ...inputStyle, direction: dir }} />
           </div>
 
           <div style={{ marginBottom: '16px' }}>
-            <label style={labelStyle}>חשיפה לשמש</label>
-            <ChipRow value={sunExposure} onChange={setSunExposure} options={SUN_EXPOSURES.map(s => ({ value: s, label: s }))} />
+            <label style={ls}>{t('editPlant.sunExposureLabel')}</label>
+            <ChipRow value={sunExposure} onChange={setSunExposure}
+              options={SUN_EXPOSURE_VALUES.map(v => ({ value: v, label: t(`sunExposure.${v}`) }))} />
           </div>
 
           <div style={{ marginBottom: '14px' }}>
-            <label style={labelStyle}>קרקע / מצע</label>
-            <input type="text" value={soil} onChange={e => setSoil(e.target.value)} style={inputStyle} />
+            <label style={ls}>{t('editPlant.soilLabel')}</label>
+            <input type="text" value={soil} onChange={e => setSoil(e.target.value)}
+              style={{ ...inputStyle, direction: dir }} />
           </div>
 
           <div style={{ marginBottom: '20px' }}>
-            <label style={labelStyle}>צמחים שכנים</label>
-            <input type="text" value={companions} onChange={e => setCompanions(e.target.value)} style={inputStyle} />
+            <label style={ls}>{t('editPlant.companionsLabel')}</label>
+            <input type="text" value={companions} onChange={e => setCompanions(e.target.value)}
+              style={{ ...inputStyle, direction: dir }} />
           </div>
 
-          {/* Automatic irrigation — mirrors IrrigationScheduleField in the app */}
+          {/* Automatic irrigation */}
           <div style={{ marginBottom: '20px' }}>
-            <div style={{
-              display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-              marginBottom: autoIrrigation ? '14px' : 0,
-            }}>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: autoIrrigation ? '14px' : 0 }}>
               <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
                 <span style={{ fontFamily: DM_SANS, fontWeight: 700, fontSize: '15px', color: TEXT_MID }}>
-                  מערכת השקיה אוטומטית
+                  {t('editPlant.autoIrrigationToggle')}
                 </span>
                 <span style={{ fontSize: '18px' }}>💧</span>
               </span>
@@ -287,14 +281,12 @@ export function EditPlantSheet({ plant, gardenId, onClose }: Props) {
 
             {autoIrrigation && (
               <>
-                <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px', marginBottom: '14px', justifyContent: 'flex-end' }}>
+                <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px', marginBottom: '14px' }}>
                   {DAY_LETTERS_HE.map((letter, i) => {
                     const selected = irrigationDays.includes(i);
                     return (
                       <button
-                        key={i}
-                        type="button"
-                        onClick={() => toggleIrrigationDay(i)}
+                        key={i} type="button" onClick={() => toggleIrrigationDay(i)}
                         style={{
                           width: '38px', height: '38px', borderRadius: '50%', cursor: 'pointer',
                           border: `1px solid ${selected ? '#C8A951' : 'rgba(0,229,195,0.2)'}`,
@@ -309,44 +301,33 @@ export function EditPlantSheet({ plant, gardenId, onClose }: Props) {
                   })}
                 </div>
 
-                {irrigationTimes.map((t, i) => (
+                {irrigationTimes.map((time, i) => (
                   <div key={i} style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '8px' }}>
                     {irrigationTimes.length > 1 && (
-                      <button
-                        type="button"
-                        onClick={() => removeIrrigationRun(i)}
-                        aria-label="הסר זמן השקיה"
-                        style={{ background: 'none', border: 'none', color: '#e06060', cursor: 'pointer', fontSize: '18px', lineHeight: 1, padding: '4px' }}
-                      >
+                      <button type="button" onClick={() => removeIrrigationRun(i)}
+                        aria-label={t('editPlant.removeTimeAria')}
+                        style={{ background: 'none', border: 'none', color: '#e06060', cursor: 'pointer', fontSize: '18px', lineHeight: 1, padding: '4px' }}>
                         ✕
                       </button>
                     )}
+                    <input type="time" value={time} onChange={e => updateIrrigationTime(i, e.target.value)}
+                      style={{ ...inputStyle, flex: 1, textAlign: 'center' }} />
                     <input
-                      type="time"
-                      value={t}
-                      onChange={e => updateIrrigationTime(i, e.target.value)}
-                      style={{ ...inputStyle, flex: 1, textAlign: 'center' }}
-                    />
-                    <input
-                      type="text"
-                      inputMode="decimal"
+                      type="text" inputMode="decimal"
                       value={irrigationLiters[i] ?? ''}
                       onChange={e => updateIrrigationLiters(i, e.target.value)}
-                      placeholder="כמות"
-                      aria-label="כמות מים בליטר"
+                      placeholder={t('editPlant.quantityPlaceholder')}
+                      aria-label={t('editPlant.quantityPlaceholder')}
                       style={{ ...inputStyle, width: '56px', textAlign: 'center', padding: '10px 4px' }}
                     />
-                    <span style={{ fontFamily: DM_SANS, fontSize: '11px', color: `${TEXT_MID}90`, whiteSpace: 'nowrap' }}>ל׳</span>
+                    <span style={{ fontFamily: DM_SANS, fontSize: '11px', color: `${TEXT_MID}90`, whiteSpace: 'nowrap' }}>{t('editPlant.litersUnit')}</span>
                   </div>
                 ))}
 
                 {irrigationTimes.length < 3 && (
-                  <button
-                    type="button"
-                    onClick={addIrrigationRun}
-                    style={{ background: 'none', border: 'none', color: '#1D9E75', fontFamily: DM_SANS, fontSize: '13px', cursor: 'pointer', padding: 0 }}
-                  >
-                    + הוסף זמן השקיה
+                  <button type="button" onClick={addIrrigationRun}
+                    style={{ background: 'none', border: 'none', color: '#1D9E75', fontFamily: DM_SANS, fontSize: '13px', cursor: 'pointer', padding: 0 }}>
+                    {t('editPlant.addTime')}
                   </button>
                 )}
               </>
@@ -354,21 +335,18 @@ export function EditPlantSheet({ plant, gardenId, onClose }: Props) {
           </div>
 
           {error && (
-            <p style={{ fontFamily: DM_SANS, fontSize: '13px', color: '#e06060', textAlign: 'right', marginBottom: '16px' }}>{error}</p>
+            <p style={{ fontFamily: DM_SANS, fontSize: '13px', color: '#e06060', textAlign: isHe ? 'right' : 'left', marginBottom: '16px' }}>{error}</p>
           )}
 
-          <button
-            type="submit"
-            disabled={isSaving}
+          <button type="submit" disabled={isSaving}
             style={{
               width: '100%', padding: '13px',
               backgroundColor: isSaving ? 'rgba(0,229,195,0.35)' : BIO_CYAN,
               color: '#050d0a', border: 'none', borderRadius: '8px',
-              fontFamily: FRANK, fontSize: '16px', fontWeight: 700,
+              fontFamily: headingFont, fontSize: '16px', fontWeight: 700,
               cursor: isSaving ? 'not-allowed' : 'pointer',
-            }}
-          >
-            {isSaving ? 'שומר...' : 'שמור שינויים'}
+            }}>
+            {isSaving ? t('editPlant.saving') : t('editPlant.save')}
           </button>
         </form>
       </div>
