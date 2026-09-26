@@ -1,12 +1,12 @@
 import { useTranslation } from 'react-i18next';
 import type { BiodynamicDay } from '@gina-haya/shared';
+import { EN_HEADING } from '../../styles/fonts';
 
 interface Props {
   day: BiodynamicDay;
 }
 
 const BIO_CYAN = '#00e5c3';
-const DM_SANS  = "'DM Sans', 'Assistant', 'Heebo', sans-serif";
 
 const BANNER_CSS = `
 @keyframes node-pulse {
@@ -57,7 +57,7 @@ export function NodeBlackoutBanner({ day }: Props) {
         <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
           <span className="node-dot" style={{ fontSize: '14px', lineHeight: 1 }}>⚫</span>
           <p style={{
-            fontFamily:    DM_SANS,
+            fontFamily:    EN_HEADING,
             fontSize:      '13px',
             fontWeight:    700,
             color:         BIO_CYAN,
@@ -71,7 +71,7 @@ export function NodeBlackoutBanner({ day }: Props) {
 
         {endTime && (
           <p style={{
-            fontFamily: DM_SANS,
+            fontFamily: EN_HEADING,
             fontSize:   '12px',
             color:      `${BIO_CYAN}77`,
             margin:     0,

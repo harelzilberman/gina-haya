@@ -2,12 +2,12 @@ import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useGardenSwitcherStore } from '../../stores/gardenSwitcherStore';
 import { useToastStore } from '../../stores/toastStore';
+import { EN_HEADING } from '../../styles/fonts';
 
 const NIGHT_CARD = '#111f18';
 const BIO_CYAN   = '#00e5c3';
 const TEXT_MID   = '#b0cfbf';
 const FRANK      = '"Frank Ruhl Libre", Georgia, serif';
-const DM_SANS    = "'DM Sans', 'Assistant', 'Heebo', sans-serif";
 
 interface Props {
   isOpen: boolean;
@@ -60,7 +60,7 @@ export function CreateGardenModal({ isOpen, onClose, onCreated }: Props) {
     border:          '1px solid rgba(0,229,195,0.2)',
     borderRadius:    '6px',
     padding:         '10px 12px',
-    fontFamily:      DM_SANS,
+    fontFamily:      EN_HEADING,
     fontSize:        '14px',
     color:           TEXT_MID,
     outline:         'none',
@@ -69,7 +69,7 @@ export function CreateGardenModal({ isOpen, onClose, onCreated }: Props) {
 
   const labelStyle: React.CSSProperties = {
     display:      'block',
-    fontFamily:   DM_SANS,
+    fontFamily:   EN_HEADING,
     fontSize:     '13px',
     color:        `${TEXT_MID}BB`,
     marginBottom: '6px',
@@ -163,7 +163,7 @@ export function CreateGardenModal({ isOpen, onClose, onCreated }: Props) {
 
           {error && (
             <p style={{
-              fontFamily:  DM_SANS,
+              fontFamily:  EN_HEADING,
               fontSize:    '13px',
               color:       '#e06060',
               marginBottom:'16px',
@@ -185,7 +185,7 @@ export function CreateGardenModal({ isOpen, onClose, onCreated }: Props) {
                 color:       `${TEXT_MID}80`,
                 border:      '1px solid rgba(0,229,195,0.2)',
                 borderRadius:'8px',
-                fontFamily:  DM_SANS,
+                fontFamily:  EN_HEADING,
                 fontSize:    '14px',
                 cursor:      'pointer',
               }}

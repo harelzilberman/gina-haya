@@ -3,6 +3,7 @@ import { useParams, useNavigate, Link } from 'react-router-dom';
 import ReactMarkdown from 'react-markdown';
 import { useTranslation } from 'react-i18next';
 import { ARTICLES } from '../data/articlesIndex';
+import { EN_HEADING } from '../styles/fonts';
 
 // ── Tokens ────────────────────────────────────────────────────────────────────
 const PAGE_BG  = '#050c05';
@@ -20,7 +21,6 @@ const AMBER   = '#c8851a';
 const PARCH   = '#f5edd8';
 const DASHED  = 'rgba(122,92,58,0.3)';
 const C_SERIF = "'Lora', Georgia, serif";
-const C_SANS  = "'DM Sans', 'Assistant', sans-serif";
 
 // ── Reading time ──────────────────────────────────────────────────────────────
 function readingTime(text: string, lang: 'he' | 'en'): string {
@@ -145,7 +145,7 @@ function makeMD(
                 style={{ width: '100%', borderRadius: '6px', display: 'block' }} />
               {caption && (
                 <figcaption style={{
-                  fontFamily: C_SANS, fontSize: '12px', fontStyle: 'italic',
+                  fontFamily: EN_HEADING, fontSize: '12px', fontStyle: 'italic',
                   color: INK_L, textAlign: 'center', marginTop: '8px',
                 }}>
                   {caption}
@@ -176,7 +176,7 @@ function makeMD(
       }
       return (
         <p style={{
-          fontFamily: C_SANS, fontSize: '0.95rem', lineHeight: 1.85,
+          fontFamily: EN_HEADING, fontSize: '0.95rem', lineHeight: 1.85,
           color: INK_M, direction: isRTL ? 'rtl' : 'ltr',
           marginBottom: '1rem',
         }}>
@@ -227,7 +227,7 @@ function makeMD(
               {num}
             </span>
             <div style={{
-              fontFamily: C_SANS, fontSize: '0.9rem',
+              fontFamily: EN_HEADING, fontSize: '0.9rem',
               color: INK_M, lineHeight: 1.7, paddingTop: '6px',
             }}>
               {children}
@@ -244,7 +244,7 @@ function makeMD(
             padding: '10px 14px',
             marginBottom: '6px',
             direction: isRTL ? 'rtl' : 'ltr',
-            fontFamily: C_SANS, fontSize: '0.88rem',
+            fontFamily: EN_HEADING, fontSize: '0.88rem',
             color: INK_M, lineHeight: 1.65,
           }}>
             {children}
@@ -253,7 +253,7 @@ function makeMD(
       }
       return (
         <li style={{
-          fontFamily: C_SANS, fontSize: '0.95rem', color: INK_M,
+          fontFamily: EN_HEADING, fontSize: '0.95rem', color: INK_M,
           lineHeight: 1.85, marginBottom: '0.4rem',
           position: 'relative', paddingInlineStart: '1.4rem', listStyle: 'none',
         }}>
@@ -287,7 +287,7 @@ function makeMD(
 
     table: ({ children }) => (
       <div style={{ overflowX: 'auto', margin: '1.5rem 0' }}>
-        <table style={{ width: '100%', borderCollapse: 'collapse', fontFamily: C_SANS, fontSize: '0.9rem' }}>
+        <table style={{ width: '100%', borderCollapse: 'collapse', fontFamily: EN_HEADING, fontSize: '0.9rem' }}>
           {children}
         </table>
       </div>
@@ -736,7 +736,7 @@ export function ArticlePage() {
                       : 'Gina Haya — now also as an app'}
                   </p>
                   <p style={{
-                    fontFamily: C_SANS, fontSize: '13px',
+                    fontFamily: EN_HEADING, fontSize: '13px',
                     color: INK_L, margin: 0, lineHeight: 1.55,
                   }}>
                     {lang === 'he'
@@ -746,7 +746,7 @@ export function ArticlePage() {
                   </p>
                 </div>
                 <span style={{
-                  fontFamily: C_SANS, fontSize: '13px', fontWeight: 600,
+                  fontFamily: EN_HEADING, fontSize: '13px', fontWeight: 600,
                   color: AMBER, flexShrink: 0, whiteSpace: 'nowrap',
                 }}>
                   {lang === 'he'

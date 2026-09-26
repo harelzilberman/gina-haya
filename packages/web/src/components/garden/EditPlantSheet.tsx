@@ -6,12 +6,12 @@ import { useToastStore } from '../../stores/toastStore';
 import { LOCATION_TYPES, locationLabel } from './PlantingBase';
 import { PlantingBase } from './PlantingBase';
 import { DAY_LETTERS_HE } from '../../constants/days';
+import { EN_HEADING } from '../../styles/fonts';
 
 const NIGHT_CARD = '#111f18';
 const BIO_CYAN   = '#00e5c3';
 const TEXT_MID   = '#b0cfbf';
 const FRANK      = '"Frank Ruhl Libre", Georgia, serif';
-const DM_SANS    = "'DM Sans', 'Assistant', 'Heebo', sans-serif";
 
 const PLANT_TYPE_VALUES = ['annual', 'perennial', 'tree', 'shrub'] as const;
 const SUN_EXPOSURE_VALUES = ['full_sun', 'partial_shade', 'shade'] as const;
@@ -30,13 +30,13 @@ function normaliseSunExposure(v: string): string {
 const inputStyle: React.CSSProperties = {
   width: '100%', boxSizing: 'border-box',
   backgroundColor: 'rgba(9,20,16,0.85)', border: '1px solid rgba(0,229,195,0.2)',
-  borderRadius: '6px', padding: '10px 12px', fontFamily: DM_SANS, fontSize: '14px',
+  borderRadius: '6px', padding: '10px 12px', fontFamily: EN_HEADING, fontSize: '14px',
   color: TEXT_MID, outline: 'none',
 };
 
 function labelStyle(isHe: boolean): React.CSSProperties {
   return {
-    display: 'block', fontFamily: DM_SANS, fontSize: '12px', color: `${TEXT_MID}80`,
+    display: 'block', fontFamily: EN_HEADING, fontSize: '12px', color: `${TEXT_MID}80`,
     marginBottom: '6px', textAlign: isHe ? 'right' : 'left',
   };
 }
@@ -59,7 +59,7 @@ function ChipRow({ options, value, onChange }: {
             border: `1px solid ${value === opt.value ? BIO_CYAN : 'rgba(0,229,195,0.2)'}`,
             backgroundColor: value === opt.value ? 'rgba(0,229,195,0.12)' : 'transparent',
             color: value === opt.value ? BIO_CYAN : `${TEXT_MID}80`,
-            fontFamily: DM_SANS, fontSize: '12.5px', cursor: 'pointer',
+            fontFamily: EN_HEADING, fontSize: '12.5px', cursor: 'pointer',
           }}
         >
           {opt.icon}{opt.label}
@@ -79,7 +79,7 @@ export function EditPlantSheet({ plant, gardenId, onClose }: Props) {
   const { t, i18n } = useTranslation('garden');
   const isHe = i18n.language === 'he';
   const dir = isHe ? 'rtl' : 'ltr';
-  const headingFont = isHe ? FRANK : DM_SANS;
+  const headingFont = isHe ? FRANK : EN_HEADING;
   const ls = labelStyle(isHe);
 
   const { patchGardenPlant } = useGardenStore();
@@ -257,7 +257,7 @@ export function EditPlantSheet({ plant, gardenId, onClose }: Props) {
           <div style={{ marginBottom: '20px' }}>
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: autoIrrigation ? '14px' : 0 }}>
               <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-                <span style={{ fontFamily: DM_SANS, fontWeight: 700, fontSize: '15px', color: TEXT_MID }}>
+                <span style={{ fontFamily: EN_HEADING, fontWeight: 700, fontSize: '15px', color: TEXT_MID }}>
                   {t('editPlant.autoIrrigationToggle')}
                 </span>
                 <span style={{ fontSize: '18px' }}>💧</span>
@@ -292,7 +292,7 @@ export function EditPlantSheet({ plant, gardenId, onClose }: Props) {
                           border: `1px solid ${selected ? '#C8A951' : 'rgba(0,229,195,0.2)'}`,
                           background: selected ? '#C8A951' : 'rgba(9,20,16,0.85)',
                           color: selected ? '#fff' : TEXT_MID,
-                          fontFamily: DM_SANS, fontWeight: 700, fontSize: '14px',
+                          fontFamily: EN_HEADING, fontWeight: 700, fontSize: '14px',
                         }}
                       >
                         {letter}
@@ -320,13 +320,13 @@ export function EditPlantSheet({ plant, gardenId, onClose }: Props) {
                       aria-label={t('editPlant.quantityPlaceholder')}
                       style={{ ...inputStyle, width: '56px', textAlign: 'center', padding: '10px 4px' }}
                     />
-                    <span style={{ fontFamily: DM_SANS, fontSize: '11px', color: `${TEXT_MID}90`, whiteSpace: 'nowrap' }}>{t('editPlant.litersUnit')}</span>
+                    <span style={{ fontFamily: EN_HEADING, fontSize: '11px', color: `${TEXT_MID}90`, whiteSpace: 'nowrap' }}>{t('editPlant.litersUnit')}</span>
                   </div>
                 ))}
 
                 {irrigationTimes.length < 3 && (
                   <button type="button" onClick={addIrrigationRun}
-                    style={{ background: 'none', border: 'none', color: '#1D9E75', fontFamily: DM_SANS, fontSize: '13px', cursor: 'pointer', padding: 0 }}>
+                    style={{ background: 'none', border: 'none', color: '#1D9E75', fontFamily: EN_HEADING, fontSize: '13px', cursor: 'pointer', padding: 0 }}>
                     {t('editPlant.addTime')}
                   </button>
                 )}
@@ -335,7 +335,7 @@ export function EditPlantSheet({ plant, gardenId, onClose }: Props) {
           </div>
 
           {error && (
-            <p style={{ fontFamily: DM_SANS, fontSize: '13px', color: '#e06060', textAlign: isHe ? 'right' : 'left', marginBottom: '16px' }}>{error}</p>
+            <p style={{ fontFamily: EN_HEADING, fontSize: '13px', color: '#e06060', textAlign: isHe ? 'right' : 'left', marginBottom: '16px' }}>{error}</p>
           )}
 
           <button type="submit" disabled={isSaving}

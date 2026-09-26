@@ -6,12 +6,12 @@ import { useToastStore } from '../../stores/toastStore';
 import { LOCATION_TYPES, locationLabel } from './PlantingBase';
 import { PlantingBase } from './PlantingBase';
 import { DAY_LETTERS_HE } from '../../constants/days';
+import { EN_HEADING } from '../../styles/fonts';
 
 const NIGHT_CARD = '#111f18';
 const BIO_CYAN   = '#00e5c3';
 const TEXT_MID   = '#b0cfbf';
 const FRANK      = '"Frank Ruhl Libre", Georgia, serif';
-const DM_SANS    = "'DM Sans', 'Assistant', 'Heebo', sans-serif";
 
 const PLANT_TYPE_VALUES = ['annual', 'perennial', 'tree', 'shrub'] as const;
 const SUN_EXPOSURE_VALUES = ['full_sun', 'partial_shade', 'shade'] as const;
@@ -31,13 +31,13 @@ function normaliseSunExposure(v: string): string {
 const inputStyle: React.CSSProperties = {
   width: '100%', boxSizing: 'border-box',
   backgroundColor: 'rgba(9,20,16,0.85)', border: '1px solid rgba(0,229,195,0.2)',
-  borderRadius: '6px', padding: '10px 12px', fontFamily: DM_SANS, fontSize: '14px',
+  borderRadius: '6px', padding: '10px 12px', fontFamily: EN_HEADING, fontSize: '14px',
   color: TEXT_MID, outline: 'none',
 };
 
 function labelStyle(isHe: boolean): React.CSSProperties {
   return {
-    display: 'block', fontFamily: DM_SANS, fontSize: '12px', color: `${TEXT_MID}80`,
+    display: 'block', fontFamily: EN_HEADING, fontSize: '12px', color: `${TEXT_MID}80`,
     marginBottom: '6px', textAlign: isHe ? 'right' : 'left',
   };
 }
@@ -60,7 +60,7 @@ function ChipRow({ options, value, onChange }: {
             border: `1px solid ${value === opt.value ? BIO_CYAN : 'rgba(0,229,195,0.2)'}`,
             backgroundColor: value === opt.value ? 'rgba(0,229,195,0.12)' : 'transparent',
             color: value === opt.value ? BIO_CYAN : `${TEXT_MID}80`,
-            fontFamily: DM_SANS, fontSize: '12.5px', cursor: 'pointer',
+            fontFamily: EN_HEADING, fontSize: '12.5px', cursor: 'pointer',
           }}
         >
           {opt.icon}{opt.label}
@@ -174,7 +174,7 @@ export function AddPlantModal({ gardenId, onClose, onAdded }: Props) {
     }
   }
 
-  const headingFont = isHe ? FRANK : DM_SANS;
+  const headingFont = isHe ? FRANK : EN_HEADING;
   const ls = labelStyle(isHe);
 
   return (
@@ -232,7 +232,7 @@ export function AddPlantModal({ gardenId, onClose, onAdded }: Props) {
                       display: 'flex', alignItems: 'center', gap: '8px', width: '100%',
                       padding: '8px 12px', background: 'transparent', border: 'none',
                       cursor: 'pointer', textAlign: isHe ? 'right' : 'left',
-                      color: TEXT_MID, fontFamily: DM_SANS, fontSize: '13px',
+                      color: TEXT_MID, fontFamily: EN_HEADING, fontSize: '13px',
                     }}
                     onMouseEnter={e => (e.currentTarget.style.background = 'rgba(0,229,195,0.08)')}
                     onMouseLeave={e => (e.currentTarget.style.background = 'transparent')}
@@ -245,7 +245,7 @@ export function AddPlantModal({ gardenId, onClose, onAdded }: Props) {
               </div>
             )}
             {selected && (
-              <p style={{ fontFamily: DM_SANS, fontSize: '11px', color: BIO_CYAN, margin: '6px 0 0' }}>
+              <p style={{ fontFamily: EN_HEADING, fontSize: '11px', color: BIO_CYAN, margin: '6px 0 0' }}>
                 {t('addPlant.fromEncyclopedia', { name: selected.common_name_en || selected.common_name_he })}{' '}
                 <button type="button" onClick={clearSpecies} style={{ background: 'none', border: 'none', color: `${TEXT_MID}60`, cursor: 'pointer', textDecoration: 'underline', fontSize: '11px' }}>
                   {t('addPlant.clearSelection')}
@@ -325,7 +325,7 @@ export function AddPlantModal({ gardenId, onClose, onAdded }: Props) {
                         border: `1px solid ${irrigationDays.includes(i) ? BIO_CYAN : 'rgba(0,229,195,0.2)'}`,
                         background: irrigationDays.includes(i) ? 'rgba(0,229,195,0.15)' : 'transparent',
                         color: irrigationDays.includes(i) ? BIO_CYAN : `${TEXT_MID}70`,
-                        fontFamily: DM_SANS, fontSize: '12px', cursor: 'pointer',
+                        fontFamily: EN_HEADING, fontSize: '12px', cursor: 'pointer',
                       }}>
                       {d}
                     </button>
@@ -347,14 +347,14 @@ export function AddPlantModal({ gardenId, onClose, onAdded }: Props) {
                     aria-label={t('addPlant.quantityPlaceholder')}
                     style={{ ...inputStyle, width: '56px', textAlign: 'center', padding: '10px 4px' }}
                   />
-                  <span style={{ fontFamily: DM_SANS, fontSize: '11px', color: `${TEXT_MID}90`, whiteSpace: 'nowrap' }}>{t('addPlant.litersUnit')}</span>
+                  <span style={{ fontFamily: EN_HEADING, fontSize: '11px', color: `${TEXT_MID}90`, whiteSpace: 'nowrap' }}>{t('addPlant.litersUnit')}</span>
                 </div>
               </div>
             )}
           </div>
 
           {error && (
-            <p style={{ fontFamily: DM_SANS, fontSize: '13px', color: '#e06060', textAlign: isHe ? 'right' : 'left', marginBottom: '16px' }}>{error}</p>
+            <p style={{ fontFamily: EN_HEADING, fontSize: '13px', color: '#e06060', textAlign: isHe ? 'right' : 'left', marginBottom: '16px' }}>{error}</p>
           )}
 
           <button

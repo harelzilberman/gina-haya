@@ -12,13 +12,13 @@ import { GardenPlantCard, AddPlantCard } from '../components/garden/GardenPlantC
 import { AddPlantModal } from '../components/garden/AddPlantModal';
 import { PlantPassportModal } from '../components/garden/PlantPassportModal';
 import { NewTrackerModal } from '../components/tracker/NewTrackerModal';
+import { EN_HEADING } from '../styles/fonts';
 
 const NIGHT      = '#050d0a';
 const NIGHT_CARD = '#111f18';
 const BIO_CYAN   = '#00e5c3';
 const TEXT_MID   = '#b0cfbf';
 const FRANK      = '"Frank Ruhl Libre", Georgia, serif';
-const DM_SANS    = "'DM Sans', 'Assistant', 'Heebo', sans-serif";
 
 export function GardenGridPage() {
   // Deliberately NOT calling loadGardens()/initFromAuth() here — App.tsx already
@@ -86,7 +86,7 @@ export function GardenGridPage() {
               {t('emptyTitle')}
             </h2>
             <p style={{
-              fontFamily: DM_SANS,
+              fontFamily: EN_HEADING,
               fontSize: '14px',
               color: TEXT_MID,
               margin: '0 0 8px',
@@ -177,7 +177,7 @@ export function GardenGridPage() {
                 onClick={() => setShowArchived(v => !v)}
                 style={{
                   background: 'none', border: 'none', cursor: 'pointer',
-                  fontFamily: DM_SANS, fontSize: '12px', color: `${TEXT_MID}60`,
+                  fontFamily: EN_HEADING, fontSize: '12px', color: `${TEXT_MID}60`,
                 }}
               >
                 {showArchived ? '▾' : '◂'} צמחים בעונות קודמות ({archivedPlants.length})
@@ -225,7 +225,7 @@ export function GardenGridPage() {
             <p style={{ fontFamily: FRANK, fontSize: '16px', color: BIO_CYAN, margin: '0 0 6px' }}>
               להתחיל לעקוב אחרי הצמח?
             </p>
-            <p style={{ fontFamily: DM_SANS, fontSize: '13px', color: `${TEXT_MID}80`, margin: '0 0 20px' }}>
+            <p style={{ fontFamily: EN_HEADING, fontSize: '13px', color: `${TEXT_MID}80`, margin: '0 0 20px' }}>
               צ'ופצ'ו ינתח תמונות ויציע משימות טיפול לאורך זמן
             </p>
             <div style={{ display: 'flex', gap: '10px' }}>
@@ -241,7 +241,7 @@ export function GardenGridPage() {
                 }}
                 style={{
                   flex: 1, padding: '10px', borderRadius: '8px', border: '1px solid rgba(0,229,195,0.25)',
-                  background: 'transparent', color: `${TEXT_MID}80`, fontFamily: DM_SANS, fontSize: '13px', cursor: 'pointer',
+                  background: 'transparent', color: `${TEXT_MID}80`, fontFamily: EN_HEADING, fontSize: '13px', cursor: 'pointer',
                 }}
               >
                 לא עכשיו

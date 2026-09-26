@@ -1,13 +1,13 @@
 import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { PlayBadge } from '../ui/PlayBadge';
+import { EN_HEADING } from '../../styles/fonts';
 
 const NIGHT    = '#050d0a';
 const BIO_CYAN = '#00e5c3';
 const TEXT_MID = '#b0cfbf';
 const MUTED    = '#6b9080';
 const FRANK    = '"Frank Ruhl Libre", Georgia, serif';
-const DM_SANS  = "'DM Sans', 'Assistant', 'Heebo', sans-serif";
 
 export function Footer() {
   const { i18n } = useTranslation();
@@ -20,7 +20,7 @@ export function Footer() {
   }
 
   const linkStyle: React.CSSProperties = {
-    fontFamily: DM_SANS, fontSize: '14px', color: TEXT_MID,
+    fontFamily: EN_HEADING, fontSize: '14px', color: TEXT_MID,
     textDecoration: 'none', transition: 'color 0.18s', opacity: 0.8,
   };
 
@@ -46,14 +46,14 @@ export function Footer() {
             marginBottom: '8px', textShadow: '0 0 20px rgba(0,229,195,.28)' }}>
             גינה חיה
           </div>
-          <p style={{ fontFamily: DM_SANS, fontWeight: 300, fontSize: '13px', color: MUTED, lineHeight: 1.65, maxWidth: '180px' }}>
+          <p style={{ fontFamily: EN_HEADING, fontWeight: 300, fontSize: '13px', color: MUTED, lineHeight: 1.65, maxWidth: '180px' }}>
             {isHebrew ? 'גדל בהרמוניה עם קצבי הטבע' : 'Grow in harmony with nature\'s rhythms'}
           </p>
         </div>
 
         {/* Product */}
         <div>
-          <p style={{ fontFamily: DM_SANS, fontWeight: 700, fontSize: '10px', letterSpacing: '0.18em',
+          <p style={{ fontFamily: EN_HEADING, fontWeight: 700, fontSize: '10px', letterSpacing: '0.18em',
             textTransform: 'uppercase', color: BIO_CYAN, marginBottom: '16px' }}>
             {isHebrew ? 'מוצר' : 'Product'}
           </p>
@@ -73,7 +73,7 @@ export function Footer() {
 
         {/* Learn */}
         <div>
-          <p style={{ fontFamily: DM_SANS, fontWeight: 700, fontSize: '10px', letterSpacing: '0.18em',
+          <p style={{ fontFamily: EN_HEADING, fontWeight: 700, fontSize: '10px', letterSpacing: '0.18em',
             textTransform: 'uppercase', color: BIO_CYAN, marginBottom: '16px' }}>
             {isHebrew ? 'למד' : 'Learn'}
           </p>
@@ -93,7 +93,7 @@ export function Footer() {
 
         {/* App */}
         <div>
-          <p style={{ fontFamily: DM_SANS, fontWeight: 700, fontSize: '10px', letterSpacing: '0.18em',
+          <p style={{ fontFamily: EN_HEADING, fontWeight: 700, fontSize: '10px', letterSpacing: '0.18em',
             textTransform: 'uppercase', color: BIO_CYAN, marginBottom: '16px' }}>
             {/* האפליקציה */}
             {isHebrew ? '\u05d4\u05d0\u05e4\u05dc\u05d9\u05e7\u05e6\u05d9\u05d4' : 'The App'}
@@ -109,7 +109,7 @@ export function Footer() {
 
         {/* Legal + lang toggle */}
         <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
-          <p style={{ fontFamily: DM_SANS, fontWeight: 700, fontSize: '10px', letterSpacing: '0.18em',
+          <p style={{ fontFamily: EN_HEADING, fontWeight: 700, fontSize: '10px', letterSpacing: '0.18em',
             textTransform: 'uppercase', color: BIO_CYAN, marginBottom: '6px' }}>
             {isHebrew ? 'משפטי' : 'Legal'}
           </p>
@@ -125,7 +125,7 @@ export function Footer() {
           <div style={{ marginTop: '8px' }}>
             <button
               onClick={toggleLanguage}
-              style={{ fontFamily: DM_SANS, fontSize: '11px', fontWeight: 600, padding: '5px 14px',
+              style={{ fontFamily: EN_HEADING, fontSize: '11px', fontWeight: 600, padding: '5px 14px',
                 borderRadius: '100px', border: '1px solid rgba(0,229,195,0.2)', color: MUTED,
                 backgroundColor: 'transparent', cursor: 'pointer', letterSpacing: '0.04em',
                 transition: 'border-color 0.18s, color 0.18s' }}
@@ -140,11 +140,11 @@ export function Footer() {
 
       <div style={{ height: '1px', backgroundColor: 'rgba(0,229,195,0.07)', margin: '0 32px' }} />
       <div style={{ padding: '16px 32px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '8px' }}>
-        <p style={{ fontFamily: DM_SANS, fontSize: '11px', color: MUTED }}>
+        <p style={{ fontFamily: EN_HEADING, fontSize: '11px', color: MUTED }}>
           © 2026 גינה חיה · Gina Haya · Made in Israel
         </p>
         <div style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', padding: '4px 12px',
-          borderRadius: '100px', border: '1px solid rgba(0,229,195,0.12)', fontSize: '11px', color: BIO_CYAN, fontFamily: DM_SANS }}>
+          borderRadius: '100px', border: '1px solid rgba(0,229,195,0.12)', fontSize: '11px', color: BIO_CYAN, fontFamily: EN_HEADING }}>
           <span style={{ width: '5px', height: '5px', borderRadius: '50%', background: BIO_CYAN,
             boxShadow: `0 0 5px ${BIO_CYAN}`, display: 'inline-block' }} />
           {isHebrew ? 'ביודינמי · Biodynamic' : 'Biodynamic · ביודינמי'}

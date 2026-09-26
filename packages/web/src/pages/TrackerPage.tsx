@@ -10,12 +10,12 @@ import { AnalysisResult } from '../components/tracker/AnalysisResult';
 import { TaskApprovalModal } from '../components/tracker/TaskApprovalModal';
 import { UpgradeBanner } from '../components/upgrade/UpgradeBanner';
 import { usePlanLimit } from '../hooks/usePlanLimit';
+import { EN_HEADING } from '../styles/fonts';
 
 const EARTH = '#050d0a';
 const GOLD  = '#00e5c3';
 const PARCH = '#b0cfbf';
 const FRANK = '"Frank Ruhl Libre", Georgia, serif';
-const ASST  = "'DM Sans', 'Assistant', 'Heebo', sans-serif";
 
 export function TrackerPage() {
   const { t, i18n } = useTranslation('tracker');
@@ -63,7 +63,7 @@ export function TrackerPage() {
         minHeight: '100vh',
         backgroundColor: EARTH,
         padding: '32px 24px 80px',
-        fontFamily: ASST,
+        fontFamily: EN_HEADING,
       }}
     >
       <div style={{ maxWidth: '900px', margin: '0 auto' }}>
@@ -81,14 +81,14 @@ export function TrackerPage() {
             <h1 style={{ fontFamily: FRANK, fontSize: '32px', color: GOLD, margin: '0 0 6px' }}>
               {t('title')}
             </h1>
-            <p style={{ fontFamily: ASST, fontSize: '14px', color: 'rgba(176,207,191,0.55)', margin: 0 }}>
+            <p style={{ fontFamily: EN_HEADING, fontSize: '14px', color: 'rgba(176,207,191,0.55)', margin: 0 }}>
               {t('subtitle')}
             </p>
           </div>
 
           <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start', gap: '8px' }}>
             {/* Tier indicator */}
-            <p style={{ fontFamily: ASST, fontSize: '12px', color: 'rgba(176,207,191,0.45)', margin: 0 }}>
+            <p style={{ fontFamily: EN_HEADING, fontSize: '12px', color: 'rgba(176,207,191,0.45)', margin: 0 }}>
               {trackerCountLabel}
             </p>
 
@@ -141,7 +141,7 @@ export function TrackerPage() {
         {isLoading ? (
           <div style={{ textAlign: 'center', padding: '80px 0' }}>
             <div style={{ fontSize: '48px', marginBottom: '16px' }} className="animate-pulse">🌱</div>
-            <p style={{ fontFamily: ASST, fontSize: '14px', color: 'rgba(176,207,191,0.45)' }}>
+            <p style={{ fontFamily: EN_HEADING, fontSize: '14px', color: 'rgba(176,207,191,0.45)' }}>
               {t('loading')}
             </p>
           </div>
@@ -158,7 +158,7 @@ export function TrackerPage() {
             <h2 style={{ fontFamily: FRANK, fontSize: '22px', color: GOLD, marginBottom: '12px' }}>
               {t('empty.title')}
             </h2>
-            <p style={{ fontFamily: ASST, fontSize: '15px', color: 'rgba(176,207,191,0.6)', marginBottom: '28px', lineHeight: 1.7, maxWidth: '400px', margin: '0 auto 28px' }}>
+            <p style={{ fontFamily: EN_HEADING, fontSize: '15px', color: 'rgba(176,207,191,0.6)', marginBottom: '28px', lineHeight: 1.7, maxWidth: '400px', margin: '0 auto 28px' }}>
               {t('empty.desc')}
             </p>
             <button
@@ -213,7 +213,7 @@ export function TrackerPage() {
                 <h3 style={{ fontFamily: FRANK, fontSize: '18px', color: GOLD, margin: '0 0 10px' }}>
                   {isHe ? 'רוצה לעקוב אחר עוד צמחים?' : 'Want to track more plants?'}
                 </h3>
-                <p style={{ fontFamily: ASST, fontSize: '14px', color: `${PARCH}99`, margin: '0 0 20px', lineHeight: 1.6 }}>
+                <p style={{ fontFamily: EN_HEADING, fontSize: '14px', color: `${PARCH}99`, margin: '0 0 20px', lineHeight: 1.6 }}>
                   {isHe
                     ? 'שדרג לגנן ב-₪18 לחודש למעקבים ללא הגבלה'
                     : 'Upgrade to Grower for ₪18/mo and track unlimited plants'}
@@ -233,7 +233,7 @@ export function TrackerPage() {
                 >
                   {isHe ? 'שדרג עכשיו 🌿' : 'Upgrade now 🌿'}
                 </button>
-                <p style={{ fontFamily: ASST, fontSize: '12px', color: `${PARCH}60`, margin: 0 }}>
+                <p style={{ fontFamily: EN_HEADING, fontSize: '12px', color: `${PARCH}60`, margin: 0 }}>
                   {isHe
                     ? (<>או <a href="/shop" style={{ color: GOLD }}>רכוש מעקב בודד ב-₪3.6</a></>)
                     : (<>or <a href="/shop" style={{ color: GOLD }}>buy a single tracker for ₪3.6</a></>)}

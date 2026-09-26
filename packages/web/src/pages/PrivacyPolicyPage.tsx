@@ -3,8 +3,8 @@ const SAGE  = '#4A9C68';
 const CREAM = '#FDF6EC';
 
 const CONTACT_EMAIL = 'gina.haya.contact@gmail.com';
-const LAST_UPDATED_HE = '7 בספטמבר 2026';
-const LAST_UPDATED_EN = 'September 7, 2026';
+const LAST_UPDATED_HE = '18 בספטמבר 2026';
+const LAST_UPDATED_EN = 'September 18, 2026';
 
 interface Section { title: string; body: string | string[] }
 
@@ -18,8 +18,9 @@ const HE_SECTIONS: Section[] = [
       'דוחות ניתוח ומעקב — תוצאות הניתוחים, מצב הצמח לאורך זמן והשוואות בין בדיקות.',
       'הודעות שיחה עם צ\'ופצ\'ו — נשמרות לשמירת המשכיות השיחה; מעובדות ע"י ממשק Anthropic\'s Claude API, שהוא ספק שירות ה-AI שלנו.',
       'מיקום מקורב — אופציונלי, ברשותך בלבד; משמש לנתוני מזג אוויר מקומי ולוח ביודינמי. לא נשמרת היסטוריית מיקומים.',
-      'מצב מנוי/רכישה — מנויים מטופלים ע"י Google Play; אנו מקבלים ושומרים את סטטוס המנוי (לא פרטי כרטיס האשראי שלך, שאנו אף פעם לא רואים).',
+      'מצב מנוי/רכישה — מנויים באפליקציה מטופלים ע"י Google Play, ומנויים באתר מטופלים ע"י Grow; אנו מקבלים ושומרים את סטטוס המנוי בלבד (לא פרטי כרטיס האשראי שלך, שאנו אף פעם לא רואים).',
       'מונים בסיסיים (כגון מספר ניתוחי AI שנוצלו) — לאכיפת מגבלות תוכנית.',
+      'דוחות קריסה — כאשר האפליקציה נתקלת בשגיאה שלא טופלה, נאסף דוח טכני לצורך תיקון התקלה. ראה סעיף "דיווח על קריסות" למטה.',
     ],
   },
   {
@@ -28,7 +29,11 @@ const HE_SECTIONS: Section[] = [
   },
   {
     title: 'ספקי שירות',
-    body: 'אנחנו עובדים עם ספקי השירות הבאים, שמעבדים נתונים מטעמנו ולפי הוראותינו בלבד: Supabase (אחסון מסד נתונים, אימות זהות ואחסון תמונות), Anthropic (עיבוד AI — שיחות עם צ\'ופצ\'ו ותמונות צמחים הנשלחות לניתוח), Google Play (תשלומים ומנויים), Railway (אחסון שרת). חלק מספקי השירות מעבדים נתונים מחוץ לישראל; ההעברה נעשית לצורך אספקת השירות בלבד.',
+    body: 'אנחנו עובדים עם ספקי השירות הבאים, שמעבדים נתונים מטעמנו ולפי הוראותינו בלבד: Supabase (אחסון מסד נתונים, אימות זהות ואחסון תמונות), Anthropic (עיבוד AI — שיחות עם צ\'ופצ\'ו ותמונות צמחים הנשלחות לניתוח), Railway (אחסון שרת), Google Play (תשלומים ומנויים באפליקציה), Grow (תשלומים ומנויים באתר), Resend (דוא"ל תפעולי — הודעות חשבון ושירות), Sentry (דוחות קריסה ואבחון שגיאות). חלק מספקי השירות מעבדים נתונים מחוץ לישראל; ההעברה נעשית לצורך אספקת השירות בלבד.',
+  },
+  {
+    title: 'דיווח על קריסות',
+    body: 'כאשר האפליקציה נתקלת בשגיאה שלא טופלה, נשלח ל-Sentry דוח הכולל את סוג השגיאה, עקבות הקריסה, דגם המכשיר וגרסת מערכת ההפעלה, גרסת האפליקציה ומזהה החשבון שלך (מזהה פנימי אקראי — לא כתובת הדוא"ל). איננו שולחים את שמך, כתובת הדוא"ל, כתובת ה-IP או תוכן כלשהו שהזנת באפליקציה. בקשות לשירות השיחה של צ\'ופצ\'ו אינן נכללות בדוחות אלה, ואסימוני הזדהות מוסרים לפני שהדוח עוזב את המכשיר. דוחות קריסה נשמרים למשך 30 יום. בגרסאות פיתוח לא נאסף מידע על קריסות.',
   },
   {
     title: 'אחסון ואבטחה',
@@ -36,7 +41,7 @@ const HE_SECTIONS: Section[] = [
   },
   {
     title: 'שמירת נתונים ומחיקה',
-    body: 'הנתונים נשמרים כל עוד החשבון פעיל, כולל תמונות שנשלחו לניתוח. משתמשים יכולים לבקש מחיקת חשבון בכל עת — ראה דף מחיקת חשבון. עם מחיקת החשבון נמחקות גם התמונות ששמורות בשרתינו. רשומות שימוש ורשומות תשלום נשמרות ללא מזהה החשבון, לצורכי חשבונאות ותפעול. המחיקה מושלמת תוך 30 יום.',
+    body: 'הנתונים נשמרים כל עוד החשבון פעיל, כולל תמונות שנשלחו לניתוח. ניתן לבקש מחיקת חשבון בכל עת — מתוך האפליקציה (הגדרות ← מחיקת חשבון) או דרך דף מחיקת חשבון באתר. עם מחיקת החשבון נמחקות גם התמונות ששמורות בשרתינו. רשומות שימוש ורשומות תשלום נשמרות ללא מזהה החשבון, לצורכי חשבונאות ותפעול. המחיקה מושלמת תוך 30 יום.',
   },
   {
     title: 'גיל מינימלי',
@@ -62,8 +67,9 @@ const EN_SECTIONS: Section[] = [
       'Analysis and tracking records — analysis results, plant health over time, and comparisons between check-ins.',
       'Chat messages with Chupchu (צ\'ופצ\'ו) — stored to provide conversation continuity; processed by Anthropic\'s Claude API as our AI service provider.',
       'Location (approximate) — optional, with your permission; used for local weather and biodynamic calendar data. No location history is stored.',
-      'Purchase/subscription state — subscriptions are processed by Google Play; we receive and store subscription status only (not your payment card details, which we never see).',
+      'Purchase/subscription state — subscriptions bought in the app are processed by Google Play, and subscriptions bought on our website are processed by Grow; we receive and store subscription status only (not your payment card details, which we never see).',
       'Basic usage counters (e.g. number of AI analyses used) — for enforcing plan limits.',
+      'Crash reports — when the app encounters an unhandled error, a technical report is collected so we can fix the fault. See the "Crash reporting" section below.',
     ],
   },
   {
@@ -72,7 +78,11 @@ const EN_SECTIONS: Section[] = [
   },
   {
     title: 'Service providers',
-    body: 'We work with the following service providers, who process data on our behalf and on our instructions only: Supabase (database storage, authentication and image storage), Anthropic (AI processing — Chupchu conversations and plant photos submitted for analysis), Google Play (payments and subscriptions), Railway (server hosting). Some service providers process data outside Israel; any such transfer is made solely to provide the service.',
+    body: 'We work with the following service providers, who process data on our behalf and on our instructions only: Supabase (database storage, authentication and image storage), Anthropic (AI processing — Chupchu conversations and plant photos submitted for analysis), Railway (server hosting), Google Play (payments and subscriptions in the app), Grow (payments and subscriptions on our website), Resend (transactional email — account and service notifications), Sentry (crash reports and error diagnostics). Some service providers process data outside Israel; any such transfer is made solely to provide the service.',
+  },
+  {
+    title: 'Crash reporting',
+    body: 'When the app encounters an unhandled error, a report is sent to Sentry containing the error type, the stack trace, your device model and operating system version, the app version, and your account identifier (an internal random UUID — not your email address). We do not send your name, email address, IP address, or any content you have entered in the app. Requests to the Chupchu chat service are excluded from these reports, and authentication tokens are removed before the report leaves your device. Crash reports are retained for 30 days. No crash data is collected in development builds.',
   },
   {
     title: 'Storage & security',
@@ -80,7 +90,7 @@ const EN_SECTIONS: Section[] = [
   },
   {
     title: 'Retention & deletion',
-    body: 'Data is kept while the account is active, including photos submitted for analysis. Users may request account deletion at any time — see the Account Deletion page. When an account is deleted, the photos stored on our servers are deleted with it. Usage and payment records are kept without your account identifier, for accounting and operational purposes. Deletion is completed within 30 days.',
+    body: 'Data is kept while the account is active, including photos submitted for analysis. You may request account deletion at any time — from within the app (Settings → Delete account) or via the Account Deletion page on our website. When an account is deleted, the photos stored on our servers are deleted with it. Usage and payment records are kept without your account identifier, for accounting and operational purposes. Deletion is completed within 30 days.',
   },
   {
     title: 'Children',

@@ -1,12 +1,12 @@
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { useChupChuStore } from '../../stores/chupChuStore';
+import { EN_HEADING } from '../../styles/fonts';
 
 const NIGHT    = '#050d0a';
 const BIO_CYAN = '#00e5c3';
 const TEXT_MID = '#b0cfbf';
 const FRANK    = '"Frank Ruhl Libre", Georgia, serif';
-const DM_SANS  = "'DM Sans', 'Assistant', 'Heebo', sans-serif";
 
 interface Props {
   tier: string | null;
@@ -77,7 +77,7 @@ export function RateLimitBanner({ tier }: Props) {
       <p style={{ fontFamily: FRANK, fontSize: '15px', color: BIO_CYAN, margin: '0 0 6px' }}>
         {headline}
       </p>
-      <p style={{ fontFamily: DM_SANS, fontSize: '13px', color: `${TEXT_MID}99`, margin: '0 0 14px', lineHeight: 1.5 }}>
+      <p style={{ fontFamily: EN_HEADING, fontSize: '13px', color: `${TEXT_MID}99`, margin: '0 0 14px', lineHeight: 1.5 }}>
         {body}
       </p>
       {showUpgrade && (

@@ -2,13 +2,13 @@ import { useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useDirection } from '../../hooks/useDirection';
 import type { BiodynamicDay } from '@gina-haya/shared';
+import { EN_HEADING } from '../../styles/fonts';
 
 const NIGHT_CARD = '#111f18';
 const BIO_CYAN   = '#00e5c3';
 const TEXT_MID   = '#b0cfbf';
 const MUTED      = '#6b9080';
 const FRANK      = '"Frank Ruhl Libre", Georgia, serif';
-const DM_SANS    = "'DM Sans', 'Assistant', 'Heebo', sans-serif";
 
 const SCORE_COLOURS: Record<string, string> = {
   green:  '#4A9C68',
@@ -223,7 +223,7 @@ export function DayDetailModal({ day, onClose }: Props) {
 
           {/* Full date */}
           <p style={{
-            fontFamily:    DM_SANS,
+            fontFamily:    EN_HEADING,
             fontSize:      '12px',
             fontWeight:    600,
             letterSpacing: '0.1em',
@@ -262,7 +262,7 @@ export function DayDetailModal({ day, onClose }: Props) {
               <span style={{ fontFamily: FRANK, fontSize: '36px', fontWeight: 700, lineHeight: 1, color: scoreColour }}>
                 {day.plantingScore}
               </span>
-              <span style={{ fontFamily: DM_SANS, fontSize: '14px', color: `${TEXT_MID}55` }}>
+              <span style={{ fontFamily: EN_HEADING, fontSize: '14px', color: `${TEXT_MID}55` }}>
                 / 10
               </span>
             </div>
@@ -280,10 +280,10 @@ export function DayDetailModal({ day, onClose }: Props) {
               borderRadius:    '10px',
               padding:         '12px 16px',
             }}>
-              <p style={{ fontFamily: DM_SANS, fontSize: '14px', fontWeight: 700, color: '#E06060', margin: '0 0 4px' }}>
+              <p style={{ fontFamily: EN_HEADING, fontSize: '14px', fontWeight: 700, color: '#E06060', margin: '0 0 4px' }}>
                 ⚫ {isHe ? 'יום צומת — יום מנוחה לגינה' : 'Node Day — rest day for the garden'}
               </p>
-              <p style={{ fontFamily: DM_SANS, fontSize: '13px', color: `${TEXT_MID}77`, margin: 0 }}>
+              <p style={{ fontFamily: EN_HEADING, fontSize: '13px', color: `${TEXT_MID}77`, margin: 0 }}>
                 {isHe
                   ? 'הימנע משתילה, קציר ועבודות קרקע'
                   : 'Avoid planting, harvesting and soil work'}
@@ -304,10 +304,10 @@ export function DayDetailModal({ day, onClose }: Props) {
                 {moonLabel}
               </span>
             </div>
-            <p style={{ fontFamily: DM_SANS, fontSize: '13px', color: `${TEXT_MID}AA`, margin: '0 0 8px', lineHeight: 1.6 }}>
+            <p style={{ fontFamily: EN_HEADING, fontSize: '13px', color: `${TEXT_MID}AA`, margin: '0 0 8px', lineHeight: 1.6 }}>
               {moonDesc}
             </p>
-            <p style={{ fontFamily: DM_SANS, fontSize: '12px', color: `${TEXT_MID}66`, margin: 0 }}>
+            <p style={{ fontFamily: EN_HEADING, fontSize: '12px', color: `${TEXT_MID}66`, margin: 0 }}>
               {isHe ? 'מזל הירח:' : 'Moon sign:'}{' '}
               <span style={{ color: MUTED }}>{isHe ? day.moonSignHe : day.moonSign}</span>
             </p>
@@ -328,7 +328,7 @@ export function DayDetailModal({ day, onClose }: Props) {
             <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
               {(tips ?? []).map((tip, i) => (
                 <p key={i} style={{
-                  fontFamily:         DM_SANS,
+                  fontFamily:         EN_HEADING,
                   fontSize:           '13px',
                   color:              `${TEXT_MID}99`,
                   lineHeight:         1.55,
@@ -351,7 +351,7 @@ export function DayDetailModal({ day, onClose }: Props) {
                   borderRadius:    '8px',
                   padding:         '10px 14px',
                 }}>
-                  <p style={{ fontFamily: DM_SANS, fontSize: '13px', color: BIO_CYAN, margin: 0 }}>
+                  <p style={{ fontFamily: EN_HEADING, fontSize: '13px', color: BIO_CYAN, margin: 0 }}>
                     {isHe
                       ? '✅ זמן מומלץ למריחת פרפרט 500 (16:00–19:00)'
                       : '✅ Recommended time to apply BD-500 (16:00–19:00)'}
@@ -365,7 +365,7 @@ export function DayDetailModal({ day, onClose }: Props) {
                   borderRadius:    '8px',
                   padding:         '10px 14px',
                 }}>
-                  <p style={{ fontFamily: DM_SANS, fontSize: '13px', color: BIO_CYAN, margin: 0 }}>
+                  <p style={{ fontFamily: EN_HEADING, fontSize: '13px', color: BIO_CYAN, margin: 0 }}>
                     {isHe
                       ? '✅ זמן מומלץ למריחת פרפרט 501 (עלות השחר–09:00)'
                       : '✅ Recommended time to apply BD-501 (dawn–09:00)'}
@@ -389,7 +389,7 @@ export function DayDetailModal({ day, onClose }: Props) {
             <span style={{ fontSize: '20px', flexShrink: 0 }}>🌱</span>
             <div style={{ flex: 1, minWidth: 0 }}>
               <p style={{
-                fontFamily:    DM_SANS,
+                fontFamily:    EN_HEADING,
                 fontSize:      '11px',
                 fontWeight:    700,
                 letterSpacing: '0.1em',

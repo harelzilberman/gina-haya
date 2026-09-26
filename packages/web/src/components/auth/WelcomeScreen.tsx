@@ -1,10 +1,10 @@
 import { useOnboardingStore } from '../../stores/onboardingStore';
+import { EN_HEADING } from '../../styles/fonts';
 
 const NIGHT    = '#050d0a';
 const BIO_CYAN = '#00e5c3';
 const TEXT_MID = '#b0cfbf';
 const FRANK    = '"Frank Ruhl Libre", Georgia, serif';
-const DM_SANS  = "'DM Sans', 'Assistant', 'Heebo', sans-serif";
 
 const CSS = `
 @keyframes chupchu-bounce-in {
@@ -104,7 +104,7 @@ export function WelcomeScreen() {
 
         {/* Subtitle */}
         <p style={{
-          fontFamily: DM_SANS, fontSize: '16px',
+          fontFamily: EN_HEADING, fontSize: '16px',
           color: `${TEXT_MID}CC`,
           textAlign: 'center', lineHeight: 1.8,
           maxWidth: 440, margin: '0 0 44px',

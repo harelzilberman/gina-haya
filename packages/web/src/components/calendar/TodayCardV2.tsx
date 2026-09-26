@@ -4,6 +4,7 @@ import { useDirection } from '../../hooks/useDirection';
 import { useAuthStore } from '../../stores/authStore';
 import type { BiodynamicDay } from '@gina-haya/shared';
 import './today-card.css';
+import { EN_HEADING } from '../../styles/fonts';
 
 const SCORE_COLOURS: Record<string, string> = {
   green:  '#4A9C68',
@@ -30,7 +31,6 @@ const NIGHT_CARD = '#111f18';
 const BIO_CYAN   = '#00e5c3';
 const TEXT_MID   = '#b0cfbf';
 const FRANK      = '"Frank Ruhl Libre", Georgia, serif';
-const DM_SANS    = "'DM Sans', 'Assistant', 'Heebo', sans-serif";
 
 
 let moonImgFailed = false;
@@ -523,7 +523,7 @@ export function MoonPhaseDisplay({ phaseAngle, phasePct, phaseHe, moonSignHe, as
         {phaseNameLabel}
       </div>
 
-      <div style={{ fontFamily: DM_SANS, fontSize: '13px', color: `${TEXT_MID}60` }}>
+      <div style={{ fontFamily: EN_HEADING, fontSize: '13px', color: `${TEXT_MID}60` }}>
         {isHe ? 'מזל הירח:' : 'Moon sign:'} {moonSignLabel}
       </div>
 
@@ -535,7 +535,7 @@ export function MoonPhaseDisplay({ phaseAngle, phasePct, phaseHe, moonSignHe, as
         border:      '1px solid rgba(0,229,195,0.2)',
         borderRadius:'99px',
         padding:     '4px 14px',
-        fontFamily:  DM_SANS,
+        fontFamily:  EN_HEADING,
         fontSize:    '12px',
         color:       BIO_CYAN,
       }}>
@@ -548,7 +548,7 @@ export function MoonPhaseDisplay({ phaseAngle, phasePct, phaseHe, moonSignHe, as
           justifyContent: 'space-between',
           fontSize:       '10px',
           color:          `${TEXT_MID}35`,
-          fontFamily:     DM_SANS,
+          fontFamily:     EN_HEADING,
           marginBottom:   '4px',
         }}>
           <span>🌑</span><span>🌓</span><span>🌕</span><span>🌗</span>
@@ -564,13 +564,13 @@ export function MoonPhaseDisplay({ phaseAngle, phasePct, phaseHe, moonSignHe, as
         </div>
       </div>
 
-      <div style={{ display: 'flex', gap: '16px', fontFamily: DM_SANS, fontSize: '11px', color: `${TEXT_MID}50` }}>
+      <div style={{ display: 'flex', gap: '16px', fontFamily: EN_HEADING, fontSize: '11px', color: `${TEXT_MID}50` }}>
         <span>{isHe ? 'ירח מלא:' : 'Full moon:'} {daysToFull === 0 ? (isHe ? 'היום!' : 'Today!') : (isHe ? `${daysToFull} ימים` : `${daysToFull} days`)}</span>
         <span>·</span>
         <span>{isHe ? 'ירח חדש:' : 'New moon:'} {daysToNew === 0 ? (isHe ? 'היום!' : 'Today!') : (isHe ? `${daysToNew} ימים` : `${daysToNew} days`)}</span>
       </div>
 
-      <div style={{ fontFamily: DM_SANS, fontSize: '11px', color: `${TEXT_MID}40` }}>
+      <div style={{ fontFamily: EN_HEADING, fontSize: '11px', color: `${TEXT_MID}40` }}>
         {isHe ? 'תאורה:' : 'Illumination:'} {illumination}%
       </div>
     </div>
@@ -641,7 +641,7 @@ export function TodayCard({ day }: Props) {
         backdropFilter:'blur(8px)',
       }}>
         <p style={{
-          fontFamily:  DM_SANS,
+          fontFamily:  EN_HEADING,
           fontSize:    '13px',
           fontWeight:  400,
           textAlign:   'center',
@@ -672,7 +672,7 @@ export function TodayCard({ day }: Props) {
                 border:       '1px solid rgba(0,229,195,0.2)',
                 borderRadius: '99px',
                 padding:      '4px 14px',
-                fontFamily:   DM_SANS,
+                fontFamily:   EN_HEADING,
                 fontSize:     '12px',
                 color:        `${BIO_CYAN}aa`,
                 cursor:       'pointer',
@@ -681,7 +681,7 @@ export function TodayCard({ day }: Props) {
               📍 עדכן מיקום לתצוגה מדויקת
             </button>
             {locationError && (
-              <div style={{ fontFamily: DM_SANS, fontSize: '11px', color: '#E24B4A', marginTop: '4px' }}>
+              <div style={{ fontFamily: EN_HEADING, fontSize: '11px', color: '#E24B4A', marginTop: '4px' }}>
                 {locationError}
               </div>
             )}
@@ -705,12 +705,12 @@ export function TodayCard({ day }: Props) {
               {day.plantingScore}
             </text>
             <text x="70" y="93" textAnchor="middle" dominantBaseline="central"
-              fontSize="11" fontWeight="400" fill={`${TEXT_MID}55`} fontFamily={DM_SANS.replace(/'/g, '')}>
+              fontSize="11" fontWeight="400" fill={`${TEXT_MID}55`} fontFamily={EN_HEADING.replace(/'/g, '')}>
               / 10
             </text>
           </svg>
           <p style={{
-            fontFamily:    DM_SANS,
+            fontFamily:    EN_HEADING,
             fontSize:      '11px',
             fontWeight:    600,
             letterSpacing: '0.1em',
@@ -724,7 +724,7 @@ export function TodayCard({ day }: Props) {
 
         <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '8px', marginBottom: showDayTypeLegend ? '8px' : '16px' }}>
           <span style={{
-            fontFamily:      DM_SANS,
+            fontFamily:      EN_HEADING,
             fontSize:        '14px',
             fontWeight:      600,
             padding:         '6px 20px',
@@ -754,7 +754,7 @@ export function TodayCard({ day }: Props) {
             border:       '1px solid rgba(0,229,195,0.1)',
           }}>
             {DAY_TYPE_LEGEND.map(({ emoji, name, desc }) => (
-              <div key={name} style={{ display: 'flex', gap: '8px', marginBottom: '6px', fontFamily: DM_SANS, alignItems: 'flex-start' }}>
+              <div key={name} style={{ display: 'flex', gap: '8px', marginBottom: '6px', fontFamily: EN_HEADING, alignItems: 'flex-start' }}>
                 <span style={{ fontSize: '14px' }}>{emoji}</span>
                 <div>
                   <span style={{ fontSize: '12px', fontWeight: 600, color: TEXT_MID }}>{name}</span>
@@ -769,7 +769,7 @@ export function TodayCard({ day }: Props) {
           <div style={{ display: 'flex', flexWrap: 'wrap', justifyContent: dir === 'rtl' ? 'flex-end' : 'flex-start', gap: '8px' }}>
             {day.prep500Recommended && (
               <span style={{
-                fontFamily:      DM_SANS,
+                fontFamily:      EN_HEADING,
                 fontSize:        '12px',
                 fontWeight:      500,
                 padding:         '5px 14px',
@@ -784,7 +784,7 @@ export function TodayCard({ day }: Props) {
             )}
             {day.prep501Recommended && (
               <span style={{
-                fontFamily:      DM_SANS,
+                fontFamily:      EN_HEADING,
                 fontSize:        '12px',
                 fontWeight:      500,
                 padding:         '5px 14px',

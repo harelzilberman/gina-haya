@@ -2,12 +2,12 @@ import { useState } from 'react';
 import { useGardenStore } from '../../stores/gardenStore';
 import { useHarvestStore, type AddHarvestData } from '../../stores/harvestStore';
 import { useToday } from '../../hooks/useCalendar';
+import { EN_HEADING } from '../../styles/fonts';
 
 const GOLD   = '#00e5c3';
 const PARCH  = '#b0cfbf';
 const EARTH  = '#050d0a';
 const FRANK  = '"Frank Ruhl Libre", Georgia, serif';
-const ASSIST = "'DM Sans', 'Assistant', 'Heebo', sans-serif";
 
 const MODAL_CSS = `
 .harvest-input {
@@ -16,7 +16,7 @@ const MODAL_CSS = `
   border: 1px solid rgba(0,229,195,0.2);
   border-radius: 8px;
   padding: 9px 12px;
-  font-family: ${ASSIST};
+  font-family: ${EN_HEADING};
   font-size: 14px;
   color: ${PARCH};
   outline: none;
@@ -32,7 +32,7 @@ const MODAL_CSS = `
   border: 1px solid rgba(0,229,195,0.2);
   border-radius: 8px;
   padding: 9px 12px;
-  font-family: ${ASSIST};
+  font-family: ${EN_HEADING};
   font-size: 14px;
   color: ${PARCH};
   outline: none;
@@ -179,7 +179,7 @@ export function AddHarvestModal({ onClose }: Props) {
           {/* Plant selector from garden */}
           {plants.length > 0 && !useCustomPlant && (
             <div>
-              <label style={{ fontFamily: ASSIST, fontSize: '12px', color: `${PARCH}77`, display: 'block', marginBottom: '5px' }}>
+              <label style={{ fontFamily: EN_HEADING, fontSize: '12px', color: `${PARCH}77`, display: 'block', marginBottom: '5px' }}>
                 בחר מהגינה
               </label>
               <select className="harvest-select" onChange={selectGardenPlant} defaultValue="" style={{ width: '100%' }}>
@@ -196,7 +196,7 @@ export function AddHarvestModal({ onClose }: Props) {
           {(plants.length === 0 || useCustomPlant || !plantNameHe) && (
             <>
               <div>
-                <label style={{ fontFamily: ASSIST, fontSize: '12px', color: `${PARCH}77`, display: 'block', marginBottom: '5px' }}>
+                <label style={{ fontFamily: EN_HEADING, fontSize: '12px', color: `${PARCH}77`, display: 'block', marginBottom: '5px' }}>
                   שם הצמח (עברית) *
                 </label>
                 <input
@@ -209,7 +209,7 @@ export function AddHarvestModal({ onClose }: Props) {
                 />
               </div>
               <div>
-                <label style={{ fontFamily: ASSIST, fontSize: '12px', color: `${PARCH}77`, display: 'block', marginBottom: '5px' }}>
+                <label style={{ fontFamily: EN_HEADING, fontSize: '12px', color: `${PARCH}77`, display: 'block', marginBottom: '5px' }}>
                   שם הצמח (אנגלית) *
                 </label>
                 <input
@@ -232,7 +232,7 @@ export function AddHarvestModal({ onClose }: Props) {
               backgroundColor: 'rgba(0,229,195,0.08)',
               border: '1px solid rgba(0,229,195,0.2)',
               borderRadius: '8px',
-              fontFamily: ASSIST,
+              fontFamily: EN_HEADING,
               fontSize: '14px',
               color: PARCH,
               display: 'flex',
@@ -252,7 +252,7 @@ export function AddHarvestModal({ onClose }: Props) {
 
           {/* Date */}
           <div>
-            <label style={{ fontFamily: ASSIST, fontSize: '12px', color: `${PARCH}77`, display: 'block', marginBottom: '5px' }}>
+            <label style={{ fontFamily: EN_HEADING, fontSize: '12px', color: `${PARCH}77`, display: 'block', marginBottom: '5px' }}>
               תאריך קציר
             </label>
             <input
@@ -266,7 +266,7 @@ export function AddHarvestModal({ onClose }: Props) {
 
           {/* Quantity */}
           <div>
-            <label style={{ fontFamily: ASSIST, fontSize: '12px', color: `${PARCH}77`, display: 'block', marginBottom: '5px' }}>
+            <label style={{ fontFamily: EN_HEADING, fontSize: '12px', color: `${PARCH}77`, display: 'block', marginBottom: '5px' }}>
               כמות (אופציונלי)
             </label>
             <div style={{ display: 'flex', gap: '8px' }}>
@@ -294,7 +294,7 @@ export function AddHarvestModal({ onClose }: Props) {
 
           {/* Notes */}
           <div>
-            <label style={{ fontFamily: ASSIST, fontSize: '12px', color: `${PARCH}77`, display: 'block', marginBottom: '5px' }}>
+            <label style={{ fontFamily: EN_HEADING, fontSize: '12px', color: `${PARCH}77`, display: 'block', marginBottom: '5px' }}>
               הערות (אופציונלי)
             </label>
             <textarea
@@ -315,10 +315,10 @@ export function AddHarvestModal({ onClose }: Props) {
               border: '1px solid rgba(0,229,195,0.1)',
               borderRadius: '8px',
             }}>
-              <div style={{ fontFamily: ASSIST, fontSize: '11px', color: `${PARCH}44`, marginBottom: '4px' }}>
+              <div style={{ fontFamily: EN_HEADING, fontSize: '11px', color: `${PARCH}44`, marginBottom: '4px' }}>
                 נתוני לוח שנה להיום
               </div>
-              <div style={{ display: 'flex', gap: '16px', fontFamily: ASSIST, fontSize: '12px', color: `${PARCH}88` }}>
+              <div style={{ display: 'flex', gap: '16px', fontFamily: EN_HEADING, fontSize: '12px', color: `${PARCH}88` }}>
                 <span>{DAY_TYPE_HE[day.dayType] ?? day.dayType}</span>
                 <span>ציון {day.plantingScore}/10</span>
               </div>
@@ -326,7 +326,7 @@ export function AddHarvestModal({ onClose }: Props) {
           )}
 
           {error && (
-            <div style={{ fontFamily: ASSIST, fontSize: '12px', color: '#E06060', textAlign: 'right' }}>
+            <div style={{ fontFamily: EN_HEADING, fontSize: '12px', color: '#E06060', textAlign: 'right' }}>
               {error}
             </div>
           )}

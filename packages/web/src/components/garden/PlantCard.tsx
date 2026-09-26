@@ -1,5 +1,6 @@
 import { useTranslation } from 'react-i18next';
 import type { PlantSummary } from '../../hooks/usePlants';
+import { EN_HEADING } from '../../styles/fonts';
 
 interface Props {
   plant:   PlantSummary;
@@ -12,7 +13,6 @@ const BIO_CYAN   = '#00e5c3';
 const TEXT_MID   = '#b0cfbf';
 const MUTED      = '#6b9080';
 const FRANK      = '"Frank Ruhl Libre", Georgia, serif';
-const DM_SANS    = "'DM Sans', 'Assistant', 'Heebo', sans-serif";
 
 const CATEGORY_EMOJIS: Record<string, string> = {
   vegetables:  '🥦',
@@ -86,7 +86,7 @@ export function PlantCard({ plant, index = 0, onClick }: Props) {
 
           {plant.common_name_en && (
             <p style={{
-              fontFamily: DM_SANS,
+              fontFamily: EN_HEADING,
               fontWeight: 300,
               fontSize:   '13px',
               color:      MUTED,
@@ -99,7 +99,7 @@ export function PlantCard({ plant, index = 0, onClick }: Props) {
 
           {plant.latin_name && (
             <p style={{
-              fontFamily:  DM_SANS,
+              fontFamily:  EN_HEADING,
               fontStyle:   'italic',
               fontSize:    '12px',
               color:       `${TEXT_MID}44`,
@@ -142,7 +142,7 @@ export function PlantCard({ plant, index = 0, onClick }: Props) {
               <span
                 key={dt}
                 style={{
-                  fontFamily:      DM_SANS,
+                  fontFamily:      EN_HEADING,
                   fontSize:        '11px',
                   fontWeight:      500,
                   padding:         '3px 10px',

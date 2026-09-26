@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { useAuthStore } from '../../stores/authStore';
 import { api } from '../../api/client';
+import { EN_HEADING } from '../../styles/fonts';
 
 // ── Design tokens ─────────────────────────────────────────────────────────────
 const NIGHT      = '#050d0a';
@@ -11,7 +12,6 @@ const TEXT       = '#e8f5ee';
 const TEXT_MID   = '#b0cfbf';
 const MUTED      = '#6b9080';
 const FRANK      = '"Frank Ruhl Libre", Georgia, serif';
-const DM_SANS    = "'DM Sans', 'Assistant', 'Heebo', sans-serif";
 
 export interface ConfirmItem {
   photoId:     string;
@@ -109,7 +109,7 @@ export function PlantConfirmBubble({ item, onDone, onDismiss }: Props) {
             <p style={{ fontFamily: FRANK, fontSize: '13px', fontWeight: 700, color: BIO_CYAN, margin: 0 }}>
               צמח זוהה! אשר הוספה לגינה
             </p>
-            <p style={{ fontFamily: DM_SANS, fontSize: '11px', color: MUTED, margin: 0 }}>
+            <p style={{ fontFamily: EN_HEADING, fontSize: '11px', color: MUTED, margin: 0 }}>
               בטחון: {item.confidence === 'high' ? 'גבוה' : item.confidence === 'medium' ? 'בינוני' : 'נמוך'}
             </p>
           </div>
@@ -124,7 +124,7 @@ export function PlantConfirmBubble({ item, onDone, onDismiss }: Props) {
       <div style={{ padding: '12px 14px', display: 'flex', flexDirection: 'column', gap: '8px' }}>
         {/* Hebrew name */}
         <div>
-          <label style={{ fontFamily: DM_SANS, fontSize: '11px', color: MUTED, display: 'block', marginBottom: '4px' }}>
+          <label style={{ fontFamily: EN_HEADING, fontSize: '11px', color: MUTED, display: 'block', marginBottom: '4px' }}>
             שם בעברית
           </label>
           <input
@@ -134,7 +134,7 @@ export function PlantConfirmBubble({ item, onDone, onDismiss }: Props) {
               width: '100%', boxSizing: 'border-box',
               background: 'rgba(9,20,16,0.85)', border: '1px solid rgba(0,229,195,0.2)',
               borderRadius: '7px', padding: '7px 10px',
-              fontFamily: DM_SANS, fontSize: '13px', color: TEXT,
+              fontFamily: EN_HEADING, fontSize: '13px', color: TEXT,
               outline: 'none', direction: 'rtl',
             }}
           />
@@ -142,7 +142,7 @@ export function PlantConfirmBubble({ item, onDone, onDismiss }: Props) {
 
         {/* English name */}
         <div>
-          <label style={{ fontFamily: DM_SANS, fontSize: '11px', color: MUTED, display: 'block', marginBottom: '4px' }}>
+          <label style={{ fontFamily: EN_HEADING, fontSize: '11px', color: MUTED, display: 'block', marginBottom: '4px' }}>
             Plant name (English)
           </label>
           <input
@@ -153,7 +153,7 @@ export function PlantConfirmBubble({ item, onDone, onDismiss }: Props) {
               width: '100%', boxSizing: 'border-box',
               background: 'rgba(9,20,16,0.85)', border: '1px solid rgba(0,229,195,0.2)',
               borderRadius: '7px', padding: '7px 10px',
-              fontFamily: DM_SANS, fontSize: '13px', color: TEXT,
+              fontFamily: EN_HEADING, fontSize: '13px', color: TEXT,
               outline: 'none', direction: 'ltr', textAlign: 'left',
             }}
           />
@@ -161,7 +161,7 @@ export function PlantConfirmBubble({ item, onDone, onDismiss }: Props) {
 
         {/* Zone selector */}
         <div>
-          <label style={{ fontFamily: DM_SANS, fontSize: '11px', color: MUTED, display: 'block', marginBottom: '4px' }}>
+          <label style={{ fontFamily: EN_HEADING, fontSize: '11px', color: MUTED, display: 'block', marginBottom: '4px' }}>
             אזור בגינה
           </label>
           <div style={{ display: 'flex', gap: '6px' }}>
@@ -174,7 +174,7 @@ export function PlantConfirmBubble({ item, onDone, onDismiss }: Props) {
                   borderRadius: '7px', border: `1px solid ${zoneId === z ? BIO_CYAN : 'rgba(0,229,195,0.15)'}`,
                   background: zoneId === z ? 'rgba(0,229,195,0.12)' : 'transparent',
                   color: zoneId === z ? BIO_CYAN : MUTED,
-                  fontFamily: DM_SANS, fontSize: '11px', fontWeight: 600,
+                  fontFamily: EN_HEADING, fontSize: '11px', fontWeight: 600,
                   cursor: 'pointer', transition: 'all 0.15s',
                 }}
               >
@@ -185,7 +185,7 @@ export function PlantConfirmBubble({ item, onDone, onDismiss }: Props) {
         </div>
 
         {error && (
-          <p style={{ fontFamily: DM_SANS, fontSize: '12px', color: '#ff5c8a', margin: 0 }}>{error}</p>
+          <p style={{ fontFamily: EN_HEADING, fontSize: '12px', color: '#ff5c8a', margin: 0 }}>{error}</p>
         )}
 
         {/* Action buttons */}
@@ -214,7 +214,7 @@ export function PlantConfirmBubble({ item, onDone, onDismiss }: Props) {
               flex: 1, padding: '9px',
               borderRadius: '8px', border: '1px solid rgba(0,229,195,0.2)',
               background: 'transparent', color: MUTED,
-              fontFamily: DM_SANS, fontSize: '12px',
+              fontFamily: EN_HEADING, fontSize: '12px',
               cursor: 'pointer', transition: 'color 0.15s',
             }}
           >

@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useLocation } from 'react-router-dom';
 import { PlayBadge } from './PlayBadge';
+import { EN_HEADING } from '../../styles/fonts';
 
 function isCheckoutRoute(pathname: string): boolean {
   return pathname === '/shop' || pathname.startsWith('/shop/');
@@ -12,7 +13,6 @@ const DISMISS_DAYS = 14;
 const BIO_CYAN   = '#00e5c3';
 const TEXT       = '#e8f5ee';
 const TEXT_MID   = '#b0cfbf';
-const DM_SANS    = "'DM Sans', 'Assistant', 'Heebo', sans-serif";
 
 // Bar height including PlayBadge clear-space: badge ~44px + 24px padding top/bottom
 const BAR_HEIGHT = 80;
@@ -98,7 +98,7 @@ export function AndroidInstallBar() {
       {/* Text */}
       <div style={{ flex: 1, overflow: 'hidden' }}>
         <p style={{
-          fontFamily: DM_SANS, fontSize: '13px', fontWeight: 700,
+          fontFamily: EN_HEADING, fontSize: '13px', fontWeight: 700,
           color: TEXT, margin: 0, lineHeight: 1.3,
           whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis',
         }}>
@@ -106,7 +106,7 @@ export function AndroidInstallBar() {
           {'\u05d4\u05d5\u05e8\u05d9\u05d3\u05d5 \u05d0\u05ea \u05d2\u05d9\u05e0\u05d4 \u05d7\u05d9\u05d4'}
         </p>
         <p style={{
-          fontFamily: DM_SANS, fontSize: '11px',
+          fontFamily: EN_HEADING, fontSize: '11px',
           color: TEXT_MID, margin: 0, lineHeight: 1.3,
         }}>
           {/* חינם ב-Google Play */}

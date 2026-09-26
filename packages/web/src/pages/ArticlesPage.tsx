@@ -2,11 +2,11 @@ import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { ARTICLES, type ArticleEntry } from '../data/articlesIndex';
+import { EN_HEADING } from '../styles/fonts';
 
 const GOLD   = '#c8a84b';
 const PARCH  = '#d4c9a8';
 const FRANK  = 'Georgia, serif';
-const ASSIST = '"Assistant", "Heebo", sans-serif';
 
 const CATEGORY_FILTERS = [
   { id: 'all',          labelHe: '✨ הכל',           labelEn: '✨ All' },
@@ -28,7 +28,7 @@ function CrossNavLink({ to, label }: { to: string; label: string }) {
       onMouseLeave={() => setHovered(false)}
       style={{
         display: 'inline-flex', alignItems: 'center', gap: '6px',
-        fontFamily: ASSIST, fontSize: '13px',
+        fontFamily: EN_HEADING, fontSize: '13px',
         color: GOLD,
         background: hovered ? 'rgba(200,168,75,0.14)' : 'rgba(200,168,75,0.07)',
         border: `1px solid ${hovered ? 'rgba(200,168,75,0.4)' : 'rgba(200,168,75,0.2)'}`,
@@ -83,7 +83,7 @@ export function ArticlesPage() {
         minHeight: '100vh',
         background: 'linear-gradient(180deg, #0e1e17 0%, #091410 30%, #091410 100%)',
         padding: '40px 48px 60px',
-        fontFamily: ASSIST,
+        fontFamily: EN_HEADING,
       }}
     >
       {/* Header */}
@@ -91,7 +91,7 @@ export function ArticlesPage() {
         <h1 style={{ fontFamily: FRANK, fontSize: '32px', color: GOLD, margin: '0 0 8px' }}>
           {heading}
         </h1>
-        <p style={{ fontFamily: ASSIST, fontSize: '15px', color: `${PARCH}60`, margin: 0 }}>
+        <p style={{ fontFamily: EN_HEADING, fontSize: '15px', color: `${PARCH}60`, margin: 0 }}>
           {subheading}
         </p>
       </div>
@@ -113,7 +113,7 @@ export function ArticlesPage() {
             padding: '10px 16px', borderRadius: '24px',
             border: '1px solid rgba(180,150,60,0.25)',
             background: 'rgba(10,24,10,0.75)',
-            color: PARCH, fontSize: '14px', fontFamily: ASSIST,
+            color: PARCH, fontSize: '14px', fontFamily: EN_HEADING,
             outline: 'none', direction: isRTL ? 'rtl' : 'ltr',
           }}
         />
@@ -129,7 +129,7 @@ export function ArticlesPage() {
               key={cat.id}
               onClick={() => setActiveFilter(cat.id)}
               style={{
-                fontFamily: ASSIST, fontSize: '13px',
+                fontFamily: EN_HEADING, fontSize: '13px',
                 padding: '6px 16px', borderRadius: '99px',
                 border: `1px solid ${active ? GOLD : 'rgba(180,150,60,0.2)'}`,
                 background: active ? 'rgba(180,150,60,0.15)' : 'transparent',
@@ -154,7 +154,7 @@ export function ArticlesPage() {
             <button
               onClick={() => setSearchQuery('')}
               style={{
-                fontFamily: ASSIST, fontSize: '13px', color: '#050d0a',
+                fontFamily: EN_HEADING, fontSize: '13px', color: '#050d0a',
                 background: GOLD, border: 'none', borderRadius: '99px',
                 padding: '8px 20px', cursor: 'pointer', marginTop: '8px',
               }}
@@ -162,7 +162,7 @@ export function ArticlesPage() {
               {lang === 'he' ? 'נקה חיפוש' : 'Clear search'}
             </button>
           ) : (
-            <p style={{ fontFamily: ASSIST, fontSize: '13px', color: `${PARCH}50`, margin: 0 }}>
+            <p style={{ fontFamily: EN_HEADING, fontSize: '13px', color: `${PARCH}50`, margin: 0 }}>
               {lang === 'he' ? "צ'ופצ'ו עובד על התוכן 🌿" : 'Chupchu is working on it 🌿'}
             </p>
           )}
@@ -241,7 +241,7 @@ function ArticleCard({
           borderBottom: '1px solid rgba(180,150,60,0.08)',
         }}>
           <span style={{
-            fontFamily: ASSIST, fontSize: '11px',
+            fontFamily: EN_HEADING, fontSize: '11px',
             color: `${GOLD}35`, letterSpacing: '0.08em',
             textTransform: 'uppercase' as const,
           }}>
@@ -254,7 +254,7 @@ function ArticleCard({
         {/* Category badge */}
         <div style={{ marginBottom: '10px' }}>
           <span style={{
-            fontFamily: ASSIST, fontSize: '10px', letterSpacing: '0.05em',
+            fontFamily: EN_HEADING, fontSize: '10px', letterSpacing: '0.05em',
             background: 'rgba(180,150,60,0.08)', color: GOLD,
             border: '1px solid rgba(180,150,60,0.2)',
             borderRadius: '99px', padding: '2px 9px',
@@ -275,7 +275,7 @@ function ArticleCard({
         {/* Description */}
         {description && (
           <p style={{
-            fontFamily: ASSIST, fontSize: '13px', color: `${PARCH}55`,
+            fontFamily: EN_HEADING, fontSize: '13px', color: `${PARCH}55`,
             margin: '0 0 12px', lineHeight: 1.6,
             display: '-webkit-box', WebkitLineClamp: 2,
             WebkitBoxOrient: 'vertical', overflow: 'hidden',
@@ -286,7 +286,7 @@ function ArticleCard({
 
         {/* Footer */}
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-          <span style={{ fontFamily: ASSIST, fontSize: '11px', color: `${PARCH}35` }}>
+          <span style={{ fontFamily: EN_HEADING, fontSize: '11px', color: `${PARCH}35` }}>
             {new Date(article.publishedAt + 'T12:00:00').toLocaleDateString(
               lang === 'he' ? 'he-IL' : 'en-US',
               { day: 'numeric', month: 'long', year: 'numeric' },

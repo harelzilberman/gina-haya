@@ -9,12 +9,12 @@ import { usePushNotifications } from '../hooks/usePushNotifications';
 import { usePlanLimit } from '../hooks/usePlanLimit';
 import { useCredits } from '../hooks/useCredits';
 import { MIN_PASSWORD_LENGTH, mapAuthError } from '../utils/authErrors';
+import { EN_HEADING } from '../styles/fonts';
 
 const EARTH  = '#050d0a';
 const GOLD   = '#00e5c3';
 const PARCH  = '#b0cfbf';
 const FRANK  = '"Frank Ruhl Libre", Georgia, serif';
-const ASSIST = "'DM Sans', 'Assistant', 'Heebo', sans-serif";
 
 const NOISE_BG = `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='250' height='250'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.75' numOctaves='4' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='250' height='250' filter='url(%23n)' opacity='0.55'/%3E%3C/svg%3E")`;
 
@@ -202,10 +202,10 @@ export function SettingsPage() {
               marginBottom:   '28px',
             }}>
               <div>
-                <div style={{ fontFamily: ASSIST, fontSize: '14px', fontWeight: 500, color: PARCH, marginBottom: '4px' }}>
+                <div style={{ fontFamily: EN_HEADING, fontSize: '14px', fontWeight: 500, color: PARCH, marginBottom: '4px' }}>
                   {t('emailPrefs.dailyTipLabel')}
                 </div>
-                <div style={{ fontFamily: ASSIST, fontSize: '12px', fontWeight: 300, color: `${PARCH}55` }}>
+                <div style={{ fontFamily: EN_HEADING, fontSize: '12px', fontWeight: 300, color: `${PARCH}55` }}>
                   {t('emailPrefs.dailyTipDesc')}
                 </div>
               </div>
@@ -244,7 +244,7 @@ export function SettingsPage() {
 
             {/* Language selector — pill style */}
             <div style={{ marginBottom: '32px' }}>
-              <div style={{ fontFamily: ASSIST, fontSize: '14px', fontWeight: 500, color: PARCH, marginBottom: '12px' }}>
+              <div style={{ fontFamily: EN_HEADING, fontSize: '14px', fontWeight: 500, color: PARCH, marginBottom: '12px' }}>
                 {t('emailPrefs.languageLabel')}
               </div>
               <div style={{ display: 'flex', gap: '8px' }}>
@@ -340,7 +340,7 @@ export function SettingsPage() {
                   padding: '10px 14px',
                   backgroundColor: 'rgba(192,57,43,0.15)',
                   border: '1px solid rgba(192,57,43,0.35)',
-                  fontFamily: ASSIST, fontSize: '13px', color: '#E07070',
+                  fontFamily: EN_HEADING, fontSize: '13px', color: '#E07070',
                 }}>
                   {passwordError}
                 </div>
@@ -352,7 +352,7 @@ export function SettingsPage() {
                   padding: '10px 14px',
                   backgroundColor: 'rgba(0,229,195,0.08)',
                   border: '1px solid rgba(0,229,195,0.3)',
-                  fontFamily: ASSIST, fontSize: '13px', color: GOLD,
+                  fontFamily: EN_HEADING, fontSize: '13px', color: GOLD,
                 }}>
                   {isHe ? 'הסיסמה עודכנה' : 'Password updated'}
                 </div>
@@ -361,7 +361,7 @@ export function SettingsPage() {
               <div style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
                 <div>
                   <label style={{
-                    display: 'block', fontFamily: ASSIST, fontSize: '13px',
+                    display: 'block', fontFamily: EN_HEADING, fontSize: '13px',
                     color: `${PARCH}80`, marginBottom: '6px',
                   }}>
                     {isHe ? 'סיסמה חדשה' : 'New password'}
@@ -377,14 +377,14 @@ export function SettingsPage() {
                       backgroundColor: 'rgba(5,13,10,0.6)',
                       border: '1px solid rgba(0,229,195,0.2)',
                       borderRadius: '8px', padding: '10px 14px',
-                      fontFamily: ASSIST, fontSize: '14px', color: PARCH,
+                      fontFamily: EN_HEADING, fontSize: '14px', color: PARCH,
                     }}
                   />
                 </div>
 
                 <div>
                   <label style={{
-                    display: 'block', fontFamily: ASSIST, fontSize: '13px',
+                    display: 'block', fontFamily: EN_HEADING, fontSize: '13px',
                     color: `${PARCH}80`, marginBottom: '6px',
                   }}>
                     {isHe ? 'אימות סיסמה' : 'Confirm password'}
@@ -399,7 +399,7 @@ export function SettingsPage() {
                       backgroundColor: 'rgba(5,13,10,0.6)',
                       border: '1px solid rgba(0,229,195,0.2)',
                       borderRadius: '8px', padding: '10px 14px',
-                      fontFamily: ASSIST, fontSize: '14px', color: PARCH,
+                      fontFamily: EN_HEADING, fontSize: '14px', color: PARCH,
                     }}
                   />
                 </div>
@@ -437,7 +437,7 @@ export function SettingsPage() {
                 {isHe ? 'התכנית שלי' : 'My Plan'}
               </h3>
               <span style={{
-                fontFamily: ASSIST, fontSize: '11px', fontWeight: 700,
+                fontFamily: EN_HEADING, fontSize: '11px', fontWeight: 700,
                 padding: '3px 10px', borderRadius: '12px',
                 backgroundColor: `${tierDisplay.color}22`,
                 color: tierDisplay.color,
@@ -458,7 +458,7 @@ export function SettingsPage() {
                 ].map(row => (
                   <div key={row.label} style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                      <span style={{ fontFamily: ASSIST, fontSize: '13px', color: `${PARCH}BB` }}>
+                      <span style={{ fontFamily: EN_HEADING, fontSize: '13px', color: `${PARCH}BB` }}>
                         {row.label}
                       </span>
                     </div>
@@ -477,7 +477,7 @@ export function SettingsPage() {
                 padding: '12px 14px',
                 marginBottom: '16px',
               }}>
-                <p style={{ fontFamily: ASSIST, fontSize: '12px', color: `${PARCH}70`, margin: '0 0 8px' }}>
+                <p style={{ fontFamily: EN_HEADING, fontSize: '12px', color: `${PARCH}70`, margin: '0 0 8px' }}>
                   {isHe ? 'קרדיטים שרכשת:' : 'Purchased credits:'}
                 </p>
                 {credits.analysis.available > 0 && (
@@ -537,7 +537,7 @@ export function SettingsPage() {
                   marginTop: '8px', width: '100%', padding: '8px',
                   backgroundColor: 'transparent',
                   color: 'rgba(220,80,80,0.75)', border: '1px solid rgba(220,80,80,0.25)',
-                  borderRadius: '8px', fontFamily: ASSIST, fontSize: '13px',
+                  borderRadius: '8px', fontFamily: EN_HEADING, fontSize: '13px',
                   cursor: 'pointer', transition: 'border-color 0.2s, color 0.2s',
                 }}
                 onMouseEnter={e => { const el = e.currentTarget as HTMLElement; el.style.color = 'rgba(220,80,80,1)'; el.style.borderColor = 'rgba(220,80,80,0.5)'; }}
@@ -554,8 +554,8 @@ export function SettingsPage() {
 
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
               <div>
-                <p style={{ fontFamily: ASSIST, fontSize: '14px', color: PARCH, margin: '0 0 2px' }}>{t('notifications.pushLabel')}</p>
-                <p style={{ fontFamily: ASSIST, fontSize: '12px', color: `${PARCH}60`, margin: 0 }}>
+                <p style={{ fontFamily: EN_HEADING, fontSize: '14px', color: PARCH, margin: '0 0 2px' }}>{t('notifications.pushLabel')}</p>
+                <p style={{ fontFamily: EN_HEADING, fontSize: '12px', color: `${PARCH}60`, margin: 0 }}>
                   {permission === 'denied'
                     ? t('notifications.blocked')
                     : isSubscribed
@@ -568,7 +568,7 @@ export function SettingsPage() {
                   onClick={isSubscribed ? unsubscribe : subscribe}
                   disabled={pushLoading}
                   style={{
-                    fontFamily: ASSIST, fontSize: '13px', fontWeight: 600,
+                    fontFamily: EN_HEADING, fontSize: '13px', fontWeight: 600,
                     padding: '7px 16px', borderRadius: '8px',
                     border: isSubscribed ? '1px solid rgba(255,100,100,0.3)' : `1px solid ${GOLD}55`,
                     color: isSubscribed ? '#ff9090' : GOLD,

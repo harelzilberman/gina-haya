@@ -2,12 +2,12 @@ import { useState, useRef, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useGardenSwitcherStore } from '../../stores/gardenSwitcherStore';
 import { usePlanLimit } from '../../hooks/usePlanLimit';
+import { EN_HEADING } from '../../styles/fonts';
 
 const NIGHT_CARD = '#111f18';
 const BIO_CYAN   = '#00e5c3';
 const TEXT_MID   = '#b0cfbf';
 const FRANK      = '"Frank Ruhl Libre", Georgia, serif';
-const DM_SANS    = "'DM Sans', 'Assistant', 'Heebo', sans-serif";
 
 interface Props {
   onCreateGarden: () => void;
@@ -42,7 +42,7 @@ export function GardenSwitcher({ onCreateGarden }: Props) {
           display:    'flex',
           alignItems: 'center',
           gap:        '6px',
-          fontFamily: DM_SANS,
+          fontFamily: EN_HEADING,
           fontSize:   '13px',
           fontWeight: 600,
           color:      TEXT_MID,
@@ -132,7 +132,7 @@ export function GardenSwitcher({ onCreateGarden }: Props) {
                 <span style={{ fontSize: '16px', flexShrink: 0 }}>🏡</span>
                 <div style={{ flex: 1, textAlign: 'start', overflow: 'hidden' }}>
                   <div style={{
-                    fontFamily:   DM_SANS,
+                    fontFamily:   EN_HEADING,
                     fontSize:     '13px',
                     fontWeight:   600,
                     color:        isActive ? BIO_CYAN : TEXT_MID,
@@ -142,12 +142,12 @@ export function GardenSwitcher({ onCreateGarden }: Props) {
                   }}>
                     {switchingId === garden.id ? 'טוען...' : garden.name}
                     {garden.is_default && (
-                      <span style={{ fontFamily: DM_SANS, fontSize: '10px', color: `${TEXT_MID}50`, marginRight: '6px' }}> ★</span>
+                      <span style={{ fontFamily: EN_HEADING, fontSize: '10px', color: `${TEXT_MID}50`, marginRight: '6px' }}> ★</span>
                     )}
                   </div>
                   {garden.location && (
                     <div style={{
-                      fontFamily:   DM_SANS,
+                      fontFamily:   EN_HEADING,
                       fontSize:     '11px',
                       color:        `${TEXT_MID}55`,
                       overflow:     'hidden',
@@ -177,7 +177,7 @@ export function GardenSwitcher({ onCreateGarden }: Props) {
                   border:          '1px dashed rgba(0,229,195,0.3)',
                   borderRadius:    '6px',
                   cursor:          'pointer',
-                  fontFamily:      DM_SANS,
+                  fontFamily:      EN_HEADING,
                   fontSize:        '12px',
                   fontWeight:      600,
                   color:           BIO_CYAN,
@@ -208,7 +208,7 @@ export function GardenSwitcher({ onCreateGarden }: Props) {
                   border:          '1px solid rgba(0,229,195,0.2)',
                   borderRadius:    '6px',
                   cursor:          'pointer',
-                  fontFamily:      DM_SANS,
+                  fontFamily:      EN_HEADING,
                   fontSize:        '11px',
                   color:           `${TEXT_MID}70`,
                   display:         'flex',
@@ -230,7 +230,7 @@ export function GardenSwitcher({ onCreateGarden }: Props) {
                 background:      'transparent',
                 border:          'none',
                 cursor:          'pointer',
-                fontFamily:      DM_SANS,
+                fontFamily:      EN_HEADING,
                 fontSize:        '11px',
                 color:           `${TEXT_MID}50`,
                 display:         'flex',

@@ -4,6 +4,7 @@ import { useTranslation } from 'react-i18next';
 import { useDirection } from '../../hooks/useDirection';
 import type { BiodynamicDay } from '@gina-haya/shared';
 import { DayDetailModal } from './DayDetailModal';
+import { EN_HEADING } from '../../styles/fonts';
 
 const SCORE_COLOURS: Record<string, string> = {
   green:  '#4A9C68',
@@ -21,7 +22,6 @@ interface Props {
 const NIGHT_CARD = '#111f18';
 const BIO_CYAN   = '#00e5c3';
 const TEXT_MID   = '#b0cfbf';
-const DM_SANS    = "'DM Sans', 'Assistant', 'Heebo', sans-serif";
 
 const STRIP_CSS = `
 @keyframes ws-pill-in {
@@ -70,7 +70,7 @@ export function WeekStrip({ days, todayDate }: Props) {
       }}>
         {/* Section label */}
         <p style={{
-          fontFamily:         DM_SANS,
+          fontFamily:         EN_HEADING,
           fontSize:           '11px',
           fontWeight:         600,
           letterSpacing:      '0.1em',
@@ -142,7 +142,7 @@ export function WeekStrip({ days, todayDate }: Props) {
               >
                 {/* Weekday */}
                 <span style={{
-                  fontFamily:   DM_SANS,
+                  fontFamily:   EN_HEADING,
                   fontSize:     '10px',
                   fontWeight:   500,
                   color:        isToday ? `${BIO_CYAN}99` : `${TEXT_MID}44`,
@@ -154,7 +154,7 @@ export function WeekStrip({ days, todayDate }: Props) {
 
                 {/* Day number */}
                 <span style={{
-                  fontFamily:   DM_SANS,
+                  fontFamily:   EN_HEADING,
                   fontSize:     '18px',
                   fontWeight:   700,
                   color:        isToday ? BIO_CYAN : `${TEXT_MID}CC`,
@@ -187,7 +187,7 @@ export function WeekStrip({ days, todayDate }: Props) {
 
         {/* Hint text */}
         <p style={{
-          fontFamily: DM_SANS,
+          fontFamily: EN_HEADING,
           fontSize:   '11px',
           color:      `${TEXT_MID}40`,
           textAlign:  'center',

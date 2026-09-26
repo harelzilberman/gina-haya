@@ -1,10 +1,10 @@
 import { useState } from 'react';
+import { EN_HEADING } from '../../styles/fonts';
 
 const NIGHT    = '#050d0a';
 const BIO_CYAN = '#00e5c3';
 const TEXT_MID = '#b0cfbf';
 const FRANK    = '"Frank Ruhl Libre", Georgia, serif';
-const DM_SANS  = "'DM Sans', 'Assistant', 'Heebo', sans-serif";
 
 interface Props {
   email: string;
@@ -42,7 +42,7 @@ export function EmailVerificationScreen({ email, onResend }: Props) {
       </h2>
 
       <p style={{
-        fontFamily: DM_SANS, fontSize: '14px', color: `${TEXT_MID}CC`,
+        fontFamily: EN_HEADING, fontSize: '14px', color: `${TEXT_MID}CC`,
         lineHeight: 1.7, margin: '0 0 24px',
       }}>
         שלחנו לך מייל לכתובת{' '}
@@ -73,7 +73,7 @@ export function EmailVerificationScreen({ email, onResend }: Props) {
             borderRadius: '8px',
             border: '1px solid rgba(0,229,195,0.3)',
             backgroundColor: 'transparent',
-            fontFamily: DM_SANS, fontSize: '14px',
+            fontFamily: EN_HEADING, fontSize: '14px',
             color: resent ? BIO_CYAN : `${TEXT_MID}70`,
             cursor: resending ? 'default' : 'pointer',
             transition: 'color 0.2s',

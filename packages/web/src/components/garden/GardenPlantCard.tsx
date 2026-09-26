@@ -2,12 +2,12 @@ import { useTranslation } from 'react-i18next';
 import type { GardenPlant } from '../../stores/gardenStore';
 import type { Tracker } from '../../stores/trackerStore';
 import { PlantingBase } from './PlantingBase';
+import { EN_HEADING } from '../../styles/fonts';
 
 const NIGHT_CARD = '#111f18';
 const BIO_CYAN   = '#00e5c3';
 const TEXT_MID   = '#b0cfbf';
 const FRANK      = '"Frank Ruhl Libre", Georgia, serif';
-const DM_SANS    = "'DM Sans', 'Assistant', 'Heebo', sans-serif";
 
 const PLANT_TYPE_EMOJI: Record<string, string> = {
   tree: '🌳', shrub: '🌳', perennial: '🔁', annual: '🌱',
@@ -140,7 +140,7 @@ export function GardenPlantCard({ plant, tracker, onClick }: Props) {
           {displayName}
         </p>
         {plant.variety && (
-          <p style={{ fontFamily: DM_SANS, fontSize: '10px', color: `${TEXT_MID}70`, margin: '1px 0 0' }}>
+          <p style={{ fontFamily: EN_HEADING, fontSize: '10px', color: `${TEXT_MID}70`, margin: '1px 0 0' }}>
             {plant.variety}
           </p>
         )}
@@ -148,7 +148,7 @@ export function GardenPlantCard({ plant, tracker, onClick }: Props) {
 
       {growthStageHe && (
         <span style={{
-          fontFamily: DM_SANS, fontSize: '9px', fontWeight: 600, color: BIO_CYAN,
+          fontFamily: EN_HEADING, fontSize: '9px', fontWeight: 600, color: BIO_CYAN,
           background: 'rgba(0,229,195,0.1)', border: '1px solid rgba(0,229,195,0.25)',
           borderRadius: '50px', padding: '2px 8px',
         }}>

@@ -8,6 +8,7 @@ import { api } from '../../api/client';
 import { getLimits, TIER_PRICING, TIER_ORDER } from '@gina-haya/shared';
 import type { SubscriptionTier } from '@gina-haya/shared';
 import { savePurchaseIntent } from '../../utils/purchaseIntent';
+import { EN_HEADING } from '../../styles/fonts';
 
 const EARTH    = '#050d0a';
 const SOIL     = '#111f18';
@@ -15,7 +16,6 @@ const GOLD     = '#00e5c3';
 const SAGE     = '#4A9C68';
 const PARCH    = '#b0cfbf';
 const FRANK    = '"Frank Ruhl Libre", Georgia, serif';
-const ASSIST   = "'DM Sans', 'Assistant', 'Heebo', sans-serif";
 
 // Payment provider switch — set to 'grow' to route all checkout through Grow.
 // Change to 'stripe' only when Stripe price IDs are configured in the API.
@@ -129,7 +129,7 @@ export function UpgradeModal() {
     ],
   };
 
-  const headingFont = isHe ? FRANK : ASSIST;
+  const headingFont = isHe ? FRANK : EN_HEADING;
 
   const resetCheckoutStep = () => {
     setPendingGrowTier(null);
@@ -289,7 +289,7 @@ export function UpgradeModal() {
                   : t('modal.selectTitle')}
               </h2>
               <p style={{
-                fontFamily: ASSIST,
+                fontFamily: EN_HEADING,
                 fontSize:   '13px',
                 color:      `${PARCH}55`,
                 margin:     0,
@@ -350,10 +350,10 @@ export function UpgradeModal() {
                     background:      'rgba(255,255,255,0.03)',
                     border:          '1px solid rgba(176,207,191,0.1)',
                   }}>
-                    <span style={{ fontFamily: ASSIST, fontSize: '13px', color: `${PARCH}66` }}>
+                    <span style={{ fontFamily: EN_HEADING, fontSize: '13px', color: `${PARCH}66` }}>
                       {t('modal.currentPlan')}
                     </span>
-                    <span style={{ fontFamily: ASSIST, fontSize: '14px', color: `${PARCH}88`, fontWeight: 600 }}>
+                    <span style={{ fontFamily: EN_HEADING, fontSize: '14px', color: `${PARCH}88`, fontWeight: 600 }}>
                       {tierDisplayName(currentTier)}
                     </span>
                   </div>
@@ -374,14 +374,14 @@ export function UpgradeModal() {
                   background:      'rgba(0,229,195,0.07)',
                   border:          `1.5px solid ${GOLD}99`,
                 }}>
-                  <span style={{ fontFamily: ASSIST, fontSize: '13px', color: `${PARCH}CC` }}>
+                  <span style={{ fontFamily: EN_HEADING, fontSize: '13px', color: `${PARCH}CC` }}>
                     {t('modal.upgradingTo')}
                   </span>
                   <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start', gap: '2px' }}>
                     <span style={{ fontFamily: headingFont, fontSize: '16px', color: GOLD, fontWeight: 700 }}>
                       {tierDisplayName(targetTier)}
                     </span>
-                    <span style={{ fontFamily: ASSIST, fontSize: '12px', color: `${PARCH}99` }}>
+                    <span style={{ fontFamily: EN_HEADING, fontSize: '12px', color: `${PARCH}99` }}>
                       {billingPeriod === 'annual'
                         ? `₪${TIER_PRICING[targetTier]?.annual} ${t('modal.perYear')}`
                         : `₪${TIER_PRICING[targetTier]?.monthly} ${t('modal.perMonth')}`}
@@ -392,7 +392,7 @@ export function UpgradeModal() {
 
               {/* Billing period note */}
               {billingPeriod === 'annual' && (
-                <p style={{ fontFamily: ASSIST, fontSize: '12px', color: `${PARCH}66`, margin: 0 }}>
+                <p style={{ fontFamily: EN_HEADING, fontSize: '12px', color: `${PARCH}66`, margin: 0 }}>
                   {t('modal.annualOneTime')}
                 </p>
               )}
@@ -407,7 +407,7 @@ export function UpgradeModal() {
                     borderRadius:    '8px',
                     border:          '1px solid rgba(0,229,195,0.15)',
                     backgroundColor: 'transparent',
-                    fontFamily:      ASSIST,
+                    fontFamily:      EN_HEADING,
                     fontSize:        '13px',
                     color:           `${PARCH}77`,
                     cursor:          'pointer',
@@ -445,7 +445,7 @@ export function UpgradeModal() {
           ) : /* ── Step 2: Name + phone collection step (Grow — all languages) ── */
           pendingGrowTier ? (
             <div dir={isHe ? 'rtl' : 'ltr'} style={{ padding: '28px', display: 'flex', flexDirection: 'column', gap: '20px' }}>
-              <p style={{ fontFamily: ASSIST, fontSize: '14px', color: `${PARCH}CC`, margin: 0 }}>
+              <p style={{ fontFamily: EN_HEADING, fontSize: '14px', color: `${PARCH}CC`, margin: 0 }}>
                 {t('grow.paymentNote')}
               </p>
 
@@ -453,7 +453,7 @@ export function UpgradeModal() {
               <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
                 <label
                   htmlFor="grow-fullname"
-                  style={{ fontFamily: ASSIST, fontSize: '13px', fontWeight: 600, color: PARCH }}
+                  style={{ fontFamily: EN_HEADING, fontSize: '13px', fontWeight: 600, color: PARCH }}
                 >
                   {t('grow.fullNameLabel')}
                 </label>
@@ -481,7 +481,7 @@ export function UpgradeModal() {
                       ? `1px solid ${SAGE}88`
                       : '1px solid rgba(0,229,195,0.2)',
                     backgroundColor: 'rgba(9,20,16,0.6)',
-                    fontFamily:      ASSIST,
+                    fontFamily:      EN_HEADING,
                     fontSize:        '15px',
                     color:           PARCH,
                     outline:         'none',
@@ -489,7 +489,7 @@ export function UpgradeModal() {
                   }}
                 />
                 {fullNameErr && (
-                  <p style={{ fontFamily: ASSIST, fontSize: '12px', color: '#C0372A', margin: 0 }}>
+                  <p style={{ fontFamily: EN_HEADING, fontSize: '12px', color: '#C0372A', margin: 0 }}>
                     {t(fullNameErr)}
                   </p>
                 )}
@@ -499,7 +499,7 @@ export function UpgradeModal() {
               <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
                 <label
                   htmlFor="grow-phone"
-                  style={{ fontFamily: ASSIST, fontSize: '13px', fontWeight: 600, color: PARCH }}
+                  style={{ fontFamily: EN_HEADING, fontSize: '13px', fontWeight: 600, color: PARCH }}
                 >
                   {t('grow.phoneLabel')}
                 </label>
@@ -531,7 +531,7 @@ export function UpgradeModal() {
                       ? `1px solid ${SAGE}88`
                       : '1px solid rgba(0,229,195,0.2)',
                     backgroundColor: 'rgba(9,20,16,0.6)',
-                    fontFamily:      ASSIST,
+                    fontFamily:      EN_HEADING,
                     fontSize:        '15px',
                     color:           PARCH,
                     outline:         'none',
@@ -540,7 +540,7 @@ export function UpgradeModal() {
                   }}
                 />
                 {phoneError && (
-                  <p style={{ fontFamily: ASSIST, fontSize: '12px', color: '#C0372A', margin: 0 }}>
+                  <p style={{ fontFamily: EN_HEADING, fontSize: '12px', color: '#C0372A', margin: 0 }}>
                     {t(phoneError)}
                   </p>
                 )}
@@ -554,7 +554,7 @@ export function UpgradeModal() {
                   border:       `1.5px solid ${GOLD}99`,
                   background:   'rgba(0,229,195,0.07)',
                 }}>
-                  <p style={{ fontFamily: ASSIST, fontSize: '13px', color: `${PARCH}BB`, margin: 0, lineHeight: 1.55 }}>
+                  <p style={{ fontFamily: EN_HEADING, fontSize: '13px', color: `${PARCH}BB`, margin: 0, lineHeight: 1.55 }}>
                     {t('grow.annualNote', { price: TIER_PRICING[pendingGrowTier]?.annual })}
                   </p>
                 </div>
@@ -612,7 +612,7 @@ export function UpgradeModal() {
                         }} />
                         <span style={{ display: 'flex', flexDirection: 'column', gap: '2px' }}>
                           <span style={{
-                            fontFamily: ASSIST,
+                            fontFamily: EN_HEADING,
                             fontWeight: 600,
                             fontSize:   '13px',
                             color:      active ? GOLD : PARCH,
@@ -621,7 +621,7 @@ export function UpgradeModal() {
                             {opt.title}
                           </span>
                           <span style={{
-                            fontFamily: ASSIST,
+                            fontFamily: EN_HEADING,
                             fontSize:   '12px',
                             color:      `${PARCH}88`,
                             lineHeight: 1.5,
@@ -637,7 +637,7 @@ export function UpgradeModal() {
 
               {/* English-only: disclose ILS + Grow as payment processor */}
               {!isHe && (
-                <p style={{ fontFamily: ASSIST, fontSize: '11px', color: `${PARCH}55`, margin: 0, lineHeight: 1.5 }}>
+                <p style={{ fontFamily: EN_HEADING, fontSize: '11px', color: `${PARCH}55`, margin: 0, lineHeight: 1.5 }}>
                   {t('grow.providerDisclaimer')}
                 </p>
               )}
@@ -651,7 +651,7 @@ export function UpgradeModal() {
                     borderRadius:    '8px',
                     border:          '1px solid rgba(0,229,195,0.15)',
                     backgroundColor: 'transparent',
-                    fontFamily:      ASSIST,
+                    fontFamily:      EN_HEADING,
                     fontSize:        '13px',
                     color:           `${PARCH}77`,
                     cursor:          'pointer',
@@ -742,7 +742,7 @@ export function UpgradeModal() {
                         top:             '-12px',
                         left:            '50%',
                         transform:       'translateX(-50%)',
-                        fontFamily:      ASSIST,
+                        fontFamily:      EN_HEADING,
                         fontWeight:      600,
                         fontSize:        '11px',
                         padding:         '3px 12px',
@@ -768,7 +768,7 @@ export function UpgradeModal() {
                         {tierDisplayName(tier)}
                       </p>
                       <p style={{
-                        fontFamily: ASSIST,
+                        fontFamily: EN_HEADING,
                         fontSize:   '15px',
                         color:      isPro ? GOLD : `${PARCH}BB`,
                         margin:     0,
@@ -782,7 +782,7 @@ export function UpgradeModal() {
                     {/* Features */}
                     <ul style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: '7px', margin: 0, padding: 0, listStyle: 'none' }}>
                       {(TIER_FEATURES[tier] ?? []).map(feature => (
-                        <li key={feature} style={{ display: 'flex', alignItems: 'flex-start', gap: '6px', fontFamily: ASSIST, fontSize: '12px', color: `${PARCH}AA` }}>
+                        <li key={feature} style={{ display: 'flex', alignItems: 'flex-start', gap: '6px', fontFamily: EN_HEADING, fontSize: '12px', color: `${PARCH}AA` }}>
                           <span style={{ color: SAGE, flexShrink: 0, marginTop: '1px' }}>✓</span>
                           {feature}
                         </li>
@@ -795,7 +795,7 @@ export function UpgradeModal() {
                         padding:         '10px',
                         borderRadius:    '8px',
                         textAlign:       'center',
-                        fontFamily:      ASSIST,
+                        fontFamily:      EN_HEADING,
                         fontSize:        '13px',
                         color:           `${PARCH}44`,
                         backgroundColor: 'rgba(255,255,255,0.03)',
@@ -808,7 +808,7 @@ export function UpgradeModal() {
                         padding:         '10px',
                         borderRadius:    '8px',
                         textAlign:       'center',
-                        fontFamily:      ASSIST,
+                        fontFamily:      EN_HEADING,
                         fontSize:        '13px',
                         color:           `${PARCH}33`,
                         backgroundColor: 'rgba(255,255,255,0.03)',

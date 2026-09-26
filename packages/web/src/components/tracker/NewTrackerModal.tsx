@@ -7,12 +7,12 @@ import { useToastStore } from '../../stores/toastStore';
 import { MAX_PHOTO_SIZE_BYTES, MAX_PHOTO_SIZE_LABEL } from '@gina-haya/shared';
 import { UpgradeModal } from '../upgrade/UpgradeModal';
 import { compressImage } from '../../utils/compressImage';
+import { EN_HEADING } from '../../styles/fonts';
 
 const NIGHT_CARD = '#111f18';
 const BIO_CYAN   = '#00e5c3';
 const TEXT_MID   = '#b0cfbf';
 const FRANK      = '"Frank Ruhl Libre", Georgia, serif';
-const DM_SANS    = "'DM Sans', 'Assistant', 'Heebo', sans-serif";
 
 const LOCATION_TYPES = [
   { value: 'garden',     labelHe: 'גינה',   icon: '🌿' },
@@ -237,7 +237,7 @@ export function NewTrackerModal({ onClose, onCreated, gardenPlantId }: Props) {
     border:          '1px solid rgba(0,229,195,0.2)',
     borderRadius:    '6px',
     padding:         '10px 12px',
-    fontFamily:      DM_SANS,
+    fontFamily:      EN_HEADING,
     fontSize:        '14px',
     color:           TEXT_MID,
     outline:         'none',
@@ -247,7 +247,7 @@ export function NewTrackerModal({ onClose, onCreated, gardenPlantId }: Props) {
 
   const labelStyle: React.CSSProperties = {
     display:      'block',
-    fontFamily:   DM_SANS,
+    fontFamily:   EN_HEADING,
     fontSize:     '13px',
     color:        `${TEXT_MID}70`,
     marginBottom: '6px',
@@ -314,7 +314,7 @@ export function NewTrackerModal({ onClose, onCreated, gardenPlantId }: Props) {
             <p style={{ fontFamily: FRANK, fontSize: '18px', color: BIO_CYAN, margin: '12px 0 4px' }}>
               {t('checkin.analyzing')}
             </p>
-            <p style={{ fontFamily: DM_SANS, fontSize: '13px', color: `${TEXT_MID}60`, margin: 0 }}>
+            <p style={{ fontFamily: EN_HEADING, fontSize: '13px', color: `${TEXT_MID}60`, margin: 0 }}>
               זה לוקח כ-15 שניות
             </p>
           </div>
@@ -323,7 +323,7 @@ export function NewTrackerModal({ onClose, onCreated, gardenPlantId }: Props) {
         {/* Retry after analysis failure */}
         {canRetry && (
           <div style={{ textAlign: 'center', padding: '16px 0', marginBottom: '16px' }}>
-            <p style={{ fontFamily: DM_SANS, fontSize: '13px', color: '#e06060', marginBottom: '12px' }}>
+            <p style={{ fontFamily: EN_HEADING, fontSize: '13px', color: '#e06060', marginBottom: '12px' }}>
               {error}
             </p>
             <button
@@ -409,7 +409,7 @@ export function NewTrackerModal({ onClose, onCreated, gardenPlantId }: Props) {
                       border:          `1px solid ${locationType === loc.value ? BIO_CYAN : 'rgba(0,229,195,0.2)'}`,
                       backgroundColor: locationType === loc.value ? 'rgba(0,229,195,0.12)' : 'transparent',
                       color:           locationType === loc.value ? BIO_CYAN : `${TEXT_MID}70`,
-                      fontFamily:      DM_SANS,
+                      fontFamily:      EN_HEADING,
                       fontSize:        '13px',
                       cursor:          'pointer',
                     }}
@@ -455,10 +455,10 @@ export function NewTrackerModal({ onClose, onCreated, gardenPlantId }: Props) {
                   <p style={{ fontFamily: FRANK, fontSize: '16px', color: BIO_CYAN, margin: '0 0 4px' }}>
                     צלם או העלה תמונה של הצמח
                   </p>
-                  <p style={{ fontFamily: DM_SANS, fontSize: '12px', color: `${TEXT_MID}50`, margin: 0 }}>
+                  <p style={{ fontFamily: EN_HEADING, fontSize: '12px', color: `${TEXT_MID}50`, margin: 0 }}>
                     צ'ופצ'ו ינתח את הצמח ויבנה תכנית גידול מותאמת
                   </p>
-                  <p style={{ fontFamily: DM_SANS, fontSize: '11px', color: `${TEXT_MID}35`, margin: '6px 0 0' }}>
+                  <p style={{ fontFamily: EN_HEADING, fontSize: '11px', color: `${TEXT_MID}35`, margin: '6px 0 0' }}>
                     JPG, PNG, WEBP עד 8MB
                   </p>
                 </div>
@@ -501,7 +501,7 @@ export function NewTrackerModal({ onClose, onCreated, gardenPlantId }: Props) {
                       borderRadius:    '6px',
                       padding:         '4px 10px',
                       color:           'rgba(255,255,255,0.8)',
-                      fontFamily:      DM_SANS,
+                      fontFamily:      EN_HEADING,
                       fontSize:        '12px',
                       cursor:          'pointer',
                     }}
@@ -533,7 +533,7 @@ export function NewTrackerModal({ onClose, onCreated, gardenPlantId }: Props) {
             </div>
 
             {error && !canRetry && (
-              <p style={{ fontFamily: DM_SANS, fontSize: '13px', color: '#e06060', textAlign: 'right', marginBottom: '16px' }}>
+              <p style={{ fontFamily: EN_HEADING, fontSize: '13px', color: '#e06060', textAlign: 'right', marginBottom: '16px' }}>
                 {error}
               </p>
             )}

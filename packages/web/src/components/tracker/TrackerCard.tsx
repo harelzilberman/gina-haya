@@ -5,12 +5,12 @@ import { CheckinHistory } from './CheckinHistory';
 import { useTrackerStore } from '../../stores/trackerStore';
 import { api } from '../../api/client';
 import { useAuthStore } from '../../stores/authStore';
+import { EN_HEADING } from '../../styles/fonts';
 
 const NIGHT_CARD = '#111f18';
 const BIO_CYAN   = '#00e5c3';
 const TEXT_MID   = '#b0cfbf';
 const FRANK      = '"Frank Ruhl Libre", Georgia, serif';
-const DM_SANS    = "'DM Sans', 'Assistant', 'Heebo', sans-serif";
 
 const HEALTH_COLOURS: Record<string, string> = {
   excellent: '#5cb85c',
@@ -103,12 +103,12 @@ export function TrackerCard({ tracker, onAddCheckin, onDeleted }: Props) {
                 backgroundColor: healthColor,
                 boxShadow:       `0 0 6px ${healthColor}88`,
               }} />
-              <span style={{ fontFamily: DM_SANS, fontSize: '12px', color: `${TEXT_MID}50` }}>
+              <span style={{ fontFamily: EN_HEADING, fontSize: '12px', color: `${TEXT_MID}50` }}>
                 {t(`card.locations.${tracker.location_type}`, { defaultValue: tracker.location_type })}
               </span>
             </div>
             {tracker.location_description && (
-              <span style={{ fontFamily: DM_SANS, fontSize: '11px', color: `${TEXT_MID}35` }}>
+              <span style={{ fontFamily: EN_HEADING, fontSize: '11px', color: `${TEXT_MID}35` }}>
                 {tracker.location_description}
               </span>
             )}
@@ -119,7 +119,7 @@ export function TrackerCard({ tracker, onAddCheckin, onDeleted }: Props) {
             <h3 style={{ fontFamily: FRANK, fontSize: '18px', color: BIO_CYAN, margin: '0 0 2px' }}>
               {isHe ? tracker.plant_name_he : (tracker.plant_name_en || tracker.plant_name_he)}
             </h3>
-            <p style={{ fontFamily: DM_SANS, fontSize: '12px', color: `${TEXT_MID}50`, margin: 0, fontStyle: 'italic' }}>
+            <p style={{ fontFamily: EN_HEADING, fontSize: '12px', color: `${TEXT_MID}50`, margin: 0, fontStyle: 'italic' }}>
               {isHe ? tracker.plant_name_en : tracker.plant_name_he}
             </p>
           </div>
@@ -134,7 +134,7 @@ export function TrackerCard({ tracker, onAddCheckin, onDeleted }: Props) {
                 <span style={{
                   padding:         '2px 10px',
                   borderRadius:    '12px',
-                  fontFamily:      DM_SANS,
+                  fontFamily:      EN_HEADING,
                   fontSize:        '11px',
                   fontWeight:      600,
                   backgroundColor: `${healthColor}22`,
@@ -146,7 +146,7 @@ export function TrackerCard({ tracker, onAddCheckin, onDeleted }: Props) {
                 <span style={{
                   padding:         '2px 10px',
                   borderRadius:    '12px',
-                  fontFamily:      DM_SANS,
+                  fontFamily:      EN_HEADING,
                   fontSize:        '11px',
                   backgroundColor: 'rgba(0,229,195,0.1)',
                   border:          '1px solid rgba(0,229,195,0.25)',
@@ -161,11 +161,11 @@ export function TrackerCard({ tracker, onAddCheckin, onDeleted }: Props) {
           {/* Last checkin */}
           <div style={{ textAlign: 'right' }}>
             {latest ? (
-              <p style={{ fontFamily: DM_SANS, fontSize: '11px', color: `${TEXT_MID}45`, margin: 0 }}>
+              <p style={{ fontFamily: EN_HEADING, fontSize: '11px', color: `${TEXT_MID}45`, margin: 0 }}>
                 {t('card.lastCheckin', { count: daysSince(latest.checkin_date) })}
               </p>
             ) : (
-              <p style={{ fontFamily: DM_SANS, fontSize: '11px', color: `${TEXT_MID}30`, margin: 0 }}>
+              <p style={{ fontFamily: EN_HEADING, fontSize: '11px', color: `${TEXT_MID}30`, margin: 0 }}>
                 {t('card.neverChecked')}
               </p>
             )}
@@ -174,7 +174,7 @@ export function TrackerCard({ tracker, onAddCheckin, onDeleted }: Props) {
 
         {/* Expand indicator */}
         <div style={{ textAlign: 'center', marginTop: '10px' }}>
-          <span style={{ fontFamily: DM_SANS, fontSize: '11px', color: 'rgba(0,229,195,0.4)' }}>
+          <span style={{ fontFamily: EN_HEADING, fontSize: '11px', color: 'rgba(0,229,195,0.4)' }}>
             {isExpanded ? '▲' : '▼'}
           </span>
         </div>
@@ -191,18 +191,18 @@ export function TrackerCard({ tracker, onAddCheckin, onDeleted }: Props) {
       }}>
         {confirmDelete ? (
           <div style={{ display: 'flex', gap: '8px', alignItems: 'center', width: '100%', justifyContent: 'flex-end' }}>
-            <span style={{ fontFamily: DM_SANS, fontSize: '12px', color: `${TEXT_MID}60` }}>
+            <span style={{ fontFamily: EN_HEADING, fontSize: '12px', color: `${TEXT_MID}60` }}>
               {t('card.deleteConfirm')}
             </span>
             <button
               onClick={() => setConfirmDelete(false)}
-              style={{ fontFamily: DM_SANS, fontSize: '12px', color: `${TEXT_MID}60`, background: 'none', border: 'none', cursor: 'pointer' }}
+              style={{ fontFamily: EN_HEADING, fontSize: '12px', color: `${TEXT_MID}60`, background: 'none', border: 'none', cursor: 'pointer' }}
             >
               {t('card.cancel')}
             </button>
             <button
               onClick={handleDelete}
-              style={{ fontFamily: DM_SANS, fontSize: '12px', color: '#e06060', background: 'none', border: 'none', cursor: 'pointer', fontWeight: 600 }}
+              style={{ fontFamily: EN_HEADING, fontSize: '12px', color: '#e06060', background: 'none', border: 'none', cursor: 'pointer', fontWeight: 600 }}
             >
               {t('card.delete')}
             </button>
@@ -212,7 +212,7 @@ export function TrackerCard({ tracker, onAddCheckin, onDeleted }: Props) {
             <button
               onClick={() => setConfirmDelete(true)}
               style={{
-                fontFamily:     DM_SANS,
+                fontFamily:     EN_HEADING,
                 fontSize:       '12px',
                 color:          'rgba(220,100,100,0.5)',
                 background:     'none',

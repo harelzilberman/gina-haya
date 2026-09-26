@@ -1,12 +1,12 @@
 import { useState } from 'react';
 import type { PlantAnalysis, GrowingPlan } from '../../stores/trackerStore';
+import { EN_HEADING } from '../../styles/fonts';
 
 const NIGHT_CARD = '#111f18';
 const BIO_CYAN   = '#00e5c3';
 const TEXT_MID   = '#b0cfbf';
 const MUTED      = '#6b9080';
 const FRANK      = '"Frank Ruhl Libre", Georgia, serif';
-const DM_SANS    = "'DM Sans', 'Assistant', 'Heebo', sans-serif";
 
 const HEALTH_COLOURS: Record<string, string> = {
   excellent: '#5cb85c',
@@ -67,7 +67,7 @@ export function AnalysisResult({ analysis, growingPlan, checkinDate, suggestedTa
           <h2 style={{ fontFamily: FRANK, fontSize: '20px', color: BIO_CYAN, marginBottom: '12px' }}>
             שגיאה בניתוח
           </h2>
-          <p style={{ fontFamily: DM_SANS, fontSize: '14px', color: `${TEXT_MID}70`, lineHeight: 1.6 }}>
+          <p style={{ fontFamily: EN_HEADING, fontSize: '14px', color: `${TEXT_MID}70`, lineHeight: 1.6 }}>
             לא ניתן להציג את תוצאות הניתוח. אנא נסה שנית.
           </p>
           <div style={{ display: 'flex', gap: '10px', justifyContent: 'center', marginTop: '20px' }}>
@@ -277,14 +277,14 @@ ${(growingPlan.naturalFertilizers ?? []).length > 0 ? `
             </p>
             {identBannerState === 'pending' ? (
               <>
-                <p style={{ fontFamily: DM_SANS, fontSize: '16px', color: TEXT_MID, margin: '0 0 12px', textAlign: 'right', fontWeight: 600 }}>
+                <p style={{ fontFamily: EN_HEADING, fontSize: '16px', color: TEXT_MID, margin: '0 0 12px', textAlign: 'right', fontWeight: 600 }}>
                   {analysis.plantIdentifiedEn} ({analysis.plantIdentified})
                 </p>
                 <div style={{ display: 'flex', gap: '8px', justifyContent: 'flex-end' }}>
                   <button
                     onClick={() => setIdentBannerState('editing')}
                     style={{
-                      padding: '7px 14px', borderRadius: '6px', fontFamily: DM_SANS, fontSize: '13px',
+                      padding: '7px 14px', borderRadius: '6px', fontFamily: EN_HEADING, fontSize: '13px',
                       backgroundColor: 'transparent', border: '1px solid rgba(0,229,195,0.35)',
                       color: BIO_CYAN, cursor: 'pointer',
                     }}
@@ -315,7 +315,7 @@ ${(growingPlan.naturalFertilizers ?? []).length > 0 ? `
                     dir="rtl"
                     style={{
                       backgroundColor: 'rgba(9,20,16,0.85)', border: '1px solid rgba(0,229,195,0.3)',
-                      borderRadius: '6px', padding: '8px 10px', fontFamily: DM_SANS, fontSize: '14px',
+                      borderRadius: '6px', padding: '8px 10px', fontFamily: EN_HEADING, fontSize: '14px',
                       color: TEXT_MID, outline: 'none',
                     }}
                   />
@@ -326,7 +326,7 @@ ${(growingPlan.naturalFertilizers ?? []).length > 0 ? `
                     dir="ltr"
                     style={{
                       backgroundColor: 'rgba(9,20,16,0.85)', border: '1px solid rgba(0,229,195,0.3)',
-                      borderRadius: '6px', padding: '8px 10px', fontFamily: DM_SANS, fontSize: '14px',
+                      borderRadius: '6px', padding: '8px 10px', fontFamily: EN_HEADING, fontSize: '14px',
                       color: TEXT_MID, outline: 'none',
                     }}
                   />
@@ -335,7 +335,7 @@ ${(growingPlan.naturalFertilizers ?? []).length > 0 ? `
                   <button
                     onClick={() => setIdentBannerState('pending')}
                     style={{
-                      padding: '7px 14px', borderRadius: '6px', fontFamily: DM_SANS, fontSize: '13px',
+                      padding: '7px 14px', borderRadius: '6px', fontFamily: EN_HEADING, fontSize: '13px',
                       backgroundColor: 'transparent', border: '1px solid rgba(176,207,191,0.25)',
                       color: `${TEXT_MID}60`, cursor: 'pointer',
                     }}
@@ -366,7 +366,7 @@ ${(growingPlan.naturalFertilizers ?? []).length > 0 ? `
             <h2 style={{ fontFamily: FRANK, fontSize: '26px', color: BIO_CYAN, margin: '0 0 4px' }}>
               {analysis.plantIdentified}
             </h2>
-            <p style={{ fontFamily: DM_SANS, fontSize: '14px', color: `${TEXT_MID}60`, margin: 0, fontStyle: 'italic' }}>
+            <p style={{ fontFamily: EN_HEADING, fontSize: '14px', color: `${TEXT_MID}60`, margin: 0, fontStyle: 'italic' }}>
               {analysis.plantIdentifiedEn}
             </p>
           </div>
@@ -381,19 +381,19 @@ ${(growingPlan.naturalFertilizers ?? []).length > 0 ? `
         {/* Badges row */}
         <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap', marginBottom: '20px' }}>
           <span style={{
-            padding: '4px 14px', borderRadius: '16px', fontFamily: DM_SANS, fontSize: '13px', fontWeight: 600,
+            padding: '4px 14px', borderRadius: '16px', fontFamily: EN_HEADING, fontSize: '13px', fontWeight: 600,
             backgroundColor: 'rgba(0,229,195,0.1)', border: '1px solid rgba(0,229,195,0.35)', color: BIO_CYAN,
           }}>
             {stageHe}
           </span>
           <span style={{
-            padding: '4px 14px', borderRadius: '16px', fontFamily: DM_SANS, fontSize: '13px', fontWeight: 600,
+            padding: '4px 14px', borderRadius: '16px', fontFamily: EN_HEADING, fontSize: '13px', fontWeight: 600,
             backgroundColor: `${healthColor}22`, border: `1px solid ${healthColor}88`, color: healthColor,
           }}>
             {analysis.healthHe}
           </span>
           <span style={{
-            padding: '4px 14px', borderRadius: '16px', fontFamily: DM_SANS, fontSize: '12px',
+            padding: '4px 14px', borderRadius: '16px', fontFamily: EN_HEADING, fontSize: '12px',
             backgroundColor: 'rgba(255,255,255,0.04)', border: '1px solid rgba(176,207,191,0.12)',
             color: `${TEXT_MID}50`,
           }}>
@@ -412,8 +412,8 @@ ${(growingPlan.naturalFertilizers ?? []).length > 0 ? `
               borderRadius: '10px', padding: '10px 14px', marginBottom: '16px', cursor: 'pointer',
             }}
           >
-            <span style={{ fontFamily: DM_SANS, fontSize: '12px', color: BIO_CYAN }}>אישור משימות ←</span>
-            <span style={{ fontFamily: DM_SANS, fontSize: '13px', color: BIO_CYAN, fontWeight: 600 }}>
+            <span style={{ fontFamily: EN_HEADING, fontSize: '12px', color: BIO_CYAN }}>אישור משימות ←</span>
+            <span style={{ fontFamily: EN_HEADING, fontSize: '13px', color: BIO_CYAN, fontWeight: 600 }}>
               🗒️ {suggestedTasksCount} משימות מוצעות לאישור
             </span>
           </button>
@@ -424,7 +424,7 @@ ${(growingPlan.naturalFertilizers ?? []).length > 0 ? `
           backgroundColor: 'rgba(255,255,255,0.03)', borderRadius: '8px', padding: '14px',
           marginBottom: '4px', border: '1px solid rgba(176,207,191,0.08)',
         }}>
-          <p style={{ fontFamily: DM_SANS, fontSize: '14px', color: TEXT_MID, lineHeight: 1.7, margin: 0 }}>
+          <p style={{ fontFamily: EN_HEADING, fontSize: '14px', color: TEXT_MID, lineHeight: 1.7, margin: 0 }}>
             {analysis.observations}
           </p>
         </div>
@@ -450,7 +450,7 @@ ${(growingPlan.naturalFertilizers ?? []).length > 0 ? `
               >
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '6px' }}>
                   <span style={{
-                    fontFamily: DM_SANS, fontSize: '12px', fontWeight: 600,
+                    fontFamily: EN_HEADING, fontSize: '12px', fontWeight: 600,
                     color: SEVERITY_COLOURS[issue.severity],
                     backgroundColor: `${SEVERITY_COLOURS[issue.severity]}22`,
                     padding: '2px 8px', borderRadius: '10px',
@@ -459,10 +459,10 @@ ${(growingPlan.naturalFertilizers ?? []).length > 0 ? `
                   </span>
                   <strong style={{ fontFamily: FRANK, fontSize: '15px', color: TEXT_MID }}>{issue.type}</strong>
                 </div>
-                <p style={{ fontFamily: DM_SANS, fontSize: '13px', color: `${TEXT_MID}80`, margin: '0 0 8px', lineHeight: 1.6 }}>
+                <p style={{ fontFamily: EN_HEADING, fontSize: '13px', color: `${TEXT_MID}80`, margin: '0 0 8px', lineHeight: 1.6 }}>
                   {issue.description}
                 </p>
-                <p style={{ fontFamily: DM_SANS, fontSize: '13px', color: MUTED, margin: 0, lineHeight: 1.6 }}>
+                <p style={{ fontFamily: EN_HEADING, fontSize: '13px', color: MUTED, margin: 0, lineHeight: 1.6 }}>
                   🌿 {issue.naturalSolution}
                 </p>
               </div>
@@ -477,7 +477,7 @@ ${(growingPlan.naturalFertilizers ?? []).length > 0 ? `
             <ol style={{ margin: 0, padding: '0 20px 0 0', listStyle: 'decimal' }}>
               {(analysis.immediateActions ?? []).map((action, i) => (
                 <li key={i} style={{
-                  fontFamily: DM_SANS, fontSize: '14px', color: TEXT_MID, lineHeight: 1.7,
+                  fontFamily: EN_HEADING, fontSize: '14px', color: TEXT_MID, lineHeight: 1.7,
                   marginBottom: '8px',
                 }}>
                   <span style={{ marginRight: '8px' }}>
@@ -493,7 +493,7 @@ ${(growingPlan.naturalFertilizers ?? []).length > 0 ? `
         {/* Section 4: Growing plan */}
         {sectionTitle('🌱 תכנית גידול')}
         <div style={{ backgroundColor: 'rgba(255,255,255,0.03)', borderRadius: '8px', padding: '14px', marginBottom: '16px', border: '1px solid rgba(176,207,191,0.08)' }}>
-          <p style={{ fontFamily: DM_SANS, fontSize: '14px', color: TEXT_MID, lineHeight: 1.7, margin: '0 0 8px' }}>
+          <p style={{ fontFamily: EN_HEADING, fontSize: '14px', color: TEXT_MID, lineHeight: 1.7, margin: '0 0 8px' }}>
             {growingPlan.summary}
           </p>
           {growingPlan.estimatedHarvestWeeks !== null && (
@@ -528,7 +528,7 @@ ${(growingPlan.naturalFertilizers ?? []).length > 0 ? `
                 transition: 'background-color 0.15s',
               }}
             >
-              <span style={{ fontFamily: DM_SANS, fontSize: '16px', color: `${TEXT_MID}60` }}>
+              <span style={{ fontFamily: EN_HEADING, fontSize: '16px', color: `${TEXT_MID}60` }}>
                 {expandedWeeks.has(step.week) ? '▲' : '▼'}
               </span>
               <span style={{ fontFamily: FRANK, fontSize: '15px', color: TEXT_MID, textAlign: 'right' }}>
@@ -539,18 +539,18 @@ ${(growingPlan.naturalFertilizers ?? []).length > 0 ? `
               <div style={{ padding: '12px 16px', borderTop: '1px solid rgba(0,229,195,0.1)' }}>
                 <ul style={{ margin: '0 0 10px', padding: '0 18px 0 0' }}>
                   {step.actions.map((action, i) => (
-                    <li key={i} style={{ fontFamily: DM_SANS, fontSize: '13px', color: TEXT_MID, lineHeight: 1.7, marginBottom: '4px' }}>
+                    <li key={i} style={{ fontFamily: EN_HEADING, fontSize: '13px', color: TEXT_MID, lineHeight: 1.7, marginBottom: '4px' }}>
                       {action}
                     </li>
                   ))}
                 </ul>
                 {step.biodynamicTip && (
-                  <p style={{ fontFamily: DM_SANS, fontSize: '13px', fontStyle: 'italic', color: BIO_CYAN, margin: '8px 0 4px', lineHeight: 1.6 }}>
+                  <p style={{ fontFamily: EN_HEADING, fontSize: '13px', fontStyle: 'italic', color: BIO_CYAN, margin: '8px 0 4px', lineHeight: 1.6 }}>
                     🌙 {step.biodynamicTip}
                   </p>
                 )}
                 {(step.preparations ?? []).length > 0 && (
-                  <p style={{ fontFamily: DM_SANS, fontSize: '12px', color: MUTED, margin: '4px 0 0' }}>
+                  <p style={{ fontFamily: EN_HEADING, fontSize: '12px', color: MUTED, margin: '4px 0 0' }}>
                     פרפרטים: {(step.preparations ?? []).join(', ')}
                   </p>
                 )}
@@ -565,11 +565,11 @@ ${(growingPlan.naturalFertilizers ?? []).length > 0 ? `
           <p style={{ fontFamily: FRANK, fontSize: '14px', color: '#7bd4e8', margin: '0 0 6px' }}>
             כל {growingPlan.wateringSchedule.frequencyDays} ימים
           </p>
-          <p style={{ fontFamily: DM_SANS, fontSize: '13px', color: TEXT_MID, margin: '0 0 4px', lineHeight: 1.6 }}>
+          <p style={{ fontFamily: EN_HEADING, fontSize: '13px', color: TEXT_MID, margin: '0 0 4px', lineHeight: 1.6 }}>
             {growingPlan.wateringSchedule.amountDescription}
           </p>
           {growingPlan.wateringSchedule.specialNotes && (
-            <p style={{ fontFamily: DM_SANS, fontSize: '12px', color: `${TEXT_MID}60`, margin: 0, fontStyle: 'italic' }}>
+            <p style={{ fontFamily: EN_HEADING, fontSize: '12px', color: `${TEXT_MID}60`, margin: 0, fontStyle: 'italic' }}>
               {growingPlan.wateringSchedule.specialNotes}
             </p>
           )}
@@ -578,14 +578,14 @@ ${(growingPlan.naturalFertilizers ?? []).length > 0 ? `
         {/* Fertilising */}
         {sectionTitle('🌱 הדשנה')}
         <div style={{ backgroundColor: 'rgba(0,229,195,0.06)', borderRadius: '8px', padding: '14px', marginBottom: '16px', border: '1px solid rgba(0,229,195,0.2)' }}>
-          <p style={{ fontFamily: DM_SANS, fontSize: '13px', color: TEXT_MID, margin: '0 0 4px' }}>
+          <p style={{ fontFamily: EN_HEADING, fontSize: '13px', color: TEXT_MID, margin: '0 0 4px' }}>
             <strong>קומפוסט:</strong> {growingPlan.fertilising.compostAmount}
           </p>
-          <p style={{ fontFamily: DM_SANS, fontSize: '13px', color: TEXT_MID, margin: '0 0 4px' }}>
+          <p style={{ fontFamily: EN_HEADING, fontSize: '13px', color: TEXT_MID, margin: '0 0 4px' }}>
             <strong>תזמון:</strong> {growingPlan.fertilising.timing}
           </p>
           {(growingPlan.fertilising?.preparations ?? []).length > 0 && (
-            <p style={{ fontFamily: DM_SANS, fontSize: '12px', color: MUTED, margin: 0 }}>
+            <p style={{ fontFamily: EN_HEADING, fontSize: '12px', color: MUTED, margin: 0 }}>
               פרפרטים: {(growingPlan.fertilising?.preparations ?? []).join(', ')}
             </p>
           )}
@@ -597,7 +597,7 @@ ${(growingPlan.naturalFertilizers ?? []).length > 0 ? `
             {sectionTitle('🐛 מניעת מזיקים')}
             <ul style={{ margin: '0 0 16px', padding: '0 18px 0 0' }}>
               {(growingPlan.pestPrevention ?? []).map((tip, i) => (
-                <li key={i} style={{ fontFamily: DM_SANS, fontSize: '13px', color: TEXT_MID, lineHeight: 1.7, marginBottom: '4px' }}>
+                <li key={i} style={{ fontFamily: EN_HEADING, fontSize: '13px', color: TEXT_MID, lineHeight: 1.7, marginBottom: '4px' }}>
                   {tip}
                 </li>
               ))}
@@ -611,7 +611,7 @@ ${(growingPlan.naturalFertilizers ?? []).length > 0 ? `
             {sectionTitle('🌿 דשנים טבעיים')}
             <ul style={{ margin: '0 0 24px', padding: '0 18px 0 0' }}>
               {(growingPlan.naturalFertilizers ?? []).map((fert, i) => (
-                <li key={i} style={{ fontFamily: DM_SANS, fontSize: '13px', color: TEXT_MID, lineHeight: 1.7, marginBottom: '4px' }}>
+                <li key={i} style={{ fontFamily: EN_HEADING, fontSize: '13px', color: TEXT_MID, lineHeight: 1.7, marginBottom: '4px' }}>
                   {fert}
                 </li>
               ))}

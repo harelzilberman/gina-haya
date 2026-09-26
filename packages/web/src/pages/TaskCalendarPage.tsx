@@ -16,6 +16,7 @@ import { useAuthStore } from '../stores/authStore';
 import { tasksApi, type GardenTask } from '../api/tasks';
 import { calendarApi } from '../api/calendar';
 import type { BiodynamicDay } from '@gina-haya/shared';
+import { EN_HEADING } from '../styles/fonts';
 
 // ── Responsive hook ────────────────────────────────────────────────────────
 function useWindowWidth() {
@@ -33,7 +34,6 @@ const EARTH = '#050d0a';
 const GOLD  = '#00e5c3';
 const PARCH = '#b0cfbf';
 const FRANK = '"Frank Ruhl Libre", Georgia, serif';
-const ASST  = "'DM Sans', 'Assistant', 'Heebo', sans-serif";
 
 const TYPE_CONFIG = {
   biodynamic: { emoji: '🌙', label: 'biodynamic', color: '#4A9C68' },
@@ -229,7 +229,7 @@ function DraggableTaskCard({
       {/* Source badge */}
       <span style={{
         alignSelf: 'flex-start',
-        fontFamily: ASST, fontSize: '9px',
+        fontFamily: EN_HEADING, fontSize: '9px',
         background: src.badgeBg, color: src.badgeColor,
         borderRadius: '4px', padding: '1px 5px',
         display: 'inline-flex', alignItems: 'center', gap: '3px',
@@ -267,7 +267,7 @@ function DraggableTaskCard({
           onPointerDown={e => e.stopPropagation()}
           onClick={e => { e.stopPropagation(); onEdit(task); }}
           style={{
-            fontFamily: ASST, fontSize: '12px',
+            fontFamily: EN_HEADING, fontSize: '12px',
             color: isDone ? `${PARCH}60` : PARCH,
             flex: 1, textDecoration: isDone ? 'line-through' : 'none',
             direction: isHe ? 'rtl' : 'ltr', textAlign: isHe ? 'right' : 'left',
@@ -387,7 +387,7 @@ function DroppableDayCell({
         {dayStyle && <span style={{ fontSize: '9px', lineHeight: 1 }}>{dayStyle.emoji}</span>}
         {tasks.length > 0 && (
           <span style={{
-            fontFamily: ASST, fontSize: '9px', fontWeight: 700,
+            fontFamily: EN_HEADING, fontSize: '9px', fontWeight: 700,
             background: 'rgba(0,229,195,0.2)', color: GOLD,
             borderRadius: '99px', padding: '1px 4px', lineHeight: 1.4,
           }}>
@@ -427,7 +427,7 @@ function DroppableDayCell({
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2px' }}>
             <div style={{ display: 'flex', gap: '4px', alignItems: 'center' }}>
               {dayStyle && (
-                <span title={`${t(dayStyle.labelKey)} — ${DAY_TYPE_DESCS_HE[bd!.dayType] ?? ''}`} style={{ fontSize: '10px', padding: '1px 5px', borderRadius: '99px', background: dayStyle.bg, color: dayStyle.color, fontFamily: ASST, fontWeight: 600 }}>
+                <span title={`${t(dayStyle.labelKey)} — ${DAY_TYPE_DESCS_HE[bd!.dayType] ?? ''}`} style={{ fontSize: '10px', padding: '1px 5px', borderRadius: '99px', background: dayStyle.bg, color: dayStyle.color, fontFamily: EN_HEADING, fontWeight: 600 }}>
                   {dayStyle.emoji}
                 </span>
               )}
@@ -435,7 +435,7 @@ function DroppableDayCell({
             </div>
             <div style={{ textAlign: isHe ? 'right' : 'left' }}>
               <span style={{ fontFamily: FRANK, fontSize: '14px', color: isToday ? GOLD : isCurrentMonth ? PARCH : `${PARCH}50`, fontWeight: isToday ? 700 : 400 }}>{num}</span>
-              <span style={{ fontFamily: ASST, fontSize: '11px', color: `${PARCH}CC`, marginRight: isHe ? '3px' : 0, marginLeft: isHe ? 0 : '3px' }}>{day}</span>
+              <span style={{ fontFamily: EN_HEADING, fontSize: '11px', color: `${PARCH}CC`, marginRight: isHe ? '3px' : 0, marginLeft: isHe ? 0 : '3px' }}>{day}</span>
             </div>
           </div>
           {bd && bd.plantingScore > 0 && (
@@ -443,15 +443,15 @@ function DroppableDayCell({
               {Array.from({ length: 10 }, (_, i) => (
                 <div key={i} style={{ width: '4px', height: '4px', borderRadius: '50%', background: i < bd.plantingScore ? (bd.plantingScore <= 3 ? '#E24B4A' : bd.plantingScore <= 6 ? '#EF9F27' : '#639922') : 'rgba(255,255,255,0.08)' }} />
               ))}
-              <span style={{ fontFamily: ASST, fontSize: '11px', color: `${PARCH}BF`, marginInlineStart: '2px' }}>{bd.plantingScore}</span>
+              <span style={{ fontFamily: EN_HEADING, fontSize: '11px', color: `${PARCH}BF`, marginInlineStart: '2px' }}>{bd.plantingScore}</span>
             </div>
           )}
         </>
       ) : (
         <div style={{ textAlign: 'center', marginBottom: '6px' }}>
-          <div style={{ fontFamily: ASST, fontSize: '11px', color: `${PARCH}CC` }}>{day}</div>
+          <div style={{ fontFamily: EN_HEADING, fontSize: '11px', color: `${PARCH}CC` }}>{day}</div>
           <div style={{ fontFamily: FRANK, fontSize: '16px', color: isToday ? GOLD : isCurrentMonth ? PARCH : `${PARCH}50`, fontWeight: isToday ? 700 : 400 }}>{num}</div>
-          <div style={{ fontFamily: ASST, fontSize: '11px', color: `${PARCH}BF` }}>{month}</div>
+          <div style={{ fontFamily: EN_HEADING, fontSize: '11px', color: `${PARCH}BF` }}>{month}</div>
           <div style={{ display: 'flex', gap: '4px', justifyContent: 'center', alignItems: 'center', marginTop: '2px' }}>
             {dayStyle && <span style={{ fontSize: '12px' }} title={`${t(dayStyle.labelKey)} — ${DAY_TYPE_DESCS_HE[bd!.dayType] ?? ''}`}>{dayStyle.emoji}</span>}
             {bd && <span style={{ fontSize: '12px' }} title={bd.moonPhaseNameHe}>{moonEmoji(bd.moonPhasePct, (bd.moonPhaseAngle ?? 90) <= 180)}</span>}
@@ -462,9 +462,9 @@ function DroppableDayCell({
                 {Array.from({ length: 10 }, (_, i) => (
                   <div key={i} style={{ width: '5px', height: '5px', borderRadius: '50%', background: i < bd.plantingScore ? (bd.plantingScore <= 3 ? '#E24B4A' : bd.plantingScore <= 6 ? '#EF9F27' : '#639922') : 'rgba(255,255,255,0.08)' }} />
                 ))}
-                <span style={{ fontFamily: ASST, fontSize: '11px', color: `${PARCH}CC`, marginInlineStart: '4px' }}>{bd.plantingScore}/10</span>
+                <span style={{ fontFamily: EN_HEADING, fontSize: '11px', color: `${PARCH}CC`, marginInlineStart: '4px' }}>{bd.plantingScore}/10</span>
               </div>
-              <span style={{ fontFamily: ASST, fontSize: '11px', color: `${PARCH}BF` }}>ציון שתילה ביודינמי</span>
+              <span style={{ fontFamily: EN_HEADING, fontSize: '11px', color: `${PARCH}BF` }}>ציון שתילה ביודינמי</span>
             </div>
           )}
         </div>
@@ -483,7 +483,7 @@ function DroppableDayCell({
           />
         ))}
         {compact && tasks.length > 3 && (
-          <span style={{ fontFamily: ASST, fontSize: '11px', color: `${PARCH}BF` }}>
+          <span style={{ fontFamily: EN_HEADING, fontSize: '11px', color: `${PARCH}BF` }}>
             {t('moreCount', { count: tasks.length - 3 })}
           </span>
         )}
@@ -495,7 +495,7 @@ function DroppableDayCell({
           onClick={e => { e.stopPropagation(); onAdd(date); }}
           style={{
             background: 'none', border: 'none', cursor: 'pointer',
-            fontFamily: ASST, fontSize: '11px', color: `${PARCH}BF`,
+            fontFamily: EN_HEADING, fontSize: '11px', color: `${PARCH}BF`,
             padding: '0', lineHeight: 1, minHeight: '44px', minWidth: '44px',
           }}
           onMouseEnter={e => { (e.currentTarget as HTMLElement).style.color = GOLD; }}
@@ -504,7 +504,7 @@ function DroppableDayCell({
           {t('addButton')}
         </button>
         {tasks.length > 0 && (
-          <span style={{ fontFamily: ASST, fontSize: '11px', color: `${PARCH}BF` }}>
+          <span style={{ fontFamily: EN_HEADING, fontSize: '11px', color: `${PARCH}BF` }}>
             {done}/{tasks.length}
           </span>
         )}
@@ -539,7 +539,7 @@ function TaskModal({
     width: '100%', boxSizing: 'border-box',
     background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(0,229,195,0.2)',
     borderRadius: '6px', padding: '8px 10px',
-    fontFamily: ASST, fontSize: '14px', color: PARCH,
+    fontFamily: EN_HEADING, fontSize: '14px', color: PARCH,
     outline: 'none', direction: isHe ? 'rtl' : 'ltr',
   };
 
@@ -601,7 +601,7 @@ function TaskModal({
                     border: `1px solid ${status === s ? GOLD : 'rgba(255,255,255,0.1)'}`,
                     background: status === s ? 'rgba(0,229,195,0.12)' : 'transparent',
                     color: status === s ? GOLD : `${PARCH}60`,
-                    fontFamily: ASST, fontSize: '11px',
+                    fontFamily: EN_HEADING, fontSize: '11px',
                   }}
                 >
                   {t(`modal.statuses.${s}`)}
@@ -617,7 +617,7 @@ function TaskModal({
               onClick={onDelete}
               style={{
                 padding: '8px 14px', borderRadius: '6px', border: '1px solid rgba(220,80,80,0.3)',
-                color: 'rgba(220,80,80,0.8)', background: 'transparent', cursor: 'pointer', fontFamily: ASST, fontSize: '13px',
+                color: 'rgba(220,80,80,0.8)', background: 'transparent', cursor: 'pointer', fontFamily: EN_HEADING, fontSize: '13px',
               }}
             >
               {t('modal.delete')}
@@ -628,7 +628,7 @@ function TaskModal({
               onClick={onClose}
               style={{
                 padding: '8px 14px', borderRadius: '6px', border: '1px solid rgba(255,255,255,0.1)',
-                color: `${PARCH}60`, background: 'transparent', cursor: 'pointer', fontFamily: ASST, fontSize: '13px',
+                color: `${PARCH}60`, background: 'transparent', cursor: 'pointer', fontFamily: EN_HEADING, fontSize: '13px',
               }}
             >
               {t('modal.cancel')}
@@ -691,14 +691,14 @@ function ModalTaskRow({ task, onStatusToggle }: { task: GardenTask; onStatusTogg
         {isDone ? '✓' : ''}
       </button>
       <span style={{
-        fontFamily: ASST, fontSize: '14px', flex: 1,
+        fontFamily: EN_HEADING, fontSize: '14px', flex: 1,
         color: isDone ? `${PARCH}50` : PARCH,
         textDecoration: isDone ? 'line-through' : 'none',
       }}>
         {task.title}
       </span>
       <span style={{
-        fontFamily: ASST, fontSize: '10px',
+        fontFamily: EN_HEADING, fontSize: '10px',
         background: src.badgeBg, color: src.badgeColor,
         borderRadius: '4px', padding: '2px 6px',
         display: 'inline-flex', alignItems: 'center', gap: '3px',
@@ -772,14 +772,14 @@ function DayDetailModal({ date, tasks, bd, onClose, onStatusToggle, onAddTask }:
               <div style={{ display: 'flex', gap: '8px', alignItems: 'center', flexWrap: 'wrap' }}>
                 {dayStyle && (
                   <span style={{
-                    fontFamily: ASST, fontSize: '12px', padding: '3px 10px',
+                    fontFamily: EN_HEADING, fontSize: '12px', padding: '3px 10px',
                     borderRadius: '99px', background: dayStyle.bg, color: dayStyle.color,
                   }}>
                     {dayStyle.emoji} {t('dayModal.dayTypePrefix')} {t(dayStyle.labelKey)}
                   </span>
                 )}
                 {bd && (
-                  <span style={{ fontFamily: ASST, fontSize: '12px', color: `${PARCH}70` }}>
+                  <span style={{ fontFamily: EN_HEADING, fontSize: '12px', color: `${PARCH}70` }}>
                     {moonEmoji(bd.moonPhasePct, (bd.moonPhaseAngle ?? 90) <= 180)} {bd.moonPhasePct}%
                   </span>
                 )}
@@ -803,7 +803,7 @@ function DayDetailModal({ date, tasks, bd, onClose, onStatusToggle, onAddTask }:
               <h3 style={{ fontFamily: FRANK, fontSize: '20px', color: GOLD, margin: '0 0 12px' }}>
                 {t('dayModal.restDay')}
               </h3>
-              <p style={{ fontFamily: ASST, fontSize: '14px', color: `${PARCH}80`, lineHeight: 1.8, margin: '0 0 14px', whiteSpace: 'pre-line' }}>
+              <p style={{ fontFamily: EN_HEADING, fontSize: '14px', color: `${PARCH}80`, lineHeight: 1.8, margin: '0 0 14px', whiteSpace: 'pre-line' }}>
                 {t('dayModal.noTasksMsg')}
               </p>
               <p style={{ fontFamily: FRANK, fontSize: '15px', color: GOLD, margin: 0 }}>
@@ -820,7 +820,7 @@ function DayDetailModal({ date, tasks, bd, onClose, onStatusToggle, onAddTask }:
                   <div style={{
                     display: 'flex', alignItems: 'center', gap: '8px',
                     margin: '14px 0 8px',
-                    color: `${PARCH}BF`, fontFamily: ASST, fontSize: '11px',
+                    color: `${PARCH}BF`, fontFamily: EN_HEADING, fontSize: '11px',
                   }}>
                     <div style={{ flex: 1, height: '1px', background: 'rgba(255,255,255,0.07)' }} />
                     <span>{t('dayModal.done')}</span>
@@ -851,7 +851,7 @@ function DayDetailModal({ date, tasks, bd, onClose, onStatusToggle, onAddTask }:
                   flex: 1, background: 'rgba(255,255,255,0.05)',
                   border: '1px solid rgba(0,229,195,0.25)',
                   borderRadius: '8px', padding: '8px 12px',
-                  fontFamily: ASST, fontSize: '13px', color: PARCH,
+                  fontFamily: EN_HEADING, fontSize: '13px', color: PARCH,
                   outline: 'none', direction: isHe ? 'rtl' : 'ltr',
                 }}
               />
@@ -875,7 +875,7 @@ function DayDetailModal({ date, tasks, bd, onClose, onStatusToggle, onAddTask }:
             <button
               onClick={() => setAddingTask(true)}
               style={{
-                fontFamily: ASST, fontSize: '13px', color: GOLD,
+                fontFamily: EN_HEADING, fontSize: '13px', color: GOLD,
                 background: 'rgba(0,229,195,0.08)', border: '1px solid rgba(0,229,195,0.2)',
                 borderRadius: '8px', padding: '9px 14px', cursor: 'pointer',
               }}
@@ -885,7 +885,7 @@ function DayDetailModal({ date, tasks, bd, onClose, onStatusToggle, onAddTask }:
             <button
               onClick={onClose}
               style={{
-                fontFamily: ASST, fontSize: '13px', color: `${PARCH}60`,
+                fontFamily: EN_HEADING, fontSize: '13px', color: `${PARCH}60`,
                 background: 'transparent', border: '1px solid rgba(255,255,255,0.1)',
                 borderRadius: '8px', padding: '9px 16px', cursor: 'pointer',
               }}
@@ -1070,7 +1070,7 @@ export function TaskCalendarPage() {
   const totalDone    = tasks.filter(t => t.status === 'done').length;
 
   return (
-    <div dir={isHe ? 'rtl' : 'ltr'} style={{ minHeight: '100vh', backgroundColor: EARTH, padding: isMobile ? '16px 8px 80px' : '28px 16px 80px', fontFamily: ASST, overflowX: 'hidden', width: '100%', boxSizing: 'border-box' }}>
+    <div dir={isHe ? 'rtl' : 'ltr'} style={{ minHeight: '100vh', backgroundColor: EARTH, padding: isMobile ? '16px 8px 80px' : '28px 16px 80px', fontFamily: EN_HEADING, overflowX: 'hidden', width: '100%', boxSizing: 'border-box' }}>
       <div style={{ maxWidth: '1200px', margin: '0 auto', width: '100%', boxSizing: 'border-box' }}>
 
         {/* Page header */}
@@ -1082,7 +1082,7 @@ export function TaskCalendarPage() {
                 {t('title')}
               </h1>
               {tasks.length > 0 && (
-                <p style={{ fontFamily: ASST, fontSize: '12px', color: `${PARCH}CC`, margin: 0 }}>
+                <p style={{ fontFamily: EN_HEADING, fontSize: '12px', color: `${PARCH}CC`, margin: 0 }}>
                   {t('completedOf', { done: totalDone, total: totalDone + totalPending })}
                 </p>
               )}
@@ -1095,7 +1095,7 @@ export function TaskCalendarPage() {
                   key={v}
                   onClick={() => setView(v)}
                   style={{
-                    fontFamily: ASST, fontSize: '12px', fontWeight: 600,
+                    fontFamily: EN_HEADING, fontSize: '12px', fontWeight: 600,
                     padding: isMobile ? '6px 10px' : '6px 14px', border: 'none', cursor: 'pointer',
                     background: view === v ? 'rgba(0,229,195,0.15)' : 'transparent',
                     color: view === v ? GOLD : `${PARCH}60`,
@@ -1111,7 +1111,7 @@ export function TaskCalendarPage() {
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '10px' }}>
             <button
               onClick={() => navigate(-1)}
-              style={{ background: 'none', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '6px', color: PARCH, cursor: 'pointer', padding: isMobile ? '8px 12px' : '6px 12px', fontFamily: ASST, fontSize: '14px', minWidth: '44px', minHeight: '44px' }}
+              style={{ background: 'none', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '6px', color: PARCH, cursor: 'pointer', padding: isMobile ? '8px 12px' : '6px 12px', fontFamily: EN_HEADING, fontSize: '14px', minWidth: '44px', minHeight: '44px' }}
             >
               {t('nav.prev')}
             </button>
@@ -1120,7 +1120,7 @@ export function TaskCalendarPage() {
               <span style={{ fontFamily: FRANK, fontSize: isMobile ? '13px' : '15px', color: PARCH, textAlign: 'center' }}>{headerLabel}</span>
               <button
                 onClick={goToday}
-                style={{ background: 'none', border: '1px solid rgba(0,229,195,0.25)', borderRadius: '6px', color: GOLD, cursor: 'pointer', padding: '4px 8px', fontFamily: ASST, fontSize: '11px', fontWeight: 600, flexShrink: 0 }}
+                style={{ background: 'none', border: '1px solid rgba(0,229,195,0.25)', borderRadius: '6px', color: GOLD, cursor: 'pointer', padding: '4px 8px', fontFamily: EN_HEADING, fontSize: '11px', fontWeight: 600, flexShrink: 0 }}
               >
                 {t('nav.today')}
               </button>
@@ -1128,7 +1128,7 @@ export function TaskCalendarPage() {
 
             <button
               onClick={() => navigate(1)}
-              style={{ background: 'none', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '6px', color: PARCH, cursor: 'pointer', padding: isMobile ? '8px 12px' : '6px 12px', fontFamily: ASST, fontSize: '14px', minWidth: '44px', minHeight: '44px' }}
+              style={{ background: 'none', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '6px', color: PARCH, cursor: 'pointer', padding: isMobile ? '8px 12px' : '6px 12px', fontFamily: EN_HEADING, fontSize: '14px', minWidth: '44px', minHeight: '44px' }}
             >
               {t('nav.next')}
             </button>
@@ -1141,7 +1141,7 @@ export function TaskCalendarPage() {
                 key={f}
                 onClick={() => setFilter(f)}
                 style={{
-                  fontFamily: ASST, fontSize: '11px', fontWeight: 600,
+                  fontFamily: EN_HEADING, fontSize: '11px', fontWeight: 600,
                   padding: '4px 8px', borderRadius: '99px',
                   border: `1px solid ${filter === f ? GOLD : 'rgba(255,255,255,0.1)'}`,
                   color: filter === f ? GOLD : `${PARCH}55`,
@@ -1156,7 +1156,7 @@ export function TaskCalendarPage() {
             {Object.values(DAY_TYPE_STYLES).map(s => (
               <span
                 key={s.labelKey}
-                style={{ fontFamily: ASST, fontSize: '10px', padding: '2px 6px', borderRadius: '99px', background: s.bg, color: s.color }}
+                style={{ fontFamily: EN_HEADING, fontSize: '10px', padding: '2px 6px', borderRadius: '99px', background: s.bg, color: s.color }}
               >
                 {s.emoji}{!isMobile && ` ${t(s.labelKey)}`}
               </span>
@@ -1183,7 +1183,7 @@ export function TaskCalendarPage() {
                 return (
                   <div key={type} style={{ display: 'flex', gap: '6px', alignItems: 'flex-start', minWidth: '180px' }}>
                     <span style={{ fontSize: '13px' }}>{s.emoji}</span>
-                    <div style={{ fontFamily: ASST }}>
+                    <div style={{ fontFamily: EN_HEADING }}>
                       <span style={{ fontSize: '11px', fontWeight: 600, color: s.color }}>{t(s.labelKey)}</span>
                       <span style={{ fontSize: '11px', color: `${PARCH}BF` }}> — {desc}</span>
                     </div>
@@ -1197,7 +1197,7 @@ export function TaskCalendarPage() {
           <div style={{ display: 'flex', gap: '6px', flexWrap: 'wrap', alignItems: 'center', marginTop: '4px' }}>
             {(Object.entries(SOURCE_STYLES) as [keyof typeof SOURCE_STYLES, typeof SOURCE_STYLES[keyof typeof SOURCE_STYLES]][]).map(([key, s]) => (
               <span key={key} style={{
-                fontFamily: ASST, fontSize: '10px',
+                fontFamily: EN_HEADING, fontSize: '10px',
                 background: s.badgeBg, color: s.badgeColor,
                 borderRadius: '4px', padding: '2px 7px',
                 display: 'inline-flex', alignItems: 'center', gap: '3px',
@@ -1212,7 +1212,7 @@ export function TaskCalendarPage() {
         {view === 'month' && (
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(7, 1fr)', gap: isMobile ? '3px' : '6px', marginBottom: '4px' }}>
             {DAY_NAMES.map(d => (
-              <div key={d} style={{ textAlign: 'center', fontFamily: ASST, fontSize: '11px', color: `${PARCH}BF`, padding: '4px 0' }}>
+              <div key={d} style={{ textAlign: 'center', fontFamily: EN_HEADING, fontSize: '11px', color: `${PARCH}BF`, padding: '4px 0' }}>
                 {isMobile ? d.slice(0, 1) : d}
               </div>
             ))}
@@ -1223,7 +1223,7 @@ export function TaskCalendarPage() {
         {isLoading ? (
           <div style={{ textAlign: 'center', padding: '60px 0' }}>
             <div style={{ fontSize: '48px' }} className="animate-pulse">🌱</div>
-            <p style={{ fontFamily: ASST, fontSize: '14px', color: `${PARCH}BF`, marginTop: '12px' }}>{t('loading')}</p>
+            <p style={{ fontFamily: EN_HEADING, fontSize: '14px', color: `${PARCH}BF`, marginTop: '12px' }}>{t('loading')}</p>
           </div>
         ) : (
           <DndContext sensors={sensors} onDragStart={handleDragStart} onDragEnd={handleDragEnd}>
@@ -1291,7 +1291,7 @@ export function TaskCalendarPage() {
                 <div style={{
                   background: 'rgba(9,20,16,0.95)', border: `1px solid ${GOLD}44`,
                   borderRadius: '7px', padding: '6px 10px',
-                  fontFamily: ASST, fontSize: '12px', color: PARCH,
+                  fontFamily: EN_HEADING, fontSize: '12px', color: PARCH,
                   boxShadow: '0 8px 32px rgba(0,0,0,0.5)',
                   cursor: 'grabbing', pointerEvents: 'none',
                 }}>

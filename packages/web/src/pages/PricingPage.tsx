@@ -6,6 +6,7 @@ import { useUpgradeModalStore } from '../stores/upgradeModalStore';
 import { useToastStore } from '../stores/toastStore';
 import { getLimits, TIER_PRICING, TIER_ORDER } from '@gina-haya/shared';
 import { savePurchaseIntent, readPurchaseIntent, clearPurchaseIntent } from '../utils/purchaseIntent';
+import { EN_HEADING } from '../styles/fonts';
 
 const NIGHT      = '#050d0a';
 const NIGHT_MID  = '#091410';
@@ -17,7 +18,6 @@ const TEXT       = '#e8f5ee';
 const TEXT_MID   = '#b0cfbf';
 const MUTED      = '#6b9080';
 const FRANK      = '"Frank Ruhl Libre", Georgia, serif';
-const ASST       = "'DM Sans', 'Assistant', 'Heebo', sans-serif";
 
 const PAGE_CSS = `
 @keyframes pricingFadeIn {
@@ -30,10 +30,10 @@ const PAGE_CSS = `
 }
 .pricing-card { transition: transform 0.2s, box-shadow 0.2s; }
 .pricing-card:hover { transform: translateY(-5px); box-shadow: 0 20px 60px rgba(0,229,195,0.1) !important; }
-.pricing-feature-row { display: flex; align-items: flex-start; gap: 8px; padding: 5px 0; font-family: ${ASST}; font-size: 13px; line-height: 1.45; }
-.pricing-toggle-pill { padding: 7px 20px; border-radius: 99px; border: none; cursor: pointer; font-family: ${ASST}; font-size: 13px; font-weight: 600; transition: background 0.2s, color 0.2s; }
+.pricing-feature-row { display: flex; align-items: flex-start; gap: 8px; padding: 5px 0; font-family: ${EN_HEADING}; font-size: 13px; line-height: 1.45; }
+.pricing-toggle-pill { padding: 7px 20px; border-radius: 99px; border: none; cursor: pointer; font-family: ${EN_HEADING}; font-size: 13px; font-weight: 600; transition: background 0.2s, color 0.2s; }
 .faq-item { border-bottom: 1px solid rgba(0,229,195,0.08); }
-.faq-answer { font-family: ${ASST}; font-size: 14px; color: #b0cfbf; line-height: 1.7; padding: 0 0 16px; }
+.faq-answer { font-family: ${EN_HEADING}; font-size: 14px; color: #b0cfbf; line-height: 1.7; padding: 0 0 16px; }
 `;
 
 type ActiveTier = 'free' | 'gardener_pro' | 'advanced' | 'professional';
@@ -71,7 +71,7 @@ function ComingSoonToast({ visible, text }: { visible: boolean; text: string }) 
       border: `1px solid rgba(0,229,195,0.3)`,
       borderRadius: '12px',
       padding: '12px 24px',
-      fontFamily: ASST, fontSize: '14px', fontWeight: 600,
+      fontFamily: EN_HEADING, fontSize: '14px', fontWeight: 600,
       color: BIO_CYAN,
       boxShadow: '0 8px 32px rgba(0,0,0,0.5)',
       animation: 'toastIn 0.25s ease both',
@@ -191,7 +191,7 @@ export function PricingPage() {
       <div style={{
         position: 'absolute', top: -12, left: '50%', transform: 'translateX(-50%)',
         background: BIO_CYAN, color: NIGHT,
-        fontFamily: isHe ? FRANK : ASST, fontSize: '11px', fontWeight: 700,
+        fontFamily: isHe ? FRANK : EN_HEADING, fontSize: '11px', fontWeight: 700,
         padding: '3px 12px', borderRadius: '99px',
         whiteSpace: 'nowrap',
       }}>
@@ -223,7 +223,7 @@ export function PricingPage() {
       onClick={() => handleUpgradeClick(tier)}
       style={{
         display: 'block', width: '100%',
-        fontFamily: isHe ? FRANK : ASST, fontSize: '15px', fontWeight: 700,
+        fontFamily: isHe ? FRANK : EN_HEADING, fontSize: '15px', fontWeight: 700,
         color: NIGHT, background: BIO_CYAN,
         padding: '13px', borderRadius: '100px',
         border: 'none', cursor: 'pointer', transition: 'filter 0.2s',
@@ -235,14 +235,14 @@ export function PricingPage() {
     </button>
   );
 
-  const headingFont = isHe ? FRANK : ASST;
+  const headingFont = isHe ? FRANK : EN_HEADING;
 
   return (
     <>
       <style>{PAGE_CSS}</style>
       <ComingSoonToast visible={toastVisible} text={t('pricing.comingSoonToast')} />
 
-      <div dir={isHe ? 'rtl' : 'ltr'} style={{ minHeight: '100vh', background: NIGHT, fontFamily: ASST }}>
+      <div dir={isHe ? 'rtl' : 'ltr'} style={{ minHeight: '100vh', background: NIGHT, fontFamily: EN_HEADING }}>
 
         {/* ── Launch free mode banner ── */}
         <div style={{
@@ -279,7 +279,7 @@ export function PricingPage() {
             {t('pricing.header')}
           </h1>
           <p style={{
-            fontFamily: ASST, fontSize: '16px',
+            fontFamily: EN_HEADING, fontSize: '16px',
             color: TEXT_MID, margin: '0 0 28px',
           }}>
             {t('pricing.subtitle')}
@@ -350,13 +350,13 @@ export function PricingPage() {
               {tierName('free')}
             </div>
             {isHe && (
-              <div style={{ fontFamily: ASST, fontSize: '13px', color: MUTED, marginBottom: '20px' }}>
+              <div style={{ fontFamily: EN_HEADING, fontSize: '13px', color: MUTED, marginBottom: '20px' }}>
                 Free
               </div>
             )}
             <div style={{ marginBottom: '24px' }}>
               <span style={{ fontFamily: headingFont, fontSize: '38px', color: BIO_CYAN, fontWeight: 700 }}>₪0</span>
-              <span style={{ fontFamily: ASST, fontSize: '13px', color: MUTED, marginRight: '6px' }}>{t('pricing.forever')}</span>
+              <span style={{ fontFamily: EN_HEADING, fontSize: '13px', color: MUTED, marginRight: '6px' }}>{t('pricing.forever')}</span>
             </div>
             <div style={{ flex: 1, marginBottom: '24px' }}>
               {FREE_FEATURES.map((f, i) => <FeatureRow key={i} {...f} />)}
@@ -365,7 +365,7 @@ export function PricingPage() {
               to="/signup"
               style={{
                 display: 'block', textAlign: 'center',
-                fontFamily: isHe ? FRANK : ASST, fontSize: '15px', fontWeight: 700,
+                fontFamily: isHe ? FRANK : EN_HEADING, fontSize: '15px', fontWeight: 700,
                 color: NIGHT, background: BIO_CYAN,
                 padding: '13px', borderRadius: '100px',
                 textDecoration: 'none', transition: 'filter 0.2s',
@@ -395,7 +395,7 @@ export function PricingPage() {
                 position: 'absolute', top: -12, left: '50%', transform: 'translateX(-50%)',
                 background: `linear-gradient(90deg, ${BIO_CYAN}, ${BIO_LIME})`,
                 color: NIGHT,
-                fontFamily: isHe ? FRANK : ASST, fontSize: '11px', fontWeight: 700,
+                fontFamily: isHe ? FRANK : EN_HEADING, fontSize: '11px', fontWeight: 700,
                 padding: '3px 14px', borderRadius: '99px',
                 whiteSpace: 'nowrap',
               }}>
@@ -406,7 +406,7 @@ export function PricingPage() {
               {tierName('gardener_pro')}
             </div>
             {isHe && (
-              <div style={{ fontFamily: ASST, fontSize: '13px', color: MUTED, marginBottom: '20px' }}>
+              <div style={{ fontFamily: EN_HEADING, fontSize: '13px', color: MUTED, marginBottom: '20px' }}>
                 Gardener Pro
               </div>
             )}
@@ -414,10 +414,10 @@ export function PricingPage() {
               <span style={{ fontFamily: headingFont, fontSize: '38px', color: BIO_CYAN, fontWeight: 700 }}>
                 ₪{isAnnual ? annualMonthly('gardener_pro') : TIER_PRICING.gardener_pro.monthly}
               </span>
-              <span style={{ fontFamily: ASST, fontSize: '13px', color: MUTED, marginRight: '6px' }}>{t('pricing.perMonth')}</span>
+              <span style={{ fontFamily: EN_HEADING, fontSize: '13px', color: MUTED, marginRight: '6px' }}>{t('pricing.perMonth')}</span>
             </div>
             {isAnnual && (
-              <div style={{ fontFamily: ASST, fontSize: '12px', color: MUTED, marginBottom: '16px' }}>
+              <div style={{ fontFamily: EN_HEADING, fontSize: '12px', color: MUTED, marginBottom: '16px' }}>
                 {t('pricing.annualTotal', { annual: TIER_PRICING.gardener_pro.annual, savings: annualSavings('gardener_pro') })}
               </div>
             )}
@@ -444,7 +444,7 @@ export function PricingPage() {
               {tierName('advanced')}
             </div>
             {isHe && (
-              <div style={{ fontFamily: ASST, fontSize: '13px', color: MUTED, marginBottom: '20px' }}>
+              <div style={{ fontFamily: EN_HEADING, fontSize: '13px', color: MUTED, marginBottom: '20px' }}>
                 Advanced
               </div>
             )}
@@ -452,10 +452,10 @@ export function PricingPage() {
               <span style={{ fontFamily: headingFont, fontSize: '38px', color: BIO_CYAN, fontWeight: 700 }}>
                 ₪{isAnnual ? annualMonthly('advanced') : TIER_PRICING.advanced.monthly}
               </span>
-              <span style={{ fontFamily: ASST, fontSize: '13px', color: MUTED, marginRight: '6px' }}>{t('pricing.perMonth')}</span>
+              <span style={{ fontFamily: EN_HEADING, fontSize: '13px', color: MUTED, marginRight: '6px' }}>{t('pricing.perMonth')}</span>
             </div>
             {isAnnual && (
-              <div style={{ fontFamily: ASST, fontSize: '12px', color: MUTED, marginBottom: '16px' }}>
+              <div style={{ fontFamily: EN_HEADING, fontSize: '12px', color: MUTED, marginBottom: '16px' }}>
                 {t('pricing.annualTotal', { annual: TIER_PRICING.advanced.annual, savings: annualSavings('advanced') })}
               </div>
             )}
@@ -482,7 +482,7 @@ export function PricingPage() {
               {tierName('professional')}
             </div>
             {isHe && (
-              <div style={{ fontFamily: ASST, fontSize: '13px', color: MUTED, marginBottom: '20px' }}>
+              <div style={{ fontFamily: EN_HEADING, fontSize: '13px', color: MUTED, marginBottom: '20px' }}>
                 Professional
               </div>
             )}
@@ -490,10 +490,10 @@ export function PricingPage() {
               <span style={{ fontFamily: headingFont, fontSize: '38px', color: BIO_CYAN, fontWeight: 700 }}>
                 ₪{isAnnual ? annualMonthly('professional') : TIER_PRICING.professional.monthly}
               </span>
-              <span style={{ fontFamily: ASST, fontSize: '13px', color: MUTED, marginRight: '6px' }}>{t('pricing.perMonth')}</span>
+              <span style={{ fontFamily: EN_HEADING, fontSize: '13px', color: MUTED, marginRight: '6px' }}>{t('pricing.perMonth')}</span>
             </div>
             {isAnnual && (
-              <div style={{ fontFamily: ASST, fontSize: '12px', color: MUTED, marginBottom: '16px' }}>
+              <div style={{ fontFamily: EN_HEADING, fontSize: '12px', color: MUTED, marginBottom: '16px' }}>
                 {t('pricing.annualTotal', { annual: TIER_PRICING.professional.annual, savings: annualSavings('professional') })}
               </div>
             )}
@@ -506,7 +506,7 @@ export function PricingPage() {
 
         {/* ── Payment provider note ── */}
         <div style={{ maxWidth: '1160px', margin: '0 auto', padding: '0 20px 8px', textAlign: 'center' }}>
-          <p style={{ fontFamily: ASST, fontSize: '12px', color: MUTED, margin: 0, lineHeight: 1.5 }}>
+          <p style={{ fontFamily: EN_HEADING, fontSize: '12px', color: MUTED, margin: 0, lineHeight: 1.5 }}>
             {t('pricing.providerNote')}
           </p>
         </div>
@@ -524,10 +524,10 @@ export function PricingPage() {
               <div style={{ fontFamily: headingFont, fontSize: '16px', color: BIO_CYAN, fontWeight: 700, marginBottom: '4px' }}>
                 {t('pricing.gardenPackTitle')}
               </div>
-              <div style={{ fontFamily: ASST, fontSize: '13px', color: TEXT_MID }}>
+              <div style={{ fontFamily: EN_HEADING, fontSize: '13px', color: TEXT_MID }}>
                 {t('pricing.gardenPackDesc')}
               </div>
-              <div style={{ fontFamily: ASST, fontSize: '12px', color: MUTED, marginTop: '4px' }}>
+              <div style={{ fontFamily: EN_HEADING, fontSize: '12px', color: MUTED, marginTop: '4px' }}>
                 {t('pricing.gardenPackExample', {
                   total: PRO_L.maxGardens! + 20,
                   base: TIER_PRICING.professional.monthly!,
@@ -538,7 +538,7 @@ export function PricingPage() {
             <button
               onClick={showToast}
               style={{
-                fontFamily: isHe ? FRANK : ASST, fontSize: '13px', fontWeight: 700,
+                fontFamily: isHe ? FRANK : EN_HEADING, fontSize: '13px', fontWeight: 700,
                 color: NIGHT, background: BIO_CYAN,
                 padding: '9px 20px', borderRadius: '100px',
                 border: 'none', cursor: 'pointer', flexShrink: 0,
@@ -556,7 +556,7 @@ export function PricingPage() {
         <div style={{ textAlign: 'center', padding: '8px 24px 32px', animation: 'pricingFadeIn 0.5s ease 0.25s both' }}>
           <Link
             to="/shop"
-            style={{ fontFamily: ASST, fontSize: '13px', color: MUTED, textDecoration: 'none' }}
+            style={{ fontFamily: EN_HEADING, fontSize: '13px', color: MUTED, textDecoration: 'none' }}
             onMouseEnter={e => { (e.currentTarget as HTMLElement).style.color = BIO_CYAN; }}
             onMouseLeave={e => { (e.currentTarget as HTMLElement).style.color = MUTED; }}
           >

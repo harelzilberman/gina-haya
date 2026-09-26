@@ -1,9 +1,9 @@
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
+import { EN_HEADING } from '../../styles/fonts';
 
 const GOLD = '#00e5c3';
-const ASST = "'DM Sans', 'Assistant', 'Heebo', sans-serif";
 
 const RESOURCE_LABELS: Record<string, { he: string; en: string }> = {
   plants:   { he: 'צמחים בגינה', en: 'plants in garden' },
@@ -44,7 +44,7 @@ export function UpgradeBanner({ type, current, limit, tier }: Props) {
         height: '40px',
         backgroundColor: 'rgba(201,168,76,0.1)',
         borderInlineStart: `3px solid ${GOLD}`,
-        fontFamily: ASST,
+        fontFamily: EN_HEADING,
         fontSize: '13px',
         color: `${GOLD}CC`,
       }}

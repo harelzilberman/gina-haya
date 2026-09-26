@@ -1,11 +1,11 @@
 import { useState } from 'react';
 import { useTrackerStore, type TrackerTask } from '../../stores/trackerStore';
+import { EN_HEADING } from '../../styles/fonts';
 
 const NIGHT_CARD = '#111f18';
 const BIO_CYAN   = '#00e5c3';
 const TEXT_MID   = '#b0cfbf';
 const FRANK      = '"Frank Ruhl Libre", Georgia, serif';
-const DM_SANS    = "'DM Sans', 'Assistant', 'Heebo', sans-serif";
 
 const PRIORITY_COLOURS: Record<string, string> = {
   high:   '#d9534f',
@@ -93,7 +93,7 @@ export function TaskApprovalModal({ trackerId, tasks, onClose }: Props) {
           </h2>
           <button onClick={onClose} style={{ background: 'none', border: 'none', color: `${TEXT_MID}50`, cursor: 'pointer', fontSize: '20px' }}>✕</button>
         </div>
-        <p style={{ fontFamily: DM_SANS, fontSize: '13px', color: `${TEXT_MID}55`, margin: '0 0 20px', lineHeight: 1.5 }}>
+        <p style={{ fontFamily: EN_HEADING, fontSize: '13px', color: `${TEXT_MID}55`, margin: '0 0 20px', lineHeight: 1.5 }}>
           קלוד הציע את המשימות הבאות בהתבסס על ניתוח הצמח. בחר את המשימות שברצונך להוסיף ללוח המשימות.
         </p>
 
@@ -118,7 +118,7 @@ export function TaskApprovalModal({ trackerId, tasks, onClose }: Props) {
         ) : status === 'error' ? (
           <div style={{ textAlign: 'center', padding: '24px 0' }}>
             <div style={{ fontSize: '40px', marginBottom: '12px' }}>⚠️</div>
-            <p style={{ fontFamily: DM_SANS, fontSize: '14px', color: '#d9534f', marginBottom: '20px', lineHeight: 1.6 }}>
+            <p style={{ fontFamily: EN_HEADING, fontSize: '14px', color: '#d9534f', marginBottom: '20px', lineHeight: 1.6 }}>
               {errorMsg || 'שגיאה בשמירת המשימות. אנא נסה שנית.'}
             </p>
             <button onClick={() => setStatus('idle')} style={{
@@ -138,7 +138,7 @@ export function TaskApprovalModal({ trackerId, tasks, onClose }: Props) {
               color:           `${TEXT_MID}50`,
               border:          '1px solid rgba(176,207,191,0.2)',
               borderRadius:    '8px',
-              fontFamily:      DM_SANS,
+              fontFamily:      EN_HEADING,
               fontSize:        '14px',
               cursor:          'pointer',
             }}>סגור</button>
@@ -177,7 +177,7 @@ export function TaskApprovalModal({ trackerId, tasks, onClose }: Props) {
                           padding:         '1px 8px',
                           borderRadius:    '10px',
                           fontSize:        '11px',
-                          fontFamily:      DM_SANS,
+                          fontFamily:      EN_HEADING,
                           fontWeight:      600,
                           backgroundColor: `${color}22`,
                           border:          `1px solid ${color}55`,
@@ -190,11 +190,11 @@ export function TaskApprovalModal({ trackerId, tasks, onClose }: Props) {
                         </strong>
                       </div>
                       {task.description && (
-                        <p style={{ fontFamily: DM_SANS, fontSize: '12px', color: `${TEXT_MID}60`, margin: 0, lineHeight: 1.5 }}>
+                        <p style={{ fontFamily: EN_HEADING, fontSize: '12px', color: `${TEXT_MID}60`, margin: 0, lineHeight: 1.5 }}>
                           {task.description}
                         </p>
                       )}
-                      <p style={{ fontFamily: DM_SANS, fontSize: '11px', color: `${TEXT_MID}35`, margin: '4px 0 0' }}>
+                      <p style={{ fontFamily: EN_HEADING, fontSize: '11px', color: `${TEXT_MID}35`, margin: '4px 0 0' }}>
                         בעוד {task.due_in_days} ימים
                       </p>
                     </div>
@@ -232,7 +232,7 @@ export function TaskApprovalModal({ trackerId, tasks, onClose }: Props) {
                   color:           `${TEXT_MID}50`,
                   border:          '1px solid rgba(176,207,191,0.15)',
                   borderRadius:    '8px',
-                  fontFamily:      DM_SANS,
+                  fontFamily:      EN_HEADING,
                   fontSize:        '14px',
                   cursor:          'pointer',
                 }}

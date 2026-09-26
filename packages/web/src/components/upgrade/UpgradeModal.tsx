@@ -1,11 +1,11 @@
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
+import { EN_HEADING } from '../../styles/fonts';
 
 const EARTH = '#050d0a';
 const GOLD  = '#00e5c3';
 const PARCH = '#b0cfbf';
 const FRANK = '"Frank Ruhl Libre", Georgia, serif';
-const ASST  = "'DM Sans', 'Assistant', 'Heebo', sans-serif";
 
 export type UpgradeLimitType =
   | 'plants' | 'trackers' | 'analysis' | 'chupchu' | 'gardens' | 'encyclopedia';
@@ -52,7 +52,7 @@ export function UpgradeModal({ isOpen, onClose, limitType, scope }: Props) {
     navigate(to);
   }
 
-  const headingFont = isHe ? FRANK : ASST;
+  const headingFont = isHe ? FRANK : EN_HEADING;
 
   return (
     <div
@@ -116,7 +116,7 @@ export function UpgradeModal({ isOpen, onClose, limitType, scope }: Props) {
         {/* Body */}
         <div style={{ padding: '24px' }}>
           <p style={{
-            fontFamily: ASST, fontSize: '15px', color: `${PARCH}CC`,
+            fontFamily: EN_HEADING, fontSize: '15px', color: `${PARCH}CC`,
             margin: '0 0 24px', lineHeight: 1.7, whiteSpace: 'pre-line',
           }}>
             {body}
@@ -173,7 +173,7 @@ export function UpgradeModal({ isOpen, onClose, limitType, scope }: Props) {
                 backgroundColor: 'transparent',
                 color: 'rgba(176,207,191,0.4)',
                 border: 'none',
-                fontFamily: ASST, fontSize: '13px',
+                fontFamily: EN_HEADING, fontSize: '13px',
                 cursor: 'pointer',
               }}
             >

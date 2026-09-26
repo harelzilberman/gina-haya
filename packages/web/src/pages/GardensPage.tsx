@@ -7,12 +7,12 @@ import { CreateGardenModal } from '../components/garden/CreateGardenModal';
 import type { Garden } from '../stores/gardenStore';
 import { api } from '../api/client';
 import { useAuthStore } from '../stores/authStore';
+import { EN_HEADING } from '../styles/fonts';
 
 const EARTH = '#050d0a';
 const GOLD  = '#00e5c3';
 const PARCH = '#b0cfbf';
 const FRANK = '"Frank Ruhl Libre", Georgia, serif';
-const ASST  = "'DM Sans', 'Assistant', 'Heebo', sans-serif";
 
 const NOISE_BG = `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='250' height='250'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.75' numOctaves='4' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='250' height='250' filter='url(%23n)' opacity='0.55'/%3E%3C/svg%3E")`;
 
@@ -133,7 +133,7 @@ export function GardensPage() {
               <h1 style={{ fontFamily: FRANK, fontSize: '2rem', color: GOLD, margin: 0, lineHeight: 1.1 }}>
                 הגינות שלי
               </h1>
-              <p style={{ fontFamily: ASST, fontSize: '14px', color: `${PARCH}70`, margin: '4px 0 0' }}>
+              <p style={{ fontFamily: EN_HEADING, fontSize: '14px', color: `${PARCH}70`, margin: '4px 0 0' }}>
                 {gardens.length}{limits.maxGardens ? `/${limits.maxGardens}` : ''} גינות
               </p>
             </div>
@@ -161,7 +161,7 @@ export function GardensPage() {
                   padding: '10px 20px',
                   backgroundColor: 'transparent', color: GOLD,
                   border: `1px solid rgba(0,229,195,0.4)`, borderRadius: '8px',
-                  fontFamily: ASST, fontSize: '13px', fontWeight: 600,
+                  fontFamily: EN_HEADING, fontSize: '13px', fontWeight: 600,
                   cursor: 'pointer',
                 }}
               >
@@ -213,7 +213,7 @@ export function GardensPage() {
                     {isActive && (
                       <div style={{
                         position: 'absolute', top: '12px', insetInlineEnd: '12px',
-                        fontFamily: ASST, fontSize: '10px', fontWeight: 700,
+                        fontFamily: EN_HEADING, fontSize: '10px', fontWeight: 700,
                         padding: '2px 8px', borderRadius: '10px',
                         backgroundColor: 'rgba(0,229,195,0.15)',
                         color: GOLD, border: '1px solid rgba(0,229,195,0.3)',
@@ -249,7 +249,7 @@ export function GardensPage() {
                             backgroundColor: 'rgba(255,255,255,0.05)',
                             border: '1px solid rgba(0,229,195,0.2)',
                             borderRadius: '6px', padding: '7px 12px',
-                            fontFamily: ASST, fontSize: '13px', color: PARCH,
+                            fontFamily: EN_HEADING, fontSize: '13px', color: PARCH,
                             outline: 'none', direction: 'rtl', marginBottom: '12px',
                           }}
                           placeholder="מיקום"
@@ -261,7 +261,7 @@ export function GardensPage() {
                               flex: 1, padding: '8px',
                               background: 'transparent', color: `${PARCH}70`,
                               border: '1px solid rgba(176,207,191,0.2)', borderRadius: '6px',
-                              fontFamily: ASST, fontSize: '13px', cursor: 'pointer',
+                              fontFamily: EN_HEADING, fontSize: '13px', cursor: 'pointer',
                             }}
                           >
                             ביטול
@@ -290,17 +290,17 @@ export function GardensPage() {
                             <h3 style={{ fontFamily: FRANK, fontSize: '18px', color: isActive ? GOLD : PARCH, margin: 0 }}>
                               {garden.name}
                               {garden.is_default && (
-                                <span style={{ fontFamily: ASST, fontSize: '11px', color: `${PARCH}50`, marginRight: '8px', fontWeight: 400 }}>ראשית</span>
+                                <span style={{ fontFamily: EN_HEADING, fontSize: '11px', color: `${PARCH}50`, marginRight: '8px', fontWeight: 400 }}>ראשית</span>
                               )}
                             </h3>
                           </div>
                           {garden.location && (
-                            <p style={{ fontFamily: ASST, fontSize: '12px', color: `${PARCH}60`, margin: '0 0 2px', paddingInlineStart: '28px' }}>
+                            <p style={{ fontFamily: EN_HEADING, fontSize: '12px', color: `${PARCH}60`, margin: '0 0 2px', paddingInlineStart: '28px' }}>
                               📍 {garden.location}
                             </p>
                           )}
                           {garden.description && (
-                            <p style={{ fontFamily: ASST, fontSize: '12px', color: `${PARCH}55`, margin: '0', paddingInlineStart: '28px' }}>
+                            <p style={{ fontFamily: EN_HEADING, fontSize: '12px', color: `${PARCH}55`, margin: '0', paddingInlineStart: '28px' }}>
                               {garden.description}
                             </p>
                           )}
@@ -308,10 +308,10 @@ export function GardensPage() {
 
                         {/* Stats */}
                         <div style={{ display: 'flex', gap: '16px', marginBottom: '14px' }}>
-                          <span style={{ fontFamily: ASST, fontSize: '12px', color: `${PARCH}70` }}>
+                          <span style={{ fontFamily: EN_HEADING, fontSize: '12px', color: `${PARCH}70` }}>
                             🌿 {gardenStats?.plants ?? garden.garden_plants?.length ?? 0} צמחים
                           </span>
-                          <span style={{ fontFamily: ASST, fontSize: '12px', color: `${PARCH}70` }}>
+                          <span style={{ fontFamily: EN_HEADING, fontSize: '12px', color: `${PARCH}70` }}>
                             📊 {gardenStats?.trackers ?? 0} מעקבים
                           </span>
                         </div>
@@ -358,7 +358,7 @@ export function GardensPage() {
                               padding: '7px 12px',
                               background: 'transparent', color: `${PARCH}80`,
                               border: '1px solid rgba(176,207,191,0.2)', borderRadius: '6px',
-                              fontFamily: ASST, fontSize: '12px', cursor: 'pointer',
+                              fontFamily: EN_HEADING, fontSize: '12px', cursor: 'pointer',
                             }}
                           >
                             ערוך
@@ -371,7 +371,7 @@ export function GardensPage() {
                                 padding: '7px 10px',
                                 background: 'transparent', color: `${PARCH}60`,
                                 border: '1px solid rgba(176,207,191,0.15)', borderRadius: '6px',
-                                fontFamily: ASST, fontSize: '12px', cursor: 'pointer',
+                                fontFamily: EN_HEADING, fontSize: '12px', cursor: 'pointer',
                               }}
                             >
                               ★ ראשית
@@ -384,7 +384,7 @@ export function GardensPage() {
                                 padding: '7px 10px',
                                 background: 'rgba(220,80,80,0.08)', color: 'rgba(220,100,100,0.8)',
                                 border: '1px solid rgba(220,80,80,0.2)', borderRadius: '6px',
-                                fontFamily: ASST, fontSize: '12px', cursor: 'pointer',
+                                fontFamily: EN_HEADING, fontSize: '12px', cursor: 'pointer',
                                 marginInlineStart: 'auto',
                               }}
                             >
@@ -431,10 +431,10 @@ export function GardensPage() {
             <h3 style={{ fontFamily: FRANK, fontSize: '18px', color: '#E87070', margin: '0 0 12px', textAlign: 'center' }}>
               מחיקת גינה
             </h3>
-            <p style={{ fontFamily: ASST, fontSize: '14px', color: PARCH, textAlign: 'center', margin: '0 0 8px', lineHeight: 1.6 }}>
+            <p style={{ fontFamily: EN_HEADING, fontSize: '14px', color: PARCH, textAlign: 'center', margin: '0 0 8px', lineHeight: 1.6 }}>
               האם למחוק את <strong>'{confirmDelete.garden.name}'</strong>?
             </p>
-            <p style={{ fontFamily: ASST, fontSize: '12px', color: `${PARCH}60`, textAlign: 'center', margin: '0 0 24px', lineHeight: 1.5 }}>
+            <p style={{ fontFamily: EN_HEADING, fontSize: '12px', color: `${PARCH}60`, textAlign: 'center', margin: '0 0 24px', lineHeight: 1.5 }}>
               כל הצמחים, המעקבים והמשימות של גינה זו יימחקו לצמיתות.
             </p>
             <div style={{ display: 'flex', gap: '10px' }}>
@@ -444,7 +444,7 @@ export function GardensPage() {
                   flex: 1, padding: '11px',
                   background: 'transparent', color: `${PARCH}80`,
                   border: '1px solid rgba(176,207,191,0.2)', borderRadius: '8px',
-                  fontFamily: ASST, fontSize: '14px', cursor: 'pointer',
+                  fontFamily: EN_HEADING, fontSize: '14px', cursor: 'pointer',
                 }}
               >
                 ביטול

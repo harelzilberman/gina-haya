@@ -1,13 +1,13 @@
 import { useState } from 'react';
 import type { CSSProperties } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { EN_HEADING } from '../styles/fonts';
 
 const BG    = '#050d0a';
 const GOLD  = '#00e5c3';
 const SAGE  = '#4A9C68';
 const TEXT  = 'rgba(176,207,191,0.8)';
 const FRANK = '"Frank Ruhl Libre", Georgia, serif';
-const ASST  = "'DM Sans', 'Assistant', 'Heebo', sans-serif";
 
 const HELP_CSS = `
 @keyframes popIn {
@@ -65,9 +65,9 @@ function MockBiodynamic() {
           background: 'rgba(0,229,195,0.1)',
           border: '1px solid rgba(0,229,195,0.25)',
         }}>
-          <div style={{ fontFamily: ASST, fontSize: '10px', color: 'rgba(176,207,191,0.4)', marginBottom: '3px' }}>סוג היום</div>
+          <div style={{ fontFamily: EN_HEADING, fontSize: '10px', color: 'rgba(176,207,191,0.4)', marginBottom: '3px' }}>סוג היום</div>
           <div style={{ fontFamily: FRANK, fontWeight: 700, fontSize: '16px', color: SAGE }}>🌿 עלים</div>
-          <div style={{ fontFamily: ASST, fontSize: '11px', color: TEXT, marginTop: '2px' }}>יום מצוין לשתילת ירקות עלים</div>
+          <div style={{ fontFamily: EN_HEADING, fontSize: '11px', color: TEXT, marginTop: '2px' }}>יום מצוין לשתילת ירקות עלים</div>
         </div>
       </div>
       <div style={{
@@ -76,7 +76,7 @@ function MockBiodynamic() {
         border: '1px solid rgba(0,229,195,0.12)',
         display: 'flex', justifyContent: 'space-between', alignItems: 'center',
       }}>
-        <span style={{ fontFamily: ASST, fontSize: '13px', color: TEXT }}>ציון שתילה היום</span>
+        <span style={{ fontFamily: EN_HEADING, fontSize: '13px', color: TEXT }}>ציון שתילה היום</span>
         <span style={{ fontFamily: FRANK, fontWeight: 700, fontSize: '22px', color: GOLD }}>8/10</span>
       </div>
       <Callout text="לחץ לפרטים על שלב הירח" style={{ top: '-10px', right: '8px', animationDelay: '0s' }} />
@@ -95,7 +95,7 @@ function MockGardenMap() {
       }}>
         {['🖊️ עט', '🌿 צמח', '🏠 מבנה', '🛣️ שביל'].map(t => (
           <div key={t} style={{
-            fontFamily: ASST, fontSize: '11px', color: TEXT,
+            fontFamily: EN_HEADING, fontSize: '11px', color: TEXT,
             background: 'rgba(0,229,195,0.07)', borderRadius: '5px',
             padding: '3px 7px', cursor: 'pointer',
           }}>{t}</div>
@@ -125,7 +125,7 @@ function MockChat() {
       <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', marginBottom: '8px' }}>
         <div style={{ alignSelf: 'flex-end', maxWidth: '72%' }}>
           <div style={{
-            fontFamily: ASST, fontSize: '13px', color: '#050d0a',
+            fontFamily: EN_HEADING, fontSize: '13px', color: '#050d0a',
             background: GOLD, borderRadius: '14px 14px 4px 14px',
             padding: '7px 11px',
           }}>מתי כדאי לשתול עגבניות? 🍅</div>
@@ -141,7 +141,7 @@ function MockChat() {
               onError={e => { (e.currentTarget as HTMLImageElement).style.display = 'none'; }} />
           </div>
           <div style={{
-            fontFamily: ASST, fontSize: '13px', color: TEXT, lineHeight: 1.5,
+            fontFamily: EN_HEADING, fontSize: '13px', color: TEXT, lineHeight: 1.5,
             background: 'rgba(9,20,16,0.9)', border: '1px solid rgba(0,229,195,0.12)',
             borderRadius: '4px 14px 14px 14px', padding: '7px 11px',
           }}>
@@ -154,8 +154,8 @@ function MockChat() {
         background: 'rgba(9,20,16,0.7)', borderRadius: '8px', padding: '7px 10px',
         border: '1px solid rgba(0,229,195,0.08)',
       }}>
-        <div style={{ flex: 1, fontFamily: ASST, fontSize: '13px', color: 'rgba(176,207,191,0.3)' }}>שאל שאלה...</div>
-        <div style={{ fontFamily: ASST, fontSize: '12px', color: GOLD, fontWeight: 700 }}>שלח ↩</div>
+        <div style={{ flex: 1, fontFamily: EN_HEADING, fontSize: '13px', color: 'rgba(176,207,191,0.3)' }}>שאל שאלה...</div>
+        <div style={{ fontFamily: EN_HEADING, fontSize: '12px', color: GOLD, fontWeight: 700 }}>שלח ↩</div>
       </div>
       <Callout text="שאל כל שאלה על הגינה" style={{ bottom: '5px', right: '8px', animationDelay: '0s' }} />
       <Callout text="עונה לפי הגינה שלך" style={{ top: '30px', left: '36px', animationDelay: '0.15s' }} />
@@ -173,7 +173,7 @@ function MockTracker() {
         textAlign: 'center', marginBottom: '10px',
       }}>
         <div style={{ fontSize: '28px', marginBottom: '4px' }}>📸</div>
-        <div style={{ fontFamily: ASST, fontSize: '12px', color: 'rgba(176,207,191,0.4)' }}>לחץ לצילום צמח</div>
+        <div style={{ fontFamily: EN_HEADING, fontSize: '12px', color: 'rgba(176,207,191,0.4)' }}>לחץ לצילום צמח</div>
       </div>
       <div style={{ display: 'flex', gap: '7px' }}>
         {[
@@ -186,7 +186,7 @@ function MockTracker() {
             background: 'rgba(9,20,16,0.8)',
             border: `1px solid ${c.color}33`, textAlign: 'center',
           }}>
-            <div style={{ fontFamily: ASST, fontSize: '10px', color: 'rgba(176,207,191,0.4)', marginBottom: '2px' }}>{c.label}</div>
+            <div style={{ fontFamily: EN_HEADING, fontSize: '10px', color: 'rgba(176,207,191,0.4)', marginBottom: '2px' }}>{c.label}</div>
             <div style={{ fontFamily: FRANK, fontWeight: 700, fontSize: '13px', color: c.color }}>{c.val}</div>
           </div>
         ))}
@@ -223,12 +223,12 @@ function MockTasks() {
               {t.done && <span style={{ fontSize: '9px', color: t.color }}>✓</span>}
             </div>
             <span style={{
-              fontFamily: ASST, fontSize: '13px', flex: 1,
+              fontFamily: EN_HEADING, fontSize: '13px', flex: 1,
               color: t.done ? 'rgba(176,207,191,0.35)' : TEXT,
               textDecoration: t.done ? 'line-through' : 'none',
             }}>{t.text}</span>
             <span style={{
-              fontFamily: ASST, fontSize: '10px', fontWeight: 700,
+              fontFamily: EN_HEADING, fontSize: '10px', fontWeight: 700,
               padding: '2px 7px', borderRadius: '10px',
               background: `${t.color}1A`, color: t.color,
               border: `1px solid ${t.color}44`,
@@ -286,7 +286,7 @@ export function HelpPage() {
   const { title, emoji, text, Mock } = STEPS[step];
 
   return (
-    <div dir="rtl" style={{ backgroundColor: BG, minHeight: '100vh', color: TEXT, fontFamily: ASST }}>
+    <div dir="rtl" style={{ backgroundColor: BG, minHeight: '100vh', color: TEXT, fontFamily: EN_HEADING }}>
       <style>{HELP_CSS}</style>
 
       <div style={{ maxWidth: '560px', margin: '0 auto', padding: '36px 20px 72px' }}>
@@ -308,7 +308,7 @@ export function HelpPage() {
           <h1 style={{ fontFamily: FRANK, fontWeight: 700, fontSize: '26px', color: GOLD, margin: '0 0 6px' }}>
             מרכז העזרה
           </h1>
-          <p style={{ fontFamily: ASST, fontSize: '14px', color: 'rgba(176,207,191,0.5)', margin: 0 }}>
+          <p style={{ fontFamily: EN_HEADING, fontSize: '14px', color: 'rgba(176,207,191,0.5)', margin: 0 }}>
             למד לגדל עם גינה חיה תוך כמה דקות
           </p>
         </div>
@@ -342,7 +342,7 @@ export function HelpPage() {
               {emoji} {title}
             </span>
             <span style={{
-              fontFamily: ASST, fontSize: '11px', fontWeight: 700,
+              fontFamily: EN_HEADING, fontSize: '11px', fontWeight: 700,
               padding: '2px 8px', borderRadius: '10px',
               background: 'rgba(0,229,195,0.1)', color: 'rgba(0,229,195,0.7)',
               border: '1px solid rgba(0,229,195,0.18)',
@@ -394,7 +394,7 @@ export function HelpPage() {
               <div style={{ fontFamily: FRANK, fontWeight: 700, fontSize: '13px', color: GOLD, marginBottom: '5px' }}>
                 צ'ופצ'ו מסביר:
               </div>
-              <p style={{ fontFamily: ASST, fontSize: '14px', color: TEXT, lineHeight: 1.7, margin: 0 }}>
+              <p style={{ fontFamily: EN_HEADING, fontSize: '14px', color: TEXT, lineHeight: 1.7, margin: 0 }}>
                 {text}
               </p>
             </div>

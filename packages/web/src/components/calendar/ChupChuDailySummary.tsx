@@ -1,6 +1,7 @@
 import { useTranslation } from 'react-i18next';
 import { useDirection } from '../../hooks/useDirection';
 import type { BiodynamicDay } from '@gina-haya/shared';
+import { EN_HEADING } from '../../styles/fonts';
 
 interface Props {
   day: BiodynamicDay;
@@ -10,7 +11,6 @@ const NIGHT_CARD = '#111f18';
 const BIO_CYAN   = '#00e5c3';
 const TEXT_MID   = '#b0cfbf';
 const FRANK      = '"Frank Ruhl Libre", Georgia, serif';
-const DM_SANS    = "'DM Sans', 'Assistant', 'Heebo', sans-serif";
 
 const CHUPCHU_CSS = `
 @keyframes chupchu-glow {
@@ -87,7 +87,7 @@ export function ChupChuDailySummary({ day }: Props) {
         {/* Text */}
         <div style={{ flex: 1, minWidth: 0, textAlign: dir === 'rtl' ? 'right' : 'left' }}>
           <p style={{
-            fontFamily:    DM_SANS,
+            fontFamily:    EN_HEADING,
             fontSize:      '11px',
             fontWeight:    700,
             letterSpacing: '0.1em',

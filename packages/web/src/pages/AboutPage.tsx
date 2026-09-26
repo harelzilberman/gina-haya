@@ -1,7 +1,7 @@
 import { useTranslation } from 'react-i18next';
+import { EN_HEADING } from '../styles/fonts';
 
 const CAVEAT    = '"Caveat", cursive';
-const ASSISTANT = "'DM Sans', 'Assistant', 'Heebo', sans-serif";
 const FRANK     = '"Frank Ruhl Libre", Georgia, serif';
 const PLAYFAIR  = '"Playfair Display", Georgia, serif';
 const FOREST    = '#050d0a';
@@ -53,7 +53,7 @@ export function AboutPage() {
   const paras = isHe ? HE_STORY_PARAS : EN_STORY_PARAS;
 
   return (
-    <div style={{ backgroundColor: '#FDF6EC', minHeight: '100vh', fontFamily: ASSISTANT }}>
+    <div style={{ backgroundColor: '#FDF6EC', minHeight: '100vh', fontFamily: EN_HEADING }}>
 
       {/* Hero banner */}
       <div style={{
@@ -147,7 +147,7 @@ export function AboutPage() {
       {/* Attribution note */}
       <div style={{ maxWidth: '820px', margin: '0 auto', padding: '20px 20px 0', direction: isHe ? 'rtl' : 'ltr' }}>
         <p style={{
-          fontFamily: ASSISTANT,
+          fontFamily: EN_HEADING,
           fontSize: '13px',
           color: '#8a7a60',
           margin: 0,
@@ -184,7 +184,7 @@ export function AboutPage() {
           {isHe ? 'צרו קשר' : 'Contact Us'}
         </h2>
         <p style={{
-          fontFamily: ASSISTANT,
+          fontFamily: EN_HEADING,
           fontSize: '16px',
           color: '#5a4a30',
           lineHeight: 1.7,

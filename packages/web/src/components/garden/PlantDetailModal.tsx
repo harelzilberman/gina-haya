@@ -6,6 +6,7 @@ import { useAuthStore } from '../../stores/authStore';
 import { useGardenStore } from '../../stores/gardenStore';
 import { useToastStore } from '../../stores/toastStore';
 import { PLANT_TABLE } from '../../data/plantTable';
+import { EN_HEADING } from '../../styles/fonts';
 
 interface Props {
   plant:   PlantSummary;
@@ -18,7 +19,6 @@ const BIO_CYAN   = '#00e5c3';
 const TEXT_MID   = '#b0cfbf';
 const MUTED      = '#6b9080';
 const FRANK      = '"Frank Ruhl Libre", Georgia, serif';
-const DM_SANS    = "'DM Sans', 'Assistant', 'Heebo', sans-serif";
 
 const CATEGORY_EMOJIS: Record<string, string> = {
   vegetables:  '🥦',
@@ -226,7 +226,7 @@ function MonthStrip({
             <span
               key={m}
               style={{
-                fontFamily:      DM_SANS,
+                fontFamily:      EN_HEADING,
                 fontSize:        '11px',
                 fontWeight:      active ? 600 : 400,
                 padding:         '3px 8px',
@@ -401,7 +401,7 @@ export function PlantDetailModal({ plant, onClose }: Props) {
             {/* English name */}
             {plant.common_name_en && (
               <p style={{
-                fontFamily: DM_SANS,
+                fontFamily: EN_HEADING,
                 fontWeight: 400,
                 fontSize:   '16px',
                 color:      TEXT_MID,
@@ -414,7 +414,7 @@ export function PlantDetailModal({ plant, onClose }: Props) {
             {/* Latin name */}
             {plant.latin_name && (
               <p style={{
-                fontFamily: DM_SANS,
+                fontFamily: EN_HEADING,
                 fontStyle:  'italic',
                 fontSize:   '14px',
                 color:      `${TEXT_MID}50`,
@@ -440,7 +440,7 @@ export function PlantDetailModal({ plant, onClose }: Props) {
           {/* Description */}
           {description && (
             <p style={{
-              fontFamily: DM_SANS,
+              fontFamily: EN_HEADING,
               fontWeight: 300,
               fontSize:   '14px',
               lineHeight: 1.9,
@@ -471,7 +471,7 @@ export function PlantDetailModal({ plant, onClose }: Props) {
                     <span
                       key={dt}
                       style={{
-                        fontFamily:      DM_SANS,
+                        fontFamily:      EN_HEADING,
                         fontSize:        '13px',
                         fontWeight:      500,
                         padding:         '5px 14px',

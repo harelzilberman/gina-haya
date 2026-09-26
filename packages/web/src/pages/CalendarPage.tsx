@@ -7,6 +7,7 @@ import { ChupChuDailySummary }   from '../components/calendar/ChupChuDailySummar
 import { TodayCard }           from '../components/calendar/TodayCardV2';
 import { WeekStrip }           from '../components/calendar/WeekStrip';
 import { useChupChuPanelStore }  from '../stores/chupChuPanelStore';
+import { EN_HEADING } from '../styles/fonts';
 
 const NIGHT   = '#050d0a';
 const NIGHT_CARD = '#111f18';
@@ -15,7 +16,6 @@ const TEXT    = '#e8f5ee';
 const TEXT_MID = '#b0cfbf';
 const MUTED   = '#6b9080';
 const FRANK   = '"Frank Ruhl Libre", Georgia, serif';
-const DM_SANS = "'DM Sans', 'Assistant', 'Heebo', sans-serif";
 
 const CAL_CSS = `
 .cal-quickask::placeholder { color: rgba(176,207,191,0.35); }
@@ -90,7 +90,7 @@ export function CalendarPage() {
         <div
           style={{ backgroundColor: NIGHT, minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
         >
-          <p style={{ fontFamily: DM_SANS, fontSize: '16px', color: TEXT_MID }}>
+          <p style={{ fontFamily: EN_HEADING, fontSize: '16px', color: TEXT_MID }}>
             {dayError || (isHe ? 'אין נתונים זמינים להיום' : 'No data available for today')}
           </p>
         </div>
@@ -115,7 +115,7 @@ export function CalendarPage() {
           {/* Page header */}
           <div className="cal-card-in" style={{ textAlign: dir === 'rtl' ? 'right' : 'left', marginBottom: '20px' }}>
             <p style={{
-              fontFamily: DM_SANS, fontSize: '11px', fontWeight: 700,
+              fontFamily: EN_HEADING, fontSize: '11px', fontWeight: 700,
               letterSpacing: '0.18em', textTransform: 'uppercase' as const,
               color: MUTED, marginBottom: '6px',
             }}>
@@ -180,7 +180,7 @@ export function CalendarPage() {
                   flex:       '1 1 auto',
                   border:     'none',
                   background: 'transparent',
-                  fontFamily: DM_SANS,
+                  fontFamily: EN_HEADING,
                   fontSize:   '14px',
                   color:      TEXT,
                   direction:  dir,

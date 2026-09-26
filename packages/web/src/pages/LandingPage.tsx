@@ -4,6 +4,7 @@ import { useTranslation } from 'react-i18next';
 import { getLimits, TIER_PRICING } from '@gina-haya/shared';
 import { ChupChuChat } from '../components/chupchu/ChupChuChat';
 import { PlayBadge } from '../components/ui/PlayBadge';
+import { EN_HEADING } from '../styles/fonts';
 
 // ── Design tokens ──────────────────────────────────────────────────────────
 const NIGHT      = '#050d0a';
@@ -18,7 +19,6 @@ const TEXT       = '#e8f5ee';
 const TEXT_MID   = '#b0cfbf';
 const MUTED      = '#6b9080';
 const SYNE       = "'Syne', sans-serif";
-const DM_SANS    = "'DM Sans', 'Assistant', 'Heebo', sans-serif";
 const FRANK      = '"Frank Ruhl Libre", Georgia, serif';
 
 
@@ -172,7 +172,7 @@ const LP_CSS = `
   background: rgba(0,229,195,0.08);
   border: 1px solid rgba(0,229,195,0.25);
   border-radius: 100px;
-  font-family: ${DM_SANS};
+  font-family: ${EN_HEADING};
   font-size: 13px;
   color: ${BIO_CYAN};
   margin-bottom: 20px;
@@ -473,7 +473,7 @@ const STEPS_EN = [
 function SectionLabel({ children }: { children: React.ReactNode }) {
   return (
     <p style={{
-      fontFamily: DM_SANS, fontSize: '10px', fontWeight: 700,
+      fontFamily: EN_HEADING, fontSize: '10px', fontWeight: 700,
       letterSpacing: '0.22em', textTransform: 'uppercase' as const,
       color: BIO_CYAN, marginBottom: '14px',
     }}>
@@ -553,7 +553,7 @@ function AppLiveSection({ isHe }: { isHe: boolean }) {
               background: 'rgba(255,184,48,0.08)',
               border: '1px solid rgba(255,184,48,0.3)',
               borderRadius: '100px', padding: '6px 16px', marginBottom: '22px',
-              fontFamily: DM_SANS, fontSize: '12px', fontWeight: 600, color: BIO_AMBER,
+              fontFamily: EN_HEADING, fontSize: '12px', fontWeight: 600, color: BIO_AMBER,
             }}>
               <span style={{ width: '6px', height: '6px', borderRadius: '50%', background: BIO_AMBER, boxShadow: `0 0 6px ${BIO_AMBER}`, display: 'inline-block' }} />
               {/* זמינה עכשיו ב-Google Play */}
@@ -576,7 +576,7 @@ function AppLiveSection({ isHe }: { isHe: boolean }) {
             <ul style={{ listStyle: 'none', padding: 0, margin: '0 0 32px', display: 'flex', flexDirection: 'column', gap: '10px' }}>
               {benefits.map(b => (
                 <li key={b} style={{
-                  fontFamily: DM_SANS, fontSize: '15px', color: TEXT_MID,
+                  fontFamily: EN_HEADING, fontSize: '15px', color: TEXT_MID,
                   display: 'flex', gap: '10px', alignItems: 'flex-start',
                 }}>
                   <span style={{ color: BIO_AMBER, flexShrink: 0, marginTop: '2px', fontSize: '13px' }}>✦</span>
@@ -590,7 +590,7 @@ function AppLiveSection({ isHe }: { isHe: boolean }) {
               <Link
                 to="/app"
                 style={{
-                  fontFamily: DM_SANS, fontSize: '13px', color: MUTED,
+                  fontFamily: EN_HEADING, fontSize: '13px', color: MUTED,
                   textDecoration: 'none', padding: '4px 8px',
                   transition: 'color 0.2s',
                 }}
@@ -724,7 +724,7 @@ export function LandingPage() {
                 background: 'rgba(255,184,48,0.08)',
                 border: '1px solid rgba(255,184,48,0.28)',
                 borderRadius: '100px', padding: '6px 18px',
-                fontFamily: DM_SANS, fontSize: '12px', fontWeight: 600,
+                fontFamily: EN_HEADING, fontSize: '12px', fontWeight: 600,
                 letterSpacing: '0.08em', color: BIO_AMBER,
               }}>
                 <span style={{ width: '6px', height: '6px', borderRadius: '50%', background: BIO_AMBER, boxShadow: `0 0 6px ${BIO_AMBER}`, display: 'inline-block' }} />
@@ -771,7 +771,7 @@ export function LandingPage() {
             <p
               className="lp-sub"
               style={{
-                fontFamily: DM_SANS, fontWeight: 300, fontSize: 'clamp(15px, 2vw, 19px)',
+                fontFamily: EN_HEADING, fontWeight: 300, fontSize: 'clamp(15px, 2vw, 19px)',
                 lineHeight: 1.75, color: TEXT_MID, maxWidth: '540px',
                 marginBottom: 'clamp(20px, 4vw, 40px)',
               }}
@@ -790,7 +790,7 @@ export function LandingPage() {
             <Link
               to="/signup"
               style={{
-                fontFamily: DM_SANS, fontSize: '13px', color: MUTED,
+                fontFamily: EN_HEADING, fontSize: '13px', color: MUTED,
                 textDecoration: 'none', transition: 'color 0.2s',
               }}
               onMouseEnter={e => { (e.currentTarget as HTMLElement).style.color = BIO_CYAN; }}
@@ -854,7 +854,7 @@ export function LandingPage() {
         </h2>
 
         <p style={{
-          fontFamily: DM_SANS,
+          fontFamily: EN_HEADING,
           fontSize:   '16px',
           color:      TEXT_MID,
           margin:     '0 auto 48px',
@@ -904,7 +904,7 @@ export function LandingPage() {
                   background: 'rgba(0,229,195,0.06)',
                   border: '1px solid rgba(0,229,195,0.2)',
                   borderRadius: '100px',
-                  fontFamily: DM_SANS, fontSize: '13px',
+                  fontFamily: EN_HEADING, fontSize: '13px',
                   color: TEXT_MID, cursor: 'pointer',
                   transition: 'border-color 0.2s, color 0.2s, background-color 0.2s',
                   direction: 'rtl',
@@ -984,7 +984,7 @@ export function LandingPage() {
                     {f.title}
                   </h3>
                   <p style={{
-                    fontFamily: DM_SANS, fontWeight: 300, fontSize: '15px',
+                    fontFamily: EN_HEADING, fontWeight: 300, fontSize: '15px',
                     color: TEXT_MID, lineHeight: 1.8,
                   }}>
                     {f.body}
@@ -1052,7 +1052,7 @@ export function LandingPage() {
                       {s.title}
                     </h3>
                     <p style={{
-                      fontFamily: DM_SANS, fontWeight: 300, fontSize: '16px',
+                      fontFamily: EN_HEADING, fontWeight: 300, fontSize: '16px',
                       color: TEXT_MID, lineHeight: 1.75, maxWidth: '520px',
                     }}>
                       {s.body}
@@ -1105,7 +1105,7 @@ export function LandingPage() {
               <p style={{ fontFamily: FRANK, fontStyle: 'italic', fontSize: '22px', color: BIO_CYAN, marginBottom: '4px' }}>
                 {isHe ? "צ'ופצ'ו" : 'ChupChu'}
               </p>
-              <p style={{ fontFamily: DM_SANS, fontSize: '13px', color: MUTED }}>
+              <p style={{ fontFamily: EN_HEADING, fontSize: '13px', color: MUTED }}>
                 {isHe ? 'סבא הירח שלך' : 'Your Moon Elder'}
               </p>
             </Reveal>
@@ -1120,7 +1120,7 @@ export function LandingPage() {
                 {isHe ? "שלום! אני צ'ופצ'ו" : 'Hello! I am ChupChu'}
               </h2>
               <p style={{
-                fontFamily: DM_SANS, fontWeight: 300, fontSize: '17px',
+                fontFamily: EN_HEADING, fontWeight: 300, fontSize: '17px',
                 lineHeight: 1.9, color: TEXT_MID, marginBottom: '28px',
               }}>
                 {isHe
@@ -1223,11 +1223,11 @@ export function LandingPage() {
                   <div style={{ marginBottom: '24px' }}>
                     {plan.price ? (
                       <div style={{ display: 'flex', alignItems: 'baseline', gap: '2px' }}>
-                        <span style={{ fontFamily: DM_SANS, fontSize: '18px', fontWeight: 300, color: plan.accent, opacity: 0.7, lineHeight: 1 }}>₪</span>
+                        <span style={{ fontFamily: EN_HEADING, fontSize: '18px', fontWeight: 300, color: plan.accent, opacity: 0.7, lineHeight: 1 }}>₪</span>
                         <span style={{ fontFamily: SYNE, fontWeight: 800, fontSize: '48px', lineHeight: 1, color: plan.accent }}>
                           {plan.price}
                         </span>
-                        <span style={{ fontFamily: DM_SANS, fontSize: '13px', color: MUTED, marginInlineStart: '4px' }}>
+                        <span style={{ fontFamily: EN_HEADING, fontSize: '13px', color: MUTED, marginInlineStart: '4px' }}>
                           {isHe ? '/חודש' : '/mo'}
                         </span>
                       </div>
@@ -1242,7 +1242,7 @@ export function LandingPage() {
                     {plan.features.map(f => (
                       <li key={f} style={{
                         display: 'flex', alignItems: 'flex-start', gap: '8px',
-                        fontFamily: DM_SANS, fontSize: '14px', color: TEXT_MID, lineHeight: 2,
+                        fontFamily: EN_HEADING, fontSize: '14px', color: TEXT_MID, lineHeight: 2,
                       }}>
                         <span style={{ color: BIO_CYAN, flexShrink: 0, fontWeight: 700 }}>✓</span>
                         {f}
@@ -1321,7 +1321,7 @@ export function LandingPage() {
                 <>"The garden is waiting for you.<br />It is always there."</>
               )}
             </p>
-            <p style={{ fontFamily: DM_SANS, fontWeight: 300, fontSize: '18px', color: MUTED, marginBottom: '52px' }}>
+            <p style={{ fontFamily: EN_HEADING, fontWeight: 300, fontSize: '18px', color: MUTED, marginBottom: '52px' }}>
               — {isHe ? "צ'ופצ'ו" : 'ChupChu'}
             </p>
             <Link

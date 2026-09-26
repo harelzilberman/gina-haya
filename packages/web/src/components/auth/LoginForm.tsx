@@ -5,12 +5,12 @@ import { useAuthStore } from '../../stores/authStore';
 import { mapAuthError } from '../../utils/authErrors';
 import { supabase } from '../../lib/supabase';
 import { EmailVerificationScreen } from './EmailVerificationScreen';
+import { EN_HEADING } from '../../styles/fonts';
 
 const NIGHT    = '#050d0a';
 const BIO_CYAN = '#00e5c3';
 const TEXT_MID = '#b0cfbf';
 const FRANK    = '"Frank Ruhl Libre", Georgia, serif';
-const DM_SANS  = "'DM Sans', 'Assistant', 'Heebo', sans-serif";
 
 const FORM_CSS = `
 .auth-input::placeholder { color: rgba(176,207,191,0.3); }
@@ -66,7 +66,7 @@ export function LoginForm() {
     border:          '1px solid rgba(0,229,195,0.2)',
     borderRadius:    '8px',
     padding:         '12px 16px',
-    fontFamily:      DM_SANS,
+    fontFamily:      EN_HEADING,
     fontSize:        '14px',
     color:           TEXT_MID,
     transition:      'border-color 0.2s, box-shadow 0.2s',
@@ -92,7 +92,7 @@ export function LoginForm() {
           padding:         '12px 14px',
           backgroundColor: 'rgba(192,57,43,0.15)',
           border:          '1px solid rgba(192,57,43,0.35)',
-          fontFamily:      DM_SANS,
+          fontFamily:      EN_HEADING,
           fontSize:        '13px',
           color:           '#E07070',
         }}>
@@ -104,7 +104,7 @@ export function LoginForm() {
         <div style={{ marginBottom: '14px' }}>
           <label style={{
             display:      'block',
-            fontFamily:   DM_SANS,
+            fontFamily:   EN_HEADING,
             fontWeight:   400,
             fontSize:     '13px',
             color:        `${TEXT_MID}70`,
@@ -128,7 +128,7 @@ export function LoginForm() {
         <div style={{ marginBottom: '22px' }}>
           <label style={{
             display:      'block',
-            fontFamily:   DM_SANS,
+            fontFamily:   EN_HEADING,
             fontWeight:   400,
             fontSize:     '13px',
             color:        `${TEXT_MID}70`,
@@ -173,7 +173,7 @@ export function LoginForm() {
       {/* Divider */}
       <div style={{ display: 'flex', alignItems: 'center', gap: '12px', margin: '18px 0' }}>
         <div style={{ flex: 1, height: '1px', backgroundColor: 'rgba(0,229,195,0.15)' }} />
-        <span style={{ fontFamily: DM_SANS, fontSize: '12px', color: `${TEXT_MID}40` }}>או</span>
+        <span style={{ fontFamily: EN_HEADING, fontSize: '12px', color: `${TEXT_MID}40` }}>או</span>
         <div style={{ flex: 1, height: '1px', backgroundColor: 'rgba(0,229,195,0.15)' }} />
       </div>
 
@@ -192,7 +192,7 @@ export function LoginForm() {
           borderRadius:    '8px',
           border:          '1px solid rgba(0,229,195,0.2)',
           backgroundColor: 'rgba(9,20,16,0.7)',
-          fontFamily:      DM_SANS,
+          fontFamily:      EN_HEADING,
           fontSize:        '14px',
           color:           TEXT_MID,
           cursor:          isLoading ? 'default' : 'pointer',
@@ -211,7 +211,7 @@ export function LoginForm() {
         {t('login.googleButton')}
       </button>
 
-      <p style={{ marginTop: '18px', textAlign: 'center', fontFamily: DM_SANS, fontSize: '13px', color: `${TEXT_MID}55` }}>
+      <p style={{ marginTop: '18px', textAlign: 'center', fontFamily: EN_HEADING, fontSize: '13px', color: `${TEXT_MID}55` }}>
         {t('login.noAccount')}{' '}
         <Link to={signupTo} style={{ color: BIO_CYAN, fontWeight: 500, textDecoration: 'none' }}
           onMouseEnter={e => { (e.currentTarget as HTMLElement).style.opacity = '0.8'; }}
@@ -221,7 +221,7 @@ export function LoginForm() {
         </Link>
       </p>
 
-      <p style={{ marginTop: '8px', textAlign: 'center', fontFamily: DM_SANS, fontSize: '12px' }}>
+      <p style={{ marginTop: '8px', textAlign: 'center', fontFamily: EN_HEADING, fontSize: '12px' }}>
         <Link to="/reset-password" style={{ color: `${TEXT_MID}40`, textDecoration: 'none' }}
           onMouseEnter={e => { (e.currentTarget as HTMLElement).style.color = BIO_CYAN; }}
           onMouseLeave={e => { (e.currentTarget as HTMLElement).style.color = `${TEXT_MID}40`; }}

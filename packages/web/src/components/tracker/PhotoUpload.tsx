@@ -6,12 +6,12 @@ import { useToastStore } from '../../stores/toastStore';
 import { MAX_PHOTO_SIZE_BYTES, MAX_PHOTO_SIZE_LABEL } from '@gina-haya/shared';
 import { UpgradeModal } from '../upgrade/UpgradeModal';
 import { compressImage } from '../../utils/compressImage';
+import { EN_HEADING } from '../../styles/fonts';
 
 const NIGHT_CARD = '#111f18';
 const BIO_CYAN   = '#00e5c3';
 const TEXT_MID   = '#b0cfbf';
 const FRANK      = '"Frank Ruhl Libre", Georgia, serif';
-const DM_SANS    = "'DM Sans', 'Assistant', 'Heebo', sans-serif";
 
 const ACCEPTED_TYPES = ['image/jpeg', 'image/png', 'image/webp'];
 
@@ -35,7 +35,7 @@ export function PhotoUpload({ trackerId, plantNameHe, plantNameEn, onClose, onCo
   const { t, i18n } = useTranslation('tracker');
   const isHe = i18n.language === 'he';
   const dir   = isHe ? 'rtl' : 'ltr';
-  const headingFont = isHe ? FRANK : DM_SANS;
+  const headingFont = isHe ? FRANK : EN_HEADING;
 
   const { createCheckin, analyzeCheckin, isAnalyzing } = useTrackerStore();
   const { profile } = useAuthStore();
@@ -215,17 +215,17 @@ export function PhotoUpload({ trackerId, plantNameHe, plantNameEn, onClose, onCo
               <p style={{ fontFamily: headingFont, fontSize: '20px', color: BIO_CYAN, marginBottom: '8px' }}>
                 {t('checkin.analyzing')}
               </p>
-              <p style={{ fontFamily: DM_SANS, fontSize: '14px', color: `${TEXT_MID}60`, marginBottom: '4px' }}>
+              <p style={{ fontFamily: EN_HEADING, fontSize: '14px', color: `${TEXT_MID}60`, marginBottom: '4px' }}>
                 {t('checkin.analyzingSubtitle')}
               </p>
-              <p style={{ fontFamily: DM_SANS, fontSize: '13px', color: `${TEXT_MID}40` }}>
+              <p style={{ fontFamily: EN_HEADING, fontSize: '13px', color: `${TEXT_MID}40` }}>
                 {t('checkin.analyzingEta')}
               </p>
             </div>
           ) : canRetry ? (
             <div style={{ textAlign: 'center', padding: '24px 0' }}>
               <div style={{ fontSize: '48px', marginBottom: '16px' }}>⚠️</div>
-              <p style={{ fontFamily: DM_SANS, fontSize: '14px', color: '#e06060', marginBottom: '16px' }}>
+              <p style={{ fontFamily: EN_HEADING, fontSize: '14px', color: '#e06060', marginBottom: '16px' }}>
                 {error}
               </p>
               <button
@@ -278,7 +278,7 @@ export function PhotoUpload({ trackerId, plantNameHe, plantNameEn, onClose, onCo
                       borderRadius:    '6px',
                       padding:         '4px 8px',
                     }}>
-                      <span style={{ fontFamily: DM_SANS, fontSize: '11px', color: `${TEXT_MID}70` }}>
+                      <span style={{ fontFamily: EN_HEADING, fontSize: '11px', color: `${TEXT_MID}70` }}>
                         {t('checkin.clickToReplace')}
                       </span>
                     </div>
@@ -289,10 +289,10 @@ export function PhotoUpload({ trackerId, plantNameHe, plantNameEn, onClose, onCo
                     <p style={{ fontFamily: headingFont, fontSize: '15px', color: TEXT_MID, marginBottom: '6px' }}>
                       {t('checkin.uploadPrompt')}
                     </p>
-                    <p style={{ fontFamily: DM_SANS, fontSize: '12px', color: `${TEXT_MID}45` }}>
+                    <p style={{ fontFamily: EN_HEADING, fontSize: '12px', color: `${TEXT_MID}45` }}>
                       {t('checkin.sizeHint', { size: MAX_PHOTO_SIZE_LABEL })}
                     </p>
-                    <p style={{ fontFamily: DM_SANS, fontSize: '12px', color: `${TEXT_MID}45`, marginTop: '4px' }}>
+                    <p style={{ fontFamily: EN_HEADING, fontSize: '12px', color: `${TEXT_MID}45`, marginTop: '4px' }}>
                       {t('checkin.dropHere')}
                     </p>
                   </div>
@@ -310,7 +310,7 @@ export function PhotoUpload({ trackerId, plantNameHe, plantNameEn, onClose, onCo
               {/* Notes */}
               <div style={{ marginBottom: '20px' }}>
                 <label style={{
-                  display: 'block', fontFamily: DM_SANS, fontSize: '13px',
+                  display: 'block', fontFamily: EN_HEADING, fontSize: '13px',
                   color: `${TEXT_MID}70`, marginBottom: '6px',
                   textAlign: isHe ? 'right' : 'left',
                 }}>
@@ -327,7 +327,7 @@ export function PhotoUpload({ trackerId, plantNameHe, plantNameEn, onClose, onCo
                     border:          '1px solid rgba(0,229,195,0.2)',
                     borderRadius:    '6px',
                     padding:         '10px 12px',
-                    fontFamily:      DM_SANS,
+                    fontFamily:      EN_HEADING,
                     fontSize:        '14px',
                     color:           TEXT_MID,
                     outline:         'none',
@@ -339,7 +339,7 @@ export function PhotoUpload({ trackerId, plantNameHe, plantNameEn, onClose, onCo
               </div>
 
               {error && !canRetry && (
-                <p style={{ fontFamily: DM_SANS, fontSize: '13px', color: '#e06060', textAlign: isHe ? 'right' : 'left', marginBottom: '16px' }}>
+                <p style={{ fontFamily: EN_HEADING, fontSize: '13px', color: '#e06060', textAlign: isHe ? 'right' : 'left', marginBottom: '16px' }}>
                   {error}
                 </p>
               )}

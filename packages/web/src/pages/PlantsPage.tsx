@@ -6,6 +6,7 @@ import { PlantCard } from '../components/garden/PlantCard';
 import { PlantSearch } from '../components/garden/PlantSearch';
 import { PlantDetailModal } from '../components/garden/PlantDetailModal';
 import { AdBanner } from '../components/ui/AdBanner';
+import { EN_HEADING } from '../styles/fonts';
 
 // ── Design tokens ────────────────────────────────────────────────────────────
 const NIGHT      = '#050d0a';
@@ -13,7 +14,6 @@ const NIGHT_CARD = '#111f18';
 const BIO_CYAN   = '#00e5c3';
 const TEXT_MID   = '#b0cfbf';
 const FRANK      = '"Frank Ruhl Libre", Georgia, serif';
-const DM_SANS    = "'DM Sans', 'Assistant', 'Heebo', sans-serif";
 
 const PLANTS_CSS = `
 @keyframes plant-shimmer {
@@ -130,7 +130,7 @@ export function PlantsPage() {
           {/* Error */}
           {error && (
             <p style={{
-              fontFamily: DM_SANS,
+              fontFamily: EN_HEADING,
               fontSize:   '13px',
               color:      '#ff5c8a',
               textAlign:  'center',
@@ -172,7 +172,7 @@ export function PlantsPage() {
                 {t('encyclopedia.noResults')}
               </p>
               <p style={{
-                fontFamily: DM_SANS,
+                fontFamily: EN_HEADING,
                 fontSize:   '14px',
                 color:      TEXT_MID,
                 margin:     0,
@@ -184,7 +184,7 @@ export function PlantsPage() {
                   onClick={clearFilters}
                   style={{
                     marginTop:       '4px',
-                    fontFamily:      DM_SANS,
+                    fontFamily:      EN_HEADING,
                     fontSize:        '13px',
                     fontWeight:      500,
                     padding:         '7px 22px',

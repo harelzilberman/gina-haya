@@ -4,12 +4,12 @@ import { useDirection } from '../hooks/useDirection';
 import { ChupChuChat } from '../components/chupchu/ChupChuChat';
 import { useChupChu } from '../hooks/useChupChu';
 import { useAuthStore } from '../stores/authStore';
+import { EN_HEADING } from '../styles/fonts';
 
 // ── Design tokens ──────────────────────────────────────────────────────────
 const NIGHT      = '#050d0a';
 const BIO_CYAN   = '#00e5c3';
 const MUTED      = '#6b9080';
-const DM_SANS    = "'DM Sans', 'Assistant', 'Heebo', sans-serif";
 const CAVEAT     = "'Caveat', cursive";
 
 const SUGGESTED_QUESTIONS = [
@@ -156,7 +156,7 @@ export function ChupChuPage() {
               צ'ופצ'ו
             </h2>
             <p style={{
-              fontFamily: DM_SANS,
+              fontFamily: EN_HEADING,
               fontSize:   '13px',
               color:      MUTED,
               margin:     0,
@@ -174,7 +174,7 @@ export function ChupChuPage() {
 
           {/* Section label */}
           <p style={{
-            fontFamily:    DM_SANS,
+            fontFamily:    EN_HEADING,
             fontSize:      '10px',
             fontWeight:    700,
             letterSpacing: '0.14em',
@@ -202,7 +202,7 @@ export function ChupChuPage() {
               backgroundColor: isAtLimit ? 'rgba(255,92,138,0.1)' : 'rgba(0,229,195,0.07)',
               border:          `1px solid ${isAtLimit ? 'rgba(255,92,138,0.3)' : 'rgba(0,229,195,0.2)'}`,
             }}>
-              <span style={{ fontFamily: DM_SANS, fontSize: '12px', fontWeight: 300, color: isAtLimit ? '#ff5c8a' : BIO_CYAN }}>
+              <span style={{ fontFamily: EN_HEADING, fontSize: '12px', fontWeight: 300, color: isAtLimit ? '#ff5c8a' : BIO_CYAN }}>
                 {t('usageCounter', { used: counterUsed, limit: counterLimit })}
               </span>
             </div>

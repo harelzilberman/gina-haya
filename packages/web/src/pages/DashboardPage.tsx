@@ -8,6 +8,7 @@ import { useChupChuPanelStore } from '../stores/chupChuPanelStore';
 import { drawMoon, getMoonTilt, MoonSignSVG, inferPhaseAngle } from '../components/calendar/TodayCardV2';
 import { getBDPlainSummary, type BDPlainSummary, type DayType } from '../utils/bdPlainLanguage';
 import { useTodayActions, type TodayActionsData } from '../hooks/useTodayActions';
+import { EN_HEADING } from '../styles/fonts';
 
 // ── Welcome checklist ──────────────────────────────────────────────────────
 const CHECKLIST_KEY = 'gina-haya-welcome-checklist';
@@ -66,7 +67,7 @@ function WelcomeChecklist({ onOpenChupchu }: { onOpenChupchu: () => void }) {
             {item.done ? '✅' : '⬜'}
           </span>
           <span style={{
-            fontFamily: ASST, fontSize: '14px',
+            fontFamily: EN_HEADING, fontSize: '14px',
             color: item.done ? `${TEXT_MID}60` : TEXT_MID,
             textDecoration: item.done ? 'line-through' : 'none',
             flex: 1,
@@ -88,7 +89,6 @@ const NIGHT_CARD = '#111f18';
 const BIO_CYAN   = '#00e5c3';
 const TEXT_MID   = '#b0cfbf';
 const FRANK      = '"Frank Ruhl Libre", Georgia, serif';
-const ASST       = "'DM Sans', 'Assistant', 'Heebo', sans-serif";
 
 const DAY_TYPE_MAP: Record<string, { emoji: string; label: string; color: string; bg: string }> = {
   fruit:  { emoji: '🍎', label: 'פרי',   color: '#EF745A', bg: 'rgba(239,116,90,0.18)' },
@@ -277,17 +277,17 @@ function DayActionCard({
               }}>
                 <span style={{ fontSize: '18px', flexShrink: 0 }}>{p.emoji}</span>
                 <div style={{ flex: 1 }}>
-                  <span style={{ fontFamily: ASST, fontSize: '13px', color: TEXT_MID }}>
+                  <span style={{ fontFamily: EN_HEADING, fontSize: '13px', color: TEXT_MID }}>
                     {isHe ? p.plantNameHe : (p.plantNameEn || p.plantNameHe)}
                   </span>
                   {p.gardenName && (
-                    <span style={{ fontFamily: ASST, fontSize: '11px', color: `${TEXT_MID}55`, marginRight: '6px', marginLeft: '6px' }}>
+                    <span style={{ fontFamily: EN_HEADING, fontSize: '11px', color: `${TEXT_MID}55`, marginRight: '6px', marginLeft: '6px' }}>
                       — {p.gardenName}
                     </span>
                   )}
                 </div>
                 <span style={{
-                  fontFamily: ASST, fontSize: '11px', fontWeight: 700,
+                  fontFamily: EN_HEADING, fontSize: '11px', fontWeight: 700,
                   background: p.action === 'harvest' ? 'rgba(74,156,104,0.25)' : 'rgba(181,136,99,0.25)',
                   color: p.action === 'harvest' ? '#4A9C68' : '#C8A070',
                   borderRadius: '99px', padding: '2px 10px', flexShrink: 0,
@@ -297,7 +297,7 @@ function DayActionCard({
               </div>
             ))
           ) : (
-            <p style={{ fontFamily: ASST, fontSize: '13px', color: `${TEXT_MID}70`, margin: 0 }}>
+            <p style={{ fontFamily: EN_HEADING, fontSize: '13px', color: `${TEXT_MID}70`, margin: 0 }}>
               {isHe
                 ? 'הצמחים בגינה שלך לא מתאימים במיוחד להיום — אבל תמיד אפשר להשקות ולבדוק.'
                 : "Your plants aren't a strong match for today — but watering and checking is always fine."}
@@ -306,13 +306,13 @@ function DayActionCard({
 
           {nonMatching.length > 0 && matching.length > 0 && (
             <div style={{ marginTop: '10px', paddingTop: '8px', borderTop: '1px solid rgba(255,255,255,0.06)' }}>
-              <div style={{ fontFamily: ASST, fontSize: '11px', color: `${TEXT_MID}45`, marginBottom: '6px' }}>
+              <div style={{ fontFamily: EN_HEADING, fontSize: '11px', color: `${TEXT_MID}45`, marginBottom: '6px' }}>
                 {isHe ? 'שאר הגינה — פחות מתאים להיום:' : "Rest of garden — less ideal today:"}
               </div>
               <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px' }}>
                 {nonMatching.map((p, i) => (
                   <span key={i} style={{
-                    fontFamily: ASST, fontSize: '12px', color: `${TEXT_MID}55`,
+                    fontFamily: EN_HEADING, fontSize: '12px', color: `${TEXT_MID}55`,
                     background: 'rgba(255,255,255,0.04)', borderRadius: '99px',
                     padding: '3px 10px', border: '1px solid rgba(255,255,255,0.06)',
                   }}>
@@ -332,7 +332,7 @@ function DayActionCard({
           display: 'flex', gap: '12px', alignItems: 'center',
         }}>
           <span style={{ fontSize: '20px' }}>🌱</span>
-          <div style={{ fontFamily: ASST, fontSize: '13px', color: `${TEXT_MID}70`, flex: 1 }}>
+          <div style={{ fontFamily: EN_HEADING, fontSize: '13px', color: `${TEXT_MID}70`, flex: 1 }}>
             {isHe
               ? 'הוסף צמחים לגינה שלך כדי לקבל המלצות מותאמות אישית להיום.'
               : 'Add plants to your garden to get personalized recommendations for today.'}
@@ -358,7 +358,7 @@ function DayActionCard({
           {alerts.slice(0, 3).map((a, i) => (
             <div key={i} style={{
               display: 'flex', gap: '8px', alignItems: 'center',
-              fontFamily: ASST, fontSize: '13px', color: `${TEXT_MID}90`, padding: '3px 0',
+              fontFamily: EN_HEADING, fontSize: '13px', color: `${TEXT_MID}90`, padding: '3px 0',
             }}>
               <span style={{ color: '#C884C8', flexShrink: 0 }}>•</span>
               <span>{isHe ? a.plantNameHe : (a.plantNameEn || a.plantNameHe)}</span>
@@ -367,7 +367,7 @@ function DayActionCard({
                   ? (isHe ? '(לא נבדק)' : '(never checked)')
                   : (isHe ? `(לפני ${a.lastAnalysisDaysAgo} ימים)` : `(${a.lastAnalysisDaysAgo}d ago)`)}
               </span>
-              <a href="/tracker" style={{ fontFamily: ASST, fontSize: '11px', color: '#C884C8', textDecoration: 'none' }}>
+              <a href="/tracker" style={{ fontFamily: EN_HEADING, fontSize: '11px', color: '#C884C8', textDecoration: 'none' }}>
                 {isHe ? 'לבדיקה ›' : 'Check ›'}
               </a>
             </div>
@@ -386,7 +386,7 @@ function DayActionCard({
         {goodFor.map((item, i) => (
           <div key={i} style={{
             display: 'flex', gap: '8px', alignItems: 'flex-start',
-            fontFamily: ASST, fontSize: '13px', color: `${TEXT_MID}99`,
+            fontFamily: EN_HEADING, fontSize: '13px', color: `${TEXT_MID}99`,
             padding: '3px 0',
           }}>
             <span style={{ color: `${BIO_CYAN}80`, flexShrink: 0 }}>•</span>
@@ -405,7 +405,7 @@ function DayActionCard({
           </h3>
           {avoidToday.map((item, i) => (
             <div key={i} style={{
-              display: 'flex', gap: '8px', fontFamily: ASST, fontSize: '13px', color: '#E8956A', padding: '3px 0',
+              display: 'flex', gap: '8px', fontFamily: EN_HEADING, fontSize: '13px', color: '#E8956A', padding: '3px 0',
             }}>
               <span style={{ flexShrink: 0 }}>•</span>
               <span>{item}</span>
@@ -418,7 +418,7 @@ function DayActionCard({
         onClick={() => setBdOpen(o => !o)}
         style={{
           background: 'none', border: 'none', cursor: 'pointer',
-          fontFamily: ASST, fontSize: '12px', color: `${TEXT_MID}45`,
+          fontFamily: EN_HEADING, fontSize: '12px', color: `${TEXT_MID}45`,
           textAlign: 'start' as const, padding: '2px 0',
           display: 'flex', alignItems: 'center', gap: '5px',
           transition: 'color 0.15s',
@@ -436,7 +436,7 @@ function DayActionCard({
         <div style={{
           background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.06)',
           borderRadius: '10px', padding: '14px 16px',
-          fontFamily: ASST, fontSize: '13px', color: `${TEXT_MID}75`, lineHeight: 1.7,
+          fontFamily: EN_HEADING, fontSize: '13px', color: `${TEXT_MID}75`, lineHeight: 1.7,
         }}>
           <div style={{ marginBottom: '6px' }}>{isHe ? bdSummary.bdDetail.he : bdSummary.bdDetail.en}</div>
           <div style={{ color: `${TEXT_MID}50`, fontSize: '12px' }}>
@@ -521,7 +521,7 @@ export function DashboardPage() {
           <div style={{ fontFamily: FRANK, fontSize: '20px', color: BIO_CYAN, fontWeight: 700, lineHeight: 1.2 }}>
             {firstName ? t('greeting.hello', { name: firstName }) : t('greeting.helloGuest')} {t(getGreetingKey())}
           </div>
-          <div style={{ fontFamily: ASST, fontSize: '12px', color: `${TEXT_MID}70`, marginTop: '3px' }}>
+          <div style={{ fontFamily: EN_HEADING, fontSize: '12px', color: `${TEXT_MID}70`, marginTop: '3px' }}>
             {t('chupchu.subtitle')}
           </div>
         </div>
@@ -529,7 +529,7 @@ export function DashboardPage() {
 
       {(day?.chupChuDailySummary || day?.dayType) && (
         <p style={{
-          fontFamily: ASST, fontSize: '13px', color: `${TEXT_MID}CC`,
+          fontFamily: EN_HEADING, fontSize: '13px', color: `${TEXT_MID}CC`,
           margin: 0, lineHeight: 1.6,
           borderRight: `3px solid ${BIO_CYAN}55`,
           paddingRight: '12px',
@@ -565,7 +565,7 @@ export function DashboardPage() {
       <div dir={isHe ? 'rtl' : 'ltr'} style={{
         minHeight: '100vh', backgroundColor: NIGHT,
         padding: '16px 12px 100px',
-        fontFamily: ASST,
+        fontFamily: EN_HEADING,
         overflowX: 'hidden',
         boxSizing: 'border-box',
       }}>
@@ -592,7 +592,7 @@ export function DashboardPage() {
                 borderRadius: '99px', padding: '7px 14px',
               }}>
                 <span style={{ fontSize: '15px' }}>{dayType.emoji}</span>
-                <span style={{ fontFamily: ASST, fontSize: '12px', fontWeight: 600, color: dayType.color }}>
+                <span style={{ fontFamily: EN_HEADING, fontSize: '12px', fontWeight: 600, color: dayType.color }}>
                   {bdSummary
                     ? (isHe ? bdSummary.headline.he : bdSummary.headline.en).split('—')[0].trim()
                     : `${t('dayTypePrefix')} ${t('dayTypes.' + day!.dayType)}`}
@@ -605,7 +605,7 @@ export function DashboardPage() {
               borderRadius: '99px', padding: '7px 14px',
             }}>
               <span style={{ fontSize: '16px' }}>{moonEmoji(day.moonPhasePct)}</span>
-              <span style={{ fontFamily: ASST, fontSize: '12px', color: BIO_CYAN, fontWeight: 600 }}>
+              <span style={{ fontFamily: EN_HEADING, fontSize: '12px', color: BIO_CYAN, fontWeight: 600 }}>
                 {day.moonPhasePct}%
               </span>
             </div>
@@ -615,7 +615,7 @@ export function DashboardPage() {
               borderRadius: '99px', padding: '7px 14px',
             }}>
               <span style={{ fontSize: '15px' }}>⭐</span>
-              <span style={{ fontFamily: ASST, fontSize: '12px', color: scoreColor, fontWeight: 700 }}>
+              <span style={{ fontFamily: EN_HEADING, fontSize: '12px', color: scoreColor, fontWeight: 700 }}>
                 {day.plantingScore}/10
               </span>
             </div>
@@ -647,14 +647,14 @@ export function DashboardPage() {
             </h2>
             <Link
               to="/tasks"
-              style={{ fontFamily: ASST, fontSize: '12px', color: `${TEXT_MID}65`, textDecoration: 'none' }}
+              style={{ fontFamily: EN_HEADING, fontSize: '12px', color: `${TEXT_MID}65`, textDecoration: 'none' }}
             >
               {t('todayTasks.seeAll')}
             </Link>
           </div>
 
           {todayTasks.length === 0 ? (
-            <p style={{ fontFamily: ASST, fontSize: '13px', color: `${TEXT_MID}50`, margin: 0 }}>
+            <p style={{ fontFamily: EN_HEADING, fontSize: '13px', color: `${TEXT_MID}50`, margin: 0 }}>
               {t('todayTasks.none')}
             </p>
           ) : (
@@ -678,7 +678,7 @@ export function DashboardPage() {
                   {task.status === 'done' ? '✓' : ''}
                 </button>
                 <span style={{
-                  fontFamily: ASST, fontSize: '13px',
+                  fontFamily: EN_HEADING, fontSize: '13px',
                   color: task.status === 'done' ? `${TEXT_MID}45` : TEXT_MID,
                   textDecoration: task.status === 'done' ? 'line-through' : 'none',
                   flex: 1, overflow: 'hidden', whiteSpace: 'nowrap', textOverflow: 'ellipsis',
@@ -717,7 +717,7 @@ export function DashboardPage() {
               }}
               >
                 <span style={{ fontSize: '32px', lineHeight: 1 }}>{btn.emoji}</span>
-                <span style={{ fontFamily: ASST, fontSize: '13px', color: BIO_CYAN, fontWeight: 600 }}>
+                <span style={{ fontFamily: EN_HEADING, fontSize: '13px', color: BIO_CYAN, fontWeight: 600 }}>
                   {t(btn.tKey)}
                 </span>
               </div>
@@ -733,7 +733,7 @@ export function DashboardPage() {
     <div dir={isHe ? 'rtl' : 'ltr'} style={{
       minHeight: '100vh', backgroundColor: NIGHT,
       padding: '28px 28px 60px',
-      fontFamily: ASST,
+      fontFamily: EN_HEADING,
       boxSizing: 'border-box',
     }}>
       {isNewUser && (
@@ -760,7 +760,7 @@ export function DashboardPage() {
             borderRadius: '14px', padding: '16px',
           }}>
             <h3 style={{
-              fontFamily: ASST, fontSize: '11px', fontWeight: 700,
+              fontFamily: EN_HEADING, fontSize: '11px', fontWeight: 700,
               color: `${TEXT_MID}50`, margin: '0 0 10px',
               textTransform: 'uppercase', letterSpacing: '0.1em',
             }}>
@@ -782,7 +782,7 @@ export function DashboardPage() {
                 <span style={{ fontSize: '18px', width: '26px', textAlign: 'center', lineHeight: 1 }}>
                   {btn.emoji}
                 </span>
-                <span style={{ fontFamily: ASST, fontSize: '14px', flex: 1 }}>{t(btn.tKey)}</span>
+                <span style={{ fontFamily: EN_HEADING, fontSize: '14px', flex: 1 }}>{t(btn.tKey)}</span>
                 <span style={{ color: `${TEXT_MID}35`, fontSize: '14px' }}>‹</span>
               </Link>
             ))}
@@ -800,7 +800,7 @@ export function DashboardPage() {
             <h1 style={{ fontFamily: FRANK, fontSize: '28px', color: BIO_CYAN, margin: '0 0 4px', lineHeight: 1.2 }}>
               {todayDateStr}
             </h1>
-            <p style={{ fontFamily: ASST, fontSize: '13px', color: `${TEXT_MID}55`, margin: 0 }}>
+            <p style={{ fontFamily: EN_HEADING, fontSize: '13px', color: `${TEXT_MID}55`, margin: 0 }}>
               {t('biodynamic.subtitle')}
             </p>
           </div>
@@ -819,13 +819,13 @@ export function DashboardPage() {
                 }}>
                   {/* Row 1 — planting score */}
                   <div style={{ background: `${scoreColor}14`, border: `1px solid ${scoreColor}44`, borderRadius: '12px', padding: '14px 16px' }}>
-                    <div style={{ fontFamily: ASST, fontSize: '11px', color: `${TEXT_MID}60`, marginBottom: '4px' }}>{t('biodynamic.plantingScore')}</div>
+                    <div style={{ fontFamily: EN_HEADING, fontSize: '11px', color: `${TEXT_MID}60`, marginBottom: '4px' }}>{t('biodynamic.plantingScore')}</div>
                     <div style={{ fontFamily: FRANK, fontSize: '28px', color: scoreColor, fontWeight: 700, lineHeight: 1 }}>
                       {day.plantingScore}
-                      <span style={{ fontFamily: ASST, fontSize: '11px', color: `${TEXT_MID}40`, fontWeight: 400 }}> /10</span>
+                      <span style={{ fontFamily: EN_HEADING, fontSize: '11px', color: `${TEXT_MID}40`, fontWeight: 400 }}> /10</span>
                     </div>
                     {bdSummary && (
-                      <div style={{ fontFamily: ASST, fontSize: '11px', color: `${scoreColor}CC`, marginTop: '5px', lineHeight: 1.3 }}>
+                      <div style={{ fontFamily: EN_HEADING, fontSize: '11px', color: `${scoreColor}CC`, marginTop: '5px', lineHeight: 1.3 }}>
                         {isHe ? bdSummary.scoreLabel.he : bdSummary.scoreLabel.en}
                       </div>
                     )}
@@ -833,7 +833,7 @@ export function DashboardPage() {
 
                   {/* Row 1 — moon phase % */}
                   <div style={{ background: 'rgba(0,229,195,0.07)', border: '1px solid rgba(0,229,195,0.2)', borderRadius: '12px', padding: '14px 16px' }}>
-                    <div style={{ fontFamily: ASST, fontSize: '11px', color: `${TEXT_MID}60`, marginBottom: '4px' }}>{t('biodynamic.moonPhase')}</div>
+                    <div style={{ fontFamily: EN_HEADING, fontSize: '11px', color: `${TEXT_MID}60`, marginBottom: '4px' }}>{t('biodynamic.moonPhase')}</div>
                     <div style={{ fontFamily: FRANK, fontSize: '22px', color: BIO_CYAN }}>
                       {moonEmoji(day.moonPhasePct)} {day.moonPhasePct}%
                     </div>
@@ -842,7 +842,7 @@ export function DashboardPage() {
                   {/* Row 1 — day type / plain headline */}
                   {dayType ? (
                     <div style={{ background: dayType.bg, border: `1px solid ${dayType.color}55`, borderRadius: '12px', padding: '14px 16px' }}>
-                      <div style={{ fontFamily: ASST, fontSize: '11px', color: `${TEXT_MID}60`, marginBottom: '4px' }}>
+                      <div style={{ fontFamily: EN_HEADING, fontSize: '11px', color: `${TEXT_MID}60`, marginBottom: '4px' }}>
                         {isHe ? 'היום בגינה' : 'Today in the garden'}
                       </div>
                       <div style={{ fontFamily: FRANK, fontSize: '13px', color: dayType.color, fontWeight: 700, lineHeight: 1.4 }}>
@@ -855,7 +855,7 @@ export function DashboardPage() {
 
                   {/* Row 2 — moon sign */}
                   <div style={{ background: 'rgba(255,255,255,0.04)', borderRadius: '10px', padding: '14px 16px' }}>
-                    <div style={{ fontFamily: ASST, fontSize: '11px', color: `${TEXT_MID}50`, marginBottom: '5px' }}>{t('biodynamic.moonSign')}</div>
+                    <div style={{ fontFamily: EN_HEADING, fontSize: '11px', color: `${TEXT_MID}50`, marginBottom: '5px' }}>{t('biodynamic.moonSign')}</div>
                     <div style={{ fontFamily: FRANK, fontSize: '16px', color: TEXT_MID }}>
                       {isHe ? day.moonSignHe : (MOON_SIGN_EN[day.moonSignHe] ?? day.moonSignHe)}
                     </div>
@@ -863,13 +863,13 @@ export function DashboardPage() {
 
                   {/* Row 2 — rise time */}
                   <div style={{ background: 'rgba(255,255,255,0.04)', borderRadius: '10px', padding: '14px 16px' }}>
-                    <div style={{ fontFamily: ASST, fontSize: '11px', color: `${TEXT_MID}50`, marginBottom: '5px' }}>{t('biodynamic.moonrise')}</div>
+                    <div style={{ fontFamily: EN_HEADING, fontSize: '11px', color: `${TEXT_MID}50`, marginBottom: '5px' }}>{t('biodynamic.moonrise')}</div>
                     <div style={{ fontFamily: FRANK, fontSize: '16px', color: TEXT_MID }}>{day.moonriseTime ?? '—'}</div>
                   </div>
 
                   {/* Row 2 — set time */}
                   <div style={{ background: 'rgba(255,255,255,0.04)', borderRadius: '10px', padding: '14px 16px' }}>
-                    <div style={{ fontFamily: ASST, fontSize: '11px', color: `${TEXT_MID}50`, marginBottom: '5px' }}>{isHe ? 'שקיעת ירח' : 'Moonset'}</div>
+                    <div style={{ fontFamily: EN_HEADING, fontSize: '11px', color: `${TEXT_MID}50`, marginBottom: '5px' }}>{isHe ? 'שקיעת ירח' : 'Moonset'}</div>
                     <div style={{ fontFamily: FRANK, fontSize: '16px', color: TEXT_MID }}>{day.moonsetTime ?? '—'}</div>
                   </div>
 
@@ -880,7 +880,7 @@ export function DashboardPage() {
                     display: 'flex', justifyContent: 'space-between', alignItems: 'center',
                   }}>
                     <div style={{ flex: 1 }}>
-                      <div style={{ fontFamily: ASST, fontSize: '11px', color: `${TEXT_MID}50`, marginBottom: '5px' }}>
+                      <div style={{ fontFamily: EN_HEADING, fontSize: '11px', color: `${TEXT_MID}50`, marginBottom: '5px' }}>
                         🌙 {isHe ? 'הירח היום' : 'Moon today'}
                       </div>
                       <div style={{ fontFamily: FRANK, fontSize: '14px', color: TEXT_MID, lineHeight: 1.4 }}>
@@ -890,7 +890,7 @@ export function DashboardPage() {
                       </div>
                     </div>
                     <div style={{ textAlign: 'right' }}>
-                      <div style={{ fontFamily: ASST, fontSize: '11px', color: `${TEXT_MID}50`, marginBottom: '5px' }}>{isHe ? 'שם הפאזה' : 'Phase name'}</div>
+                      <div style={{ fontFamily: EN_HEADING, fontSize: '11px', color: `${TEXT_MID}50`, marginBottom: '5px' }}>{isHe ? 'שם הפאזה' : 'Phase name'}</div>
                       <div style={{ fontFamily: FRANK, fontSize: '16px', color: TEXT_MID }}>
                         {isHe ? day.moonPhaseNameHe : (PHASE_NAME_EN[day.moonPhaseNameHe] ?? day.moonPhaseNameHe)}
                       </div>
@@ -945,14 +945,14 @@ export function DashboardPage() {
                   display: 'flex', gap: '10px', alignItems: 'center',
                 }}>
                   <span style={{ fontSize: '18px' }}>🌕</span>
-                  <div style={{ fontFamily: ASST, fontSize: '13px', color: '#E8956A' }}>
+                  <div style={{ fontFamily: EN_HEADING, fontSize: '13px', color: '#E8956A' }}>
                     {isHe ? 'הירח קרוב לכדור הארץ היום — כוחות הגאות חזקים יותר מהרגיל' : 'Moon close to Earth today — tidal forces are stronger than usual'}
                   </div>
                 </div>
               )}
             </>
           ) : (
-            <p style={{ fontFamily: ASST, fontSize: '14px', color: `${TEXT_MID}50` }}>
+            <p style={{ fontFamily: EN_HEADING, fontSize: '14px', color: `${TEXT_MID}50` }}>
               {isHe ? 'לא נמצאו נתוני לוח להיום' : 'No calendar data found for today'}
             </p>
           )}
@@ -972,7 +972,7 @@ export function DashboardPage() {
             </h2>
             <Link
               to="/tasks"
-              style={{ fontFamily: ASST, fontSize: '12px', color: `${TEXT_MID}60`, textDecoration: 'none' }}
+              style={{ fontFamily: EN_HEADING, fontSize: '12px', color: `${TEXT_MID}60`, textDecoration: 'none' }}
             >
               {isHe ? 'הכל ›' : 'All ›'}
             </Link>
@@ -980,7 +980,7 @@ export function DashboardPage() {
 
           {tasks.length === 0 ? (
             <div style={{ textAlign: 'center', padding: '24px 0' }}>
-              <p style={{ fontFamily: ASST, fontSize: '13px', color: `${TEXT_MID}50`, marginBottom: '12px' }}>
+              <p style={{ fontFamily: EN_HEADING, fontSize: '13px', color: `${TEXT_MID}50`, marginBottom: '12px' }}>
                 {isHe ? 'אין משימות לשבוע זה' : 'No tasks this week'}
               </p>
               <Link
@@ -1028,7 +1028,7 @@ export function DashboardPage() {
                         {task.status === 'done' ? '✓' : ''}
                       </button>
                       <span style={{
-                        fontFamily: ASST, fontSize: '13px',
+                        fontFamily: EN_HEADING, fontSize: '13px',
                         color: task.status === 'done' ? `${TEXT_MID}40` : `${TEXT_MID}DD`,
                         textDecoration: task.status === 'done' ? 'line-through' : 'none',
                         flex: 1, overflow: 'hidden', whiteSpace: 'nowrap', textOverflow: 'ellipsis',

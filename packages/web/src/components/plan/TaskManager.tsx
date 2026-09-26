@@ -1,10 +1,10 @@
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import type { GardenTask } from '../../api/tasks';
+import { EN_HEADING } from '../../styles/fonts';
 
 const GOLD  = '#00e5c3';
 const PARCH = '#b0cfbf';
-const ASSIST = "'DM Sans', 'Assistant', 'Heebo', sans-serif";
 const FRANK  = '"Frank Ruhl Libre", Georgia, serif';
 
 const TYPE_CONFIG = {
@@ -82,7 +82,7 @@ export function TaskManager({ tasks, onUpdateStatus, onDelete, onAdd, isLoading 
         <button
           onClick={() => setShowAddForm(v => !v)}
           style={{
-            fontFamily: ASSIST, fontSize: '13px', fontWeight: 600,
+            fontFamily: EN_HEADING, fontSize: '13px', fontWeight: 600,
             padding: '6px 14px', borderRadius: '8px', border: `1px solid ${GOLD}55`,
             color: GOLD, background: 'rgba(0,229,195,0.08)', cursor: 'pointer',
           }}
@@ -95,10 +95,10 @@ export function TaskManager({ tasks, onUpdateStatus, onDelete, onAdd, isLoading 
       {total > 0 && (
         <div style={{ marginBottom: '16px' }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '6px' }}>
-            <span style={{ fontFamily: ASSIST, fontSize: '12px', color: `${PARCH}70` }}>
+            <span style={{ fontFamily: EN_HEADING, fontSize: '12px', color: `${PARCH}70` }}>
               {isHe ? `${done} מתוך ${total} משימות הושלמו` : `${done} of ${total} tasks completed`}
             </span>
-            <span style={{ fontFamily: ASSIST, fontSize: '12px', color: `${PARCH}BF` }}>
+            <span style={{ fontFamily: EN_HEADING, fontSize: '12px', color: `${PARCH}BF` }}>
               {isHe ? `${pending} ממתינות` : `${pending} pending`}
             </span>
           </div>
@@ -120,7 +120,7 @@ export function TaskManager({ tasks, onUpdateStatus, onDelete, onAdd, isLoading 
             key={f}
             onClick={() => setFilter(f)}
             style={{
-              fontFamily: ASSIST, fontSize: '12px', fontWeight: 600,
+              fontFamily: EN_HEADING, fontSize: '12px', fontWeight: 600,
               padding: '4px 12px', borderRadius: '99px',
               border: `1px solid ${filter === f ? GOLD : 'rgba(255,255,255,0.1)'}`,
               color: filter === f ? GOLD : `${PARCH}60`,
@@ -146,7 +146,7 @@ export function TaskManager({ tasks, onUpdateStatus, onDelete, onAdd, isLoading 
               onChange={e => setNewTaskTitle(e.target.value)}
               placeholder={isHe ? 'שם המשימה...' : 'Task name...'}
               style={{
-                fontFamily: ASSIST, fontSize: '14px', color: PARCH,
+                fontFamily: EN_HEADING, fontSize: '14px', color: PARCH,
                 background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)',
                 borderRadius: '8px', padding: '8px 12px', outline: 'none',
                 direction: isHe ? 'rtl' : 'ltr',
@@ -157,7 +157,7 @@ export function TaskManager({ tasks, onUpdateStatus, onDelete, onAdd, isLoading 
               value={newTaskDate}
               onChange={e => setNewTaskDate(e.target.value)}
               style={{
-                fontFamily: ASSIST, fontSize: '14px', color: PARCH,
+                fontFamily: EN_HEADING, fontSize: '14px', color: PARCH,
                 background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)',
                 borderRadius: '8px', padding: '8px 12px', outline: 'none',
               }}
@@ -165,13 +165,13 @@ export function TaskManager({ tasks, onUpdateStatus, onDelete, onAdd, isLoading 
             <div style={{ display: 'flex', gap: '8px', justifyContent: 'flex-end' }}>
               <button
                 onClick={() => setShowAddForm(false)}
-                style={{ fontFamily: ASSIST, fontSize: '13px', padding: '6px 14px', borderRadius: '8px', border: '1px solid rgba(255,255,255,0.1)', color: `${PARCH}60`, background: 'transparent', cursor: 'pointer' }}
+                style={{ fontFamily: EN_HEADING, fontSize: '13px', padding: '6px 14px', borderRadius: '8px', border: '1px solid rgba(255,255,255,0.1)', color: `${PARCH}60`, background: 'transparent', cursor: 'pointer' }}
               >
                 {isHe ? 'ביטול' : 'Cancel'}
               </button>
               <button
                 onClick={handleAdd}
-                style={{ fontFamily: ASSIST, fontSize: '13px', fontWeight: 600, padding: '6px 14px', borderRadius: '8px', border: 'none', background: GOLD, color: '#050d0a', cursor: 'pointer' }}
+                style={{ fontFamily: EN_HEADING, fontSize: '13px', fontWeight: 600, padding: '6px 14px', borderRadius: '8px', border: 'none', background: GOLD, color: '#050d0a', cursor: 'pointer' }}
               >
                 {isHe ? 'הוסף' : 'Add'}
               </button>
@@ -182,11 +182,11 @@ export function TaskManager({ tasks, onUpdateStatus, onDelete, onAdd, isLoading 
 
       {/* Tasks by date */}
       {isLoading ? (
-        <p style={{ fontFamily: ASSIST, fontSize: '14px', color: `${PARCH}BF`, textAlign: 'center', padding: '20px' }}>
+        <p style={{ fontFamily: EN_HEADING, fontSize: '14px', color: `${PARCH}BF`, textAlign: 'center', padding: '20px' }}>
           {isHe ? 'טוען משימות...' : 'Loading tasks...'}
         </p>
       ) : dates.length === 0 ? (
-        <p style={{ fontFamily: ASSIST, fontSize: '14px', color: `${PARCH}BF`, textAlign: 'center', padding: '20px' }}>
+        <p style={{ fontFamily: EN_HEADING, fontSize: '14px', color: `${PARCH}BF`, textAlign: 'center', padding: '20px' }}>
           {filter === 'done'
             ? (isHe ? 'עדיין לא הושלמו משימות השבוע' : 'No tasks completed yet')
             : (isHe ? 'אין משימות לשבוע זה' : 'No tasks this week')}
@@ -236,7 +236,7 @@ export function TaskManager({ tasks, onUpdateStatus, onDelete, onAdd, isLoading 
 
                     {/* Title */}
                     <span style={{
-                      fontFamily: ASSIST, fontSize: '14px', color: isDone ? `${PARCH}70` : PARCH,
+                      fontFamily: EN_HEADING, fontSize: '14px', color: isDone ? `${PARCH}70` : PARCH,
                       flex: 1, textDecoration: isDone ? 'line-through' : 'none',
                       direction: isHe ? 'rtl' : 'ltr', textAlign: isHe ? 'right' : 'left',
                     }}>
@@ -245,7 +245,7 @@ export function TaskManager({ tasks, onUpdateStatus, onDelete, onAdd, isLoading 
 
                     {/* Type badge */}
                     <span style={{
-                      fontFamily: ASSIST, fontSize: '10px', fontWeight: 600,
+                      fontFamily: EN_HEADING, fontSize: '10px', fontWeight: 600,
                       padding: '2px 8px', borderRadius: '99px',
                       background: `${cfg.color}22`, color: cfg.color, flexShrink: 0,
                     }}>
@@ -255,7 +255,7 @@ export function TaskManager({ tasks, onUpdateStatus, onDelete, onAdd, isLoading 
                     {/* Tracker origin badge */}
                     {task.source_action === 'growing_tracker' && (
                       <span style={{
-                        fontFamily: ASSIST, fontSize: '10px', fontWeight: 600,
+                        fontFamily: EN_HEADING, fontSize: '10px', fontWeight: 600,
                         padding: '2px 8px', borderRadius: '99px',
                         background: 'rgba(0,229,195,0.08)', color: '#4A9C68', flexShrink: 0,
                       }}>

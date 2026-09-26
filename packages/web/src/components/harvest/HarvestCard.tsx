@@ -1,9 +1,9 @@
 import { useState } from 'react';
+import { EN_HEADING } from '../../styles/fonts';
 
 const GOLD   = '#00e5c3';
 const PARCH  = '#b0cfbf';
 const FRANK  = '"Frank Ruhl Libre", Georgia, serif';
-const ASSIST = "'DM Sans', 'Assistant', 'Heebo', sans-serif";
 
 const SCORE_COLOURS: Record<string, string> = {
   green:  '#4A9C68',
@@ -104,7 +104,7 @@ export function HarvestCard({ harvest: h, onDelete }: Props) {
             <div style={{ fontFamily: FRANK, fontWeight: 700, fontSize: '16px', color: PARCH, lineHeight: 1.2 }}>
               {h.plant_name_he}
             </div>
-            <div style={{ fontFamily: ASSIST, fontSize: '11px', color: `${PARCH}55`, marginTop: '1px' }}>
+            <div style={{ fontFamily: EN_HEADING, fontSize: '11px', color: `${PARCH}55`, marginTop: '1px' }}>
               {h.plant_name_en}
             </div>
           </div>
@@ -113,7 +113,7 @@ export function HarvestCard({ harvest: h, onDelete }: Props) {
             title="מחק קציר"
             style={{
               flexShrink:      0,
-              fontFamily:      ASSIST,
+              fontFamily:      EN_HEADING,
               fontSize:        confirming ? '11px' : '14px',
               color:           confirming ? '#E06060' : `${PARCH}44`,
               background:      'none',
@@ -133,7 +133,7 @@ export function HarvestCard({ harvest: h, onDelete }: Props) {
 
         <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginTop: '8px', flexWrap: 'wrap' }}>
           {/* Date */}
-          <span style={{ fontFamily: ASSIST, fontSize: '12px', color: `${PARCH}77` }}>
+          <span style={{ fontFamily: EN_HEADING, fontSize: '12px', color: `${PARCH}77` }}>
             {formatHebrewDate(h.harvest_date)}
           </span>
 
@@ -141,7 +141,7 @@ export function HarvestCard({ harvest: h, onDelete }: Props) {
           {qty && (
             <>
               <span style={{ color: `${PARCH}33` }}>·</span>
-              <span style={{ fontFamily: ASSIST, fontSize: '12px', color: GOLD, fontWeight: 600 }}>
+              <span style={{ fontFamily: EN_HEADING, fontSize: '12px', color: GOLD, fontWeight: 600 }}>
                 {qty}
               </span>
             </>
@@ -150,7 +150,7 @@ export function HarvestCard({ harvest: h, onDelete }: Props) {
           {/* Day type badge */}
           {badge && h.day_type && (
             <span style={{
-              fontFamily:      ASSIST,
+              fontFamily:      EN_HEADING,
               fontSize:        '10px',
               fontWeight:      600,
               padding:         '2px 8px',
@@ -166,7 +166,7 @@ export function HarvestCard({ harvest: h, onDelete }: Props) {
         {/* Notes */}
         {h.notes && (
           <div style={{
-            fontFamily: ASSIST,
+            fontFamily: EN_HEADING,
             fontSize:   '12px',
             fontStyle:  'italic',
             color:      `${PARCH}66`,

@@ -4,13 +4,13 @@ import { useTranslation } from 'react-i18next';
 import { LoginForm } from '../components/auth/LoginForm';
 import { useAuthStore } from '../stores/authStore';
 import { readPurchaseIntent } from '../utils/purchaseIntent';
+import { EN_HEADING } from '../styles/fonts';
 
 const NIGHT      = '#050d0a';
 const NIGHT_CARD = '#111f18';
 const BIO_CYAN   = '#00e5c3';
 const TEXT_MID   = '#b0cfbf';
 const FRANK      = '"Frank Ruhl Libre", Georgia, serif';
-const DM_SANS    = "'DM Sans', 'Assistant', 'Heebo', sans-serif";
 
 const PAGE_CSS = `
 @keyframes auth-wheel-spin {
@@ -92,7 +92,7 @@ export function LoginPage() {
                 borderRadius:    '10px',
                 padding:         '12px 16px',
                 marginBottom:    '16px',
-                fontFamily:      DM_SANS,
+                fontFamily:      EN_HEADING,
                 fontSize:        '14px',
                 color:           BIO_CYAN,
                 textAlign:       'center',
@@ -129,7 +129,7 @@ export function LoginPage() {
               גינה חיה
             </h1>
             <p style={{
-              fontFamily: DM_SANS,
+              fontFamily: EN_HEADING,
               fontStyle:  'italic',
               fontSize:   '13px',
               color:      TEXT_MID,

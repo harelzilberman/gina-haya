@@ -4,13 +4,13 @@ import { api } from '../../api/client';
 import { useAuthStore } from '../../stores/authStore';
 import type { Credits } from '../../hooks/useCredits';
 import type { ProductId } from '../../pages/ShopPage';
+import { EN_HEADING } from '../../styles/fonts';
 
 const EARTH = '#050d0a';
 const GOLD  = '#00e5c3';
 const PARCH = '#b0cfbf';
 const SAGE  = '#4A9C68';
 const FRANK = '"Frank Ruhl Libre", Georgia, serif';
-const ASST  = "'DM Sans', 'Assistant', 'Heebo', sans-serif";
 
 export interface CartItem {
   productId: ProductId;
@@ -168,7 +168,7 @@ export function CheckoutModal({ cart, onClose }: Props) {
                 <p style={{ fontFamily: FRANK, fontSize: '18px', color: GOLD, margin: '0 0 6px' }}>
                   מתחבר לגרו...
                 </p>
-                <p style={{ fontFamily: ASST, fontSize: '13px', color: `${PARCH}60`, margin: 0 }}>
+                <p style={{ fontFamily: EN_HEADING, fontSize: '13px', color: `${PARCH}60`, margin: 0 }}>
                   רגע אחד
                 </p>
               </div>
@@ -180,14 +180,14 @@ export function CheckoutModal({ cart, onClose }: Props) {
 
                 {!isAuthReady ? (
                   /* Auth still initializing */
-                  <p style={{ fontFamily: ASST, fontSize: '14px', color: `${PARCH}88`, margin: 0, textAlign: 'center', padding: '24px 0' }}>
+                  <p style={{ fontFamily: EN_HEADING, fontSize: '14px', color: `${PARCH}88`, margin: 0, textAlign: 'center', padding: '24px 0' }}>
                     טוען...
                   </p>
 
                 ) : !session ? (
                   /* Not signed in — prompt login; cart is already saved in localStorage */
                   <div style={{ textAlign: 'center', padding: '16px 0', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '20px' }}>
-                    <p style={{ fontFamily: ASST, fontSize: '15px', color: PARCH, margin: 0, lineHeight: 1.6 }}>
+                    <p style={{ fontFamily: EN_HEADING, fontSize: '15px', color: PARCH, margin: 0, lineHeight: 1.6 }}>
                       כדי להשלים רכישה צריך להתחבר לחשבון.
                     </p>
                     <button
@@ -209,7 +209,7 @@ export function CheckoutModal({ cart, onClose }: Props) {
                 ) : (
                   /* Authenticated — show the payment form */
                   <>
-                    <p style={{ fontFamily: ASST, fontSize: '14px', color: `${PARCH}CC`, margin: 0 }}>
+                    <p style={{ fontFamily: EN_HEADING, fontSize: '14px', color: `${PARCH}CC`, margin: 0 }}>
                       לצורך עיבוד התשלום נדרשים שם מלא ומספר טלפון נייד ישראלי.
                     </p>
 
@@ -217,7 +217,7 @@ export function CheckoutModal({ cart, onClose }: Props) {
                     <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
                       <label
                         htmlFor="shop-fullname"
-                        style={{ fontFamily: ASST, fontSize: '13px', fontWeight: 600, color: PARCH }}
+                        style={{ fontFamily: EN_HEADING, fontSize: '13px', fontWeight: 600, color: PARCH }}
                       >
                         שם מלא
                       </label>
@@ -244,12 +244,12 @@ export function CheckoutModal({ cart, onClose }: Props) {
                             ? `1px solid ${SAGE}88`
                             : '1px solid rgba(0,229,195,0.2)',
                           backgroundColor: 'rgba(9,20,16,0.6)',
-                          fontFamily: ASST, fontSize: '15px', color: PARCH,
+                          fontFamily: EN_HEADING, fontSize: '15px', color: PARCH,
                           outline: 'none',
                         }}
                       />
                       {fullNameErr && (
-                        <p style={{ fontFamily: ASST, fontSize: '12px', color: '#C0372A', margin: 0 }}>
+                        <p style={{ fontFamily: EN_HEADING, fontSize: '12px', color: '#C0372A', margin: 0 }}>
                           {fullNameErr}
                         </p>
                       )}
@@ -259,7 +259,7 @@ export function CheckoutModal({ cart, onClose }: Props) {
                     <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
                       <label
                         htmlFor="shop-phone"
-                        style={{ fontFamily: ASST, fontSize: '13px', fontWeight: 600, color: PARCH }}
+                        style={{ fontFamily: EN_HEADING, fontSize: '13px', fontWeight: 600, color: PARCH }}
                       >
                         מספר טלפון נייד
                       </label>
@@ -289,19 +289,19 @@ export function CheckoutModal({ cart, onClose }: Props) {
                             ? `1px solid ${SAGE}88`
                             : '1px solid rgba(0,229,195,0.2)',
                           backgroundColor: 'rgba(9,20,16,0.6)',
-                          fontFamily: ASST, fontSize: '15px', color: PARCH,
+                          fontFamily: EN_HEADING, fontSize: '15px', color: PARCH,
                           outline: 'none', letterSpacing: '0.06em',
                         }}
                       />
                       {phoneErr && (
-                        <p style={{ fontFamily: ASST, fontSize: '12px', color: '#C0372A', margin: 0 }}>
+                        <p style={{ fontFamily: EN_HEADING, fontSize: '12px', color: '#C0372A', margin: 0 }}>
                           {phoneErr}
                         </p>
                       )}
                     </div>
 
                     {error && (
-                      <p style={{ fontFamily: ASST, fontSize: '13px', color: '#E06060', margin: 0 }}>
+                      <p style={{ fontFamily: EN_HEADING, fontSize: '13px', color: '#E06060', margin: 0 }}>
                         {error}
                       </p>
                     )}
@@ -324,7 +324,7 @@ export function CheckoutModal({ cart, onClose }: Props) {
                     </button>
 
                     <p style={{
-                      fontFamily: ASST, fontSize: '11px',
+                      fontFamily: EN_HEADING, fontSize: '11px',
                       color: `${PARCH}40`, textAlign: 'center', margin: 0,
                     }}>
                       תועבר לעמוד התשלום של גרו לביצוע הרכישה
@@ -349,7 +349,7 @@ export function CheckoutModal({ cart, onClose }: Props) {
                         borderBottom: '1px solid rgba(0,229,195,0.08)',
                       }}
                     >
-                      <span style={{ fontFamily: ASST, fontSize: '14px', color: PARCH }}>
+                      <span style={{ fontFamily: EN_HEADING, fontSize: '14px', color: PARCH }}>
                         {item.name}
                       </span>
                       <span style={{ fontFamily: FRANK, fontSize: '15px', color: GOLD, fontWeight: 700 }}>

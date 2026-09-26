@@ -1,10 +1,10 @@
 import { useTranslation } from 'react-i18next';
 import { useToday } from '../../hooks/useCalendar';
+import { EN_HEADING } from '../../styles/fonts';
 
 const BIO_CYAN = '#00e5c3';
 const TEXT_MID = '#b0cfbf';
 const FRANK    = '"Frank Ruhl Libre", Georgia, serif';
-const DM_SANS  = "'DM Sans', 'Assistant', 'Heebo', sans-serif";
 
 const DAY_TYPE_HE: Record<string, string> = {
   fruit:  'יום פרי 🍅',
@@ -66,7 +66,7 @@ export function ChupChuGreeting() {
         >
           <p style={{ margin: 0 }}>{t('greeting')}</p>
           {calendarLine && (
-            <p style={{ margin: '4px 0 0', fontSize: '12px', fontFamily: DM_SANS, color: `${TEXT_MID}99` }}>
+            <p style={{ margin: '4px 0 0', fontSize: '12px', fontFamily: EN_HEADING, color: `${TEXT_MID}99` }}>
               {calendarLine}
             </p>
           )}

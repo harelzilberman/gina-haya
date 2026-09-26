@@ -4,11 +4,11 @@ import { useTrackerStore } from '../../stores/trackerStore';
 import { useToastStore } from '../../stores/toastStore';
 import { AnalysisResult } from './AnalysisResult';
 import { supabase } from '../../lib/supabase';
+import { EN_HEADING } from '../../styles/fonts';
 
 const NIGHT_CARD = '#111f18';
 const BIO_CYAN   = '#00e5c3';
 const TEXT_MID   = '#b0cfbf';
-const DM_SANS    = "'DM Sans', 'Assistant', 'Heebo', sans-serif";
 const FRANK      = '"Frank Ruhl Libre", Georgia, serif';
 
 const HEALTH_COLOURS: Record<string, string> = {
@@ -144,7 +144,7 @@ export function CheckinHistory({ checkins, trackerId, onCheckinDeleted }: Props)
   if (checkins.length === 0) {
     return (
       <div style={{ padding: '20px', textAlign: 'center' }}>
-        <p style={{ fontFamily: DM_SANS, fontSize: '13px', color: `${TEXT_MID}45` }}>
+        <p style={{ fontFamily: EN_HEADING, fontSize: '13px', color: `${TEXT_MID}45` }}>
           עדיין אין בדיקות. לחץ על "הוסף בדיקה +" כדי להתחיל.
         </p>
       </div>
@@ -219,7 +219,7 @@ export function CheckinHistory({ checkins, trackerId, onCheckinDeleted }: Props)
                         <span style={{
                           padding:         '2px 10px',
                           borderRadius:    '12px',
-                          fontFamily:      DM_SANS,
+                          fontFamily:      EN_HEADING,
                           fontSize:        '11px',
                           fontWeight:      600,
                           backgroundColor: `${healthColor}22`,
@@ -231,7 +231,7 @@ export function CheckinHistory({ checkins, trackerId, onCheckinDeleted }: Props)
                         <span style={{
                           padding:         '2px 10px',
                           borderRadius:    '12px',
-                          fontFamily:      DM_SANS,
+                          fontFamily:      EN_HEADING,
                           fontSize:        '11px',
                           backgroundColor: 'rgba(0,229,195,0.1)',
                           border:          '1px solid rgba(0,229,195,0.25)',
@@ -246,7 +246,7 @@ export function CheckinHistory({ checkins, trackerId, onCheckinDeleted }: Props)
                     <p style={{ fontFamily: FRANK, fontSize: '14px', color: TEXT_MID, margin: 0 }}>
                       {formatDate(checkin.checkin_date)}
                     </p>
-                    <p style={{ fontFamily: DM_SANS, fontSize: '11px', color: `${TEXT_MID}45`, margin: '2px 0 0' }}>
+                    <p style={{ fontFamily: EN_HEADING, fontSize: '11px', color: `${TEXT_MID}45`, margin: '2px 0 0' }}>
                       {index === 0 ? `לפני ${daysSince(checkin.checkin_date)} ימים` : ''}
                     </p>
                   </div>
@@ -255,7 +255,7 @@ export function CheckinHistory({ checkins, trackerId, onCheckinDeleted }: Props)
                 {/* Comparison note */}
                 {comparison && (
                   <p style={{
-                    fontFamily:  DM_SANS,
+                    fontFamily:  EN_HEADING,
                     fontSize:    '12px',
                     color:       `${BIO_CYAN}70`,
                     margin:      '6px 0 0',
@@ -269,7 +269,7 @@ export function CheckinHistory({ checkins, trackerId, onCheckinDeleted }: Props)
 
                 {/* Notes */}
                 {checkin.notes && (
-                  <p style={{ fontFamily: DM_SANS, fontSize: '12px', color: `${TEXT_MID}55`, margin: '6px 0 0', fontStyle: 'italic' }}>
+                  <p style={{ fontFamily: EN_HEADING, fontSize: '12px', color: `${TEXT_MID}55`, margin: '6px 0 0', fontStyle: 'italic' }}>
                     💬 {checkin.notes}
                   </p>
                 )}
@@ -283,14 +283,14 @@ export function CheckinHistory({ checkins, trackerId, onCheckinDeleted }: Props)
                     style={{ display: 'flex', gap: '8px', alignItems: 'center', marginTop: '8px', paddingTop: '6px', borderTop: '1px solid rgba(0,229,195,0.1)' }}
                     onClick={e => e.stopPropagation()}
                   >
-                    <span style={{ fontFamily: DM_SANS, fontSize: '12px', color: `${TEXT_MID}70`, flex: 1 }}>
+                    <span style={{ fontFamily: EN_HEADING, fontSize: '12px', color: `${TEXT_MID}70`, flex: 1 }}>
                       למחוק בדיקה זו?
                     </span>
                     <button
                       disabled={isDeleting}
                       onClick={() => setConfirmDeleteId(null)}
                       style={{
-                        fontFamily:      DM_SANS,
+                        fontFamily:      EN_HEADING,
                         fontSize:        '11px',
                         padding:         '3px 10px',
                         borderRadius:    '6px',
@@ -306,7 +306,7 @@ export function CheckinHistory({ checkins, trackerId, onCheckinDeleted }: Props)
                       disabled={isDeleting}
                       onClick={() => handleConfirmDelete(checkin.id)}
                       style={{
-                        fontFamily:      DM_SANS,
+                        fontFamily:      EN_HEADING,
                         fontSize:        '11px',
                         padding:         '3px 10px',
                         borderRadius:    '6px',
@@ -343,7 +343,7 @@ export function CheckinHistory({ checkins, trackerId, onCheckinDeleted }: Props)
                       🗑
                     </button>
                     {/* Expand hint */}
-                    <span style={{ fontFamily: DM_SANS, fontSize: '11px', color: `${BIO_CYAN}50` }}>
+                    <span style={{ fontFamily: EN_HEADING, fontSize: '11px', color: `${BIO_CYAN}50` }}>
                       {isExpanded ? '▲ סגור' : '▼ הצג ניתוח מלא'}
                     </span>
                   </div>
@@ -366,7 +366,7 @@ export function CheckinHistory({ checkins, trackerId, onCheckinDeleted }: Props)
                 onClick={e => e.stopPropagation()}
               >
                 <p style={{
-                  fontFamily: DM_SANS,
+                  fontFamily: EN_HEADING,
                   fontSize:   '13px',
                   color:      TEXT_MID,
                   margin:     '0 0 10px',
@@ -379,7 +379,7 @@ export function CheckinHistory({ checkins, trackerId, onCheckinDeleted }: Props)
                     disabled={isDeleting}
                     onClick={() => handleLinkedTasksDecision(linkedTasksInfo.checkinId, true)}
                     style={{
-                      fontFamily:      DM_SANS,
+                      fontFamily:      EN_HEADING,
                       fontSize:        '12px',
                       padding:         '5px 12px',
                       borderRadius:    '6px',
@@ -395,7 +395,7 @@ export function CheckinHistory({ checkins, trackerId, onCheckinDeleted }: Props)
                     disabled={isDeleting}
                     onClick={() => handleLinkedTasksDecision(linkedTasksInfo.checkinId, false)}
                     style={{
-                      fontFamily:      DM_SANS,
+                      fontFamily:      EN_HEADING,
                       fontSize:        '12px',
                       padding:         '5px 12px',
                       borderRadius:    '6px',
@@ -411,7 +411,7 @@ export function CheckinHistory({ checkins, trackerId, onCheckinDeleted }: Props)
                     disabled={isDeleting}
                     onClick={() => setLinkedTasksInfo(null)}
                     style={{
-                      fontFamily:      DM_SANS,
+                      fontFamily:      EN_HEADING,
                       fontSize:        '12px',
                       padding:         '5px 12px',
                       borderRadius:    '6px',

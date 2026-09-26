@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { PlayBadge } from '../components/ui/PlayBadge';
 import { playStoreUrl } from '../config/app-links';
+import { EN_HEADING } from '../styles/fonts';
 
 // ── Design tokens (matching LandingPage) ───────────────────────────────────
 const NIGHT      = '#050d0a';
@@ -15,7 +16,6 @@ const TEXT       = '#e8f5ee';
 const TEXT_MID   = '#b0cfbf';
 const MUTED      = '#6b9080';
 const FRANK      = '"Frank Ruhl Libre", Georgia, serif';
-const DM_SANS    = "'DM Sans', 'Assistant', 'Heebo', sans-serif";
 
 const SCREENSHOTS: Array<{ src: string; captionHe: string; captionEn: string }> = [
   {
@@ -160,7 +160,7 @@ export function AppPage() {
             display: 'inline-flex', alignItems: 'center', gap: '8px',
             background: 'rgba(255,184,48,0.08)', border: '1px solid rgba(255,184,48,0.28)',
             borderRadius: '100px', padding: '6px 18px', marginBottom: '32px',
-            fontFamily: DM_SANS, fontSize: '12px', fontWeight: 600, color: BIO_AMBER,
+            fontFamily: EN_HEADING, fontSize: '12px', fontWeight: 600, color: BIO_AMBER,
             letterSpacing: '0.06em',
           }}>
             <span style={{ width: '6px', height: '6px', borderRadius: '50%', background: BIO_AMBER, display: 'inline-block' }} />
@@ -179,7 +179,7 @@ export function AppPage() {
           </h1>
 
           <p style={{
-            fontFamily: DM_SANS, fontWeight: 300, fontSize: 'clamp(15px, 2vw, 18px)',
+            fontFamily: EN_HEADING, fontWeight: 300, fontSize: 'clamp(15px, 2vw, 18px)',
             lineHeight: 1.75, color: TEXT_MID, marginBottom: '40px',
           }}>
             {isHe
@@ -201,7 +201,7 @@ export function AppPage() {
         <div style={{ maxWidth: '1100px', margin: '0 auto' }}>
           <div style={{ textAlign: 'center', marginBottom: '52px' }}>
             <p style={{
-              fontFamily: DM_SANS, fontSize: '10px', fontWeight: 700,
+              fontFamily: EN_HEADING, fontSize: '10px', fontWeight: 700,
               letterSpacing: '0.22em', textTransform: 'uppercase',
               color: BIO_CYAN, marginBottom: '14px',
             }}>
@@ -241,7 +241,7 @@ export function AppPage() {
                   {f.title}
                 </h3>
                 <p style={{
-                  fontFamily: DM_SANS, fontWeight: 300, fontSize: '14px',
+                  fontFamily: EN_HEADING, fontWeight: 300, fontSize: '14px',
                   color: TEXT_MID, lineHeight: 1.7,
                 }}>
                   {f.body}
@@ -260,7 +260,7 @@ export function AppPage() {
         <div style={{ maxWidth: '1100px', margin: '0 auto' }}>
           <div style={{ textAlign: 'center', marginBottom: '52px' }}>
             <p style={{
-              fontFamily: DM_SANS, fontSize: '10px', fontWeight: 700,
+              fontFamily: EN_HEADING, fontSize: '10px', fontWeight: 700,
               letterSpacing: '0.22em', textTransform: 'uppercase',
               color: BIO_CYAN, marginBottom: '14px',
             }}>
@@ -296,7 +296,7 @@ export function AppPage() {
                   />
                 </div>
                 <p style={{
-                  fontFamily: DM_SANS, fontSize: '13px', color: TEXT_MID,
+                  fontFamily: EN_HEADING, fontSize: '13px', color: TEXT_MID,
                   lineHeight: 1.55, textAlign: 'center',
                 }}>
                   {isHe ? s.captionHe : s.captionEn}
@@ -315,7 +315,7 @@ export function AppPage() {
         <div style={{ maxWidth: '800px', margin: '0 auto' }}>
           <div style={{ textAlign: 'center', marginBottom: '52px' }}>
             <p style={{
-              fontFamily: DM_SANS, fontSize: '10px', fontWeight: 700,
+              fontFamily: EN_HEADING, fontSize: '10px', fontWeight: 700,
               letterSpacing: '0.22em', textTransform: 'uppercase',
               color: BIO_CYAN, marginBottom: '14px',
             }}>
@@ -335,7 +335,7 @@ export function AppPage() {
               background: NIGHT_CARD, border: '1px solid rgba(0,229,195,0.12)',
               borderRadius: '20px', padding: '32px 28px',
             }}>
-              <p style={{ fontFamily: DM_SANS, fontSize: '10px', fontWeight: 700, letterSpacing: '0.18em', textTransform: 'uppercase', color: MUTED, marginBottom: '12px' }}>
+              <p style={{ fontFamily: EN_HEADING, fontSize: '10px', fontWeight: 700, letterSpacing: '0.18em', textTransform: 'uppercase', color: MUTED, marginBottom: '12px' }}>
                 {isHe ? '\u05d7\u05d9\u05e0\u05de\u05d9\u05ea' : 'Free'}
               </p>
               <p style={{ fontFamily: FRANK, fontSize: '36px', fontWeight: 700, color: TEXT, marginBottom: '24px' }}>
@@ -350,7 +350,7 @@ export function AppPage() {
                      '~20 Chupchu messages/month',
                      'One garden, 10 plants']
                 ).map(item => (
-                  <li key={item} style={{ fontFamily: DM_SANS, fontSize: '14px', color: TEXT_MID, display: 'flex', gap: '8px', alignItems: 'flex-start' }}>
+                  <li key={item} style={{ fontFamily: EN_HEADING, fontSize: '14px', color: TEXT_MID, display: 'flex', gap: '8px', alignItems: 'flex-start' }}>
                     <span style={{ color: BIO_CYAN, flexShrink: 0, marginTop: '1px' }}>✓</span>
                     {item}
                   </li>
@@ -369,19 +369,19 @@ export function AppPage() {
               <span style={{
                 position: 'absolute', top: '-12px', insetInlineStart: '28px',
                 background: BIO_CYAN, color: NIGHT,
-                fontFamily: DM_SANS, fontSize: '11px', fontWeight: 700,
+                fontFamily: EN_HEADING, fontSize: '11px', fontWeight: 700,
                 padding: '3px 14px', borderRadius: '100px',
                 letterSpacing: '0.06em', textTransform: 'uppercase',
               }}>
                 {isHe ? '\u05de\u05d5\u05de\u05dc\u05e5' : 'Recommended'}
               </span>
-              <p style={{ fontFamily: DM_SANS, fontSize: '10px', fontWeight: 700, letterSpacing: '0.18em', textTransform: 'uppercase', color: BIO_CYAN, marginBottom: '12px' }}>
+              <p style={{ fontFamily: EN_HEADING, fontSize: '10px', fontWeight: 700, letterSpacing: '0.18em', textTransform: 'uppercase', color: BIO_CYAN, marginBottom: '12px' }}>
                 Pro
               </p>
               <p style={{ fontFamily: FRANK, fontSize: '36px', fontWeight: 700, color: TEXT, marginBottom: '4px' }}>
                 {isHe ? '18 \u20aa' : '₪18'}
               </p>
-              <p style={{ fontFamily: DM_SANS, fontSize: '13px', color: MUTED, marginBottom: '24px' }}>
+              <p style={{ fontFamily: EN_HEADING, fontSize: '13px', color: MUTED, marginBottom: '24px' }}>
                 {isHe ? '\u05dc\u05d7\u05d5\u05d3\u05e9' : '/month'}
               </p>
               <ul style={{ listStyle: 'none', padding: 0, margin: 0, display: 'flex', flexDirection: 'column', gap: '10px' }}>
@@ -397,7 +397,7 @@ export function AppPage() {
                      'Advanced growth reports',
                      'Priority support']
                 ).map(item => (
-                  <li key={item} style={{ fontFamily: DM_SANS, fontSize: '14px', color: TEXT_MID, display: 'flex', gap: '8px', alignItems: 'flex-start' }}>
+                  <li key={item} style={{ fontFamily: EN_HEADING, fontSize: '14px', color: TEXT_MID, display: 'flex', gap: '8px', alignItems: 'flex-start' }}>
                     <span style={{ color: BIO_CYAN, flexShrink: 0, marginTop: '1px' }}>✓</span>
                     {item}
                   </li>
@@ -416,7 +416,7 @@ export function AppPage() {
         <div style={{ maxWidth: '720px', margin: '0 auto' }}>
           <div style={{ textAlign: 'center', marginBottom: '52px' }}>
             <p style={{
-              fontFamily: DM_SANS, fontSize: '10px', fontWeight: 700,
+              fontFamily: EN_HEADING, fontSize: '10px', fontWeight: 700,
               letterSpacing: '0.22em', textTransform: 'uppercase',
               color: BIO_CYAN, marginBottom: '14px',
             }}>
@@ -443,7 +443,7 @@ export function AppPage() {
                   {item.q}
                 </p>
                 <p style={{
-                  fontFamily: DM_SANS, fontSize: '14px',
+                  fontFamily: EN_HEADING, fontSize: '14px',
                   color: TEXT_MID, lineHeight: 1.7,
                 }}>
                   {item.a}
@@ -471,7 +471,7 @@ export function AppPage() {
             }
           </h2>
           <p style={{
-            fontFamily: DM_SANS, fontWeight: 300, fontSize: '16px',
+            fontFamily: EN_HEADING, fontWeight: 300, fontSize: '16px',
             color: TEXT_MID, lineHeight: 1.7, marginBottom: '36px',
           }}>
             {isHe
@@ -482,7 +482,7 @@ export function AppPage() {
             <PlayBadge source="app_page_footer" loading="lazy" />
           </div>
           <p style={{
-            fontFamily: DM_SANS, fontSize: '12px', color: MUTED, marginTop: '16px',
+            fontFamily: EN_HEADING, fontSize: '12px', color: MUTED, marginTop: '16px',
           }}>
             {isHe
               ? <><bdi>Android</bdi>{' '}{'\u05d1\u05dc\u05d1\u05d3. \u05d2\u05e8\u05e1\u05ea iOS \u05d1\u05ea\u05db\u05e0\u05d5\u05df.'}</>
@@ -493,7 +493,7 @@ export function AppPage() {
 
         <div style={{ marginTop: '48px' }}>
           <Link to="/" style={{
-            fontFamily: DM_SANS, fontSize: '14px', color: MUTED,
+            fontFamily: EN_HEADING, fontSize: '14px', color: MUTED,
             textDecoration: 'none', borderBottom: '1px solid rgba(107,144,128,0.3)',
             transition: 'color 0.2s, border-color 0.2s',
           }}

@@ -5,6 +5,7 @@ import { getLimits } from '@gina-haya/shared';
 import { useAuthStore } from '../stores/authStore';
 import { useTier } from '../hooks/useTier';
 import { api } from '../api/client';
+import { EN_HEADING } from '../styles/fonts';
 
 const EARTH  = '#050d0a';
 const GOLD   = '#00e5c3';
@@ -12,7 +13,6 @@ const SAGE   = '#4A9C68';
 const CLAY   = '#9B7A48';
 const PARCH  = '#b0cfbf';
 const FRANK  = '"Frank Ruhl Libre", Georgia, serif';
-const ASSIST = "'DM Sans', 'Assistant', 'Heebo', sans-serif";
 const PLAYFAIR = '"Playfair Display", Georgia, serif';
 
 const NOISE_BG = `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='250' height='250'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.75' numOctaves='4' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='250' height='250' filter='url(%23n)' opacity='0.55'/%3E%3C/svg%3E")`;
@@ -162,7 +162,7 @@ export function BillingPage() {
 
           {/* Page title */}
           <h1 style={{
-            fontFamily: isHe ? FRANK : ASSIST,
+            fontFamily: isHe ? FRANK : EN_HEADING,
             fontWeight: 700,
             fontSize:   '2rem',
             color:      GOLD,
@@ -178,7 +178,7 @@ export function BillingPage() {
               ...cardStyle(),
               border:          '1px solid rgba(0,229,195,0.25)',
               backgroundColor: 'rgba(0,229,195,0.07)',
-              fontFamily:      ASSIST,
+              fontFamily:      EN_HEADING,
               fontSize:        '14px',
               color:           GOLD,
               display:         'flex',
@@ -195,7 +195,7 @@ export function BillingPage() {
               ...cardStyle(),
               border:          `1px solid ${CLAY}55`,
               backgroundColor: 'rgba(155,122,72,0.15)',
-              fontFamily:      ASSIST,
+              fontFamily:      EN_HEADING,
               fontSize:        '14px',
               color:           `${PARCH}CC`,
             }}>
@@ -207,7 +207,7 @@ export function BillingPage() {
               ...cardStyle(),
               border:          '1px solid rgba(0,229,195,0.4)',
               backgroundColor: 'rgba(74,156,104,0.15)',
-              fontFamily:      ASSIST,
+              fontFamily:      EN_HEADING,
               fontSize:        '14px',
               color:           SAGE,
             }}>
@@ -219,7 +219,7 @@ export function BillingPage() {
               ...cardStyle(),
               border:          `1px solid ${CLAY}55`,
               backgroundColor: 'rgba(155,122,72,0.15)',
-              fontFamily:      ASSIST,
+              fontFamily:      EN_HEADING,
               fontSize:        '14px',
               color:           `${PARCH}CC`,
             }}>
@@ -231,7 +231,7 @@ export function BillingPage() {
               ...cardStyle(),
               border:          `1px solid ${CLAY}55`,
               backgroundColor: 'rgba(155,122,72,0.15)',
-              fontFamily:      ASSIST,
+              fontFamily:      EN_HEADING,
               fontSize:        '14px',
               color:           `${PARCH}CC`,
             }}>
@@ -245,10 +245,10 @@ export function BillingPage() {
           <div style={cardStyle(true)}>
             <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', marginBottom: '16px' }}>
               <div>
-                <p style={{ fontFamily: ASSIST, fontSize: '11px', fontWeight: 600, letterSpacing: '0.1em', textTransform: 'uppercase', color: `${PARCH}44`, margin: '0 0 4px' }}>
+                <p style={{ fontFamily: EN_HEADING, fontSize: '11px', fontWeight: 600, letterSpacing: '0.1em', textTransform: 'uppercase', color: `${PARCH}44`, margin: '0 0 4px' }}>
                   {t('currentPlan')}
                 </p>
-                <h2 style={{ fontFamily: isHe ? FRANK : ASSIST, fontWeight: 700, fontSize: '26px', color: GOLD, margin: 0 }}>
+                <h2 style={{ fontFamily: isHe ? FRANK : EN_HEADING, fontWeight: 700, fontSize: '26px', color: GOLD, margin: 0 }}>
                   {tierName}
                 </h2>
               </div>
@@ -263,7 +263,7 @@ export function BillingPage() {
             </div>
             <ul style={{ display: 'flex', flexDirection: 'column', gap: '8px', margin: 0, padding: 0, listStyle: 'none' }}>
               {features.map(f => (
-                <li key={f} style={{ display: 'flex', alignItems: 'flex-start', gap: '8px', fontFamily: ASSIST, fontSize: '13px', color: `${PARCH}CC` }}>
+                <li key={f} style={{ display: 'flex', alignItems: 'flex-start', gap: '8px', fontFamily: EN_HEADING, fontSize: '13px', color: `${PARCH}CC` }}>
                   <span style={{ color: SAGE, flexShrink: 0 }}>✓</span>
                   {f}
                 </li>
@@ -274,10 +274,10 @@ export function BillingPage() {
           {/* Upgrade */}
           {nextTier && (
             <div style={cardStyle()}>
-              <h3 style={{ fontFamily: isHe ? FRANK : ASSIST, fontWeight: 600, fontSize: '18px', color: PARCH, margin: '0 0 6px' }}>
+              <h3 style={{ fontFamily: isHe ? FRANK : EN_HEADING, fontWeight: 600, fontSize: '18px', color: PARCH, margin: '0 0 6px' }}>
                 {t('upgradeTitle', { name: nextName })}
               </h3>
-              <p style={{ fontFamily: ASSIST, fontSize: '13px', color: `${PARCH}66`, margin: '0 0 16px' }}>
+              <p style={{ fontFamily: EN_HEADING, fontSize: '13px', color: `${PARCH}66`, margin: '0 0 16px' }}>
                 {t('upgradeDesc')}
               </p>
               <button
@@ -288,7 +288,7 @@ export function BillingPage() {
                   borderRadius:    '8px',
                   border:          'none',
                   backgroundColor: GOLD,
-                  fontFamily:      isHe ? FRANK : ASSIST,
+                  fontFamily:      isHe ? FRANK : EN_HEADING,
                   fontWeight:      600,
                   fontSize:        '15px',
                   color:           EARTH,
@@ -306,10 +306,10 @@ export function BillingPage() {
           {/* Cancel */}
           {tier !== 'free' && !cancelledAt && (
             <div id="cancel-subscription" style={cardStyle()}>
-              <h3 style={{ fontFamily: isHe ? FRANK : ASSIST, fontWeight: 600, fontSize: '16px', color: PARCH, margin: '0 0 6px' }}>
+              <h3 style={{ fontFamily: isHe ? FRANK : EN_HEADING, fontWeight: 600, fontSize: '16px', color: PARCH, margin: '0 0 6px' }}>
                 {t('cancel.title')}
               </h3>
-              <p style={{ fontFamily: ASSIST, fontSize: '13px', color: `${PARCH}66`, margin: '0 0 14px' }}>
+              <p style={{ fontFamily: EN_HEADING, fontSize: '13px', color: `${PARCH}66`, margin: '0 0 14px' }}>
                 {t('cancel.desc')}
               </p>
 
@@ -317,7 +317,7 @@ export function BillingPage() {
                 <button
                   onClick={() => setShowCancelConfirm(true)}
                   style={{
-                    fontFamily:      ASSIST,
+                    fontFamily:      EN_HEADING,
                     fontSize:        '13px',
                     fontWeight:      500,
                     padding:         '7px 18px',
@@ -343,11 +343,11 @@ export function BillingPage() {
                   flexDirection:   'column',
                   gap:             '12px',
                 }}>
-                  <p style={{ fontFamily: ASSIST, fontSize: '13px', color: PARCH, margin: 0 }}>
+                  <p style={{ fontFamily: EN_HEADING, fontSize: '13px', color: PARCH, margin: 0 }}>
                     {t('cancel.confirm')}
                   </p>
                   {cancelError && (
-                    <p style={{ fontFamily: ASSIST, fontSize: '13px', color: '#f87171', margin: 0 }}>
+                    <p style={{ fontFamily: EN_HEADING, fontSize: '13px', color: '#f87171', margin: 0 }}>
                       {cancelError}
                     </p>
                   )}
@@ -360,7 +360,7 @@ export function BillingPage() {
                         borderRadius:    '8px',
                         border:          '1px solid rgba(0,229,195,0.2)',
                         backgroundColor: 'transparent',
-                        fontFamily:      ASSIST,
+                        fontFamily:      EN_HEADING,
                         fontSize:        '13px',
                         color:           `${PARCH}77`,
                         cursor:          'pointer',
@@ -377,7 +377,7 @@ export function BillingPage() {
                         borderRadius:    '8px',
                         border:          'none',
                         backgroundColor: '#C0372A',
-                        fontFamily:      isHe ? FRANK : ASSIST,
+                        fontFamily:      isHe ? FRANK : EN_HEADING,
                         fontWeight:      600,
                         fontSize:        '13px',
                         color:           '#fff',

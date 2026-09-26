@@ -1,10 +1,10 @@
 import type { HarvestStats } from '../../stores/harvestStore';
+import { EN_HEADING } from '../../styles/fonts';
 
 const GOLD   = '#00e5c3';
 const PARCH  = '#b0cfbf';
 const SAGE   = '#4A9C68';
 const FRANK  = '"Frank Ruhl Libre", Georgia, serif';
-const ASSIST = "'DM Sans', 'Assistant', 'Heebo', sans-serif";
 
 const DAY_TYPE_COLOURS: Record<string, string> = {
   fruit:  '#C8A040',
@@ -38,7 +38,7 @@ export function HarvestStats({ stats }: Props) {
           <div style={{ fontFamily: FRANK, fontSize: '2.2rem', fontWeight: 700, color: GOLD, lineHeight: 1 }}>
             {stats.totalHarvests}
           </div>
-          <div style={{ fontFamily: ASSIST, fontSize: '11px', color: `${PARCH}77`, marginTop: '2px' }}>
+          <div style={{ fontFamily: EN_HEADING, fontSize: '11px', color: `${PARCH}77`, marginTop: '2px' }}>
             סה"כ קצירים
           </div>
         </div>
@@ -46,13 +46,13 @@ export function HarvestStats({ stats }: Props) {
           <div style={{ fontFamily: FRANK, fontSize: '2.2rem', fontWeight: 700, color: SAGE, lineHeight: 1 }}>
             {stats.thisMonth}
           </div>
-          <div style={{ fontFamily: ASSIST, fontSize: '11px', color: `${PARCH}77`, marginTop: '2px' }}>
+          <div style={{ fontFamily: EN_HEADING, fontSize: '11px', color: `${PARCH}77`, marginTop: '2px' }}>
             החודש
           </div>
         </div>
         {stats.lastMonth > 0 && (
           <div style={{ alignSelf: 'center' }}>
-            <div style={{ fontFamily: ASSIST, fontSize: '12px', color: `${PARCH}55` }}>
+            <div style={{ fontFamily: EN_HEADING, fontSize: '12px', color: `${PARCH}55` }}>
               {stats.lastMonth > stats.thisMonth ? '▼' : stats.lastMonth < stats.thisMonth ? '▲' : '—'}{' '}
               {stats.lastMonth} חודש שעבר
             </div>
@@ -60,7 +60,7 @@ export function HarvestStats({ stats }: Props) {
         )}
         {stats.recentStreak > 1 && (
           <div style={{ marginInlineStart: 'auto', alignSelf: 'center' }}>
-            <div style={{ fontFamily: ASSIST, fontSize: '12px', color: GOLD }}>
+            <div style={{ fontFamily: EN_HEADING, fontSize: '12px', color: GOLD }}>
               🔥 {stats.recentStreak} ימים ברצף
             </div>
           </div>
@@ -70,13 +70,13 @@ export function HarvestStats({ stats }: Props) {
       {/* Top plants */}
       {top3.length > 0 && (
         <div style={{ marginBottom: '14px' }}>
-          <div style={{ fontFamily: ASSIST, fontSize: '11px', fontWeight: 600, letterSpacing: '0.1em', textTransform: 'uppercase' as const, color: `${PARCH}44`, marginBottom: '8px' }}>
+          <div style={{ fontFamily: EN_HEADING, fontSize: '11px', fontWeight: 600, letterSpacing: '0.1em', textTransform: 'uppercase' as const, color: `${PARCH}44`, marginBottom: '8px' }}>
             הכי הרבה
           </div>
           <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
             {top3.map(p => (
               <span key={p.nameHe} style={{
-                fontFamily: ASSIST,
+                fontFamily: EN_HEADING,
                 fontSize: '12px',
                 padding: '3px 10px',
                 borderRadius: '50px',
@@ -94,7 +94,7 @@ export function HarvestStats({ stats }: Props) {
       {/* Day type distribution bar */}
       {total > 0 && (
         <div>
-          <div style={{ fontFamily: ASSIST, fontSize: '11px', fontWeight: 600, letterSpacing: '0.1em', textTransform: 'uppercase' as const, color: `${PARCH}44`, marginBottom: '6px' }}>
+          <div style={{ fontFamily: EN_HEADING, fontSize: '11px', fontWeight: 600, letterSpacing: '0.1em', textTransform: 'uppercase' as const, color: `${PARCH}44`, marginBottom: '6px' }}>
             לפי סוג יום
           </div>
           <div style={{ display: 'flex', borderRadius: '4px', overflow: 'hidden', height: '8px', gap: '1px' }}>
@@ -119,7 +119,7 @@ export function HarvestStats({ stats }: Props) {
               const count = stats.byDayType[dt];
               if (count === 0) return null;
               return (
-                <span key={dt} style={{ fontFamily: ASSIST, fontSize: '10px', color: DAY_TYPE_COLOURS[dt], display: 'flex', alignItems: 'center', gap: '3px' }}>
+                <span key={dt} style={{ fontFamily: EN_HEADING, fontSize: '10px', color: DAY_TYPE_COLOURS[dt], display: 'flex', alignItems: 'center', gap: '3px' }}>
                   <span style={{ width: '6px', height: '6px', borderRadius: '50%', backgroundColor: DAY_TYPE_COLOURS[dt], display: 'inline-block' }} />
                   {DAY_TYPE_HE[dt]} {count}
                 </span>

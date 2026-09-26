@@ -12,6 +12,7 @@ import { RateLimitBanner } from './RateLimitBanner';
 import { PlantConfirmBubble } from '../journal/PlantConfirmBubble';
 import type { ConfirmItem } from '../journal/PlantConfirmBubble';
 import './chupchu-chat.css';
+import { EN_HEADING } from '../../styles/fonts';
 
 // Compress an image file to JPEG base64 below ~4.5 MB
 async function compressImageToBase64(file: File): Promise<{ base64: string; dataUrl: string }> {
@@ -47,7 +48,6 @@ const NIGHT_CARD = '#111f18';
 const BIO_CYAN   = '#00e5c3';
 const TEXT_MID   = '#b0cfbf';
 const FRANK      = '"Frank Ruhl Libre", Georgia, serif';
-const DM_SANS    = "'DM Sans', 'Assistant', 'Heebo', sans-serif";
 
 // ── Expression images ─────────────────────────────────────────────────────────
 const EXPRESSION_IMAGES: Record<ChupChuExpression, string> = {
@@ -98,7 +98,7 @@ function GuestSignupWall() {
       <h3 style={{ fontFamily: "'Caveat', cursive", fontSize: '21px', color: BIO_CYAN, margin: 0 }}>
         רוצה להמשיך לדבר איתי?
       </h3>
-      <p style={{ fontFamily: DM_SANS, fontSize: '13px', color: `${TEXT_MID}CC`, margin: 0, lineHeight: 1.65, maxWidth: '280px' }}>
+      <p style={{ fontFamily: EN_HEADING, fontSize: '13px', color: `${TEXT_MID}CC`, margin: 0, lineHeight: 1.65, maxWidth: '280px' }}>
         הצטרפו בחינם וקבלו גישה מלאה לצ'ופצ'ו, ללוח הביודינמי ולגינה החיה שלכם
       </p>
       <div style={{ display: 'flex', gap: '10px', width: '100%' }}>
@@ -131,7 +131,7 @@ function GuestSignupWall() {
           כניסה
         </button>
       </div>
-      <p style={{ fontFamily: DM_SANS, fontSize: '11px', color: `${TEXT_MID}50`, margin: 0 }}>
+      <p style={{ fontFamily: EN_HEADING, fontSize: '11px', color: `${TEXT_MID}50`, margin: 0 }}>
         3 שיחות ניתנו לאורחים — ראיתם רק את ההתחלה 🌱
       </p>
     </div>
@@ -270,7 +270,7 @@ function MessageBubble({ message, isRTL }: { message: ChupChuMessage; isRTL: boo
                   backgroundColor: 'rgba(0,229,195,0.08)',
                   border:          '1px solid rgba(0,229,195,0.2)',
                   color:           TEXT_MID,
-                  fontFamily:      DM_SANS,
+                  fontFamily:      EN_HEADING,
                   fontWeight:      400,
                 }
               : {
@@ -378,7 +378,7 @@ function TaskProposalCard({ tasks, isRTL, isHe, onDismiss }: TaskProposalCardPro
         borderRadius: '12px',
         padding: '14px 16px',
         textAlign: 'center',
-        fontFamily: DM_SANS,
+        fontFamily: EN_HEADING,
         fontSize: '14px',
         color: BIO_CYAN,
       }}>
@@ -430,11 +430,11 @@ function TaskProposalCard({ tasks, isRTL, isHe, onDismiss }: TaskProposalCardPro
             <div style={{ flex: 1, minWidth: 0 }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: '6px', flexWrap: 'wrap' }}>
                 <span style={{ fontSize: '13px' }}>{CATEGORY_ICON[task.category] ?? '📋'}</span>
-                <span style={{ fontFamily: DM_SANS, fontSize: '13px', color: TEXT_MID, fontWeight: 500 }}>
+                <span style={{ fontFamily: EN_HEADING, fontSize: '13px', color: TEXT_MID, fontWeight: 500 }}>
                   {isHe ? task.title.he : task.title.en}
                 </span>
                 <span style={{
-                  fontSize: '10px', fontFamily: DM_SANS, fontWeight: 600,
+                  fontSize: '10px', fontFamily: EN_HEADING, fontWeight: 600,
                   color: PRIORITY_COLOR[task.priority] ?? TEXT_MID,
                   background: `${PRIORITY_COLOR[task.priority] ?? '#888'}22`,
                   borderRadius: '4px', padding: '1px 5px',
@@ -442,7 +442,7 @@ function TaskProposalCard({ tasks, isRTL, isHe, onDismiss }: TaskProposalCardPro
                   {task.priority}
                 </span>
               </div>
-              <div style={{ fontFamily: DM_SANS, fontSize: '11px', color: `${TEXT_MID}66`, marginTop: '2px' }}>
+              <div style={{ fontFamily: EN_HEADING, fontSize: '11px', color: `${TEXT_MID}66`, marginTop: '2px' }}>
                 {formatDate(task.date)}
               </div>
             </div>
@@ -532,7 +532,7 @@ function MobileToolConfirmCard({ tool, isRTL, isHe, onDismiss }: MobileToolConfi
         backgroundColor: NIGHT_CARD,
         border:          `1px solid ${BIO_CYAN}`,
         textAlign:       'center',
-        fontFamily:      DM_SANS,
+        fontFamily:      EN_HEADING,
         fontSize:        '14px',
         color:           BIO_CYAN,
       }}>
@@ -578,7 +578,7 @@ function MobileToolConfirmCard({ tool, isRTL, isHe, onDismiss }: MobileToolConfi
       {/* Body */}
       <div style={{ padding: '12px 14px' }}>
         <p style={{
-          fontFamily: DM_SANS,
+          fontFamily: EN_HEADING,
           fontSize:   '14px',
           color:      TEXT_MID,
           margin:     '0 0 12px',
@@ -590,7 +590,7 @@ function MobileToolConfirmCard({ tool, isRTL, isHe, onDismiss }: MobileToolConfi
 
         {errorMsg && (
           <p style={{
-            fontFamily: DM_SANS,
+            fontFamily: EN_HEADING,
             fontSize:   '12px',
             color:      '#ff5c8a',
             margin:     '0 0 10px',
@@ -634,7 +634,7 @@ function MobileToolConfirmCard({ tool, isRTL, isHe, onDismiss }: MobileToolConfi
               border:          '1px solid rgba(0,229,195,0.2)',
               backgroundColor: 'transparent',
               color:           TEXT_MID,
-              fontFamily:      DM_SANS,
+              fontFamily:      EN_HEADING,
               fontSize:        '12px',
               cursor:          'pointer',
               transition:      'border-color 0.15s',
@@ -904,7 +904,7 @@ export function ChupChuChat({ compact, initialMessage, onInitialMessageConsumed,
             {t('title')}
           </h2>
           <p style={{
-            fontFamily: DM_SANS,
+            fontFamily: EN_HEADING,
             fontSize:   '11px',
             fontWeight: 300,
             color:      `${TEXT_MID}55`,
@@ -1013,7 +1013,7 @@ export function ChupChuChat({ compact, initialMessage, onInitialMessageConsumed,
       {/* Error */}
       {error && (
         <p style={{
-          fontFamily: DM_SANS,
+          fontFamily: EN_HEADING,
           fontSize:   '12px',
           textAlign:  isRTL ? 'right' : 'left',
           color:      '#ff5c8a',
@@ -1026,7 +1026,7 @@ export function ChupChuChat({ compact, initialMessage, onInitialMessageConsumed,
 
       {/* Disclaimer */}
       <p style={{
-        fontFamily: DM_SANS,
+        fontFamily: EN_HEADING,
         fontWeight: 300,
         fontSize:   '11px',
         textAlign:  isRTL ? 'right' : 'left',
@@ -1082,14 +1082,14 @@ export function ChupChuChat({ compact, initialMessage, onInitialMessageConsumed,
                 ✕
               </button>
             </div>
-            <span style={{ fontFamily: DM_SANS, fontSize: '12px', color: `${TEXT_MID}99` }}>
+            <span style={{ fontFamily: EN_HEADING, fontSize: '12px', color: `${TEXT_MID}99` }}>
               {imageFile?.name ?? (isHe ? 'תמונה נבחרה' : 'Image selected')}
             </span>
           </div>
         )}
 
         {imageError && (
-          <p style={{ fontFamily: DM_SANS, fontSize: '12px', color: '#ff5c8a', margin: '0 0 6px' }}>
+          <p style={{ fontFamily: EN_HEADING, fontSize: '12px', color: '#ff5c8a', margin: '0 0 6px' }}>
             {imageError}
           </p>
         )}
@@ -1166,7 +1166,7 @@ export function ChupChuChat({ compact, initialMessage, onInitialMessageConsumed,
               border:     'none',
               outline:    'none',
               background: 'transparent',
-              fontFamily: DM_SANS,
+              fontFamily: EN_HEADING,
               fontSize:   '14px',
               color:      TEXT_MID,
               lineHeight: '1.5',

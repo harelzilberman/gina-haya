@@ -8,6 +8,7 @@ import { useCredits } from '../../hooks/useCredits';
 import { useGardenSwitcherStore } from '../../stores/gardenSwitcherStore';
 import { GardenSwitcher } from '../garden/GardenSwitcher';
 import { CreateGardenModal } from '../garden/CreateGardenModal';
+import { EN_HEADING } from '../../styles/fonts';
 
 // ── v3 tokens ──────────────────────────────────────────────────────────────
 const NIGHT      = '#050d0a';
@@ -18,7 +19,6 @@ const TEXT       = '#e8f5ee';
 const TEXT_MID   = '#b0cfbf';
 const MUTED      = '#6b9080';
 const FRANK      = '"Frank Ruhl Libre", Georgia, serif';
-const DM_SANS    = "'DM Sans', 'Assistant', 'Heebo', sans-serif";
 
 // Shared dropdown chrome — module-level so NavDropdown can reference them
 const dropdownBg     = `linear-gradient(180deg, ${NIGHT_LIFT} 0%, ${NIGHT} 100%)`;
@@ -70,7 +70,7 @@ function NavDropdown({
         onClick={() => setOpen(!isOpen)}
         className="gina-nav-link"
         style={{
-          fontFamily: DM_SANS, fontSize: '14px', fontWeight: 500,
+          fontFamily: EN_HEADING, fontSize: '14px', fontWeight: 500,
           color: isOpen ? BIO_CYAN : TEXT_MID,
           background: 'none', border: 'none', cursor: 'pointer',
           display: 'flex', alignItems: 'center', gap: '4px', padding: '4px 0',
@@ -100,7 +100,7 @@ function NavDropdown({
               onClick={() => setOpen(false)}
               style={{
                 display: 'block', padding: '9px 16px',
-                fontFamily: DM_SANS, fontSize: '14px',
+                fontFamily: EN_HEADING, fontSize: '14px',
                 color: TEXT_MID, textDecoration: 'none',
                 transition: 'background-color 0.15s, color 0.15s',
               }}>
@@ -178,7 +178,7 @@ export function Navbar() {
     <button
       onClick={toggleLanguage}
       style={{
-        fontFamily: DM_SANS, fontSize: '12px', fontWeight: 600, padding: '4px 11px',
+        fontFamily: EN_HEADING, fontSize: '12px', fontWeight: 600, padding: '4px 11px',
         borderRadius: '100px', border: '1px solid rgba(0,229,195,0.25)',
         color: MUTED, backgroundColor: 'rgba(0,229,195,0.05)', cursor: 'pointer',
         letterSpacing: '0.04em', transition: 'border-color 0.2s, color 0.2s, background-color 0.2s',
@@ -192,7 +192,7 @@ export function Navbar() {
 
   // ── Mobile styles ────────────────────────────────────────────────────────
   const mobileLink: React.CSSProperties = {
-    fontFamily: DM_SANS, fontSize: '16px', color: TEXT_MID,
+    fontFamily: EN_HEADING, fontSize: '16px', color: TEXT_MID,
     textDecoration: 'none', padding: '10px 0',
     borderBottom: '1px solid rgba(0,229,195,0.05)',
     transition: 'color 0.15s',
@@ -204,13 +204,13 @@ export function Navbar() {
     color: MUTED,
   };
   const mobileSection: React.CSSProperties = {
-    fontFamily: DM_SANS, fontSize: '11px', fontWeight: 700,
+    fontFamily: EN_HEADING, fontSize: '11px', fontWeight: 700,
     color: BIO_CYAN, letterSpacing: '0.08em', textTransform: 'uppercase',
     padding: '14px 0 4px',
   };
 
   const navLinkStyle = (_isHe: boolean): React.CSSProperties => ({
-    fontFamily: DM_SANS, fontSize: '14px', fontWeight: 500,
+    fontFamily: EN_HEADING, fontSize: '14px', fontWeight: 500,
     color: TEXT_MID, textDecoration: 'none',
     whiteSpace: 'nowrap',
   });
@@ -245,7 +245,7 @@ export function Navbar() {
           </div>
           <div>
             <div style={{ fontFamily: FRANK, fontWeight: 700, fontSize: '18px', color: TEXT, lineHeight: 1.1 }}>גינה חיה</div>
-            <div style={{ fontFamily: DM_SANS, fontSize: '9px', letterSpacing: '0.18em', textTransform: 'uppercase' as const, color: MUTED, lineHeight: 1 }}>Gina Haya</div>
+            <div style={{ fontFamily: EN_HEADING, fontSize: '9px', letterSpacing: '0.18em', textTransform: 'uppercase' as const, color: MUTED, lineHeight: 1 }}>Gina Haya</div>
           </div>
         </Link>
 
@@ -340,14 +340,14 @@ export function Navbar() {
                 { label: isHebrew ? 'חנות'  : 'Shop',    to: '/shop'    },
               ].map(item => (
                 <Link key={item.to} to={item.to}
-                  style={{ fontFamily: DM_SANS, fontSize: '13px', color: TEXT_MID, textDecoration: 'none', padding: '5px 8px', transition: 'color 0.2s' }}
+                  style={{ fontFamily: EN_HEADING, fontSize: '13px', color: TEXT_MID, textDecoration: 'none', padding: '5px 8px', transition: 'color 0.2s' }}
                   onMouseEnter={e => { (e.currentTarget as HTMLElement).style.color = BIO_CYAN; }}
                   onMouseLeave={e => { (e.currentTarget as HTMLElement).style.color = TEXT_MID; }}>
                   {item.label}
                 </Link>
               ))}
               <Link to="/login"
-                style={{ fontFamily: DM_SANS, fontSize: '13px', color: TEXT_MID, textDecoration: 'none', padding: '5px 12px', borderRadius: '8px', transition: 'color 0.2s' }}
+                style={{ fontFamily: EN_HEADING, fontSize: '13px', color: TEXT_MID, textDecoration: 'none', padding: '5px 12px', borderRadius: '8px', transition: 'color 0.2s' }}
                 onMouseEnter={e => { (e.currentTarget as HTMLElement).style.color = BIO_CYAN; }}
                 onMouseLeave={e => { (e.currentTarget as HTMLElement).style.color = TEXT_MID; }}>
                 {t('nav.login')}
@@ -366,7 +366,7 @@ export function Navbar() {
               {/* Credit pills */}
               {credits.analysis.available > 0 && (
                 <button title="קרדיטים זמינים" onClick={() => navigate('/shop')}
-                  style={{ fontFamily: DM_SANS, fontSize: '11px', fontWeight: 700, padding: '3px 9px', borderRadius: '12px',
+                  style={{ fontFamily: EN_HEADING, fontSize: '11px', fontWeight: 700, padding: '3px 9px', borderRadius: '12px',
                     backgroundColor: 'rgba(255,184,48,0.12)', border: '1px solid rgba(255,184,48,0.3)',
                     color: BIO_AMBER, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '3px' }}>
                   🔬 {credits.analysis.available}
@@ -374,7 +374,7 @@ export function Navbar() {
               )}
               {credits.tracker.available > 0 && (
                 <button title="קרדיטים זמינים" onClick={() => navigate('/shop')}
-                  style={{ fontFamily: DM_SANS, fontSize: '11px', fontWeight: 700, padding: '3px 9px', borderRadius: '12px',
+                  style={{ fontFamily: EN_HEADING, fontSize: '11px', fontWeight: 700, padding: '3px 9px', borderRadius: '12px',
                     backgroundColor: 'rgba(0,229,195,0.1)', border: '1px solid rgba(0,229,195,0.25)',
                     color: BIO_CYAN, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '3px' }}>
                   🌱 {credits.tracker.available}
@@ -399,7 +399,7 @@ export function Navbar() {
                     boxShadow: dropdownShadow, padding: '6px 0', zIndex: 101 }}>
                     {/* Tier badge */}
                     <div style={{ padding: '8px 16px 6px', display: 'flex', alignItems: 'center', gap: '8px' }}>
-                      <span style={{ fontFamily: DM_SANS, fontSize: '11px', fontWeight: 700, padding: '2px 8px',
+                      <span style={{ fontFamily: EN_HEADING, fontSize: '11px', fontWeight: 700, padding: '2px 8px',
                         borderRadius: '10px', backgroundColor: `${tierDisplay.color}22`,
                         color: tierDisplay.color, border: `1px solid ${tierDisplay.color}44`,
                         letterSpacing: '0.04em', textTransform: 'uppercase' as const }}>
@@ -407,7 +407,7 @@ export function Navbar() {
                       </span>
                       {tier === 'free' && (
                         <Link to="/pricing" onClick={() => setDropdownOpen(false)}
-                          style={{ fontFamily: DM_SANS, fontSize: '11px', color: BIO_CYAN, textDecoration: 'none' }}>
+                          style={{ fontFamily: EN_HEADING, fontSize: '11px', color: BIO_CYAN, textDecoration: 'none' }}>
                           {isHebrew ? 'שדרג ↗' : 'Upgrade ↗'}
                         </Link>
                       )}
@@ -426,7 +426,7 @@ export function Navbar() {
                     {/* Billing */}
                     <Link to="/billing" className="gina-dropdown-item"
                       onClick={() => setDropdownOpen(false)}
-                      style={{ display: 'block', padding: '9px 16px', fontFamily: DM_SANS, fontSize: '14px',
+                      style={{ display: 'block', padding: '9px 16px', fontFamily: EN_HEADING, fontSize: '14px',
                         color: TEXT_MID, textDecoration: 'none', transition: 'background-color 0.15s, color 0.15s' }}>
                       {isHebrew ? 'חיוב ותוכניות' : 'Billing & Plans'}
                     </Link>
@@ -434,7 +434,7 @@ export function Navbar() {
                     {/* Settings */}
                     <Link to="/settings" className="gina-dropdown-item"
                       onClick={() => setDropdownOpen(false)}
-                      style={{ display: 'block', padding: '9px 16px', fontFamily: DM_SANS, fontSize: '14px',
+                      style={{ display: 'block', padding: '9px 16px', fontFamily: EN_HEADING, fontSize: '14px',
                         color: TEXT_MID, textDecoration: 'none', transition: 'background-color 0.15s, color 0.15s' }}>
                       {isHebrew ? 'הגדרות' : 'Settings'}
                     </Link>
@@ -442,7 +442,7 @@ export function Navbar() {
                     <div style={{ height: '1px', backgroundColor: 'rgba(0,229,195,0.1)', margin: '4px 0' }} />
                     <button onClick={handleSignOut}
                       style={{ display: 'block', width: '100%', textAlign: 'start', padding: '9px 16px',
-                        fontFamily: DM_SANS, fontSize: '14px', color: 'rgba(255,100,100,0.8)',
+                        fontFamily: EN_HEADING, fontSize: '14px', color: 'rgba(255,100,100,0.8)',
                         backgroundColor: 'transparent', border: 'none', cursor: 'pointer', transition: 'color 0.15s' }}
                       onMouseEnter={e => { (e.currentTarget as HTMLElement).style.color = '#e06060'; }}
                       onMouseLeave={e => { (e.currentTarget as HTMLElement).style.color = 'rgba(255,100,100,0.8)'; }}>
@@ -478,7 +478,7 @@ export function Navbar() {
               <Link to="/billing"  onClick={() => setMobileOpen(false)} style={mobileSub}>{isHebrew ? 'חיוב ותוכניות' : 'Billing & Plans'}</Link>
               <Link to="/settings" onClick={() => setMobileOpen(false)} style={mobileSub}>{isHebrew ? 'הגדרות'         : 'Settings'}</Link>
               <button onClick={handleSignOut}
-                style={{ fontFamily: DM_SANS, fontSize: '14px', color: 'rgba(255,100,100,0.8)', background: 'none',
+                style={{ fontFamily: EN_HEADING, fontSize: '14px', color: 'rgba(255,100,100,0.8)', background: 'none',
                   border: 'none', cursor: 'pointer', textAlign: 'start', padding: '10px 0',
                   paddingInlineStart: '16px', borderBottom: '1px solid rgba(0,229,195,0.05)' }}>
                 {isHebrew ? 'התנתקות' : 'Sign out'}
@@ -512,16 +512,16 @@ export function Navbar() {
 
           {!user && (
             <>
-              <Link to="/login"   onClick={() => setMobileOpen(false)} style={{ fontFamily: DM_SANS, fontSize: '16px', color: TEXT_MID, textDecoration: 'none', padding: '10px 0' }}>{t('nav.login')}</Link>
+              <Link to="/login"   onClick={() => setMobileOpen(false)} style={{ fontFamily: EN_HEADING, fontSize: '16px', color: TEXT_MID, textDecoration: 'none', padding: '10px 0' }}>{t('nav.login')}</Link>
               <Link to="/signup"  onClick={() => setMobileOpen(false)} style={{ fontFamily: FRANK, fontSize: '16px', fontWeight: 700, color: BIO_CYAN, textDecoration: 'none', padding: '10px 0' }}>{t('nav.signup')}</Link>
-              <Link to="/app"     onClick={() => setMobileOpen(false)} style={{ fontFamily: DM_SANS, fontSize: '16px', color: BIO_AMBER, textDecoration: 'none', padding: '10px 0' }}>
+              <Link to="/app"     onClick={() => setMobileOpen(false)} style={{ fontFamily: EN_HEADING, fontSize: '16px', color: BIO_AMBER, textDecoration: 'none', padding: '10px 0' }}>
                 {/* האפליקציה */}
                 {isHebrew ? '\u05d4\u05d0\u05e4\u05dc\u05d9\u05e7\u05e6\u05d9\u05d4' : 'The App'}
               </Link>
-              <Link to="/pricing" onClick={() => setMobileOpen(false)} style={{ fontFamily: DM_SANS, fontSize: '16px', color: TEXT_MID, textDecoration: 'none', padding: '10px 0' }}>{isHebrew ? 'תמחור' : 'Pricing'}</Link>
-              <Link to="/shop"    onClick={() => setMobileOpen(false)} style={{ fontFamily: DM_SANS, fontSize: '16px', color: TEXT_MID, textDecoration: 'none', padding: '10px 0' }}>{isHebrew ? 'חנות' : 'Shop'}</Link>
-              <Link to="/help"    onClick={() => setMobileOpen(false)} style={{ fontFamily: DM_SANS, fontSize: '16px', color: TEXT_MID, textDecoration: 'none', padding: '10px 0' }}>{isHebrew ? 'עזרה' : 'Help'}</Link>
-              <Link to="/about"   onClick={() => setMobileOpen(false)} style={{ fontFamily: DM_SANS, fontSize: '16px', color: TEXT_MID, textDecoration: 'none', padding: '10px 0' }}>{isHebrew ? 'אודות' : 'About'}</Link>
+              <Link to="/pricing" onClick={() => setMobileOpen(false)} style={{ fontFamily: EN_HEADING, fontSize: '16px', color: TEXT_MID, textDecoration: 'none', padding: '10px 0' }}>{isHebrew ? 'תמחור' : 'Pricing'}</Link>
+              <Link to="/shop"    onClick={() => setMobileOpen(false)} style={{ fontFamily: EN_HEADING, fontSize: '16px', color: TEXT_MID, textDecoration: 'none', padding: '10px 0' }}>{isHebrew ? 'חנות' : 'Shop'}</Link>
+              <Link to="/help"    onClick={() => setMobileOpen(false)} style={{ fontFamily: EN_HEADING, fontSize: '16px', color: TEXT_MID, textDecoration: 'none', padding: '10px 0' }}>{isHebrew ? 'עזרה' : 'Help'}</Link>
+              <Link to="/about"   onClick={() => setMobileOpen(false)} style={{ fontFamily: EN_HEADING, fontSize: '16px', color: TEXT_MID, textDecoration: 'none', padding: '10px 0' }}>{isHebrew ? 'אודות' : 'About'}</Link>
             </>
           )}
 

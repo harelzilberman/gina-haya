@@ -1,4 +1,5 @@
 import { useTranslation } from 'react-i18next';
+import { EN_HEADING } from '../../styles/fonts';
 
 interface Props {
   search:          string;
@@ -21,7 +22,6 @@ const DAY_TYPES = [
 const NIGHT_CARD = '#111f18';
 const BIO_CYAN   = '#00e5c3';
 const TEXT_MID   = '#b0cfbf';
-const DM_SANS    = "'DM Sans', 'Assistant', 'Heebo', sans-serif";
 
 export function PlantSearch({
   search,         onSearchChange,
@@ -49,7 +49,7 @@ export function PlantSearch({
             borderRadius:    '12px',
             padding:         '13px 18px',
             paddingInlineEnd:'48px',
-            fontFamily:      DM_SANS,
+            fontFamily:      EN_HEADING,
             fontSize:        '14px',
             fontWeight:      400,
             color:           TEXT_MID,
@@ -82,7 +82,7 @@ export function PlantSearch({
               key={cat}
               onClick={() => onCategoryChange(cat === 'all' ? '' : cat)}
               style={{
-                fontFamily:      DM_SANS,
+                fontFamily:      EN_HEADING,
                 fontSize:        '13px',
                 fontWeight:      active ? 600 : 400,
                 padding:         '6px 16px',
@@ -126,7 +126,7 @@ export function PlantSearch({
               key={key}
               onClick={() => onDayTypeChange(active ? '' : key)}
               style={{
-                fontFamily:      DM_SANS,
+                fontFamily:      EN_HEADING,
                 fontSize:        '12px',
                 fontWeight:      active ? 600 : 400,
                 padding:         '5px 14px',

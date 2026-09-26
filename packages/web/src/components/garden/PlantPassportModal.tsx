@@ -15,13 +15,13 @@ import { EditPlantSheet } from './EditPlantSheet';
 import { NewTrackerModal } from '../tracker/NewTrackerModal';
 import { PhotoUpload } from '../tracker/PhotoUpload';
 import { AnalysisResult } from '../tracker/AnalysisResult';
+import { EN_HEADING } from '../../styles/fonts';
 
 const NIGHT      = '#0a1712';
 const NIGHT_CARD = '#1a3226';
 const BIO_CYAN   = '#00e5c3';
 const TEXT_MID   = '#c8e2d4';
 const FRANK      = '"Frank Ruhl Libre", Georgia, serif';
-const DM_SANS    = "'DM Sans', 'Assistant', 'Heebo', sans-serif";
 
 const HEALTH_STYLE: Record<string, { bg: string; fg: string }> = {
   excellent: { bg: '#EAF3DE', fg: '#3B6D11' },
@@ -75,7 +75,7 @@ export function PlantPassportModal({ plant, tracker, gardenName, gardenId, onClo
   const isHe = i18n.language === 'he';
   const dir = isHe ? 'rtl' : 'ltr';
   const locale = isHe ? 'he-IL' : 'en-US';
-  const headingFont = isHe ? FRANK : DM_SANS;
+  const headingFont = isHe ? FRANK : EN_HEADING;
 
   const { patchGardenPlant, removePlant } = useGardenStore();
   const { getPlantTimeline, logWater, logFertilize, addNote, loadTrackers } = useTrackerStore();
@@ -237,8 +237,8 @@ export function PlantPassportModal({ plant, tracker, gardenName, gardenId, onClo
       background: 'rgba(0,229,195,0.09)', border: '1px solid rgba(0,229,195,0.2)',
       borderRadius: '10px', padding: '10px 12px',
     }}>
-      <span style={{ fontFamily: DM_SANS, fontSize: '10px', color: `${TEXT_MID}82` }}>{icon ? `${icon} ` : ''}{label}</span>
-      <span style={{ fontFamily: DM_SANS, fontSize: '13px', color: TEXT_MID, fontWeight: 600 }}>{value}</span>
+      <span style={{ fontFamily: EN_HEADING, fontSize: '10px', color: `${TEXT_MID}82` }}>{icon ? `${icon} ` : ''}{label}</span>
+      <span style={{ fontFamily: EN_HEADING, fontSize: '13px', color: TEXT_MID, fontWeight: 600 }}>{value}</span>
     </div>
   );
 
@@ -276,7 +276,7 @@ export function PlantPassportModal({ plant, tracker, gardenName, gardenId, onClo
         {/* Top bar */}
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '6px' }}>
           <button onClick={onClose} style={iconBtnStyle} aria-label="Close">✕</button>
-          <span style={{ fontFamily: DM_SANS, fontSize: '12px', color: `${TEXT_MID}82` }}>{gardenName}</span>
+          <span style={{ fontFamily: EN_HEADING, fontSize: '12px', color: `${TEXT_MID}82` }}>{gardenName}</span>
           {isArchived ? (
             <button onClick={handleRestore} style={iconBtnStyle} aria-label="Restore" disabled={busyAction === 'restore'}>↺</button>
           ) : (
@@ -291,15 +291,15 @@ export function PlantPassportModal({ plant, tracker, gardenName, gardenId, onClo
             {displayName}
           </h1>
           {plant.variety && (
-            <p style={{ fontFamily: DM_SANS, fontSize: '13px', color: `${TEXT_MID}88`, margin: '0 0 4px' }}>{plant.variety}</p>
+            <p style={{ fontFamily: EN_HEADING, fontSize: '13px', color: `${TEXT_MID}88`, margin: '0 0 4px' }}>{plant.variety}</p>
           )}
-          <p style={{ fontFamily: DM_SANS, fontSize: '12px', color: `${TEXT_MID}78`, margin: '0 0 10px', direction: 'ltr' }}>
+          <p style={{ fontFamily: EN_HEADING, fontSize: '12px', color: `${TEXT_MID}78`, margin: '0 0 10px', direction: 'ltr' }}>
             {locationLabel(plant.location_type, t)}{plant.location_description ? ` · ${plant.location_description}` : ''}
           </p>
           <div style={{ display: 'flex', justifyContent: 'center', gap: '8px', flexWrap: 'wrap' }}>
             {healthStyle && (
               <span style={{
-                fontFamily: DM_SANS, fontSize: '11px', fontWeight: 600, padding: '4px 10px', borderRadius: '50px',
+                fontFamily: EN_HEADING, fontSize: '11px', fontWeight: 600, padding: '4px 10px', borderRadius: '50px',
                 background: healthStyle.bg, color: healthStyle.fg,
               }}>
                 {health!.healthHe}
@@ -314,16 +314,16 @@ export function PlantPassportModal({ plant, tracker, gardenName, gardenId, onClo
         {/* Latest-report summary */}
         {tracker && health && (
           <div style={{ padding: '12px 14px', marginBottom: '14px', borderRadius: '12px', background: NIGHT_CARD, border: '1px solid rgba(0,229,195,0.24)' }}>
-            <p style={{ fontFamily: DM_SANS, fontSize: '13px', color: TEXT_MID, margin: '0 0 4px', fontWeight: 600 }}>
+            <p style={{ fontFamily: EN_HEADING, fontSize: '13px', color: TEXT_MID, margin: '0 0 4px', fontWeight: 600 }}>
               {health.growthStageHe} · {health.healthHe}
             </p>
             {tracker.latest_checkin?.checkin_date && (
-              <p style={{ fontFamily: DM_SANS, fontSize: '11px', color: `${TEXT_MID}74`, margin: '0 0 4px' }}>
+              <p style={{ fontFamily: EN_HEADING, fontSize: '11px', color: `${TEXT_MID}74`, margin: '0 0 4px' }}>
                 {formatDate(tracker.latest_checkin.checkin_date, locale)}
               </p>
             )}
             <p style={{
-              fontFamily: DM_SANS, fontSize: '12.5px', color: `${TEXT_MID}93`, margin: 0, lineHeight: 1.6,
+              fontFamily: EN_HEADING, fontSize: '12.5px', color: `${TEXT_MID}93`, margin: 0, lineHeight: 1.6,
               display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden',
             } as React.CSSProperties}>
               {health.observations}
@@ -338,7 +338,7 @@ export function PlantPassportModal({ plant, tracker, gardenName, gardenId, onClo
             borderRadius: '10px', background: 'rgba(200,160,64,0.12)', border: '1px solid rgba(200,160,64,0.3)',
           }}>
             <span>🍂</span>
-            <span style={{ fontFamily: DM_SANS, fontSize: '12.5px', color: '#C8A040' }}>
+            <span style={{ fontFamily: EN_HEADING, fontSize: '12.5px', color: '#C8A040' }}>
               {t('passport.endedSeason', { date: formatDate(plant.archived_at, locale) })}
             </span>
           </div>
@@ -355,7 +355,7 @@ export function PlantPassportModal({ plant, tracker, gardenName, gardenId, onClo
           }}
         >
           <span style={{ fontSize: '20px' }}>🤖</span>
-          <span style={{ fontFamily: DM_SANS, fontSize: '13px', color: BIO_CYAN, flex: 1 }}>
+          <span style={{ fontFamily: EN_HEADING, fontSize: '13px', color: BIO_CYAN, flex: 1 }}>
             {t('passport.askChupChu', { name: displayName })}
           </span>
           <span style={{ color: `${BIO_CYAN}80` }}>‹</span>
@@ -384,7 +384,7 @@ export function PlantPassportModal({ plant, tracker, gardenName, gardenId, onClo
               placeholder={t('passport.notePlaceholder')}
               style={{
                 flex: 1, boxSizing: 'border-box', backgroundColor: NIGHT_CARD, border: '1px solid rgba(0,229,195,0.2)',
-                borderRadius: '8px', padding: '10px 12px', fontFamily: DM_SANS, fontSize: '13px', color: TEXT_MID,
+                borderRadius: '8px', padding: '10px 12px', fontFamily: EN_HEADING, fontSize: '13px', color: TEXT_MID,
                 direction: dir,
               }}
             />
@@ -420,7 +420,7 @@ export function PlantPassportModal({ plant, tracker, gardenName, gardenId, onClo
           <>
             <SectionHeader title={t('passport.growthTracker')} headingFont={headingFont} />
             {tracker ? (
-              <p style={{ fontFamily: DM_SANS, fontSize: '13px', color: `${TEXT_MID}82`, marginBottom: '20px' }}>
+              <p style={{ fontFamily: EN_HEADING, fontSize: '13px', color: `${TEXT_MID}82`, marginBottom: '20px' }}>
                 {t('passport.noAnalysis')}
               </p>
             ) : (
@@ -429,7 +429,7 @@ export function PlantPassportModal({ plant, tracker, gardenName, gardenId, onClo
                 background: 'rgba(74,156,104,0.1)', border: '1px solid rgba(74,156,104,0.3)',
               }}>
                 <p style={{ fontFamily: headingFont, fontSize: '15px', color: '#4A9C68', margin: '0 0 4px' }}>{t('passport.smartTracker')}</p>
-                <p style={{ fontFamily: DM_SANS, fontSize: '12.5px', color: `${TEXT_MID}88`, margin: '0 0 12px' }}>
+                <p style={{ fontFamily: EN_HEADING, fontSize: '12.5px', color: `${TEXT_MID}88`, margin: '0 0 12px' }}>
                   {t('passport.smartTrackerDesc')}
                 </p>
                 <button
@@ -447,21 +447,21 @@ export function PlantPassportModal({ plant, tracker, gardenName, gardenId, onClo
         <SectionHeader title={isArchived ? t('passport.pastSeasonTasks') : t('passport.upcomingTasks')} headingFont={headingFont} />
         <div style={{ marginBottom: '20px' }}>
           {loadingTasks ? (
-            <p style={{ fontFamily: DM_SANS, fontSize: '12px', color: `${TEXT_MID}74` }}>{t('passport.loading')}</p>
+            <p style={{ fontFamily: EN_HEADING, fontSize: '12px', color: `${TEXT_MID}74` }}>{t('passport.loading')}</p>
           ) : tasks.length === 0 ? (
-            <p style={{ fontFamily: DM_SANS, fontSize: '12px', color: `${TEXT_MID}74` }}>{t('passport.noTasks')}</p>
+            <p style={{ fontFamily: EN_HEADING, fontSize: '12px', color: `${TEXT_MID}74` }}>{t('passport.noTasks')}</p>
           ) : (
             tasks.slice(0, 5).map(task => (
               <div key={task.id} style={{ display: 'flex', alignItems: 'center', gap: '10px', padding: '8px 4px' }}>
                 <input type="checkbox" checked={task.status === 'completed'} disabled={isArchived} onChange={() => toggleTask(task)} />
                 <span style={{
-                  flex: 1, fontFamily: DM_SANS, fontSize: '13px',
+                  flex: 1, fontFamily: EN_HEADING, fontSize: '13px',
                   color: task.status === 'completed' ? `${TEXT_MID}66` : TEXT_MID,
                   textDecoration: task.status === 'completed' ? 'line-through' : 'none',
                 }}>
                   {task.title}
                 </span>
-                <span style={{ fontFamily: DM_SANS, fontSize: '11px', color: `${TEXT_MID}74` }}>{task.date}</span>
+                <span style={{ fontFamily: EN_HEADING, fontSize: '11px', color: `${TEXT_MID}74` }}>{task.date}</span>
                 {!isArchived && (
                   <button onClick={() => deleteTask(task.id)} style={{ background: 'none', border: 'none', color: `${TEXT_MID}66`, cursor: 'pointer' }}>✕</button>
                 )}
@@ -469,7 +469,7 @@ export function PlantPassportModal({ plant, tracker, gardenName, gardenId, onClo
             ))
           )}
           {tasks.length > 5 && (
-            <p style={{ fontFamily: DM_SANS, fontSize: '11px', color: `${TEXT_MID}74`, marginTop: '4px' }}>
+            <p style={{ fontFamily: EN_HEADING, fontSize: '11px', color: `${TEXT_MID}74`, marginTop: '4px' }}>
               {t('passport.moreTasks', { count: tasks.length - 5 })}
             </p>
           )}
@@ -479,9 +479,9 @@ export function PlantPassportModal({ plant, tracker, gardenName, gardenId, onClo
         <SectionHeader title={t('passport.allHistory')} headingFont={headingFont} />
         <div>
           {loadingTimeline ? (
-            <p style={{ fontFamily: DM_SANS, fontSize: '12px', color: `${TEXT_MID}74` }}>{t('passport.loading')}</p>
+            <p style={{ fontFamily: EN_HEADING, fontSize: '12px', color: `${TEXT_MID}74` }}>{t('passport.loading')}</p>
           ) : timeline.length === 0 ? (
-            <p style={{ fontFamily: DM_SANS, fontSize: '12px', color: `${TEXT_MID}74` }}>{t('passport.noHistory')}</p>
+            <p style={{ fontFamily: EN_HEADING, fontSize: '12px', color: `${TEXT_MID}74` }}>{t('passport.noHistory')}</p>
           ) : (
             timeline.map((entry, i) => {
               const color = ENTRY_COLOR[entry.entry_type] ?? '#C8A951';
@@ -496,17 +496,17 @@ export function PlantPassportModal({ plant, tracker, gardenName, gardenId, onClo
                   <div style={{ flex: 1, paddingBottom: '4px' }}>
                     <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '2px' }}>
                       <span style={{
-                        fontFamily: DM_SANS, fontSize: '10px', fontWeight: 600, padding: '2px 8px', borderRadius: '50px',
+                        fontFamily: EN_HEADING, fontSize: '10px', fontWeight: 600, padding: '2px 8px', borderRadius: '50px',
                         background: `${color}22`, color,
                       }}>
                         {emoji} {label}
                       </span>
-                      <span style={{ fontFamily: DM_SANS, fontSize: '10.5px', color: `${TEXT_MID}74`, direction: 'ltr' }}>
+                      <span style={{ fontFamily: EN_HEADING, fontSize: '10.5px', color: `${TEXT_MID}74`, direction: 'ltr' }}>
                         {formatDate(entry.created_at, locale)}
                       </span>
                     </div>
                     {entry.note && (
-                      <p style={{ fontFamily: DM_SANS, fontSize: '12.5px', color: `${TEXT_MID}97`, margin: 0 }}>{entry.note}</p>
+                      <p style={{ fontFamily: EN_HEADING, fontSize: '12.5px', color: `${TEXT_MID}97`, margin: 0 }}>{entry.note}</p>
                     )}
                     {entry.photo_path && (
                       <TimelinePhoto photoPath={entry.photo_path} />
@@ -522,7 +522,7 @@ export function PlantPassportModal({ plant, tracker, gardenName, gardenId, onClo
         {isArchived && (
           <button
             onClick={() => setConfirmDelete(true)}
-            style={{ marginTop: '24px', width: '100%', padding: '11px', borderRadius: '8px', border: '1px solid rgba(220,80,80,0.35)', background: 'transparent', color: '#e06060', fontFamily: DM_SANS, fontSize: '13px', cursor: 'pointer' }}
+            style={{ marginTop: '24px', width: '100%', padding: '11px', borderRadius: '8px', border: '1px solid rgba(220,80,80,0.35)', background: 'transparent', color: '#e06060', fontFamily: EN_HEADING, fontSize: '13px', cursor: 'pointer' }}
           >
             {t('passport.deleteForever')}
           </button>
@@ -579,8 +579,8 @@ export function PlantPassportModal({ plant, tracker, gardenName, gardenId, onClo
               disabled={!!busyAction}
               style={{ width: '100%', textAlign: isHe ? 'right' : 'left', padding: '14px', borderRadius: '10px', border: '1px solid rgba(200,169,81,0.4)', background: 'rgba(200,169,81,0.08)', cursor: 'pointer', marginBottom: '10px', display: 'block' }}
             >
-              <div style={{ fontFamily: DM_SANS, fontWeight: 700, fontSize: '14px', color: '#C8A951', marginBottom: '4px' }}>{t('passport.archive')}</div>
-              <div style={{ fontFamily: DM_SANS, fontSize: '12px', color: 'rgba(200,169,81,0.8)', lineHeight: 1.5 }}>{t('passport.archiveDesc')}</div>
+              <div style={{ fontFamily: EN_HEADING, fontWeight: 700, fontSize: '14px', color: '#C8A951', marginBottom: '4px' }}>{t('passport.archive')}</div>
+              <div style={{ fontFamily: EN_HEADING, fontSize: '12px', color: 'rgba(200,169,81,0.8)', lineHeight: 1.5 }}>{t('passport.archiveDesc')}</div>
             </button>
 
             <button
@@ -588,13 +588,13 @@ export function PlantPassportModal({ plant, tracker, gardenName, gardenId, onClo
               disabled={!!busyAction}
               style={{ width: '100%', textAlign: isHe ? 'right' : 'left', padding: '14px', borderRadius: '10px', border: '1px solid rgba(220,80,80,0.35)', background: 'rgba(220,80,80,0.06)', cursor: 'pointer', marginBottom: '16px', display: 'block' }}
             >
-              <div style={{ fontFamily: DM_SANS, fontWeight: 700, fontSize: '14px', color: '#e06060', marginBottom: '4px' }}>{t('passport.deleteForever')}</div>
-              <div style={{ fontFamily: DM_SANS, fontSize: '12px', color: 'rgba(220,80,80,0.7)', lineHeight: 1.5 }}>{t('passport.deleteForeverDesc')}</div>
+              <div style={{ fontFamily: EN_HEADING, fontWeight: 700, fontSize: '14px', color: '#e06060', marginBottom: '4px' }}>{t('passport.deleteForever')}</div>
+              <div style={{ fontFamily: EN_HEADING, fontSize: '12px', color: 'rgba(220,80,80,0.7)', lineHeight: 1.5 }}>{t('passport.deleteForeverDesc')}</div>
             </button>
 
             <button
               onClick={() => setShowEndOfSeason(false)}
-              style={{ width: '100%', padding: '10px', borderRadius: '8px', border: '1px solid rgba(0,229,195,0.15)', background: 'transparent', color: `${TEXT_MID}99`, fontFamily: DM_SANS, fontSize: '13px', cursor: 'pointer' }}
+              style={{ width: '100%', padding: '10px', borderRadius: '8px', border: '1px solid rgba(0,229,195,0.15)', background: 'transparent', color: `${TEXT_MID}99`, fontFamily: EN_HEADING, fontSize: '13px', cursor: 'pointer' }}
             >
               {t('cancel', { ns: 'garden', defaultValue: 'ביטול' })}
             </button>
@@ -668,7 +668,7 @@ function IrrigationBadge({ plant, onEditClick, isArchived, tGarden, isHe }: {
       type="button"
       onClick={() => { if (!isArchived) onEditClick(); }}
       style={{
-        fontFamily: DM_SANS, fontSize: '11px', fontWeight: 600, padding: '4px 10px', borderRadius: '50px',
+        fontFamily: EN_HEADING, fontSize: '11px', fontWeight: 600, padding: '4px 10px', borderRadius: '50px',
         background: '#DCEEFB', color: '#1565C0', border: 'none',
         cursor: isArchived ? 'default' : 'pointer',
         maxWidth: '260px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
@@ -749,7 +749,7 @@ function QuickAction({ emoji, label, onClick, busy, disabled, title }: {
       }}
     >
       <span style={{ fontSize: '18px' }}>{busy ? '…' : emoji}</span>
-      <span style={{ fontFamily: DM_SANS, fontSize: '10.5px' }}>{label}</span>
+      <span style={{ fontFamily: EN_HEADING, fontSize: '10.5px' }}>{label}</span>
     </button>
   );
 }
@@ -759,7 +759,7 @@ function SectionHeader({ title, action, headingFont }: { title: string; action?:
     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '10px' }}>
       <h3 style={{ fontFamily: headingFont, fontSize: '14px', color: TEXT_MID, margin: 0 }}>{title}</h3>
       {action && (
-        <button onClick={action.onClick} style={{ background: 'none', border: 'none', color: BIO_CYAN, fontFamily: DM_SANS, fontSize: '12px', cursor: 'pointer' }}>
+        <button onClick={action.onClick} style={{ background: 'none', border: 'none', color: BIO_CYAN, fontFamily: EN_HEADING, fontSize: '12px', cursor: 'pointer' }}>
           {action.label}
         </button>
       )}
@@ -771,7 +771,7 @@ function Stat({ value, label, headingFont }: { value: number; label: string; hea
   return (
     <div style={{ textAlign: 'center' }}>
       <div style={{ fontFamily: headingFont, fontSize: '20px', fontWeight: 700, color: BIO_CYAN }}>{value}</div>
-      <div style={{ fontFamily: DM_SANS, fontSize: '10.5px', color: `${TEXT_MID}82` }}>{label}</div>
+      <div style={{ fontFamily: EN_HEADING, fontSize: '10.5px', color: `${TEXT_MID}82` }}>{label}</div>
     </div>
   );
 }
@@ -789,9 +789,9 @@ function ConfirmDialog({ title, message, confirmLabel, onConfirm, onCancel, busy
     >
       <div style={{ background: NIGHT_CARD, border: '1px solid rgba(0,229,195,0.2)', borderRadius: '12px', padding: '22px', width: '100%', maxWidth: '340px', textAlign: 'center' }}>
         <p style={{ fontFamily: headingFont, fontSize: '16px', color: danger ? '#e06060' : BIO_CYAN, margin: '0 0 8px' }}>{title}</p>
-        <p style={{ fontFamily: DM_SANS, fontSize: '13px', color: `${TEXT_MID}93`, margin: '0 0 18px', lineHeight: 1.6 }}>{message}</p>
+        <p style={{ fontFamily: EN_HEADING, fontSize: '13px', color: `${TEXT_MID}93`, margin: '0 0 18px', lineHeight: 1.6 }}>{message}</p>
         <div style={{ display: 'flex', gap: '10px' }}>
-          <button onClick={onCancel} disabled={busy} style={{ flex: 1, padding: '10px', borderRadius: '8px', border: '1px solid rgba(0,229,195,0.25)', background: 'transparent', color: `${TEXT_MID}93`, fontFamily: DM_SANS, fontSize: '13px', cursor: 'pointer' }}>
+          <button onClick={onCancel} disabled={busy} style={{ flex: 1, padding: '10px', borderRadius: '8px', border: '1px solid rgba(0,229,195,0.25)', background: 'transparent', color: `${TEXT_MID}93`, fontFamily: EN_HEADING, fontSize: '13px', cursor: 'pointer' }}>
             {t('button.cancel')}
           </button>
           <button onClick={onConfirm} disabled={busy} style={{ flex: 1, padding: '10px', borderRadius: '8px', border: 'none', background: danger ? '#e06060' : BIO_CYAN, color: danger ? '#fff' : '#050d0a', fontFamily: headingFont, fontWeight: 700, fontSize: '13px', cursor: 'pointer' }}>

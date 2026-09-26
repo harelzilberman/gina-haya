@@ -1,12 +1,12 @@
 import { useState, useRef } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
+import { EN_HEADING } from '../styles/fonts';
 
 const GOLD   = '#00e5c3';
 const PARCH  = '#b0cfbf';
 const FOREST = '#050d0a';
 const FRANK  = '"Frank Ruhl Libre", Georgia, serif';
-const ASSIST = "'DM Sans', 'Assistant', 'Heebo', sans-serif";
 
 interface Video {
   id: string;
@@ -186,7 +186,7 @@ function VideoCard({ video, onClick }: { video: Video; onClick: () => void }) {
             background: 'rgba(9,20,16,0.9)',
             border: '1px solid rgba(0,229,195,0.3)',
             borderRadius: '4px', padding: '2px 8px',
-            fontFamily: ASSIST, fontSize: '10px', color: 'rgba(176,207,191,0.7)',
+            fontFamily: EN_HEADING, fontSize: '10px', color: 'rgba(176,207,191,0.7)',
           }}>
             {'בקרוב 🎬'}
           </div>
@@ -195,7 +195,7 @@ function VideoCard({ video, onClick }: { video: Video; onClick: () => void }) {
         <div style={{
           position: 'absolute', bottom: '6px', insetInlineEnd: '6px',
           background: 'rgba(0,0,0,0.7)', borderRadius: '3px',
-          padding: '1px 6px', fontFamily: ASSIST, fontSize: '10px',
+          padding: '1px 6px', fontFamily: EN_HEADING, fontSize: '10px',
           color: video.format === 'yt' ? '#ff6b6b' : video.format === 'reel' ? '#f9a8d4' : GOLD,
         }}>
           {video.format === 'yt' ? 'YouTube' : video.format === 'reel' ? 'Reel' : 'YT + Reel'}
@@ -204,7 +204,7 @@ function VideoCard({ video, onClick }: { video: Video; onClick: () => void }) {
         <div style={{
           position: 'absolute', bottom: '6px', insetInlineStart: '6px',
           background: 'rgba(0,0,0,0.7)', borderRadius: '3px',
-          padding: '1px 6px', fontFamily: ASSIST, fontSize: '10px', color: 'rgba(176,207,191,0.7)',
+          padding: '1px 6px', fontFamily: EN_HEADING, fontSize: '10px', color: 'rgba(176,207,191,0.7)',
         }}>
           {video.duration}
         </div>
@@ -220,7 +220,7 @@ function VideoCard({ video, onClick }: { video: Video; onClick: () => void }) {
         {video.titleHe}
       </p>
       <p style={{
-        fontFamily: ASSIST, fontSize: '11px', color: 'rgba(176,207,191,0.45)',
+        fontFamily: EN_HEADING, fontSize: '11px', color: 'rgba(176,207,191,0.45)',
         margin: 0, lineHeight: 1.4,
         display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical',
         overflow: 'hidden',
@@ -337,7 +337,7 @@ function VideoModal({ video, onClose }: { video: Video; onClose: () => void }) {
             <p style={{ fontFamily: FRANK, fontSize: '18px', color: GOLD, margin: '0 0 8px' }}>
               {t('videoModal.inProgress')}
             </p>
-            <p style={{ fontFamily: ASSIST, fontSize: '13px', color: 'rgba(176,207,191,0.5)', margin: 0 }}>
+            <p style={{ fontFamily: EN_HEADING, fontSize: '13px', color: 'rgba(176,207,191,0.5)', margin: 0 }}>
               {t('videoModal.followYouTube')}
             </p>
           </div>
@@ -353,19 +353,19 @@ function VideoModal({ video, onClose }: { video: Video; onClose: () => void }) {
               style={{ background: 'none', border: 'none', color: 'rgba(176,207,191,0.5)', cursor: 'pointer', fontSize: '20px', flexShrink: 0 }}
             >✕</button>
           </div>
-          <p style={{ fontFamily: ASSIST, fontSize: '14px', color: 'rgba(176,207,191,0.7)', margin: '10px 0 16px', lineHeight: 1.6 }}>
+          <p style={{ fontFamily: EN_HEADING, fontSize: '14px', color: 'rgba(176,207,191,0.7)', margin: '10px 0 16px', lineHeight: 1.6 }}>
             {video.descHe}
           </p>
           <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
             <span style={{
-              fontFamily: ASSIST, fontSize: '12px', padding: '4px 12px',
+              fontFamily: EN_HEADING, fontSize: '12px', padding: '4px 12px',
               borderRadius: '99px', border: '1px solid rgba(0,229,195,0.25)',
               color: GOLD, background: 'rgba(0,229,195,0.08)',
             }}>
               {video.format === 'yt' ? '▶ YouTube' : video.format === 'reel' ? '📱 Reel' : '▶ YouTube + 📱 Reel'}
             </span>
             <span style={{
-              fontFamily: ASSIST, fontSize: '12px', padding: '4px 12px',
+              fontFamily: EN_HEADING, fontSize: '12px', padding: '4px 12px',
               borderRadius: '99px', border: '1px solid rgba(176,207,191,0.15)',
               color: 'rgba(176,207,191,0.6)',
             }}>
@@ -482,7 +482,7 @@ function SubjectModal({
               </h2>
               {category && (
                 <span style={{
-                  fontFamily: ASSIST, fontSize: '11px',
+                  fontFamily: EN_HEADING, fontSize: '11px',
                   background: 'rgba(0,229,195,0.12)', color: GOLD,
                   border: '1px solid rgba(0,229,195,0.25)',
                   borderRadius: '99px', padding: '2px 10px',
@@ -495,7 +495,7 @@ function SubjectModal({
 
           {/* Content options */}
           <div style={{ padding: '20px 18px' }}>
-            <p style={{ fontFamily: ASSIST, fontSize: '12px', color: `${PARCH}55`, margin: '0 0 14px', letterSpacing: '0.06em', textTransform: 'uppercase' as const }}>
+            <p style={{ fontFamily: EN_HEADING, fontSize: '12px', color: `${PARCH}55`, margin: '0 0 14px', letterSpacing: '0.06em', textTransform: 'uppercase' as const }}>
               {t('subjectModal.available')}
             </p>
 
@@ -516,7 +516,7 @@ function SubjectModal({
                 <span style={{ fontSize: '26px', flexShrink: 0 }}>🎬</span>
                 <div style={{ flex: 1 }}>
                   <div style={{ fontFamily: FRANK, fontSize: '15px', color: GOLD }}>{t('subjectModal.video')}</div>
-                  <div style={{ fontFamily: ASSIST, fontSize: '12px', color: `${PARCH}55` }}>⏱ {content.video.duration}</div>
+                  <div style={{ fontFamily: EN_HEADING, fontSize: '12px', color: `${PARCH}55` }}>⏱ {content.video.duration}</div>
                 </div>
                 <span style={{ color: GOLD, fontSize: '20px', flexShrink: 0 }}>▶</span>
               </div>
@@ -549,13 +549,13 @@ function SubjectModal({
                   <div style={{ fontFamily: FRANK, fontSize: '15px', color: content.article.ready ? GOLD : PARCH }}>
                     {t('subjectModal.article')}
                   </div>
-                  <div style={{ fontFamily: ASSIST, fontSize: '12px', color: `${PARCH}55` }}>{t('subjectModal.byChupchu')}</div>
+                  <div style={{ fontFamily: EN_HEADING, fontSize: '12px', color: `${PARCH}55` }}>{t('subjectModal.byChupchu')}</div>
                 </div>
                 {content.article.ready ? (
                   <span style={{ color: GOLD, fontSize: '20px', flexShrink: 0 }}>→</span>
                 ) : (
                   <span style={{
-                    fontFamily: ASSIST, fontSize: '10px',
+                    fontFamily: EN_HEADING, fontSize: '10px',
                     background: 'rgba(0,229,195,0.1)', color: GOLD,
                     border: '1px solid rgba(0,229,195,0.2)',
                     borderRadius: '4px', padding: '2px 7px', flexShrink: 0,
@@ -567,7 +567,7 @@ function SubjectModal({
             {/* Article "in progress" feedback */}
             {articleMsg && (
               <div style={{
-                fontFamily: ASSIST, fontSize: '12px', color: GOLD,
+                fontFamily: EN_HEADING, fontSize: '12px', color: GOLD,
                 textAlign: 'center', padding: '6px 0 2px',
                 animation: 'subjectModalIn 0.15s ease-out',
               }}>
@@ -586,7 +586,7 @@ function SubjectModal({
                   <div style={{ fontFamily: FRANK, fontSize: '15px', color: PARCH }}>{item}</div>
                 </div>
                 <span style={{
-                  fontFamily: ASSIST, fontSize: '10px',
+                  fontFamily: EN_HEADING, fontSize: '10px',
                   background: 'rgba(255,255,255,0.08)', color: `${PARCH}60`,
                   borderRadius: '4px', padding: '2px 7px', flexShrink: 0,
                 }}>{t('comingSoon')}</span>
@@ -602,14 +602,14 @@ function SubjectModal({
           }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
               <span style={{ fontSize: '22px' }}>🌕</span>
-              <span style={{ fontFamily: ASSIST, fontSize: '11px', color: `${PARCH}50` }}>
+              <span style={{ fontFamily: EN_HEADING, fontSize: '11px', color: `${PARCH}50` }}>
                 {t('subjectModal.chupChuRecommends')}
               </span>
             </div>
             <button
               onClick={onClose}
               style={{
-                fontFamily: ASSIST, fontSize: '13px', color: `${PARCH}70`,
+                fontFamily: EN_HEADING, fontSize: '13px', color: `${PARCH}70`,
                 background: 'transparent', border: '1px solid rgba(255,255,255,0.12)',
                 borderRadius: '8px', padding: '8px 18px', cursor: 'pointer', flexShrink: 0,
               }}
@@ -633,7 +633,7 @@ function CrossNavLink({ to, label }: { to: string; label: string }) {
       onMouseLeave={() => setHovered(false)}
       style={{
         display: 'inline-flex', alignItems: 'center', gap: '6px',
-        fontFamily: ASSIST, fontSize: '13px',
+        fontFamily: EN_HEADING, fontSize: '13px',
         color: GOLD,
         background: hovered ? 'rgba(0,229,195,0.14)' : 'rgba(0,229,195,0.07)',
         border: `1px solid ${hovered ? 'rgba(0,229,195,0.4)' : 'rgba(0,229,195,0.2)'}`,
@@ -676,7 +676,7 @@ export function GuidesPage() {
         minHeight: '100vh',
         background: 'linear-gradient(180deg, #0e1e17 0%, #091410 30%, #091410 100%)',
         padding: '40px 48px 60px',
-        fontFamily: ASSIST,
+        fontFamily: EN_HEADING,
       }}
     >
       {/* Header */}
@@ -684,7 +684,7 @@ export function GuidesPage() {
         <h1 style={{ fontFamily: FRANK, fontSize: '32px', color: GOLD, margin: '0 0 8px' }}>
           {t('title')}
         </h1>
-        <p style={{ fontFamily: ASSIST, fontSize: '15px', color: 'rgba(176,207,191,0.6)', margin: 0 }}>
+        <p style={{ fontFamily: EN_HEADING, fontSize: '15px', color: 'rgba(176,207,191,0.6)', margin: 0 }}>
           {t('subtitle')}
         </p>
       </div>
@@ -706,7 +706,7 @@ export function GuidesPage() {
             padding: '10px 16px', borderRadius: '24px',
             border: '1px solid rgba(0,229,195,0.25)',
             background: 'rgba(9,20,16,0.7)',
-            color: PARCH, fontSize: '14px', fontFamily: ASSIST,
+            color: PARCH, fontSize: '14px', fontFamily: EN_HEADING,
             outline: 'none', direction: isHe ? 'rtl' : 'ltr',
           }}
         />
@@ -719,7 +719,7 @@ export function GuidesPage() {
             key={cat.id}
             onClick={() => setActiveFilter(cat.id)}
             style={{
-              fontFamily: ASSIST, fontSize: '13px',
+              fontFamily: EN_HEADING, fontSize: '13px',
               padding: '6px 16px', borderRadius: '99px',
               border: `1px solid ${activeFilter === cat.id ? GOLD : 'rgba(0,229,195,0.2)'}`,
               background: activeFilter === cat.id ? 'rgba(0,229,195,0.15)' : 'transparent',
@@ -742,7 +742,7 @@ export function GuidesPage() {
           <button
             onClick={() => setSearchQuery('')}
             style={{
-              fontFamily: ASSIST, fontSize: '13px', color: FOREST,
+              fontFamily: EN_HEADING, fontSize: '13px', color: FOREST,
               background: GOLD, border: 'none', borderRadius: '99px',
               padding: '8px 20px', cursor: 'pointer',
             }}
