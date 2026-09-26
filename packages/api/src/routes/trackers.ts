@@ -594,7 +594,7 @@ trackersRouter.delete('/:id', async (req: any, res) => {
   }
 });
 
-// ── POST /api/trackers/:id/checkin ────────────────────────────────────────
+// ── POST /api/trackers/:id/checkin  (Phase 1 — fast: upload + save, no AI) ──
 trackersRouter.post('/:id/checkin', async (req: any, res) => {
   try {
     const userId = req.user.id;
@@ -608,7 +608,7 @@ trackersRouter.post('/:id/checkin', async (req: any, res) => {
     // Verify tracker ownership
     const { data: tracker, error: trackerError } = await db
       .from('plant_trackers')
-      .select('*, gardens(*)')
+      .select('id, user_id, garden_plants_id')
       .eq('id', trackerId)
       .eq('user_id', userId)
       .is('deleted_at', null)
@@ -623,7 +623,7 @@ trackersRouter.post('/:id/checkin', async (req: any, res) => {
     let usedAnalysisCredit = false;
 
     // Helper: consume analysis credit if available, else block
-    async function checkAnalysisCredit(errPayload: object): Promise<boolean> {
+    async function checkAnalysisCredit(): Promise<boolean> {
       const { data: creditRow } = await db
         .from('user_credits')
         .select('id, total, used')
@@ -632,7 +632,7 @@ trackersRouter.post('/:id/checkin', async (req: any, res) => {
         .single();
 
       const available = Math.max(0, (creditRow?.total ?? 0) - (creditRow?.used ?? 0));
-      if (available <= 0) return false; // no credits — block
+      if (available <= 0) return false;
 
       await db
         .from('user_credits')
@@ -644,7 +644,7 @@ trackersRouter.post('/:id/checkin', async (req: any, res) => {
       return true;
     }
 
-    // Free tier: hard cap on total checkins ever
+    // Enforce checkin limits (quota consumed here — not in the analyze step)
     if (limits?.maxTotalCheckinsEver !== null && limits?.maxTotalCheckinsEver !== undefined) {
       const { count } = await db
         .from('plant_tracker_checkins')
@@ -654,14 +654,12 @@ trackersRouter.post('/:id/checkin', async (req: any, res) => {
 
       if ((count ?? 0) >= limits.maxTotalCheckinsEver) {
         const errPayload = { error: 'limit_exceeded', message: 'limit_exceeded', tier, limit: limits.maxTotalCheckinsEver, type: 'checkins' };
-        const credited = await checkAnalysisCredit(errPayload);
-        if (!credited) {
+        if (!(await checkAnalysisCredit())) {
           console.log(`[limit] user ${userId} hit maxTotalCheckinsEver (tier=${tier})`);
           return res.status(429).json(errPayload);
         }
       }
     } else if (limits?.maxCheckinsPerTrackerPerMonth !== null && limits?.maxCheckinsPerTrackerPerMonth !== undefined) {
-      // Paid tiers: per tracker per month
       const startOfMonth = new Date();
       startOfMonth.setDate(1);
       startOfMonth.setHours(0, 0, 0, 0);
@@ -676,20 +674,14 @@ trackersRouter.post('/:id/checkin', async (req: any, res) => {
       if ((count ?? 0) >= limits.maxCheckinsPerTrackerPerMonth) {
         const resetsAt = new Date(startOfMonth.getFullYear(), startOfMonth.getMonth() + 1, 1).toISOString();
         const errPayload = { error: 'analysis_limit_reached', message: 'הגעת למגבלת הניתוחים החודשית עבור מעקב זה.', tier, limit: limits.maxCheckinsPerTrackerPerMonth, current: count, resets_at: resetsAt };
-        const credited = await checkAnalysisCredit(errPayload);
-        if (!credited) {
+        if (!(await checkAnalysisCredit())) {
           console.log(`[limit] user ${userId} hit maxCheckinsPerTrackerPerMonth (tier=${tier})`);
           return res.status(403).json(errPayload);
         }
       }
     }
 
-    // ── Vision quota gate ─────────────────────────────────────────────────────
-    // Checked BEFORE any Anthropic spend.
-    // tier is already resolved via attachTier middleware (req.tier).
-    // garden_plants_id from the tracker row is recorded for billing context.
-    // Refusal shape: { ok: false, reason: 'vision_quota_exceeded', used, limit }
-    // HTTP 200 so the app can render an upsell rather than a generic error.
+    // Vision quota gate — consume quota slot before any Anthropic spend
     {
       const gardenPlantsId: string | null = (tracker as any).garden_plants_id ?? null;
       const quota = await checkAndRecordVisionUse(userId, 'tracker_checkin', gardenPlantsId, req.tier);
@@ -698,8 +690,109 @@ trackersRouter.post('/:id/checkin', async (req: any, res) => {
       }
     }
 
-    // Fetch today's calendar
+    // Compress image — reduces ~4 MB client JPEG to ≤1 MB for storage
+    let compressed: Awaited<ReturnType<typeof compressImageForClaude>>;
+    try {
+      compressed = await compressImageForClaude(imageBase64);
+    } catch (compressErr: any) {
+      if (compressErr.code === 'image_too_large') {
+        return res.status(422).json({ error: 'image_too_large', error_code: 'image_too_large', message: 'התמונה גדולה מדי' });
+      }
+      throw compressErr;
+    }
+
+    // Upload compressed image to storage (non-blocking)
+    let photoPath: string | null = null;
+    try {
+      const storagePath = `${userId}/${trackerId}/${Date.now()}.jpg`;
+      const { error: uploadError } = await db.storage
+        .from('tracker-photos')
+        .upload(storagePath, compressed.buffer, { contentType: 'image/jpeg', upsert: false });
+      if (uploadError) {
+        console.error('[checkin] photo upload failed:', uploadError.message);
+      } else {
+        photoPath = storagePath;
+      }
+    } catch (uploadErr: any) {
+      console.error('[checkin] photo upload exception:', uploadErr.message);
+    }
+
+    // Insert checkin row without AI analysis — analysis happens in the /analyze step
     const today = todayInIsrael();
+    const { data: checkin, error: checkinError } = await db
+      .from('plant_tracker_checkins')
+      .insert({
+        tracker_id:   trackerId,
+        user_id:      userId,
+        checkin_date: today,
+        growth_stage: 'pending',  // filled in by /analyze
+        notes:        notes ?? null,
+        photo_path:   photoPath,
+      })
+      .select()
+      .single();
+
+    if (checkinError) throw checkinError;
+
+    res.status(201).json({ checkin_id: checkin.id, photo_path: photoPath, used_credit: usedAnalysisCredit });
+  } catch (err: any) {
+    console.error('[POST /api/trackers/:id/checkin]', err.message, err.stack);
+    res.status(500).json({ error: err.message, error_code: 'unknown' });
+  }
+});
+
+// ── POST /api/trackers/:id/checkins/:checkinId/analyze  (Phase 2 — AI) ────
+trackersRouter.post('/:id/checkins/:checkinId/analyze', async (req: any, res) => {
+  try {
+    const userId    = req.user.id;
+    const { id: trackerId, checkinId } = req.params;
+    const { imageBase64, mimeType } = req.body;
+
+    if (!imageBase64 || !mimeType) {
+      return res.status(400).json({ error: 'imageBase64 and mimeType are required' });
+    }
+
+    // Verify tracker + checkin ownership
+    const { data: tracker, error: trackerError } = await db
+      .from('plant_trackers')
+      .select('*, gardens(*)')
+      .eq('id', trackerId)
+      .eq('user_id', userId)
+      .is('deleted_at', null)
+      .single();
+
+    if (trackerError || !tracker) {
+      return res.status(404).json({ error: 'Tracker not found' });
+    }
+
+    const { data: checkin, error: checkinError } = await db
+      .from('plant_tracker_checkins')
+      .select('*')
+      .eq('id', checkinId)
+      .eq('tracker_id', trackerId)
+      .eq('user_id', userId)
+      .is('deleted_at', null)
+      .single();
+
+    if (checkinError || !checkin) {
+      return res.status(404).json({ error: 'Checkin not found' });
+    }
+
+    // If already analyzed, return existing result without re-running Claude
+    if (checkin.ai_analysis && checkin.growth_stage !== 'pending') {
+      return res.json({
+        checkin,
+        analysis:        checkin.ai_analysis,
+        growingPlan:     checkin.growing_plan,
+        suggested_tasks: checkin.suggested_tasks ?? [],
+        used_credit:     false,
+      });
+    }
+
+    const garden = tracker.gardens as any;
+
+    // Fetch today's calendar
+    const today = checkin.checkin_date;
     const { data: calendarDay } = await db
       .from('biodynamic_calendar')
       .select('*')
@@ -718,29 +811,26 @@ trackersRouter.post('/:id/checkin', async (req: any, res) => {
       perigeeActive:        calendarDay.perigee_active,
     } : undefined;
 
-    // Fetch weather — prefer exact garden coordinates when set.
-    // tracker is fetched with select('*, gardens(*)'): select-all on gardens,
-    // so latitude/longitude are present once migration 041 has been applied.
-    const garden = tracker.gardens as any;
+    // Fetch weather
     const _trackerCoords = (garden?.latitude != null && garden?.longitude != null)
       ? { lat: Number(garden.latitude), lon: Number(garden.longitude) }
       : null;
     const weather = await fetchWeatherForRegion(garden?.location_region ?? null, _trackerCoords);
 
-    // Get previous checkin for comparison
+    // Get previous checkin (excluding this one) for comparison
     const { data: previousCheckins } = await db
       .from('plant_tracker_checkins')
       .select('ai_analysis, checkin_date')
       .eq('tracker_id', trackerId)
+      .neq('id', checkinId)
       .is('deleted_at', null)
       .order('created_at', { ascending: false })
       .limit(1);
 
-    const previousCheckin = previousCheckins?.[0] ?? null;
-    const previousAnalysis = previousCheckin?.ai_analysis ?? undefined;
-    const previousCheckinDate = previousCheckin?.checkin_date ?? undefined;
+    const previousAnalysis    = previousCheckins?.[0]?.ai_analysis ?? undefined;
+    const previousCheckinDate = previousCheckins?.[0]?.checkin_date ?? undefined;
 
-    // Compress image — may throw image_too_large if compressed size > 4.5MB
+    // Compress image for Claude
     let compressed: Awaited<ReturnType<typeof compressImageForClaude>>;
     try {
       compressed = await compressImageForClaude(imageBase64);
@@ -751,23 +841,7 @@ trackersRouter.post('/:id/checkin', async (req: any, res) => {
       throw compressErr;
     }
 
-    // Upload compressed image to storage (non-blocking — failure does not stop analysis)
-    let photoPath: string | null = null;
-    try {
-      const storagePath = `${userId}/${trackerId}/${Date.now()}.jpg`;
-      const { error: uploadError } = await db.storage
-        .from('tracker-photos')
-        .upload(storagePath, compressed.buffer, { contentType: 'image/jpeg', upsert: false });
-      if (uploadError) {
-        console.error('[checkin] Photo upload failed:', uploadError.message, uploadError);
-      } else {
-        photoPath = storagePath;
-      }
-    } catch (uploadErr: any) {
-      console.error('[checkin] Photo upload exception:', uploadErr.message, uploadErr.stack);
-    }
-
-    // Call Claude vision with pre-compressed data (avoids double compression)
+    // Call Claude vision (50 s timeout enforced in plantVision.ts)
     let analysisResult: Awaited<ReturnType<typeof analyzePlantImage>>;
     try {
       analysisResult = await analyzePlantImage(imageBase64, mimeType, {
@@ -787,14 +861,13 @@ trackersRouter.post('/:id/checkin', async (req: any, res) => {
       }
       const isParseFailure = visionErr.message?.includes('Failed to parse') || visionErr.message?.includes('Invalid response');
       return res.status(503).json({
-        error: visionErr.message,
+        error:      visionErr.message,
         error_code: isParseFailure ? 'analysis_failed' : 'api_unavailable',
       });
     }
     const { analysis, growingPlan, tasks } = analysisResult;
 
     // Suppress watering tasks for auto-irrigated plants
-    // (tracker tasks have no category field — filter by Hebrew title keyword)
     let filteredTasks = tasks;
     const gardenPlantId = (tracker as any).garden_plants_id ?? null;
     if (gardenPlantId) {
@@ -810,30 +883,23 @@ trackersRouter.post('/:id/checkin', async (req: any, res) => {
       }
     }
 
-    // Save checkin with photo path
-    const { data: checkin, error: checkinError } = await db
+    // Update checkin with AI analysis results
+    const { data: updatedCheckin, error: updateError } = await db
       .from('plant_tracker_checkins')
-      .insert({
-        tracker_id:      trackerId,
-        user_id:         userId,
-        checkin_date:    today,
+      .update({
         growth_stage:    analysis.growthStage,
         ai_analysis:     analysis,
         growing_plan:    growingPlan,
-        notes:           notes ?? null,
-        photo_path:      photoPath,
         suggested_tasks: filteredTasks.length > 0 ? filteredTasks : null,
       })
+      .eq('id', checkinId)
       .select()
       .single();
 
-    if (checkinError) throw checkinError;
+    if (updateError) throw updateError;
 
-    // Log the photo + AI report to plant_timeline so it shows up in the plant
-    // passport's history (mirrors the water/fertilize logging elsewhere in this
-    // file). Non-blocking / best-effort — a failure here shouldn't fail the
-    // checkin itself. Requires a linked garden_plants_id; legacy trackers
-    // created before that FK existed simply skip this.
+    // Log to plant_timeline (best-effort)
+    const photoPath = updatedCheckin.photo_path;
     if (gardenPlantId) {
       try {
         const timelineRows: any[] = [];
@@ -844,8 +910,8 @@ trackersRouter.post('/:id/checkin', async (req: any, res) => {
             user_id:            userId,
             entry_type:         'photo',
             photo_path:         photoPath,
-            tracker_checkin_id: checkin.id,
-            created_at:         checkin.created_at,
+            tracker_checkin_id: checkinId,
+            created_at:         updatedCheckin.created_at,
           });
         }
         timelineRows.push({
@@ -854,20 +920,20 @@ trackersRouter.post('/:id/checkin', async (req: any, res) => {
           user_id:            userId,
           entry_type:         'tracker_report',
           note:                `${analysis.healthHe} · ${analysis.growthStageHe}`,
-          tracker_checkin_id: checkin.id,
-          created_at:         checkin.created_at,
+          tracker_checkin_id: checkinId,
+          created_at:         updatedCheckin.created_at,
         });
         const { error: tlErr } = await db.from('plant_timeline').insert(timelineRows);
-        if (tlErr) console.error('[checkin] plant_timeline insert failed:', tlErr.message, tlErr.details, tlErr.hint);
+        if (tlErr) console.error('[analyze] plant_timeline insert failed:', tlErr.message);
       } catch (tlErr: any) {
-        console.error('[checkin] plant_timeline insert threw:', tlErr.message);
+        console.error('[analyze] plant_timeline insert threw:', tlErr.message);
       }
     }
 
-    res.status(201).json({ checkin, analysis, growingPlan, suggested_tasks: filteredTasks, used_credit: usedAnalysisCredit });
+    res.json({ checkin: updatedCheckin, analysis, growingPlan, suggested_tasks: filteredTasks, used_credit: false });
   } catch (err: any) {
-    console.error('[POST /api/trackers/:id/checkin]', err.message, err.stack);
-    res.status(500).json({ error: err.message, message: err.message, error_code: 'unknown' });
+    console.error('[POST /api/trackers/:id/checkins/:checkinId/analyze]', err.message, err.stack);
+    res.status(500).json({ error: err.message, error_code: 'unknown' });
   }
 });
 

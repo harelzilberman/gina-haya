@@ -1,9 +1,11 @@
 import { useState, useRef } from 'react';
+import { useTranslation } from 'react-i18next';
 import { useTrackerStore, type CheckinResult } from '../../stores/trackerStore';
 import { useAuthStore } from '../../stores/authStore';
 import { useToastStore } from '../../stores/toastStore';
 import { MAX_PHOTO_SIZE_BYTES, MAX_PHOTO_SIZE_LABEL } from '@gina-haya/shared';
 import { UpgradeModal } from '../upgrade/UpgradeModal';
+import { compressImage } from '../../utils/compressImage';
 
 const NIGHT_CARD = '#111f18';
 const BIO_CYAN   = '#00e5c3';
@@ -29,21 +31,25 @@ interface Props {
 }
 
 export function PhotoUpload({ trackerId, plantNameHe, onClose, onComplete }: Props) {
-  const { addCheckin, isAnalyzing } = useTrackerStore();
+  const { t } = useTranslation('tracker');
+  const { createCheckin, analyzeCheckin, isAnalyzing } = useTrackerStore();
   const { profile } = useAuthStore();
   const { show: showToast } = useToastStore();
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const submittingRef = useRef(false);
 
   const [preview,      setPreview]      = useState<string | null>(null);
   const [imageBase64,  setImageBase64]  = useState<string | null>(null);
-  const [mimeType,     setMimeType]     = useState<string>('');
   const [notes,        setNotes]        = useState('');
   const [error,        setError]        = useState('');
   const [dragOver,     setDragOver]     = useState(false);
   const [upgradeOpen,  setUpgradeOpen]  = useState(false);
   const [upgradeResetsAt, setUpgradeResetsAt] = useState<string | undefined>();
+  // Retry state after analysis failure
+  const [pendingCheckinId, setPendingCheckinId] = useState<string | null>(null);
+  const [pendingCredit,    setPendingCredit]    = useState(false);
 
-  function processFile(file: File) {
+  async function processFile(file: File) {
     setError('');
     if (!ACCEPTED_TYPES.includes(file.type)) {
       setError('קבצים מותרים: JPG, PNG, WEBP בלבד');
@@ -53,14 +59,14 @@ export function PhotoUpload({ trackerId, plantNameHe, onClose, onComplete }: Pro
       setError(`התמונה גדולה מדי. אנא בחר תמונה קטנה מ-${MAX_PHOTO_SIZE_LABEL}`);
       return;
     }
-    const reader = new FileReader();
-    reader.onload = ev => {
-      const dataUrl = ev.target?.result as string;
+    try {
+      const { dataUrl, base64 } = await compressImage(file);
       setPreview(dataUrl);
-      setImageBase64(dataUrl.split(',')[1]);
-      setMimeType(file.type);
-    };
-    reader.readAsDataURL(file);
+      setImageBase64(base64);
+      setPendingCheckinId(null); // clear retry when new image chosen
+    } catch {
+      setError(t('errors.image_decode'));
+    }
   }
 
   function handleFileChange(e: React.ChangeEvent<HTMLInputElement>) {
@@ -75,52 +81,76 @@ export function PhotoUpload({ trackerId, plantNameHe, onClose, onComplete }: Pro
     if (file) processFile(file);
   }
 
-  async function handleSubmit() {
-    if (!imageBase64 || !mimeType) {
-      setError('יש לבחור תמונה תחילה');
-      return;
+  function friendlyError(err: any): string {
+    if (!navigator.onLine || err.message?.includes('Failed to fetch') || err.message?.includes('NetworkError')) {
+      return t('errors.network');
     }
-    setError('');
+    const code = err.errorCode ?? '';
+    const MAP: Record<string, string> = {
+      timeout:                t('errors.timeout'),
+      api_unavailable:        t('errors.api_unavailable'),
+      analysis_failed:        t('errors.analysis_failed'),
+      image_too_large:        t('errors.image_too_large'),
+      analysis_limit_reached: t('errors.analysis_limit_reached'),
+    };
+    return MAP[code] ?? t('errors.unknown');
+  }
+
+  async function runAnalysis(checkinId: string, base64: string, priorCredit: boolean) {
     try {
-      const result = await addCheckin(trackerId, imageBase64, mimeType, notes || undefined);
+      const result = await analyzeCheckin(trackerId, checkinId, base64, 'image/jpeg', priorCredit);
       if (result.used_credit) {
         showToast('השתמשת במגבלה החודשית — משתמש בקרדיט שרכשת 🔬', 'info');
       }
       onComplete(result);
     } catch (err: any) {
-      if (err.errorCode === 'analysis_limit_reached') {
-        setUpgradeResetsAt(err.limitData?.resetsAt);
-        setUpgradeOpen(true);
-      } else if (err.message === 'limit_exceeded') {
-        const { limitType } = err.limitData ?? {};
-        if (limitType === 'checkins' || limitType === 'checkins_monthly') {
-          setError(`הגעת למגבלת הבדיקות. שדרג לקבלת עוד ניתוחים.`);
-        } else {
-          setError('הגעת למגבלת המעקבים. שדרג לקבלת עוד מעקבים.');
-        }
-      } else {
-        const isNetworkError = !navigator.onLine
-          || err.message?.includes('Failed to fetch')
-          || err.message?.includes('NetworkError')
-          || err.message?.includes('net::');
-        if (isNetworkError) {
-          setError('לא ניתן להתחבר לשרת. בדוק את החיבור לאינטרנט ונסה שוב.');
-        } else {
-          const ERROR_MESSAGES: Record<string, string> = {
-            api_unavailable:        'השירות אינו זמין כרגע. נסה שוב מאוחר יותר.',
-            image_too_large:        'התמונה גדולה מדי לניתוח.',
-            analysis_failed:        'לא הצלחנו לנתח את התמונה. נסה תמונה אחרת.',
-            storage_error:          'שגיאה בשמירת התמונה.',
-            tracker_limit_reached:  'הגעת למגבלת המעקבים.',
-            analysis_limit_reached: 'הגעת למגבלת הניתוחים החודשיים.',
-            unknown:                'אירעה שגיאה. נסה שוב.',
-          };
-          const mapped = err.errorCode !== 'unknown' ? ERROR_MESSAGES[err.errorCode] : undefined;
-          setError(mapped ?? err.message ?? ERROR_MESSAGES.unknown);
-        }
-      }
+      console.error('[PhotoUpload] analysis failed', err);
+      setError(friendlyError(err));
+      // pendingCheckinId stays set so the retry button appears
     }
   }
+
+  async function handleSubmit() {
+    if (!imageBase64) { setError('יש לבחור תמונה תחילה'); return; }
+    if (submittingRef.current) return;
+    submittingRef.current = true;
+    setError('');
+    try {
+      // Phase 1: upload photo + create checkin
+      let checkinId: string;
+      let usedCredit: boolean;
+      try {
+        const phase1 = await createCheckin(trackerId, imageBase64, 'image/jpeg', notes || undefined);
+        checkinId  = phase1.checkin_id;
+        usedCredit = phase1.used_credit;
+        setPendingCheckinId(checkinId);
+        setPendingCredit(usedCredit);
+      } catch (err: any) {
+        if (err.errorCode === 'analysis_limit_reached') {
+          setUpgradeResetsAt(err.limitData?.resetsAt);
+          setUpgradeOpen(true);
+        } else if (err.message === 'limit_exceeded') {
+          setError(t('errors.limit_exceeded'));
+        } else {
+          setError(friendlyError(err));
+        }
+        return;
+      }
+
+      // Phase 2: AI analysis
+      await runAnalysis(checkinId, imageBase64, usedCredit);
+    } finally {
+      submittingRef.current = false;
+    }
+  }
+
+  async function retryAnalysis() {
+    if (!pendingCheckinId || !imageBase64) return;
+    setError('');
+    await runAnalysis(pendingCheckinId, imageBase64, pendingCredit);
+  }
+
+  const canRetry = !isAnalyzing && !!pendingCheckinId && !!error;
 
   return (
     <>
@@ -174,7 +204,7 @@ export function PhotoUpload({ trackerId, plantNameHe, onClose, onComplete }: Pro
             <div style={{ textAlign: 'center', padding: '32px 0' }}>
               <div className="mon-pulse" style={{ fontSize: '64px', marginBottom: '20px' }}>🌱</div>
               <p style={{ fontFamily: FRANK, fontSize: '20px', color: BIO_CYAN, marginBottom: '8px' }}>
-                צ'ופצ'ו בודק את הצמח שלך...
+                {t('checkin.analyzing')}
               </p>
               <p style={{ fontFamily: DM_SANS, fontSize: '14px', color: `${TEXT_MID}60`, marginBottom: '4px' }}>
                 ניתוח חכם עם בינה מלאכותית
@@ -182,6 +212,23 @@ export function PhotoUpload({ trackerId, plantNameHe, onClose, onComplete }: Pro
               <p style={{ fontFamily: DM_SANS, fontSize: '13px', color: `${TEXT_MID}40` }}>
                 זה לוקח כ-15 שניות
               </p>
+            </div>
+          ) : canRetry ? (
+            <div style={{ textAlign: 'center', padding: '24px 0' }}>
+              <div style={{ fontSize: '48px', marginBottom: '16px' }}>⚠️</div>
+              <p style={{ fontFamily: DM_SANS, fontSize: '14px', color: '#e06060', marginBottom: '16px' }}>
+                {error}
+              </p>
+              <button
+                onClick={retryAnalysis}
+                style={{
+                  padding: '10px 28px', borderRadius: '8px', border: 'none',
+                  background: BIO_CYAN, color: '#050d0a',
+                  fontFamily: FRANK, fontWeight: 700, fontSize: '15px', cursor: 'pointer',
+                }}
+              >
+                {t('checkin.retryButton')}
+              </button>
             </div>
           ) : (
             <>
@@ -278,7 +325,7 @@ export function PhotoUpload({ trackerId, plantNameHe, onClose, onComplete }: Pro
                 />
               </div>
 
-              {error && (
+              {error && !canRetry && (
                 <p style={{ fontFamily: DM_SANS, fontSize: '13px', color: '#e06060', textAlign: 'right', marginBottom: '16px' }}>
                   {error}
                 </p>
@@ -287,21 +334,21 @@ export function PhotoUpload({ trackerId, plantNameHe, onClose, onComplete }: Pro
               {/* Submit */}
               <button
                 onClick={handleSubmit}
-                disabled={!imageBase64}
+                disabled={!imageBase64 || isAnalyzing}
                 style={{
                   width:           '100%',
                   padding:         '13px',
-                  backgroundColor: imageBase64 ? BIO_CYAN : 'rgba(0,229,195,0.3)',
+                  backgroundColor: (imageBase64 && !isAnalyzing) ? BIO_CYAN : 'rgba(0,229,195,0.3)',
                   color:           '#050d0a',
                   border:          'none',
                   borderRadius:    '8px',
                   fontFamily:      FRANK,
                   fontSize:        '16px',
                   fontWeight:      700,
-                  cursor:          imageBase64 ? 'pointer' : 'not-allowed',
+                  cursor:          (imageBase64 && !isAnalyzing) ? 'pointer' : 'not-allowed',
                   transition:      'filter 0.2s',
                 }}
-                onMouseEnter={e => { if (imageBase64) (e.currentTarget as HTMLElement).style.filter = 'brightness(1.1)'; }}
+                onMouseEnter={e => { if (imageBase64 && !isAnalyzing) (e.currentTarget as HTMLElement).style.filter = 'brightness(1.1)'; }}
                 onMouseLeave={e => { (e.currentTarget as HTMLElement).style.filter = 'none'; }}
               >
                 נתח עם צ'ופצ'ו 🌱

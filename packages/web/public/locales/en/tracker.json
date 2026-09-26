@@ -26,5 +26,24 @@
     "title": "No plants tracked yet",
     "desc": "Photograph a plant from your garden and Chupchu will build you a personalised growing plan",
     "cta": "Start first tracker 🌱"
+  },
+  "checkin": {
+    "uploading": "Uploading photo...",
+    "analyzing": "Chupchu is analyzing your plant...",
+    "analyzeRetry": "Analysis failed. Tap to retry",
+    "retryButton": "Retry",
+    "saved": "Tracker saved"
+  },
+  "errors": {
+    "network": "Can't reach the server. Check your internet connection and try again.",
+    "timeout": "Analysis is taking too long. Please try again in a moment.",
+    "api_unavailable": "The service is unavailable right now. Your plant was saved — you can retry the analysis.",
+    "analysis_failed": "We couldn't analyse the photo. Please try a different image.",
+    "image_too_large": "The photo is too large to analyse.",
+    "analysis_limit_reached": "You've reached your monthly analysis limit.",
+    "limit_exceeded": "You've reached your tracker limit.",
+    "photo_required": "Please upload a photo of the plant",
+    "image_decode": "Couldn't read the image. Please try a different file.",
+    "unknown": "Something went wrong. Please try again."
   }
 }

@@ -1,10 +1,12 @@
 import { useState, useRef } from 'react';
+import { useTranslation } from 'react-i18next';
 import { useTrackerStore, type CheckinResult } from '../../stores/trackerStore';
 import { useGardenStore } from '../../stores/gardenStore';
 import { useAuthStore } from '../../stores/authStore';
 import { useToastStore } from '../../stores/toastStore';
 import { MAX_PHOTO_SIZE_BYTES, MAX_PHOTO_SIZE_LABEL } from '@gina-haya/shared';
 import { UpgradeModal } from '../upgrade/UpgradeModal';
+import { compressImage } from '../../utils/compressImage';
 
 const NIGHT_CARD = '#111f18';
 const BIO_CYAN   = '#00e5c3';
@@ -29,7 +31,8 @@ interface Props {
 }
 
 export function NewTrackerModal({ onClose, onCreated, gardenPlantId }: Props) {
-  const { createTracker, addCheckin } = useTrackerStore();
+  const { t } = useTranslation('tracker');
+  const { createTracker, createCheckin, analyzeCheckin } = useTrackerStore();
   const { activeGarden }              = useGardenStore();
   const { profile }                   = useAuthStore();
   const { show: showToast }           = useToastStore();
@@ -42,11 +45,18 @@ export function NewTrackerModal({ onClose, onCreated, gardenPlantId }: Props) {
   const [notes,                setNotes]                = useState('');
   const [imageFile,            setImageFile]            = useState<File | null>(null);
   const [imagePreview,         setImagePreview]         = useState<string | null>(null);
+  const [compressedBase64,     setCompressedBase64]     = useState<string | null>(null);
   const [isSubmitting,         setIsSubmitting]         = useState(false);
   const [isAnalyzing,          setIsAnalyzing]          = useState(false);
   const [error,                setError]                = useState('');
   const [upgradeOpen,          setUpgradeOpen]          = useState(false);
+  // Populated after phase-1 succeeds so analysis can be retried without re-uploading
+  const [pendingTrackerId,     setPendingTrackerId]     = useState<string | null>(null);
+  const [pendingCheckinId,     setPendingCheckinId]     = useState<string | null>(null);
+  const [pendingCredit,        setPendingCredit]        = useState(false);
+  const [pendingAutoId,        setPendingAutoId]        = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const submittingRef = useRef(false); // guard against double-submit
 
   const gardenPlants = activeGarden?.garden_plants ?? [];
 
@@ -68,18 +78,25 @@ export function NewTrackerModal({ onClose, onCreated, gardenPlantId }: Props) {
     }
   }
 
-  function handleFileSelect(e: React.ChangeEvent<HTMLInputElement>) {
+  async function handleFileSelect(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0];
     if (!file) return;
     if (file.size > MAX_PHOTO_SIZE_BYTES) {
       setError(`התמונה גדולה מדי. אנא בחר תמונה קטנה מ-${MAX_PHOTO_SIZE_LABEL}`);
       return;
     }
-    setImageFile(file);
     setError('');
-    const reader = new FileReader();
-    reader.onload = (ev) => setImagePreview(ev.target?.result as string);
-    reader.readAsDataURL(file);
+    try {
+      const { dataUrl, base64 } = await compressImage(file);
+      setImageFile(file);
+      setImagePreview(dataUrl);
+      setCompressedBase64(base64);
+      // Clear any pending retry state when a new image is selected
+      setPendingCheckinId(null);
+      setPendingTrackerId(null);
+    } catch {
+      setError(t('errors.image_decode'));
+    }
   }
 
   function removeImage() {
@@ -90,7 +107,8 @@ export function NewTrackerModal({ onClose, onCreated, gardenPlantId }: Props) {
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
-    if (!imageFile) { setError('יש להעלות תמונה של הצמח'); return; }
+    if (!imageFile || !compressedBase64) { setError(t('errors.photo_required')); return; }
+    if (submittingRef.current) return;
 
     const isUnknownHe      = UNKNOWN_PLANT_RE.test(plantNameHe);
     const isUnknownEn      = UNKNOWN_PLANT_RE.test(plantNameEn);
@@ -104,6 +122,7 @@ export function NewTrackerModal({ onClose, onCreated, gardenPlantId }: Props) {
     const resolvedNameHe = wasAutoIdentified ? 'לא ידוע' : plantNameHe.trim();
     const resolvedNameEn = wasAutoIdentified ? 'Unknown'  : plantNameEn.trim();
 
+    submittingRef.current = true;
     setIsSubmitting(true);
     setError('');
 
@@ -118,24 +137,90 @@ export function NewTrackerModal({ onClose, onCreated, gardenPlantId }: Props) {
         locationDescription: locationDescription.trim() || undefined,
       });
 
+      // Phase 1 — upload photo + create checkin (fast)
+      setIsSubmitting(false);
       setIsAnalyzing(true);
-      const base64   = imagePreview!.split(',')[1];
-      const mimeType = imageFile.type;
-      const result   = await addCheckin(tracker.id, base64, mimeType, notes.trim() || undefined);
+
+      let checkinId: string;
+      let usedCredit: boolean;
+      try {
+        const phase1 = await createCheckin(tracker.id, compressedBase64, 'image/jpeg', notes.trim() || undefined);
+        checkinId  = phase1.checkin_id;
+        usedCredit = phase1.used_credit;
+        setPendingTrackerId(tracker.id);
+        setPendingCheckinId(checkinId);
+        setPendingCredit(usedCredit);
+        setPendingAutoId(wasAutoIdentified);
+      } catch (err: any) {
+        handleCheckinError(err);
+        return;
+      }
+
+      // Phase 2 — AI analysis (slow, can be retried)
+      await runAnalysis(tracker.id, checkinId, compressedBase64, usedCredit, wasAutoIdentified);
+    } catch (err: any) {
+      if (err.errorCode === 'tracker_limit_reached' || err.message === 'limit_exceeded') {
+        setUpgradeOpen(true);
+      } else {
+        setError(friendlyError(err));
+      }
+    } finally {
+      submittingRef.current = false;
+      setIsSubmitting(false);
+      setIsAnalyzing(false);
+    }
+  }
+
+  async function retryAnalysis() {
+    if (!pendingTrackerId || !pendingCheckinId || !compressedBase64) return;
+    setError('');
+    setIsAnalyzing(true);
+    await runAnalysis(pendingTrackerId, pendingCheckinId, compressedBase64, pendingCredit, pendingAutoId);
+    setIsAnalyzing(false);
+  }
+
+  async function runAnalysis(
+    trackerId: string,
+    checkinId: string,
+    base64: string,
+    priorCredit: boolean,
+    wasAutoIdentified: boolean,
+  ) {
+    try {
+      const result = await analyzeCheckin(trackerId, checkinId, base64, 'image/jpeg', priorCredit);
       if (result.used_credit) {
         showToast('השתמשת במגבלה החודשית — משתמש בקרדיט שרכשת 🔬', 'info');
       }
       onCreated(result, wasAutoIdentified);
     } catch (err: any) {
-      if (err.errorCode === 'tracker_limit_reached' || err.message === 'limit_exceeded') {
-        setUpgradeOpen(true);
-      } else {
-        setError(err.message || 'משהו השתבש, נסה שוב');
-      }
-    } finally {
-      setIsSubmitting(false);
-      setIsAnalyzing(false);
+      console.error('[NewTrackerModal] analysis failed', err);
+      setError(friendlyError(err));
+      // pendingCheckinId stays set so the retry button appears
     }
+  }
+
+  function handleCheckinError(err: any) {
+    console.error('[NewTrackerModal] checkin create failed', err);
+    if (err.errorCode === 'tracker_limit_reached' || err.message === 'limit_exceeded') {
+      setUpgradeOpen(true);
+    } else {
+      setError(friendlyError(err));
+    }
+  }
+
+  function friendlyError(err: any): string {
+    if (!navigator.onLine || err.message?.includes('Failed to fetch') || err.message?.includes('NetworkError')) {
+      return t('errors.network');
+    }
+    const code = err.errorCode ?? '';
+    const MAP: Record<string, string> = {
+      timeout:                t('errors.timeout'),
+      api_unavailable:        t('errors.api_unavailable'),
+      analysis_failed:        t('errors.analysis_failed'),
+      image_too_large:        t('errors.image_too_large'),
+      analysis_limit_reached: t('errors.analysis_limit_reached'),
+    };
+    return MAP[code] ?? t('errors.unknown');
   }
 
   const inputStyle: React.CSSProperties = {
@@ -161,7 +246,8 @@ export function NewTrackerModal({ onClose, onCreated, gardenPlantId }: Props) {
     textAlign:    'right',
   };
 
-  const isLoading = isSubmitting || isAnalyzing;
+  const isLoading    = isSubmitting || isAnalyzing;
+  const canRetry     = !isLoading && !!pendingCheckinId && !!error;
 
   return (
     <div
@@ -218,11 +304,30 @@ export function NewTrackerModal({ onClose, onCreated, gardenPlantId }: Props) {
           }}>
             <div style={{ fontSize: '48px', animation: 'pulse 1.5s ease-in-out infinite' }}>🌱</div>
             <p style={{ fontFamily: FRANK, fontSize: '18px', color: BIO_CYAN, margin: '12px 0 4px' }}>
-              צ'ופצ'ו בודק את הצמח שלך...
+              {t('checkin.analyzing')}
             </p>
             <p style={{ fontFamily: DM_SANS, fontSize: '13px', color: `${TEXT_MID}60`, margin: 0 }}>
               זה לוקח כ-15 שניות
             </p>
+          </div>
+        )}
+
+        {/* Retry after analysis failure */}
+        {canRetry && (
+          <div style={{ textAlign: 'center', padding: '16px 0', marginBottom: '16px' }}>
+            <p style={{ fontFamily: DM_SANS, fontSize: '13px', color: '#e06060', marginBottom: '12px' }}>
+              {error}
+            </p>
+            <button
+              onClick={retryAnalysis}
+              style={{
+                padding: '10px 24px', borderRadius: '8px', border: 'none',
+                background: BIO_CYAN, color: '#050d0a',
+                fontFamily: FRANK, fontWeight: 700, fontSize: '14px', cursor: 'pointer',
+              }}
+            >
+              {t('checkin.retryButton')}
+            </button>
           </div>
         )}
 
@@ -234,7 +339,7 @@ export function NewTrackerModal({ onClose, onCreated, gardenPlantId }: Props) {
           currentTier={profile?.subscription_tier ?? 'free'}
         />
 
-        {!isAnalyzing && !upgradeOpen && (
+        {!isAnalyzing && !upgradeOpen && !canRetry && (
           <form onSubmit={handleSubmit}>
             {/* Plant selector */}
             {gardenPlants.length > 0 && (
@@ -418,7 +523,7 @@ export function NewTrackerModal({ onClose, onCreated, gardenPlantId }: Props) {
               />
             </div>
 
-            {error && (
+            {error && !canRetry && (
               <p style={{ fontFamily: DM_SANS, fontSize: '13px', color: '#e06060', textAlign: 'right', marginBottom: '16px' }}>
                 {error}
               </p>

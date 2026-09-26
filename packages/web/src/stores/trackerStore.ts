@@ -127,6 +127,22 @@ interface TrackerState {
     locationDescription?: string;
   }) => Promise<Tracker>;
   deleteTracker: (id: string) => Promise<void>;
+  /** Phase 1: upload photo + create checkin row (no AI). Fast — returns in seconds. */
+  createCheckin: (
+    trackerId: string,
+    imageBase64: string,
+    mimeType: string,
+    notes?: string,
+  ) => Promise<{ checkin_id: string; used_credit: boolean }>;
+  /** Phase 2: run AI analysis on an existing checkin. Sets isAnalyzing while running. */
+  analyzeCheckin: (
+    trackerId: string,
+    checkinId: string,
+    imageBase64: string,
+    mimeType: string,
+    priorCredit?: boolean,
+  ) => Promise<CheckinResult>;
+  /** Convenience: createCheckin then analyzeCheckin in one call. */
   addCheckin: (
     trackerId: string,
     imageBase64: string,
@@ -211,21 +227,20 @@ export const useTrackerStore = create<TrackerState>((set, get) => ({
     }
   },
 
-  addCheckin: async (trackerId, imageBase64, mimeType, notes) => {
+  createCheckin: async (trackerId, imageBase64, mimeType, notes) => {
     const token = getToken();
     if (!token) throw new Error('Not authenticated');
 
-    set({ isAnalyzing: true });
+    const ctrl = new AbortController();
+    const timer = setTimeout(() => ctrl.abort(), 45_000); // 45s for upload + compress
     try {
-      // Use raw fetch so we can inspect 429 body properly
       const res = await fetch(`${API_BASE}/api/trackers/${trackerId}/checkin`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`,
-        },
-        body: JSON.stringify({ imageBase64, mimeType, notes }),
+        method:  'POST',
+        headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+        body:    JSON.stringify({ imageBase64, mimeType, notes }),
+        signal:  ctrl.signal,
       });
+      clearTimeout(timer);
 
       if (res.status === 403) {
         const data = await res.json().catch(() => ({}));
@@ -234,21 +249,61 @@ export const useTrackerStore = create<TrackerState>((set, get) => ({
         err.limitData = { limit: data.limit, current: data.current, resetsAt: data.resets_at };
         throw err;
       }
-
       if (res.status === 429) {
-        const data = await res.json();
-        const err = new Error('limit_exceeded') as any;
+        const data = await res.json().catch(() => ({}));
+        const err: any = new Error('limit_exceeded');
         err.limitData = { tier: data.tier, limit: data.limit, limitType: data.type };
         throw err;
       }
-
       if (res.status === 422) {
         const data = await res.json().catch(() => ({}));
-        const err: any = new Error(data.message || 'התמונה גדולה מדי לניתוח');
+        const err: any = new Error(data.message || 'image_too_large');
         err.errorCode = data.error_code || 'image_too_large';
         throw err;
       }
+      if (!res.ok) {
+        const data = await res.json().catch(() => ({}));
+        const err: any = new Error(data.message || data.error || `HTTP ${res.status}`);
+        err.errorCode = data.error_code || 'unknown';
+        throw err;
+      }
 
+      const body = await res.json();
+      return { checkin_id: body.checkin_id as string, used_credit: !!(body.used_credit) };
+    } catch (err: any) {
+      clearTimeout(timer);
+      if (err.name === 'AbortError') {
+        const te: any = new Error('timeout');
+        te.errorCode = 'timeout';
+        throw te;
+      }
+      throw err;
+    }
+  },
+
+  analyzeCheckin: async (trackerId, checkinId, imageBase64, mimeType, priorCredit = false) => {
+    const token = getToken();
+    if (!token) throw new Error('Not authenticated');
+
+    const ctrl  = new AbortController();
+    const timer = setTimeout(() => ctrl.abort(), 90_000); // 90s; server times out at 50s
+    set({ isAnalyzing: true });
+    try {
+      const res = await fetch(`${API_BASE}/api/trackers/${trackerId}/checkins/${checkinId}/analyze`, {
+        method:  'POST',
+        headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+        body:    JSON.stringify({ imageBase64, mimeType }),
+        signal:  ctrl.signal,
+      });
+      clearTimeout(timer);
+
+      if (res.status === 403) {
+        const data = await res.json().catch(() => ({}));
+        const err: any = new Error(data.error || 'forbidden');
+        err.errorCode = data.error;
+        err.limitData = { limit: data.limit, current: data.current, resetsAt: data.resets_at };
+        throw err;
+      }
       if (!res.ok) {
         const data = await res.json().catch(() => ({}));
         const err: any = new Error(data.message || data.error || `HTTP ${res.status}`);
@@ -257,19 +312,37 @@ export const useTrackerStore = create<TrackerState>((set, get) => ({
       }
 
       const result: CheckinResult = await res.json();
+      // Merge priorCredit (consumed in phase 1)
+      const merged: CheckinResult = { ...result, used_credit: result.used_credit || priorCredit };
 
-      // Update tracker's latest checkin in store
       set(state => ({
         trackers: state.trackers.map(t =>
-          t.id === trackerId
-            ? { ...t, latest_checkin: result.checkin }
-            : t
+          t.id === trackerId ? { ...t, latest_checkin: merged.checkin } : t
         ),
       }));
-
-      return result;
+      return merged;
+    } catch (err: any) {
+      clearTimeout(timer);
+      if (err.name === 'AbortError') {
+        const te: any = new Error('timeout');
+        te.errorCode = 'timeout';
+        throw te;
+      }
+      throw err;
     } finally {
       set({ isAnalyzing: false });
+    }
+  },
+
+  addCheckin: async (trackerId, imageBase64, mimeType, notes) => {
+    const { createCheckin, analyzeCheckin } = get();
+    const { checkin_id, used_credit } = await createCheckin(trackerId, imageBase64, mimeType, notes);
+    try {
+      return await analyzeCheckin(trackerId, checkin_id, imageBase64, mimeType, used_credit);
+    } catch (err: any) {
+      // Attach checkin_id so callers can offer a retry without re-uploading
+      err.checkin_id = checkin_id;
+      throw err;
     }
   },
 

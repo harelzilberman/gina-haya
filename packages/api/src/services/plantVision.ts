@@ -334,7 +334,7 @@ due_in_days: מתי לבצע את המשימה (1-14 ימים). priority: high=�
         ],
       },
     ],
-  }, { headers: ANTHROPIC_HEADERS, timeout: 90000 })).data;
+  }, { headers: ANTHROPIC_HEADERS, timeout: 50000 })).data;
 
   // Persist real token data — fire-and-forget, never blocks the response
   void logApiUsage({ userId, endpoint: 'vision_tracker_checkin', model: TRACKER_VISION_MODEL, usage: response.usage });
