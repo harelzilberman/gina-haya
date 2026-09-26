@@ -2,6 +2,9 @@
   "title": "My Garden",
   "noGarden": "You don't have a garden yet. Let's start!",
   "createGarden": "Create new garden",
+  "emptyTitle": "No garden yet",
+  "emptyDesc": "A garden is your workspace for plants, trackers, and tasks.",
+  "createFirst": "Create my first garden",
   "gardenName": "Garden name",
   "location": "Region",
   "soilType": {

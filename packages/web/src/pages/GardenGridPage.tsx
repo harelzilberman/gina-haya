@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { useGardenStore } from '../stores/gardenStore';
 import { useGardenSwitcherStore } from '../stores/gardenSwitcherStore';
 import { useTrackerStore } from '../stores/trackerStore';
@@ -25,6 +26,8 @@ export function GardenGridPage() {
   // which syncs into gardenStore too. Calling it again here caused two concurrent
   // /api/garden fetches to race and clobber each other's result. Every other page
   // that reads garden state (GardensPage, MapPage) follows the same read-only pattern.
+  const { t, i18n } = useTranslation('garden');
+  const isHe = i18n.language === 'he';
   const { activeGarden } = useGardenStore();
   const { isLoading } = useGardenSwitcherStore();
   const { trackers, loadTrackers } = useTrackerStore();
@@ -52,9 +55,68 @@ export function GardenGridPage() {
 
   if (!activeGarden) {
     return (
-      <div style={{ backgroundColor: NIGHT, minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-        <p style={{ fontFamily: DM_SANS, fontSize: '15px', color: TEXT_MID }}>אין לך גינה עדיין</p>
-      </div>
+      <>
+        <div
+          dir={isHe ? 'rtl' : 'ltr'}
+          style={{
+            backgroundColor: NIGHT,
+            minHeight: '100vh',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            padding: '24px',
+          }}
+        >
+          <div style={{
+            textAlign: 'center',
+            maxWidth: '360px',
+            display: 'flex',
+            flexDirection: 'column',
+            alignItems: 'center',
+            gap: '12px',
+          }}>
+            <div style={{ fontSize: '56px', lineHeight: 1 }}>🌱</div>
+            <h2 style={{
+              fontFamily: FRANK,
+              fontSize: '22px',
+              color: BIO_CYAN,
+              margin: 0,
+              fontWeight: 700,
+            }}>
+              {t('emptyTitle')}
+            </h2>
+            <p style={{
+              fontFamily: DM_SANS,
+              fontSize: '14px',
+              color: TEXT_MID,
+              margin: '0 0 8px',
+              lineHeight: 1.6,
+            }}>
+              {t('emptyDesc')}
+            </p>
+            <button
+              onClick={() => setShowCreateGarden(true)}
+              style={{
+                padding:         '13px 28px',
+                backgroundColor: BIO_CYAN,
+                color:           NIGHT,
+                border:          'none',
+                borderRadius:    '100px',
+                fontFamily:      FRANK,
+                fontSize:        '15px',
+                fontWeight:      700,
+                cursor:          'pointer',
+                transition:      'filter 0.2s',
+              }}
+              onMouseEnter={e => { (e.currentTarget as HTMLElement).style.filter = 'brightness(1.1)'; }}
+              onMouseLeave={e => { (e.currentTarget as HTMLElement).style.filter = 'none'; }}
+            >
+              {t('createFirst')}
+            </button>
+          </div>
+        </div>
+        <CreateGardenModal isOpen={showCreateGarden} onClose={() => setShowCreateGarden(false)} />
+      </>
     );
   }
 
@@ -81,12 +143,12 @@ export function GardenGridPage() {
   return (
     <>
       <div style={{ backgroundColor: NIGHT, minHeight: '100vh' }}>
-        <div style={{ maxWidth: '760px', margin: '0 auto', padding: '20px 16px 60px', direction: 'rtl' }}>
+        <div style={{ maxWidth: '760px', margin: '0 auto', padding: '20px 16px 60px', direction: isHe ? 'rtl' : 'ltr' }}>
 
           {/* Header row: garden switcher + label */}
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '18px' }}>
             <h1 style={{ fontFamily: FRANK, fontWeight: 700, fontSize: '20px', color: TEXT_MID, margin: 0 }}>
-              🌱 הגינה שלי
+              🌱 {t('title')}
             </h1>
             <GardenSwitcher onCreateGarden={() => setShowCreateGarden(true)} />
           </div>
