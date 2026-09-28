@@ -12,3 +12,5 @@ build/
 .claude/settings.local.json
 scripts/vision-eval/
 _audit/
+
+calendar_output.json
