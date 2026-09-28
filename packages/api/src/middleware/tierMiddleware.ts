@@ -1,6 +1,6 @@
 import type { Request, Response, NextFunction } from 'express';
 import { db } from '../db/client';
-import { getLimits, type TierLimits } from '../config/tiers';
+import { getLimits, TIER_LIMITS, type TierLimits } from '../config/tiers';
 import { sendGrantFailureAlert } from '../services/email';
 
 declare global {
@@ -191,6 +191,9 @@ export async function attachTier(req: Request, res: Response, next: NextFunction
       }
     }
 
+    if (!(tier in TIER_LIMITS)) {
+      console.warn(`[attachTier] unknown tier="${tier}" for user=${userId} — falling back to free limits`);
+    }
     req.tier = tier;
     req.limits = getLimits(tier);
   } catch {

@@ -366,7 +366,7 @@ billingRouter.post('/play/verify', verifyToken, async (req: any, res) => {
     }
 
     // Upsert subscription record (idempotent — safe to call twice with same token)
-    await db.from('user_subscriptions').upsert(
+    const { error: upsertSubError } = await db.from('user_subscriptions').upsert(
       {
         user_id:          userId,
         platform:         'google_play',
@@ -381,12 +381,48 @@ billingRouter.post('/play/verify', verifyToken, async (req: any, res) => {
       },
       { onConflict: 'purchase_token' }
     );
+    if (upsertSubError) {
+      const maskedToken = purchaseToken.slice(0, 20);
+      console.error(
+        `[play/verify] user_subscriptions upsert FAILED user=${userId} productId=${productId} token=${maskedToken}:`,
+        upsertSubError
+      );
+      await sendGrantFailureAlert({
+        context:       'tier_grant',
+        userId,
+        userEmail:     undefined,
+        productOrTier: `${productId} (${tier})`,
+        transactionId: maskedToken,
+        provider:      'google_play',
+        errorMessage:  upsertSubError.message,
+      });
+      res.status(500).json({ error: 'Failed to record subscription' });
+      return;
+    }
 
     // Update user's tier
-    await db.from('users').update({
+    const { error: tierUpdateError } = await db.from('users').update({
       subscription_tier: tier,
       updated_at: new Date().toISOString(),
     }).eq('id', userId);
+    if (tierUpdateError) {
+      const maskedToken = purchaseToken.slice(0, 20);
+      console.error(
+        `[play/verify] users.update FAILED user=${userId} productId=${productId} token=${maskedToken}:`,
+        tierUpdateError
+      );
+      await sendGrantFailureAlert({
+        context:       'tier_grant',
+        userId,
+        userEmail:     undefined,
+        productOrTier: `${productId} (${tier})`,
+        transactionId: maskedToken,
+        provider:      'google_play',
+        errorMessage:  tierUpdateError.message,
+      });
+      res.status(500).json({ error: 'Failed to grant subscription tier' });
+      return;
+    }
 
     // Acknowledge the purchase (unacknowledged purchases auto-refund after 3 days)
     const alreadyAcked =
