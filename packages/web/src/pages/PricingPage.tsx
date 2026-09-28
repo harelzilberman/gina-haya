@@ -244,27 +244,6 @@ export function PricingPage() {
 
       <div dir={isHe ? 'rtl' : 'ltr'} style={{ minHeight: '100vh', background: NIGHT, fontFamily: EN_HEADING }}>
 
-        {/* ── Launch free mode banner ── */}
-        <div style={{
-          maxWidth: '1160px', margin: '0 auto',
-          padding: '24px 20px 0',
-          animation: 'pricingFadeIn 0.5s ease both',
-        }}>
-          <div style={{
-            background: 'rgba(0,229,195,0.07)',
-            border: '1px solid rgba(0,229,195,0.2)',
-            borderRadius: '12px',
-            padding: '16px',
-            textAlign: 'center',
-            marginBottom: '24px',
-            fontSize: '15px',
-            color: BIO_CYAN,
-            fontWeight: 600,
-          }}>
-            {t('pricing.launchBanner')}
-          </div>
-        </div>
-
         {/* ── Header ── */}
         <div style={{
           background: `linear-gradient(180deg, ${NIGHT_MID} 0%, ${NIGHT} 100%)`,
