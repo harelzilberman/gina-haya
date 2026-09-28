@@ -10,3 +10,5 @@ build/
 !packages/shared/dist/
 .claude/worktrees/
 .claude/settings.local.json
+scripts/vision-eval/
+_audit/
