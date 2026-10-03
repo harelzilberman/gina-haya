@@ -14,7 +14,9 @@ import {
   TIER_LABEL_HE,
   mapSubscriptionState,
   isActiveState,
+  extractBasePlanId,
 } from '../config/playProducts';
+import { acknowledgeIfNeeded } from '../services/playAck';
 
 export const billingRouter: IRouter = Router();
 
@@ -322,18 +324,11 @@ billingRouter.post('/play/verify', verifyToken, async (req: any, res) => {
       return;
     }
 
-    if (!isActiveState(sub.subscriptionState)) {
-      res.status(402).json({
-        error: 'Subscription is not active',
-        state: sub.subscriptionState,
-      });
-      return;
-    }
-
     const userId: string = req.user.id;
     const lineItem = sub.lineItems?.[0] ?? {};
     const expiresAt: string | null = lineItem.expiryTime ?? null;
     const status = mapSubscriptionState(sub.subscriptionState);
+    const basePlanId = extractBasePlanId(sub);
 
     // Security: reject token already claimed by a different live user.
     // Three cases — keep them explicit; the distinction is the whole point:
@@ -365,6 +360,55 @@ billingRouter.post('/play/verify', verifyToken, async (req: any, res) => {
       // Case A — same user, fall through
     }
 
+    if (!isActiveState(sub.subscriptionState)) {
+      // Pending payment (slow method). Record the token against this user BEFORE
+      // returning 402, so that when the payment settles the RTDN handler (or the
+      // reconcile cron) can find the owner, grant the tier and acknowledge —
+      // without depending on the user reopening the app within Google's 3-day
+      // auto-refund window. No tier is granted here.
+      if (status === 'pending') {
+        const { error: pendingErr } = await db.from('user_subscriptions').upsert(
+          {
+            user_id:          userId,
+            platform:         'google_play',
+            purchase_token:   purchaseToken,
+            product_id:       productId,
+            base_plan_id:     basePlanId,
+            expires_at:       expiresAt,
+            status:           'pending',
+            acknowledged:     false,
+            raw_notification: sub,
+            updated_at:       new Date().toISOString(),
+          },
+          { onConflict: 'purchase_token' }
+        );
+        if (pendingErr) {
+          // Non-fatal for the response (the user still gets the 402 message), but
+          // without this row a settled payment cannot be granted server-side.
+          console.error(
+            `[play/verify] pending row upsert FAILED user=${userId} productId=${productId} ` +
+            `token=${purchaseToken.slice(0, 20)}:`, pendingErr
+          );
+          await sendGrantFailureAlert({
+            context:       'tier_grant',
+            userId,
+            userEmail:     undefined,
+            productOrTier: `${productId} (${tier}, pending)`,
+            transactionId: purchaseToken.slice(0, 20),
+            provider:      'google_play',
+            errorMessage:  `pending row not recorded: ${pendingErr.message}`,
+          });
+        } else {
+          console.log(`[play/verify] recorded pending purchase user=${userId} productId=${productId}`);
+        }
+      }
+      res.status(402).json({
+        error: 'Subscription is not active',
+        state: sub.subscriptionState,
+      });
+      return;
+    }
+
     // Upsert subscription record (idempotent — safe to call twice with same token)
     const { error: upsertSubError } = await db.from('user_subscriptions').upsert(
       {
@@ -372,7 +416,7 @@ billingRouter.post('/play/verify', verifyToken, async (req: any, res) => {
         platform:         'google_play',
         purchase_token:   purchaseToken,
         product_id:       productId,
-        base_plan_id:     null,
+        base_plan_id:     basePlanId,
         expires_at:       expiresAt,
         status,
         acknowledged:     false,
@@ -425,24 +469,7 @@ billingRouter.post('/play/verify', verifyToken, async (req: any, res) => {
     }
 
     // Acknowledge the purchase (unacknowledged purchases auto-refund after 3 days)
-    const alreadyAcked =
-      sub.acknowledgementState === 'ACKNOWLEDGEMENT_STATE_ACKNOWLEDGED';
-    if (!alreadyAcked) {
-      try {
-        await publisher.purchases.subscriptions.acknowledge({
-          packageName:    PLAY_PACKAGE_NAME,
-          subscriptionId: productId,
-          token:          purchaseToken,
-          requestBody:    {},
-        });
-        await db.from('user_subscriptions')
-          .update({ acknowledged: true, updated_at: new Date().toISOString() })
-          .eq('purchase_token', purchaseToken);
-      } catch (ackErr: any) {
-        // Non-fatal: Google may already have it acknowledged
-        console.warn('[play/verify] acknowledge failed (non-fatal):', ackErr.message);
-      }
-    }
+    await acknowledgeIfNeeded(publisher, sub, productId, purchaseToken, '[play/verify]');
 
     res.json({
       ok:            true,
@@ -533,8 +560,9 @@ billingRouter.post('/play/rtdn', async (req: Request, res) => {
 
     // 4. Fetch current state from Google (source of truth; don't trust notificationType alone)
     let sub: any;
+    let publisher: ReturnType<typeof getAndroidPublisherClient>;
     try {
-      const publisher = getAndroidPublisherClient();
+      publisher = getAndroidPublisherClient();
       const resp = await publisher.purchases.subscriptionsv2.get({
         packageName: PLAY_PACKAGE_NAME,
         token:       purchaseToken,
@@ -552,12 +580,17 @@ billingRouter.post('/play/rtdn', async (req: Request, res) => {
     const expiresAt: string | null = lineItem.expiryTime ?? null;
     const active = isActiveState(sub.subscriptionState);
 
-    // Determine tier to apply
+    // Determine tier to apply. null = leave users.subscription_tier untouched.
     const productTier = PLAY_PRODUCT_TO_TIER[subscriptionId];
-    let newTier: string;
+    let newTier: string | null;
     if (active && productTier) {
       // Active or in grace period — keep / restore tier
       newTier = productTier;
+    } else if (status === 'pending' || status === 'unknown') {
+      // Payment still pending (or a state we do not recognise): this token never
+      // granted anything, so it must not take anything away either — the user
+      // may hold a tier from another purchase.
+      newTier = null;
     } else if (status === 'cancelled') {
       // Cancelled but not yet expired — keep access until period end
       const { data: userData, error: userReadError } = await db
@@ -584,6 +617,7 @@ billingRouter.post('/play/rtdn', async (req: Request, res) => {
     const { error: subUpdateError } = await db.from('user_subscriptions').update({
       status,
       expires_at:       expiresAt,
+      base_plan_id:     extractBasePlanId(sub),
       raw_notification: sub,
       updated_at:       new Date().toISOString(),
     }).eq('purchase_token', purchaseToken);
@@ -597,10 +631,25 @@ billingRouter.post('/play/rtdn', async (req: Request, res) => {
       );
     }
 
+    if (newTier === null) {
+      console.log(
+        `[play/rtdn] user=${subRecord.user_id} state=${sub.subscriptionState} status=${status} — tier unchanged`
+      );
+      res.json({ received: true });
+      return;
+    }
+
     const { data: tierUpdateRows, error: tierUpdateError } = await db.from('users').update({
       subscription_tier: newTier,
       updated_at:        new Date().toISOString(),
     }).eq('id', subRecord.user_id).select('id');
+
+    // A payment that settled after the app's verify call got a 402 (pending) is
+    // granted here, and nothing else will acknowledge it — so RTDN must, or Google
+    // refunds it after 3 days. Only acknowledge once the tier write succeeded.
+    if (active && productTier && !tierUpdateError && tierUpdateRows && tierUpdateRows.length > 0) {
+      await acknowledgeIfNeeded(publisher!, sub, subscriptionId, purchaseToken, '[play/rtdn]');
+    }
 
     if (tierUpdateError) {
       console.error(

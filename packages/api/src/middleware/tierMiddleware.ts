@@ -82,6 +82,9 @@ export async function attachTier(req: Request, res: Response, next: NextFunction
             .select('expires_at, status')
             .eq('user_id', userId)
             .eq('platform', 'google_play')
+            // A pending (unsettled) purchase never granted a tier, so it must not
+            // drive the expiry safety net for a tier held via an earlier purchase.
+            .neq('status', 'pending')
             .order('created_at', { ascending: false })
             .limit(1)
             .maybeSingle(),

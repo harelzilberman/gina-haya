@@ -34,8 +34,22 @@ export function mapSubscriptionState(state: string | undefined | null): string {
     case 'SUBSCRIPTION_STATE_PAUSED':           return 'paused';
     case 'SUBSCRIPTION_STATE_CANCELED':         return 'cancelled';
     case 'SUBSCRIPTION_STATE_EXPIRED':          return 'expired';
+    // Payment not yet settled (slow methods: bank transfer, carrier billing).
+    // No access until it settles; RTDN/reconcile grant it then.
+    case 'SUBSCRIPTION_STATE_PENDING':          return 'pending';
+    // A pending payment that never settled — the purchase never existed.
+    case 'SUBSCRIPTION_STATE_PENDING_PURCHASE_CANCELED': return 'expired';
     default:                                    return 'unknown';
   }
+}
+
+/**
+ * Base plan of a subscriptionsv2 response (e.g. 'monthly' / 'yearly').
+ * Server-side value from Google — never trust a client-supplied base plan.
+ */
+export function extractBasePlanId(sub: any): string | null {
+  const id = sub?.lineItems?.[0]?.offerDetails?.basePlanId;
+  return typeof id === 'string' && id.length > 0 ? id : null;
 }
 
 /** Returns true if this status means the user has active access. */

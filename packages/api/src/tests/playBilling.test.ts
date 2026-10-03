@@ -11,6 +11,7 @@ import {
   TIER_LABEL_HE,
   mapSubscriptionState,
   isActiveState,
+  extractBasePlanId,
 } from '../config/playProducts';
 
 // ── helpers ──────────────────────────────────────────────────────────────────
@@ -129,6 +130,7 @@ function simulateTierFromState(
 ): string {
   const active = isActiveState(state);
   if (active && productTier) return productTier;
+  if (status === 'pending' || status === 'unknown') return 'unchanged'; // never granted -> never revokes
   if (status === 'cancelled') return 'current_tier'; // keeps access until expiry
   return 'free';
 }
@@ -136,6 +138,22 @@ assertEqual(simulateTierFromState('SUBSCRIPTION_STATE_EXPIRED',   'expired',   '
 assertEqual(simulateTierFromState('SUBSCRIPTION_STATE_PAUSED',    'paused',    'gardener_pro'), 'free', 'paused -> free');
 assertEqual(simulateTierFromState('SUBSCRIPTION_STATE_ACTIVE',    'active',    'advanced'),     'advanced', 'active -> advanced');
 assertEqual(simulateTierFromState('SUBSCRIPTION_STATE_CANCELED',  'cancelled', 'professional'), 'current_tier', 'cancelled -> keep access');
+assertEqual(simulateTierFromState('SUBSCRIPTION_STATE_PENDING',   'pending',   'advanced'),     'unchanged', 'pending -> tier unchanged');
+
+// ── Test 8: Pending payment states ───────────────────────────────────────────
+console.log('\nTest 8: Pending payment states');
+assertEqual(mapSubscriptionState('SUBSCRIPTION_STATE_PENDING'), 'pending', 'PENDING -> pending');
+assertEqual(mapSubscriptionState('SUBSCRIPTION_STATE_PENDING_PURCHASE_CANCELED'), 'expired', 'PENDING_PURCHASE_CANCELED -> expired');
+assert(!isActiveState('SUBSCRIPTION_STATE_PENDING'), 'PENDING grants no access');
+
+// ── Test 9: Base plan extraction (server-side value) ─────────────────────────
+console.log('\nTest 9: extractBasePlanId');
+assertEqual(extractBasePlanId({ lineItems: [{ offerDetails: { basePlanId: 'yearly' } }] }), 'yearly', 'yearly');
+assertEqual(extractBasePlanId({ lineItems: [{ offerDetails: { basePlanId: 'monthly' } }] }), 'monthly', 'monthly');
+assertEqual(extractBasePlanId({ lineItems: [{}] }), null, 'no offerDetails -> null');
+assertEqual(extractBasePlanId({}), null, 'no lineItems -> null');
+assertEqual(extractBasePlanId(null), null, 'null sub -> null');
+assertEqual(extractBasePlanId({ lineItems: [{ offerDetails: { basePlanId: '' } }] }), null, 'empty -> null');
 
 // ── Summary ───────────────────────────────────────────────────────────────────
 console.log(`\n${'─'.repeat(50)}`);

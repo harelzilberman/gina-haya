@@ -17,8 +17,12 @@ import { db } from '../db/client';
 import { getAndroidPublisherClient } from './googlePlay';
 import {
   mapSubscriptionState,
+  isActiveState,
+  extractBasePlanId,
   PLAY_PACKAGE_NAME,
+  PLAY_PRODUCT_TO_TIER,
 } from '../config/playProducts';
+import { acknowledgeIfNeeded } from './playAck';
 
 // ---------------------------------------------------------------------------
 // Types
@@ -84,7 +88,8 @@ export async function reconcilePlaySubs(opts: {
   token?:     string | null;
   /**
    * When true, query only rows where status is 'active' or 'grace_period'
-   * AND expires_at is more than 25 hours in the past. Used by the scheduled
+   * AND expires_at is more than 25 hours in the past, plus all 'pending'
+   * rows (unsettled payments; granted + acknowledged once settled). Used by the scheduled
    * job to avoid a full table sweep on every daily run.
    * Default: false (full sweep).
    */
@@ -108,9 +113,12 @@ export async function reconcilePlaySubs(opts: {
     // grace row that has not been refreshed by RTDN within this window is a
     // candidate for drift correction. Today this returns zero rows.
     const staleThreshold = new Date(Date.now() - 25 * 60 * 60 * 1000).toISOString();
-    query = query
-      .in('status', ['active', 'grace_period'])
-      .lt('expires_at', staleThreshold);
+    // Pending rows (unsettled payments) are always included, whatever their age:
+    // if RTDN missed the settlement, this is the backstop that grants and
+    // acknowledges before Google's 3-day auto-refund.
+    query = query.or(
+      `and(status.in.(active,grace_period),expires_at.lt."${staleThreshold}"),status.eq.pending`
+    );
   }
 
   const { data: rows, error: fetchError } = await query;
@@ -267,6 +275,7 @@ export async function reconcilePlaySubs(opts: {
         .update({
           status:           r.googleStatus,
           expires_at:       r.googleExpiry,
+          base_plan_id:     extractBasePlanId(freshSub),
           raw_notification: freshSub,
           updated_at:       new Date().toISOString(),
         })
@@ -274,8 +283,34 @@ export async function reconcilePlaySubs(opts: {
 
       if (updateError) {
         needsReview.push({ ...r, needsReview: `DB update failed: ${updateError.message}` });
-      } else {
-        changedCount++;
+        continue;
+      }
+      changedCount++;
+
+      // Pending payment that has since settled: nothing else granted it (the
+      // app got a 402 and RTDN was missed). Grant the tier, then acknowledge.
+      // Other rows keep the original behavior: status/expiry only; attachTier
+      // handles downgrades.
+      const freshState = freshSub.subscriptionState as string | undefined;
+      const tier = r.row.product_id ? PLAY_PRODUCT_TO_TIER[r.row.product_id] : undefined;
+      if (r.row.status === 'pending' && isActiveState(freshState) && tier && r.row.product_id) {
+        const { data: tierRows, error: tierErr } = await db.from('users')
+          .update({ subscription_tier: tier, updated_at: new Date().toISOString() })
+          .eq('id', r.row.user_id!)
+          .select('id');
+        if (tierErr || !tierRows || tierRows.length === 0) {
+          needsReview.push({
+            ...r,
+            needsReview: `Settled pending purchase but tier grant failed: ${tierErr?.message ?? 'user not found'}`,
+          });
+          continue;
+        }
+        const acked = await acknowledgeIfNeeded(
+          publisher!, freshSub, r.row.product_id, r.row.purchase_token, '[reconcile]'
+        );
+        if (!acked) {
+          needsReview.push({ ...r, needsReview: 'Granted settled pending purchase but acknowledge failed — retry before the 3-day refund' });
+        }
       }
     }
   }

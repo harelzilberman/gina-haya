@@ -100,9 +100,10 @@ async function runReconcilePlaySubs(): Promise<void> {
   console.log(`[cron/reconcile] Lock claimed by instance=${instanceId}`);
 
   // ------------------------------------------------------------------
-  // 2. Run the reconcile (targeted: stale active/grace rows only)
-  //    staleOnly=true means we query only status IN ('active','grace_period')
-  //    AND expires_at < now() - 25h. Today this returns zero rows; the
+  // 2. Run the reconcile (targeted: stale active/grace rows + pending rows)
+  //    staleOnly=true means we query status IN ('active','grace_period')
+  //    AND expires_at < now() - 25h, plus every status='pending' row (unsettled
+  //    payments — granted and acknowledged here if RTDN missed the settlement). The
   //    steady-state cost is one DB query and no Google API calls.
   //    apply=true: this job IS the correction mechanism.
   // ------------------------------------------------------------------
