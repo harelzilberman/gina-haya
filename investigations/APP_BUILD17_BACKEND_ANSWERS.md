@@ -4,6 +4,11 @@ Written 3 October 2026 from the website chat. Read-only investigation of `packag
 
 **Update 3 Oct, after owner approval:** §2 and §4 are implemented in the commit that adds this file. Run `packages/api/sql/play_billing_followups.sql` before or right after deploying it. §4 still depends on RTDN delivery working (see §3).
 
+**Update 3 Oct, evening — live checks:**
+- §1: bilingual templates installed in Supabase; signup and reset tested on device, both pass.
+- §6: a free test account was refused a second garden, so LAUNCH_FREE_MODE is off in production.
+- RTDN: a Play Console test notification reached the API (`[play/rtdn] Non-subscription notification, acking` at 19:43 IDT, deploy 2a2a2246). Delivery works now. The §3 hypothesis that delivery is broken is refuted for the present. Why the 2 Oct row was never updated is still unexplained; check it after the 4 Oct 03:30 reconcile.
+
 **Limits of this pass:** the live database and the live Railway API were not reachable from this session (network egress blocked), and the browser had no signed-in session. Everything below is from the code. Items that need a live check say so.
 
 ---
