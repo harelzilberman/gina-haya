@@ -12,5 +12,5 @@ Links:
 - Confirm signup uses `{{ .ConfirmationURL }}`.
 - Reset password uses `{{ .SiteURL }}/reset-password?token_hash={{ .TokenHash }}&type=recovery`. This is the format `ResetPasswordPage.tsx` expects (it calls verifyOtp on tap).
 
-Before saving in the dashboard, compare each button's href with the template currently installed. If the installed one differs, keep the installed href.
+Both links match the templates installed 22–26 Sep 2026. Confirm signup deliberately stays on `{{ .ConfirmationURL }}` so it respects the app's `redirect_to` (ginahaya://auth). In the HTML the reset link's `&` is written as `&amp;`.
 Hebrew is checked by Unicode codepoint (final-letter forms at word end only), never by how a terminal renders it.
