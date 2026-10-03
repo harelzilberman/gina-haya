@@ -22,6 +22,21 @@ const VISION_MODEL = 'claude-opus-4-5';
 // enable Haiku routing without touching image or full-diagnosis paths.
 const CHAT_TEXT_MODEL = process.env.CHAT_TEXT_MODEL ?? MODEL;
 
+// Sampling temperature for Chupchu text chat. Anthropic's default is 1.0,
+// which is too permissive for Hebrew generation — it produces near-miss
+// vocabulary. Set CHAT_TEMPERATURE on Railway to A/B without a deploy.
+const CHAT_TEMPERATURE = (() => {
+  const raw = process.env.CHAT_TEMPERATURE;
+  if (raw === undefined || raw.trim() === '') return 0.4;
+  const parsed = Number(raw);
+  if (!Number.isFinite(parsed) || parsed < 0 || parsed > 1) {
+    console.warn(`[claude] CHAT_TEMPERATURE invalid (${raw}) — falling back to 0.4`);
+    return 0.4;
+  }
+  return parsed;
+})();
+console.log(`[claude] chat temperature=${CHAT_TEMPERATURE}`);
+
 const MAX_TOOL_ITERATIONS = 3;
 
 // ── Static knowledge bases ─────────────────────────────────────────────────
@@ -821,6 +836,7 @@ export async function askChupChu(
     const response = (await axios.post(ANTHROPIC_URL, {
       model: modelToUse,
       max_tokens: maxTokens,
+      temperature: CHAT_TEMPERATURE,
       system: systemBlocks,
       tools: CHUPCHU_TOOLS,
       messages: apiMessages,
