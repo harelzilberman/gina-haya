@@ -56,6 +56,7 @@ export function BillingPage() {
   const [cancelling,        setCancelling]        = useState(false);
   const [cancelledAt,       setCancelledAt]       = useState<string | null>(null);
   const [cancelError,       setCancelError]       = useState<string | null>(null);
+  const [portalUrl,         setPortalUrl]         = useState<string | null>(null);
 
   // Polling state for post-payment tier refresh
   const [polling,      setPolling]      = useState(status === 'success');
@@ -115,6 +116,15 @@ export function BillingPage() {
     return () => { if (pollRef.current) clearInterval(pollRef.current); };
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+
+  // Fetch billing status to get the Lemon Squeezy customer portal URL
+  useEffect(() => {
+    if (!session?.access_token || tier === 'free') return;
+    api.get<{ portalUrl?: string | null }>('/api/billing/status', session.access_token)
+      .then(data => { if (data.portalUrl) setPortalUrl(data.portalUrl); })
+      .catch(() => { /* non-fatal */ });
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [session?.access_token, tier]);
 
   const handleCancel = async () => {
     if (!session?.access_token || cancelling) return;
@@ -300,6 +310,40 @@ export function BillingPage() {
               >
                 {t('upgradeCta')}
               </button>
+            </div>
+          )}
+
+          {/* Manage subscription (Lemon Squeezy portal) */}
+          {portalUrl && (
+            <div style={cardStyle()}>
+              <h3 style={{ fontFamily: isHe ? FRANK : EN_HEADING, fontWeight: 600, fontSize: '16px', color: PARCH, margin: '0 0 6px' }}>
+                {t('manage.title')}
+              </h3>
+              <p style={{ fontFamily: EN_HEADING, fontSize: '13px', color: `${PARCH}66`, margin: '0 0 14px' }}>
+                {t('manage.desc')}
+              </p>
+              <a
+                href={portalUrl}
+                target="_blank"
+                rel="noreferrer"
+                style={{
+                  display:         'inline-block',
+                  padding:         '10px 20px',
+                  borderRadius:    '8px',
+                  border:          `1px solid ${GOLD}55`,
+                  backgroundColor: 'transparent',
+                  fontFamily:      EN_HEADING,
+                  fontSize:        '13px',
+                  fontWeight:      500,
+                  color:           GOLD,
+                  textDecoration:  'none',
+                  transition:      'background-color 0.15s',
+                }}
+                onMouseEnter={e => { (e.currentTarget as HTMLElement).style.backgroundColor = 'rgba(0,229,195,0.1)'; }}
+                onMouseLeave={e => { (e.currentTarget as HTMLElement).style.backgroundColor = 'transparent'; }}
+              >
+                {t('manage.button')}
+              </a>
             </div>
           )}
 

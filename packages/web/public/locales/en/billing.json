@@ -28,22 +28,10 @@
     "polling": "Updating your subscription…",
     "pollTimedOut": "Payment received — the update may take a moment. Refresh the page in a few seconds."
   },
-  "grow": {
-    "checkoutTitle": "Complete Purchase",
-    "paymentNote": "To process your payment, we need your full name and an Israeli mobile phone number.",
-    "fullNameLabel": "Full name",
-    "fullNamePlaceholder": "Jane Smith",
-    "fullNameError": "Full name required — first and last name (at least 2 characters each)",
-    "phoneLabel": "Mobile phone number",
-    "phoneError": "An Israeli mobile number is required (e.g. 0501234567)",
-    "payButton": "Pay",
-    "backButton": "Back",
-    "annualNote": "Annual plan — one-time upfront payment of ₪{{price}}, no auto-renewal. We'll send you a reminder before the subscription ends.",
-    "recurringTitle": "Monthly recurring subscription",
-    "recurringSubtitle": "₪{{price}} will be charged automatically each month until cancelled",
-    "oneTimeTitle": "One-time payment",
-    "oneTimeSubtitle": "Try the plan for one month (₪{{price}}), no auto-renewal",
-    "providerDisclaimer": "Payment is processed in ILS (₪) by Grow, an Israeli payment provider. An Israeli credit card and an Israeli mobile number are required."
+  "manage": {
+    "title": "Manage subscription",
+    "desc": "Update payment details, view invoices, and manage your subscription in the customer portal.",
+    "button": "Manage subscription →"
   },
   "pricing": {
     "header": "Choose your plan",
@@ -65,7 +53,7 @@
     "gardenPackDesc": "10 extra gardens for ₪19/month. Multiple packs can be purchased.",
     "gardenPackExample": "Example: {{total}} gardens = ₪{{base}} + ₪19 + ₪19 = ₪{{sum}}/month",
     "gardenPackBtn": "Add Pack",
-    "providerNote": "Payment is processed in ILS (₪) by Grow, an Israeli payment provider. An Israeli credit card and an Israeli mobile number are required.",
+    "providerNote": "Payment is processed by Lemon Squeezy.",
     "features": {
       "dailyCalendar": "Daily biodynamic calendar",
       "moonPhase": "Moon phase + sowing score",

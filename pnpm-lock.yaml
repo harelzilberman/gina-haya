@@ -104,18 +104,12 @@ importers:
       pg:
         specifier: ^8.11.0
         version: 8.20.0
-      qs:
-        specifier: ^6.15.3
-        version: 6.15.3
       resend:
         specifier: ^6.9.3
         version: 6.12.3
       sharp:
         specifier: ^0.33.0
         version: 0.33.5
-      stripe:
-        specifier: ^20.4.1
-        version: 20.4.1(@types/node@22.20.1)
       web-push:
         specifier: ^3.6.7
         version: 3.6.7
@@ -141,9 +135,6 @@ importers:
       '@types/pg':
         specifier: ^8.11.0
         version: 8.20.0
-      '@types/qs':
-        specifier: ^6.15.1
-        version: 6.15.1
       tsx:
         specifier: ^4.7.0
         version: 4.21.0
@@ -3857,15 +3848,6 @@ packages:
     resolution: {integrity: sha512-6fPc+R4ihwqP6N/aIv2f1gMH8lOVtWQHoqC4yK6oSDVVocumAsfCqjkXnqiYMhmMwS/mEHLp7Vehlt3ql6lEig==}
     engines: {node: '>=8'}
 
-  stripe@20.4.1:
-    resolution: {integrity: sha512-axCguHItc8Sxt0HC6aSkdVRPffjYPV7EQqZRb2GkIa8FzWDycE7nHJM19C6xAIynH1Qp1/BHiopSi96jGBxT0w==}
-    engines: {node: '>=16'}
-    peerDependencies:
-      '@types/node': '>=16'
-    peerDependenciesMeta:
-      '@types/node':
-        optional: true
-
   style-loader@4.0.0:
     resolution: {integrity: sha512-1V4WqhhZZgjVAVJyt7TdDPZoPBPNHbekX4fWnCJL1yQukhCeZhJySUL+gL9y6sNdN95uEOS83Y55SqHcP7MzLA==}
     engines: {node: '>= 18.12.0'}
@@ -4972,7 +4954,7 @@ snapshots:
       react-refresh: 0.18.0
       remotion: 4.0.459(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
       source-map: 0.7.3
-      style-loader: 4.0.0(webpack@5.105.0)
+      style-loader: 4.0.0(webpack@5.105.0(esbuild@0.25.0)(postcss@8.5.10))
       webpack: 5.105.0(esbuild@0.25.0)(postcss@8.5.10)
     transitivePeerDependencies:
       - '@minify-html/node'
@@ -8046,11 +8028,7 @@ snapshots:
 
   strip-json-comments@3.1.1: {}
 
-  stripe@20.4.1(@types/node@22.20.1):
-    optionalDependencies:
-      '@types/node': 22.20.1
-
-  style-loader@4.0.0(webpack@5.105.0):
+  style-loader@4.0.0(webpack@5.105.0(esbuild@0.25.0)(postcss@8.5.10)):
     dependencies:
       webpack: 5.105.0(esbuild@0.25.0)(postcss@8.5.10)
 

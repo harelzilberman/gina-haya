@@ -9,7 +9,6 @@ import { EN_HEADING } from '../../styles/fonts';
 const EARTH = '#050d0a';
 const GOLD  = '#00e5c3';
 const PARCH = '#b0cfbf';
-const SAGE  = '#4A9C68';
 const FRANK = '"Frank Ruhl Libre", Georgia, serif';
 
 export interface CartItem {
@@ -21,28 +20,7 @@ export interface CartItem {
 interface Props {
   cart: CartItem[];
   onClose: () => void;
-  onSuccess: (credits: Credits) => void;  // kept for interface compatibility; not called in Grow path
-}
-
-type Step = 'summary' | 'details' | 'processing';
-
-const ISRAELI_MOBILE_RE = /^05\d{8}$/;
-
-function validateFullName(v: string): string | null {
-  const words = v.trim().split(/\s+/);
-  return words.length >= 2 && words.every(w => w.length >= 2)
-    ? null
-    : 'נדרש שם מלא — שם פרטי ושם משפחה (לפחות 2 תווים כל אחד)';
-}
-
-function validatePhone(v: string): string | null {
-  return ISRAELI_MOBILE_RE.test(v) ? null : 'מספר נייד לא תקין — לדוגמה 0501234567';
-}
-
-function normalizePhone(raw: string): string {
-  const digits = raw.replace(/\D/g, '');
-  if (digits.startsWith('972')) return '0' + digits.slice(3);
-  return digits;
+  onSuccess: (credits: Credits) => void;  // kept for interface compatibility
 }
 
 const PULSE_CSS = `
@@ -56,51 +34,40 @@ const PULSE_CSS = `
 export function CheckoutModal({ cart, onClose }: Props) {
   const { session, isAuthReady } = useAuthStore();
   const navigate = useNavigate();
-  const [step, setStep]               = useState<Step>('summary');
-  const [fullName, setFullName]       = useState('');
-  const [fullNameErr, setFullNameErr] = useState<string | null>(null);
-  const [phone, setPhone]             = useState('');
-  const [phoneErr, setPhoneErr]       = useState<string | null>(null);
-  const [error, setError]             = useState('');
+  const [processing, setProcessing] = useState(false);
+  const [error, setError]           = useState('');
 
-  const total = cart.reduce((sum, item) => sum + item.price, 0);
+  // Lemon Squeezy does not support multi-item carts — take the first item.
+  const item = cart[0];
+  const total = item?.price ?? 0;
+  const hasMultiple = cart.length > 1;
 
-  async function handlePay() {
-    // Validate both fields and surface errors to the user
-    const nameErr = validateFullName(fullName);
-    const pErr    = validatePhone(phone);
-    setFullNameErr(nameErr);
-    setPhoneErr(pErr);
-    if (nameErr || pErr) return;
+  async function handleCheckout() {
+    if (!item) return;
 
-    // Safety net — should not be reachable since the auth gate hides the form
     if (!session?.access_token) {
       setError('כדי לשלם יש להתחבר לחשבון.');
       return;
     }
 
-    setStep('processing');
+    setProcessing(true);
     setError('');
 
     try {
-      const data = await api.post<{ paymentUrl?: string }>(
-        '/api/shop/grow/create-payment',
-        {
-          fullName: fullName.trim(),
-          phone,
-          cart: cart.map(item => ({ productId: item.productId, quantity: 1 })),
-        },
+      const data = await api.post<{ checkoutUrl?: string }>(
+        '/api/shop/checkout',
+        { productId: item.productId },
         session.access_token,
       );
 
-      if (data.paymentUrl) {
-        window.location.href = data.paymentUrl;
+      if (data.checkoutUrl) {
+        window.location.href = data.checkoutUrl;
       } else {
         throw new Error('לא התקבל קישור לתשלום');
       }
     } catch (err: any) {
       setError(err.message || 'משהו השתבש. נסה שוב.');
-      setStep('details');
+      setProcessing(false);
     }
   }
 
@@ -117,7 +84,7 @@ export function CheckoutModal({ cart, onClose }: Props) {
           padding: '16px',
         }}
         onClick={e => {
-          if (step === 'summary' && e.target === e.currentTarget) onClose();
+          if (!processing && e.target === e.currentTarget) onClose();
         }}
       >
         <div
@@ -142,31 +109,25 @@ export function CheckoutModal({ cart, onClose }: Props) {
             justifyContent: 'space-between',
           }}>
             <h2 style={{ fontFamily: FRANK, fontSize: '18px', color: GOLD, margin: 0 }}>
-              {step === 'summary'    ? 'סיכום הזמנה'
-               : step === 'details' ? 'פרטי תשלום'
-               : 'מעבד...'}
+              {processing ? 'מעבד...' : 'סיכום הזמנה'}
             </h2>
-            {step !== 'processing' && (
+            {!processing && (
               <button
-                onClick={() => {
-                  if (step === 'details') { setStep('summary'); return; }
-                  onClose();
-                }}
+                onClick={onClose}
                 style={{ background: 'none', border: 'none', color: 'rgba(176,207,191,0.4)', cursor: 'pointer', fontSize: '18px' }}
               >
-                {step === 'details' ? '←' : '✕'}
+                ✕
               </button>
             )}
           </div>
 
           <div style={{ padding: '24px' }}>
-
-            {/* ── Processing ── */}
-            {step === 'processing' && (
+            {/* Processing */}
+            {processing && (
               <div style={{ textAlign: 'center', padding: '32px 0' }}>
                 <div className="chk-pulse" style={{ fontSize: '60px', marginBottom: '16px' }}>🌕</div>
                 <p style={{ fontFamily: FRANK, fontSize: '18px', color: GOLD, margin: '0 0 6px' }}>
-                  מתחבר לגרו...
+                  מתחבר לתשלום...
                 </p>
                 <p style={{ fontFamily: EN_HEADING, fontSize: '13px', color: `${PARCH}60`, margin: 0 }}>
                   רגע אחד
@@ -174,18 +135,15 @@ export function CheckoutModal({ cart, onClose }: Props) {
               </div>
             )}
 
-            {/* ── Details: name + phone ── */}
-            {step === 'details' && (
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '18px' }}>
-
+            {/* Summary */}
+            {!processing && (
+              <>
                 {!isAuthReady ? (
-                  /* Auth still initializing */
                   <p style={{ fontFamily: EN_HEADING, fontSize: '14px', color: `${PARCH}88`, margin: 0, textAlign: 'center', padding: '24px 0' }}>
                     טוען...
                   </p>
 
                 ) : !session ? (
-                  /* Not signed in — prompt login; cart is already saved in localStorage */
                   <div style={{ textAlign: 'center', padding: '16px 0', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '20px' }}>
                     <p style={{ fontFamily: EN_HEADING, fontSize: '15px', color: PARCH, margin: 0, lineHeight: 1.6 }}>
                       כדי להשלים רכישה צריך להתחבר לחשבון.
@@ -206,108 +164,64 @@ export function CheckoutModal({ cart, onClose }: Props) {
                     </button>
                   </div>
 
-                ) : (
-                  /* Authenticated — show the payment form */
+                ) : item ? (
                   <>
-                    <p style={{ fontFamily: EN_HEADING, fontSize: '14px', color: `${PARCH}CC`, margin: 0 }}>
-                      לצורך עיבוד התשלום נדרשים שם מלא ומספר טלפון נייד ישראלי.
-                    </p>
-
-                    {/* Full name */}
-                    <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
-                      <label
-                        htmlFor="shop-fullname"
-                        style={{ fontFamily: EN_HEADING, fontSize: '13px', fontWeight: 600, color: PARCH }}
-                      >
-                        שם מלא
-                      </label>
-                      <input
-                        id="shop-fullname"
-                        type="text"
-                        dir="rtl"
-                        placeholder="ישראל ישראלי"
-                        value={fullName}
-                        onChange={e => {
-                          setFullName(e.target.value);
-                          if (e.target.value.length > 0) setFullNameErr(validateFullName(e.target.value));
-                          else setFullNameErr(null);
-                        }}
-                        onBlur={() => {
-                          if (fullName.length > 0) setFullNameErr(validateFullName(fullName));
-                        }}
-                        style={{
-                          width: '100%', boxSizing: 'border-box',
-                          padding: '11px 14px', borderRadius: '8px',
-                          border: fullNameErr
-                            ? '1px solid rgba(192,57,43,0.7)'
-                            : validateFullName(fullName) === null && fullName.length > 0
-                            ? `1px solid ${SAGE}88`
-                            : '1px solid rgba(0,229,195,0.2)',
-                          backgroundColor: 'rgba(9,20,16,0.6)',
-                          fontFamily: EN_HEADING, fontSize: '15px', color: PARCH,
-                          outline: 'none',
-                        }}
-                      />
-                      {fullNameErr && (
-                        <p style={{ fontFamily: EN_HEADING, fontSize: '12px', color: '#C0372A', margin: 0 }}>
-                          {fullNameErr}
-                        </p>
-                      )}
+                    {/* One item */}
+                    <div style={{ marginBottom: '20px' }}>
+                      <div style={{
+                        display: 'flex', justifyContent: 'space-between',
+                        alignItems: 'center',
+                        padding: '10px 0',
+                        borderBottom: '1px solid rgba(0,229,195,0.08)',
+                      }}>
+                        <span style={{ fontFamily: EN_HEADING, fontSize: '14px', color: PARCH }}>
+                          {item.name}
+                        </span>
+                        <span style={{ fontFamily: FRANK, fontSize: '15px', color: GOLD, fontWeight: 700 }}>
+                          ₪{total % 1 === 0 ? total : total.toFixed(1)}
+                        </span>
+                      </div>
                     </div>
 
-                    {/* Phone */}
-                    <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
-                      <label
-                        htmlFor="shop-phone"
-                        style={{ fontFamily: EN_HEADING, fontSize: '13px', fontWeight: 600, color: PARCH }}
-                      >
-                        מספר טלפון נייד
-                      </label>
-                      <input
-                        id="shop-phone"
-                        type="tel"
-                        dir="ltr"
-                        inputMode="numeric"
-                        autoComplete="tel-national"
-                        placeholder="0501234567"
-                        value={phone}
-                        onChange={e => {
-                          const v = normalizePhone(e.target.value).slice(0, 10);
-                          setPhone(v);
-                          if (v.length > 0) setPhoneErr(validatePhone(v));
-                          else setPhoneErr(null);
-                        }}
-                        onBlur={() => {
-                          if (phone.length > 0) setPhoneErr(validatePhone(phone));
-                        }}
-                        style={{
-                          width: '100%', boxSizing: 'border-box',
-                          padding: '11px 14px', borderRadius: '8px',
-                          border: phoneErr
-                            ? '1px solid rgba(192,57,43,0.7)'
-                            : ISRAELI_MOBILE_RE.test(phone)
-                            ? `1px solid ${SAGE}88`
-                            : '1px solid rgba(0,229,195,0.2)',
-                          backgroundColor: 'rgba(9,20,16,0.6)',
-                          fontFamily: EN_HEADING, fontSize: '15px', color: PARCH,
-                          outline: 'none', letterSpacing: '0.06em',
-                        }}
-                      />
-                      {phoneErr && (
-                        <p style={{ fontFamily: EN_HEADING, fontSize: '12px', color: '#C0372A', margin: 0 }}>
-                          {phoneErr}
-                        </p>
-                      )}
+                    {/* Note when cart had multiple items */}
+                    {hasMultiple && (
+                      <p style={{
+                        fontFamily: EN_HEADING, fontSize: '12px',
+                        color: `${PARCH}77`, margin: '0 0 16px',
+                        padding: '8px 12px',
+                        borderRadius: '6px',
+                        background: 'rgba(0,229,195,0.05)',
+                        border: '1px solid rgba(0,229,195,0.1)',
+                        lineHeight: 1.5,
+                      }}>
+                        מערכת התשלום מאפשרת רכישה אחת בכל פעם. לרכישות נוספות חזור לחנות.
+                        {' / '}
+                        One item per checkout. Return to the shop for additional purchases.
+                      </p>
+                    )}
+
+                    {/* Total */}
+                    <div style={{
+                      display: 'flex', justifyContent: 'space-between',
+                      alignItems: 'center',
+                      padding: '12px 0 24px',
+                      borderBottom: '1px solid rgba(0,229,195,0.15)',
+                      marginBottom: '24px',
+                    }}>
+                      <span style={{ fontFamily: FRANK, fontSize: '16px', color: PARCH }}>סה"כ</span>
+                      <span style={{ fontFamily: FRANK, fontSize: '22px', color: GOLD, fontWeight: 700 }}>
+                        ₪{total % 1 === 0 ? total : total.toFixed(1)}
+                      </span>
                     </div>
 
                     {error && (
-                      <p style={{ fontFamily: EN_HEADING, fontSize: '13px', color: '#E06060', margin: 0 }}>
+                      <p style={{ fontFamily: EN_HEADING, fontSize: '13px', color: '#E06060', margin: '0 0 16px' }}>
                         {error}
                       </p>
                     )}
 
                     <button
-                      onClick={handlePay}
+                      onClick={handleCheckout}
                       style={{
                         width: '100%', padding: '13px',
                         backgroundColor: GOLD,
@@ -322,71 +236,8 @@ export function CheckoutModal({ cart, onClose }: Props) {
                     >
                       לתשלום ←
                     </button>
-
-                    <p style={{
-                      fontFamily: EN_HEADING, fontSize: '11px',
-                      color: `${PARCH}40`, textAlign: 'center', margin: 0,
-                    }}>
-                      תועבר לעמוד התשלום של גרו לביצוע הרכישה
-                    </p>
                   </>
-                )}
-              </div>
-            )}
-
-            {/* ── Summary ── */}
-            {step === 'summary' && (
-              <>
-                {/* Items list */}
-                <div style={{ marginBottom: '20px' }}>
-                  {cart.map(item => (
-                    <div
-                      key={item.productId}
-                      style={{
-                        display: 'flex', justifyContent: 'space-between',
-                        alignItems: 'center',
-                        padding: '10px 0',
-                        borderBottom: '1px solid rgba(0,229,195,0.08)',
-                      }}
-                    >
-                      <span style={{ fontFamily: EN_HEADING, fontSize: '14px', color: PARCH }}>
-                        {item.name}
-                      </span>
-                      <span style={{ fontFamily: FRANK, fontSize: '15px', color: GOLD, fontWeight: 700 }}>
-                        ₪{item.price % 1 === 0 ? item.price : item.price.toFixed(1)}
-                      </span>
-                    </div>
-                  ))}
-                </div>
-
-                {/* Total */}
-                <div style={{
-                  display: 'flex', justifyContent: 'space-between',
-                  alignItems: 'center',
-                  padding: '12px 0 24px',
-                  borderBottom: '1px solid rgba(0,229,195,0.15)',
-                  marginBottom: '24px',
-                }}>
-                  <span style={{ fontFamily: FRANK, fontSize: '16px', color: PARCH }}>סה"כ</span>
-                  <span style={{ fontFamily: FRANK, fontSize: '22px', color: GOLD, fontWeight: 700 }}>
-                    ₪{total % 1 === 0 ? total : total.toFixed(1)}
-                  </span>
-                </div>
-
-                <button
-                  onClick={() => setStep('details')}
-                  style={{
-                    width: '100%', padding: '13px',
-                    backgroundColor: GOLD, color: EARTH,
-                    border: 'none', borderRadius: '10px',
-                    fontFamily: FRANK, fontSize: '16px', fontWeight: 700,
-                    cursor: 'pointer', transition: 'filter 0.2s',
-                  }}
-                  onMouseEnter={e => { (e.currentTarget as HTMLElement).style.filter = 'brightness(1.1)'; }}
-                  onMouseLeave={e => { (e.currentTarget as HTMLElement).style.filter = 'none'; }}
-                >
-                  לפרטי תשלום →
-                </button>
+                ) : null}
               </>
             )}
           </div>

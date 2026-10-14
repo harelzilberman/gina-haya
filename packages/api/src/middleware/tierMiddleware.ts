@@ -2,6 +2,7 @@ import type { Request, Response, NextFunction } from 'express';
 import { db } from '../db/client';
 import { getLimits, TIER_LIMITS, type TierLimits } from '../config/tiers';
 import { sendGrantFailureAlert } from '../services/email';
+import { LS_ACTIVE_STATUSES } from '../routes/billing';
 
 declare global {
   namespace Express {
@@ -22,7 +23,7 @@ export const MS_24H = 24 * 60 * 60 * 1000;
 export const staleAlertSent = new Map<string, number>();
 
 /**
- * Fires a grant-failure alert when a Play or Grow subscription appears stale-active.
+ * Fires a grant-failure alert when a Play subscription appears stale-active.
  * Rate-limited to one alert per user per 24 h. Never throws — a mail error must not
  * interrupt the request.
  */
@@ -65,19 +66,17 @@ export async function attachTier(req: Request, res: Response, next: NextFunction
 
     // LAUNCH MODE — everyone gets Pro access
     // Remove this when payments are ready.
-    // Fix 4: use 'professional' (the real top-tier key in TIER_LIMITS) — 'pro'
-    // has no entry and falls back to free limits via getLimits().
     const LAUNCH_FREE_MODE = process.env.LAUNCH_FREE_MODE === 'true';
     let tier = LAUNCH_FREE_MODE
       ? 'professional'
       : (data?.subscription_tier ?? 'free');
 
-    // Safety net: check Google Play and Grow subscriptions for silent expiry.
+    // Safety net: check Google Play and Lemon Squeezy subscriptions for silent expiry.
     // Only runs when LAUNCH_FREE_MODE is off and the tier is a paid tier.
     if (!LAUNCH_FREE_MODE && !FREE_TIERS.has(tier)) {
       try {
         // Fetch both platform subscriptions in parallel (one query each).
-        const [{ data: playSub }, { data: growSub }] = await Promise.all([
+        const [{ data: playSub }, { data: lsSub }] = await Promise.all([
           db.from('user_subscriptions')
             .select('expires_at, status')
             .eq('user_id', userId)
@@ -91,18 +90,21 @@ export async function attachTier(req: Request, res: Response, next: NextFunction
           db.from('user_subscriptions')
             .select('expires_at, status')
             .eq('user_id', userId)
-            .eq('platform', 'grow')
+            .eq('platform', 'lemonsqueezy')
             .order('created_at', { ascending: false })
             .limit(1)
             .maybeSingle(),
         ]);
 
         const now = new Date();
-        const growExpiresAt   = growSub?.expires_at ? new Date(growSub.expires_at) : null;
-        const growNotExpired  = growSub !== null && (growExpiresAt === null || growExpiresAt > now);
-        // active OR cancellation_requested-but-not-yet-expired both count as valid Grow access.
-        const hasActiveGrow   = growNotExpired && (
-          growSub!.status === 'active' || growSub!.status === 'cancellation_requested'
+        const lsExpiresAt  = lsSub?.expires_at ? new Date(lsSub.expires_at) : null;
+
+        // LS counts as valid access when:
+        //   - status is active / on_trial / past_due, OR
+        //   - status is cancelled but ends_at hasn't passed yet.
+        const hasActiveLS = lsSub !== null && (
+          LS_ACTIVE_STATUSES.has(lsSub.status) ||
+          (lsSub.status === 'cancelled' && lsExpiresAt !== null && lsExpiresAt > now)
         );
 
         // ── 1. Google Play expiry check ──────────────────────────────────────
@@ -113,19 +115,19 @@ export async function attachTier(req: Request, res: Response, next: NextFunction
             playSub.status !== 'active' && playSub.status !== 'grace_period';
 
           if (expiredMoreThan24hAgo && notActive) {
-            if (hasActiveGrow) {
-              // User's paid tier is valid via Grow — don't downgrade based on a
+            if (hasActiveLS) {
+              // User's paid tier is valid via Lemon Squeezy — don't downgrade based on a
               // stale google_play row (e.g. an old test subscription).
               console.warn(
                 `[attachTier] safety-net: skipping google_play downgrade for user=${userId} ` +
-                `— active Grow subscription found (expires_at=${growSub?.expires_at ?? 'null'})`
+                `— active Lemon Squeezy subscription found (expires_at=${lsSub?.expires_at ?? 'null'})`
               );
             } else {
               // Row status is already terminal (expired/cancelled/paused); the tier column
               // was not updated — inline downgrade to recover from the missed write.
               console.warn(
                 `[attachTier] safety-net: downgrading user=${userId} to free ` +
-                `— google_play sub expired+inactive, no active Grow sub`
+                `— google_play sub expired+inactive, no active Lemon Squeezy sub`
               );
               await db.from('users').update({
                 subscription_tier: 'free',
@@ -151,42 +153,33 @@ export async function attachTier(req: Request, res: Response, next: NextFunction
           }
         }
 
-        // ── 2. Grow cancellation expiry check ────────────────────────────────
-        // Covers Grow-only users (no Play sub). If the most recent Grow row has
-        // status='cancellation_requested' and expires_at has passed, downgrade.
-        // This is the automatic tier-revocation mechanism after a manual Grow cancel.
-        if (!FREE_TIERS.has(tier) &&
-            growSub?.status === 'cancellation_requested' &&
-            growExpiresAt !== null &&
-            growExpiresAt <= now) {
-          console.warn(
-            `[attachTier] safety-net: downgrading user=${userId} to free ` +
-            `— Grow cancellation period ended (expires_at=${growSub.expires_at})`
+        // ── 2. Lemon Squeezy expiry downgrade ────────────────────────────────
+        // If the most recent LS row is cancelled-past-ends_at, expired, or unpaid,
+        // and there's no valid Play sub, downgrade to free.
+        if (!FREE_TIERS.has(tier)) {
+          const lsExpiredOrCancelled = lsSub !== null && (
+            (lsSub.status === 'cancelled' && lsExpiresAt !== null && lsExpiresAt <= now) ||
+            lsSub.status === 'expired' ||
+            lsSub.status === 'unpaid'
           );
-          await db.from('users').update({
-            subscription_tier: 'free',
-            updated_at: new Date().toISOString(),
-          }).eq('id', userId);
-          tier = 'free';
-        }
 
-        // ── 3. Grow stale-active detection ───────────────────────────────────
-        // A Grow 'active' row whose expires_at is > 24 h in the past means the
-        // webhook stopped delivering renewals. Access via hasActiveGrow is already
-        // correctly denied (growNotExpired=false), but users.subscription_tier is
-        // not downgraded. Surface for investigation; do not change tier.
-        if (growSub?.status === 'active' &&
-            growExpiresAt !== null &&
-            (now.getTime() - growExpiresAt.getTime()) > MS_24H) {
-          const growDaysPastDue = Math.floor(
-            (now.getTime() - growExpiresAt.getTime()) / MS_24H
+          const hasActivePlay = playSub !== null && (
+            playSub.status === 'active' || playSub.status === 'grace_period'
+          ) && (
+            !playSub.expires_at || new Date(playSub.expires_at) > now
           );
-          console.warn(
-            `[attachTier] stale-active: user=${userId} platform=grow ` +
-            `status=${growSub.status} expires_at=${growSub.expires_at} ` +
-            `days_past_due=${growDaysPastDue} — Grow webhook may have stopped; tier unchanged`
-          );
-          await alertStaleActive(userId, 'grow', growSub.status, growSub.expires_at, growDaysPastDue);
+
+          if (lsExpiredOrCancelled && !hasActivePlay) {
+            console.warn(
+              `[attachTier] safety-net: downgrading user=${userId} to free ` +
+              `— Lemon Squeezy subscription ended (status=${lsSub!.status} expires_at=${lsSub!.expires_at})`
+            );
+            await db.from('users').update({
+              subscription_tier: 'free',
+              updated_at: new Date().toISOString(),
+            }).eq('id', userId);
+            tier = 'free';
+          }
         }
       } catch (safetyErr) {
         // Fail-open: keep current tier if the check errors

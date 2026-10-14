@@ -25,23 +25,13 @@ const allowedOrigins = process.env.NODE_ENV === 'development'
 
 console.log(`[CORS] NODE_ENV=${process.env.NODE_ENV ?? 'unset'}, allowed origins:`, allowedOrigins);
 
+// Lemon Squeezy webhook needs the raw Buffer for HMAC-SHA256 signature verification.
+// This must be registered BEFORE express.json() so the body isn't consumed first.
+app.use('/api/billing/lemon/webhook', express.raw({ type: () => true, limit: '1mb' }));
+
 // 2 MB ceiling: post-compression images peak at ~600 KB base64; anything
 // larger than 2 MB is suspicious and benefits from early rejection.
 app.use(express.json({ limit: '2mb' }));
-// Grow webhooks come from two sources with different body formats:
-//   Source 1 (PaymentLinks notify Url): real JSON with mislabeled Content-Type
-//   Source 2 (account-level dashboard webhooks): genuine form-urlencoded data
-// We use express.text() to capture the raw body as a string regardless of
-// Content-Type, then parse defensively in the route handler (JSON → form-urlencoded).
-// Path covers both /api/billing/grow/webhook and /api/billing/grow/webhook/:secret
-app.use('/api/billing/grow/webhook', express.text({
-  type: () => true,   // accept regardless of Content-Type header
-  limit: '1mb',
-}));
-app.use('/api/shop/grow/webhook', express.text({
-  type: () => true,
-  limit: '1mb',
-}));
 app.use(cors({
   origin: allowedOrigins,
   credentials: true,

@@ -4,7 +4,6 @@ import { createClient } from '@supabase/supabase-js';
 const REQUIRED_ENV_VARS = [
   'ANTHROPIC_API_KEY',
   'SUPABASE_URL',
-  'STRIPE_SECRET_KEY',
 ];
 
 export async function healthcheck(_req: Request, res: Response): Promise<void> {

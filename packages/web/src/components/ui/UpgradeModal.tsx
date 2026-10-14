@@ -17,10 +17,6 @@ const SAGE     = '#4A9C68';
 const PARCH    = '#b0cfbf';
 const FRANK    = '"Frank Ruhl Libre", Georgia, serif';
 
-// Payment provider switch — set to 'grow' to route all checkout through Grow.
-// Change to 'stripe' only when Stripe price IDs are configured in the API.
-const PAYMENT_PROVIDER = 'grow' as const;
-
 const MODAL_CSS = `
 @keyframes upgrade-modal-in {
   from { opacity: 0; transform: scale(0.96); }
@@ -47,27 +43,6 @@ const TIER_NAMES_EN: Record<string, string> = {
   professional: 'Professional',
 };
 
-const ISRAELI_MOBILE_RE = /^05\d{8}$/;
-
-/** Strip spaces/dashes/dots/parens; convert +972 or bare 972 prefix to leading 0. */
-function normalizeIsraeliPhone(raw: string): string {
-  let n = raw.replace(/[\s\-.()]/g, '');
-  n = n.replace(/^\+972/, '0').replace(/^972/, '0');
-  return n;
-}
-
-// Validators return i18n keys (resolved via t() at render time).
-const validatePhone = (v: string): string | null =>
-  ISRAELI_MOBILE_RE.test(normalizeIsraeliPhone(v)) ? null : 'grow.phoneError';
-
-// Grow requires first + last name, each at least 2 characters.
-const validateFullName = (v: string): string | null => {
-  const words = v.trim().split(/\s+/);
-  return words.length >= 2 && words.every(w => w.length >= 2)
-    ? null
-    : 'grow.fullNameError';
-};
-
 export function UpgradeModal() {
   const { close, billingPeriod, targetTier } = useUpgradeModalStore();
   const { session, profile }     = useAuthStore();
@@ -75,17 +50,7 @@ export function UpgradeModal() {
   const { i18n, t }              = useTranslation('billing');
   const isHe                    = i18n.language === 'he';
   const navigate                 = useNavigate();
-  const [loading, setLoading] = useState<string | null>(null);
-
-  // Grow-only checkout collection state.
-  // pendingGrowTier: when set, renders the name+phone step instead of the tier grid.
-  const [pendingGrowTier, setPendingGrowTier] = useState<SubscriptionTier | null>(null);
-  const [fullName,    setFullName]    = useState('');
-  const [fullNameErr, setFullNameErr] = useState<string | null>(null);
-  const [phone,       setPhone]       = useState('');
-  const [phoneError,  setPhoneError]  = useState<string | null>(null);
-  // recurring: true = monthly auto-renewal (default); false = one-time trial charge.
-  const [recurring,   setRecurring]   = useState(true);
+  const [loading, setLoading]    = useState<string | null>(null);
 
   if (import.meta.env.PROD && import.meta.env.VITE_LAUNCH_FREE_MODE === 'true') {
     return null;
@@ -131,41 +96,22 @@ export function UpgradeModal() {
 
   const headingFont = isHe ? FRANK : EN_HEADING;
 
-  const resetCheckoutStep = () => {
-    setPendingGrowTier(null);
-    setFullName('');
-    setFullNameErr(null);
-    setPhone('');
-    setPhoneError(null);
-    setRecurring(true);
-  };
-
   // Called when a tier card's upgrade button is clicked.
-  const handleUpgrade = (targetTier: SubscriptionTier) => {
-    if (targetTier === 'free') return;
+  const handleUpgrade = (tier: SubscriptionTier) => {
+    if (tier === 'free') return;
 
     if (!session?.access_token) {
-      // Defensive: should not normally be reachable (PricingPage guards unauthenticated
-      // clicks before opening this modal), but never fail silently.
-      savePurchaseIntent({ tier: targetTier, billingPeriod, returnTo: '/pricing' });
+      savePurchaseIntent({ tier, billingPeriod, returnTo: '/pricing' });
       close();
       navigate('/login?next=/pricing');
       return;
     }
 
-    if (PAYMENT_PROVIDER === 'grow') {
-      // All payments go through Grow regardless of UI language.
-      // Show the name+phone collection step; don't call the API yet.
-      setPendingGrowTier(targetTier);
-      return;
-    }
-
-    // Stripe path — only reachable when PAYMENT_PROVIDER is changed to 'stripe'
-    // and Stripe price IDs are configured in the API.
-    setLoading(targetTier);
+    setLoading(tier);
+    const interval = billingPeriod === 'annual' ? 'yearly' : 'monthly';
     api.post<{ checkoutUrl?: string }>(
-      '/api/billing/create-checkout',
-      { tier: targetTier },
+      '/api/billing/checkout',
+      { tier, interval },
       session.access_token,
     ).then(data => {
       if (data.checkoutUrl) window.location.href = data.checkoutUrl;
@@ -175,59 +121,6 @@ export function UpgradeModal() {
       setLoading(null);
     });
   };
-
-  // Derive paymentMode from billingPeriod + recurring selection.
-  // Annual is always one-time (no recurring interval in Grow's free integration).
-  // Monthly lets the user choose between auto-renewing or a single trial charge.
-  const paymentMode: 'recurring' | 'one_time_monthly' | 'one_time_annual' =
-    billingPeriod === 'annual'
-      ? 'one_time_annual'
-      : recurring
-      ? 'recurring'
-      : 'one_time_monthly';
-
-  // Called when user confirms name + phone and clicks pay (Grow path only).
-  const handleGrowConfirm = async () => {
-    if (!pendingGrowTier) return;
-
-    if (!session?.access_token) {
-      // Defensive: should never be reachable normally, but never fail silently.
-      savePurchaseIntent({ tier: pendingGrowTier, billingPeriod, returnTo: '/pricing' });
-      close();
-      navigate('/login?next=/pricing');
-      return;
-    }
-
-    const nameErr  = validateFullName(fullName);
-    const phoneErr = validatePhone(phone);
-    if (nameErr)  { setFullNameErr(nameErr);  return; }
-    if (phoneErr) { setPhoneError(phoneErr);  return; }
-
-    setLoading(pendingGrowTier);
-    try {
-      const data = await api.post<{ paymentUrl?: string }>(
-        '/api/billing/grow/create-payment',
-        {
-          tier:        pendingGrowTier,
-          paymentMode,
-          // Keep recurring boolean for any other code that may read it
-          recurring:   paymentMode === 'recurring',
-          fullName:    fullName.trim(),
-          phone:       normalizeIsraeliPhone(phone),
-        },
-        session.access_token,
-      );
-      if (data.paymentUrl) window.location.href = data.paymentUrl;
-    } catch {
-      // silent
-    } finally {
-      setLoading(null);
-    }
-  };
-
-  const isFullNameValid = validateFullName(fullName) === null;
-  const isPhoneValid    = ISRAELI_MOBILE_RE.test(normalizeIsraeliPhone(phone));
-  const isFormValid     = isFullNameValid && isPhoneValid;
 
   return (
     <>
@@ -245,15 +138,14 @@ export function UpgradeModal() {
           padding:         '16px',
           backgroundColor: 'rgba(0,0,0,0.9)',
         }}
-        onClick={e => { if (e.target === e.currentTarget) { resetCheckoutStep(); close(); } }}
+        onClick={e => { if (e.target === e.currentTarget) close(); }}
       >
         <div
           className="upgrade-modal-card upgrade-modal-scroll"
           style={{
             position:        'relative',
             width:           '100%',
-            // Narrow for confirmation + checkout steps; wide only for the fallback tier-picker grid
-            maxWidth:        (!targetTier && !pendingGrowTier) ? '860px' : '500px',
+            maxWidth:        targetTier ? '500px' : '860px',
             maxHeight:       '90vh',
             overflowY:       'auto',
             backgroundColor: SOIL,
@@ -282,11 +174,7 @@ export function UpgradeModal() {
                 color:      GOLD,
                 margin:     '0 0 4px',
               }}>
-                {pendingGrowTier
-                  ? t('grow.checkoutTitle')
-                  : targetTier
-                  ? t('modal.confirmTitle')
-                  : t('modal.selectTitle')}
+                {targetTier ? t('modal.confirmTitle') : t('modal.selectTitle')}
               </h2>
               <p style={{
                 fontFamily: EN_HEADING,
@@ -294,18 +182,14 @@ export function UpgradeModal() {
                 color:      `${PARCH}55`,
                 margin:     0,
               }}>
-                {pendingGrowTier
-                  ? billingPeriod === 'annual'
-                    ? t('modal.confirmSubtitleAnnual', { name: tierDisplayName(pendingGrowTier), price: TIER_PRICING[pendingGrowTier]?.annual })
-                    : t('modal.confirmSubtitleMonthly', { name: tierDisplayName(pendingGrowTier), price: TIER_PRICING[pendingGrowTier]?.monthly })
-                  : targetTier
+                {targetTier
                   ? t('modal.planTransition', { from: tierDisplayName(currentTier), to: tierDisplayName(targetTier) })
                   : t('modal.selectSubtitle')}
               </p>
             </div>
             {/* Close button */}
             <button
-              onClick={() => { resetCheckoutStep(); close(); }}
+              onClick={() => close()}
               aria-label="סגור"
               style={{
                 width:           '34px',
@@ -329,17 +213,12 @@ export function UpgradeModal() {
             </button>
           </div>
 
-          {/* ── Step 1: Order confirmation (when targetTier is pre-set) ── */}
-          {!pendingGrowTier && targetTier ? (
+          {/* ── Confirmation step (when targetTier is pre-set) ── */}
+          {targetTier ? (
             <div dir={isHe ? 'rtl' : 'ltr'} style={{ padding: '28px', display: 'flex', flexDirection: 'column', gap: '20px' }}>
 
               {/* Current → New plan summary */}
-              <div style={{
-                display:       'flex',
-                flexDirection: 'column',
-                gap:           '10px',
-              }}>
-                {/* Current plan row — only shown when there is a logged-in user */}
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
                 {profile && (
                   <div style={{
                     display:         'flex',
@@ -359,12 +238,10 @@ export function UpgradeModal() {
                   </div>
                 )}
 
-                {/* Arrow — only shown when current plan is visible */}
                 {profile && (
                   <div style={{ textAlign: 'center', color: GOLD, fontSize: '18px', lineHeight: 1 }}>↓</div>
                 )}
 
-                {/* New plan row */}
                 <div style={{
                   display:         'flex',
                   alignItems:      'center',
@@ -390,14 +267,12 @@ export function UpgradeModal() {
                 </div>
               </div>
 
-              {/* Billing period note */}
               {billingPeriod === 'annual' && (
                 <p style={{ fontFamily: EN_HEADING, fontSize: '12px', color: `${PARCH}66`, margin: 0 }}>
                   {t('modal.annualOneTime')}
                 </p>
               )}
 
-              {/* Actions */}
               <div style={{ display: 'flex', gap: '10px' }}>
                 <button
                   onClick={() => close()}
@@ -442,249 +317,6 @@ export function UpgradeModal() {
               </div>
             </div>
 
-          ) : /* ── Step 2: Name + phone collection step (Grow — all languages) ── */
-          pendingGrowTier ? (
-            <div dir={isHe ? 'rtl' : 'ltr'} style={{ padding: '28px', display: 'flex', flexDirection: 'column', gap: '20px' }}>
-              <p style={{ fontFamily: EN_HEADING, fontSize: '14px', color: `${PARCH}CC`, margin: 0 }}>
-                {t('grow.paymentNote')}
-              </p>
-
-              {/* Full name */}
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
-                <label
-                  htmlFor="grow-fullname"
-                  style={{ fontFamily: EN_HEADING, fontSize: '13px', fontWeight: 600, color: PARCH }}
-                >
-                  {t('grow.fullNameLabel')}
-                </label>
-                <input
-                  id="grow-fullname"
-                  type="text"
-                  dir={isHe ? 'rtl' : 'ltr'}
-                  placeholder={t('grow.fullNamePlaceholder')}
-                  value={fullName}
-                  onChange={e => {
-                    setFullName(e.target.value);
-                    if (e.target.value.length > 0) setFullNameErr(validateFullName(e.target.value));
-                    else setFullNameErr(null);
-                  }}
-                  onBlur={() => {
-                    if (fullName.length > 0) setFullNameErr(validateFullName(fullName));
-                  }}
-                  style={{
-                    width:           '100%',
-                    padding:         '11px 14px',
-                    borderRadius:    '8px',
-                    border:          fullNameErr
-                      ? '1px solid rgba(192,57,43,0.7)'
-                      : isFullNameValid && fullName.length > 0
-                      ? `1px solid ${SAGE}88`
-                      : '1px solid rgba(0,229,195,0.2)',
-                    backgroundColor: 'rgba(9,20,16,0.6)',
-                    fontFamily:      EN_HEADING,
-                    fontSize:        '15px',
-                    color:           PARCH,
-                    outline:         'none',
-                    boxSizing:       'border-box',
-                  }}
-                />
-                {fullNameErr && (
-                  <p style={{ fontFamily: EN_HEADING, fontSize: '12px', color: '#C0372A', margin: 0 }}>
-                    {t(fullNameErr)}
-                  </p>
-                )}
-              </div>
-
-              {/* Phone — Grow requires an Israeli mobile number (05XXXXXXXX) */}
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
-                <label
-                  htmlFor="grow-phone"
-                  style={{ fontFamily: EN_HEADING, fontSize: '13px', fontWeight: 600, color: PARCH }}
-                >
-                  {t('grow.phoneLabel')}
-                </label>
-                <input
-                  id="grow-phone"
-                  type="tel"
-                  dir="ltr"
-                  inputMode="tel"
-                  placeholder="0501234567"
-                  value={phone}
-                  onChange={e => {
-                    // Keep only characters that can appear in a phone number (digits, +, spaces,
-                    // dashes, dots, parens); normalisation happens at validate/send time.
-                    const v = e.target.value.replace(/[^\d+\s\-.()]/g, '').slice(0, 20);
-                    setPhone(v);
-                    if (v.length > 0) setPhoneError(validatePhone(v));
-                    else setPhoneError(null);
-                  }}
-                  onBlur={() => {
-                    if (phone.length > 0) setPhoneError(validatePhone(phone));
-                  }}
-                  style={{
-                    width:           '100%',
-                    padding:         '11px 14px',
-                    borderRadius:    '8px',
-                    border:          phoneError
-                      ? '1px solid rgba(192,57,43,0.7)'
-                      : isPhoneValid
-                      ? `1px solid ${SAGE}88`
-                      : '1px solid rgba(0,229,195,0.2)',
-                    backgroundColor: 'rgba(9,20,16,0.6)',
-                    fontFamily:      EN_HEADING,
-                    fontSize:        '15px',
-                    color:           PARCH,
-                    outline:         'none',
-                    boxSizing:       'border-box',
-                    letterSpacing:   '0.06em',
-                  }}
-                />
-                {phoneError && (
-                  <p style={{ fontFamily: EN_HEADING, fontSize: '12px', color: '#C0372A', margin: 0 }}>
-                    {t(phoneError)}
-                  </p>
-                )}
-              </div>
-
-              {billingPeriod === 'annual' ? (
-                /* ── Annual: single disclosure, no choice needed ── */
-                <div style={{
-                  padding:      '12px 14px',
-                  borderRadius: '8px',
-                  border:       `1.5px solid ${GOLD}99`,
-                  background:   'rgba(0,229,195,0.07)',
-                }}>
-                  <p style={{ fontFamily: EN_HEADING, fontSize: '13px', color: `${PARCH}BB`, margin: 0, lineHeight: 1.55 }}>
-                    {t('grow.annualNote', { price: TIER_PRICING[pendingGrowTier]?.annual })}
-                  </p>
-                </div>
-              ) : (
-                /* ── Monthly: two mutually exclusive radio cards ── */
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-                  {([
-                    {
-                      value:    true,
-                      title:    t('grow.recurringTitle'),
-                      subtitle: t('grow.recurringSubtitle', { price: TIER_PRICING[pendingGrowTier]?.monthly }),
-                    },
-                    {
-                      value:    false,
-                      title:    t('grow.oneTimeTitle'),
-                      subtitle: t('grow.oneTimeSubtitle', { price: TIER_PRICING[pendingGrowTier]?.monthly }),
-                    },
-                  ] as const).map(opt => {
-                    const active = recurring === opt.value;
-                    return (
-                      <button
-                        key={String(opt.value)}
-                        type="button"
-                        onClick={() => setRecurring(opt.value)}
-                        style={{
-                          display:         'flex',
-                          alignItems:      'flex-start',
-                          gap:             '12px',
-                          padding:         '12px 14px',
-                          borderRadius:    '8px',
-                          border:          active
-                            ? `1.5px solid ${GOLD}99`
-                            : '1px solid rgba(0,229,195,0.15)',
-                          background:      active
-                            ? 'rgba(0,229,195,0.07)'
-                            : 'rgba(9,20,16,0.4)',
-                          cursor:          'pointer',
-                          textAlign:       isHe ? 'right' : 'left',
-                          width:           '100%',
-                          transition:      'border-color 0.15s, background 0.15s',
-                        }}
-                      >
-                        {/* Radio dot */}
-                        <span style={{
-                          flexShrink:   0,
-                          marginTop:    '3px',
-                          width:        '16px',
-                          height:       '16px',
-                          borderRadius: '50%',
-                          border:       active ? `5px solid ${GOLD}` : '2px solid rgba(0,229,195,0.35)',
-                          background:   'transparent',
-                          display:      'block',
-                          boxSizing:    'border-box',
-                          transition:   'border 0.15s',
-                        }} />
-                        <span style={{ display: 'flex', flexDirection: 'column', gap: '2px' }}>
-                          <span style={{
-                            fontFamily: EN_HEADING,
-                            fontWeight: 600,
-                            fontSize:   '13px',
-                            color:      active ? GOLD : PARCH,
-                            transition: 'color 0.15s',
-                          }}>
-                            {opt.title}
-                          </span>
-                          <span style={{
-                            fontFamily: EN_HEADING,
-                            fontSize:   '12px',
-                            color:      `${PARCH}88`,
-                            lineHeight: 1.5,
-                          }}>
-                            {opt.subtitle}
-                          </span>
-                        </span>
-                      </button>
-                    );
-                  })}
-                </div>
-              )}
-
-              {/* English-only: disclose ILS + Grow as payment processor */}
-              {!isHe && (
-                <p style={{ fontFamily: EN_HEADING, fontSize: '11px', color: `${PARCH}55`, margin: 0, lineHeight: 1.5 }}>
-                  {t('grow.providerDisclaimer')}
-                </p>
-              )}
-
-              <div style={{ display: 'flex', gap: '10px' }}>
-                <button
-                  onClick={resetCheckoutStep}
-                  style={{
-                    flex:            1,
-                    padding:         '11px',
-                    borderRadius:    '8px',
-                    border:          '1px solid rgba(0,229,195,0.15)',
-                    backgroundColor: 'transparent',
-                    fontFamily:      EN_HEADING,
-                    fontSize:        '13px',
-                    color:           `${PARCH}77`,
-                    cursor:          'pointer',
-                  }}
-                >
-                  {t('grow.backButton')}
-                </button>
-                <button
-                  onClick={handleGrowConfirm}
-                  disabled={!isFormValid || loading === pendingGrowTier}
-                  style={{
-                    flex:            2,
-                    padding:         '11px',
-                    borderRadius:    '8px',
-                    border:          'none',
-                    backgroundColor: isFormValid && loading !== pendingGrowTier ? GOLD : `${GOLD}44`,
-                    fontFamily:      FRANK,
-                    fontWeight:      600,
-                    fontSize:        '14px',
-                    color:           EARTH,
-                    cursor:          isFormValid && loading !== pendingGrowTier ? 'pointer' : 'default',
-                    transition:      'filter 0.15s',
-                  }}
-                  onMouseEnter={e => {
-                    if (isFormValid && loading !== pendingGrowTier)
-                      (e.currentTarget as HTMLElement).style.filter = 'brightness(1.1)';
-                  }}
-                  onMouseLeave={e => { (e.currentTarget as HTMLElement).style.filter = 'none'; }}
-                >
-                  {loading === pendingGrowTier ? '...' : t('grow.payButton')}
-                </button>
-              </div>
-            </div>
           ) : (
             /* ── Tier cards grid (default view) ── */
             <div style={{
