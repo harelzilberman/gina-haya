@@ -1,10 +1,10 @@
 export type ProductId =
-  | 'analysis_single'
-  | 'analysis_pack_5'
-  | 'analysis_pack_10'
-  | 'tracker_single'
-  | 'tracker_pack_5'
-  | 'tracker_pack_10';
+  | 'analysis_pack_3'
+  | 'analysis_pack_6'
+  | 'analysis_pack_12'
+  | 'tracker_pack_3'
+  | 'tracker_pack_6'
+  | 'tracker_pack_12';
 
 export type ProductType = 'analysis' | 'tracker';
 
@@ -17,10 +17,10 @@ export interface Product {
 }
 
 export const PRODUCTS: Record<ProductId, Product> = {
-  analysis_single:  { id: 'analysis_single',  name: 'ניתוח צמח בודד',    price: 3.6,  quantity: 1,  type: 'analysis' },
-  analysis_pack_5:  { id: 'analysis_pack_5',  name: 'חבילת 5 ניתוחים',   price: 12,   quantity: 5,  type: 'analysis' },
-  analysis_pack_10: { id: 'analysis_pack_10', name: 'חבילת 10 ניתוחים',  price: 21,   quantity: 10, type: 'analysis' },
-  tracker_single:   { id: 'tracker_single',   name: 'מעקב גידול בודד',   price: 3.6,  quantity: 1,  type: 'tracker'  },
-  tracker_pack_5:   { id: 'tracker_pack_5',   name: 'חבילת 5 מעקבים',    price: 12,   quantity: 5,  type: 'tracker'  },
-  tracker_pack_10:  { id: 'tracker_pack_10',  name: 'חבילת 10 מעקבים',   price: 21,   quantity: 10, type: 'tracker'  },
+  analysis_pack_3:  { id: 'analysis_pack_3',  name: 'חבילת 3 ניתוחים',  price: 12, quantity: 3,  type: 'analysis' },
+  analysis_pack_6:  { id: 'analysis_pack_6',  name: 'חבילת 6 ניתוחים',  price: 18, quantity: 6,  type: 'analysis' },
+  analysis_pack_12: { id: 'analysis_pack_12', name: 'חבילת 12 ניתוחים', price: 27, quantity: 12, type: 'analysis' },
+  tracker_pack_3:   { id: 'tracker_pack_3',   name: 'חבילת 3 מעקבים',   price: 12, quantity: 3,  type: 'tracker'  },
+  tracker_pack_6:   { id: 'tracker_pack_6',   name: 'חבילת 6 מעקבים',   price: 18, quantity: 6,  type: 'tracker'  },
+  tracker_pack_12:  { id: 'tracker_pack_12',  name: 'חבילת 12 מעקבים',  price: 27, quantity: 12, type: 'tracker'  },
 };

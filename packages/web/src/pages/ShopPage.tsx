@@ -8,12 +8,12 @@ import BIODYNAMIC_RAW from '../../../shared/data/biodynamic-products.json';
 import { EN_HEADING } from '../styles/fonts';
 
 export type ProductId =
-  | 'analysis_single'
-  | 'analysis_pack_5'
-  | 'analysis_pack_10'
-  | 'tracker_single'
-  | 'tracker_pack_5'
-  | 'tracker_pack_10'
+  | 'analysis_pack_3'
+  | 'analysis_pack_6'
+  | 'analysis_pack_12'
+  | 'tracker_pack_3'
+  | 'tracker_pack_6'
+  | 'tracker_pack_12'
   | 'garden_pack';
 
 const EARTH  = '#0A2A12';
@@ -73,15 +73,15 @@ interface ProductDef {
 }
 
 const ANALYSIS_PRODUCTS: ProductDef[] = [
-  { id: 'analysis_single',  label: 'בודד',     name: 'ניתוח צמח בודד',    price: 3.6,  priceStr: '₪3.6', note: 'ניתוח אחד מלא' },
-  { id: 'analysis_pack_5',  label: 'חבילת 5',  name: 'חבילת 5 ניתוחים',   price: 12,   priceStr: '₪12',  note: '₪2.4 לניתוח — חסכון 33%' },
-  { id: 'analysis_pack_10', label: 'חבילת 10', name: 'חבילת 10 ניתוחים',  price: 21,   priceStr: '₪21',  note: '₪2.1 לניתוח — חסכון 42%', badge: 'הכי משתלם' },
+  { id: 'analysis_pack_3',  label: 'חבילת 3',  name: 'חבילת 3 ניתוחים',  price: 12, priceStr: '₪12', note: '₪4 לניתוח' },
+  { id: 'analysis_pack_6',  label: 'חבילת 6',  name: 'חבילת 6 ניתוחים',  price: 18, priceStr: '₪18', note: '₪3 לניתוח — חסכון 25%' },
+  { id: 'analysis_pack_12', label: 'חבילת 12', name: 'חבילת 12 ניתוחים', price: 27, priceStr: '₪27', note: '₪2.25 לניתוח — חסכון 44%', badge: 'הכי משתלם' },
 ];
 
 const TRACKER_PRODUCTS: ProductDef[] = [
-  { id: 'tracker_single',  label: 'בודד',     name: 'מעקב גידול בודד',   price: 3.6,  priceStr: '₪3.6', note: 'מעקב אחד' },
-  { id: 'tracker_pack_5',  label: 'חבילת 5',  name: 'חבילת 5 מעקבים',    price: 12,   priceStr: '₪12',  note: '₪2.4 למעקב — חסכון 33%' },
-  { id: 'tracker_pack_10', label: 'חבילת 10', name: 'חבילת 10 מעקבים',   price: 21,   priceStr: '₪21',  note: '₪2.1 למעקב — חסכון 42%', badge: 'הכי משתלם' },
+  { id: 'tracker_pack_3',  label: 'חבילת 3',  name: 'חבילת 3 מעקבים',  price: 12, priceStr: '₪12', note: '₪4 למעקב' },
+  { id: 'tracker_pack_6',  label: 'חבילת 6',  name: 'חבילת 6 מעקבים',  price: 18, priceStr: '₪18', note: '₪3 למעקב — חסכון 25%' },
+  { id: 'tracker_pack_12', label: 'חבילת 12', name: 'חבילת 12 מעקבים', price: 27, priceStr: '₪27', note: '₪2.25 למעקב — חסכון 44%', badge: 'הכי משתלם' },
 ];
 
 const COMING_SOON = [
@@ -980,7 +980,7 @@ export function ShopPage() {
               fontFamily: FRANK, fontSize: 'clamp(15px, 2.5vw, 18px)',
               color: PARCH, fontWeight: 700, marginBottom: '20px', lineHeight: 1.45,
             }}>
-              10 בדיקות עולות ₪21.{' '}
+              12 בדיקות עולות ₪27.{' '}
               <span style={{ color: GOLD }}>חודש שלם של הכל — ₪18.</span>
             </div>
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(190px, 1fr))', gap: '24px' }}>
