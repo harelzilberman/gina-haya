@@ -436,8 +436,10 @@ billingRouter.get('/status', verifyToken, async (req: any, res) => {
 
     res.json({
       tier, monthlyPrice, isActive, platform, cancelAt, portalUrl,
-      pendingTier:        sub?.pending_tier ?? null,
-      pendingEffectiveAt: sub?.pending_effective_at ?? null,
+      // A cancelled subscription ends at period end (→ free), so a scheduled
+      // downgrade is moot for display. It stays in the DB in case the customer resumes.
+      pendingTier:        sub?.status === 'cancelled' ? null : (sub?.pending_tier ?? null),
+      pendingEffectiveAt: sub?.status === 'cancelled' ? null : (sub?.pending_effective_at ?? null),
     });
   } catch (err: any) {
     console.error('[GET /api/billing/status]', err);
