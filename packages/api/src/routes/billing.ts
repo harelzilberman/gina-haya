@@ -331,7 +331,7 @@ billingRouter.post('/checkout', verifyToken, async (req: any, res) => {
 
     if (lsSub) {
       try {
-        const result = await changePlan(req.user.id, lsSub as LsSubRow, tier, interval, variantId);
+        const result = await changePlan(req.user.id, lsSub as unknown as LsSubRow, tier, interval, variantId);
         res.status(result.status).json(result.body);
       } catch (changeErr: any) {
         console.error('[POST /api/billing/checkout] plan change failed:', changeErr.message);
@@ -407,7 +407,7 @@ billingRouter.get('/status', verifyToken, async (req: any, res) => {
     if (userRow.error || !userRow.data) throw new Error('User not found');
 
     let tier: string = userRow.data.subscription_tier ?? 'free';
-    const sub = subRow.data as (LsSubRow & { platform: string; raw_notification: any }) | null;
+    const sub = subRow.data as unknown as (LsSubRow & { platform: string; raw_notification: any }) | null;
 
     // Safety net in case the renewal webhook that applies a scheduled downgrade was missed.
     if (sub?.platform === 'lemonsqueezy' && sub.pending_tier && await applyPendingIfDue(sub)) {
@@ -700,7 +700,7 @@ billingRouter.post('/lemon/webhook', async (req: Request, res) => {
         .select(LS_SUB_COLUMNS)
         .eq('purchase_token', subId)
         .maybeSingle();
-      if (subRow) await applyPendingIfDue(subRow as LsSubRow);
+      if (subRow) await applyPendingIfDue(subRow as unknown as LsSubRow);
       console.log(`[lemon/webhook] payment_success subId=${subId} invoice=${payload?.data?.id}`);
       return;
     }
