@@ -26,7 +26,9 @@
     "cancelled": "No problem — you stayed on the {{name}} plan. You can upgrade whenever you want.",
     "cancelledAt": "Your subscription will be cancelled on {{date}}. You can continue using it until then.",
     "polling": "Updating your subscription…",
-    "pollTimedOut": "Payment received — the update may take a moment. Refresh the page in a few seconds."
+    "pollTimedOut": "Payment received — the update may take a moment. Refresh the page in a few seconds.",
+    "upgraded": "🎉 Your plan was upgraded to {{name}}. You were charged only the prorated difference for the rest of this billing period.",
+    "downgradeScheduled": "Your plan will change to {{name}} on {{date}}. Until then you keep everything in your current plan."
   },
   "manage": {
     "title": "Manage subscription",
@@ -79,7 +81,7 @@
     },
     "faq": {
       "q1": "Can I upgrade or downgrade my plan?",
-      "a1": "Yes, at any time. The change takes effect at the start of the next billing month.",
+      "a1": "Yes, at any time. Upgrades take effect immediately — you're charged only the prorated difference for the rest of the billing period. Moving to a cheaper plan takes effect at the end of the period you've already paid for, so you keep your current plan until then.",
       "q2": "Is there a contract?",
       "a2": "No. You can cancel at any time without penalties.",
       "q3": "What's the difference between AI analysis and growth tracking?",
@@ -109,7 +111,8 @@
     "free": "Free",
     "currentPlanLabel": "Current plan",
     "notAvailable": "Not available",
-    "upgradeNow": "Upgrade now"
+    "upgradeNow": "Upgrade now",
+    "switchTo": "Switch to this plan"
   },
   "upgradeLimit": {
     "dismiss": "Later",

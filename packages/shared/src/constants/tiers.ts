@@ -26,7 +26,7 @@ export const TIER_LIMITS: Record<string, TierLimits> = {
     maxVisionLooksPerDay:          2,
     maxPlantsInChupchuContext:     30,
     encyclopediaAccess:            false,
-    displayNameHe:                 'גנן מתחיל',
+    displayNameHe:                 'גנן',
   },
   gardener_pro: {
     maxGardens:                    2,

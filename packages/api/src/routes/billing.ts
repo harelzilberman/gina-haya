@@ -17,6 +17,7 @@ import {
 } from '../config/playProducts';
 import { acknowledgeIfNeeded } from '../services/playAck';
 import { grantCredits } from './shop';
+import { classifyPlanChange, isPendingDue, type BillingInterval } from '../services/planChange';
 
 export const billingRouter: IRouter = Router();
 
@@ -94,8 +95,191 @@ export function lsStatusToTierAction(
   return { newTier: null };
 }
 
+// ── Plan changes (existing Lemon Squeezy subscribers) ────────────────────────
+
+interface LsSubRow {
+  user_id:              string;
+  purchase_token:       string;
+  product_id:           string | null;
+  base_plan_id:         string | null;
+  expires_at:           string | null;
+  status:               string | null;
+  pending_tier:         string | null;
+  pending_interval:     string | null;
+  pending_effective_at: string | null;
+}
+
+const LS_SUB_COLUMNS =
+  'user_id, purchase_token, product_id, base_plan_id, expires_at, status, ' +
+  'pending_tier, pending_interval, pending_effective_at';
+
+const CLEAR_PENDING = { pending_tier: null, pending_interval: null, pending_effective_at: null };
+
+/** PATCH /v1/subscriptions/:id to a new variant. Throws on a non-2xx response. */
+async function lsPatchVariant(
+  subscriptionId: string,
+  variantId: string,
+  opts: { invoiceImmediately?: boolean; disableProrations?: boolean },
+): Promise<any> {
+  const lsRes = await fetch(`${LS_API_BASE}/subscriptions/${subscriptionId}`, {
+    method:  'PATCH',
+    headers: lsHeaders(),
+    body: JSON.stringify({
+      data: {
+        type: 'subscriptions',
+        id:   String(subscriptionId),
+        attributes: {
+          variant_id: Number(variantId),
+          ...(opts.invoiceImmediately ? { invoice_immediately: true } : {}),
+          ...(opts.disableProrations  ? { disable_prorations:  true } : {}),
+        },
+      },
+    }),
+  });
+  const body = await lsRes.json().catch(() => ({}));
+  if (!lsRes.ok) {
+    throw new Error(`LS PATCH subscription ${subscriptionId} failed: ${lsRes.status} ${JSON.stringify(body)}`);
+  }
+  return body;
+}
+
+/**
+ * Applies a scheduled downgrade once its period has ended.
+ * Returns true if it was applied.
+ */
+async function applyPendingIfDue(row: LsSubRow): Promise<boolean> {
+  if (!row?.pending_tier || !isPendingDue(row.pending_effective_at)) return false;
+
+  const now = new Date().toISOString();
+  await db
+    .from('user_subscriptions')
+    .update({
+      product_id:   row.pending_tier,
+      base_plan_id: row.pending_interval,
+      ...CLEAR_PENDING,
+      updated_at:   now,
+    })
+    .eq('purchase_token', row.purchase_token);
+
+  if (row.status && LS_ACTIVE_STATUSES.has(row.status)) {
+    await db
+      .from('users')
+      .update({ subscription_tier: row.pending_tier, updated_at: now })
+      .eq('id', row.user_id);
+  }
+
+  console.log(
+    `[billing] scheduled downgrade applied user=${row.user_id} ` +
+    `subId=${row.purchase_token} → ${row.pending_tier}/${row.pending_interval}`
+  );
+  return true;
+}
+
+/**
+ * Moves an existing Lemon Squeezy subscription to another plan.
+ *   upgrade   → switch now, charge the prorated difference immediately.
+ *   downgrade → LS bills the new price from the next renewal (no refund);
+ *               the customer keeps the current plan until then.
+ *   same plan with a downgrade pending → cancels the scheduled downgrade.
+ */
+async function changePlan(
+  userId: string,
+  sub: LsSubRow,
+  newTier: string,
+  newInterval: BillingInterval,
+  newVariantId: string,
+): Promise<{ status: number; body: Record<string, unknown> }> {
+  const subId = sub.purchase_token;
+  const accessTier = sub.product_id ?? 'free';
+  const accessInterval: BillingInterval = sub.base_plan_id === 'yearly' ? 'yearly' : 'monthly';
+  const kind = classifyPlanChange(accessTier, accessInterval, newTier, newInterval);
+  const now  = new Date().toISOString();
+
+  console.log(
+    `[billing/change-plan] user=${userId} subId=${subId} ` +
+    `${accessTier}/${accessInterval} → ${newTier}/${newInterval} (${kind}) ` +
+    `pending=${sub.pending_tier ?? 'none'}`
+  );
+
+  if (kind === 'same') {
+    if (!sub.pending_tier) return { status: 400, body: { error: 'already_on_plan' } };
+    // Customer changed their mind about a scheduled downgrade: put billing back on
+    // the plan they already paid for. No charge, access unchanged.
+    await lsPatchVariant(subId, newVariantId, { disableProrations: true });
+    await db.from('user_subscriptions')
+      .update({ ...CLEAR_PENDING, updated_at: now })
+      .eq('purchase_token', subId);
+    return { status: 200, body: { changed: true, effective: 'now', tier: newTier } };
+  }
+
+  if (kind === 'upgrade') {
+    if (sub.pending_tier) {
+      // LS is already billing the lower pending plan. Restore the plan the customer
+      // paid for first (no charge), so the upgrade proration is charged from there.
+      const accessVariant = getVariantId(accessTier, accessInterval);
+      if (accessVariant) {
+        await lsPatchVariant(subId, accessVariant, { disableProrations: true });
+        await db.from('user_subscriptions')
+          .update({ ...CLEAR_PENDING, updated_at: now })
+          .eq('purchase_token', subId);
+      }
+    }
+
+    await lsPatchVariant(subId, newVariantId, { invoiceImmediately: true });
+
+    await db.from('user_subscriptions')
+      .update({ product_id: newTier, base_plan_id: newInterval, ...CLEAR_PENDING, updated_at: now })
+      .eq('purchase_token', subId);
+    await db.from('users')
+      .update({ subscription_tier: newTier, updated_at: now })
+      .eq('id', userId);
+
+    return { status: 200, body: { changed: true, effective: 'now', tier: newTier } };
+  }
+
+  // ── downgrade ──
+  if (!sub.expires_at) return { status: 409, body: { error: 'no_period_end' } };
+
+  // Record the pending change BEFORE patching LS, so the subscription_updated
+  // webhook that follows the PATCH already sees it and keeps the current tier.
+  await db.from('user_subscriptions')
+    .update({
+      pending_tier:         newTier,
+      pending_interval:     newInterval,
+      pending_effective_at: sub.expires_at,
+      updated_at:           now,
+    })
+    .eq('purchase_token', subId);
+
+  let effectiveAt = sub.expires_at;
+  try {
+    const body = await lsPatchVariant(subId, newVariantId, { disableProrations: true });
+    const renewsAt: string | undefined = body?.data?.attributes?.renews_at;
+    if (renewsAt && renewsAt !== effectiveAt) {
+      effectiveAt = renewsAt;
+      await db.from('user_subscriptions')
+        .update({ pending_effective_at: renewsAt })
+        .eq('purchase_token', subId);
+    }
+  } catch (err) {
+    // Roll back to whatever was scheduled before
+    await db.from('user_subscriptions')
+      .update({
+        pending_tier:         sub.pending_tier,
+        pending_interval:     sub.pending_interval,
+        pending_effective_at: sub.pending_effective_at,
+        updated_at:           new Date().toISOString(),
+      })
+      .eq('purchase_token', subId);
+    throw err;
+  }
+
+  return { status: 200, body: { changed: true, effective: 'period_end', tier: newTier, effectiveAt } };
+}
+
 // ── POST /api/billing/checkout ────────────────────────────────────────────────
-// Creates a Lemon Squeezy checkout session for a subscription upgrade.
+// New subscribers: creates a Lemon Squeezy checkout session.
+// Existing Lemon Squeezy subscribers: changes the plan in place (see changePlan).
 billingRouter.post('/checkout', verifyToken, async (req: any, res) => {
   try {
     if (!lsConfigured()) {
@@ -116,6 +300,43 @@ billingRouter.post('/checkout', verifyToken, async (req: any, res) => {
     const variantId = getVariantId(tier, interval);
     if (!variantId) {
       res.status(503).json({ error: 'payments not configured for this tier/interval' });
+      return;
+    }
+
+    // Existing subscribers change plan in place. A second checkout would create a
+    // second subscription and bill both every month.
+    const { data: playSub } = await db
+      .from('user_subscriptions')
+      .select('id')
+      .eq('user_id', req.user.id)
+      .eq('platform', 'google_play')
+      .in('status', ['active', 'grace_period'])
+      .limit(1)
+      .maybeSingle();
+
+    if (playSub) {
+      res.status(409).json({ error: 'play_subscription' });
+      return;
+    }
+
+    const { data: lsSub } = await db
+      .from('user_subscriptions')
+      .select(LS_SUB_COLUMNS)
+      .eq('user_id', req.user.id)
+      .eq('platform', 'lemonsqueezy')
+      .in('status', [...LS_ACTIVE_STATUSES])
+      .order('created_at', { ascending: false })
+      .limit(1)
+      .maybeSingle();
+
+    if (lsSub) {
+      try {
+        const result = await changePlan(req.user.id, lsSub as LsSubRow, tier, interval, variantId);
+        res.status(result.status).json(result.body);
+      } catch (changeErr: any) {
+        console.error('[POST /api/billing/checkout] plan change failed:', changeErr.message);
+        res.status(502).json({ error: 'Plan change failed' });
+      }
       return;
     }
 
@@ -176,7 +397,7 @@ billingRouter.get('/status', verifyToken, async (req: any, res) => {
     const [userRow, subRow] = await Promise.all([
       db.from('users').select('subscription_tier').eq('id', req.user.id).single(),
       db.from('user_subscriptions')
-        .select('platform, status, expires_at, raw_notification')
+        .select(`raw_notification, platform, ${LS_SUB_COLUMNS}`)
         .eq('user_id', req.user.id)
         .order('created_at', { ascending: false })
         .limit(1)
@@ -185,9 +406,17 @@ billingRouter.get('/status', verifyToken, async (req: any, res) => {
 
     if (userRow.error || !userRow.data) throw new Error('User not found');
 
-    const tier: string = userRow.data.subscription_tier ?? 'free';
+    let tier: string = userRow.data.subscription_tier ?? 'free';
+    const sub = subRow.data as (LsSubRow & { platform: string; raw_notification: any }) | null;
+
+    // Safety net in case the renewal webhook that applies a scheduled downgrade was missed.
+    if (sub?.platform === 'lemonsqueezy' && sub.pending_tier && await applyPendingIfDue(sub)) {
+      if (sub.status && LS_ACTIVE_STATUSES.has(sub.status)) tier = sub.pending_tier;
+      sub.pending_tier = null;
+      sub.pending_effective_at = null;
+    }
+
     const monthlyPrice = TIER_PRICING[tier]?.monthly ?? null;
-    const sub = subRow.data;
 
     const isActive = tier !== 'free';
     const platform: string | null = sub?.platform ?? null;
@@ -205,7 +434,11 @@ billingRouter.get('/status', verifyToken, async (req: any, res) => {
       }
     }
 
-    res.json({ tier, monthlyPrice, isActive, platform, cancelAt, portalUrl });
+    res.json({
+      tier, monthlyPrice, isActive, platform, cancelAt, portalUrl,
+      pendingTier:        sub?.pending_tier ?? null,
+      pendingEffectiveAt: sub?.pending_effective_at ?? null,
+    });
   } catch (err: any) {
     console.error('[GET /api/billing/status]', err);
     res.status(500).json({ error: err.message });
@@ -456,6 +689,22 @@ billingRouter.post('/lemon/webhook', async (req: Request, res) => {
       return;
     }
 
+    // ── subscription_payment_success ───────────────────────────────────────
+    // The payload is a subscription INVOICE (data.id is the invoice id), not a
+    // subscription, so it must never be upserted into user_subscriptions.
+    // A renewal is the moment a scheduled downgrade takes effect.
+    if (eventName === 'subscription_payment_success') {
+      const subId = String(dataAttr.subscription_id ?? '');
+      const { data: subRow } = await db
+        .from('user_subscriptions')
+        .select(LS_SUB_COLUMNS)
+        .eq('purchase_token', subId)
+        .maybeSingle();
+      if (subRow) await applyPendingIfDue(subRow as LsSubRow);
+      console.log(`[lemon/webhook] payment_success subId=${subId} invoice=${payload?.data?.id}`);
+      return;
+    }
+
     // ── subscription events ─────────────────────────────────────────────────
     const SUBSCRIPTION_EVENTS = new Set([
       'subscription_created',
@@ -463,7 +712,6 @@ billingRouter.post('/lemon/webhook', async (req: Request, res) => {
       'subscription_resumed',
       'subscription_cancelled',
       'subscription_expired',
-      'subscription_payment_success',
     ]);
 
     if (!SUBSCRIPTION_EVENTS.has(eventName)) {
@@ -475,10 +723,11 @@ billingRouter.post('/lemon/webhook', async (req: Request, res) => {
     const lsStatus: string = dataAttr.status ?? 'unknown';
     const variantId: string = String(dataAttr.variant_id ?? '');
 
-    // Resolve tier: prefer custom_data.tier, fallback to variant map
-    let tier: string | null = customData.tier ?? null;
-    if (!tier || !TIER_ORDER.includes(tier)) {
-      tier = VARIANT_MAP[variantId]?.tier ?? null;
+    // Resolve tier from the subscription's CURRENT variant. custom_data.tier is
+    // frozen at checkout, so after a plan change it would point at the old plan.
+    let tier: string | null = VARIANT_MAP[variantId]?.tier ?? null;
+    if (!tier && customData.tier && TIER_ORDER.includes(customData.tier)) {
+      tier = customData.tier;
     }
 
     const interval: 'monthly' | 'yearly' =
@@ -487,14 +736,25 @@ billingRouter.post('/lemon/webhook', async (req: Request, res) => {
 
     const expiresAt: string | null = dataAttr.ends_at ?? dataAttr.renews_at ?? null;
 
+    // A scheduled downgrade keeps the customer on the plan they paid for until the
+    // period ends, even though Lemon Squeezy already reports the lower variant.
+    const { data: pendingRow } = await db
+      .from('user_subscriptions')
+      .select('pending_tier, pending_effective_at')
+      .eq('purchase_token', subscriptionId)
+      .maybeSingle();
+    const hasPending     = !!pendingRow?.pending_tier;
+    const isTerminal     = lsStatus === 'expired' || lsStatus === 'unpaid';
+    const holdForPending = hasPending && !isTerminal && !isPendingDue(pendingRow?.pending_effective_at);
+
     // Upsert user_subscriptions
     const { error: upsertError } = await db.from('user_subscriptions').upsert(
       {
         user_id:          userId,
         platform:         'lemonsqueezy',
         purchase_token:   subscriptionId,
-        product_id:       tier,
-        base_plan_id:     interval,
+        ...(holdForPending ? {} : { product_id: tier, base_plan_id: interval }),
+        ...(hasPending && !holdForPending ? CLEAR_PENDING : {}),
         expires_at:       expiresAt,
         status:           lsStatus,
         acknowledged:     true,
@@ -510,6 +770,14 @@ billingRouter.post('/lemon/webhook', async (req: Request, res) => {
         upsertError
       );
       // Don't abort — still attempt tier update
+    }
+
+    if (holdForPending) {
+      console.log(
+        `[lemon/webhook] subId=${subscriptionId} downgrade to ${pendingRow?.pending_tier} ` +
+        `scheduled for ${pendingRow?.pending_effective_at} — keeping current tier`
+      );
+      return;
     }
 
     if (!tier) {

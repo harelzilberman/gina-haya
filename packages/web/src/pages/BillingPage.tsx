@@ -57,6 +57,8 @@ export function BillingPage() {
   const [cancelledAt,       setCancelledAt]       = useState<string | null>(null);
   const [cancelError,       setCancelError]       = useState<string | null>(null);
   const [portalUrl,         setPortalUrl]         = useState<string | null>(null);
+  const [pendingTier,       setPendingTier]       = useState<string | null>(null);
+  const [pendingAt,         setPendingAt]         = useState<string | null>(null);
 
   // Polling state for post-payment tier refresh
   const [polling,      setPolling]      = useState(status === 'success');
@@ -120,8 +122,14 @@ export function BillingPage() {
   // Fetch billing status to get the Lemon Squeezy customer portal URL
   useEffect(() => {
     if (!session?.access_token || tier === 'free') return;
-    api.get<{ portalUrl?: string | null }>('/api/billing/status', session.access_token)
-      .then(data => { if (data.portalUrl) setPortalUrl(data.portalUrl); })
+    api.get<{ portalUrl?: string | null; pendingTier?: string | null; pendingEffectiveAt?: string | null }>(
+      '/api/billing/status', session.access_token,
+    )
+      .then(data => {
+        if (data.portalUrl) setPortalUrl(data.portalUrl);
+        setPendingTier(data.pendingTier ?? null);
+        setPendingAt(data.pendingEffectiveAt ?? null);
+      })
       .catch(() => { /* non-fatal */ });
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [session?.access_token, tier]);
@@ -222,6 +230,33 @@ export function BillingPage() {
               color:           SAGE,
             }}>
               {t('status.success', { name: tierName })}
+            </div>
+          )}
+          {status === 'upgraded' && (
+            <div style={{
+              ...cardStyle(),
+              border:          '1px solid rgba(0,229,195,0.4)',
+              backgroundColor: 'rgba(74,156,104,0.15)',
+              fontFamily:      EN_HEADING,
+              fontSize:        '14px',
+              color:           SAGE,
+            }}>
+              {t('status.upgraded', { name: tierName })}
+            </div>
+          )}
+          {pendingTier && pendingAt && (
+            <div style={{
+              ...cardStyle(),
+              border:          '1px solid rgba(0,229,195,0.25)',
+              backgroundColor: 'rgba(9,20,16,0.4)',
+              fontFamily:      EN_HEADING,
+              fontSize:        '14px',
+              color:           `${PARCH}CC`,
+            }}>
+              {t('status.downgradeScheduled', {
+                name: isHe ? getLimits(pendingTier).displayNameHe : t(`tierNames.${pendingTier}`, { defaultValue: pendingTier }),
+                date: new Date(pendingAt).toLocaleDateString(isHe ? 'he-IL' : 'en-US'),
+              })}
             </div>
           )}
           {status === 'cancelled' && (

@@ -9,6 +9,7 @@
 
 import crypto from 'crypto';
 import { lsStatusToTierAction, LS_ACTIVE_STATUSES } from '../routes/billing';
+import { classifyPlanChange, isPendingDue, PENDING_DUE_TOLERANCE_MS } from '../services/planChange';
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
 
@@ -145,6 +146,33 @@ assertEqual(
   lsStatusToTierAction('paused', futureDate, 'gardener_pro').newTier,
   null,
   'paused → null (leave tier unchanged)'
+);
+
+console.log('\nTest 7: classifyPlanChange');
+
+assertEqual(classifyPlanChange('gardener_pro', 'monthly', 'advanced', 'monthly'), 'upgrade', 'Grower → Gardener = upgrade');
+assertEqual(classifyPlanChange('advanced', 'yearly', 'professional', 'monthly'), 'upgrade', 'higher tier wins over shorter interval');
+assertEqual(classifyPlanChange('advanced', 'monthly', 'advanced', 'yearly'), 'upgrade', 'monthly → yearly = upgrade');
+assertEqual(classifyPlanChange('professional', 'monthly', 'gardener_pro', 'monthly'), 'downgrade', 'Professional → Grower = downgrade');
+assertEqual(classifyPlanChange('advanced', 'yearly', 'advanced', 'monthly'), 'downgrade', 'yearly → monthly = downgrade');
+assertEqual(classifyPlanChange('advanced', 'monthly', 'advanced', 'monthly'), 'same', 'same tier + interval = same');
+
+console.log('\nTest 8: isPendingDue');
+
+const nowT = new Date('2026-11-01T12:00:00Z');
+assertEqual(isPendingDue(null, nowT), false, 'no date → not due');
+assertEqual(isPendingDue('not-a-date', nowT), false, 'invalid date → not due');
+assertEqual(isPendingDue('2026-11-10T12:00:00Z', nowT), false, 'future → not due');
+assertEqual(isPendingDue('2026-11-01T11:00:00Z', nowT), true, 'past → due');
+assertEqual(
+  isPendingDue(new Date(nowT.getTime() + PENDING_DUE_TOLERANCE_MS - 1000).toISOString(), nowT),
+  true,
+  'within tolerance before renewal → due'
+);
+assertEqual(
+  isPendingDue(new Date(nowT.getTime() + PENDING_DUE_TOLERANCE_MS + 60_000).toISOString(), nowT),
+  false,
+  'beyond tolerance → not due'
 );
 
 // ── Summary ───────────────────────────────────────────────────────────────────

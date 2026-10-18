@@ -45,7 +45,7 @@ const TIER_NAMES_EN: Record<string, string> = {
 
 export function UpgradeModal() {
   const { close, billingPeriod, targetTier } = useUpgradeModalStore();
-  const { session, profile }     = useAuthStore();
+  const { session, profile, loadProfile } = useAuthStore();
   const { tier: currentTier }   = useTier();
   const { i18n, t }              = useTranslation('billing');
   const isHe                    = i18n.language === 'he';
@@ -109,12 +109,21 @@ export function UpgradeModal() {
 
     setLoading(tier);
     const interval = billingPeriod === 'annual' ? 'yearly' : 'monthly';
-    api.post<{ checkoutUrl?: string }>(
+    api.post<{ checkoutUrl?: string; changed?: boolean; effective?: 'now' | 'period_end' }>(
       '/api/billing/checkout',
       { tier, interval },
       session.access_token,
-    ).then(data => {
-      if (data.checkoutUrl) window.location.href = data.checkoutUrl;
+    ).then(async data => {
+      if (data.checkoutUrl) {
+        window.location.href = data.checkoutUrl;
+        return;
+      }
+      // Existing subscriber — the plan was changed in place (no new checkout).
+      if (data.changed) {
+        await loadProfile();
+        close();
+        navigate(`/billing?status=${data.effective === 'now' ? 'upgraded' : 'downgradeScheduled'}`);
+      }
     }).catch(() => {
       // silent
     }).finally(() => {
@@ -435,18 +444,6 @@ export function UpgradeModal() {
                       }}>
                         {isCurrent ? t('modal.currentPlanLabel') : t('modal.free')}
                       </div>
-                    ) : isDowngrade ? (
-                      <div style={{
-                        padding:         '10px',
-                        borderRadius:    '8px',
-                        textAlign:       'center',
-                        fontFamily:      EN_HEADING,
-                        fontSize:        '13px',
-                        color:           `${PARCH}33`,
-                        backgroundColor: 'rgba(255,255,255,0.03)',
-                      }}>
-                        {t('modal.notAvailable')}
-                      </div>
                     ) : (
                       <button
                         onClick={() => handleUpgrade(tier)}
@@ -478,7 +475,7 @@ export function UpgradeModal() {
                           if (!isPro) el.style.backgroundColor = 'transparent';
                         }}
                       >
-                        {loading === tier ? '...' : t('modal.upgradeNow')}
+                        {loading === tier ? '...' : isDowngrade ? t('modal.switchTo') : t('modal.upgradeNow')}
                       </button>
                     )}
                   </div>

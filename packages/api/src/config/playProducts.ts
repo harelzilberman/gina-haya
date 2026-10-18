@@ -18,7 +18,7 @@ export const PLAY_PACKAGE_NAME = 'com.ginahaya.gina_haya';
  * that don't want to import the full shared package.
  */
 export const TIER_LABEL_HE: Record<string, string> = {
-  free:           'גנן מתחיל',
+  free:           'גנן',
   gardener_pro:   'גנן ביתי',
   advanced:       'גנן מתקדם',
   professional:   'גנן מקצועי',
