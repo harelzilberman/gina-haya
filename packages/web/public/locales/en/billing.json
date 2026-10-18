@@ -8,8 +8,8 @@
   "upgradeCta": "See all plans",
   "tierNames": {
     "free": "Free",
-    "gardener_pro": "Gardener Pro",
-    "advanced": "Advanced",
+    "gardener_pro": "Grower",
+    "advanced": "Gardener",
     "professional": "Professional"
   },
   "cancel": {
@@ -72,8 +72,8 @@
       "unlimitedTrackers": "Unlimited growth trackers",
       "pdfExport": "PDF export per garden",
       "earlyAccess": "Early access to features",
-      "allGardenerPro": "Everything in Gardener Pro",
-      "allAdvanced": "Everything in Advanced",
+      "allGardenerPro": "Everything in Grower",
+      "allAdvanced": "Everything in Gardener",
       "prioritySupport": "Priority support",
       "advancedStats": "Advanced statistics"
     },

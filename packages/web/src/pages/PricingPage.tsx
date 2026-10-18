@@ -356,7 +356,7 @@ export function PricingPage() {
             </Link>
           </div>
 
-          {/* ── Gardener Pro — featured ── */}
+          {/* ── Grower — featured ── */}
           <div
             className="pricing-card"
             style={{
@@ -386,7 +386,7 @@ export function PricingPage() {
             </div>
             {isHe && (
               <div style={{ fontFamily: EN_HEADING, fontSize: '13px', color: MUTED, marginBottom: '20px' }}>
-                Gardener Pro
+                Grower
               </div>
             )}
             <div style={{ marginBottom: isAnnual ? '8px' : '24px' }}>
@@ -424,7 +424,7 @@ export function PricingPage() {
             </div>
             {isHe && (
               <div style={{ fontFamily: EN_HEADING, fontSize: '13px', color: MUTED, marginBottom: '20px' }}>
-                Advanced
+                Gardener
               </div>
             )}
             <div style={{ marginBottom: isAnnual ? '8px' : '24px' }}>

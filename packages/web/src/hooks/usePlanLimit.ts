@@ -12,8 +12,8 @@ export interface PlanLimits {
 // en display name + badge color per tier (Hebrew name comes from shared getLimits)
 const TIER_META: Record<string, { en: string; color: string }> = {
   free:         { en: 'Free',         color: '#9CA3AF' },
-  gardener_pro: { en: 'Gardener Pro', color: '#00e5c3' },
-  advanced:     { en: 'Advanced',     color: '#56B87A' },
+  gardener_pro: { en: 'Grower',       color: '#00e5c3' },
+  advanced:     { en: 'Gardener',     color: '#56B87A' },
   professional: { en: 'Professional', color: '#60A5FA' },
   owner:        { en: 'Owner',        color: '#FFD700' },
 };

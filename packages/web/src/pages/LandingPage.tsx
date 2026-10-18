@@ -441,12 +441,12 @@ const PRICING_EN: PricingPlan[] = [
     cta: 'Start Now', highlight: false, badge: '', accent: MUTED,
   },
   {
-    name: 'Gardener', price: String(TIER_PRICING.gardener_pro.monthly),
+    name: 'Grower', price: String(TIER_PRICING.gardener_pro.monthly),
     features: ['Full biodynamic calendar', `${_GL.maxGardens} gardens`, `Up to ${_GL.maxTrackers} trackers`, `${_GL.maxVisionLooksPerMonth} AI analyses/month`, `${_GL.maxChupChuPerMonth} ChupChu chats/month`, 'Full encyclopedia'],
     cta: 'Choose Plan', highlight: true, badge: 'Most Popular', accent: BIO_CYAN,
   },
   {
-    name: 'Advanced', price: String(TIER_PRICING.advanced.monthly),
+    name: 'Gardener', price: String(TIER_PRICING.advanced.monthly),
     features: ['Everything in Gardener', `${_AL.maxGardens} gardens`, 'Unlimited trackers', `${_AL.maxVisionLooksPerMonth} AI analyses/month`, `${_AL.maxChupChuPerMonth} chats/month`, 'PDF export'],
     cta: 'Choose Plan', highlight: false, badge: '', accent: BIO_CYAN,
   },

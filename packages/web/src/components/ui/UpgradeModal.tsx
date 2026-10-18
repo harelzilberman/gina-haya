@@ -38,8 +38,8 @@ const _p = getLimits('professional');
 
 const TIER_NAMES_EN: Record<string, string> = {
   free:         'Free',
-  gardener_pro: 'Gardener Pro',
-  advanced:     'Advanced',
+  gardener_pro: 'Grower',
+  advanced:     'Gardener',
   professional: 'Professional',
 };
 

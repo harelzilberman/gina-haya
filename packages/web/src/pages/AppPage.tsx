@@ -381,7 +381,7 @@ export function AppPage() {
                 {isHe ? '\u05de\u05d5\u05de\u05dc\u05e5' : 'Recommended'}
               </span>
               <p style={{ fontFamily: EN_HEADING, fontSize: '10px', fontWeight: 700, letterSpacing: '0.18em', textTransform: 'uppercase', color: BIO_CYAN, marginBottom: '12px' }}>
-                Pro
+                {isHe ? GP_L.displayNameHe : 'Grower'}
               </p>
               <p style={{ fontFamily: FRANK, fontSize: '36px', fontWeight: 700, color: TEXT, marginBottom: '4px' }}>
                 {isHe ? `${GP_PRICE} ₪` : `₪${GP_PRICE}`}
