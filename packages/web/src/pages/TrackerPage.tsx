@@ -11,6 +11,9 @@ import { TaskApprovalModal } from '../components/tracker/TaskApprovalModal';
 import { UpgradeBanner } from '../components/upgrade/UpgradeBanner';
 import { usePlanLimit } from '../hooks/usePlanLimit';
 import { EN_HEADING } from '../styles/fonts';
+import { getLimits, TIER_PRICING } from '@gina-haya/shared';
+
+const GP_PRICE = TIER_PRICING.gardener_pro.monthly;
 
 const EARTH = '#050d0a';
 const GOLD  = '#00e5c3';
@@ -215,8 +218,8 @@ export function TrackerPage() {
                 </h3>
                 <p style={{ fontFamily: EN_HEADING, fontSize: '14px', color: `${PARCH}99`, margin: '0 0 20px', lineHeight: 1.6 }}>
                   {isHe
-                    ? 'שדרג לגנן ב-₪18 לחודש למעקבים ללא הגבלה'
-                    : 'Upgrade to Grower for ₪18/mo and track unlimited plants'}
+                    ? `שדרג את התכנית כדי לעקוב אחר צמחים נוספים — החל מ-₪${GP_PRICE} לחודש`
+                    : `Upgrade your plan to track more plants — from ₪${GP_PRICE}/mo`}
                 </p>
                 <button
                   onClick={() => navigate('/pricing')}
@@ -235,8 +238,8 @@ export function TrackerPage() {
                 </button>
                 <p style={{ fontFamily: EN_HEADING, fontSize: '12px', color: `${PARCH}60`, margin: 0 }}>
                   {isHe
-                    ? (<>או <a href="/shop" style={{ color: GOLD }}>רכוש מעקב בודד ב-₪3.6</a></>)
-                    : (<>or <a href="/shop" style={{ color: GOLD }}>buy a single tracker for ₪3.6</a></>)}
+                    ? (<>או <a href="/shop" style={{ color: GOLD }}>רכוש חבילת מעקבים בחנות — החל מ-₪12</a></>)
+                    : (<>or <a href="/shop" style={{ color: GOLD }}>buy a tracker pack in the shop — from ₪12</a></>)}
                 </p>
               </div>
             )}

@@ -1,6 +1,7 @@
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { EN_HEADING } from '../../styles/fonts';
+import { getLimits, TIER_PRICING, TIER_ORDER, type TierLimits } from '@gina-haya/shared';
 
 const EARTH = '#050d0a';
 const GOLD  = '#00e5c3';
@@ -10,15 +11,31 @@ const FRANK = '"Frank Ruhl Libre", Georgia, serif';
 export type UpgradeLimitType =
   | 'plants' | 'trackers' | 'analysis' | 'chupchu' | 'gardens' | 'encyclopedia';
 
-// Which tier each limit type upgrades to — used to resolve the tier display name.
-const UPGRADE_TIER: Record<UpgradeLimitType, string> = {
-  plants:      'gardener_pro',
-  trackers:    'gardener_pro',
-  analysis:    'gardener_pro',
-  chupchu:     'gardener_pro',
-  gardens:     'professional',
-  encyclopedia:'gardener_pro',
+// The TierLimits field behind each limit type.
+const LIMIT_FIELD: Record<UpgradeLimitType, keyof TierLimits> = {
+  plants:       'maxPlantsPerGarden',
+  trackers:     'maxTrackers',
+  analysis:     'maxVisionLooksPerMonth',
+  chupchu:      'maxChupChuPerMonth',
+  gardens:      'maxGardens',
+  encyclopedia: 'encyclopediaAccess',
 };
+
+// Cheapest tier above the user's current one that actually raises the limit they hit.
+// All numbers shown in the modal come from TIER_LIMITS / TIER_PRICING, never from copy.
+function resolveUpgradeTier(limitType: UpgradeLimitType, currentTier: string, daily: boolean): string {
+  const field: keyof TierLimits = daily ? 'maxVisionLooksPerDay' : LIMIT_FIELD[limitType];
+  const current = getLimits(currentTier)[field];
+  const start = (TIER_ORDER as readonly string[]).indexOf(currentTier);
+  for (const tier of TIER_ORDER.slice(start + 1)) {
+    const next = getLimits(tier)[field];
+    const better = typeof next === 'boolean'
+      ? next && !current
+      : current !== null && (next === null || (next as number) > (current as number));
+    if (better) return tier;
+  }
+  return TIER_ORDER[TIER_ORDER.length - 1];
+}
 
 interface Props {
   isOpen: boolean;
@@ -32,7 +49,7 @@ interface Props {
   scope?: 'daily' | 'monthly';
 }
 
-export function UpgradeModal({ isOpen, onClose, limitType, scope }: Props) {
+export function UpgradeModal({ isOpen, onClose, limitType, currentTier = 'free', scope }: Props) {
   const navigate = useNavigate();
   const { t, i18n } = useTranslation('billing');
   const isHe = i18n.language === 'he';
@@ -45,15 +62,26 @@ export function UpgradeModal({ isOpen, onClose, limitType, scope }: Props) {
 
   const isDaily = limitType === 'analysis' && scope === 'daily';
 
-  const tierName = t(`tierNames.${UPGRADE_TIER[limitType]}`);
+  const upgradeTier = resolveUpgradeTier(limitType, currentTier, isDaily);
+  const target      = getLimits(upgradeTier);
+  const vars = {
+    tier:          t(`tierNames.${upgradeTier}`),
+    price:         TIER_PRICING[upgradeTier]?.monthly,
+    plants:        target.maxPlantsPerGarden,
+    gardens:       target.maxGardens,
+    analyses:      target.maxVisionLooksPerMonth,
+    dailyAnalyses: target.maxVisionLooksPerDay,
+    chats:         target.maxChupChuPerMonth,
+    currentChats:  getLimits(currentTier).maxChupChuPerMonth,
+  };
 
   const title         = isDaily
-    ? t('upgradeLimit.analysis.dailyTitle')
-    : t(`upgradeLimit.${limitType}.title`);
+    ? t('upgradeLimit.analysis.dailyTitle', vars)
+    : t(`upgradeLimit.${limitType}.title`, vars);
   const body          = isDaily
-    ? t('upgradeLimit.analysis.dailyBody')
-    : t(`upgradeLimit.${limitType}.body`);
-  const primaryLabel  = t(`upgradeLimit.${limitType}.primaryLabel`, { tier: tierName });
+    ? t('upgradeLimit.analysis.dailyBody', vars)
+    : t(`upgradeLimit.${limitType}.body`, vars);
+  const primaryLabel  = t(`upgradeLimit.${limitType}.primaryLabel`, vars);
   const secondaryLabel = (limitType === 'analysis' && !isDaily)
     ? t('upgradeLimit.analysis.secondaryLabel')
     : null;

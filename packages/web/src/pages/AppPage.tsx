@@ -4,6 +4,11 @@ import { useTranslation } from 'react-i18next';
 import { PlayBadge } from '../components/ui/PlayBadge';
 import { playStoreUrl } from '../config/app-links';
 import { EN_HEADING } from '../styles/fonts';
+import { getLimits, TIER_PRICING } from '@gina-haya/shared';
+
+const FREE_L   = getLimits('free');
+const GP_L     = getLimits('gardener_pro');
+const GP_PRICE = TIER_PRICING.gardener_pro.monthly;
 
 // ── Design tokens (matching LandingPage) ───────────────────────────────────
 const NIGHT      = '#050d0a';
@@ -73,7 +78,7 @@ const FAQ_HE: Array<{ q: string; a: string }> = [
   },
   {
     q: '\u05de\u05d4 \u05db\u05dc\u05d5\u05dc \u05d1\u05ea\u05d5\u05db\u05e0\u05d9\u05ea \u05d4\u05d7\u05d9\u05e0\u05de\u05d9\u05ea\u003f',
-    a:  '\u05db 20 \u05d4\u05d5\u05d3\u05e2\u05d5\u05ea \u05dc\u05e6\u0027\u05d5\u05e4\u05e6\u0027\u05d5 \u05dc\u05d7\u05d5\u05d3\u05e9\u002c \u05d2\u05d9\u05e0\u05d4 \u05d0\u05d7\u05ea\u002c 10 \u05e6\u05de\u05d7\u05d9\u05dd\u002c \u05d5\u05dc\u05d5\u05d7 \u05d1\u05d9\u05d5\u05d3\u05d9\u05e0\u05de\u05d9 \u05de\u05dc\u05d0.',
+    a:  `${FREE_L.maxChupChuPerMonth} הודעות לצ'ופצ'ו בחודש, גינה אחת עם עד ${FREE_L.maxPlantsPerGarden} צמחים, ולוח ביודינמי מלא.`,
   },
 ];
 
@@ -81,7 +86,7 @@ const FAQ_EN: Array<{ q: string; a: string }> = [
   { q: 'Is the app available for iOS?',          a: 'Android only for now. iOS is planned.' },
   { q: 'Does the app work outside Israel?',      a: 'Israel only for now. More regions are planned.' },
   { q: 'Do I need an account?',                  a: 'Yes, a free registration is required — sign up on the website or in the app.' },
-  { q: "What's included in the free plan?",      a: "~20 Chupchu messages/month, one garden, 10 plants, and full biodynamic calendar." },
+  { q: "What's included in the free plan?",      a: `${FREE_L.maxChupChuPerMonth} Chupchu messages/month, one garden with up to ${FREE_L.maxPlantsPerGarden} plants, and the full biodynamic calendar.` },
 ];
 
 export function AppPage() {
@@ -344,11 +349,11 @@ export function AppPage() {
               <ul style={{ listStyle: 'none', padding: 0, margin: 0, display: 'flex', flexDirection: 'column', gap: '10px' }}>
                 {(isHe
                   ? ['\u05d3\u05e3 \u05d1\u05d9\u05ea, \u05dc\u05d5\u05d7 \u05d9\u05e8\u05d7 \u05d5\u05d8\u05d9\u05e4 \u05d9\u05d5\u05de\u05d9',
-                     '\u05db 20 \u05d4\u05d5\u05d3\u05e2\u05d5\u05ea \u05dc\u05e6\u0027\u05d5\u05e4\u05e6\u0027\u05d5 \u05d1\u05d7\u05d5\u05d3\u05e9',
-                     '\u05d2\u05d9\u05e0\u05d4 \u05d0\u05d7\u05ea, 10 \u05e6\u05de\u05d7\u05d9\u05dd']
+                     `${FREE_L.maxChupChuPerMonth} הודעות לצ'ופצ'ו בחודש`,
+                     `גינה אחת, עד ${FREE_L.maxPlantsPerGarden} צמחים`]
                   : ['Home screen, moon calendar & daily tip',
-                     '~20 Chupchu messages/month',
-                     'One garden, 10 plants']
+                     `${FREE_L.maxChupChuPerMonth} Chupchu messages/month`,
+                     `One garden, up to ${FREE_L.maxPlantsPerGarden} plants`]
                 ).map(item => (
                   <li key={item} style={{ fontFamily: EN_HEADING, fontSize: '14px', color: TEXT_MID, display: 'flex', gap: '8px', alignItems: 'flex-start' }}>
                     <span style={{ color: BIO_CYAN, flexShrink: 0, marginTop: '1px' }}>✓</span>
@@ -379,23 +384,23 @@ export function AppPage() {
                 Pro
               </p>
               <p style={{ fontFamily: FRANK, fontSize: '36px', fontWeight: 700, color: TEXT, marginBottom: '4px' }}>
-                {isHe ? '18 \u20aa' : '₪18'}
+                {isHe ? `${GP_PRICE} ₪` : `₪${GP_PRICE}`}
               </p>
               <p style={{ fontFamily: EN_HEADING, fontSize: '13px', color: MUTED, marginBottom: '24px' }}>
                 {isHe ? '\u05dc\u05d7\u05d5\u05d3\u05e9' : '/month'}
               </p>
               <ul style={{ listStyle: 'none', padding: 0, margin: 0, display: 'flex', flexDirection: 'column', gap: '10px' }}>
                 {(isHe
-                  ? ['\u05db\u05dc \u05de\u05d4 \u05e9\u05d9\u05e9 \u05d1\u05ea\u05d5\u05db\u05e0\u05d9\u05ea \u05d4\u05d7\u05d9\u05e0\u05de\u05d9\u05ea',
-                     '\u05e6\u0027\u05d5\u05e4\u05e6\u0027\u05d5 \u05dc\u05dc\u05d0 \u05d4\u05d2\u05d1\u05dc\u05d5\u05ea',
-                     '\u05d2\u05d9\u05e0\u05d5\u05ea \u05d5\u05e6\u05de\u05d7\u05d9\u05dd \u05dc\u05dc\u05d0 \u05d2\u05d1\u05d5\u05dc',
-                     '\u05d3\u05d5\u05d7\u05d5\u05ea \u05e6\u05de\u05d9\u05d7\u05d4 \u05de\u05ea\u05e7\u05d3\u05de\u05d9\u05dd',
-                     '\u05ea\u05de\u05d9\u05db\u05d4 \u05e7\u05d3\u05d9\u05de\u05d4']
+                  ? ['כל מה שיש בתוכנית החינמית',
+                     `${GP_L.maxChupChuPerMonth} הודעות לצ'ופצ'ו בחודש`,
+                     `${GP_L.maxGardens} גינות, עד ${GP_L.maxPlantsPerGarden} צמחים בכל גינה`,
+                     `${GP_L.maxVisionLooksPerMonth} ניתוחי AI בחודש`,
+                     `עד ${GP_L.maxTrackers} מעקבי גידול`]
                   : ['Everything in free',
-                     'Unlimited Chupchu messages',
-                     'Unlimited gardens & plants',
-                     'Advanced growth reports',
-                     'Priority support']
+                     `${GP_L.maxChupChuPerMonth} Chupchu messages/month`,
+                     `${GP_L.maxGardens} gardens, up to ${GP_L.maxPlantsPerGarden} plants each`,
+                     `${GP_L.maxVisionLooksPerMonth} AI analyses/month`,
+                     `Up to ${GP_L.maxTrackers} growth trackers`]
                 ).map(item => (
                   <li key={item} style={{ fontFamily: EN_HEADING, fontSize: '14px', color: TEXT_MID, display: 'flex', gap: '8px', alignItems: 'flex-start' }}>
                     <span style={{ color: BIO_CYAN, flexShrink: 0, marginTop: '1px' }}>✓</span>

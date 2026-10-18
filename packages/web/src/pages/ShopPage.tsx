@@ -6,6 +6,10 @@ import { useAuthStore } from '../stores/authStore';
 import { api } from '../api/client';
 import BIODYNAMIC_RAW from '../../../shared/data/biodynamic-products.json';
 import { EN_HEADING } from '../styles/fonts';
+import { getLimits, TIER_PRICING } from '@gina-haya/shared';
+
+const GP_L     = getLimits('gardener_pro');
+const GP_PRICE = TIER_PRICING.gardener_pro;
 
 export type ProductId =
   | 'analysis_pack_3'
@@ -981,7 +985,7 @@ export function ShopPage() {
               color: PARCH, fontWeight: 700, marginBottom: '20px', lineHeight: 1.45,
             }}>
               12 בדיקות עולות ₪27.{' '}
-              <span style={{ color: GOLD }}>חודש שלם של הכל — ₪18.</span>
+              <span style={{ color: GOLD }}>חודש שלם עם {GP_L.maxVisionLooksPerMonth} ניתוחים ועוד — ₪{GP_PRICE.monthly}.</span>
             </div>
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(190px, 1fr))', gap: '24px' }}>
               {/* Pay-as-you-go column */}
@@ -1000,10 +1004,10 @@ export function ShopPage() {
               {/* Subscription column */}
               <div>
                 <div style={{ fontFamily: FRANK, fontSize: '15px', color: GOLD, fontWeight: 700, marginBottom: '10px' }}>
-                  מפתח לבית המלאכה — גנן ביתי
+                  מפתח לבית המלאכה — {GP_L.displayNameHe}
                 </div>
                 <ul style={{ margin: 0, padding: 0, listStyle: 'none', display: 'flex', flexDirection: 'column', gap: '7px', marginBottom: '16px' }}>
-                  {["צ'ופצ'ו בלי הגבלה", 'כל הבדיקות כלולות', 'מעקבים ללא הגבלה'].map(item => (
+                  {[`${GP_L.maxChupChuPerMonth} שיחות עם צ'ופצ'ו בחודש`, `${GP_L.maxVisionLooksPerMonth} ניתוחי AI בחודש`, `עד ${GP_L.maxTrackers} מעקבי גידול`].map(item => (
                     <li key={item} style={{ fontFamily: EN_HEADING, fontSize: '13px', color: MUTED, display: 'flex', alignItems: 'center', gap: '7px' }}>
                       <span style={{ color: GOLD, fontSize: '12px' }}>✓</span> {item}
                     </li>
@@ -1022,10 +1026,10 @@ export function ShopPage() {
                   onMouseEnter={e => { (e.currentTarget as HTMLElement).style.filter = 'brightness(1.1)'; }}
                   onMouseLeave={e => { (e.currentTarget as HTMLElement).style.filter = 'none'; }}
                 >
-                  ₪18 לחודש
+                  ₪{GP_PRICE.monthly} לחודש
                 </Link>
                 <div style={{ fontFamily: EN_HEADING, fontSize: '12px', color: MUTED }}>
-                  או ₪180 לשנה — חודשיים מתנה
+                  או ₪{GP_PRICE.annual} לשנה — חודשיים מתנה
                 </div>
               </div>
             </div>

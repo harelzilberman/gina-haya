@@ -2,6 +2,11 @@ import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { useChupChuStore } from '../../stores/chupChuStore';
 import { EN_HEADING } from '../../styles/fonts';
+import { getLimits, TIER_PRICING } from '@gina-haya/shared';
+
+const FREE_L   = getLimits('free');
+const GP_L     = getLimits('gardener_pro');
+const GP_PRICE = TIER_PRICING.gardener_pro.monthly;
 
 const NIGHT    = '#050d0a';
 const BIO_CYAN = '#00e5c3';
@@ -50,14 +55,14 @@ export function RateLimitBanner({ tier }: Props) {
     emoji    = '⚙️';
     headline = isHe ? 'לצ\'ופצ\'ו נגמר הקיטור להיום' : 'Chupchu is out of steam for today';
     body     = isHe
-      ? 'נתראה מחר עם 3 הודעות חדשות — או שדרגו ל-Pro להודעות ללא הגבלה (₪18 לחודש).'
-      : 'Back tomorrow with 3 fresh messages — or upgrade to Pro for unlimited (₪18/mo).';
+      ? `נתראה מחר עם ${FREE_L.maxChupChuPerDay} הודעות חדשות — או שדרגו ב-₪${GP_PRICE} לחודש ל-${GP_L.maxChupChuPerMonth} הודעות בחודש.`
+      : `Back tomorrow with ${FREE_L.maxChupChuPerDay} fresh messages — or upgrade for ₪${GP_PRICE}/mo to get ${GP_L.maxChupChuPerMonth} messages a month.`;
   } else {
     emoji    = '🌙';
     headline = isHe ? 'צ\'ופצ\'ו עייף קצת...' : 'Chupchu needs a rest...';
     body     = isHe
-      ? 'ניצלת את כל השיחות החודשיות שלך. שדרג ל-Pro לשיחות ללא הגבלה (₪18 לחודש).'
-      : 'You used all your monthly messages. Upgrade to Pro for unlimited messages (₪18/mo).';
+      ? `ניצלת את כל השיחות החודשיות שלך. שדרג ב-₪${GP_PRICE} לחודש ל-${GP_L.maxChupChuPerMonth} שיחות בחודש.`
+      : `You used all your monthly messages. Upgrade for ₪${GP_PRICE}/mo to get ${GP_L.maxChupChuPerMonth} messages a month.`;
   }
 
   return (
