@@ -5,7 +5,7 @@ import { verifyToken } from '../middleware/auth';
 import { attachTier } from '../middleware/tierMiddleware';
 import { analyzePlantImage, compressImageForClaude } from '../services/plantVision';
 import { fetchWeatherForRegion } from '../services/weather';
-import { todayInIsrael, assertStorageKey } from '@gina-haya/shared';
+import { todayInIsrael, assertStorageKey, israelDateToUTCMidnight } from '@gina-haya/shared';
 import { checkAndRecordVisionUse, buildVisionQuotaError } from '../services/visionQuota';
 import { userOwnsGardenPlant } from '../utils/ownership';
 
@@ -672,7 +672,13 @@ trackersRouter.post('/:id/checkin', async (req: any, res) => {
         .gte('created_at', startOfMonth.toISOString());
 
       if ((count ?? 0) >= limits.maxCheckinsPerTrackerPerMonth) {
-        const resetsAt = new Date(startOfMonth.getFullYear(), startOfMonth.getMonth() + 1, 1).toISOString();
+        // Compute resets_at as Israel midnight of the first day of next month —
+        // matches the convention used by buildVisionQuotaError.
+        const _today = todayInIsrael(); // "YYYY-MM-DD"
+        const _m = Number(_today.slice(5, 7));
+        const _y = Number(_today.slice(0, 4));
+        const _nextMonthStr = _m === 12 ? `${_y + 1}-01-01` : `${_y}-${String(_m + 1).padStart(2, '0')}-01`;
+        const resetsAt = israelDateToUTCMidnight(_nextMonthStr);
         const errPayload = { error: 'analysis_limit_reached', message: 'הגעת למגבלת הניתוחים החודשית עבור מעקב זה.', tier, limit: limits.maxCheckinsPerTrackerPerMonth, current: count, resets_at: resetsAt };
         if (!(await checkAnalysisCredit())) {
           console.log(`[limit] user ${userId} hit maxCheckinsPerTrackerPerMonth (tier=${tier})`);
