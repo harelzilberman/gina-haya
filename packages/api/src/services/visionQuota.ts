@@ -243,6 +243,7 @@ export async function checkAndRecordVisionUse(
  */
 export function buildVisionQuotaError(
   quota: Pick<VisionQuotaResult, 'used' | 'limit' | 'limitType'>,
+  tier?: string,
 ): object {
   const today = todayInIsrael(); // "YYYY-MM-DD"
   const [y, m, d] = today.split('-').map(Number);
@@ -274,6 +275,8 @@ export function buildVisionQuotaError(
     reason:    'vision_quota_exceeded',
     used:      quota.used,
     limitType: quota.limitType,
+    // Optional tier — included only when the caller passes it
+    ...(tier ? { tier } : {}),
   };
 }
 

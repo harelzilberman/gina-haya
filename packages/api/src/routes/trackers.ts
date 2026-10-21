@@ -687,7 +687,7 @@ trackersRouter.post('/:id/checkin', async (req: any, res) => {
       const gardenPlantsId: string | null = (tracker as any).garden_plants_id ?? null;
       const quota = await checkAndRecordVisionUse(userId, 'tracker_checkin', gardenPlantsId, req.tier);
       if (!quota.allowed) {
-        return res.status(403).json(buildVisionQuotaError(quota));
+        return res.status(403).json(buildVisionQuotaError(quota, req.tier));
       }
     }
 
