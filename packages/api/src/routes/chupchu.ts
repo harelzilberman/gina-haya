@@ -1563,6 +1563,7 @@ chupChuRouter.post('/chat', async (req: any, res) => {
           return res.status(429).json({
             error:                'rate_limit_exceeded',
             limitType:            'monthly',
+            tier,
             // Belt-and-braces clamp.
             messagesUsedThisMonth: Math.min(messagesUsedThisMonth, monthlyLimit),
             monthlyLimit,
