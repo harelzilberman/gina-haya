@@ -17,7 +17,7 @@ const PORT = process.env.PORT || 3001;
 // CORS_ORIGINS env var overrides defaults (comma-separated list)
 const productionOrigins = process.env.CORS_ORIGINS
   ? process.env.CORS_ORIGINS.split(',').map(o => o.trim())
-  : ['https://gina-haya.com', 'https://www.gina-haya.com', 'https://gina-haya.vercel.app'];
+  : ['https://gina-haya.com', 'https://www.gina-haya.com', 'https://gina-haya.pages.dev'];
 
 const allowedOrigins = process.env.NODE_ENV === 'development'
   ? ['http://localhost:5173', 'http://127.0.0.1:5173']

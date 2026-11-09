@@ -15,7 +15,6 @@
     "@gina-haya/i18n": "workspace:*",
     "@gina-haya/shared": "workspace:*",
     "@supabase/supabase-js": "^2.39.0",
-    "@vercel/analytics": "^2.0.1",
     "i18next": "^23.10.0",
     "i18next-browser-languagedetector": "^8.0.0",
     "i18next-http-backend": "^2.5.0",
@@ -29,7 +28,6 @@
   "devDependencies": {
     "@types/react": "^18.3.0",
     "@types/react-dom": "^18.3.0",
-    "@vercel/node": "^3.0.0",
     "@vitejs/plugin-react": "^4.2.0",
     "autoprefixer": "^10.4.0",
     "postcss": "^8.4.0",

@@ -2,7 +2,7 @@
 
 ## Pre-deploy checklist
 
-- [ ] All environment variables set in Vercel dashboard
+- [ ] All environment variables set in Cloudflare Pages dashboard
 - [ ] All environment variables set in Railway dashboard
 - [ ] Supabase production project created (separate from dev)
 - [ ] All migrations run on production DB (`pnpm db:migrate`)
@@ -11,19 +11,21 @@
 - [ ] Google OAuth configured with production domain (`https://gina-haya.com`)
 - [ ] Stripe webhook configured with production URL (`https://api.gina-haya.com/api/billing/webhook`)
 - [ ] Resend domain verified (`gina-haya.com`)
-- [ ] Custom domain configured in Vercel
+- [ ] Custom domain configured in Cloudflare Pages
 
 ---
 
 ## Environment variables
 
-### Vercel (web frontend)
+### Cloudflare Pages (web frontend)
 
 | Variable | Description |
 |---|---|
+| `SKIP_DEPENDENCY_INSTALL` | `true` — skip Cloudflare's automatic install; the build command installs with pnpm itself |
 | `VITE_API_URL` | Production API base URL, e.g. `https://api.gina-haya.com` |
 | `VITE_SUPABASE_URL` | Supabase project URL |
-| `VITE_SUPABASE_ANON_KEY` | Supabase anon/public key |
+| `VITE_SUPABASE_ANON_KEY` | Supabase publishable key |
+| `VITE_ADMIN_EMAIL` | Admin account email |
 | `VITE_GOOGLE_CLIENT_ID` | Google OAuth client ID |
 
 ### Railway (API backend)
@@ -51,7 +53,7 @@
 ### 1. Supabase — production project
 
 1. Create a new Supabase project at [supabase.com](https://supabase.com) (keep dev and prod separate).
-2. Copy the project URL and keys into Railway + Vercel dashboards.
+2. Copy the project URL and keys into Railway + Cloudflare Pages dashboards.
 3. Run migrations against the production DB:
    ```bash
    # Set env vars locally pointing at prod DB, then:
@@ -81,19 +83,23 @@
 5. Set a custom domain in Railway → Settings → Domains: `api.gina-haya.com`.
 6. Confirm health check passes: `curl https://api.gina-haya.com/health`
 
-### 3. Vercel — web frontend
+### 3. Cloudflare Pages — web frontend
 
-1. Import this GitHub repo into Vercel.
-2. Vercel auto-detects `vercel.json` at the repo root — no framework override needed.
-3. Add all Vercel environment variables from the table above.
+1. In Cloudflare → Workers & Pages → Create → Pages → connect this GitHub repo.
+2. Build settings:
+   - Framework preset: None
+   - Build command:
+     ```
+     npx pnpm@9.15.0 install --no-frozen-lockfile && npx pnpm@9.15.0 --filter @gina-haya/web build
+     ```
+   - Build output directory: `packages/web/dist`
+   - Root directory: `/` (repo root)
+3. Add the Cloudflare Pages environment variables from the table above (`SKIP_DEPENDENCY_INSTALL=true`, `VITE_API_URL`, `VITE_SUPABASE_URL`, `VITE_SUPABASE_ANON_KEY` (publishable key), `VITE_ADMIN_EMAIL`).
 4. Set `VITE_API_URL` to `https://api.gina-haya.com`.
-5. Deploy. Vercel will run:
-   ```
-   npx pnpm@8.15.0 install
-   pnpm --filter @gina-haya/shared build && pnpm --filter @gina-haya/i18n build && pnpm --filter @gina-haya/web build
-   ```
-6. Add your custom domain in Vercel → Settings → Domains: `gina-haya.com` + `www.gina-haya.com`.
-7. Point your DNS: add Vercel's nameservers or the CNAME/A records they provide.
+5. Deploy. The project is also reachable at `https://gina-haya.pages.dev` (allowed in the API's default CORS origins).
+6. Add custom domains in Pages → Custom domains: `gina-haya.com` + `www.gina-haya.com`.
+7. DNS: `gina-haya.com` DNS is hosted on Cloudflare (nameservers were changed at the registrar, JetServer, to Cloudflare's).
+8. `gina-haya.com` redirects to `www.gina-haya.com` via a Cloudflare redirect rule (Rules → Redirect Rules).
 
 ### 4. Stripe — webhooks
 
@@ -114,7 +120,7 @@
 1. In Google Cloud Console → Credentials → OAuth 2.0 Client:
    - Authorised JavaScript origins: `https://gina-haya.com`
    - Authorised redirect URIs: `https://<supabase-project>.supabase.co/auth/v1/callback`
-2. Copy the client ID into Vercel as `VITE_GOOGLE_CLIENT_ID`.
+2. Copy the client ID into Cloudflare Pages as `VITE_GOOGLE_CLIENT_ID`.
 
 ---
 
@@ -136,6 +142,6 @@ Run these manually after every production deploy:
 
 ## Rollback
 
-Vercel: instant rollback via dashboard → Deployments → select a previous build → Redeploy.
+Cloudflare Pages: instant rollback via Workers & Pages → project → Deployments → select a previous deployment → Rollback.
 
 Railway: redeploy a previous deployment from the Railway dashboard or push a revert commit to `main`.

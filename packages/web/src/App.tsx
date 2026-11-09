@@ -44,7 +44,6 @@ import { useGardenSwitcherStore } from './stores/gardenSwitcherStore';
 import { useOnboardingStore } from './stores/onboardingStore';
 import { useChupChuPanelStore } from './stores/chupChuPanelStore';
 import { useChupChu } from './hooks/useChupChu';
-import { Analytics } from '@vercel/analytics/react';
 
 function isCheckoutRoute(pathname: string): boolean {
   return pathname === '/shop' || pathname.startsWith('/shop/');
@@ -415,7 +414,6 @@ export default function App() {
         </a>
       </div>
       <PurchaseIntentHandler />
-      <Analytics />
     </div>
   );
 }
