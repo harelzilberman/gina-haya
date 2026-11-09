@@ -10,6 +10,7 @@
     "lint": "pnpm -r lint",
     "test": "pnpm -r test",
     "db:seed": "tsx scripts/seed-calendar.ts",
+    "sitemap": "node scripts/generate-sitemap.mjs",
     "db:migrate": "pnpm --filter @gina-haya/api db:migrate"
   },
   "packageManager": "pnpm@8.15.9",
