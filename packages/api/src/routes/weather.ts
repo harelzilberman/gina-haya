@@ -1,4 +1,7 @@
 import { Router } from 'express';
+import { db } from '../db/client';
+import { verifyToken } from '../middleware/auth';
+import { REGION_COORDS, forecastTimezone, resolveGardenWeatherCoords } from '../services/weather';
 
 export const weatherRouter = Router();
 
@@ -43,19 +46,54 @@ function extractTime(isoString: string | null): string {
   return t.substring(0, 5);
 }
 
-// GET /api/weather/forecast?lat=&lon=
-weatherRouter.get('/forecast', async (req, res) => {
-  const lat = parseFloat(req.query.lat as string);
-  const lon = parseFloat(req.query.lon as string);
+// GET /api/weather/forecast?gardenId=     (authenticated — preferred)
+// GET /api/weather/forecast?lat=&lon=     (legacy — older mobile app versions)
+//
+// gardenId form: coordinates resolved with the shared fallback chain
+// (garden lat/lon → REGION_COORDS[location_region] → Jerusalem) and the
+// garden's saved timezone. lat/lon form: timezone=auto.
+weatherRouter.get(
+  '/forecast',
+  (req, res, next) => (req.query.gardenId ? verifyToken(req, res, next) : next()),
+  async (req, res) => {
+  let lat: number;
+  let lon: number;
+  let tzParam: string;
+  let isExactLocation: boolean;
 
-  if (isNaN(lat) || isNaN(lon)) {
-    return res.status(400).json({ error: 'lat and lon are required' });
+  const gardenId = typeof req.query.gardenId === 'string' ? req.query.gardenId : null;
+  if (gardenId) {
+    const { data: garden, error } = await db
+      .from('gardens')
+      .select('id, latitude, longitude, location_region, timezone')
+      .eq('id', gardenId)
+      .eq('user_id', req.user!.id)
+      .maybeSingle();
+    if (error) {
+      console.error('[GET /api/weather/forecast] garden lookup failed:', error.message);
+      return res.status(500).json({ error: 'Internal error' });
+    }
+    if (!garden) return res.status(404).json({ error: 'garden_not_found' });
+
+    const resolved = resolveGardenWeatherCoords(garden) ?? REGION_COORDS['default'];
+    isExactLocation = garden.latitude != null && garden.longitude != null;
+    lat = resolved.lat;
+    lon = resolved.lon;
+    tzParam = forecastTimezone(isExactLocation, garden.timezone);
+  } else {
+    lat = parseFloat(req.query.lat as string);
+    lon = parseFloat(req.query.lon as string);
+    if (isNaN(lat) || isNaN(lon)) {
+      return res.status(400).json({ error: 'lat and lon are required' });
+    }
+    isExactLocation = true;
+    tzParam = 'auto';
   }
 
-  const cacheKey = `${lat.toFixed(2)},${lon.toFixed(2)}`;
+  const cacheKey = `${lat.toFixed(2)},${lon.toFixed(2)},${tzParam}`;
   const cached = cache.get(cacheKey);
   if (cached && Date.now() - cached.fetchedAt < CACHE_TTL_MS) {
-    return res.json(cached.data);
+    return res.json({ ...cached.data, isExactLocation });
   }
 
   try {
@@ -67,7 +105,7 @@ weatherRouter.get('/forecast', async (req, res) => {
     url.searchParams.set('daily',
       'temperature_2m_max,temperature_2m_min,precipitation_sum,precipitation_probability_max,uv_index_max,sunrise,sunset,weather_code');
     url.searchParams.set('hourly', 'uv_index');
-    url.searchParams.set('timezone', 'Asia/Jerusalem');
+    url.searchParams.set('timezone', tzParam);
     url.searchParams.set('forecast_days', '2');
 
     const fetchRes = await fetch(url.toString());
@@ -81,6 +119,8 @@ weatherRouter.get('/forecast', async (req, res) => {
     const tomorrowCode = daily.weather_code[1] as number;
 
     const result = {
+      timezone: typeof json.timezone === 'string' && json.timezone ? json.timezone : tzParam,
+      isExactLocation,
       today: {
         tempCurrent:        Math.round(cur.temperature_2m),
         tempMax:            Math.round(daily.temperature_2m_max[0]),
@@ -114,4 +154,5 @@ weatherRouter.get('/forecast', async (req, res) => {
     console.error('Weather forecast error:', e);
     res.status(500).json({ error: 'Internal error' });
   }
-});
+  },
+);

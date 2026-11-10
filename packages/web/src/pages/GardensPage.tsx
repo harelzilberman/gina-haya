@@ -4,6 +4,8 @@ import { useGardenSwitcherStore } from '../stores/gardenSwitcherStore';
 import { usePlanLimit } from '../hooks/usePlanLimit';
 import { useToastStore } from '../stores/toastStore';
 import { CreateGardenModal } from '../components/garden/CreateGardenModal';
+import { GardenLocationModal } from '../components/garden/GardenLocationModal';
+import { useTranslation } from 'react-i18next';
 import type { Garden } from '../stores/gardenStore';
 import { api } from '../api/client';
 import { useAuthStore } from '../stores/authStore';
@@ -26,6 +28,7 @@ interface ConfirmDelete {
 
 export function GardensPage() {
   const navigate = useNavigate();
+  const { t } = useTranslation('garden');
   const { session, profile: authProfile, isAuthReady } = useAuthStore();
   const { gardens, activeGardenId, switchGarden, deleteGarden, setDefaultGarden, loadGardens } = useGardenSwitcherStore();
   const { tier, limits } = usePlanLimit();
@@ -39,6 +42,7 @@ export function GardensPage() {
   const [isDeleting, setIsDeleting] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
   const [stats, setStats] = useState<GardenStats>({});
+  const [locationGardenId, setLocationGardenId] = useState<string | null>(null);
 
   // Redirect non-pro users — only after auth + profile have fully loaded
   useEffect(() => {
@@ -306,6 +310,43 @@ export function GardensPage() {
                           )}
                         </div>
 
+                        {/* Garden location (drives weather, moon and Chupchu) */}
+                        <div style={{
+                          display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap',
+                          marginBottom: '12px', padding: '8px 10px',
+                          background: 'rgba(0,229,195,0.04)', border: '1px solid rgba(0,229,195,0.1)',
+                          borderRadius: '8px',
+                        }}>
+                          <div style={{ flex: 1, minWidth: 0 }}>
+                            <div style={{ fontFamily: EN_HEADING, fontSize: '11px', color: `${PARCH}60`, marginBottom: '2px' }}>
+                              🌍 {t('locationPicker.title')}
+                            </div>
+                            <div style={{
+                              fontFamily: EN_HEADING, fontSize: '13px',
+                              color: garden.location_name || garden.latitude != null ? PARCH : `${PARCH}55`,
+                              overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
+                            }}>
+                              {garden.location_name
+                                || (garden.latitude != null && garden.longitude != null
+                                  ? `${Number(garden.latitude).toFixed(2)}, ${Number(garden.longitude).toFixed(2)}`
+                                  : t('locationPicker.notSet'))}
+                            </div>
+                          </div>
+                          <button
+                            type="button"
+                            onClick={() => setLocationGardenId(garden.id)}
+                            style={{
+                              padding: '5px 10px',
+                              background: 'transparent', color: GOLD,
+                              border: '1px solid rgba(0,229,195,0.3)', borderRadius: '6px',
+                              fontFamily: EN_HEADING, fontSize: '12px', cursor: 'pointer',
+                              flexShrink: 0,
+                            }}
+                          >
+                            {garden.latitude != null ? t('locationPicker.change') : t('locationPicker.set')}
+                          </button>
+                        </div>
+
                         {/* Stats */}
                         <div style={{ display: 'flex', gap: '16px', marginBottom: '14px' }}>
                           <span style={{ fontFamily: EN_HEADING, fontSize: '12px', color: `${PARCH}70` }}>
@@ -401,6 +442,15 @@ export function GardensPage() {
           )}
         </div>
       </div>
+
+      {/* Garden location picker */}
+      {locationGardenId && (
+        <GardenLocationModal
+          gardenId={locationGardenId}
+          isOpen
+          onClose={() => setLocationGardenId(null)}
+        />
+      )}
 
       {/* Create Garden Modal */}
       <CreateGardenModal

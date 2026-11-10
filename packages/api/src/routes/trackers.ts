@@ -822,7 +822,7 @@ trackersRouter.post('/:id/checkins/:checkinId/analyze', async (req: any, res) =>
     const _trackerCoords = (garden?.latitude != null && garden?.longitude != null)
       ? { lat: Number(garden.latitude), lon: Number(garden.longitude) }
       : null;
-    const weather = await fetchWeatherForRegion(garden?.location_region ?? null, _trackerCoords);
+    const weather = await fetchWeatherForRegion(garden?.location_region ?? null, _trackerCoords, garden?.timezone ?? null);
 
     // Get previous checkin (excluding this one) for comparison
     const { data: previousCheckins } = await db

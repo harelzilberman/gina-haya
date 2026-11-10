@@ -1,4 +1,4 @@
-const REGION_COORDS: Record<string, { lat: number; lon: number }> = {
+export const REGION_COORDS: Record<string, { lat: number; lon: number }> = {
   'צפון':     { lat: 32.9,  lon: 35.5  },
   'גליל':     { lat: 32.9,  lon: 35.5  },
   'מרכז':     { lat: 32.08, lon: 34.78 },
@@ -11,6 +11,20 @@ const REGION_COORDS: Record<string, { lat: number; lon: number }> = {
   'ערבה':     { lat: 29.5,  lon: 35.0  },
   'default':  { lat: 31.78, lon: 35.22 },
 };
+
+// Every REGION_COORDS entry (including 'default') is in Israel, so any garden
+// that falls back to a centroid uses Israel time.
+export const FALLBACK_TIMEZONE = 'Asia/Jerusalem';
+
+/**
+ * Open-Meteo `timezone` parameter for a forecast.
+ *   - exact garden coordinates → the garden's saved IANA timezone, else 'auto'
+ *   - region centroid / Jerusalem default → 'Asia/Jerusalem'
+ */
+export function forecastTimezone(isExactLocation: boolean, gardenTimezone?: string | null): string {
+  if (!isExactLocation) return FALLBACK_TIMEZONE;
+  return gardenTimezone?.trim() || 'auto';
+}
 
 const WEATHER_CODE_HE: Record<number, string> = {
   0: 'שמיים בהירים',
@@ -38,6 +52,8 @@ export interface WeatherData {
   locationRegion: string;
   /** true when real garden coordinates were used; false when a region centroid or default was used */
   isExactLocation: boolean;
+  /** IANA timezone the forecast times (sunrise, moonrise…) are expressed in. */
+  timezone: string;
   tempMax: number;
   tempMin: number;
   tempCurrent: number;
@@ -179,6 +195,7 @@ export function resolveGardenWeatherCoords(
 export async function fetchWeatherForRegion(
   locationRegion: string | null,
   coords?: { lat: number; lon: number } | null,
+  gardenTimezone?: string | null,
 ): Promise<WeatherData | null> {
   // Resolution order: explicit garden coordinates → region centroid → default.
   // Callers that pass only locationRegion continue to work unchanged.
@@ -188,7 +205,8 @@ export async function fetchWeatherForRegion(
     : (REGION_COORDS[locationRegion ?? ''] ?? REGION_COORDS['default']);
 
   const region   = locationRegion ?? 'default';
-  const cacheKey = `${resolved.lat},${resolved.lon}`;
+  const tzParam  = forecastTimezone(isExact, gardenTimezone);
+  const cacheKey = `${resolved.lat},${resolved.lon},${tzParam}`;
   const cached   = cache.get(cacheKey);
   if (cached && Date.now() - cached.fetchedAt < CACHE_TTL_MS) {
     return { ...cached.data, locationRegion: region, isExactLocation: isExact };
@@ -201,7 +219,7 @@ export async function fetchWeatherForRegion(
     url.searchParams.set('daily',     'temperature_2m_max,temperature_2m_min,precipitation_sum,uv_index_max,sunrise,sunset,moonrise,moonset');
     url.searchParams.set('hourly',    'temperature_2m,relative_humidity_2m,wind_speed_10m');
     url.searchParams.set('current',   'temperature_2m,relative_humidity_2m,wind_speed_10m,precipitation,weather_code');
-    url.searchParams.set('timezone',  'Asia/Jerusalem');
+    url.searchParams.set('timezone',  tzParam);
     url.searchParams.set('forecast_days', '2');
 
     const controller = new AbortController();
@@ -223,6 +241,8 @@ export async function fetchWeatherForRegion(
     const data: WeatherData = {
       locationRegion:        region,
       isExactLocation:       isExact,
+      // With timezone=auto Open-Meteo echoes the resolved zone back.
+      timezone:              typeof json.timezone === 'string' && json.timezone ? json.timezone : tzParam,
       tempCurrent:           Math.round(cur.temperature_2m * 10) / 10,
       humidity:              Math.round(cur.relative_humidity_2m),
       windSpeed:             Math.round(cur.wind_speed_10m * 10) / 10,

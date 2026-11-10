@@ -8,6 +8,7 @@ import { useChupChuPanelStore } from '../stores/chupChuPanelStore';
 import { drawMoon, getMoonTilt, MoonSignSVG, inferPhaseAngle } from '../components/calendar/TodayCardV2';
 import { getBDPlainSummary, type BDPlainSummary, type DayType } from '../utils/bdPlainLanguage';
 import { useTodayActions, type TodayActionsData } from '../hooks/useTodayActions';
+import { useGardenLocation } from '../hooks/useGardenLocation';
 import { EN_HEADING } from '../styles/fonts';
 
 // ── Welcome checklist ──────────────────────────────────────────────────────
@@ -185,7 +186,8 @@ function moonEmoji(pct: number): string {
 // canvas.offsetWidth including the border and inflating drawMoon's size param.
 function MoonCanvas({ phasePct, phaseAngle }: { phasePct: number; phaseAngle: number }) {
   const ref = useRef<HTMLCanvasElement>(null);
-  const tilt = getMoonTilt(phaseAngle, 31.5);
+  const { lat } = useGardenLocation();
+  const tilt = getMoonTilt(phaseAngle, lat);
   useEffect(() => {
     if (!ref.current) return;
     const canvas = ref.current;

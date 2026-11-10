@@ -1,6 +1,7 @@
 import { create } from 'zustand';
 import { useAuthStore } from './authStore';
 import { api } from '../api/client';
+import type { GardenLocationFields, GardenLocationInput } from '@gina-haya/shared';
 
 export interface GardenPlant {
   id: string;
@@ -62,7 +63,8 @@ export interface PatchGardenPlantData {
   irrigationLiters?: (number | null)[] | null;
 }
 
-export interface Garden {
+// latitude / longitude / timezone / location_name come from GardenLocationFields.
+export interface Garden extends GardenLocationFields {
   id: string;
   user_id: string;
   name: string;
@@ -84,7 +86,7 @@ interface GardenState {
   error: string | null;
   loadGardens: () => Promise<void>;
   setActiveGarden: (garden: Garden) => void;
-  updateGarden: (id: string, updates: { name?: string; locationRegion?: string | null; soilType?: string | null; notes?: string | null; location?: string | null; description?: string | null }) => Promise<void>;
+  updateGarden: (id: string, updates: { name?: string; locationRegion?: string | null; soilType?: string | null; notes?: string | null; location?: string | null; description?: string | null } & Partial<GardenLocationInput>) => Promise<Garden>;
   addPlant: (gardenId: string, plantId: string, commonNameHe: string, commonNameEn: string | null) => Promise<GardenPlant>;
   addPlantDetailed: (gardenId: string, data: AddPlantData) => Promise<GardenPlant>;
   patchGardenPlant: (gardenPlantId: string, gardenId: string, data: PatchGardenPlantData) => Promise<GardenPlant>;
@@ -132,6 +134,7 @@ export const useGardenStore = create<GardenState>((set, get) => ({
         ? { ...state.activeGarden, ...updated }
         : state.activeGarden,
     }));
+    return updated;
   },
 
   addPlant: async (gardenId, plantId, commonNameHe, commonNameEn) => {

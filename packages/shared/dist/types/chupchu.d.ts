@@ -11,6 +11,12 @@ export interface ChupChuMessage {
 export interface ChupChuContext {
     gardenName: string | null;
     locationRegion: string | null;
+    /** Garden display location (city picker), e.g. 'Berlin, Germany'. */
+    gardenLocationName?: string | null;
+    /** Garden IANA timezone. */
+    gardenTimezone?: string | null;
+    /** Derived from garden latitude: >= 0 north, < 0 south, null → unknown. */
+    hemisphere?: 'north' | 'south' | 'unknown';
     soilType: string | null;
     plants: string[];
     todayCalendar: {
@@ -60,6 +66,8 @@ export interface ChupChuContext {
         weatherDescription: string;
         weatherDescriptionHe: string;
         locationRegion: string;
+        isExactLocation?: boolean;
+        timezone?: string;
     } | null;
 }
 //# sourceMappingURL=chupchu.d.ts.map

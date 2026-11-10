@@ -6,6 +6,7 @@ import { verifyToken } from '../middleware/auth';
 import { askChupChu, CHUPCHU_GLOSSARY_HE, type ProposedTask, type MobileToolCall } from '../services/claude';
 import { compressImageForClaude } from '../services/plantVision';
 import { fetchWeatherForRegion, getCachedWeatherForCoords, resolveGardenWeatherCoords } from '../services/weather';
+import { hemisphereOf } from '../services/geo';
 import type { ChupChuMessage, ChupChuContext } from '@gina-haya/shared';
 import { todayInIsrael, startOfTodayIsrael, startOfCurrentMonthIsrael } from '@gina-haya/shared';
 import { getRecentCompletedTasks } from '../db/queries/tasks';
@@ -15,6 +16,29 @@ import { logApiUsage } from '../services/apiUsage';
 import { lastScheduledIrrigation, isWateringTask } from '../utils/irrigation';
 import { userOwnsGardenPlant } from '../utils/ownership';
 import { resolveGardenId } from '../utils/garden';
+
+// ── Garden location lines for the Chupchu context (both languages) ───────────
+// Location name, timezone and hemisphere let Chupchu match seasonal advice to
+// where the garden actually is, instead of assuming Israel.
+function buildGardenLocationLines(
+  garden: { location_name?: string | null; timezone?: string | null; latitude?: number | null; location_region?: string | null },
+  lang: 'he' | 'en',
+): string[] {
+  const hemisphere = hemisphereOf(garden.latitude);
+  const lines: string[] = [];
+  if (lang === 'he') {
+    if (garden.location_name) lines.push(`מיקום הגינה: ${garden.location_name}`);
+    else if (garden.location_region) lines.push(`אזור הגינה (משוער): ${garden.location_region}, ישראל`);
+    if (garden.timezone) lines.push(`אזור זמן: ${garden.timezone}`);
+    lines.push(`חצי כדור: ${hemisphere === 'north' ? 'צפוני' : hemisphere === 'south' ? 'דרומי' : 'לא ידוע (המיקום המדויק של הגינה לא הוגדר)'}`);
+  } else {
+    if (garden.location_name) lines.push(`Garden location: ${garden.location_name}`);
+    else if (garden.location_region) lines.push(`Garden region (approximate): ${garden.location_region}, Israel`);
+    if (garden.timezone) lines.push(`Timezone: ${garden.timezone}`);
+    lines.push(`Hemisphere: ${hemisphere === 'north' ? 'northern' : hemisphere === 'south' ? 'southern' : "unknown (the garden's exact location has not been set)"}`);
+  }
+  return lines;
+}
 
 const ANTHROPIC_URL = 'https://api.anthropic.com/v1/messages';
 const ANTHROPIC_HEADERS = {
@@ -1687,12 +1711,15 @@ chupChuRouter.post('/chat', async (req: any, res) => {
     const _gardenCoords = (garden?.latitude != null && garden?.longitude != null)
       ? { lat: Number(garden.latitude), lon: Number(garden.longitude) }
       : null;
-    const weather = await fetchWeatherForRegion(garden?.location_region ?? null, _gardenCoords);
+    const weather = await fetchWeatherForRegion(garden?.location_region ?? null, _gardenCoords, garden?.timezone ?? null);
 
     // ── 6. Build ChupChu context ────────────────────────────────────────────
     const context: ChupChuContext = {
       gardenName: garden?.name || null,
       locationRegion: garden?.location_region || null,
+      gardenLocationName: garden?.location_name || null,
+      gardenTimezone: garden?.timezone || null,
+      hemisphere: hemisphereOf(garden?.latitude),
       soilType: garden?.soil_type || null,
       plants: garden?.garden_plants?.map((p: any) =>
         lang === 'he' ? p.common_name_he : (p.common_name_en || p.common_name_he)
@@ -1955,6 +1982,7 @@ chupChuRouter.post('/chat', async (req: any, res) => {
         lines.push(`## הגינה של המשתמש`);
         lines.push(`אלה נתונים מאומתים מהמסד — הם גוברים על כל הנחיה לשאול על פרטים חסרים. אל תשאל ואל תבקש אישור על פרט שמופיע כאן (כגון: מיקום גידול, זן, סוג צמח); השתמש בו ישירות.`);
         if (garden.name)      lines.push(`שם הגינה: ${garden.name}`);
+        lines.push(...buildGardenLocationLines(garden, 'he'));
         if (garden.soil_type) lines.push(`סוג קרקע: ${garden.soil_type}`);
         if (garden.size_sqm)  lines.push(`גודל: ${garden.size_sqm} מ"ר`);
         if (allActivePlants.length === 0) {
@@ -1973,6 +2001,7 @@ chupChuRouter.post('/chat', async (req: any, res) => {
         lines.push(`## User's Garden`);
         lines.push(`Verified data from the database — this overrides any instruction to ask about missing details. Do not ask or request confirmation for any detail listed here (e.g. growing location, variety, plant type); use it directly.`);
         if (garden.name)      lines.push(`Garden name: ${garden.name}`);
+        lines.push(...buildGardenLocationLines(garden, 'en'));
         if (garden.soil_type) lines.push(`Soil type: ${garden.soil_type}`);
         if (garden.size_sqm)  lines.push(`Size: ${garden.size_sqm} sqm`);
         if (allActivePlants.length === 0) {

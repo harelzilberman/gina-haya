@@ -6,6 +6,7 @@ import { getCalendarRange } from '../db/queries/calendar';
 import starterTasksData from '../../../shared/data/starter_tasks.json';
 import { lastScheduledIrrigation, isWateringTask } from '../utils/irrigation';
 import { userOwnsGarden, userOwnsGardenPlant } from '../utils/ownership';
+import { buildGardenLocationUpdates } from '../services/geo';
 
 // ── Types for starter_tasks.json ─────────────────────────────────────────────
 interface StarterTaskEntry {
@@ -339,7 +340,12 @@ gardenRouter.get('/:id', async (req: any, res) => {
 // POST /api/garden — create a new garden
 gardenRouter.post('/', async (req: any, res) => {
   try {
-    const { name, locationRegion, soilType, location, description, plantIds = [] } = req.body;
+    const { name, locationRegion, soilType, location, description, plantIds = [], latitude, longitude, timezone, locationName } = req.body;
+
+    const loc = await buildGardenLocationUpdates({ latitude, longitude, timezone, locationName });
+    if ('error' in loc) {
+      return res.status(400).json({ error: 'invalid_coords', message: loc.error });
+    }
 
     // Enforce per-tier garden limit.
     // Explicit LAUNCH_FREE_MODE guard: when true, alpha testers bypass the cap entirely
@@ -383,6 +389,7 @@ gardenRouter.post('/', async (req: any, res) => {
         soil_type: soilType || null,
         notes: '',
         is_default: isFirst,
+        ...loc.updates,
       })
       .select()
       .single();
@@ -424,40 +431,22 @@ gardenRouter.post('/', async (req: any, res) => {
 // partial coordinate pair is useless and likely indicates a client bug.
 gardenRouter.patch('/:id', async (req: any, res) => {
   try {
-    const { name, locationRegion, soilType, notes, location, description, latitude, longitude } = req.body;
+    const { name, locationRegion, soilType, notes, location, description, latitude, longitude, timezone, locationName } = req.body;
 
-    // Coordinates: must be supplied as a pair, and within valid geographic ranges.
-    const hasLat = latitude  !== undefined && latitude  !== null;
-    const hasLon = longitude !== undefined && longitude !== null;
-    if (hasLat !== hasLon) {
-      return res.status(400).json({
-        error: 'invalid_coords',
-        message: 'latitude and longitude must be supplied together',
-      });
-    }
-    if (hasLat) {
-      const lat = Number(latitude);
-      const lon = Number(longitude);
-      if (!Number.isFinite(lat) || lat < -90  || lat > 90) {
-        return res.status(400).json({ error: 'invalid_coords', message: 'latitude must be between -90 and 90' });
-      }
-      if (!Number.isFinite(lon) || lon < -180 || lon > 180) {
-        return res.status(400).json({ error: 'invalid_coords', message: 'longitude must be between -180 and 180' });
-      }
+    // Coordinates: must be supplied as a pair, within valid ranges. Saved rounded
+    // to 2 decimals, with timezone resolved server-side (client tz as fallback).
+    const loc = await buildGardenLocationUpdates({ latitude, longitude, timezone, locationName });
+    if ('error' in loc) {
+      return res.status(400).json({ error: 'invalid_coords', message: loc.error });
     }
 
-    const updates: Record<string, unknown> = { updated_at: new Date().toISOString() };
+    const updates: Record<string, unknown> = { updated_at: new Date().toISOString(), ...loc.updates };
     if (name          !== undefined) updates.name            = name;
     if (locationRegion !== undefined) updates.location_region = locationRegion;
     if (location       !== undefined) updates.location        = location;
     if (description    !== undefined) updates.description     = description;
     if (soilType       !== undefined) updates.soil_type       = soilType;
     if (notes          !== undefined) updates.notes           = notes;
-    if (hasLat) {
-      updates.latitude           = Number(latitude);
-      updates.longitude          = Number(longitude);
-      updates.coords_updated_at  = new Date().toISOString();
-    }
 
     const { data, error } = await db
       .from('gardens')

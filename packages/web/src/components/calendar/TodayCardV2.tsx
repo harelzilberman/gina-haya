@@ -1,7 +1,8 @@
 import { useState, useEffect, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useDirection } from '../../hooks/useDirection';
-import { useAuthStore } from '../../stores/authStore';
+import { useGardenLocation } from '../../hooks/useGardenLocation';
+import { GardenLocationModal } from '../garden/GardenLocationModal';
 import type { BiodynamicDay } from '@gina-haya/shared';
 import './today-card.css';
 import { EN_HEADING } from '../../styles/fonts';
@@ -597,24 +598,14 @@ function FormattedDate({ dateStr, locale }: { dateStr: string; locale: string })
 
 export function TodayCard({ day }: Props) {
   const { t, i18n } = useTranslation('calendar');
+  const { t: tGarden } = useTranslation('garden');
   const { dir } = useDirection();
   const isHe = i18n.language === 'he';
   const [mounted, setMounted] = useState(false);
-  const [localLat, setLocalLat] = useState<number | null>(null);
-  const [locationError, setLocationError] = useState<string | null>(null);
   const [showDayTypeLegend, setShowDayTypeLegend] = useState(false);
-  const { profile, user } = useAuthStore();
-  const userLat: number = profile?.latitude ?? (user?.user_metadata?.latitude as number | undefined) ?? 31.7;
-  const displayLat   = localLat ?? userLat;
-  const isDefaultLat = !localLat && userLat === 31.7;
-
-  const handleRequestLocation = () => {
-    if (!navigator.geolocation) { setLocationError('הדפדפן אינו תומך במיקום'); return; }
-    navigator.geolocation.getCurrentPosition(
-      pos => { setLocalLat(pos.coords.latitude); setLocationError(null); },
-      () => setLocationError('לא ניתן לקבל מיקום'),
-    );
-  };
+  const [showLocationPicker, setShowLocationPicker] = useState(false);
+  // Moon latitude comes from the active garden (fallback chain in useGardenLocation).
+  const { garden, gardenHasCoords, lat: displayLat } = useGardenLocation();
 
   useEffect(() => {
     const id = requestAnimationFrame(() => setMounted(true));
@@ -663,10 +654,11 @@ export function TodayCard({ day }: Props) {
           lat={displayLat}
         />
 
-        {isDefaultLat && (
+        {garden && !gardenHasCoords && (
           <div style={{ textAlign: 'center', marginTop: '-8px', marginBottom: '8px' }}>
             <button
-              onClick={handleRequestLocation}
+              type="button"
+              onClick={() => setShowLocationPicker(true)}
               style={{
                 background:   'none',
                 border:       '1px solid rgba(0,229,195,0.2)',
@@ -678,14 +670,17 @@ export function TodayCard({ day }: Props) {
                 cursor:       'pointer',
               }}
             >
-              📍 עדכן מיקום לתצוגה מדויקת
+              📍 {tGarden('locationPicker.prompt')}
             </button>
-            {locationError && (
-              <div style={{ fontFamily: EN_HEADING, fontSize: '11px', color: '#E24B4A', marginTop: '4px' }}>
-                {locationError}
-              </div>
-            )}
           </div>
+        )}
+
+        {garden && (
+          <GardenLocationModal
+            gardenId={garden.id}
+            isOpen={showLocationPicker}
+            onClose={() => setShowLocationPicker(false)}
+          />
         )}
 
         <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', marginBottom: '20px' }}>

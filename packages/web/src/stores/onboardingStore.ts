@@ -1,12 +1,14 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 import type { SoilType } from '@gina-haya/shared';
+import type { PickedLocation } from '../components/garden/LocationPicker';
 
 type Step = 0 | 1 | 2 | 3;
 
 export interface OnboardingGardenData {
   name: string;
-  locationRegion: string;
+  /** Picked in the city picker; null when the step was skipped. */
+  location: PickedLocation | null;
   soilType: SoilType | null;
   plantIds: string[];
 }
@@ -29,7 +31,7 @@ export const useOnboardingStore = create<OnboardingState>()(
       step: 0,
       gardenData: {
         name: 'הגינה שלי',
-        locationRegion: '',
+        location: null,
         soilType: null,
         plantIds: [],
       },

@@ -193,5 +193,34 @@
     "saving": "Saving...",
     "save": "Save changes",
     "savedToast": "Details updated 🌱"
+  },
+  "locationPicker": {
+    "title": "Garden location",
+    "notSet": "Location not set yet",
+    "set": "Set location",
+    "change": "Change location",
+    "searchLabel": "Search for a city or town",
+    "searchPlaceholder": "Type a city or town name…",
+    "searching": "Searching…",
+    "noResults": "No places found with that name",
+    "searchError": "Search is unavailable right now. Please try again in a moment.",
+    "or": "or",
+    "useMyLocation": "Use my current location",
+    "locating": "Finding your location…",
+    "myLocationName": "My location ({{lat}}, {{lon}})",
+    "selected": "Selected: {{name}}",
+    "privacyNote": "Saved at city level only, and used for weather, the moon and Chupchu.",
+    "errors": {
+      "unsupported": "Your browser doesn't support location. Search for your city instead.",
+      "denied": "Location access was blocked. Allow location in your browser settings, or search for your city.",
+      "unavailable": "We couldn't determine your location right now. Try again or search for your city.",
+      "timeout": "Finding your location took too long. Try again or search for your city."
+    },
+    "save": "Save location",
+    "saving": "Saving…",
+    "cancel": "Cancel",
+    "savedToast": "Garden location updated 🌱",
+    "saveError": "We couldn't save the location. Please try again.",
+    "prompt": "Set your garden's location for accurate weather and moon"
   }
 }

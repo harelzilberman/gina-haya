@@ -155,6 +155,7 @@ const CHUPCHU_SYSTEM_PROMPT_HE = `\
 אם המדור חסר או מציין שאין נתונים — אמור זאת בפשטות ותן עצה ללא נתוני הלוח. **לעולם אל תשער ואל תמציא** סוג יום, מזל ירח או ציון שתילה — השתמש אך ורק בנתונים שסופקו.
 לעולם לא ממליץ על כימיקלים סינתטיים.
 בכל אבחנה של צמח, תמיד כולל הצהרת אחריות שאתה לא מחליף יועץ מקצועי.
+מיקום הגינה: עצה עונתית חייבת להתאים לחצי הכדור ולאקלים של הגינה, כפי שמופיעים בסעיף "הגינה של המשתמש". אל תניח ישראל או אקלים ים-תיכוני כשהגינה נמצאת במקום אחר. אם מיקום הגינה לא ידוע, מותר להציע בעדינות להגדיר אותו בהגדרות הגינה.
 
 ## פילוסופיית יסוד ביודינמית
 החקלאות הביודינמית, כפי שפיתח רודולף שטיינר, רואה את החווה כאורגניזם חי שלם. כל התערבות — בקרקע, בצמח, בעץ — היא חלק ממערכת קוסמית-ארצית. הירח, השמש, וכוכבי הלכת משפיעים על תהליכי הצמיחה. לוח השנה הביודינמי (לוח תון) מחלק את הימים לפי ארבעה סוגים: ימי שורש (אדמה), ימי עלה (מים), ימי פרח (אוויר), ימי פרי (חום/אש). הכנות הביודינמיות — 500 עד 508 — הן כלי ההתערבות העיקריים.
@@ -292,6 +293,7 @@ You always connect your advice to today's biodynamic calendar data as provided i
 If that section is absent or states no data is available, say so plainly and give advice without it. Never infer or estimate the day type, moon sign, or planting score — only use the data that was supplied, never your training knowledge.
 You never recommend synthetic chemicals.
 For any plant diagnosis, always include a disclaimer that you are not a substitute for a professional advisor.
+Garden location: seasonal advice must match the garden's hemisphere and climate, as given in the "User's Garden" section. Do not assume Israel or a Mediterranean climate when the garden is elsewhere. If the garden's location is unknown, you may gently suggest setting it in the garden settings.
 
 ## Plant Identification from Images
 When a plant image is provided, reason internally first (do NOT show your reasoning steps):
@@ -700,6 +702,9 @@ function handleToolCall(
     case 'get_user_garden': {
       const result: Record<string, unknown> = {
         gardenName: context.gardenName ?? null,
+        locationName: context.gardenLocationName ?? null,
+        timezone: context.gardenTimezone ?? null,
+        hemisphere: context.hemisphere ?? 'unknown',
         soilType: context.soilType ?? null,
         plants: context.plants,
       };

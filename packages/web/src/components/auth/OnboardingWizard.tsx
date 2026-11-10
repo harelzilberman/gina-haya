@@ -5,12 +5,9 @@ import { useAuthStore } from '../../stores/authStore';
 import { useOnboardingStore } from '../../stores/onboardingStore';
 import { api } from '../../api/client';
 import type { SoilType } from '@gina-haya/shared';
+import { LocationPicker, type PickedLocation } from '../garden/LocationPicker';
 
 // ── Static data ────────────────────────────────────────────────────────────
-
-const REGIONS = [
-  'צפון', 'מרכז', 'ירושלים', 'דרום', 'שפלה', 'שרון', 'גליל', 'נגב', 'ערבה',
-];
 
 const SOIL_CARDS: { value: SoilType; emoji: string; he: string; en: string }[] = [
   { value: 'clay',   emoji: '🧱', he: 'חרסית',  en: 'Clay'   },
@@ -120,8 +117,8 @@ function Step0({ onAgree }: { onAgree: () => void }) {
 function Step1({
   value, onChange, onContinue, onSkip,
 }: {
-  value: string;
-  onChange: (v: string) => void;
+  value: PickedLocation | null;
+  onChange: (v: PickedLocation | null) => void;
   onContinue: () => void;
   onSkip: () => void;
 }) {
@@ -133,17 +130,10 @@ function Step1({
       <h2 className="text-lg font-bold text-navy mb-5 text-center">
         {t('onboarding.step1Title')}
       </h2>
-      <select
-        value={value}
-        onChange={(e) => onChange(e.target.value)}
-        className="w-full rounded-lg border border-sage/30 bg-white px-4 py-2.5 text-sm text-navy focus:border-sage focus:outline-none focus:ring-1 focus:ring-sage mb-6"
-      >
-        <option value="">{t('onboarding.locationPlaceholder')}</option>
-        {REGIONS.map((r) => (
-          <option key={r} value={r}>{r}</option>
-        ))}
-      </select>
-      <NavButtons onContinue={onContinue} onSkip={onSkip} />
+      <div className="mb-6">
+        <LocationPicker value={value} onSelect={onChange} variant="light" />
+      </div>
+      <NavButtons onContinue={onContinue} onSkip={() => { onChange(null); onSkip(); }} />
     </div>
   );
 }
@@ -331,13 +321,21 @@ export function OnboardingWizard() {
     setGardenError(null);
     try {
       const plantIds = skipPlants ? [] : gardenData.plantIds;
+      // location_region is no longer written for new gardens — the picked
+      // location (if any) is the source of truth for weather, moon and Chupchu.
+      const loc = gardenData.location ?? null;
       await api.post(
         '/api/garden',
         {
           name: gardenData.name || 'הגינה שלי',
-          locationRegion: gardenData.locationRegion,
           soilType: gardenData.soilType,
           plantIds,
+          ...(loc ? {
+            latitude: loc.latitude,
+            longitude: loc.longitude,
+            timezone: loc.timezone,
+            locationName: loc.locationName,
+          } : {}),
         },
         token
       );
@@ -373,8 +371,8 @@ export function OnboardingWizard() {
 
         {step === 1 && (
           <Step1
-            value={gardenData.locationRegion}
-            onChange={(v) => updateGardenData({ locationRegion: v })}
+            value={gardenData.location ?? null}
+            onChange={(v) => updateGardenData({ location: v })}
             onContinue={nextStep}
             onSkip={nextStep}
           />

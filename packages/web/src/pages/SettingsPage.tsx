@@ -10,6 +10,8 @@ import { usePlanLimit } from '../hooks/usePlanLimit';
 import { useCredits } from '../hooks/useCredits';
 import { MIN_PASSWORD_LENGTH, mapAuthError } from '../utils/authErrors';
 import { EN_HEADING } from '../styles/fonts';
+import { useGardenLocation } from '../hooks/useGardenLocation';
+import { GardenLocationModal } from '../components/garden/GardenLocationModal';
 
 const EARTH  = '#050d0a';
 const GOLD   = '#00e5c3';
@@ -63,7 +65,10 @@ function UsageBar({ used, limit }: { used: number; limit: number | null }) {
 
 export function SettingsPage() {
   const { t, i18n } = useTranslation('settings');
+  const { t: tGarden } = useTranslation('garden');
   const isHe = i18n.language === 'he';
+  const { garden: activeGarden, gardenHasCoords } = useGardenLocation();
+  const [showLocationPicker, setShowLocationPicker] = useState(false);
   const navigate = useNavigate();
   const { profile, session, user } = useAuthStore();
   const { show: showToast }  = useToastStore();
@@ -547,6 +552,43 @@ export function SettingsPage() {
               </button>
             )}
           </div>
+
+          {/* Garden location — drives weather, moon and Chupchu for the active garden */}
+          {activeGarden && (
+            <div style={{ background: 'rgba(9,20,16,0.5)', border: '1px solid rgba(0,229,195,0.12)', borderRadius: '12px', padding: '20px', marginTop: '16px' }}>
+              <h3 style={{ fontFamily: FRANK, fontSize: '16px', color: GOLD, margin: '0 0 16px' }}>
+                {tGarden('locationPicker.title')}
+              </h3>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '12px' }}>
+                <div style={{ minWidth: 0 }}>
+                  <p style={{ fontFamily: EN_HEADING, fontSize: '14px', color: PARCH, margin: '0 0 2px' }}>{activeGarden.name}</p>
+                  <p style={{ fontFamily: EN_HEADING, fontSize: '12px', color: `${PARCH}60`, margin: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                    📍 {activeGarden.location_name
+                      || (gardenHasCoords
+                        ? `${Number(activeGarden.latitude).toFixed(2)}, ${Number(activeGarden.longitude).toFixed(2)}`
+                        : tGarden('locationPicker.notSet'))}
+                  </p>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => setShowLocationPicker(true)}
+                  style={{
+                    fontFamily: EN_HEADING, fontSize: '13px', fontWeight: 600,
+                    padding: '7px 16px', borderRadius: '8px', flexShrink: 0,
+                    border: `1px solid ${GOLD}55`, color: GOLD,
+                    background: 'rgba(0,229,195,0.08)', cursor: 'pointer',
+                  }}
+                >
+                  {gardenHasCoords ? tGarden('locationPicker.change') : tGarden('locationPicker.set')}
+                </button>
+              </div>
+              <GardenLocationModal
+                gardenId={activeGarden.id}
+                isOpen={showLocationPicker}
+                onClose={() => setShowLocationPicker(false)}
+              />
+            </div>
+          )}
 
           {/* Notifications section */}
           <div style={{ background: 'rgba(9,20,16,0.5)', border: '1px solid rgba(0,229,195,0.12)', borderRadius: '12px', padding: '20px', marginTop: '16px' }}>

@@ -102,6 +102,7 @@ import { homeRouter }       from './routes/home';
 import { waitlistRouter }      from './routes/waitlist';
 import adminWaitlistRouter      from './routes/adminWaitlist';
 import { recognitionsRouter }  from './routes/recognitions';
+import { geoRouter }          from './routes/geo';
 import { startCronJobs } from './services/cronJobs';
 
 app.use('/api/auth',     authRouter);
@@ -126,6 +127,7 @@ app.use('/api/home',             homeRouter);
 app.use('/api/waitlist',         waitlistRouter);
 app.use('/api/admin/waitlist',   adminWaitlistRouter);
 app.use('/api/recognitions',     recognitionsRouter);
+app.use('/api/geo',              geoRouter);
 
 app.use((_req, res) => {
   res.status(404).json({ error: 'Not found' });
