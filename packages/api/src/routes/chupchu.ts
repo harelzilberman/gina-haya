@@ -7,6 +7,7 @@ import { askChupChu, CHUPCHU_GLOSSARY_HE, type ProposedTask, type MobileToolCall
 import { compressImageForClaude } from '../services/plantVision';
 import { fetchWeatherForRegion, getCachedWeatherForCoords, resolveGardenWeatherCoords } from '../services/weather';
 import { hemisphereOf } from '../services/geo';
+import { buildGardenFactsBlock, type GardenFactsInput } from '../services/gardenFacts';
 import type { ChupChuMessage, ChupChuContext } from '@gina-haya/shared';
 import { todayInIsrael, startOfTodayIsrael, startOfCurrentMonthIsrael } from '@gina-haya/shared';
 import { getRecentCompletedTasks } from '../db/queries/tasks';
@@ -1638,6 +1639,28 @@ chupChuRouter.post('/chat', async (req: any, res) => {
       garden = data;
     }
 
+    // ── 4a. Garden facts (top of the system prompt) ──────────────────────
+    // All of the user's gardens (light rows) so gardens in different
+    // hemispheres can be named side by side. Non-fatal on error.
+    let userGardensForFacts: GardenFactsInput[] = [];
+    {
+      const { data: gardenRows, error: gardenRowsError } = await db
+        .from('gardens')
+        .select('id, name, latitude, longitude, timezone, location_name, location_region')
+        .eq('user_id', userId)
+        .order('created_at', { ascending: true });
+      if (gardenRowsError) {
+        console.warn('[Chupchu] garden list for facts failed:', gardenRowsError.message);
+      } else {
+        userGardensForFacts = (gardenRows ?? []) as GardenFactsInput[];
+      }
+    }
+    const gardenFactsBlock = buildGardenFactsBlock(
+      garden ? (garden as GardenFactsInput) : null,
+      userGardensForFacts,
+      lang === 'en' ? 'en' : 'he',
+    );
+
     // ── 4b. Fetch active tracker garden_plant_ids (for plant prioritization) ──
     // Used in the gardenSection builder to put tracked plants first in the
     // context cap, so Claude always has data on the plants the user cares about.
@@ -2389,6 +2412,7 @@ chupChuRouter.post('/chat', async (req: any, res) => {
       volatileContext || undefined,
       compressedImage,
       userId,
+      gardenFactsBlock,
     );
 
     const chupChuMessage: ChupChuMessage = {

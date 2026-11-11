@@ -25,4 +25,5 @@ __exportStar(require("./utils/date"), exports);
 __exportStar(require("./types/article"), exports);
 __exportStar(require("./data/starterTasks"), exports);
 __exportStar(require("./utils/photoPath"), exports);
+__exportStar(require("./utils/season"), exports);
 //# sourceMappingURL=index.js.map

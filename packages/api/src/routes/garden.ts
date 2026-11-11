@@ -8,6 +8,18 @@ import { lastScheduledIrrigation, isWateringTask } from '../utils/irrigation';
 import { userOwnsGarden, userOwnsGardenPlant } from '../utils/ownership';
 import { buildGardenLocationUpdates } from '../services/geo';
 
+/** Lazily loads the user's profile language for reverse geocoding (default 'he'). */
+function profileLanguage(userId: string): () => Promise<'he' | 'en'> {
+  return async () => {
+    const { data } = await db
+      .from('users')
+      .select('language_preference')
+      .eq('id', userId)
+      .maybeSingle();
+    return data?.language_preference === 'en' ? 'en' : 'he';
+  };
+}
+
 // ── Types for starter_tasks.json ─────────────────────────────────────────────
 interface StarterTaskEntry {
   title: string;
@@ -342,7 +354,10 @@ gardenRouter.post('/', async (req: any, res) => {
   try {
     const { name, locationRegion, soilType, location, description, plantIds = [], latitude, longitude, timezone, locationName } = req.body;
 
-    const loc = await buildGardenLocationUpdates({ latitude, longitude, timezone, locationName });
+    const loc = await buildGardenLocationUpdates(
+      { latitude, longitude, timezone, locationName },
+      profileLanguage(req.user.id),
+    );
     if ('error' in loc) {
       return res.status(400).json({ error: 'invalid_coords', message: loc.error });
     }
@@ -435,7 +450,10 @@ gardenRouter.patch('/:id', async (req: any, res) => {
 
     // Coordinates: must be supplied as a pair, within valid ranges. Saved rounded
     // to 2 decimals, with timezone resolved server-side (client tz as fallback).
-    const loc = await buildGardenLocationUpdates({ latitude, longitude, timezone, locationName });
+    const loc = await buildGardenLocationUpdates(
+      { latitude, longitude, timezone, locationName },
+      profileLanguage(req.user.id),
+    );
     if ('error' in loc) {
       return res.status(400).json({ error: 'invalid_coords', message: loc.error });
     }

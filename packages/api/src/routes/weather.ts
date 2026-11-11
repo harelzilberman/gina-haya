@@ -52,6 +52,7 @@ function extractTime(isoString: string | null): string {
 // gardenId form: coordinates resolved with the shared fallback chain
 // (garden lat/lon → REGION_COORDS[location_region] → Jerusalem) and the
 // garden's saved timezone. lat/lon form: timezone=auto.
+// Response carries timezone, isExactLocation and locationName (null for lat/lon).
 weatherRouter.get(
   '/forecast',
   (req, res, next) => (req.query.gardenId ? verifyToken(req, res, next) : next()),
@@ -60,12 +61,15 @@ weatherRouter.get(
   let lon: number;
   let tzParam: string;
   let isExactLocation: boolean;
+  // Human-readable place the forecast is for (gardenId form only):
+  // garden.location_name → Israeli region name when on a region centroid → null.
+  let locationName: string | null = null;
 
   const gardenId = typeof req.query.gardenId === 'string' ? req.query.gardenId : null;
   if (gardenId) {
     const { data: garden, error } = await db
       .from('gardens')
-      .select('id, latitude, longitude, location_region, timezone')
+      .select('id, latitude, longitude, location_region, location_name, timezone')
       .eq('id', gardenId)
       .eq('user_id', req.user!.id)
       .maybeSingle();
@@ -80,6 +84,12 @@ weatherRouter.get(
     lat = resolved.lat;
     lon = resolved.lon;
     tzParam = forecastTimezone(isExactLocation, garden.timezone);
+    const savedName = typeof garden.location_name === 'string' ? garden.location_name.trim() : '';
+    if (savedName) {
+      locationName = savedName;
+    } else if (!isExactLocation && garden.location_region && garden.location_region !== 'default' && REGION_COORDS[garden.location_region]) {
+      locationName = garden.location_region;
+    }
   } else {
     lat = parseFloat(req.query.lat as string);
     lon = parseFloat(req.query.lon as string);
@@ -93,7 +103,7 @@ weatherRouter.get(
   const cacheKey = `${lat.toFixed(2)},${lon.toFixed(2)},${tzParam}`;
   const cached = cache.get(cacheKey);
   if (cached && Date.now() - cached.fetchedAt < CACHE_TTL_MS) {
-    return res.json({ ...cached.data, isExactLocation });
+    return res.json({ ...cached.data, isExactLocation, locationName });
   }
 
   try {
@@ -149,7 +159,7 @@ weatherRouter.get(
     };
 
     cache.set(cacheKey, { data: result, fetchedAt: Date.now() });
-    res.json(result);
+    res.json({ ...result, locationName });
   } catch (e) {
     console.error('Weather forecast error:', e);
     res.status(500).json({ error: 'Internal error' });
