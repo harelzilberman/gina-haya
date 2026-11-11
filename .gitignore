@@ -17,3 +17,7 @@ calendar_output.json
 
 # Local fallback written by generate_calendar.py --variants when the upsert fails
 calendar_variants_output.json
+
+# Compiled Python
+__pycache__/
+*.pyc
