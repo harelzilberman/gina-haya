@@ -324,11 +324,13 @@ export const LOCATION_NAME_MAX = 80;
 
 /**
  * Most specific settlement-level name in a Nominatim /reverse address.
- * Order: hamlet → village → suburb → town → city → municipality → county.
+ * Order: hamlet → village → town → city → municipality → suburb → county.
+ * A village or hamlet wins over a neighbouring town; suburb comes after city
+ * so big cities return the city ("Berlin"), not a district ("Mitte").
  */
 function reversePlaceName(address: any): string | null {
   const a = address ?? {};
-  for (const k of ['hamlet', 'village', 'suburb', 'town', 'city', 'municipality', 'county']) {
+  for (const k of ['hamlet', 'village', 'town', 'city', 'municipality', 'suburb', 'county']) {
     const v = a[k];
     if (typeof v === 'string' && v.trim()) return v.trim();
   }
