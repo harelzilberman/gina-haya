@@ -13,6 +13,14 @@
 import { getGardenSeason, type GardenSeason } from '@gina-haya/shared';
 import { REGION_COORDS, FALLBACK_TIMEZONE } from './weather';
 
+/** A garden's biodynamic day for its own local today (variant row). */
+export interface GardenCalendarToday {
+  dayType: string;
+  dayTypeHe: string;
+  direction: string;   // 'ascending' | 'descending' (hemisphere rule applied)
+  directionHe: string;
+}
+
 export interface GardenFactsInput {
   id: string;
   name?: string | null;
@@ -24,6 +32,7 @@ export interface GardenFactsInput {
 }
 
 interface ResolvedGardenFacts {
+  id: string;
   name: string | null;
   place: string | null;
   /** True when the place is an Israeli region centroid rather than a saved location. */
@@ -31,6 +40,8 @@ interface ResolvedGardenFacts {
   timezone: string | null;
   season: GardenSeason | null;
   localTime: string | null; // "HH:MM"
+  /** Local date with weekday, in the prompt language (e.g. "Thursday 12 November 2026"). */
+  localDateLong: string | null;
 }
 
 const MAX_GARDENS_LISTED = 6;
@@ -46,19 +57,37 @@ function localTime(now: Date, timeZone: string | null): string | null {
   }
 }
 
+/**
+ * Full local date with weekday. The weekday matters: Chupchu once used
+ * Israel's weekday for a Sydney garden that was already a day ahead.
+ */
+function localDateLong(now: Date, timeZone: string | null, lang: 'he' | 'en'): string | null {
+  if (!timeZone) return null;
+  try {
+    return new Intl.DateTimeFormat(lang === 'he' ? 'he-IL' : 'en-GB', {
+      timeZone, weekday: 'long', day: 'numeric', month: 'long', year: 'numeric',
+    }).format(now);
+  } catch {
+    return null;
+  }
+}
+
 function resolveFacts(g: GardenFactsInput, now: Date, lang: 'he' | 'en'): ResolvedGardenFacts {
+  const id = g.id;
   const name = g.name?.trim() || null;
   const hasCoords = g.latitude != null && g.longitude != null && Number.isFinite(Number(g.latitude));
 
   if (hasCoords) {
     const tz = g.timezone?.trim() || null;
     return {
+      id,
       name,
       place: g.location_name?.trim() || null,
       approximate: false,
       timezone: tz,
       season: getGardenSeason(Number(g.latitude), now, tz),
       localTime: localTime(now, tz),
+      localDateLong: localDateLong(now, tz, lang),
     };
   }
 
@@ -66,16 +95,18 @@ function resolveFacts(g: GardenFactsInput, now: Date, lang: 'he' | 'en'): Resolv
   const region = g.location_region?.trim();
   if (region && region !== 'default' && REGION_COORDS[region]) {
     return {
+      id,
       name,
       place: lang === 'he' ? `${region}, ישראל` : `${region} region, Israel`,
       approximate: true,
       timezone: FALLBACK_TIMEZONE,
       season: getGardenSeason(REGION_COORDS[region].lat, now, FALLBACK_TIMEZONE),
       localTime: localTime(now, FALLBACK_TIMEZONE),
+      localDateLong: localDateLong(now, FALLBACK_TIMEZONE, lang),
     };
   }
 
-  return { name, place: null, approximate: false, timezone: null, season: null, localTime: null };
+  return { id, name, place: null, approximate: false, timezone: null, season: null, localTime: null, localDateLong: null };
 }
 
 function factLines(f: ResolvedGardenFacts, lang: 'he' | 'en', isCurrent: boolean, showCurrentMarker: boolean): string[] {
@@ -89,7 +120,8 @@ function factLines(f: ResolvedGardenFacts, lang: 'he' | 'en', isCurrent: boolean
     }
     lines.push(`  מקום: ${f.place ?? 'לא ידוע (נשמרו קואורדינטות בלבד)'}${f.approximate ? ' (משוער, לפי אזור)' : ''}`);
     lines.push(`  חצי כדור: ${f.season.hemisphereLabel.he}`);
-    const when = f.localTime ? `${f.season.localDate}, ${f.localTime}` : f.season.localDate;
+    const date = f.localDateLong ?? f.season.localDate;
+    const when = f.localTime ? `${date}, ${f.localTime}` : date;
     lines.push(`  תאריך ושעה מקומיים בגינה: ${when}${f.timezone ? ` (${f.timezone})` : ''}`);
     lines.push(`  עונה נוכחית בגינה: ${f.season.seasonLabel.he}`);
   } else {
@@ -101,7 +133,8 @@ function factLines(f: ResolvedGardenFacts, lang: 'he' | 'en', isCurrent: boolean
     }
     lines.push(`  Place: ${f.place ?? 'unknown (coordinates only)'}${f.approximate ? ' (approximate, by region)' : ''}`);
     lines.push(`  Hemisphere: ${f.season.hemisphereLabel.en}`);
-    const when = f.localTime ? `${f.season.localDate}, ${f.localTime}` : f.season.localDate;
+    const date = f.localDateLong ?? f.season.localDate;
+    const when = f.localTime ? `${date}, ${f.localTime}` : date;
     lines.push(`  Local date and time at the garden: ${when}${f.timezone ? ` (${f.timezone})` : ''}`);
     lines.push(`  Current season at the garden: ${f.season.seasonLabel.en}`);
   }
@@ -114,12 +147,15 @@ function factLines(f: ResolvedGardenFacts, lang: 'he' | 'en', isCurrent: boolean
  * @param currentGarden  The garden this conversation resolved to (may be null).
  * @param allGardens     All of the user's gardens (light rows), used to detect
  *                       gardens in different hemispheres.
+ * @param gardenCalendars Each garden's biodynamic day for its own local today
+ *                       (by garden id). Listed by garden name when they differ.
  */
 export function buildGardenFactsBlock(
   currentGarden: GardenFactsInput | null,
   allGardens: GardenFactsInput[],
   lang: 'he' | 'en',
   now: Date = new Date(),
+  gardenCalendars: Map<string, GardenCalendarToday> = new Map(),
 ): string {
   const current = currentGarden ? resolveFacts(currentGarden, now, lang) : null;
   const others = allGardens
@@ -142,6 +178,28 @@ export function buildGardenFactsBlock(
   const anyUnknown = entries.length === 0 || entries.some(e => !e.facts.season);
   const multiple = entries.length > 1;
 
+  // Gardens whose own "today" differs in day type or asc/desc (another
+  // timezone or hemisphere) are each named with their calendar day.
+  const calendarDiffers = new Set(
+    [...gardenCalendars.values()].map(c => `${c.dayType}|${c.direction}`),
+  ).size > 1;
+  const nameOf = new Map(allGardens.map(g => [g.id, g.name?.trim() || null]));
+  const calendarLines = (l: 'he' | 'en'): string[] => {
+    if (!calendarDiffers) return [];
+    const rows = [...gardenCalendars.entries()].map(([id, c]) => {
+      const n = nameOf.get(id) ?? (l === 'he' ? 'ללא שם' : 'unnamed');
+      return l === 'he'
+        ? `- ${n}: יום ${c.dayTypeHe}, ירח ${c.directionHe}`
+        : `- ${n}: ${c.dayType} day, ${c.direction} moon`;
+    });
+    return [
+      l === 'he'
+        ? `היום הביודינמי של כל גינה היום (לפי התאריך המקומי שלה) — הם שונים, אז ציין לאיזו גינה העצה מתייחסת:`
+        : `Each garden's biodynamic day today (by its own local date) — they differ, so say which garden the advice is for:`,
+      ...rows,
+    ];
+  };
+
   const out: string[] = [];
   if (lang === 'he') {
     out.push(`## עובדות הגינה — מקור קובע, גובר על כל הנחת ברירת מחדל לגבי ישראל או העונה`);
@@ -152,6 +210,8 @@ export function buildGardenFactsBlock(
     } else {
       for (const e of entries) out.push(...factLines(e.facts, 'he', e.isCurrent, multiple));
     }
+    out.push(...calendarLines('he'));
+    out.push(`בחצי הכדור הדרומי, עולה/יורד לפי המוסכמה האנטיפודית — הפוך מחצי הכדור הצפוני. ערכי הלוח שמסופקים כבר מותאמים לכך.`);
     if (mixedHemispheres) {
       out.push(`למשתמש יש גינות בחצאי כדור שונים. כשהעצה תלויה בעונה ולא ברור לאיזו גינה הוא מתכוון — שאל קודם לאיזו גינה הכוונה.`);
     } else if (!current && multiple) {
@@ -171,6 +231,8 @@ export function buildGardenFactsBlock(
     } else {
       for (const e of entries) out.push(...factLines(e.facts, 'en', e.isCurrent, multiple));
     }
+    out.push(...calendarLines('en'));
+    out.push(`In the southern hemisphere, ascending/descending follows the Antipodean convention (reversed from the north). The calendar values supplied are already adjusted.`);
     if (mixedHemispheres) {
       out.push(`The user has gardens in different hemispheres. When advice depends on the season and it is not clear which garden they mean, ask which garden first.`);
     } else if (!current && multiple) {

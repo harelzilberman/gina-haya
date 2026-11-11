@@ -35,5 +35,22 @@
   },
   "moonrise": "זריחת הירח",
   "moonset": "שקיעת הירח",
-  "moonSign": "מזל הירח"
+  "moonSign": "מזל הירח",
+  "transitions": {
+    "title": "שינויים במהלך היום",
+    "signChange": "{{from}} עד {{time}} ← {{to}}",
+    "ascDesc": "ירח {{direction}} מ-{{time}}",
+    "newMoon": "ירח חדש ב-{{time}}",
+    "fullMoon": "ירח מלא ב-{{time}}",
+    "direction": {
+      "ascending": "עולה",
+      "descending": "יורד"
+    },
+    "dayType": {
+      "fruit": "פרי",
+      "root": "שורש",
+      "flower": "פרח",
+      "leaf": "עלה"
+    }
+  }
 }

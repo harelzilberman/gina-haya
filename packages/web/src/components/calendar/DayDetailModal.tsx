@@ -3,6 +3,7 @@ import { useTranslation } from 'react-i18next';
 import { useDirection } from '../../hooks/useDirection';
 import type { BiodynamicDay } from '@gina-haya/shared';
 import { EN_HEADING } from '../../styles/fonts';
+import { DayTransitions } from './DayTransitions';
 
 const NIGHT_CARD = '#111f18';
 const BIO_CYAN   = '#00e5c3';
@@ -127,9 +128,12 @@ export function DayDetailModal({ day, onClose }: Props) {
   const tips        = isHe ? TIPS_HE[day.dayType] : TIPS_EN[day.dayType];
   const isAscending = day.ascendingDescending === 'ascending';
 
-  const fullDate = new Date(day.date + 'T12:00:00').toLocaleDateString(
+  // day.date is already the garden's LOCAL calendar date ("YYYY-MM-DD"), so
+  // format it as a pure date (UTC noon in UTC) — converting through any other
+  // zone could shift it by a day near the date line.
+  const fullDate = new Date(day.date + 'T12:00:00Z').toLocaleDateString(
     isHe ? 'he-IL' : 'en-US',
-    { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric', timeZone: 'Asia/Jerusalem' },
+    { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric', timeZone: 'UTC' },
   );
 
   const moonLabel = isHe
@@ -234,6 +238,9 @@ export function DayDetailModal({ day, onClose }: Props) {
           }}>
             {fullDate}
           </p>
+
+          {/* In-day changes (local time) — variant days only */}
+          <DayTransitions day={day} />
 
           {/* Day type badge + Score */}
           <div style={{

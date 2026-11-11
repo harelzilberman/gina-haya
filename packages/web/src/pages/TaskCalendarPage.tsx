@@ -15,6 +15,7 @@ import { CSS } from '@dnd-kit/utilities';
 import { useAuthStore } from '../stores/authStore';
 import { tasksApi, type GardenTask } from '../api/tasks';
 import { calendarApi } from '../api/calendar';
+import { useCalendarZone } from '../hooks/useCalendarZone';
 import type { BiodynamicDay } from '@gina-haya/shared';
 import { EN_HEADING } from '../styles/fonts';
 
@@ -938,13 +939,16 @@ export function TaskCalendarPage() {
   })();
 
 
+  // Biodynamic days in the active garden's timezone/hemisphere variant.
+  const calendarZone = useCalendarZone();
+
   const loadData = useCallback(async () => {
-    if (!token) return;
+    if (!token || !calendarZone.ready) return;
     setIsLoading(true);
     try {
       const [fetchedTasks, fetchedBd] = await Promise.all([
         tasksApi.getRange(from, to, token),
-        calendarApi.getRange(from, to),
+        calendarApi.getRange(from, to, calendarZone),
       ]);
 
       const map: Record<string, BiodynamicDay> = {};
@@ -956,7 +960,8 @@ export function TaskCalendarPage() {
     } finally {
       setIsLoading(false);
     }
-  }, [from, to, token]);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [from, to, token, calendarZone.ready, calendarZone.query]);
 
   useEffect(() => { loadData(); }, [loadData]);
 

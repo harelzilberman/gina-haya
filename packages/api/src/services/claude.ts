@@ -5,7 +5,7 @@ import type { ChupChuContext, ChupChuMessage } from '@gina-haya/shared';
 import { db } from '../db/client';
 import { logApiUsage } from './apiUsage';
 import { resolveGardenId } from '../utils/garden';
-import { todayInIsrael } from '@gina-haya/shared';
+import { todayInIsrael, localTodayISO, resolveVariant, isValidIanaTimeZone } from '@gina-haya/shared';
 
 const ANTHROPIC_URL = 'https://api.anthropic.com/v1/messages';
 const ANTHROPIC_HEADERS = {
@@ -952,14 +952,37 @@ export async function askChupChu(
             if (b.name === 'get_upcoming_bd_days') {
               const { day_type, count = 3 } = b.input as { day_type: string; count?: number };
               try {
-                const today = todayInIsrael(); // was: new Date().toISOString().split('T')[0] — UTC, off-by-one on Israel evenings
-                const { data } = await db
-                  .from('biodynamic_calendar')
+                // The garden's own local date and calendar variant (timezone ×
+                // hemisphere); Israel defaults when the garden has no location.
+                // Uses today's variant for the whole lookahead (a DST change
+                // inside it shifts the instant by an hour — negligible here).
+                const tz = isValidIanaTimeZone(context.gardenTimezone) ? context.gardenTimezone : null;
+                const today = localTodayISO(tz);
+                const variant = resolveVariant(today, tz, context.hemisphere === 'south' ? -1 : 1);
+                const limit = Math.min(count, 7);
+                let data: any[] | null = null;
+                const variantRes = await db
+                  .from('biodynamic_calendar_variants')
                   .select('date, day_type, planting_score, moon_sign')
+                  .eq('utc_offset_hours', variant.utcOffsetHours)
+                  .eq('hemisphere', variant.hemisphere)
                   .eq('day_type', day_type)
                   .gte('date', today)
                   .order('date', { ascending: true })
-                  .limit(Math.min(count, 7));
+                  .limit(limit);
+                if (!variantRes.error && variantRes.data && variantRes.data.length > 0) {
+                  data = variantRes.data;
+                } else {
+                  // Variants not generated yet → legacy Israel table.
+                  const legacy = await db
+                    .from('biodynamic_calendar')
+                    .select('date, day_type, planting_score, moon_sign')
+                    .eq('day_type', day_type)
+                    .gte('date', todayInIsrael())
+                    .order('date', { ascending: true })
+                    .limit(limit);
+                  data = legacy.data;
+                }
                 if (!data || data.length === 0) {
                   return { type: 'tool_result' as const, tool_use_id: b.id, content: 'אין נתונים זמינים.' };
                 }

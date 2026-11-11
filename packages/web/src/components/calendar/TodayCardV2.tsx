@@ -6,6 +6,7 @@ import { GardenLocationModal } from '../garden/GardenLocationModal';
 import type { BiodynamicDay } from '@gina-haya/shared';
 import './today-card.css';
 import { EN_HEADING } from '../../styles/fonts';
+import { DayTransitions } from './DayTransitions';
 
 const SCORE_COLOURS: Record<string, string> = {
   green:  '#4A9C68',
@@ -77,26 +78,39 @@ export function inferPhaseAngle(phasePct: number, phaseNameHe: string): number {
   return WAXING_PHASE_NAMES_HE.has(phaseNameHe) ? base : 360 - base;
 }
 
+/**
+ * Rotation (degrees, canvas-clockwise) of the northern-hemisphere moon drawing
+ * for the observer's |latitude|. Southern latitudes use the same tilt for
+ * |lat| and drawMoon() then mirrors the drawing horizontally, so the southern
+ * view is exactly the mirror image of the northern view at the same |lat|
+ * (waxing crescent lit on the LEFT). E.g. Israel 31.7 → −41.7° waxing;
+ * Sydney −33.8 → −43.8°, mirrored → lit side lower-left.
+ */
 export function getMoonTilt(phaseAngle: number, lat: number): number {
-  const latFactor = (lat / 90);
+  const latFactor = (Math.abs(lat) / 90);
   const baseTilt = -90 * latFactor;
   const isWaxing = phaseAngle <= 180;
   const phaseTilt = isWaxing ? -10 : 10;
   return baseTilt + phaseTilt;
 }
 
-export function drawMoon(canvas: HTMLCanvasElement, phasePct: number, phaseAngle: number, tiltDeg: number, _lat = 31.7) {
+export function drawMoon(canvas: HTMLCanvasElement, phasePct: number, phaseAngle: number, tiltDeg: number, lat = 31.7) {
   const ctx = canvas.getContext('2d');
   if (!ctx) return;
   const size = canvas.offsetWidth || 165;
   const cx = size / 2, cy = size / 2, r = size / 2;
+  const southern = lat < 0;
 
   const render = () => {
     ctx.save();
     ctx.clearRect(0, 0, size, size);
 
-    // Tilt rotation
+    // Tilt rotation, then (southern hemisphere) a horizontal mirror about the
+    // centre. Canvas applies the LAST call first to each point, so the
+    // northern drawing is rotated by tiltDeg (computed for |lat|) and the
+    // result is mirrored — the exact mirror image of the northern view.
     ctx.translate(cx, cy);
+    if (southern) ctx.scale(-1, 1);
     ctx.rotate(tiltDeg * Math.PI / 180);
     ctx.translate(-cx, -cy);
 
@@ -586,11 +600,12 @@ const DAY_TYPE_LEGEND = [
 ];
 
 function FormattedDate({ dateStr, locale }: { dateStr: string; locale: string }) {
-  const date = new Date(dateStr + 'T12:00:00');
+  // dateStr is the garden's local calendar date — format it as a pure date.
+  const date = new Date(dateStr + 'T12:00:00Z');
   return (
     <>
       {date.toLocaleDateString(locale, {
-        weekday: 'long', day: 'numeric', month: 'long', year: 'numeric',
+        weekday: 'long', day: 'numeric', month: 'long', year: 'numeric', timeZone: 'UTC',
       })}
     </>
   );
@@ -759,6 +774,9 @@ export function TodayCard({ day }: Props) {
             ))}
           </div>
         )}
+
+        {/* In-day changes (local time) — variant days only */}
+        <DayTransitions day={day} align="center" />
 
         {(day.prep500Recommended || day.prep501Recommended) && (
           <div style={{ display: 'flex', flexWrap: 'wrap', justifyContent: dir === 'rtl' ? 'flex-end' : 'flex-start', gap: '8px' }}>

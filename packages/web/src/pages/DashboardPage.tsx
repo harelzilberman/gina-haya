@@ -9,6 +9,7 @@ import { drawMoon, getMoonTilt, MoonSignSVG, inferPhaseAngle } from '../componen
 import { getBDPlainSummary, type BDPlainSummary, type DayType } from '../utils/bdPlainLanguage';
 import { useTodayActions, type TodayActionsData } from '../hooks/useTodayActions';
 import { useGardenLocation } from '../hooks/useGardenLocation';
+import { localTodayISO } from '@gina-haya/shared';
 import { EN_HEADING } from '../styles/fonts';
 
 // ── Welcome checklist ──────────────────────────────────────────────────────
@@ -158,9 +159,6 @@ function useIsMobile() {
   return mobile;
 }
 
-function todayISO() {
-  return new Date().toLocaleDateString('en-CA', { timeZone: 'Asia/Jerusalem' });
-}
 
 function getGreetingKey(): string {
   const h = new Date().getHours();
@@ -187,6 +185,7 @@ function moonEmoji(pct: number): string {
 function MoonCanvas({ phasePct, phaseAngle }: { phasePct: number; phaseAngle: number }) {
   const ref = useRef<HTMLCanvasElement>(null);
   const { lat } = useGardenLocation();
+  // Tilt for |lat|; drawMoon mirrors the drawing for southern latitudes.
   const tilt = getMoonTilt(phaseAngle, lat);
   useEffect(() => {
     if (!ref.current) return;
@@ -198,8 +197,8 @@ function MoonCanvas({ phasePct, phaseAngle }: { phasePct: number; phaseAngle: nu
     canvas.style.height = '165px';
     const ctx = canvas.getContext('2d');
     if (ctx) ctx.scale(dpr, dpr);
-    drawMoon(canvas, phasePct, phaseAngle, tilt);
-  }, [phasePct, phaseAngle, tilt]);
+    drawMoon(canvas, phasePct, phaseAngle, tilt, lat);
+  }, [phasePct, phaseAngle, tilt, lat]);
   return (
     <canvas
       ref={ref}
@@ -455,13 +454,14 @@ export function DashboardPage() {
   const { t, i18n } = useTranslation('dashboard');
   const isHe = i18n.language === 'he';
   const isMobile = useIsMobile();
-  const { day, isLoading: calLoading } = useToday();
+  // Calendar "today" is the active garden's local date (browser zone without a garden).
+  const { day, isLoading: calLoading, timezone: calTimezone } = useToday();
   const { tasks, updateStatus } = useTasks();
   const { user, profile } = useAuthStore();
   const { open: openChupChu } = useChupChuPanelStore();
   const { data: todayActions, loading: actionsLoading } = useTodayActions();
 
-  const today      = todayISO();
+  const today      = localTodayISO(calTimezone);
   const todayTasks = tasks.filter(t => t.date === today);
   const firstName  = profile?.display_name?.split(' ')[0] ?? '';
   const isNewUser  = user
@@ -480,7 +480,7 @@ export function DashboardPage() {
   ) : null;
 
   const todayDateStr = new Date().toLocaleDateString(isHe ? 'he-IL' : 'en-US', {
-    weekday: 'long', day: 'numeric', month: 'long', year: 'numeric',
+    weekday: 'long', day: 'numeric', month: 'long', year: 'numeric', timeZone: calTimezone,
   });
 
   // Weekly tasks grouped by date

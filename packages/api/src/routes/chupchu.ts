@@ -7,9 +7,10 @@ import { askChupChu, CHUPCHU_GLOSSARY_HE, type ProposedTask, type MobileToolCall
 import { compressImageForClaude } from '../services/plantVision';
 import { fetchWeatherForRegion, getCachedWeatherForCoords, resolveGardenWeatherCoords } from '../services/weather';
 import { hemisphereOf } from '../services/geo';
-import { buildGardenFactsBlock, type GardenFactsInput } from '../services/gardenFacts';
+import { buildGardenFactsBlock, type GardenFactsInput, type GardenCalendarToday } from '../services/gardenFacts';
+import { getVariantRawRows, type CalendarLocation, type RawCalendarRow } from '../db/queries/calendar';
 import type { ChupChuMessage, ChupChuContext } from '@gina-haya/shared';
-import { todayInIsrael, startOfTodayIsrael, startOfCurrentMonthIsrael } from '@gina-haya/shared';
+import { todayInIsrael, startOfTodayIsrael, startOfCurrentMonthIsrael, localTodayISO, addDaysISO, resolveVariant, isValidIanaTimeZone } from '@gina-haya/shared';
 import { getRecentCompletedTasks } from '../db/queries/tasks';
 import { getLimits } from '../config/tiers';
 import { checkVisionQuota, recordVisionUse, checkAndRecordVisionUse, recordFreeRetryVisionUse, buildVisionQuotaError } from '../services/visionQuota';
@@ -1610,19 +1611,9 @@ chupChuRouter.post('/chat', async (req: any, res) => {
     const _todayParts = today.split('-').map(Number);
     const _tomorrowD  = new Date(Date.UTC(_todayParts[0], _todayParts[1] - 1, _todayParts[2] + 1));
     const tomorrow    = _tomorrowD.toISOString().split('T')[0];
-
-    const { data: calendarRows, error: calendarError } = await db
-      .from('biodynamic_calendar')
-      .select('*')
-      .in('date', [today, tomorrow])
-      .order('date', { ascending: true });
-
-    if (calendarError) {
-      console.error('[Chupchu] biodynamic_calendar fetch failed:', calendarError.message);
-    }
-
-    const calendarDay      = (calendarRows ?? []).find((r: any) => r.date === today)     ?? null;
-    const calendarTomorrow = (calendarRows ?? []).find((r: any) => r.date === tomorrow)  ?? null;
+    // The calendar rows themselves are loaded in step 4a, once the garden is
+    // known: they come from the garden's timezone/hemisphere variant and its
+    // LOCAL today/tomorrow (calToday / calTomorrow), not Israel's.
 
     // ── 4. Fetch user's garden (shared resolution helper) ────────────────
     // On ambiguous-multiple-gardens or no-gardens, proceed with garden = null
@@ -1655,10 +1646,61 @@ chupChuRouter.post('/chat', async (req: any, res) => {
         userGardensForFacts = (gardenRows ?? []) as GardenFactsInput[];
       }
     }
+
+    // ── 4a-ii. Biodynamic calendar for the garden's own day ──────────────
+    // Variant = the garden's timezone (local today/tomorrow, UTC offset at
+    // local noon) × hemisphere (south → Antipodean asc/desc). No garden or no
+    // location → Israel defaults, identical to the legacy table. Missing
+    // variant rows fall back to biodynamic_calendar inside getVariantRawRows.
+    const calendarLocationOf = (g: { timezone?: string | null; latitude?: number | null } | null): CalendarLocation => ({
+      timezone: g && isValidIanaTimeZone(g.timezone) ? g.timezone : null,
+      latitude: g?.latitude != null ? Number(g.latitude) : null,
+    });
+    const gardenCalLoc = calendarLocationOf(garden);
+    const calToday    = localTodayISO(gardenCalLoc.timezone);
+    const calTomorrow = addDaysISO(calToday, 1);
+    let calendarDay: RawCalendarRow | null = null;
+    let calendarTomorrow: RawCalendarRow | null = null;
+    try {
+      const calRows = await getVariantRawRows([calToday, calTomorrow], gardenCalLoc);
+      calendarDay      = calRows.get(calToday)    ?? null;
+      calendarTomorrow = calRows.get(calTomorrow) ?? null;
+    } catch (calErr: any) {
+      console.error('[Chupchu] calendar fetch failed:', calErr?.message ?? calErr);
+    }
+
+    // Each garden's own calendar today — named in the facts when gardens differ.
+    const gardenCalendars = new Map<string, GardenCalendarToday>();
+    if (userGardensForFacts.length > 1) {
+      const rowCache = new Map<string, RawCalendarRow | null>();
+      for (const g of userGardensForFacts.slice(0, 6)) {
+        const loc = calendarLocationOf(g);
+        const date = localTodayISO(loc.timezone);
+        const v = resolveVariant(date, loc.timezone, loc.latitude);
+        const key = `${date}|${v.utcOffsetHours}|${v.hemisphere}`;
+        if (!rowCache.has(key)) {
+          try {
+            rowCache.set(key, (await getVariantRawRows([date], loc)).get(date) ?? null);
+          } catch {
+            rowCache.set(key, null);
+          }
+        }
+        const row = rowCache.get(key);
+        if (row) {
+          gardenCalendars.set(g.id, {
+            dayType: row.day_type, dayTypeHe: row.day_type_he,
+            direction: row.ascending_descending, directionHe: row.ascending_descending_he,
+          });
+        }
+      }
+    }
+
     const gardenFactsBlock = buildGardenFactsBlock(
       garden ? (garden as GardenFactsInput) : null,
       userGardensForFacts,
       lang === 'en' ? 'en' : 'he',
+      new Date(),
+      gardenCalendars,
     );
 
     // ── 4b. Fetch active tracker garden_plant_ids (for plant prioritization) ──
@@ -2187,7 +2229,26 @@ chupChuRouter.post('/chat', async (req: any, res) => {
         ? `יום ${dayTypeStr} — ${moonSignStr}, ${ascStr}, ציון שתילה: ${row.planting_score} (${row.score_colour})`
         : `${dayTypeStr} day — ${moonSignStr}, ${ascStr}, planting score: ${row.planting_score} (${row.score_colour})`);
 
-      const changeTime = _formatChangeTime(row.day_type_change_time);
+      // Variant rows: events inside the garden's local day, in local time.
+      const transitions: any[] = row.fromVariant && Array.isArray(row.transitions) ? row.transitions : [];
+      for (const t of transitions) {
+        if (t.type === 'sign_change') {
+          lines.push(isHe
+            ? `(${t.local_time} שעון מקומי: יום ${t.from_day_type_he} ← יום ${t.to_day_type_he}, ${t.to_sign_he})`
+            : `(${t.local_time} local time: ${t.from_day_type} → ${t.to_day_type} day, ${t.to_sign})`);
+        } else if (t.type === 'asc_desc_change') {
+          lines.push(isHe
+            ? `(${t.local_time} שעון מקומי: הירח הופך ל${t.value_he})`
+            : `(${t.local_time} local time: the moon turns ${t.value})`);
+        } else if (t.type === 'new_moon' || t.type === 'full_moon') {
+          lines.push(isHe
+            ? `(${t.local_time} שעון מקומי: ${t.label_he})`
+            : `(${t.local_time} local time: ${t.type === 'new_moon' ? 'new moon' : 'full moon'})`);
+        }
+      }
+
+      // Legacy rows (Israel table fallback) keep the Israel-time change line.
+      const changeTime = row.fromVariant ? null : _formatChangeTime(row.day_type_change_time);
       if (changeTime) {
         lines.push(isHe
           ? `(שינוי סוג יום ב-${changeTime} שעון ישראל)`
@@ -2213,8 +2274,8 @@ chupChuRouter.post('/chat', async (req: any, res) => {
     const _tomorrowBioStr = calendarTomorrow ? _formatBioDay(calendarTomorrow, _isHeBio) : _noDataMsg;
 
     const biodynamicSection = _isHeBio
-      ? `## לוח ביודינמי\n**היום (${today}):**\n${_todayBioStr}\n\n**מחר (${tomorrow}):**\n${_tomorrowBioStr}`
-      : `## Biodynamic Calendar\n**Today (${today}):**\n${_todayBioStr}\n\n**Tomorrow (${tomorrow}):**\n${_tomorrowBioStr}`;
+      ? `## לוח ביודינמי (לפי התאריך המקומי בגינה)\n**היום (${calToday}):**\n${_todayBioStr}\n\n**מחר (${calTomorrow}):**\n${_tomorrowBioStr}`
+      : `## Biodynamic Calendar (garden's local date)\n**Today (${calToday}):**\n${_todayBioStr}\n\n**Tomorrow (${calTomorrow}):**\n${_tomorrowBioStr}`;
 
     // ── 8b. Build past conversation context (messages older than the current window)
     // Prefer client history when it is longer than what's in DB — this survives silent

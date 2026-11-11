@@ -35,5 +35,22 @@
   },
   "moonrise": "Moonrise",
   "moonset": "Moonset",
-  "moonSign": "Moon Sign"
+  "moonSign": "Moon Sign",
+  "transitions": {
+    "title": "Changes during the day",
+    "signChange": "{{from}} until {{time}} → {{to}}",
+    "ascDesc": "{{direction}} moon from {{time}}",
+    "newMoon": "New moon at {{time}}",
+    "fullMoon": "Full moon at {{time}}",
+    "direction": {
+      "ascending": "Ascending",
+      "descending": "Descending"
+    },
+    "dayType": {
+      "fruit": "Fruit",
+      "root": "Root",
+      "flower": "Flower",
+      "leaf": "Leaf"
+    }
+  }
 }

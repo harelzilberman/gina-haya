@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useDirection } from '../hooks/useDirection';
 import { useToday, useWeek } from '../hooks/useCalendar';
+import { localTodayISO } from '@gina-haya/shared';
 import { NodeBlackoutBanner }  from '../components/calendar/NodeBlackoutBanner';
 import { ChupChuDailySummary }   from '../components/calendar/ChupChuDailySummary';
 import { TodayCard }           from '../components/calendar/TodayCardV2';
@@ -71,7 +72,8 @@ export function CalendarPage() {
     setQuickAsk('');
     openChupChu(text);
   };
-  const { day, isLoading: dayLoading, error: dayError } = useToday();
+  // "Today" and dates follow the active garden's timezone (browser zone without a garden).
+  const { day, isLoading: dayLoading, error: dayError, timezone: calTimezone } = useToday();
   const { days, isLoading: weekLoading } = useWeek();
 
   if (dayLoading) {
@@ -98,9 +100,9 @@ export function CalendarPage() {
     );
   }
 
-  const todayISO = new Date().toLocaleDateString('en-CA', { timeZone: 'Asia/Jerusalem' });
+  const todayISO = localTodayISO(calTimezone);
   const formattedDate = new Date().toLocaleDateString(isHe ? 'he-IL' : 'en-US', {
-    weekday: 'long', month: 'long', day: 'numeric',
+    weekday: 'long', month: 'long', day: 'numeric', timeZone: calTimezone,
   });
 
   return (

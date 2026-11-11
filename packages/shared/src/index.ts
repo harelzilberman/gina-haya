@@ -10,3 +10,4 @@ export * from './types/article';
 export * from './data/starterTasks';
 export * from './utils/photoPath';
 export * from './utils/season';
+export * from './utils/calendarVariant';

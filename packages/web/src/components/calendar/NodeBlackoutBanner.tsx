@@ -27,7 +27,8 @@ export function NodeBlackoutBanner({ day }: Props) {
       endTime = new Date(day.nodeBlackoutEnd).toLocaleTimeString(i18n.language === 'he' ? 'he-IL' : 'en-US', {
         hour:     '2-digit',
         minute:   '2-digit',
-        timeZone: 'Asia/Jerusalem',
+        // Variant days carry the garden's zone; legacy rows are Israel time.
+        timeZone: day.timezone ?? 'Asia/Jerusalem',
       });
     } catch {
       endTime = null;
