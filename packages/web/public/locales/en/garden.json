@@ -222,5 +222,14 @@
     "savedToast": "Garden location updated 🌱",
     "saveError": "We couldn't save the location. Please try again.",
     "prompt": "Set your garden's location for accurate weather and moon"
+  },
+  "locationName": {
+    "edit": "Edit place name",
+    "label": "Place name",
+    "placeholder": "e.g. Gan Hashomron",
+    "hint": "Up to 80 characters. Leave empty to use the automatic name.",
+    "save": "Save",
+    "savedToast": "Place name updated 🌱",
+    "saveError": "We couldn't save the place name. Please try again."
   }
 }

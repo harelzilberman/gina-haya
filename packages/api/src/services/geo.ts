@@ -319,37 +319,52 @@ export async function searchPlaces(q: string, lang: 'he' | 'en'): Promise<GeoSea
   return data;
 }
 
+/** Max length of a garden's place name (location_name). */
+export const LOCATION_NAME_MAX = 80;
+
+/**
+ * Most specific settlement-level name in a Nominatim /reverse address.
+ * Order: hamlet → village → suburb → town → city → municipality → county.
+ */
+function reversePlaceName(address: any): string | null {
+  const a = address ?? {};
+  for (const k of ['hamlet', 'village', 'suburb', 'town', 'city', 'municipality', 'county']) {
+    const v = a[k];
+    if (typeof v === 'string' && v.trim()) return v.trim();
+  }
+  return null;
+}
+
 /**
  * Reverse-geocode coordinates to "place, country" (e.g. "גן השומרון, ישראל")
- * via Nominatim /reverse. 30-day cache keyed by 2-decimal coordinates.
- * Returns null on any failure — never throws.
+ * via Nominatim /reverse. Returns null on any failure — never throws.
  *
- * zoom=13 (village/suburb level), not 10 (city level): at zoom 10 a moshav
- * like Gan HaShomron resolves to its regional council ("מועצה אזורית מנשה").
- * At 13 the address still carries `city` for urban points, and
- * nominatimPlaceName() prefers village/town/city over suburb, so big cities
- * come back as "Sydney" / "ברלין", not a neighbourhood.
+ * Callers pass the coordinates the CLIENT sent, not the 2-decimal stored
+ * values: rounding to 2 decimals moves a point up to ~700 m, enough to land
+ * a border village (Gan HaShomron) in its neighbour (Pardes Hanna-Karkur).
+ * The query and the 30-day cache key use 3 decimals (~100 m). zoom=14
+ * (neighbourhood level) so small villages and hamlets resolve as themselves.
  */
 export async function reverseGeocode(lat: number, lon: number, lang: 'he' | 'en'): Promise<string | null> {
   if (!Number.isFinite(lat) || !Number.isFinite(lon)) return null;
-  const rLat = roundCoord(lat).toFixed(2);
-  const rLon = roundCoord(lon).toFixed(2);
+  const rLat = (Math.round(lat * 1000) / 1000).toFixed(3);
+  const rLon = (Math.round(lon * 1000) / 1000).toFixed(3);
   const key = `${lang}:${rLat},${rLon}`;
   const cached = reverseCache.get(key);
   if (cached && Date.now() - cached.fetchedAt < REVERSE_TTL_MS) return cached.data;
 
   try {
     const json = await nominatimFetch('/reverse', {
-      format: 'jsonv2', lat: rLat, lon: rLon, zoom: '13', 'accept-language': lang, addressdetails: '1',
+      format: 'jsonv2', lat: rLat, lon: rLon, zoom: '14', 'accept-language': lang, addressdetails: '1',
     });
     if (!json || json.error) return null;
-    const place   = nominatimPlaceName(json) ?? json.address?.county ?? json.address?.state ?? null;
+    const place   = reversePlaceName(json.address);
     const country = json.address?.country ?? null;
     const parts = [place, country]
       .map(v => (typeof v === 'string' ? v.trim() : ''))
       .filter(Boolean);
     if (parts.length === 0) return null;
-    const label = [...new Set(parts)].join(', ').slice(0, 200);
+    const label = [...new Set(parts)].join(', ').slice(0, LOCATION_NAME_MAX);
     boundedSet(reverseCache, key, { data: label, fetchedAt: Date.now() });
     return label;
   } catch (err: any) {
@@ -367,12 +382,18 @@ export async function reverseGeocode(lat: number, lon: number, lang: 'he' | 'en'
  *   - stored rounded to 2 decimals (city-level precision, for privacy)
  *   - timezone: server-resolved from coords; client value used only as a
  *     fallback, and only if it is a valid IANA zone
- *   - location_name saved when supplied (trimmed, max 200 chars)
- *   - coordinates saved without a location name (GPS "use my location"):
- *     location_name is filled by reverse geocoding in the user's language.
- *     A geocoding failure never fails the save — the name is simply left as is.
+ *   - with coordinates: location_name saved when supplied (trimmed, cut to
+ *     LOCATION_NAME_MAX). Without one (GPS "use my location") it is filled by
+ *     reverse geocoding the client's precise coordinates (3 decimals) in the
+ *     user's language. A geocoding failure never fails the save.
+ *   - locationName WITHOUT coordinates (renaming the place): only
+ *     location_name changes — never coordinates or timezone. 1–80 chars after
+ *     trimming (longer → 400); empty resets it to the reverse-geocoded name of
+ *     the garden's current (stored) coordinates, or null if that fails.
  *
- * `getLanguage` is called lazily, only when reverse geocoding is needed.
+ * Callbacks are called lazily, only when reverse geocoding is needed:
+ *   getLanguage       user's profile language (default 'he')
+ *   getCurrentCoords  the garden's stored coordinates (PATCH only)
  */
 export async function buildGardenLocationUpdates(
   body: {
@@ -381,15 +402,48 @@ export async function buildGardenLocationUpdates(
     timezone?: unknown;
     locationName?: unknown;
   },
-  getLanguage?: () => Promise<'he' | 'en'>,
-): Promise<{ updates: Record<string, unknown> } | { error: string }> {
+  opts: {
+    getLanguage?: () => Promise<'he' | 'en'>;
+    getCurrentCoords?: () => Promise<{ lat: number; lon: number } | null>;
+  } = {},
+): Promise<{ updates: Record<string, unknown> } | { error: string; code?: 'invalid_location_name' }> {
   const { latitude, longitude, timezone, locationName } = body;
-  const suppliedName = typeof locationName === 'string' ? locationName.trim().slice(0, 200) : '';
+  const { getLanguage, getCurrentCoords } = opts;
   const hasLat = latitude  !== undefined && latitude  !== null;
   const hasLon = longitude !== undefined && longitude !== null;
   if (hasLat !== hasLon) return { error: 'latitude and longitude must be supplied together' };
+  if (locationName !== undefined && locationName !== null && typeof locationName !== 'string') {
+    return { error: 'locationName must be a string', code: 'invalid_location_name' };
+  }
+  const trimmedName = typeof locationName === 'string' ? locationName.trim() : '';
 
   const updates: Record<string, unknown> = {};
+
+  // ── Rename only: locationName without coordinates ─────────────────────────
+  if (!hasLat && locationName !== undefined) {
+    if (trimmedName.length > LOCATION_NAME_MAX) {
+      return { error: `locationName must be at most ${LOCATION_NAME_MAX} characters`, code: 'invalid_location_name' };
+    }
+    if (trimmedName) {
+      updates.location_name = trimmedName;
+      return { updates };
+    }
+    // Empty → reset to the automatic name for the current coordinates.
+    let autoName: string | null = null;
+    try {
+      const coords = getCurrentCoords ? await getCurrentCoords() : null;
+      if (coords) {
+        const lang = getLanguage ? await getLanguage() : 'he';
+        autoName = await reverseGeocode(coords.lat, coords.lon, lang);
+      }
+    } catch (err: any) {
+      console.warn('[buildGardenLocationUpdates] name reset geocode skipped:', err?.message ?? err);
+    }
+    updates.location_name = autoName;
+    return { updates };
+  }
+
+  const suppliedName = trimmedName.slice(0, LOCATION_NAME_MAX);
 
   if (hasLat) {
     const lat = Number(latitude);
@@ -407,7 +461,8 @@ export async function buildGardenLocationUpdates(
       if (suppliedName) return null;
       try {
         const lang = getLanguage ? await getLanguage() : 'he';
-        return await reverseGeocode(rLat, rLon, lang);
+        // Precise client coordinates — NOT the 2-decimal stored values.
+        return await reverseGeocode(lat, lon, lang);
       } catch (err: any) {
         console.warn('[buildGardenLocationUpdates] reverse geocode skipped:', err?.message ?? err);
         return null;

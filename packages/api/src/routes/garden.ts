@@ -356,10 +356,10 @@ gardenRouter.post('/', async (req: any, res) => {
 
     const loc = await buildGardenLocationUpdates(
       { latitude, longitude, timezone, locationName },
-      profileLanguage(req.user.id),
+      { getLanguage: profileLanguage(req.user.id) },
     );
     if ('error' in loc) {
-      return res.status(400).json({ error: 'invalid_coords', message: loc.error });
+      return res.status(400).json({ error: loc.code ?? 'invalid_coords', message: loc.error });
     }
 
     // Enforce per-tier garden limit.
@@ -450,12 +450,29 @@ gardenRouter.patch('/:id', async (req: any, res) => {
 
     // Coordinates: must be supplied as a pair, within valid ranges. Saved rounded
     // to 2 decimals, with timezone resolved server-side (client tz as fallback).
+    //
+    // locationName alone (no coordinates) renames the place only: 1–80 chars,
+    // empty resets it to the reverse-geocoded name of the stored coordinates.
+    // Coordinates and timezone are never touched by a rename.
     const loc = await buildGardenLocationUpdates(
       { latitude, longitude, timezone, locationName },
-      profileLanguage(req.user.id),
+      {
+        getLanguage: profileLanguage(req.user.id),
+        getCurrentCoords: async () => {
+          const { data } = await db
+            .from('gardens')
+            .select('latitude, longitude')
+            .eq('id', req.params.id)
+            .eq('user_id', req.user.id)
+            .maybeSingle();
+          return data?.latitude != null && data?.longitude != null
+            ? { lat: Number(data.latitude), lon: Number(data.longitude) }
+            : null;
+        },
+      },
     );
     if ('error' in loc) {
-      return res.status(400).json({ error: 'invalid_coords', message: loc.error });
+      return res.status(400).json({ error: loc.code ?? 'invalid_coords', message: loc.error });
     }
 
     const updates: Record<string, unknown> = { updated_at: new Date().toISOString(), ...loc.updates };

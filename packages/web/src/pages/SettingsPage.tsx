@@ -12,6 +12,7 @@ import { MIN_PASSWORD_LENGTH, mapAuthError } from '../utils/authErrors';
 import { EN_HEADING } from '../styles/fonts';
 import { useGardenLocation } from '../hooks/useGardenLocation';
 import { GardenLocationModal } from '../components/garden/GardenLocationModal';
+import { LocationNameEditor } from '../components/garden/LocationNameEditor';
 
 const EARTH  = '#050d0a';
 const GOLD   = '#00e5c3';
@@ -560,14 +561,10 @@ export function SettingsPage() {
                 {tGarden('locationPicker.title')}
               </h3>
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '12px' }}>
-                <div style={{ minWidth: 0 }}>
+                <div style={{ minWidth: 0, flex: 1 }}>
                   <p style={{ fontFamily: EN_HEADING, fontSize: '14px', color: PARCH, margin: '0 0 2px' }}>{activeGarden.name}</p>
-                  <p style={{ fontFamily: EN_HEADING, fontSize: '12px', color: `${PARCH}60`, margin: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-                    📍 {activeGarden.location_name
-                      || (gardenHasCoords
-                        ? `${Number(activeGarden.latitude).toFixed(2)}, ${Number(activeGarden.longitude).toFixed(2)}`
-                        : tGarden('locationPicker.notSet'))}
-                  </p>
+                  {/* Place name with inline "edit name" (PATCH locationName only) */}
+                  <LocationNameEditor garden={activeGarden} />
                 </div>
                 <button
                   type="button"

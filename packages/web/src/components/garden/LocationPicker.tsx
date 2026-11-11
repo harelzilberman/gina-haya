@@ -12,14 +12,19 @@ import { EN_HEADING } from '../../styles/fonts';
 // "use my current location" button. Emits { latitude, longitude, timezone,
 // locationName } — the shape PATCH/POST /api/garden accepts. The server
 // rounds coordinates and resolves the timezone itself; the timezone we send
-// is only its fallback.
+// is only its fallback. "Use my location" sends no name and 3-decimal
+// coordinates (~100 m): the server names the place by reverse geocoding those
+// precise coordinates, then stores only 2 decimals.
 
 export interface PickedLocation {
   latitude: number;
   longitude: number;
   /** Client-side fallback timezone (place tz from geocoding, else browser tz). */
   timezone: string | null;
-  locationName: string;
+  /** Name to save; null lets the server name the place (GPS picks). */
+  locationName: string | null;
+  /** What the picker shows as "Selected: …". */
+  label: string;
 }
 
 type Variant = 'light' | 'dark';
@@ -112,6 +117,7 @@ export function LocationPicker({ value, onSelect, variant = 'light', autoFocus =
       longitude: r.longitude,
       timezone: r.timezone ?? browserTimeZone(),
       locationName: formatPlace(r),
+      label: formatPlace(r),
     });
     setQuery('');
     setResults([]);
@@ -128,13 +134,14 @@ export function LocationPicker({ value, onSelect, variant = 'light', autoFocus =
     navigator.geolocation.getCurrentPosition(
       pos => {
         setLocating(false);
-        const lat = Math.round(pos.coords.latitude * 100) / 100;
-        const lon = Math.round(pos.coords.longitude * 100) / 100;
+        const lat = Math.round(pos.coords.latitude * 1000) / 1000;
+        const lon = Math.round(pos.coords.longitude * 1000) / 1000;
         onSelect({
           latitude: lat,
           longitude: lon,
           timezone: browserTimeZone(),
-          locationName: t('locationPicker.myLocationName', { lat: lat.toFixed(2), lon: lon.toFixed(2) }),
+          locationName: null,
+          label: t('locationPicker.myLocationName', { lat: lat.toFixed(2), lon: lon.toFixed(2) }),
         });
       },
       err => {
@@ -249,7 +256,7 @@ export function LocationPicker({ value, onSelect, variant = 'light', autoFocus =
 
       {value && (
         <p style={{ margin: '12px 0 0', fontSize: '14px', fontWeight: 600, color: c.accent }}>
-          ✓ {t('locationPicker.selected', { name: value.locationName })}
+          ✓ {t('locationPicker.selected', { name: value.label || value.locationName || '' })}
         </p>
       )}
 
