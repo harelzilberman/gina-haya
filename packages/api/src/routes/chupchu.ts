@@ -1639,7 +1639,7 @@ chupChuRouter.post('/chat', async (req: any, res) => {
       garden = data;
     }
 
-    // ── 4a. Garden facts (top of the system prompt) ──────────────────────
+    // ── 4a. Garden facts (uncached system block after the cached ones) ───
     // All of the user's gardens (light rows) so gardens in different
     // hemispheres can be named side by side. Non-fatal on error.
     let userGardensForFacts: GardenFactsInput[] = [];

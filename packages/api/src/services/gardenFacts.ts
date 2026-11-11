@@ -1,16 +1,14 @@
 // ── Chupchu "Garden facts" block ─────────────────────────────────────────────
 //
-// A short, authoritative block placed at the TOP of Chupchu's system prompt:
-// where the garden is, its hemisphere, the local date/time there and the
-// current season. Testing showed that location facts buried in the per-user
-// context were ignored on the first answer (Israeli-season advice for a
-// Sydney garden), so these facts lead the prompt and the instruction attached
-// to them is explicit.
+// A short, authoritative block in Chupchu's system prompt: where the garden
+// is, its hemisphere, the local date/time there and the current season.
+// Testing showed that location facts buried in the per-user context were
+// ignored on the first answer (Israeli-season advice for a Sydney garden), so
+// this block has its own loud heading and an explicit rule attached.
 //
-// Prompt-cache note: this block precedes the cached base prompt, so its text
-// must stay byte-stable for as long as possible. The local time is therefore
-// given to the hour only — the block (and the base-prompt cache behind it)
-// changes at most once an hour per garden set, matching the 1h cache TTL.
+// Placement: AFTER the cached system blocks, uncached (see askChupChu in
+// services/claude.ts). It changes every minute, so it carries the local time
+// to the minute.
 
 import { getGardenSeason, type GardenSeason } from '@gina-haya/shared';
 import { REGION_COORDS, FALLBACK_TIMEZONE } from './weather';
@@ -32,16 +30,17 @@ interface ResolvedGardenFacts {
   approximate: boolean;
   timezone: string | null;
   season: GardenSeason | null;
-  localHour: string | null; // "HH:00"
+  localTime: string | null; // "HH:MM"
 }
 
 const MAX_GARDENS_LISTED = 6;
 
-function localHour(now: Date, timeZone: string | null): string | null {
+function localTime(now: Date, timeZone: string | null): string | null {
   if (!timeZone) return null;
   try {
-    const h = new Intl.DateTimeFormat('en-GB', { timeZone, hour: '2-digit', hourCycle: 'h23' }).format(now);
-    return `${h.padStart(2, '0')}:00`;
+    return new Intl.DateTimeFormat('en-GB', {
+      timeZone, hour: '2-digit', minute: '2-digit', hourCycle: 'h23',
+    }).format(now);
   } catch {
     return null;
   }
@@ -59,7 +58,7 @@ function resolveFacts(g: GardenFactsInput, now: Date, lang: 'he' | 'en'): Resolv
       approximate: false,
       timezone: tz,
       season: getGardenSeason(Number(g.latitude), now, tz),
-      localHour: localHour(now, tz),
+      localTime: localTime(now, tz),
     };
   }
 
@@ -72,11 +71,11 @@ function resolveFacts(g: GardenFactsInput, now: Date, lang: 'he' | 'en'): Resolv
       approximate: true,
       timezone: FALLBACK_TIMEZONE,
       season: getGardenSeason(REGION_COORDS[region].lat, now, FALLBACK_TIMEZONE),
-      localHour: localHour(now, FALLBACK_TIMEZONE),
+      localTime: localTime(now, FALLBACK_TIMEZONE),
     };
   }
 
-  return { name, place: null, approximate: false, timezone: null, season: null, localHour: null };
+  return { name, place: null, approximate: false, timezone: null, season: null, localTime: null };
 }
 
 function factLines(f: ResolvedGardenFacts, lang: 'he' | 'en', isCurrent: boolean, showCurrentMarker: boolean): string[] {
@@ -90,7 +89,7 @@ function factLines(f: ResolvedGardenFacts, lang: 'he' | 'en', isCurrent: boolean
     }
     lines.push(`  מקום: ${f.place ?? 'לא ידוע (נשמרו קואורדינטות בלבד)'}${f.approximate ? ' (משוער, לפי אזור)' : ''}`);
     lines.push(`  חצי כדור: ${f.season.hemisphereLabel.he}`);
-    const when = f.localHour ? `${f.season.localDate}, בסביבות ${f.localHour}` : f.season.localDate;
+    const when = f.localTime ? `${f.season.localDate}, ${f.localTime}` : f.season.localDate;
     lines.push(`  תאריך ושעה מקומיים בגינה: ${when}${f.timezone ? ` (${f.timezone})` : ''}`);
     lines.push(`  עונה נוכחית בגינה: ${f.season.seasonLabel.he}`);
   } else {
@@ -102,7 +101,7 @@ function factLines(f: ResolvedGardenFacts, lang: 'he' | 'en', isCurrent: boolean
     }
     lines.push(`  Place: ${f.place ?? 'unknown (coordinates only)'}${f.approximate ? ' (approximate, by region)' : ''}`);
     lines.push(`  Hemisphere: ${f.season.hemisphereLabel.en}`);
-    const when = f.localHour ? `${f.season.localDate}, around ${f.localHour}` : f.season.localDate;
+    const when = f.localTime ? `${f.season.localDate}, ${f.localTime}` : f.season.localDate;
     lines.push(`  Local date and time at the garden: ${when}${f.timezone ? ` (${f.timezone})` : ''}`);
     lines.push(`  Current season at the garden: ${f.season.seasonLabel.en}`);
   }
@@ -145,8 +144,8 @@ export function buildGardenFactsBlock(
 
   const out: string[] = [];
   if (lang === 'he') {
-    out.push(`## עובדות הגינה`);
-    out.push(`אלה עובדות מאומתות על מיקום הגינה, הזמן בה והעונה בה. הן המקור הקובע.`);
+    out.push(`## עובדות הגינה — מקור קובע, גובר על כל הנחת ברירת מחדל לגבי ישראל או העונה`);
+    out.push(`אלה עובדות מאומתות על מיקום הגינה, הזמן בה והעונה בה. הן גוברות על כל הנחה אחרת בהנחיה זו.`);
     out.push(`כל עצה על שתילה, זריעה, גיזום ועונתיות **חייבת** להתאים לעובדות האלה — לפי העונה וחצי הכדור של הגינה, לא לפי התאריך בישראל. לעולם אל תניח ישראל או אקלים ים-תיכוני, אלא אם כתוב כאן שהגינה בישראל.`);
     if (entries.length === 0) {
       out.push(`- אין למשתמש גינה עם מיקום ידוע. חצי הכדור והעונה לא ידועים.`);
@@ -164,8 +163,8 @@ export function buildGardenFactsBlock(
         : `המיקום לא ידוע — אל תניח מיקום ואל תניח ישראל. מותר לשאול פעם אחת, בעדינות, איפה הגינה נמצאת (או להציע להגדיר מיקום בהגדרות הגינה), ולתת בינתיים עצה כללית שלא תלויה בעונה.`);
     }
   } else {
-    out.push(`## Garden facts`);
-    out.push(`Verified facts about where the garden is, its local time and its season. They are authoritative.`);
+    out.push(`## GARDEN FACTS — authoritative, overrides any default assumption about Israel or season`);
+    out.push(`Verified facts about where the garden is, its local time and its season. They override any other assumption in this prompt.`);
     out.push(`All planting, sowing, pruning and seasonal advice **MUST** follow these facts — the garden's own season and hemisphere, not the date in Israel. Never assume Israel or a Mediterranean climate unless these facts say the garden is in Israel.`);
     if (entries.length === 0) {
       out.push(`- The user has no garden with a known location. Hemisphere and season are unknown.`);

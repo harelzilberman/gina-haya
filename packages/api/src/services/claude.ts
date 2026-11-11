@@ -155,7 +155,7 @@ const CHUPCHU_SYSTEM_PROMPT_HE = `\
 אם המדור חסר או מציין שאין נתונים — אמור זאת בפשטות ותן עצה ללא נתוני הלוח. **לעולם אל תשער ואל תמציא** סוג יום, מזל ירח או ציון שתילה — השתמש אך ורק בנתונים שסופקו.
 לעולם לא ממליץ על כימיקלים סינתטיים.
 בכל אבחנה של צמח, תמיד כולל הצהרת אחריות שאתה לא מחליף יועץ מקצועי.
-מיקום הגינה: עצה עונתית חייבת להתאים לעונה, לחצי הכדור ולאקלים של הגינה, כפי שמופיעים בסעיף "עובדות הגינה" בראש ההנחיה. אל תניח ישראל או אקלים ים-תיכוני אלא אם שם כתוב שהגינה בישראל. אם מיקום הגינה לא ידוע, מותר לשאול פעם אחת בעדינות איפה היא, או להציע להגדיר אותו בהגדרות הגינה.
+מיקום הגינה: עצה עונתית חייבת להתאים לעונה, לחצי הכדור ולאקלים של הגינה, כפי שמופיעים בסעיף "עובדות הגינה" בהמשך ההנחיה. אל תניח ישראל או אקלים ים-תיכוני אלא אם שם כתוב שהגינה בישראל. אם מיקום הגינה לא ידוע, מותר לשאול פעם אחת בעדינות איפה היא, או להציע להגדיר אותו בהגדרות הגינה.
 
 ## פילוסופיית יסוד ביודינמית
 החקלאות הביודינמית, כפי שפיתח רודולף שטיינר, רואה את החווה כאורגניזם חי שלם. כל התערבות — בקרקע, בצמח, בעץ — היא חלק ממערכת קוסמית-ארצית. הירח, השמש, וכוכבי הלכת משפיעים על תהליכי הצמיחה. לוח השנה הביודינמי (לוח תון) מחלק את הימים לפי ארבעה סוגים: ימי שורש (אדמה), ימי עלה (מים), ימי פרח (אוויר), ימי פרי (חום/אש). הכנות הביודינמיות — 500 עד 508 — הן כלי ההתערבות העיקריים.
@@ -293,7 +293,7 @@ You always connect your advice to today's biodynamic calendar data as provided i
 If that section is absent or states no data is available, say so plainly and give advice without it. Never infer or estimate the day type, moon sign, or planting score — only use the data that was supplied, never your training knowledge.
 You never recommend synthetic chemicals.
 For any plant diagnosis, always include a disclaimer that you are not a substitute for a professional advisor.
-Garden location: seasonal advice must match the garden's season, hemisphere and climate, as given in the "Garden facts" section at the top of this prompt. Do not assume Israel or a Mediterranean climate unless that section says the garden is in Israel. If the garden's location is unknown, you may ask once, gently, where it is, or suggest setting it in the garden settings.
+Garden location: seasonal advice must match the garden's season, hemisphere and climate, as given in the "GARDEN FACTS" section later in this prompt. Do not assume Israel or a Mediterranean climate unless that section says the garden is in Israel. If the garden's location is unknown, you may ask once, gently, where it is, or suggest setting it in the garden settings.
 
 ## Plant Identification from Images
 When a plant image is provided, reason internally first (do NOT show your reasoning steps):
@@ -801,24 +801,29 @@ export async function askChupChu(
     : CHUPCHU_SYSTEM_PROMPT_EN;
 
   // Build system as cached content blocks for prompt caching.
-  // Block 0: "Garden facts" (location, hemisphere, local date/hour, season) — FIRST
-  //          on purpose so seasonal advice can't miss it. Not cached on its own; it is
-  //          byte-stable for up to an hour per user, so the base-prompt cache behind it
-  //          is reused within that window (tool definitions are cached before system
-  //          and are unaffected).
   // Block 1: static base prompt — identical for all users per language (always cached).
+  //          Must stay the FIRST system block: prompt caching is prefix-based, so any
+  //          per-user text before it would turn this shared cache into a per-user one.
   // Block 2: per-session stable context (garden, memory, tasks) — cached per user session.
   //          Byte-stable because chupchu.ts caches the assembled string for 1h server-side.
-  // Block 3: volatile context (past summary, date, weather) — NOT cached; changes every request.
+  // Block 3: "GARDEN FACTS" (place, hemisphere, local date + time to the minute, season)
+  //          — NOT cached. It sits after the last cache breakpoint on purpose: it changes
+  //          every minute, and anything placed before a breakpoint invalidates that cached
+  //          prefix (before Block 1 it made the base prompt per-user; before Block 2 it
+  //          would rewrite the stable context every request). Salience comes from its loud
+  //          heading and the base prompt's rule pointing at it, not from position.
+  //          Tool definitions are cached ahead of the whole system prompt — unaffected.
+  // Block 4: volatile context (past summary, date, weather) — NOT cached; changes every request.
   // Both cached blocks use ttl:'1h' to survive sporadic gardening-app usage patterns.
   type TextBlock = { type: 'text'; text: string; cache_control?: CacheControlExtended };
-  const systemBlocks: TextBlock[] = [];
-  if (gardenFacts) {
-    systemBlocks.push({ type: 'text', text: gardenFacts });
-  }
-  systemBlocks.push({ type: 'text', text: basePrompt, cache_control: { type: 'ephemeral', ttl: '1h' } });
+  const systemBlocks: TextBlock[] = [
+    { type: 'text', text: basePrompt, cache_control: { type: 'ephemeral', ttl: '1h' } },
+  ];
   if (stableContext) {
     systemBlocks.push({ type: 'text', text: stableContext, cache_control: { type: 'ephemeral', ttl: '1h' } });
+  }
+  if (gardenFacts) {
+    systemBlocks.push({ type: 'text', text: gardenFacts });
   }
   if (volatileContext) {
     systemBlocks.push({ type: 'text', text: volatileContext });

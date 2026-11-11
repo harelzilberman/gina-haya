@@ -14,7 +14,7 @@ const CACHE_MAX_ENTRIES = 2000;
 
 const tzCache        = new Map<string, string>();
 const searchCache    = new Map<string, { data: GeoSearchResult[]; fetchedAt: number }>();
-const nominatimCache = new Map<string, { data: GeoSearchResult[]; fetchedAt: number }>();
+const nominatimCache = new Map<string, { data: RawPlace[]; fetchedAt: number }>();
 const reverseCache   = new Map<string, { data: string; fetchedAt: number }>();
 
 /** Insert into a bounded Map, dropping the oldest entry once it is full. */
@@ -135,10 +135,16 @@ export interface GeoSearchResult {
   timezone: string | null;
 }
 
-type OpenMeteoResult = GeoSearchResult & { _id?: number };
+/**
+ * Internal search row: the public shape plus what de-duplication needs.
+ *   _id     GeoNames id (Open-Meteo only) — the same place in both languages
+ *   _names  every known name of the place, in any language
+ *   _cc     ISO country code (language-independent, unlike `country`)
+ */
+type RawPlace = GeoSearchResult & { _id?: number; _names: string[]; _cc: string | null };
 
-/** Open-Meteo geocoding in one language. Results carry their GeoNames id for de-duplication. */
-async function searchOpenMeteo(q: string, lang: 'he' | 'en'): Promise<OpenMeteoResult[]> {
+/** Open-Meteo geocoding in one language. */
+async function searchOpenMeteo(q: string, lang: 'he' | 'en'): Promise<RawPlace[]> {
   const url = new URL('https://geocoding-api.open-meteo.com/v1/search');
   url.searchParams.set('name',     q);
   url.searchParams.set('count',    '8');
@@ -155,6 +161,8 @@ async function searchOpenMeteo(q: string, lang: 'he' | 'en'): Promise<OpenMeteoR
       .filter(r => Number.isFinite(r?.latitude) && Number.isFinite(r?.longitude) && r?.name)
       .map(r => ({
         _id:       Number.isFinite(r.id) ? Number(r.id) : undefined,
+        _names:    [String(r.name)],
+        _cc:       r.country_code ? String(r.country_code).toUpperCase() : null,
         name:      String(r.name),
         admin1:    r.admin1 ? String(r.admin1) : null,
         country:   r.country ? String(r.country) : null,
@@ -167,47 +175,84 @@ async function searchOpenMeteo(q: string, lang: 'he' | 'en'): Promise<OpenMeteoR
   }
 }
 
-/** Nominatim free-text search mapped to GeoSearchResult (24h cache). */
-async function searchNominatim(q: string, lang: 'he' | 'en'): Promise<GeoSearchResult[]> {
+/** Nominatim free-text search (24h cache). namedetails supplies the place's names in other languages. */
+async function searchNominatim(q: string, lang: 'he' | 'en'): Promise<RawPlace[]> {
   const key = `${lang}:${q.toLowerCase()}`;
   const cached = nominatimCache.get(key);
   if (cached && Date.now() - cached.fetchedAt < SEARCH_TTL_MS) return cached.data;
 
   const json = await nominatimFetch('/search', {
-    format: 'jsonv2', q, 'accept-language': lang, limit: '8', addressdetails: '1',
+    format: 'jsonv2', q, 'accept-language': lang, limit: '8', addressdetails: '1', namedetails: '1',
   });
   const rows = (Array.isArray(json) ? json : [])
     .map((r: any) => ({ r, name: nominatimPlaceName(r), lat: Number(r?.lat), lon: Number(r?.lon) }))
     .filter(x => x.name && Number.isFinite(x.lat) && Number.isFinite(x.lon));
 
-  const data: GeoSearchResult[] = await Promise.all(rows.map(async ({ r, name, lat, lon }) => ({
-    name:      name!,
-    admin1:    r.address?.state ? String(r.address.state) : (r.address?.region ? String(r.address.region) : null),
-    country:   r.address?.country ? String(r.address.country) : null,
-    latitude:  lat,
-    longitude: lon,
-    // Best effort — the garden POST/PATCH resolves the timezone again anyway.
-    timezone:  await resolveTimezone(lat, lon).catch(() => null),
-  })));
+  const data: RawPlace[] = await Promise.all(rows.map(async ({ r, name, lat, lon }) => {
+    const nd = r.namedetails ?? {};
+    const names = [name!, nd.name, nd['name:he'], nd['name:en']]
+      .filter((n): n is string => typeof n === 'string' && n.trim() !== '');
+    return {
+      _names:    names,
+      _cc:       r.address?.country_code ? String(r.address.country_code).toUpperCase() : null,
+      name:      name!,
+      admin1:    r.address?.state ? String(r.address.state) : (r.address?.region ? String(r.address.region) : null),
+      country:   r.address?.country ? String(r.address.country) : null,
+      latitude:  lat,
+      longitude: lon,
+      // Best effort — the garden POST/PATCH resolves the timezone again anyway.
+      timezone:  await resolveTimezone(lat, lon).catch(() => null),
+    };
+  }));
 
   boundedSet(nominatimCache, key, { data, fetchedAt: Date.now() });
   return data;
 }
 
-/** De-duplication key: same name + coordinates rounded to 2 decimals. */
-function dedupeKey(r: GeoSearchResult): string {
-  return `${r.name.trim().toLowerCase()}|${roundCoord(r.latitude).toFixed(2)},${roundCoord(r.longitude).toFixed(2)}`;
+/** Great-circle distance in km. */
+function distanceKm(aLat: number, aLon: number, bLat: number, bLon: number): number {
+  const toRad = (d: number) => (d * Math.PI) / 180;
+  const dLat = toRad(bLat - aLat);
+  const dLon = toRad(bLon - aLon);
+  const h = Math.sin(dLat / 2) ** 2 + Math.cos(toRad(aLat)) * Math.cos(toRad(bLat)) * Math.sin(dLon / 2) ** 2;
+  return 2 * 6371 * Math.asin(Math.min(1, Math.sqrt(h)));
+}
+
+/** Two results this close together, in the same country, are the same place. */
+const SAME_PLACE_KM = 2;
+/**
+ * A name match only counts within this distance: "Berlin, NH" and
+ * "Berlin, NJ" share a name and a country but are different towns. Name
+ * variants of one place from different sources sit well inside it
+ * (Open-Meteo's "Gan Hashomron" and "גן השומרון" are ~0.3 km apart).
+ */
+const SAME_NAME_MAX_KM = 20;
+
+const normName = (n: string) => n.trim().toLocaleLowerCase();
+
+function isSamePlace(a: RawPlace, b: RawPlace): boolean {
+  if (a._id !== undefined && a._id === b._id) return true;
+  // Countries must agree when both are known (codes are language-independent).
+  if (a._cc && b._cc && a._cc !== b._cc) return false;
+  const km = distanceKm(a.latitude, a.longitude, b.latitude, b.longitude);
+  if (km <= SAME_PLACE_KM && a._cc && b._cc) return true;
+  if (km > SAME_NAME_MAX_KM) return false;
+  const aNames = new Set(a._names.map(normName));
+  return b._names.some(n => aNames.has(normName(n)));
 }
 
 /**
  * Search places by name.
  *
  *   1. Open-Meteo in the requested language and in English, in parallel.
- *      Requested-language results come first; duplicates are dropped (same
- *      name + 2-decimal coordinates, or the same GeoNames id returned in
- *      both languages, e.g. "ברלין" / "Berlin").
- *   2. Fewer than 3 results → also ask Nominatim (OpenStreetMap), which
- *      knows small places like moshavim and kibbutzim.
+ *   2. Fewer than 3 distinct places → also ask Nominatim (OpenStreetMap),
+ *      which knows small places like moshavim and kibbutzim.
+ *
+ * Merging: two results are the same place when they share a GeoNames id, OR
+ * any of their names match case-insensitively in either language (same
+ * country, within SAME_NAME_MAX_KM), OR they are within SAME_PLACE_KM of each
+ * other in the same country. The requested-language entry is kept, at the
+ * position where the place first appeared.
  *
  * Throws only when every source failed, so the route can return 502.
  */
@@ -220,31 +265,44 @@ export async function searchPlaces(q: string, lang: 'he' | 'en'): Promise<GeoSea
   const langs: ('he' | 'en')[] = lang === 'en' ? ['en'] : [lang, 'en'];
   const settled = await Promise.allSettled(langs.map(l => searchOpenMeteo(query, l)));
 
-  const merged: GeoSearchResult[] = [];
-  const seenKeys = new Set<string>();
-  const seenIds  = new Set<number>();
+  const merged: { place: RawPlace; requestedLang: boolean }[] = [];
   let anySucceeded = false;
-  const add = (r: OpenMeteoResult) => {
-    const k = dedupeKey(r);
-    if (seenKeys.has(k) || (r._id !== undefined && seenIds.has(r._id))) return;
-    seenKeys.add(k);
-    if (r._id !== undefined) seenIds.add(r._id);
-    const { _id, ...clean } = r;
-    merged.push(clean);
+  const add = (place: RawPlace, requestedLang: boolean) => {
+    const existing = merged.find(m => isSamePlace(m.place, place));
+    if (!existing) {
+      merged.push({ place: { ...place, _names: [...place._names] }, requestedLang });
+      return;
+    }
+    // Same place: pool the names (so later results can match either
+    // language) and prefer the requested-language entry.
+    const names = [...existing.place._names, ...place._names];
+    if (requestedLang && !existing.requestedLang) {
+      existing.place = {
+        ...place,
+        _id: place._id ?? existing.place._id,
+        _cc: place._cc ?? existing.place._cc,
+        _names: names,
+      };
+      existing.requestedLang = true;
+    } else {
+      existing.place._names = names;
+      if (existing.place._id === undefined) existing.place._id = place._id;
+    }
   };
 
-  for (const s of settled) {
+  settled.forEach((s, i) => {
     if (s.status === 'fulfilled') {
       anySucceeded = true;
-      s.value.forEach(add);
+      s.value.forEach(p => add(p, langs[i] === lang));
     } else {
       console.warn('[searchPlaces] Open-Meteo failed:', s.reason?.message ?? s.reason);
     }
-  }
+  });
 
   if (merged.length < 3) {
     try {
-      (await searchNominatim(query, lang)).forEach(add);
+      // Nominatim answers in the requested language (accept-language).
+      (await searchNominatim(query, lang)).forEach(p => add(p, true));
       anySucceeded = true;
     } catch (err: any) {
       console.warn('[searchPlaces] Nominatim failed:', err?.message ?? err);
@@ -253,8 +311,12 @@ export async function searchPlaces(q: string, lang: 'he' | 'en'): Promise<GeoSea
 
   if (!anySucceeded) throw new Error('All geocoding sources failed');
 
-  boundedSet(searchCache, key, { data: merged, fetchedAt: Date.now() });
-  return merged;
+  const data: GeoSearchResult[] = merged.map(({ place }) => {
+    const { _id, _names, _cc, ...clean } = place;
+    return clean;
+  });
+  boundedSet(searchCache, key, { data, fetchedAt: Date.now() });
+  return data;
 }
 
 /**
