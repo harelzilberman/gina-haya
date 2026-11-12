@@ -166,7 +166,7 @@ pushRouter.post('/send-daily', async (req, res) => {
         const payload = JSON.stringify({
           title: pushIsHe ? '🌱 גינה חיה — משימות היום' : '🌱 Gina Haya — tasks today',
           body: tasks.map((t: any) => `• ${t.title}`).join('\n'),
-          url: '/tasks',
+          url: '/calendar',
         });
 
         await webpush.sendNotification(sub.subscription, payload);
@@ -183,7 +183,7 @@ pushRouter.post('/send-daily', async (req, res) => {
   }
 });
 
-export async function sendPushToUser(userId: string, title: string, body: string, url = '/tasks') {
+export async function sendPushToUser(userId: string, title: string, body: string, url = '/calendar') {
   try {
     const { data: sub } = await db
       .from('push_subscriptions')

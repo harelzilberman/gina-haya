@@ -51,24 +51,3 @@ export function useToday() {
 
   return { day, isLoading, error, timezone: zone.timezone, hemisphere: zone.hemisphere };
 }
-
-/** Next 7 days (from local today) for the active garden's zone. */
-export function useWeek() {
-  const zone = useCalendarZone();
-  const [days, setDays] = useState<BiodynamicDay[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-
-  useEffect(() => {
-    if (!zone.ready) return;
-    setIsLoading(true);
-    setError(null);
-    api.get<BiodynamicDay[]>(withZone('/api/calendar/week', zone), zone.token)
-      .then(setDays)
-      .catch(err => setError(err.message))
-      .finally(() => setIsLoading(false));
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [zone.ready, zone.query]);
-
-  return { days, isLoading, error };
-}

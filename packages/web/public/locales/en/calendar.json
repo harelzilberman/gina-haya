@@ -54,5 +54,26 @@
       "flower": "Flower",
       "leaf": "Leaf"
     }
+  },
+  "page": {
+    "backToToday": "Back to today",
+    "noDataMonth": "No calendar data for this month",
+    "noDataDay": "No calendar data for this day",
+    "endOfData": "End of the available calendar data",
+    "tasksForDay": "Tasks for {{date}}",
+    "quickAskToday": "Ask ChupChu about the garden...",
+    "quickAskDate": "Ask ChupChu about {{date}}...",
+    "quickAskPrefix": "About {{date}}:",
+    "quickAskSend": "Send to ChupChu",
+    "cellAria_one": "{{date}}, {{dayType}}, {{count}} task",
+    "cellAria_other": "{{date}}, {{dayType}}, {{count}} tasks",
+    "noDayType": "no calendar data",
+    "scoreDot": "Planting score {{score}}/10",
+    "nodeMarker": "Lunar node — rest day",
+    "signChangeMarker": "Day type changes during the day",
+    "legendScore": "Planting score colour",
+    "legendToggle": "What do the day types mean?",
+    "plantingScoreLabel": "Biodynamic planting score",
+    "viewToggle": "Calendar view"
   }
 }

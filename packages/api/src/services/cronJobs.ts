@@ -297,7 +297,7 @@ async function sendDailySummary(now: Date = new Date()) {
           ? `🌱 גינה חיה — ${tasks.length} משימות להיום`
           : `🌱 Gina Haya — ${tasks.length} tasks today`,
         body: taskLines + more,
-        url: '/tasks',
+        url: '/calendar',
       });
 
       let delivered = false;
@@ -531,7 +531,7 @@ export async function sendSmartReminder(userId: string, message: string) {
     await webpush.sendNotification(sub.subscription, JSON.stringify({
       title: smartIsHe ? '🌙 מון — תזכורת חכמה' : '🌙 Chupchu — smart reminder',
       body: message,
-      url: '/tasks',
+      url: '/calendar',
     }));
   } catch (e) {
     console.error('[push] Smart reminder failed:', e);

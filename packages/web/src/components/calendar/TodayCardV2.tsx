@@ -18,6 +18,8 @@ const SCORE_COLOURS: Record<string, string> = {
 
 interface Props {
   day: BiodynamicDay;
+  /** Hide the date line (the calendar day panel shows its own heading). */
+  showDate?: boolean;
 }
 
 const DAY_TYPE_STYLES: Record<string, { bg: string; color: string; emoji: string }> = {
@@ -611,7 +613,7 @@ function FormattedDate({ dateStr, locale }: { dateStr: string; locale: string })
   );
 }
 
-export function TodayCard({ day }: Props) {
+export function TodayCard({ day, showDate = true }: Props) {
   const { t, i18n } = useTranslation('calendar');
   const { t: tGarden } = useTranslation('garden');
   const { dir } = useDirection();
@@ -646,17 +648,19 @@ export function TodayCard({ day }: Props) {
         marginBottom:  '12px',
         backdropFilter:'blur(8px)',
       }}>
-        <p style={{
-          fontFamily:  EN_HEADING,
-          fontSize:    '13px',
-          fontWeight:  400,
-          textAlign:   'center',
-          color:       `${TEXT_MID}88`,
-          marginBottom:'20px',
-          lineHeight:  1.4,
-        }}>
-          <FormattedDate dateStr={day.date} locale={isHe ? 'he-IL' : 'en-US'} />
-        </p>
+        {showDate && (
+          <p style={{
+            fontFamily:  EN_HEADING,
+            fontSize:    '13px',
+            fontWeight:  400,
+            textAlign:   'center',
+            color:       `${TEXT_MID}88`,
+            marginBottom:'20px',
+            lineHeight:  1.4,
+          }}>
+            <FormattedDate dateStr={day.date} locale={isHe ? 'he-IL' : 'en-US'} />
+          </p>
+        )}
 
         <MoonPhaseDisplay
           phasePct={day.moonPhasePct ?? 0}

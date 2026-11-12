@@ -5,7 +5,7 @@ import { LoginPage } from './pages/LoginPage';
 import { SignupPage } from './pages/SignupPage';
 import { ResetPasswordPage } from './pages/ResetPasswordPage';
 import { LandingPage } from './pages/LandingPage';
-import { CalendarPage } from './pages/CalendarPage';
+import { BiodynamicCalendarPage } from './pages/BiodynamicCalendarPage';
 import { ChupChuPage } from './pages/ChupChuPage';
 import { PlantsPage } from './pages/PlantsPage';
 import { GardenGridPage } from './pages/GardenGridPage';
@@ -15,7 +15,6 @@ import { TrackerPage } from './pages/TrackerPage';
 import { GuidesPage } from './pages/GuidesPage';
 import { ArticlesPage } from './pages/ArticlesPage';
 import { ArticlePage } from './pages/ArticlePage';
-import { TaskCalendarPage } from './pages/TaskCalendarPage';
 import { DashboardPage } from './pages/DashboardPage';
 import { PrivacyPolicyPage } from './pages/PrivacyPolicyPage';
 import { DeleteAccountPage } from './pages/DeleteAccountPage';
@@ -44,6 +43,12 @@ import { useGardenSwitcherStore } from './stores/gardenSwitcherStore';
 import { useOnboardingStore } from './stores/onboardingStore';
 import { useChupChuPanelStore } from './stores/chupChuPanelStore';
 import { useChupChu } from './hooks/useChupChu';
+
+/** /tasks → /calendar, keeping the query string (push notifications link to /tasks). */
+function TasksRedirect() {
+  const { search, hash } = useLocation();
+  return <Navigate to={`/calendar${search}${hash}`} replace />;
+}
 
 function isCheckoutRoute(pathname: string): boolean {
   return pathname === '/shop' || pathname.startsWith('/shop/');
@@ -210,7 +215,7 @@ export default function App() {
             path="/calendar"
             element={
               <ProtectedRoute>
-                <CalendarPage />
+                <BiodynamicCalendarPage />
               </ProtectedRoute>
             }
           />
@@ -256,14 +261,8 @@ export default function App() {
             }
           />
           <Route path="/guides" element={<GuidesPage />} />
-          <Route
-            path="/tasks"
-            element={
-              <ProtectedRoute>
-                <TaskCalendarPage />
-              </ProtectedRoute>
-            }
-          />
+          {/* Tasks merged into the biodynamic calendar; keep old links / push urls working. */}
+          <Route path="/tasks" element={<TasksRedirect />} />
           <Route path="/articles" element={<ArticlesPage />} />
           <Route path="/articles/:slug" element={<ArticlePage />} />
 

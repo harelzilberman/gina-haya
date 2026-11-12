@@ -12,4 +12,8 @@ export const calendarApi = {
       `/api/calendar/range?from=${from}&to=${to}${zone ? `&${zone.query}` : ''}`,
       zone?.token,
     ),
+
+  /** Date range and day count of the generated calendar data. */
+  getStatus: () =>
+    api.get<{ count: number; minDate: string | null; maxDate: string | null }>('/api/calendar/status'),
 };

@@ -1,5 +1,4 @@
 {
-  "title": "📋 Task Board",
   "completedOf": "{{done}} of {{total}} completed",
   "views": {
     "week": "Week",
@@ -60,5 +59,9 @@
     "add": "Add"
   },
   "moreCount": "+{{count}} more...",
-  "addButton": "+ Add"
+  "addButton": "+ Add",
+  "panel": {
+    "markDone": "Mark \"{{title}}\" done",
+    "markPending": "Mark \"{{title}}\" not done"
+  }
 }

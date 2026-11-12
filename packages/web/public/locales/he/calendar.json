@@ -1,5 +1,5 @@
 {
-  "title": "לוח הביודינמי",
+  "title": "לוח ביודינמי",
   "today": "היום",
   "dayType": {
     "fruit": "יום פרי 🍅",
@@ -54,5 +54,26 @@
       "flower": "פרח",
       "leaf": "עלה"
     }
+  },
+  "page": {
+    "backToToday": "חזרה להיום",
+    "noDataMonth": "אין נתוני לוח לחודש הזה",
+    "noDataDay": "אין נתוני לוח ליום הזה",
+    "endOfData": "סוף נתוני הלוח הזמינים",
+    "tasksForDay": "משימות ל-{{date}}",
+    "quickAskToday": "שאל את צ'ופצ'ו על הגינה...",
+    "quickAskDate": "שאל את צ'ופצ'ו על {{date}}...",
+    "quickAskPrefix": "לגבי {{date}}:",
+    "quickAskSend": "שלח לצ'ופצ'ו",
+    "cellAria_one": "{{date}}, {{dayType}}, משימה אחת",
+    "cellAria_other": "{{date}}, {{dayType}}, {{count}} משימות",
+    "noDayType": "אין נתוני לוח",
+    "scoreDot": "ציון שתילה {{score}}/10",
+    "nodeMarker": "צומת ירח — יום מנוחה",
+    "signChangeMarker": "סוג היום מתחלף במהלך היום",
+    "legendScore": "צבע ציון השתילה",
+    "legendToggle": "מה המשמעות של סוגי הימים?",
+    "plantingScoreLabel": "ציון שתילה ביודינמי",
+    "viewToggle": "תצוגת הלוח"
   }
 }

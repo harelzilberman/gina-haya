@@ -272,14 +272,9 @@ export function Navbar() {
               ]}
             />
 
-            {/* 3. Biodynamic Calendar — plain link */}
+            {/* 3. Biodynamic Calendar (calendar + tasks) — plain link */}
             <Link to="/calendar" className="gina-nav-link" style={navLinkStyle(isHebrew)}>
               {isHebrew ? 'לוח ביודינמי' : 'Biodynamic Calendar'}
-            </Link>
-
-            {/* 4. Tasks — plain link */}
-            <Link to="/tasks" className="gina-nav-link" style={navLinkStyle(isHebrew)}>
-              {isHebrew ? 'משימות' : 'Tasks'}
             </Link>
 
             {/* 5. Chupchu — plain link */}
@@ -491,8 +486,6 @@ export function Navbar() {
               <Link to="/gardens"  onClick={() => setMobileOpen(false)} style={mobileSub}>{isHebrew ? 'הגינות שלי'  : 'My Gardens'}</Link>
               <Link to="/tracker"  onClick={() => setMobileOpen(false)} style={mobileSub}>{isHebrew ? 'עוקב צמחים'  : 'Plant Tracker'}</Link>
               <Link to="/calendar" onClick={() => setMobileOpen(false)} style={mobileLink}>{isHebrew ? 'לוח ביודינמי' : 'Biodynamic Calendar'}</Link>
-              <div style={mobileSection}>{isHebrew ? 'משימות' : 'Tasks'}</div>
-              <Link to="/tasks"    onClick={() => setMobileOpen(false)} style={mobileSub}>{isHebrew ? 'משימות'       : 'Tasks'}</Link>
               <Link to="/chupchu"  onClick={() => setMobileOpen(false)} style={mobileLink}>{isHebrew ? "צ'ופצ'ו"      : 'Chupchu'}</Link>
               <div style={mobileSection}>{isHebrew ? 'קרא/צפה' : 'Read/Watch'}</div>
               <Link to="/plants"   onClick={() => setMobileOpen(false)} style={mobileSub}>{isHebrew ? 'אנציקלופדיה'  : 'Encyclopedia'}</Link>

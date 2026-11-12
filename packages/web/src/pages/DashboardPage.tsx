@@ -139,7 +139,6 @@ const REST_DAY_TITLES: Record<string, string> = {
 
 const NAV_BUTTONS = [
   { emoji: '📅', tKey: 'nav.calendar', to: '/calendar' },
-  { emoji: '✅', tKey: 'nav.tasks',    to: '/tasks'    },
   { emoji: '🌱', tKey: 'nav.garden',  to: '/garden'   },
   { emoji: '🌱', tKey: 'nav.tracker', to: '/tracker'  },
   { emoji: '📖', tKey: 'nav.plants',  to: '/plants'   },
@@ -648,7 +647,7 @@ export function DashboardPage() {
               {t('todayTasks.title')}
             </h2>
             <Link
-              to="/tasks"
+              to="/calendar"
               style={{ fontFamily: EN_HEADING, fontSize: '12px', color: `${TEXT_MID}65`, textDecoration: 'none' }}
             >
               {t('todayTasks.seeAll')}
@@ -973,7 +972,7 @@ export function DashboardPage() {
               {isHe ? 'משימות השבוע' : "This Week's Tasks"}
             </h2>
             <Link
-              to="/tasks"
+              to="/calendar"
               style={{ fontFamily: EN_HEADING, fontSize: '12px', color: `${TEXT_MID}60`, textDecoration: 'none' }}
             >
               {isHe ? 'הכל ›' : 'All ›'}
@@ -1046,7 +1045,7 @@ export function DashboardPage() {
 
           {/* Add task CTA */}
           <Link
-            to="/tasks"
+            to="/calendar"
             style={{
               display: 'block', textAlign: 'center', marginTop: 'auto',
               fontFamily: FRANK, fontSize: '14px', fontWeight: 700,

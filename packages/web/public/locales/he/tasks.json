@@ -1,5 +1,4 @@
 {
-  "title": "📋 לוח משימות",
   "completedOf": "{{done}} מתוך {{total}} הושלמו",
   "views": {
     "week": "שבוע",
@@ -60,5 +59,9 @@
     "add": "הוסף"
   },
   "moreCount": "+{{count}} עוד...",
-  "addButton": "+ הוסף"
+  "addButton": "+ הוסף",
+  "panel": {
+    "markDone": "סמן את \"{{title}}\" כבוצעה",
+    "markPending": "סמן את \"{{title}}\" כלא בוצעה"
+  }
 }
