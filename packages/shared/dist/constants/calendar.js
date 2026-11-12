@@ -1,6 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.ISRAEL_TIMEZONE = exports.NODE_BLACKOUT_HOURS = exports.SCORE_COLOURS = exports.SCORE_COLOUR_THRESHOLDS = void 0;
+exports.ISRAEL_TIMEZONE = exports.CALENDAR_DATA_MIN_DATE = exports.NODE_BLACKOUT_HOURS = exports.SCORE_COLOURS = exports.SCORE_COLOUR_THRESHOLDS = void 0;
 exports.SCORE_COLOUR_THRESHOLDS = [
     { min: 8, colour: 'green' },
     { min: 6, colour: 'yellow' },
@@ -16,5 +16,7 @@ exports.SCORE_COLOURS = {
     black: '#333333',
 };
 exports.NODE_BLACKOUT_HOURS = 24;
+/** First date of generated calendar data — fallback when /api/calendar/status has no minDate. */
+exports.CALENDAR_DATA_MIN_DATE = '2025-01-01';
 exports.ISRAEL_TIMEZONE = 'Asia/Jerusalem';
 //# sourceMappingURL=calendar.js.map

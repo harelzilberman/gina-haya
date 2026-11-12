@@ -60,6 +60,7 @@
     "noDataMonth": "No calendar data for this month",
     "noDataDay": "No calendar data for this day",
     "endOfData": "End of the available calendar data",
+    "startOfData": "Start of calendar data",
     "tasksForDay": "Tasks for {{date}}",
     "quickAskToday": "Ask ChupChu about the garden...",
     "quickAskDate": "Ask ChupChu about {{date}}...",

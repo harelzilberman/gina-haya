@@ -60,6 +60,7 @@
     "noDataMonth": "אין נתוני לוח לחודש הזה",
     "noDataDay": "אין נתוני לוח ליום הזה",
     "endOfData": "סוף נתוני הלוח הזמינים",
+    "startOfData": "תחילת נתוני הלוח",
     "tasksForDay": "משימות ל-{{date}}",
     "quickAskToday": "שאל את צ'ופצ'ו על הגינה...",
     "quickAskDate": "שאל את צ'ופצ'ו על {{date}}...",

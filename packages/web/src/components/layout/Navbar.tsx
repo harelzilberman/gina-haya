@@ -131,6 +131,25 @@ export function Navbar() {
   const gardenRef   = useRef<HTMLDivElement>(null);
   const readRef     = useRef<HTMLDivElement>(null);
   const moreRef     = useRef<HTMLDivElement>(null);
+  const navRef      = useRef<HTMLElement>(null);
+
+  // Publish the navbar's real height as --navbar-height (pages use it for
+  // sticky offsets), kept current on resize.
+  useEffect(() => {
+    const el = navRef.current;
+    if (!el) return;
+    const root = document.documentElement;
+    const update = () => root.style.setProperty('--navbar-height', `${Math.round(el.getBoundingClientRect().height)}px`);
+    update();
+    window.addEventListener('resize', update);
+    const ro = typeof ResizeObserver !== 'undefined' ? new ResizeObserver(update) : null;
+    ro?.observe(el);
+    return () => {
+      window.removeEventListener('resize', update);
+      ro?.disconnect();
+      root.style.removeProperty('--navbar-height');
+    };
+  }, []);
 
   const isHebrew = i18n.language === 'he';
 
@@ -220,6 +239,7 @@ export function Navbar() {
       <style>{NAVBAR_CSS}</style>
 
       <nav
+        ref={navRef}
         dir={dir}
         style={{
           position: 'fixed', top: 0, insetInlineStart: 0, insetInlineEnd: 0, zIndex: 100,

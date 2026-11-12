@@ -13,7 +13,7 @@ import {
   useSensors,
 } from '@dnd-kit/core';
 import { CSS } from '@dnd-kit/utilities';
-import { addDaysISO, localTodayISO, SCORE_COLOURS, type BiodynamicDay } from '@gina-haya/shared';
+import { addDaysISO, localTodayISO, SCORE_COLOURS, CALENDAR_DATA_MIN_DATE, type BiodynamicDay } from '@gina-haya/shared';
 import { useAuthStore } from '../stores/authStore';
 import { tasksApi, type GardenTask } from '../api/tasks';
 import { calendarApi } from '../api/calendar';
@@ -38,8 +38,6 @@ const DESKTOP_MIN = 1024;
 const MOBILE_MAX  = 768;
 const PANEL_WIDTH = 400;
 const ISO_DATE    = /^\d{4}-\d{2}-\d{2}$/;
-/** How far back a ?date= may point (older → today). */
-const MAX_PAST_DAYS = 3 * 366;
 
 function useWindowWidth() {
   const [width, setWidth] = useState(() => typeof window !== 'undefined' ? window.innerWidth : 1024);
@@ -51,7 +49,37 @@ function useWindowWidth() {
   return width;
 }
 
-// ── Pure "YYYY-MM-DD" date math (weeks start on Monday, like dayNames) ──────
+/**
+ * First day of the week, 0 = Sunday … 6 = Saturday. Hebrew (Israel) weeks
+ * start on Sunday; otherwise the browser locale's week info decides
+ * (Intl firstDay: 1 = Monday … 7 = Sunday), falling back to Sunday.
+ */
+function weekStartFor(lang: string): number {
+  if (lang.startsWith('he')) return 0;
+  try {
+    type WeekInfo = { firstDay?: number };
+    const loc = new Intl.Locale(navigator.language) as Intl.Locale & { getWeekInfo?: () => WeekInfo; weekInfo?: WeekInfo };
+    const info = typeof loc.getWeekInfo === 'function' ? loc.getWeekInfo() : loc.weekInfo;
+    const first = Number(info?.firstDay);
+    if (Number.isInteger(first) && first >= 1 && first <= 7) return first % 7;
+  } catch { /* old browser / bad tag → Sunday */ }
+  return 0;
+}
+
+/**
+ * Short weekday label for a date. dayNames (tasks locale) is Monday-first;
+ * index it by the date's real weekday so any week start lines up.
+ */
+function dayNameOf(dayNames: string[], iso: string): string {
+  return dayNames[(weekdaySun0(iso) + 6) % 7];
+}
+
+/** Header labels in grid order for a week starting on `weekStart` (0 = Sunday). */
+function weekdayHeaders(dayNames: string[], weekStart: number): string[] {
+  return Array.from({ length: 7 }, (_, i) => dayNames[(weekStart + i + 6) % 7]);
+}
+
+// ── Pure "YYYY-MM-DD" date math (weekStart: 0 = Sunday … 6 = Saturday) ─────
 
 function isRealISODate(s: string | null): s is string {
   if (!s || !ISO_DATE.test(s)) return false;
@@ -59,13 +87,13 @@ function isRealISODate(s: string | null): s is string {
   return !Number.isNaN(d.getTime()) && d.toISOString().slice(0, 10) === s;
 }
 
-/** Monday = 0 … Sunday = 6 */
-function weekdayMon0(iso: string): number {
-  return (new Date(iso + 'T12:00:00Z').getUTCDay() + 6) % 7;
+/** Sunday = 0 … Saturday = 6 */
+function weekdaySun0(iso: string): number {
+  return new Date(iso + 'T12:00:00Z').getUTCDay();
 }
 
-function startOfWeekISO(iso: string): string {
-  return addDaysISO(iso, -weekdayMon0(iso));
+function startOfWeekISO(iso: string, weekStart: number): string {
+  return addDaysISO(iso, -((weekdaySun0(iso) - weekStart + 7) % 7));
 }
 
 function monthKeyOf(iso: string): string {
@@ -86,9 +114,9 @@ function shiftMonthKey(key: string, n: number): string {
   return new Date(Date.UTC(y, m - 1 + n, 1)).toISOString().slice(0, 7);
 }
 
-function monthGrid(key: string): { from: string; to: string; days: string[]; weeks: string[][] } {
-  const from = startOfWeekISO(monthStartISO(key));
-  const to   = addDaysISO(startOfWeekISO(monthEndISO(key)), 6);
+function monthGrid(key: string, weekStart: number): { from: string; to: string; days: string[]; weeks: string[][] } {
+  const from = startOfWeekISO(monthStartISO(key), weekStart);
+  const to   = addDaysISO(startOfWeekISO(monthEndISO(key), weekStart), 6);
   const days: string[] = [];
   for (let d = from; d <= to; d = addDaysISO(d, 1)) days.push(d);
   const weeks: string[][] = [];
@@ -96,8 +124,8 @@ function monthGrid(key: string): { from: string; to: string; days: string[]; wee
   return { from, to, days, weeks };
 }
 
-function weekRange(anchor: string): { from: string; to: string; days: string[] } {
-  const from = startOfWeekISO(anchor);
+function weekRange(anchor: string, weekStart: number): { from: string; to: string; days: string[] } {
+  const from = startOfWeekISO(anchor, weekStart);
   const days = Array.from({ length: 7 }, (_, i) => addDaysISO(from, i));
   return { from, to: days[6], days };
 }
@@ -273,7 +301,7 @@ function DroppableDayCell({
   const { setNodeRef, isOver } = useDroppable({ id: date });
   const dayStyle = bd ? DAY_TYPE_STYLES[bd.dayType] : null;
   const num   = String(Number(date.slice(8, 10)));
-  const day   = DAY_NAMES[weekdayMon0(date)];
+  const day   = dayNameOf(DAY_NAMES, date);
   const month = formatLocalDate(date, locale, { month: 'short' });
   const done  = tasks.filter(x => x.status === 'done').length;
 
@@ -592,6 +620,9 @@ export function BiodynamicCalendarPage() {
   const isHe = i18n.language === 'he';
   const locale = isHe ? 'he-IL' : 'en-US';
   const DAY_NAMES = t('dayNames', { returnObjects: true }) as string[];
+  // Month grid, week view and weekday headers all use this one week start.
+  const weekStart = useMemo(() => weekStartFor(i18n.language), [i18n.language]);
+  const headerDayNames = weekdayHeaders(DAY_NAMES, weekStart);
 
   const { session } = useAuthStore();
   const token = session?.access_token ?? '';
@@ -603,12 +634,19 @@ export function BiodynamicCalendarPage() {
   const zone = useCalendarZone();
   const todayISO = localTodayISO(zone.timezone);
 
-  // ── Calendar data range (navigation stops at its end) ──
+  // ── Calendar data range (navigation stops at both ends) ──
+  // From /api/calendar/status; the start falls back to CALENDAR_DATA_MIN_DATE.
+  const [minDate, setMinDate] = useState<string>(CALENDAR_DATA_MIN_DATE);
   const [maxDate, setMaxDate] = useState<string | null>(null);
+  const [statusSettled, setStatusSettled] = useState(false);
   useEffect(() => {
     calendarApi.getStatus()
-      .then(s => setMaxDate(s.maxDate))
-      .catch(() => setMaxDate(null));
+      .then(s => {
+        if (s.minDate && ISO_DATE.test(s.minDate)) setMinDate(s.minDate);
+        setMaxDate(s.maxDate);
+      })
+      .catch(() => setMaxDate(null))
+      .finally(() => setStatusSettled(true));
   }, []);
 
   // ── URL state: ?date=YYYY-MM-DD & ?view=month|week ──
@@ -616,17 +654,17 @@ export function BiodynamicCalendarPage() {
   const view: 'month' | 'week' = searchParams.get('view') === 'week' ? 'week' : 'month';
   const rawDate = searchParams.get('date');
   const dateIsValid = isRealISODate(rawDate)
-    && rawDate >= addDaysISO(todayISO, -MAX_PAST_DAYS)
+    && rawDate >= minDate
     && (maxDate == null || rawDate <= maxDate);
   const selectedDate = dateIsValid ? rawDate : todayISO;
 
   // Drop an invalid / out-of-range ?date= from the URL (→ today).
   useEffect(() => {
-    if (rawDate != null && !dateIsValid && (maxDate != null || !isRealISODate(rawDate))) {
+    if (rawDate != null && !dateIsValid && (statusSettled || !isRealISODate(rawDate))) {
       setSearchParams(prev => { const p = new URLSearchParams(prev); p.delete('date'); return p; }, { replace: true });
     }
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [rawDate, dateIsValid, maxDate]);
+  }, [rawDate, dateIsValid, statusSettled]);
 
   const selectDate = useCallback((date: string, replace = false) => {
     setSearchParams(prev => { const p = new URLSearchParams(prev); p.set('date', date); return p; }, { replace });
@@ -645,11 +683,11 @@ export function BiodynamicCalendarPage() {
 
   const { from, to, days, weeks } = useMemo(() => {
     if (view === 'week') {
-      const w = weekRange(anchor);
+      const w = weekRange(anchor, weekStart);
       return { ...w, weeks: [w.days] };
     }
-    return monthGrid(anchorMonth);
-  }, [view, anchor, anchorMonth]);
+    return monthGrid(anchorMonth, weekStart);
+  }, [view, anchor, anchorMonth, weekStart]);
 
   // Keep the selected date in view when it changes (URL back/forward, keyboard,
   // "back to today"), but never jump on plain month navigation.
@@ -673,8 +711,9 @@ export function BiodynamicCalendarPage() {
     }
     if (monthsLoaded.current.has(key)) return;
     if (maxDate && monthStartISO(key) > maxDate) return;
+    if (monthEndISO(key) < minDate) return;
     monthsLoaded.current.set(key, 'loading');
-    const grid = monthGrid(key);
+    const grid = monthGrid(key, weekStart);
     const queryAtStart = zone.query;
     calendarApi.getRange(grid.from, grid.to, zone)
       .then(list => {
@@ -688,7 +727,7 @@ export function BiodynamicCalendarPage() {
         monthsLoaded.current.delete(key);
       });
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [zone.ready, zone.query, zone.token, maxDate]);
+  }, [zone.ready, zone.query, zone.token, maxDate, minDate, weekStart]);
 
   useEffect(() => {
     const visibleMonths = new Set([monthKeyOf(from), anchorMonth, monthKeyOf(to)]);
@@ -711,7 +750,8 @@ export function BiodynamicCalendarPage() {
   const visibleMonthEmpty = view === 'month'
     && monthState(anchorMonth) === 'done'
     && !days.some(d => monthKeyOf(d) === anchorMonth && dayCache.current.has(d));
-  const visibleMonthBeyondData = view === 'month' && maxDate != null && monthStartISO(anchorMonth) > maxDate;
+  const visibleMonthBeyondData = view === 'month'
+    && ((maxDate != null && monthStartISO(anchorMonth) > maxDate) || monthEndISO(anchorMonth) < minDate);
 
   // ── Tasks ──
   const [tasks, setTasks] = useState<GardenTask[]>([]);
@@ -750,12 +790,17 @@ export function BiodynamicCalendarPage() {
 
   // ── Navigation ──
   const periodStartAfter = (dir: -1 | 1): string => view === 'week'
-    ? addDaysISO(startOfWeekISO(anchor), dir * 7)
+    ? addDaysISO(startOfWeekISO(anchor, weekStart), dir * 7)
     : monthStartISO(shiftMonthKey(anchorMonth, dir));
+  const periodEndOf = (start: string): string => view === 'week'
+    ? addDaysISO(start, 6)
+    : monthEndISO(monthKeyOf(start));
   const nextDisabled = maxDate != null && periodStartAfter(1) > maxDate;
+  const prevDisabled = periodEndOf(periodStartAfter(-1)) < minDate;
 
   const navigate = (dir: -1 | 1) => {
     if (dir === 1 && nextDisabled) return;
+    if (dir === -1 && prevDisabled) return;
     setAnchor(periodStartAfter(dir));
   };
 
@@ -779,7 +824,7 @@ export function BiodynamicCalendarPage() {
       key === 'ArrowRight' ? (rtl ? -1 : 1) :
       /* ArrowLeft */        (rtl ? 1 : -1);
     const next = addDaysISO(date, delta);
-    if (maxDate && next > maxDate) return;
+    if ((maxDate && next > maxDate) || next < minDate) return;
     pendingFocus.current = next;
     selectDate(next, true);
     if (next < from || next > to) setAnchor(next);
@@ -968,7 +1013,14 @@ export function BiodynamicCalendarPage() {
 
             {/* prev / today / next */}
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '10px' }}>
-              <button onClick={() => navigate(-1)} style={navButtonStyle}>{t('nav.prev')}</button>
+              <button
+                onClick={() => navigate(-1)}
+                disabled={prevDisabled}
+                title={prevDisabled ? tc('page.startOfData') : undefined}
+                style={{ ...navButtonStyle, opacity: prevDisabled ? 0.3 : 1, cursor: prevDisabled ? 'default' : 'pointer' }}
+              >
+                {t('nav.prev')}
+              </button>
               <div style={{ display: 'flex', gap: '8px', alignItems: 'center', flex: 1, justifyContent: 'center' }}>
                 <span aria-live="polite" style={{ fontFamily: FRANK, fontSize: isMobile ? '13px' : '15px', color: PARCH, textAlign: 'center' }}>{headerLabel}</span>
                 <button
@@ -1072,7 +1124,7 @@ export function BiodynamicCalendarPage() {
 
           {view === 'month' && (
             <div aria-hidden style={{ display: 'grid', gridTemplateColumns: 'repeat(7, 1fr)', gap: isMobile ? '3px' : '6px', marginBottom: '4px' }}>
-              {DAY_NAMES.map(d => (
+              {headerDayNames.map(d => (
                 <div key={d} style={{ textAlign: 'center', fontFamily: EN_HEADING, fontSize: '11px', color: `${PARCH}BF`, padding: '4px 0' }}>
                   {isMobile ? d.slice(0, 1) : d}
                 </div>
@@ -1135,8 +1187,9 @@ export function BiodynamicCalendarPage() {
           <aside
             aria-labelledby="day-panel-heading"
             style={{
-              position: 'sticky', top: '88px',
-              maxHeight: 'calc(100vh - 104px)', overflowY: 'auto',
+              // --navbar-height is measured by the Navbar (ResizeObserver).
+              position: 'sticky', top: 'calc(var(--navbar-height, 64px) + 24px)',
+              maxHeight: 'calc(100vh - var(--navbar-height, 64px) - 40px)', overflowY: 'auto',
               scrollbarWidth: 'thin', paddingInlineEnd: '2px',
             }}
           >
