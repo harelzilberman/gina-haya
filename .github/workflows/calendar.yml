@@ -5,10 +5,21 @@ name: Calendar
 # wheel, so the calendar is generated here and upserted straight to Supabase:
 #   1. biodynamic_calendar           (legacy Israel table)
 #   2. biodynamic_calendar_variants  (54 timezone × hemisphere variants)
-# Manual run: Actions → Calendar → "Run workflow".
+# Manual run: Actions → Calendar → "Run workflow". Optional inputs start_date
+# and days backfill or regenerate a specific range in BOTH tables; left empty,
+# the defaults apply (today UTC, 400 days), as on the monthly schedule.
 
 on:
   workflow_dispatch:
+    inputs:
+      start_date:
+        description: 'First date, YYYY-MM-DD (empty = today UTC)'
+        required: false
+        default: ''
+      days:
+        description: 'Number of days, 1–1000 (empty = 400)'
+        required: false
+        default: ''
   schedule:
     - cron: '17 2 1 * *'   # 1st of each month, 02:17 UTC
 
@@ -55,19 +66,49 @@ jobs:
       - name: Install dependencies
         run: pip install -r packages/api/scripts/requirements.txt
 
+      - name: Resolve date range
+        id: range
+        env:
+          # Inputs pass through env, never interpolated into the script text.
+          IN_START: ${{ github.event.inputs.start_date }}
+          IN_DAYS: ${{ github.event.inputs.days }}
+        run: |
+          start="$(echo "${IN_START:-}" | tr -d '[:space:]')"
+          days="$(echo "${IN_DAYS:-}" | tr -d '[:space:]')"
+          if [ -n "$start" ]; then
+            if ! [[ "$start" =~ ^[0-9]{4}-[0-9]{2}-[0-9]{2}$ ]] || [ "$(date -u -d "$start" +%F 2>/dev/null)" != "$start" ]; then
+              echo "::error::start_date must be a real date in YYYY-MM-DD format (got '$start')"; exit 1
+            fi
+          fi
+          if [ -n "$days" ]; then
+            if ! [[ "$days" =~ ^[0-9]+$ ]] || [ "$days" -lt 1 ] || [ "$days" -gt 1000 ]; then
+              echo "::error::days must be a whole number from 1 to 1000 (got '$days')"; exit 1
+            fi
+            # The generator takes days only after a start date → default it to today (UTC).
+            [ -n "$start" ] || start="$(date -u +%F)"
+          fi
+          args="$start${days:+ $days}"
+          echo "args=$args" >> "$GITHUB_OUTPUT"
+          echo "Range: ${args:-defaults (today UTC, 400 days)}"
+
       - name: Legacy Israel calendar (biodynamic_calendar)
         id: legacy
+        env:
+          RANGE_ARGS: ${{ steps.range.outputs.args }}
         run: |
           set +e
-          python packages/api/scripts/generate_calendar.py 2>&1 | tee "$RUNNER_TEMP/legacy.log"
+          # Unquoted on purpose: empty → no arguments; "START [DAYS]" → two (validated above).
+          python packages/api/scripts/generate_calendar.py $RANGE_ARGS 2>&1 | tee "$RUNNER_TEMP/legacy.log"
           echo "code=${PIPESTATUS[0]}" >> "$GITHUB_OUTPUT"
 
       - name: Variants (biodynamic_calendar_variants)
         id: variants
         if: ${{ !cancelled() && steps.legacy.outcome == 'success' }}
+        env:
+          RANGE_ARGS: ${{ steps.range.outputs.args }}
         run: |
           set +e
-          python packages/api/scripts/generate_calendar.py --variants 2>&1 | tee "$RUNNER_TEMP/variants.log"
+          python packages/api/scripts/generate_calendar.py --variants $RANGE_ARGS 2>&1 | tee "$RUNNER_TEMP/variants.log"
           echo "code=${PIPESTATUS[0]}" >> "$GITHUB_OUTPUT"
 
       - name: Job summary
@@ -75,6 +116,7 @@ jobs:
         env:
           LEGACY_CODE: ${{ steps.legacy.outputs.code }}
           VARIANTS_CODE: ${{ steps.variants.outputs.code }}
+          RANGE_ARGS: ${{ steps.range.outputs.args }}
         run: |
           upserted() {  # last "Upserted N/M rows" line, or "none"
             local line
@@ -83,6 +125,8 @@ jobs:
           }
           {
             echo "## Biodynamic calendar"
+            echo
+            echo "Range: ${RANGE_ARGS:-defaults (today UTC, 400 days)}"
             echo
             echo "| Run | Exit code | Rows upserted |"
             echo "|---|---|---|"

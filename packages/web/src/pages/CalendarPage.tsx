@@ -110,7 +110,7 @@ export function CalendarPage() {
       <style>{CAL_CSS}</style>
 
       <div style={{ backgroundColor: NIGHT, minHeight: '100vh', position: 'relative', zIndex: 0 }}>
-        {day.nodeActive && <NodeBlackoutBanner day={day} />}
+        <NodeBlackoutBanner day={day} />
 
         <div dir={dir} style={{ maxWidth: '600px', margin: '0 auto', padding: '20px 16px 40px' }}>
 

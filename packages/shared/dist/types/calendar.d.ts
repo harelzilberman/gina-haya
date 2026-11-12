@@ -12,6 +12,13 @@ export interface BiodynamicDay {
     nodeBlackoutStart: string | null;
     /** Variant days: node_exact_utc + NODE_BLACKOUT_HOURS/2 (UTC ISO). */
     nodeBlackoutEnd: string | null;
+    /**
+     * True when [nodeBlackoutStart, nodeBlackoutEnd] overlaps this day in the
+     * garden's local time (also the neighbouring day when the ±12 h window
+     * spills over). Use for "node today" UI. nodeActive (node near local noon)
+     * stays the planting-score input. Legacy fallback days: equals nodeActive.
+     */
+    nodeBlackoutToday?: boolean;
     perigeeActive: boolean;
     prep500Recommended: boolean;
     prep501Recommended: boolean;

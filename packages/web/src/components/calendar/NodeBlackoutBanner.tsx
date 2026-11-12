@@ -17,11 +17,26 @@ const BANNER_CSS = `
 .node-dot { animation: node-pulse 1.8s ease-in-out infinite; }
 `;
 
+/**
+ * Banner visibility: the node blackout window overlaps the day shown
+ * (nodeBlackoutToday), or "now" is inside the window. nodeActive is only a
+ * fallback for responses without nodeBlackoutToday (older API).
+ */
+export function isNodeBlackoutShown(day: BiodynamicDay, now: number = Date.now()): boolean {
+  if (day.nodeBlackoutToday) return true;
+  if (day.nodeBlackoutStart && day.nodeBlackoutEnd) {
+    const start = Date.parse(day.nodeBlackoutStart);
+    const end   = Date.parse(day.nodeBlackoutEnd);
+    if (now >= start && now < end) return true;
+  }
+  return day.nodeBlackoutToday === undefined && day.nodeActive;
+}
+
 export function NodeBlackoutBanner({ day }: Props) {
   const { t, i18n } = useTranslation('calendar');
   const zone = useCalendarZone();
 
-  if (!day.nodeActive) return null;
+  if (!isNodeBlackoutShown(day)) return null;
 
   let endTime: string | null = null;
   if (day.nodeBlackoutEnd) {
