@@ -1,6 +1,10 @@
 #!/bin/bash
-# Run the biodynamic calendar generator
-# Called by Railway pre-deploy / cron job monthly
+# Run the biodynamic calendar generator by hand on a machine with Python
+# (Linux/macOS; pyswisseph has no Windows wheel). Needs SUPABASE_URL and
+# SUPABASE_SERVICE_ROLE_KEY in the environment.
+# The scheduled source of truth is the "Calendar" GitHub Action
+# (.github/workflows/calendar.yml) — monthly, or "Run workflow" for a manual run.
+# The Railway API image has no Python, so this script is not run there.
 set +e  # don't exit on error — failures must never block deployment
 
 echo "Starting biodynamic calendar generation..."

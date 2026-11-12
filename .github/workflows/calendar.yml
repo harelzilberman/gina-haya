@@ -1,0 +1,114 @@
+name: Calendar
+
+# Biodynamic calendar generation — the scheduled source of truth.
+# The API image (node:22-alpine) has no Python, and pyswisseph has no Windows
+# wheel, so the calendar is generated here and upserted straight to Supabase:
+#   1. biodynamic_calendar           (legacy Israel table)
+#   2. biodynamic_calendar_variants  (54 timezone × hemisphere variants)
+# Manual run: Actions → Calendar → "Run workflow".
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: '17 2 1 * *'   # 1st of each month, 02:17 UTC
+
+permissions:
+  contents: read
+
+concurrency:
+  group: calendar-generation
+  cancel-in-progress: false
+
+jobs:
+  generate:
+    name: Generate biodynamic calendar
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    env:
+      SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+      SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+      PYTHONUNBUFFERED: '1'
+      PYTHONIOENCODING: utf-8
+    defaults:
+      run:
+        shell: bash
+    steps:
+      - name: Check secrets
+        run: |
+          missing=()
+          [ -n "$SUPABASE_URL" ] || missing+=(SUPABASE_URL)
+          [ -n "$SUPABASE_SERVICE_ROLE_KEY" ] || missing+=(SUPABASE_SERVICE_ROLE_KEY)
+          if [ ${#missing[@]} -gt 0 ]; then
+            echo "::error::Missing repository secret(s): ${missing[*]}. Add them under Settings → Secrets and variables → Actions."
+            exit 1
+          fi
+          echo "Secrets present (values not shown)."
+
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+          cache: pip
+          cache-dependency-path: packages/api/scripts/requirements.txt
+
+      - name: Install dependencies
+        run: pip install -r packages/api/scripts/requirements.txt
+
+      - name: Legacy Israel calendar (biodynamic_calendar)
+        id: legacy
+        run: |
+          set +e
+          python packages/api/scripts/generate_calendar.py 2>&1 | tee "$RUNNER_TEMP/legacy.log"
+          echo "code=${PIPESTATUS[0]}" >> "$GITHUB_OUTPUT"
+
+      - name: Variants (biodynamic_calendar_variants)
+        id: variants
+        if: ${{ !cancelled() && steps.legacy.outcome == 'success' }}
+        run: |
+          set +e
+          python packages/api/scripts/generate_calendar.py --variants 2>&1 | tee "$RUNNER_TEMP/variants.log"
+          echo "code=${PIPESTATUS[0]}" >> "$GITHUB_OUTPUT"
+
+      - name: Job summary
+        if: ${{ !cancelled() && steps.legacy.outcome == 'success' }}
+        env:
+          LEGACY_CODE: ${{ steps.legacy.outputs.code }}
+          VARIANTS_CODE: ${{ steps.variants.outputs.code }}
+        run: |
+          upserted() {  # last "Upserted N/M rows" line, or "none"
+            local line
+            line=$(grep -o 'Upserted [0-9]*/[0-9]* rows' "$1" 2>/dev/null | tail -n 1)
+            echo "${line:-none}"
+          }
+          {
+            echo "## Biodynamic calendar"
+            echo
+            echo "| Run | Exit code | Rows upserted |"
+            echo "|---|---|---|"
+            echo "| biodynamic_calendar (Israel) | ${LEGACY_CODE:-n/a} | $(upserted "$RUNNER_TEMP/legacy.log") |"
+            echo "| biodynamic_calendar_variants | ${VARIANTS_CODE:-n/a} | $(upserted "$RUNNER_TEMP/variants.log") |"
+            echo
+            echo "### Regression check (variants)"
+            echo '```'
+            grep -E '── Regression check|✓ all compared|✗ .*mismatching' "$RUNNER_TEMP/variants.log" 2>/dev/null \
+              || echo "(no regression output)"
+            echo '```'
+            echo
+            echo "Variants exit codes: 0 ok · 2 regression mismatches · 1 upsert failed."
+          } >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Fail on non-zero exit
+        if: ${{ !cancelled() && steps.legacy.outcome == 'success' }}
+        env:
+          LEGACY_CODE: ${{ steps.legacy.outputs.code }}
+          VARIANTS_CODE: ${{ steps.variants.outputs.code }}
+        run: |
+          status=0
+          if [ "${LEGACY_CODE:-1}" != "0" ]; then
+            echo "::error::Legacy calendar run exited with code ${LEGACY_CODE:-unknown}"; status=1
+          fi
+          if [ "${VARIANTS_CODE:-1}" != "0" ]; then
+            echo "::error::Variants run exited with code ${VARIANTS_CODE:-unknown} (2 = regression mismatches, 1 = upsert failed)"; status=1
+          fi
+          exit $status

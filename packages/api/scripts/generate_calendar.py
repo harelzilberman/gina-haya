@@ -1084,6 +1084,7 @@ def main(positional=None):
         with open(out, 'w', encoding='utf-8') as f:
             json.dump(rows, f, ensure_ascii=False, indent=2)
         print(f'\n⚠️  Saved locally to {out} (Supabase upsert failed — check credentials)')
+        sys.exit(1)  # non-zero so the GitHub Action fails (run_calendar.sh ignores it)
 
 if __name__ == '__main__':
     # Usage:
