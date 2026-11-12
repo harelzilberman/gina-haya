@@ -11,4 +11,5 @@ export * from './data/starterTasks';
 export * from './utils/photoPath';
 export * from './utils/season';
 export * from './utils/calendarVariant';
+export * from './utils/moonTimes';
 //# sourceMappingURL=index.d.ts.map

@@ -11,6 +11,10 @@
     "verify": "tsc && git diff --exit-code -- dist/"
   },
   "devDependencies": {
+    "@types/suncalc": "1.9.2",
     "typescript": "^5.4.0"
+  },
+  "dependencies": {
+    "suncalc": "1.9.0"
   }
 }

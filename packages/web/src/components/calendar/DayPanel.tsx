@@ -7,6 +7,8 @@ import { useChupChuPanelStore } from '../../stores/chupChuPanelStore';
 import { NodeBlackoutBanner } from './NodeBlackoutBanner';
 import { TodayCard } from './TodayCardV2';
 import { ChupChuDailySummary } from './ChupChuDailySummary';
+import { useMoonRiseSet } from '../../hooks/useMoonRiseSet';
+import { useCalendarZone } from '../../hooks/useCalendarZone';
 import {
   GOLD, PARCH, TEXT, NIGHT_CARD, EARTH, FRANK,
   SOURCE_STYLES, getTaskSource, priorityColorOf, formatLocalDate,
@@ -103,6 +105,26 @@ interface DayPanelProps {
   onClose?: () => void;
 }
 
+/** Moonrise and moonset of the panel's day, in the day's (garden's) timezone. */
+function MoonRiseSetRow({ day }: { day: BiodynamicDay }) {
+  const { t } = useTranslation('calendar');
+  const zone = useCalendarZone();
+  const times = useMoonRiseSet(day.date, day.timezone ?? zone.timezone);
+  if (!times) return null;
+  const cell = (label: string, value: string) => (
+    <div style={{ flex: 1, minWidth: 0, background: NIGHT_CARD, border: '1px solid rgba(0,229,195,0.12)', borderRadius: '12px', padding: '10px 12px' }}>
+      <div style={{ fontFamily: EN_HEADING, fontSize: '11px', color: `${PARCH}99`, marginBottom: '3px' }}>{label}</div>
+      <div style={{ fontFamily: FRANK, fontSize: '15px', color: PARCH }}>{value}</div>
+    </div>
+  );
+  return (
+    <div style={{ display: 'flex', gap: '8px' }}>
+      {cell(`🌙↑ ${t('moonrise')}`, times.rise)}
+      {cell(`🌙↓ ${t('moonset')}`, times.set)}
+    </div>
+  );
+}
+
 export function DayPanel({
   date, todayISO, bd, bdLoading, tasks, onBackToToday, onStatusToggle, onEdit, onAddTask, headingId, onClose,
 }: DayPanelProps) {
@@ -183,6 +205,9 @@ export function DayPanel({
 
           {/* 3. Full day card: moon, day type, score ring, in-day changes, preps */}
           <TodayCard day={bd} showDate={false} />
+
+          {/* Moonrise / moonset for this day (garden coordinates) */}
+          <MoonRiseSetRow day={bd} />
 
           {/* 4. Chupchu's summary for the day */}
           <ChupChuDailySummary day={bd} />

@@ -63,8 +63,7 @@ function navbarHeightPx(): number {
  * navbar. Taller → scrolls with the page and sticks by its BOTTOM once its end
  * is reached (top = min(navbar + gap, innerHeight − panelHeight − gap), may be
  * negative). Recomputed on resize, on day change and when the content grows
- * or shrinks. After a day change, if the panel's top is hidden, the page
- * scrolls just enough to show the panel heading.
+ * or shrinks.
  */
 function StickyDayAside({
   selectedDate, headingId, children,
@@ -99,31 +98,8 @@ function StickyDayAside({
     };
   }, [recompute]);
 
-  // Day changed: recompute, then make sure the panel's top is visible.
-  const firstRender = useRef(true);
-  useEffect(() => {
-    recompute();
-    if (firstRender.current) { firstRender.current = false; return; }
-    const raf = requestAnimationFrame(() => {
-      const el = ref.current;
-      const container = el?.parentElement;
-      if (!el || !container) return;
-      const navbar = navbarHeightPx();
-      if (el.getBoundingClientRect().top >= navbar) return;
-      // Sticky can only push the panel down from its natural place (the top
-      // of the grid row), so the heading shows at navbar + gap once the
-      // natural top gets there.
-      const heading = document.getElementById(headingId);
-      const headingOffset = heading
-        ? heading.getBoundingClientRect().top - el.getBoundingClientRect().top
-        : 0;
-      const naturalTop = container.getBoundingClientRect().top;
-      const delta = naturalTop + headingOffset - (navbar + STICKY_GAP);
-      if (delta < 0) window.scrollBy({ top: delta, behavior: 'smooth' });
-    });
-    return () => cancelAnimationFrame(raf);
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [selectedDate]);
+  // Day changed: recompute (the panel updates in place; no page scroll).
+  useEffect(() => { recompute(); }, [selectedDate, recompute]);
 
   return (
     <aside
@@ -402,17 +378,43 @@ function DroppableDayCell({
     count: tasks.length,
   });
 
+  // Selected = the only framed cell (strong outline + lit background).
+  // Today = no frame; its number sits in a filled circle with a "Today" label.
   const borderColour = isSelected ? GOLD
     : isOver ? 'rgba(0,229,195,0.4)'
-    : isToday ? 'rgba(0,229,195,0.25)'
     : 'rgba(255,255,255,0.06)';
+  const frame: React.CSSProperties = {
+    border: `${isSelected ? 2 : 1}px solid ${borderColour}`,
+    boxShadow: isSelected ? `0 0 0 1px ${GOLD}, 0 0 14px rgba(0,229,195,0.30)` : undefined,
+  };
+  const cellBackground = isOver ? 'rgba(0,229,195,0.08)'
+    : isSelected ? 'rgba(0,229,195,0.16)'
+    : 'rgba(9,20,16,0.35)';
+
+  /** The day number: plain, or (today) in a small filled teal circle. */
+  const dayNumber = (fontSize: number) => isToday ? (
+    <span style={{
+      display: 'inline-flex', alignItems: 'center', justifyContent: 'center',
+      minWidth: `${fontSize + 10}px`, height: `${fontSize + 10}px`, padding: '0 3px', boxSizing: 'border-box',
+      borderRadius: '999px', background: GOLD, color: EARTH,
+      fontFamily: FRANK, fontSize: `${fontSize}px`, fontWeight: 700, lineHeight: 1,
+    }}>
+      {num}
+    </span>
+  ) : (
+    <span style={{ fontFamily: FRANK, fontSize: `${fontSize}px`, color: numberColour, lineHeight: 1.2 }}>{num}</span>
+  );
+  const todayLabel = (fontSize: number) => isToday ? (
+    <span style={{ fontFamily: EN_HEADING, fontSize: `${fontSize}px`, fontWeight: 700, color: GOLD, lineHeight: 1.1, letterSpacing: '0.02em' }}>
+      {tc('today')}
+    </span>
+  ) : null;
 
   const common = {
     ref: setNodeRef,
     role: 'button' as const,
     tabIndex: tabbable ? 0 : -1,
     'aria-label': ariaLabel,
-    'aria-pressed': isSelected,
     'aria-current': isToday ? ('date' as const) : undefined,
     'data-date': date,
     onClick: () => onSelect(date),
@@ -425,23 +427,22 @@ function DroppableDayCell({
     },
   };
 
-  const numberColour = isToday ? GOLD : isCurrentMonth ? PARCH : `${PARCH}50`;
+  const numberColour = isCurrentMonth ? PARCH : `${PARCH}50`;
 
   if (isMobileView && compact) {
     return (
       <div
         {...common}
         style={{
-          background: isOver ? 'rgba(0,229,195,0.08)' : isSelected ? 'rgba(0,229,195,0.12)' : isToday ? 'rgba(0,229,195,0.07)' : 'rgba(9,20,16,0.35)',
-          border: `${isSelected ? 2 : 1}px solid ${borderColour}`,
+          background: cellBackground,
+          ...frame,
           borderRadius: '6px', padding: '4px 2px', minHeight: '56px',
           display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'space-between',
           opacity: isCurrentMonth ? 1 : 0.35, boxSizing: 'border-box', cursor: 'pointer', outlineOffset: '2px',
         }}
       >
-        <span style={{ fontFamily: FRANK, fontSize: '12px', color: numberColour, fontWeight: isToday ? 700 : 400, lineHeight: 1.2 }}>
-          {num}
-        </span>
+        {dayNumber(11)}
+        {todayLabel(8)}
         {dayStyle && <span style={{ fontSize: '9px', lineHeight: 1 }}>{dayStyle.emoji}</span>}
         <DayMarkers bd={bd} size={5} />
         {tasks.length > 0 && (
@@ -460,13 +461,13 @@ function DroppableDayCell({
     <div
       {...common}
       style={{
-        background: isOver ? 'rgba(0,229,195,0.08)' : isSelected ? 'rgba(0,229,195,0.09)' : isToday ? 'rgba(0,229,195,0.05)' : 'rgba(9,20,16,0.35)',
-        border: `${isSelected ? 2 : 1}px solid ${borderColour}`,
+        background: cellBackground,
+        ...frame,
         borderRadius: '10px', padding: compact ? '6px' : '8px',
         minHeight: compact ? '96px' : '120px',
         display: 'flex', flexDirection: 'column', gap: '4px',
         opacity: isCurrentMonth ? 1 : 0.45,
-        transition: 'background 0.15s, border-color 0.15s',
+        transition: 'background 0.15s, border-color 0.15s, box-shadow 0.15s',
         boxSizing: 'border-box', width: '100%', cursor: 'pointer', outlineOffset: '2px', minWidth: 0,
       }}
     >
@@ -482,9 +483,12 @@ function DroppableDayCell({
               {bd && <span title={bd.moonPhaseNameHe} style={{ fontSize: '11px', lineHeight: 1 }}>{moonEmoji(bd.moonPhasePct, (bd.moonPhaseAngle ?? 90) <= 180)}</span>}
               <DayMarkers bd={bd} size={7} />
             </div>
-            <div style={{ textAlign: isHe ? 'right' : 'left', flexShrink: 0 }}>
-              <span style={{ fontFamily: FRANK, fontSize: '14px', color: numberColour, fontWeight: isToday ? 700 : 400 }}>{num}</span>
-              <span style={{ fontFamily: EN_HEADING, fontSize: '11px', color: `${PARCH}CC`, marginInlineStart: '3px' }}>{day}</span>
+            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', flexShrink: 0 }}>
+              <div style={{ display: 'flex', alignItems: 'center' }}>
+                {dayNumber(13)}
+                <span style={{ fontFamily: EN_HEADING, fontSize: '11px', color: `${PARCH}CC`, marginInlineStart: '3px' }}>{day}</span>
+              </div>
+              {todayLabel(9)}
             </div>
           </div>
           {bd && bd.plantingScore > 0 && (
@@ -499,7 +503,10 @@ function DroppableDayCell({
       ) : (
         <div style={{ textAlign: 'center', marginBottom: '6px' }}>
           <div style={{ fontFamily: EN_HEADING, fontSize: '11px', color: `${PARCH}CC` }}>{day}</div>
-          <div style={{ fontFamily: FRANK, fontSize: '16px', color: numberColour, fontWeight: isToday ? 700 : 400 }}>{num}</div>
+          <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '2px', margin: '2px 0' }}>
+            {dayNumber(15)}
+            {todayLabel(10)}
+          </div>
           <div style={{ fontFamily: EN_HEADING, fontSize: '11px', color: `${PARCH}BF` }}>{month}</div>
           <div style={{ display: 'flex', gap: '4px', justifyContent: 'center', alignItems: 'center', marginTop: '2px' }}>
             {dayStyle && <span style={{ fontSize: '12px' }} title={`${t(dayStyle.labelKey)} — ${DAY_TYPE_DESCS_HE[bd!.dayType] ?? ''}`}>{dayStyle.emoji}</span>}
@@ -1238,7 +1245,7 @@ export function BiodynamicCalendarPage() {
                     gap: '8px', boxSizing: 'border-box', width: '100%',
                   }}>
                     {days.map((date, idx) => (
-                      <div key={date} role="gridcell" style={{ gridColumn: isMobile && idx === 6 ? '1 / -1' : undefined, minWidth: 0 }}>
+                      <div key={date} role="gridcell" aria-selected={date === selectedDate} style={{ gridColumn: isMobile && idx === 6 ? '1 / -1' : undefined, minWidth: 0 }}>
                         {cell(date, false, idx)}
                       </div>
                     ))}
@@ -1248,7 +1255,7 @@ export function BiodynamicCalendarPage() {
                     {weeks.map((week, wi) => (
                       <div key={wi} role="row" style={{ display: 'grid', gridTemplateColumns: 'repeat(7, minmax(0, 1fr))', gap: isMobile ? '3px' : '6px' }}>
                         {week.map((date, di) => (
-                          <div key={date} role="gridcell" style={{ minWidth: 0 }}>
+                          <div key={date} role="gridcell" aria-selected={date === selectedDate} style={{ minWidth: 0 }}>
                             {cell(date, true, wi * 7 + di)}
                           </div>
                         ))}

@@ -1,4 +1,6 @@
 {
+  "saveError": "Couldn't save, please try again",
+  "cancel": "Cancel",
   "title": "My Garden",
   "noGarden": "You don't have a garden yet. Let's start!",
   "createGarden": "Create new garden",
@@ -30,6 +32,8 @@
     "phase2": "Garden map is coming in Phase 2!"
   },
   "encyclopedia": {
+    "harvestMonths": "Harvest months",
+    "dayTypeAffinity": "Suited day types",
     "title": "Encyclopedia",
     "search": "Search plants...",
     "noResults": "No plants found 🌱",

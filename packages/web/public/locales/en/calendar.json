@@ -43,6 +43,8 @@
   },
   "moonrise": "Moonrise",
   "moonset": "Moonset",
+  "moonNoRise": "Doesn't rise today",
+  "moonNoSet": "Doesn't set today",
   "moonSign": "Moon Sign",
   "transitions": {
     "title": "Changes during the day",

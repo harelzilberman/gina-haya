@@ -1,3 +1,4 @@
+import { ISRAEL_DEFAULT_COORDS } from '@gina-haya/shared';
 import { useGardenStore, type Garden } from '../stores/gardenStore';
 
 /** Used only when no garden has coordinates (central Israel). */
@@ -13,6 +14,7 @@ function hasCoords(g: Garden | null | undefined): g is Garden & { latitude: numb
  * Garden: the active garden (gardenStore), else the first garden by created_at.
  * Latitude: that garden's coordinates → the first garden (by created_at) that
  * has coordinates → DEFAULT_MOON_LAT.
+ * Coordinates (moonrise / moonset): the same garden → ISRAEL_DEFAULT_COORDS.
  */
 export function useGardenLocation() {
   const activeGarden = useGardenStore(s => s.activeGarden);
@@ -27,5 +29,9 @@ export function useGardenLocation() {
     /** True when the active garden itself has coordinates. */
     gardenHasCoords: hasCoords(garden),
     lat: source ? Number(source.latitude) : DEFAULT_MOON_LAT,
+    /** Latitude / longitude for rise and set times. */
+    coords: source
+      ? { latitude: Number(source.latitude), longitude: Number(source.longitude) }
+      : { latitude: ISRAEL_DEFAULT_COORDS.latitude, longitude: ISRAEL_DEFAULT_COORDS.longitude },
   };
 }

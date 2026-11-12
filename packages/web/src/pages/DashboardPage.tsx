@@ -9,6 +9,7 @@ import { drawMoon, getMoonTilt, MoonSignSVG, inferPhaseAngle } from '../componen
 import { getBDPlainSummary, type BDPlainSummary, type DayType } from '../utils/bdPlainLanguage';
 import { useTodayActions, type TodayActionsData } from '../hooks/useTodayActions';
 import { useGardenLocation } from '../hooks/useGardenLocation';
+import { useMoonRiseSet } from '../hooks/useMoonRiseSet';
 import { localTodayISO } from '@gina-haya/shared';
 import { EN_HEADING } from '../styles/fonts';
 
@@ -461,6 +462,8 @@ export function DashboardPage() {
   const { data: todayActions, loading: actionsLoading } = useTodayActions();
 
   const today      = localTodayISO(calTimezone);
+  // Moonrise / moonset: computed from the garden's coordinates (suncalc).
+  const moonTimes  = useMoonRiseSet(day?.date ?? today, calTimezone);
   const todayTasks = tasks.filter(t => t.date === today);
   const firstName  = profile?.display_name?.split(' ')[0] ?? '';
   const isNewUser  = user
@@ -865,13 +868,13 @@ export function DashboardPage() {
                   {/* Row 2 — rise time */}
                   <div style={{ background: 'rgba(255,255,255,0.04)', borderRadius: '10px', padding: '14px 16px' }}>
                     <div style={{ fontFamily: EN_HEADING, fontSize: '11px', color: `${TEXT_MID}50`, marginBottom: '5px' }}>{t('biodynamic.moonrise')}</div>
-                    <div style={{ fontFamily: FRANK, fontSize: '16px', color: TEXT_MID }}>{day.moonriseTime ?? '—'}</div>
+                    <div style={{ fontFamily: FRANK, fontSize: '16px', color: TEXT_MID }}>{moonTimes?.rise ?? day.moonriseTime ?? '—'}</div>
                   </div>
 
                   {/* Row 2 — set time */}
                   <div style={{ background: 'rgba(255,255,255,0.04)', borderRadius: '10px', padding: '14px 16px' }}>
-                    <div style={{ fontFamily: EN_HEADING, fontSize: '11px', color: `${TEXT_MID}50`, marginBottom: '5px' }}>{isHe ? 'שקיעת ירח' : 'Moonset'}</div>
-                    <div style={{ fontFamily: FRANK, fontSize: '16px', color: TEXT_MID }}>{day.moonsetTime ?? '—'}</div>
+                    <div style={{ fontFamily: EN_HEADING, fontSize: '11px', color: `${TEXT_MID}50`, marginBottom: '5px' }}>{t('biodynamic.moonset')}</div>
+                    <div style={{ fontFamily: FRANK, fontSize: '16px', color: TEXT_MID }}>{moonTimes?.set ?? day.moonsetTime ?? '—'}</div>
                   </div>
 
                   {/* Row 3 — ascending/descending + phase name, full width */}

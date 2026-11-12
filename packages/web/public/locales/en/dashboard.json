@@ -24,6 +24,7 @@
   },
   "quickNav": "Quick navigation",
   "nav": {
+    "garden": "My garden",
     "calendar": "Biodynamic Calendar",
     "map": "Garden Map",
     "tracker": "Growth Tracker",

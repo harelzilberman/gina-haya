@@ -43,6 +43,8 @@
   },
   "moonrise": "זריחת הירח",
   "moonset": "שקיעת הירח",
+  "moonNoRise": "לא עולה היום",
+  "moonNoSet": "לא שוקע היום",
   "moonSign": "מזל הירח",
   "transitions": {
     "title": "שינויים במהלך היום",
