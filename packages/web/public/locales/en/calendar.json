@@ -15,7 +15,15 @@
   },
   "nodeBlackout": {
     "active": "⚫ Lunar Node Crossing — a rest day for the garden",
-    "endsAt": "Node crossing ends at {{time}}"
+    "nodeAt": "Lunar node at {{time}}",
+    "nodeAtDay": "Lunar node {{day}} at {{time}}",
+    "avoidRange": "Best to avoid working with plants from {{start}} until {{end}}",
+    "endsEarly": "The node window ends at {{time}} — a normal day after that",
+    "startsLate": "The node window starts at {{time}}",
+    "dayTime": "{{day}} {{time}}",
+    "tomorrow": "tomorrow",
+    "yesterday": "yesterday",
+    "now": "Now"
   },
   "perigee": {
     "active": "⚠️ Moon at Perigee — be cautious with planting"

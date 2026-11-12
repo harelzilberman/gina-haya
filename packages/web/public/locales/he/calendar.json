@@ -15,7 +15,15 @@
   },
   "nodeBlackout": {
     "active": "⚫ השפעת הצומת — יום מנוחה לגינה",
-    "endsAt": "הצומת מסתיים ב-{{time}}"
+    "nodeAt": "צומת ירח ב-{{time}}",
+    "nodeAtDay": "צומת ירח {{day}} ב-{{time}}",
+    "avoidRange": "מומלץ להימנע מעבודה עם צמחים מ-{{start}} ועד {{end}}",
+    "endsEarly": "חלון הצומת מסתיים ב-{{time}} — אחר כך יום רגיל",
+    "startsLate": "חלון הצומת מתחיל ב-{{time}}",
+    "dayTime": "{{day}} {{time}}",
+    "tomorrow": "מחר",
+    "yesterday": "אתמול",
+    "now": "עכשיו"
   },
   "perigee": {
     "active": "⚠️ ירח בפריגיאה — היזהר בשתילה"
