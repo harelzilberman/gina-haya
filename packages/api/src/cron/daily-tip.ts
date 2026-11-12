@@ -1,7 +1,8 @@
 import { db } from '../db/client';
-import { getCalendarDay } from '../db/queries/calendar';
+import { getVariantDay } from '../db/queries/calendar';
 import { sendDailyTip, type EmailUser } from '../services/email';
-import { todayInIsrael } from '@gina-haya/shared';
+import { todayIn, resolveVariant, type BiodynamicDay } from '@gina-haya/shared';
+import { getHomeZonesForUsers, calendarLocationOf, ISRAEL_ZONE } from '../utils/zone';
 
 
 function sleep(ms: number): Promise<void> {
@@ -10,15 +11,6 @@ function sleep(ms: number): Promise<void> {
 
 export async function sendDailyTipToAllUsers(): Promise<void> {
   console.log('[daily-tip cron] Starting daily tip send...');
-
-  // Fetch today's calendar data
-  const today = todayInIsrael();
-  const calendarDay = await getCalendarDay(today);
-
-  if (!calendarDay) {
-    console.warn(`[daily-tip cron] No calendar data for ${today} — skipping send.`);
-    return;
-  }
 
   // Fetch all opted-in users
   const { data: users, error } = await db
@@ -36,13 +28,32 @@ export async function sendDailyTipToAllUsers(): Promise<void> {
     return;
   }
 
-  console.log(`[daily-tip cron] Sending to ${users.length} users for ${today}`);
+  // Person-scoped: each user's home zone decides "today" and the calendar
+  // variant. Days are cached per (local date, variant).
+  const homeZones = await getHomeZonesForUsers((users as EmailUser[]).map(u => u.id));
+  const dayCache = new Map<string, Promise<BiodynamicDay | null>>();
+  const dayFor = (userId: string): Promise<BiodynamicDay | null> => {
+    const zone = homeZones.get(userId) ?? ISRAEL_ZONE;
+    const date = todayIn(zone.timezone);
+    const v = resolveVariant(date, zone.timezone, zone.latitude);
+    const key = `${date}|${v.utcOffsetHours}|${v.hemisphere}`;
+    if (!dayCache.has(key)) dayCache.set(key, getVariantDay(date, calendarLocationOf(zone)).catch(() => null));
+    return dayCache.get(key)!;
+  };
+
+  console.log(`[daily-tip cron] Sending to ${users.length} users`);
 
   let sent = 0;
   let failed = 0;
 
   for (const user of users as EmailUser[]) {
     try {
+      const calendarDay = await dayFor(user.id);
+      if (!calendarDay) {
+        console.warn(`[daily-tip cron] No calendar data for user ${user.id}'s local today — skipped.`);
+        failed++;
+        continue;
+      }
       await sendDailyTip(user, calendarDay);
       sent++;
     } catch (err) {

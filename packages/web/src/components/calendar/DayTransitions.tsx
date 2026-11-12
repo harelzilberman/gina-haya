@@ -30,6 +30,8 @@ function useTransitionLabel() {
         return t('transitions.newMoon', { time });
       case 'full_moon':
         return t('transitions.fullMoon', { time });
+      case 'node':
+        return t(tr.direction === 'ascending' ? 'transitions.nodeAscending' : 'transitions.nodeDescending', { time });
       default:
         return '';
     }

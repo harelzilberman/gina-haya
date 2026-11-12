@@ -5,7 +5,9 @@ import { verifyToken } from '../middleware/auth';
 import { attachTier } from '../middleware/tierMiddleware';
 import { analyzePlantImage, compressImageForClaude } from '../services/plantVision';
 import { fetchWeatherForRegion } from '../services/weather';
-import { todayInIsrael, assertStorageKey, israelDateToUTCMidnight } from '@gina-haya/shared';
+import { todayIn, todayInIsrael, assertStorageKey, israelDateToUTCMidnight } from '@gina-haya/shared';
+import { getVariantRawRows, type RawCalendarRow } from '../db/queries/calendar';
+import { getGardenZone, getGardenZoneById, calendarLocationOf, type Zone } from '../utils/zone';
 import { checkAndRecordVisionUse, buildVisionQuotaError } from '../services/visionQuota';
 import { userOwnsGardenPlant } from '../utils/ownership';
 
@@ -300,7 +302,9 @@ trackersRouter.get('/photos/all', async (req: any, res) => {
         gardens!inner(
           id,
           name,
-          user_id
+          user_id,
+          timezone,
+          latitude
         )
       )
     `)
@@ -315,27 +319,36 @@ trackersRouter.get('/photos/all', async (req: any, res) => {
     return res.status(500).json({ error: error.message });
   }
 
-  // Fetch biodynamic data for all unique dates in the results
-  const uniqueDates = [...new Set((data || []).map((row: any) => {
-    const d = new Date(row.created_at);
-    return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
-  }))];
+  // Each photo's local date in its GARDEN's timezone, and that garden's
+  // calendar variant for the date (grouped per garden location).
+  const zoneOfRow = (row: any): Zone => getGardenZone(row.garden_plants?.gardens);
+  const localDateOf = (row: any): string => todayIn(zoneOfRow(row).timezone, new Date(row.created_at));
+  const zoneKey = (z: Zone) => `${z.timezone}|${z.latitude != null && z.latitude < 0 ? 'S' : 'N'}`;
 
-  const { data: bioData } = await db
-    .from('biodynamic_calendar')
-    .select('date, day_type_he, day_type_emoji, moon_phase_name_he')
-    .in('date', uniqueDates);
-
-  const bioMap: Record<string, any> = {};
-  (bioData || []).forEach((b: any) => { bioMap[b.date] = b; });
+  const datesByZone = new Map<string, { zone: Zone; dates: Set<string> }>();
+  for (const row of data || []) {
+    const z = zoneOfRow(row);
+    const entry = datesByZone.get(zoneKey(z)) ?? { zone: z, dates: new Set<string>() };
+    entry.dates.add(localDateOf(row));
+    datesByZone.set(zoneKey(z), entry);
+  }
+  const bioByZone = new Map<string, Map<string, RawCalendarRow>>();
+  for (const [key, { zone, dates }] of datesByZone) {
+    try {
+      bioByZone.set(key, await getVariantRawRows([...dates], calendarLocationOf(zone)));
+    } catch (calErr: any) {
+      console.error('GET /photos/all calendar error:', calErr?.message ?? calErr);
+      bioByZone.set(key, new Map());
+    }
+  }
 
   const hebrewMonths = ['ינואר','פברואר','מרץ','אפריל','מאי','יוני','יולי','אוגוסט','ספטמבר','אוקטובר','נובמבר','דצמבר'];
 
   const photos = (data || []).map((row: any) => {
-    const createdAt = new Date(row.created_at);
-    const photoDate = `${createdAt.getFullYear()}-${String(createdAt.getMonth() + 1).padStart(2, '0')}-${String(createdAt.getDate()).padStart(2, '0')}`;
-    const bio = bioMap[photoDate] || {};
-    const formattedDate = `${createdAt.getDate()} ב${hebrewMonths[createdAt.getMonth()]} ${createdAt.getFullYear()}`;
+    const photoDate = localDateOf(row);
+    const bio: any = bioByZone.get(zoneKey(zoneOfRow(row)))?.get(photoDate) ?? {};
+    const [pY, pM, pD] = photoDate.split('-').map(Number);
+    const formattedDate = `${pD} ב${hebrewMonths[pM - 1]} ${pY}`;
 
     return {
       timeline_id: row.id,
@@ -673,7 +686,8 @@ trackersRouter.post('/:id/checkin', async (req: any, res) => {
 
       if ((count ?? 0) >= limits.maxCheckinsPerTrackerPerMonth) {
         // Compute resets_at as Israel midnight of the first day of next month —
-        // matches the convention used by buildVisionQuotaError.
+        // matches the convention used by buildVisionQuotaError. Quota windows
+        // stay on Israel time on purpose (one server-wide accounting period).
         const _today = todayInIsrael(); // "YYYY-MM-DD"
         const _m = Number(_today.slice(5, 7));
         const _y = Number(_today.slice(0, 4));
@@ -724,8 +738,14 @@ trackersRouter.post('/:id/checkin', async (req: any, res) => {
       console.error('[checkin] photo upload exception:', uploadErr.message);
     }
 
-    // Insert checkin row without AI analysis — analysis happens in the /analyze step
-    const today = todayInIsrael();
+    // Insert checkin row without AI analysis — analysis happens in the /analyze step.
+    // checkin_date = today in the tracker's GARDEN timezone.
+    const { data: trackerGarden } = await db
+      .from('plant_trackers')
+      .select('garden_id')
+      .eq('id', trackerId)
+      .maybeSingle();
+    const today = todayIn((await getGardenZoneById(trackerGarden?.garden_id ?? null, userId)).timezone);
     const { data: checkin, error: checkinError } = await db
       .from('plant_tracker_checkins')
       .insert({
@@ -798,13 +818,14 @@ trackersRouter.post('/:id/checkins/:checkinId/analyze', async (req: any, res) =>
 
     const garden = tracker.gardens as any;
 
-    // Fetch today's calendar
+    // The checkin date's calendar in the garden's variant (timezone × hemisphere)
     const today = checkin.checkin_date;
-    const { data: calendarDay } = await db
-      .from('biodynamic_calendar')
-      .select('*')
-      .eq('date', today)
-      .single();
+    let calendarDay: RawCalendarRow | null = null;
+    try {
+      calendarDay = (await getVariantRawRows([today], calendarLocationOf(getGardenZone(garden)))).get(today) ?? null;
+    } catch (calErr: any) {
+      console.error('[analyze] calendar fetch failed:', calErr?.message ?? calErr);
+    }
 
     const todayCalendar = calendarDay ? {
       ascendingDescending:  calendarDay.ascending_descending,
@@ -958,7 +979,7 @@ trackersRouter.post('/:id/approve-tasks', async (req: any, res) => {
     // Verify tracker ownership — also fetch garden_plants_id so we can link tasks
     const { data: tracker, error: trackerError } = await db
       .from('plant_trackers')
-      .select('id, plant_name_he, garden_plants_id')
+      .select('id, plant_name_he, garden_plants_id, garden_id')
       .eq('id', trackerId)
       .eq('user_id', userId)
       .is('deleted_at', null)
@@ -968,7 +989,8 @@ trackersRouter.post('/:id/approve-tasks', async (req: any, res) => {
       return res.status(404).json({ error: 'Tracker not found' });
     }
 
-    const today = todayInIsrael();
+    // Due dates are relative to today in the tracker's GARDEN timezone.
+    const today = todayIn((await getGardenZoneById((tracker as any).garden_id ?? null, userId)).timezone);
     const [y, m, d] = today.split('-').map(Number);
 
     // Look up the latest checkin up-front — its id becomes source_checkin_id on

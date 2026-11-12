@@ -2,11 +2,13 @@ import { Router, type IRouter } from 'express';
 import { db } from '../db/client';
 import { verifyToken } from '../middleware/auth';
 import { attachTier } from '../middleware/tierMiddleware';
-import { getCalendarRange } from '../db/queries/calendar';
+import { getVariantDays, datesBetween } from '../db/queries/calendar';
 import starterTasksData from '../../../shared/data/starter_tasks.json';
 import { lastScheduledIrrigation, isWateringTask } from '../utils/irrigation';
 import { userOwnsGarden, userOwnsGardenPlant } from '../utils/ownership';
 import { buildGardenLocationUpdates } from '../services/geo';
+import { getGardenZoneById, getGardenZone, calendarLocationOf, type Zone } from '../utils/zone';
+import { todayIn } from '@gina-haya/shared';
 
 /** Lazily loads the user's profile language for reverse geocoding (default 'he'). */
 function profileLanguage(userId: string): () => Promise<'he' | 'en'> {
@@ -82,6 +84,7 @@ function resolveStarterTasks(
 async function scheduledDate(
   baseDate: string,
   lunarSensitive: boolean,
+  zone: Zone,
 ): Promise<string> {
   if (!lunarSensitive) return baseDate;
 
@@ -93,7 +96,8 @@ async function scheduledDate(
 
   let calendarDays: import('@gina-haya/shared').BiodynamicDay[];
   try {
-    calendarDays = await getCalendarRange(from, to);
+    // The garden's own calendar variant (timezone × hemisphere), per date.
+    calendarDays = await getVariantDays(datesBetween(from, to), calendarLocationOf(zone));
   } catch {
     // Calendar table unavailable (e.g. not yet populated) — fall back silently
     return baseDate;
@@ -117,6 +121,8 @@ type LastWatering = { at: string; source: 'manual' | 'scheduled' } | null;
 
 interface PlantIrrigationShape {
   id: string;
+  /** Irrigation times are wall-clock times in this garden's timezone. */
+  garden_id?: string | null;
   auto_irrigation?: boolean | null;
   irrigation_days?: number[] | null;
   irrigation_times?: string[] | null;
@@ -125,9 +131,21 @@ interface PlantIrrigationShape {
 async function resolveLastWaterings(
   plants: PlantIrrigationShape[],
   now: Date,
+  /** garden_id → timezone, when the caller already has the gardens. */
+  knownZones: Map<string, string | null> = new Map(),
 ): Promise<Map<string, LastWatering>> {
   const result = new Map<string, LastWatering>();
   if (plants.length === 0) return result;
+
+  // Each plant's garden timezone (irrigation times are local wall-clock times).
+  const zones = new Map(knownZones);
+  const missingGardenIds = [...new Set(
+    plants.filter(p => p.auto_irrigation && p.garden_id && !zones.has(p.garden_id)).map(p => p.garden_id!),
+  )];
+  if (missingGardenIds.length > 0) {
+    const { data: gardenRows } = await db.from('gardens').select('id, timezone').in('id', missingGardenIds);
+    for (const g of gardenRows ?? []) zones.set(g.id, g.timezone ?? null);
+  }
 
   const plantIds = plants.map(p => p.id);
 
@@ -159,6 +177,7 @@ async function resolveLastWaterings(
       plant.irrigation_days  ?? null,
       plant.irrigation_times ?? null,
       now,
+      plant.garden_id ? zones.get(plant.garden_id) ?? null : null,
     );
 
     const manualDate = manualAtStr ? new Date(manualAtStr) : null;
@@ -299,7 +318,8 @@ gardenRouter.get('/', async (req: any, res) => {
     const allPlants: PlantIrrigationShape[] = gardens.flatMap((g: any) => g.garden_plants ?? []);
 
     // Single batched plant_timeline query — no N+1.
-    const lastWateringsMap = await resolveLastWaterings(allPlants, new Date());
+    const gardenZones = new Map<string, string | null>(gardens.map((g: any) => [g.id, g.timezone ?? null]));
+    const lastWateringsMap = await resolveLastWaterings(allPlants, new Date(), gardenZones);
 
     for (const garden of gardens) {
       for (const plant of (garden.garden_plants ?? [])) {
@@ -332,7 +352,7 @@ gardenRouter.get('/:id', async (req: any, res) => {
     if (error || !data) return res.status(404).json({ error: 'garden_not_found' });
 
     const plants: any[] = data.garden_plants ?? [];
-    const lastWateringsMap = await resolveLastWaterings(plants, new Date());
+    const lastWateringsMap = await resolveLastWaterings(plants, new Date(), new Map([[data.id, data.timezone ?? null]]));
     for (const plant of plants) {
       plant.last_watering = lastWateringsMap.get(plant.id) ?? null;
       if (Array.isArray(plant.irrigation_times)) {
@@ -719,7 +739,8 @@ gardenRouter.post('/:id/plants', async (req: any, res) => {
 
     // Attach last_watering — a brand-new plant has no manual entries yet, so
     // this will be a scheduled value (or null if auto_irrigation is off).
-    const scheduled = lastScheduledIrrigation(auto_irrigation, irrigation_days, irrigation_times, new Date());
+    const plantGardenZone = await getGardenZoneById(req.params.id);
+    const scheduled = lastScheduledIrrigation(auto_irrigation, irrigation_days, irrigation_times, new Date(), plantGardenZone.timezone);
     const lastWatering: LastWatering = scheduled
       ? { at: scheduled.toISOString(), source: 'scheduled' }
       : null;
@@ -781,12 +802,13 @@ gardenRouter.post('/garden-plants/:id/starter-tasks', async (req: any, res) => {
     // 2. Verify ownership via gardens.user_id
     const { data: garden, error: gardenError } = await db
       .from('gardens')
-      .select('id')
+      .select('id, timezone, latitude')
       .eq('id', gp.garden_id)
       .eq('user_id', userId)
       .single();
 
     if (gardenError || !garden) return res.status(403).json({ error: 'Forbidden' });
+    const gardenZone = getGardenZone(garden);
 
     // 3. Idempotency guard — seed exactly once per plant
     const { count, error: countError } = await db
@@ -815,11 +837,12 @@ gardenRouter.post('/garden-plants/:id/starter-tasks', async (req: any, res) => {
       d.setUTCDate(d.getUTCDate() + days);
       return d.toISOString().slice(0, 10);
     }
-    const todayStr = new Date().toISOString().slice(0, 10);
+    // "Today" in the garden's timezone (was the UTC date).
+    const todayStr = todayIn(gardenZone.timezone);
 
     const rows = await Promise.all(capped.map(async t => {
       const baseDate = addDays(todayStr, t.dayOffset);
-      const date = await scheduledDate(baseDate, t.lunarSensitive);
+      const date = await scheduledDate(baseDate, t.lunarSensitive, gardenZone);
       return {
         user_id:           userId,
         garden_plants_id:  gardenPlantId,

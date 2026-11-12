@@ -5,9 +5,12 @@ export interface BiodynamicDay {
     date: string;
     ascendingDescending: MoonPhaseDirection;
     ascendingDescendingHe: string;
+    /** Variant days: the new/full moon moment inside the local day (UTC ISO), else null. */
     phaseTransitionTime: string | null;
     nodeActive: boolean;
+    /** Variant days: node_exact_utc − NODE_BLACKOUT_HOURS/2 (UTC ISO). */
     nodeBlackoutStart: string | null;
+    /** Variant days: node_exact_utc + NODE_BLACKOUT_HOURS/2 (UTC ISO). */
     nodeBlackoutEnd: string | null;
     perigeeActive: boolean;
     prep500Recommended: boolean;
@@ -16,6 +19,7 @@ export interface BiodynamicDay {
     moonSignHe: string;
     dayType: DayType;
     dayTypeHe: string;
+    /** Variant days: the first sign change inside the local day (UTC ISO), else null. */
     dayTypeChangeTime: string | null;
     moonPhasePct: number;
     moonPhaseName: string;
@@ -55,6 +59,12 @@ export type CalendarTransition = (CalendarTransitionBase & {
 }) | (CalendarTransitionBase & {
     type: 'new_moon' | 'full_moon';
     label_he: string;
+}) | (CalendarTransitionBase & {
+    type: 'node';
+    /** Astronomical: the moon crosses the ecliptic going north (ascending) or south. */
+    direction: MoonPhaseDirection;
+    label_he: string;
+    label_en: string;
 });
 interface CalendarTransitionBase {
     /** ISO timestamp, minute precision, UTC. */

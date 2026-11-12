@@ -1,6 +1,7 @@
 import { Router, type IRouter } from 'express';
 import { verifyToken } from '../middleware/auth';
-import { todayInIsrael } from '@gina-haya/shared';
+import { todayIn, addDaysISO } from '@gina-haya/shared';
+import { getUserHomeZone } from '../utils/zone';
 import {
   getTasksForWeek, getTasksForRange, updateTaskStatus, updateTask,
   createCustomTask, deleteTask,
@@ -15,11 +16,10 @@ tasksRouter.use(verifyToken);
 // ?include_archived=true — include tasks linked to archived plants (for Passport view)
 tasksRouter.get('/week', async (req, res) => {
   try {
-    const today = todayInIsrael();
-    const end = new Date(today + 'T00:00:00');
-    end.setDate(end.getDate() + 6);
+    // The user's tasks across gardens: "today" in their home zone.
+    const today = todayIn((await getUserHomeZone(req.user!.id, req)).timezone);
     const includeArchived = req.query.include_archived === 'true';
-    const tasks = await getTasksForWeek(req.user!.id, today, end.toISOString().slice(0, 10), includeArchived);
+    const tasks = await getTasksForWeek(req.user!.id, today, addDaysISO(today, 6), includeArchived);
     res.json(tasks);
   } catch (err: any) {
     res.status(500).json({ error: err.message });

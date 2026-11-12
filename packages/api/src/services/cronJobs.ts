@@ -4,36 +4,42 @@ import webpush from 'web-push';
 import { sendRenewalReminder, sendCronJobAlert } from './email';
 import { getLimits } from '@gina-haya/shared';
 import { reconcilePlaySubs } from './reconcilePlaySubs';
+import { getHomeZonesForUsers, localClock, ISRAEL_ZONE, type Zone } from '../utils/zone';
 
 export function startCronJobs() {
-  // Convention: wall-clock Israel time + explicit timezone.
-  // node-cron interprets the schedule in the given timezone, so IDT/IST
-  // transitions are handled automatically — no UTC arithmetic needed.
+  // Person-scoped jobs run every 15 minutes (UTC) and act for each user when
+  // THEIR home-zone local time (default garden → first garden → Israel)
+  // reaches the send time:
+  //   daily summary push      07:00 local  (de-duplicated by users.last_daily_summary_date)
+  //   annual renewal reminder 09:00 local
+  // Operational jobs stay on Israel wall-clock time (node-cron handles DST):
+  //   Play reconcile          03:30 Asia/Jerusalem
+  //   reconcile watchdog      09:00 Asia/Jerusalem
+  const QUARTER_HOURLY       = '*/15 * * * *';
+  const RECONCILE_SCHEDULE   = '30 3 * * *';  // 03:30 — low-traffic, no collision with existing jobs
+  const WATCHDOG_SCHEDULE    = '0 9 * * *';
+  const OPS_TZ = 'Asia/Jerusalem';
 
-  // 07:00 Israel time daily
-  const DAILY_SCHEDULE     = '0 7 * * *';
-  const RENEWAL_SCHEDULE   = '0 9 * * *';
-  const RECONCILE_SCHEDULE = '30 3 * * *';  // 03:30 — low-traffic, no collision with existing jobs
-  const TZ = 'Asia/Jerusalem';
-
-  cron.schedule(DAILY_SCHEDULE, async () => {
-    console.log('[cron] Sending daily garden task notifications...');
+  cron.schedule(QUARTER_HOURLY, async () => {
     try {
       await sendDailySummary();
     } catch (e) {
       console.error('[cron] Daily summary failed:', e);
     }
-  }, { timezone: TZ });
-
-  // 09:00 Israel time daily
-  cron.schedule(RENEWAL_SCHEDULE, async () => {
-    console.log('[cron] Sending annual renewal reminders...');
     try {
       await sendAnnualRenewalReminders();
     } catch (e) {
       console.error('[cron] Annual renewal reminders failed:', e);
     }
-  }, { timezone: TZ });
+  }, { timezone: 'UTC' });
+
+  cron.schedule(WATCHDOG_SCHEDULE, async () => {
+    try {
+      await checkReconcileWatchdog();
+    } catch (e) {
+      console.error('[cron/renewal] Watchdog failed:', e);
+    }
+  }, { timezone: OPS_TZ });
 
   // 03:30 Israel time daily — reconcile Google Play subscriptions against live API data.
   // This is insurance against silent RTDN delivery failure (the Pub/Sub topic lost its
@@ -45,17 +51,26 @@ export function startCronJobs() {
     } catch (e) {
       console.error('[cron/reconcile] Unexpected error outside runReconcilePlaySubs:', e);
     }
-  }, { timezone: TZ });
+  }, { timezone: OPS_TZ });
 
-  // Derive log times from schedule strings so this line cannot drift silently.
-  const dailyHour     = DAILY_SCHEDULE.split(' ')[1];
-  const renewalHour   = RENEWAL_SCHEDULE.split(' ')[1];
   const reconcileMin  = RECONCILE_SCHEDULE.split(' ')[0];
   const reconcileHour = RECONCILE_SCHEDULE.split(' ')[1];
   console.log(
-    `[cron] Jobs scheduled: daily summary at ${dailyHour}:00, renewal reminders at ${renewalHour}:00, ` +
-    `Play reconcile at ${reconcileHour}:${reconcileMin} ${TZ}`
+    `[cron] Jobs scheduled: daily summary ${DAILY_SUMMARY_AT.hour}:00 and renewal reminders ` +
+    `${RENEWAL_AT.hour}:00 in each user's home zone (checked every 15 min UTC); ` +
+    `Play reconcile at ${reconcileHour}:${reconcileMin} and watchdog at ${WATCHDOG_SCHEDULE.split(' ')[1]}:00 ${OPS_TZ}`
   );
+}
+
+/** Local send times; the 15-minute window matches the quarter-hourly tick. */
+const DAILY_SUMMARY_AT = { hour: 7, minute: 0 };
+const RENEWAL_AT       = { hour: 9, minute: 0 };
+const SEND_WINDOW_MIN  = 15;
+
+function inSendWindow(zone: Zone, at: { hour: number; minute: number }, now: Date): { inWindow: boolean; localDate: string } {
+  const { date, minutes } = localClock(zone.timezone, now);
+  const start = at.hour * 60 + at.minute;
+  return { inWindow: minutes >= start && minutes < start + SEND_WINDOW_MIN, localDate: date };
 }
 
 // ---------------------------------------------------------------------------
@@ -200,9 +215,7 @@ async function runReconcilePlaySubs(): Promise<void> {
   }
 }
 
-async function sendDailySummary() {
-  const today = new Date().toLocaleDateString('en-CA', { timeZone: 'Asia/Jerusalem' });
-
+async function sendDailySummary(now: Date = new Date()) {
   // Get all push subscriptions
   const { data: subs, error } = await db
     .from('push_subscriptions')
@@ -210,36 +223,65 @@ async function sendDailySummary() {
 
   if (error || !subs || subs.length === 0) return;
 
+  // Users whose home-zone local time is 07:00–07:14 right now.
+  const subsByUser = new Map<string, any[]>();
+  for (const sub of subs) {
+    const list = subsByUser.get(sub.user_id) ?? [];
+    list.push(sub.subscription);
+    subsByUser.set(sub.user_id, list);
+  }
+  const zones = await getHomeZonesForUsers([...subsByUser.keys()]);
+  const due = new Map<string, string>(); // user_id → local date
+  for (const userId of subsByUser.keys()) {
+    const { inWindow, localDate } = inSendWindow(zones.get(userId) ?? ISRAEL_ZONE, DAILY_SUMMARY_AT, now);
+    if (inWindow) due.set(userId, localDate);
+  }
+  if (due.size === 0) return;
+
+  console.log(`[cron] Daily summary: ${due.size} user(s) at 07:00 local`);
+
+  // Language + de-duplication column for the due users, in one query.
+  const { data: userRows, error: usersError } = await db
+    .from('users')
+    .select('id, language_preference, last_daily_summary_date')
+    .in('id', [...due.keys()]);
+  if (usersError) {
+    console.error('[cron] Daily summary: users lookup failed:', usersError.message);
+    return;
+  }
+  const userById = new Map((userRows ?? []).map((u: any) => [u.id, u]));
+
   let sent = 0;
   let failed = 0;
+  let skippedAlreadySent = 0;
 
-  for (const sub of subs) {
+  for (const [userId, localDate] of due) {
+    const user: any = userById.get(userId);
+    // Already sent for this local date (another tick, a restart or another replica).
+    if (user?.last_daily_summary_date === localDate) {
+      skippedAlreadySent++;
+      continue;
+    }
     try {
       // Check notification settings
       const { data: settings } = await db
         .from('notification_settings')
         .select('enabled, daily_summary')
-        .eq('user_id', sub.user_id)
+        .eq('user_id', userId)
         .single();
 
       // Skip if disabled
       if (settings && (!settings.enabled || !settings.daily_summary)) continue;
 
-      // Look up user language preference — fall back to Hebrew on any error.
-      // The Supabase client returns errors in the result object, not as throws.
-      const { data: userData, error: langError } = await db
-        .from('users')
-        .select('language_preference')
-        .eq('id', sub.user_id)
-        .maybeSingle();
-      const isHe = langError || !userData || userData.language_preference !== 'en';
+      // Default Hebrew — English only when explicitly set.
+      const isHe = !user || user.language_preference !== 'en';
 
-      // Get today's pending tasks
+      // Today's pending tasks — "today" in the user's home zone.
       const { data: tasks } = await db
         .from('garden_tasks')
         .select('title, type')
-        .eq('user_id', sub.user_id)
-        .eq('date', today)
+        .eq('user_id', userId)
+        .eq('date', localDate)
         .eq('status', 'pending');
 
       if (!tasks || tasks.length === 0) continue;
@@ -258,33 +300,48 @@ async function sendDailySummary() {
         url: '/tasks',
       });
 
-      await webpush.sendNotification(sub.subscription, payload);
-      sent++;
+      let delivered = false;
+      for (const subscription of subsByUser.get(userId) ?? []) {
+        try {
+          await webpush.sendNotification(subscription, payload);
+          delivered = true;
+        } catch (e: any) {
+          // Remove invalid/expired subscription
+          if (e.statusCode === 404 || e.statusCode === 410) {
+            await db.from('push_subscriptions').delete().eq('user_id', userId);
+          }
+        }
+      }
+
+      if (delivered) {
+        sent++;
+        const { error: markError } = await db
+          .from('users')
+          .update({ last_daily_summary_date: localDate })
+          .eq('id', userId);
+        if (markError) console.error(`[cron] Daily summary: could not mark user ${userId}:`, markError.message);
+      } else {
+        failed++;
+      }
     } catch (e: any) {
       failed++;
-      // Remove invalid/expired subscription
-      if (e.statusCode === 404 || e.statusCode === 410) {
-        await db.from('push_subscriptions').delete().eq('user_id', sub.user_id);
-      }
+      console.error(`[cron] Daily summary failed for user ${userId}:`, e?.message ?? e);
     }
   }
 
-  console.log(`[cron] Daily summary: sent=${sent} failed=${failed}`);
+  console.log(`[cron] Daily summary: sent=${sent} failed=${failed} already_sent=${skippedAlreadySent}`);
 }
 
-// Exported so it can be invoked directly for manual testing without waiting for the schedule.
-export async function sendAnnualRenewalReminders(): Promise<void> {
-  const now = new Date();
-  const in7Days = new Date(now.getTime() + 7 * 24 * 60 * 60 * 1000);
-
-  // ------------------------------------------------------------------
-  // Cross-check: verify the Play reconcile job is still running.
-  // If its last_finished_at is older than 48 hours, alert the admin.
-  //
-  // This catches "the reconcile job stopped running" — it does NOT catch
-  // "node-cron itself died and ALL jobs stopped." That residual gap
-  // requires an external uptime monitor (e.g. pointing at /api/health/jobs).
-  // ------------------------------------------------------------------
+/**
+ * Cross-check: verify the Play reconcile job is still running.
+ * If its last_finished_at is older than 48 hours, alert the admin.
+ *
+ * This catches "the reconcile job stopped running" — it does NOT catch
+ * "node-cron itself died and ALL jobs stopped." That residual gap
+ * requires an external uptime monitor (e.g. pointing at /api/health/jobs).
+ * Runs once a day (09:00 Israel); it used to run inside the renewal job.
+ */
+async function checkReconcileWatchdog(): Promise<void> {
   try {
     const { data: reconcileJob } = await db
       .from('job_runs')
@@ -316,6 +373,24 @@ export async function sendAnnualRenewalReminders(): Promise<void> {
     console.error('[cron/renewal] Watchdog check failed:', watchdogErr?.message);
   }
 
+}
+
+// In-process guard against a second reminder for the same user and local
+// date (the 15-minute window already allows only one tick per day).
+const renewalSentFor = new Set<string>();
+
+/**
+ * Annual renewal reminders (email + push) for subscriptions expiring within 7
+ * days, sent at 09:00 in each user's home zone. Runs every 15 minutes.
+ * Exported so it can be invoked directly for manual testing; pass
+ * { ignoreLocalTime: true } to send to everyone due regardless of the hour.
+ */
+export async function sendAnnualRenewalReminders(
+  opts: { now?: Date; ignoreLocalTime?: boolean } = {},
+): Promise<void> {
+  const now = opts.now ?? new Date();
+  const in7Days = new Date(now.getTime() + 7 * 24 * 60 * 60 * 1000);
+
   // Find active annual Grow subscriptions expiring within the next 7 days.
   // base_plan_id = 'annual' is the queryable label set by the webhook handler.
   const { data: expiring, error } = await db
@@ -332,18 +407,29 @@ export async function sendAnnualRenewalReminders(): Promise<void> {
     return;
   }
 
-  if (!expiring || expiring.length === 0) {
-    console.log('[cron/renewal] No annual subscriptions expiring within 7 days');
-    return;
-  }
+  if (!expiring || expiring.length === 0) return;
 
-  console.log(`[cron/renewal] Found ${expiring.length} subscriptions to remind`);
+  // Only users whose home-zone local time is 09:00–09:14 now (unless forced).
+  const zones = await getHomeZonesForUsers(expiring.map((r: any) => r.user_id));
+  const dueRows: Array<{ row: any; zone: Zone; localDate: string }> = [];
+  for (const row of expiring) {
+    const zone = zones.get(row.user_id) ?? ISRAEL_ZONE;
+    const { inWindow, localDate } = inSendWindow(zone, RENEWAL_AT, now);
+    if (!opts.ignoreLocalTime && !inWindow) continue;
+    const key = `${row.user_id}|${localDate}`;
+    if (renewalSentFor.has(key)) continue;
+    dueRows.push({ row, zone, localDate });
+  }
+  if (dueRows.length === 0) return;
+
+  console.log(`[cron/renewal] Found ${dueRows.length} subscriptions to remind (09:00 local)`);
 
   let emailSent = 0;
   let emailFailed = 0;
   let pushSent = 0;
 
-  for (const row of expiring) {
+  for (const { row, zone, localDate } of dueRows) {
+    renewalSentFor.add(`${row.user_id}|${localDate}`);
     // Fetch user details for the email and language preference
     const { data: user } = await db
       .from('users')
@@ -369,6 +455,7 @@ export async function sendAnnualRenewalReminders(): Promise<void> {
         tierNameHe,
         expiresAt,
         language:    userLang,
+        timeZone:    zone.timezone,
       });
       emailSent++;
     } catch (err) {
@@ -386,7 +473,7 @@ export async function sendAnnualRenewalReminders(): Promise<void> {
 
       if (pushSub?.subscription) {
         const expiryStr = expiresAt.toLocaleDateString(renewalIsHe ? 'he-IL' : 'en-US', {
-          month: 'long', day: 'numeric', timeZone: 'Asia/Jerusalem',
+          month: 'long', day: 'numeric', timeZone: zone.timezone,
         });
         await webpush.sendNotification(
           pushSub.subscription,

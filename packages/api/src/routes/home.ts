@@ -1,7 +1,9 @@
 import { Router } from 'express';
 import { db } from '../db/client';
 import { verifyToken } from '../middleware/auth';
-import { todayInIsrael } from '@gina-haya/shared';
+import { todayIn, addDaysISO } from '@gina-haya/shared';
+import { findVariantRawRows } from '../db/queries/calendar';
+import { getUserHomeZone, calendarLocationOf } from '../utils/zone';
 
 export const homeRouter = Router();
 
@@ -9,9 +11,12 @@ export const homeRouter = Router();
 // Returns all home screen sections in one payload
 homeRouter.get('/summary', verifyToken, async (req: any, res) => {
   const userId = req.user.id;
-  const today = todayInIsrael();
 
   try {
+    // Person-scoped: the user's home zone (default garden, else first, else Israel).
+    const home = await getUserHomeZone(userId, req);
+    const today = todayIn(home.timezone);
+
     // ── 1. Today's tasks ──────────────────────────────────────────────────
     const { data: tasks, error: tasksError } = await db
       .from('garden_tasks')
@@ -102,13 +107,16 @@ homeRouter.get('/summary', verifyToken, async (req: any, res) => {
     ].filter(Boolean);
 
     // ── 4. Next planting window ───────────────────────────────────────────
-    const { data: nextWindows } = await db
-      .from('biodynamic_calendar')
-      .select('date, day_type, day_type_he, day_type_emoji, planting_score, moon_phase_name_he')
-      .gt('date', today)
-      .gte('planting_score', 7)
-      .order('date', { ascending: true })
-      .limit(3);
+    // Home zone's calendar variant, resolved per date; 60-day horizon.
+    let nextWindows: any[] = [];
+    try {
+      nextWindows = await findVariantRawRows(
+        addDaysISO(today, 1), 60, calendarLocationOf(home),
+        row => Number(row.planting_score) >= 7, 3,
+      );
+    } catch (calErr: any) {
+      console.error('home summary calendar error:', calErr?.message ?? calErr);
+    }
 
     // ── 5. Assemble response ──────────────────────────────────────────────
     res.json({

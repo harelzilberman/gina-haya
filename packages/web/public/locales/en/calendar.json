@@ -42,6 +42,8 @@
     "ascDesc": "{{direction}} moon from {{time}}",
     "newMoon": "New moon at {{time}}",
     "fullMoon": "Full moon at {{time}}",
+    "nodeAscending": "Ascending lunar node at {{time}}",
+    "nodeDescending": "Descending lunar node at {{time}}",
     "direction": {
       "ascending": "Ascending",
       "descending": "Descending"

@@ -759,6 +759,13 @@ VARIANTS_TABLE      = 'biodynamic_calendar_variants'
 VARIANTS_FALLBACK   = 'calendar_variants_output.json'
 MINUTE_JD           = 1.0 / 1440.0
 DIRECTION_HE        = {'ascending': 'עולה', 'descending': 'יורד'}
+# Same value as NODE_BLACKOUT_HOURS in packages/shared/src/constants/calendar.ts:
+# the blackout window is node_exact_utc ± NODE_BLACKOUT_HOURS / 2.
+NODE_BLACKOUT_HOURS = 24
+NODE_LABELS         = {
+    'ascending':  {'he': 'צומת עולה', 'en': 'Ascending lunar node'},
+    'descending': {'he': 'צומת יורד', 'en': 'Descending lunar node'},
+}
 
 
 def _moon_sign_index(jd):
@@ -789,6 +796,52 @@ def _bisect(lo, hi, before):
         else:
             hi = mid
     return hi
+
+
+def _moon_latitude(jd):
+    """Moon's geocentric ecliptic latitude (degrees). Sidereal mode does not
+    affect latitude; tropical flags are used."""
+    result, _ = swe.calc_ut(jd, swe.MOON, 0)
+    return result[1]
+
+
+def find_node_crossings(start_jd, end_jd, step_days=0.25):
+    """
+    Exact moments (to 1 minute) the moon crosses the ecliptic — its ascending
+    (latitude − → +) or descending (+ → −) lunar node — in [start_jd, end_jd].
+    Crossings are ~13.6 days apart, so a 6-hour scan step cannot skip one.
+    Returns [(jd, 'ascending' | 'descending')] in time order.
+    """
+    out = []
+    jd = start_jd
+    lat = _moon_latitude(jd)
+    while jd < end_jd:
+        nxt = min(jd + step_days, end_jd)
+        lat_n = _moon_latitude(nxt)
+        if (lat < 0) != (lat_n < 0):
+            neg_before = lat < 0
+            t = _bisect(jd, nxt, lambda x: (_moon_latitude(x) < 0) == neg_before)
+            out.append((t, 'ascending' if neg_before else 'descending'))
+        jd, lat = nxt, lat_n
+    return out
+
+
+def _jd_to_utc_iso(jd):
+    y, m, d, h = swe.revjul(jd)
+    minutes = int(round(h * 60))
+    return (datetime(y, m, d) + timedelta(minutes=minutes)).strftime('%Y-%m-%dT%H:%M:00Z')
+
+
+def nearest_node_utc(nodes, local_noon_jd):
+    """node_exact_utc: the node moment nearest to the variant day's local noon,
+    if within ±NODE_BLACKOUT_HOURS (its ±NODE_BLACKOUT_HOURS/2 window can then
+    overlap the local day). None otherwise."""
+    best = None
+    for jd, _ in nodes:
+        dist = abs(jd - local_noon_jd)
+        if dist <= NODE_BLACKOUT_HOURS / 24.0 and (best is None or dist < abs(best - local_noon_jd)):
+            best = jd
+    return _jd_to_utc_iso(best) if best is not None else None
 
 
 def day_transitions_raw(dt, utc_offset_hours):
@@ -856,27 +909,50 @@ def format_transitions(dt, utc_offset_hours, hemisphere, start_jd, raw_events):
             item.update({'label_he': 'ירח חדש'})
         elif ev['type'] == 'full_moon':
             item.update({'label_he': 'ירח מלא'})
+        elif ev['type'] == 'node':
+            # Astronomical node direction (moon crossing the ecliptic going
+            # north / south) — the same in both hemispheres.
+            item.update({
+                'direction': ev['direction'],
+                'label_he': NODE_LABELS[ev['direction']]['he'],
+                'label_en': NODE_LABELS[ev['direction']]['en'],
+            })
         out.append(item)
     return out
 
 
 def generate_variant_rows(start_date, days):
     """All 54 variants. Returns {(offset, hemisphere): [rows]}."""
+    # Node crossings for the whole range (+ margin for every offset's local day
+    # and the ±NODE_BLACKOUT_HOURS search) — they depend only on the instant.
+    range_start = swe.julday(start_date.year, start_date.month, start_date.day, 0.0) - 3.0
+    nodes = find_node_crossings(range_start, range_start + days + 6.0)
+    print(f'  {len(nodes)} lunar node crossings in range')
+
     variants = {}
     for off in VARIANT_OFFSETS:
         raw_by_date = []
         for i in range(days):
             dt = start_date + timedelta(days=i)
-            raw_by_date.append((dt,) + day_transitions_raw(dt, off))
+            start_jd, events = day_transitions_raw(dt, off)
+            events = events + [
+                (jd, {'type': 'node', 'direction': direction})
+                for jd, direction in nodes
+                if start_jd <= jd < start_jd + 1.0
+            ]
+            events.sort(key=lambda e: e[0])
+            node_utc = nearest_node_utc(nodes, start_jd + 0.5)
+            raw_by_date.append((dt, start_jd, events, node_utc))
         for hemi in VARIANT_HEMISPHERES:
             rows, _, _, _ = generate_calendar_data(
                 start_date, days, utc_hour_for=local_noon_utc_hour(off),
                 hemisphere=hemi, verbose=False,
             )
-            for row, (dt, start_jd, events) in zip(rows, raw_by_date):
+            for row, (dt, start_jd, events, node_utc) in zip(rows, raw_by_date):
                 row['utc_offset_hours'] = off
                 row['hemisphere'] = hemi
                 row['transitions'] = format_transitions(dt, off, hemi, start_jd, events)
+                row['node_exact_utc'] = node_utc
             variants[(off, hemi)] = rows
         print(f'  UTC{off:+d}: {days} days × 2 hemispheres')
     return variants
@@ -999,6 +1075,11 @@ def variants_main(positional, dry_run):
 
 
 def main(positional=None):
+    # Legacy biodynamic_calendar (Israel, one row per date). Since round 3 the
+    # API reads only biodynamic_calendar_variants; this table is still
+    # generated (GitHub Action "Calendar", step 1) as a BACKUP for one more
+    # month, and is the reference for the --variants regression check.
+    # Remove this run (and the table) once the variants have been stable.
     positional = sys.argv[1:] if positional is None else positional
     print('🌕 Gina Haya — Real Biodynamic Calendar Generator')
     print('   Sources: Maria Thun + Stella Natura + BDI/Rudolf Steiner')

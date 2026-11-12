@@ -5,6 +5,7 @@ exports.isValidIanaTimeZone = isValidIanaTimeZone;
 exports.resolveVariant = resolveVariant;
 exports.localTodayISO = localTodayISO;
 exports.addDaysISO = addDaysISO;
+const date_1 = require("./date");
 // ── Biodynamic calendar variant selection ────────────────────────────────────
 //
 // biodynamic_calendar_variants holds one row per (date, utc_offset_hours,
@@ -29,18 +30,6 @@ function isValidIanaTimeZone(tz) {
 function zoneOrDefault(tz) {
     return isValidIanaTimeZone(tz) ? tz : exports.DEFAULT_CALENDAR_TIMEZONE;
 }
-/** Offset of `timeZone` from UTC at `instantMs`, in minutes (e.g. +120 for Israel winter). */
-function offsetMinutesAt(timeZone, instantMs) {
-    const parts = new Intl.DateTimeFormat('en-US', {
-        timeZone,
-        hourCycle: 'h23',
-        year: 'numeric', month: '2-digit', day: '2-digit',
-        hour: '2-digit', minute: '2-digit', second: '2-digit',
-    }).formatToParts(new Date(instantMs));
-    const get = (type) => Number(parts.find(p => p.type === type)?.value ?? 0);
-    const wallAsUtc = Date.UTC(get('year'), get('month') - 1, get('day'), get('hour'), get('minute'), get('second'));
-    return Math.round((wallAsUtc - Math.floor(instantMs / 1000) * 1000) / 60000);
-}
 /**
  * Variant for a garden on `dateISO` ("YYYY-MM-DD", the garden's local date).
  *
@@ -56,8 +45,8 @@ function resolveVariant(dateISO, timezone, latitude) {
     const [y, m, d] = dateISO.split('-').map(Number);
     const utcNoon = Date.UTC(y, (m || 1) - 1, d || 1, 12);
     // Two passes: the offset at UTC noon locates local noon; measure there.
-    const firstGuess = offsetMinutesAt(tz, utcNoon);
-    const offsetMin = offsetMinutesAt(tz, utcNoon - firstGuess * 60000);
+    const firstGuess = (0, date_1.zoneOffsetMinutes)(tz, utcNoon);
+    const offsetMin = (0, date_1.zoneOffsetMinutes)(tz, utcNoon - firstGuess * 60000);
     const hours = Math.min(exports.MAX_VARIANT_OFFSET, Math.max(exports.MIN_VARIANT_OFFSET, Math.round(offsetMin / 60)));
     const lat = latitude == null ? NaN : Number(latitude);
     return {

@@ -7,6 +7,8 @@
  * to plant_timeline; only manual waterings appear there.
  */
 
+import { zoneOffsetMinutes, isValidIanaTimeZone, DEFAULT_CALENDAR_TIMEZONE } from '@gina-haya/shared';
+
 interface ParsedTime { h: number; m: number }
 
 function parseTime(t: string): ParsedTime | null {
@@ -30,30 +32,41 @@ export function isWateringTask(task: { category?: string | null }): boolean {
   return task.category === 'watering';
 }
 
-// Shared Intl formatters — created once, reused on every call.
-const ISRAEL_FULL_FORMATTER = new Intl.DateTimeFormat('en-US', {
-  timeZone: 'Asia/Jerusalem',
-  year: 'numeric', month: 'numeric', day: 'numeric',
-  weekday: 'short', hour: 'numeric', minute: 'numeric',
-  hour12: false,
-});
+// Per-timezone Intl formatters — created once per zone, reused on every call.
+interface ZoneFormatters { full: Intl.DateTimeFormat; verify: Intl.DateTimeFormat }
+const FORMATTERS = new Map<string, ZoneFormatters>();
 
-const ISRAEL_VERIFY_FORMATTER = new Intl.DateTimeFormat('en-US', {
-  timeZone: 'Asia/Jerusalem',
-  year: 'numeric', month: 'numeric', day: 'numeric',
-  hour: 'numeric', minute: 'numeric',
-  hour12: false,
-});
+function formattersFor(timeZone: string): ZoneFormatters {
+  let f = FORMATTERS.get(timeZone);
+  if (!f) {
+    f = {
+      full: new Intl.DateTimeFormat('en-US', {
+        timeZone,
+        year: 'numeric', month: 'numeric', day: 'numeric',
+        weekday: 'short', hour: 'numeric', minute: 'numeric',
+        hourCycle: 'h23',
+      }),
+      verify: new Intl.DateTimeFormat('en-US', {
+        timeZone,
+        year: 'numeric', month: 'numeric', day: 'numeric',
+        hour: 'numeric', minute: 'numeric',
+        hourCycle: 'h23',
+      }),
+    };
+    FORMATTERS.set(timeZone, f);
+  }
+  return f;
+}
 
 /** Map weekday short name (en-US locale) → 0-6 where 0 = Sunday. */
 const WEEKDAY_MAP: Record<string, number> = {
   Sun: 0, Mon: 1, Tue: 2, Wed: 3, Thu: 4, Fri: 5, Sat: 6,
 };
 
-function israelDateParts(d: Date): {
+function localDateParts(d: Date, timeZone: string): {
   year: number; month0: number; day: number; weekday: number; hour: number; minute: number;
 } {
-  const parts = ISRAEL_FULL_FORMATTER.formatToParts(d);
+  const parts = formattersFor(timeZone).full.formatToParts(d);
   const g = (type: string) => parseInt(parts.find(p => p.type === type)?.value ?? '0', 10);
   const weekdayStr = parts.find(p => p.type === 'weekday')?.value ?? 'Sun';
   return {
@@ -67,28 +80,34 @@ function israelDateParts(d: Date): {
 }
 
 /**
- * Convert an Israel wall-clock date+time to a UTC Date, DST-correct.
+ * Convert a wall-clock date+time in `timeZone` to a UTC Date, DST-correct.
  *
- * Israel is always UTC+2 (standard, Oct–Mar) or UTC+3 (DST, Mar–Oct).
- * Both offsets are tried and verified via Intl — no hard-coded offset constant.
- * Returns null only if neither offset produces the expected wall-clock reading
- * (should never happen for valid Israel dates).
+ * Candidate offsets are the zone's offsets 12 h either side of the anchor
+ * (they differ only across a DST change); each candidate is verified via Intl.
+ * Returns null when the wall-clock time does not exist (skipped by a DST
+ * spring-forward).
  */
-function israelWallClockToUtc(
-  ilYear: number, ilMonth0: number, ilDay: number,
+function wallClockToUtc(
+  year: number, month0: number, day: number,
   h: number, m: number,
+  timeZone: string,
 ): Date | null {
-  // Anchor: treat the wall-clock as if it were UTC, then subtract the Israel offset.
-  const anchorUtcMs = Date.UTC(ilYear, ilMonth0, ilDay, h, m, 0, 0);
-  for (const subtractMs of [2 * 3_600_000, 3 * 3_600_000]) {
-    const tryMs = anchorUtcMs - subtractMs;
-    const parts = ISRAEL_VERIFY_FORMATTER.formatToParts(new Date(tryMs));
+  // Anchor: treat the wall-clock as if it were UTC, then subtract the zone offset.
+  const anchorUtcMs = Date.UTC(year, month0, day, h, m, 0, 0);
+  const candidates = new Set([
+    zoneOffsetMinutes(timeZone, anchorUtcMs - 12 * 3_600_000),
+    zoneOffsetMinutes(timeZone, anchorUtcMs + 12 * 3_600_000),
+  ]);
+  const { verify } = formattersFor(timeZone);
+  for (const offsetMin of candidates) {
+    const tryMs = anchorUtcMs - offsetMin * 60_000;
+    const parts = verify.formatToParts(new Date(tryMs));
     const g = (type: string) => parseInt(parts.find(p => p.type === type)?.value ?? '0', 10);
     if (
-      g('year')   === ilYear      &&
-      g('month')  === ilMonth0 + 1 &&  // Intl is 1-based
-      g('day')    === ilDay        &&
-      g('hour')   === h            &&
+      g('year')   === year       &&
+      g('month')  === month0 + 1 &&  // Intl is 1-based
+      g('day')    === day        &&
+      g('hour')   === h          &&
       g('minute') === m
     ) {
       return new Date(tryMs);
@@ -106,16 +125,20 @@ function israelWallClockToUtc(
  *
  * @param autoIrrigation  Whether automatic irrigation is enabled.
  * @param irrigationDays  Weekday numbers 0–6 (0 = Sunday) when irrigation runs.
- * @param irrigationTimes Wall-clock times in Asia/Jerusalem local time.
+ * @param irrigationTimes Wall-clock times in the GARDEN's local time (its
+ *                        timezone), as the user set them on the controller.
  *                        Accepts 'HH:MM' or 'HH:MM:SS' (Postgres TIME[] format).
  * @param now             Reference instant (injected — keeps this a pure function).
+ * @param timeZone        The garden's IANA zone; null/invalid → Asia/Jerusalem.
  */
 export function lastScheduledIrrigation(
   autoIrrigation: boolean,
   irrigationDays: number[] | null,
   irrigationTimes: string[] | null,
   now: Date,
+  timeZone?: string | null,
 ): Date | null {
+  const tz = isValidIanaTimeZone(timeZone) ? timeZone : DEFAULT_CALENDAR_TIMEZONE;
   if (!autoIrrigation || !irrigationDays?.length || !irrigationTimes?.length) {
     return null;
   }
@@ -130,11 +153,11 @@ export function lastScheduledIrrigation(
   let best: Date | null = null;
 
   // Walk back at most 8 days. Subtracting exactly 24 h from a UTC timestamp always
-  // lands in the previous Israel calendar day — DST shifts are at most 1 h, so a
+  // lands in the previous local calendar day — DST shifts are at most 1 h, so a
   // 24 h step can never skip over a day boundary.
   for (let daysBack = 0; daysBack <= 8; daysBack++) {
     const probe = new Date(nowMs - daysBack * 86_400_000);
-    const il    = israelDateParts(probe);
+    const il    = localDateParts(probe, tz);
 
     if (!irrigationDays.includes(il.weekday)) continue;
 
@@ -142,7 +165,7 @@ export function lastScheduledIrrigation(
       // On today (daysBack === 0) skip times that have not yet passed.
       if (daysBack === 0 && (h > il.hour || (h === il.hour && m > il.minute))) continue;
 
-      const scheduled = israelWallClockToUtc(il.year, il.month0, il.day, h, m);
+      const scheduled = wallClockToUtc(il.year, il.month0, il.day, h, m, tz);
       if (!scheduled || scheduled.getTime() > nowMs) continue;
 
       if (best === null || scheduled > best) {

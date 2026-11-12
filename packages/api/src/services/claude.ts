@@ -5,7 +5,8 @@ import type { ChupChuContext, ChupChuMessage } from '@gina-haya/shared';
 import { db } from '../db/client';
 import { logApiUsage } from './apiUsage';
 import { resolveGardenId } from '../utils/garden';
-import { todayInIsrael, localTodayISO, resolveVariant, isValidIanaTimeZone } from '@gina-haya/shared';
+import { todayIn, isValidIanaTimeZone } from '@gina-haya/shared';
+import { findVariantRawRows } from '../db/queries/calendar';
 
 const ANTHROPIC_URL = 'https://api.anthropic.com/v1/messages';
 const ANTHROPIC_HEADERS = {
@@ -406,12 +407,12 @@ const LOCATION_TYPE_LABEL_EN: Record<string, string> = {
   greenhouse:  'greenhouse',
 };
 
-function mobileToolDescriptionHe(name: string, params: Record<string, unknown>): string {
+function mobileToolDescriptionHe(name: string, params: Record<string, unknown>, today: string): string {
   switch (name) {
     case 'create_task':
       return `מוסיף משימה: ${params.title}${params.due_date ? ` ל-${params.due_date}` : ''}`;
     case 'log_bd_prep':
-      return `מתעד יישום פרפרט ${params.prep_name} בתאריך ${(params.date as string | undefined) || todayInIsrael()}`;
+      return `מתעד יישום פרפרט ${params.prep_name} בתאריך ${(params.date as string | undefined) || today}`;
     case 'add_plant': {
       const plantName  = String(params.common_name_he ?? '');
       const variety    = params.variety ? ` (${params.variety})` : '';
@@ -424,12 +425,12 @@ function mobileToolDescriptionHe(name: string, params: Record<string, unknown>):
   }
 }
 
-function mobileToolDescriptionEn(name: string, params: Record<string, unknown>): string {
+function mobileToolDescriptionEn(name: string, params: Record<string, unknown>, today: string): string {
   switch (name) {
     case 'create_task':
       return `Adding task: ${params.title}${params.due_date ? ` for ${params.due_date}` : ''}`;
     case 'log_bd_prep':
-      return `Logging prep ${params.prep_name} on ${(params.date as string | undefined) || todayInIsrael()}`;
+      return `Logging prep ${params.prep_name} on ${(params.date as string | undefined) || today}`;
     case 'add_plant': {
       const plantName  = String(params.common_name_en ?? params.common_name_he ?? '');
       const variety    = params.variety ? ` (${params.variety})` : '';
@@ -796,6 +797,11 @@ export async function askChupChu(
   userId?: string,
   gardenFacts?: string,
 ): Promise<{ response: string; proposedTasks?: ProposedTask[]; mobileTool?: MobileToolCall }> {
+  // Garden-scoped dates (tool defaults, prep history, BD lookahead) use the
+  // garden's timezone; Israel when the garden has none.
+  const gardenTz = isValidIanaTimeZone(context.gardenTimezone) ? context.gardenTimezone : null;
+  const gardenToday = () => todayIn(gardenTz);
+
   const basePrompt = context.userLanguage === 'he'
     ? CHUPCHU_SYSTEM_PROMPT_HE
     : CHUPCHU_SYSTEM_PROMPT_EN;
@@ -924,8 +930,8 @@ export async function askChupChu(
               capturedMobileTool = {
                 name: b.name as MobileToolCall['name'],
                 params,
-                descriptionHe: mobileToolDescriptionHe(b.name, params),
-                descriptionEn: mobileToolDescriptionEn(b.name, params),
+                descriptionHe: mobileToolDescriptionHe(b.name, params, gardenToday()),
+                descriptionEn: mobileToolDescriptionEn(b.name, params, gardenToday()),
               };
               return {
                 type: 'tool_result' as const,
@@ -952,37 +958,16 @@ export async function askChupChu(
             if (b.name === 'get_upcoming_bd_days') {
               const { day_type, count = 3 } = b.input as { day_type: string; count?: number };
               try {
-                // The garden's own local date and calendar variant (timezone ×
-                // hemisphere); Israel defaults when the garden has no location.
-                // Uses today's variant for the whole lookahead (a DST change
-                // inside it shifts the instant by an hour — negligible here).
-                const tz = isValidIanaTimeZone(context.gardenTimezone) ? context.gardenTimezone : null;
-                const today = localTodayISO(tz);
-                const variant = resolveVariant(today, tz, context.hemisphere === 'south' ? -1 : 1);
+                // The garden's own local date; the calendar variant (timezone ×
+                // hemisphere) is resolved PER DATE, so a DST change inside the
+                // lookahead is handled. Israel / north when the garden has no location.
                 const limit = Math.min(count, 7);
-                let data: any[] | null = null;
-                const variantRes = await db
-                  .from('biodynamic_calendar_variants')
-                  .select('date, day_type, planting_score, moon_sign')
-                  .eq('utc_offset_hours', variant.utcOffsetHours)
-                  .eq('hemisphere', variant.hemisphere)
-                  .eq('day_type', day_type)
-                  .gte('date', today)
-                  .order('date', { ascending: true })
-                  .limit(limit);
-                if (!variantRes.error && variantRes.data && variantRes.data.length > 0) {
-                  data = variantRes.data;
-                } else {
-                  // Variants not generated yet → legacy Israel table.
-                  const legacy = await db
-                    .from('biodynamic_calendar')
-                    .select('date, day_type, planting_score, moon_sign')
-                    .eq('day_type', day_type)
-                    .gte('date', todayInIsrael())
-                    .order('date', { ascending: true })
-                    .limit(limit);
-                  data = legacy.data;
-                }
+                const data = await findVariantRawRows(
+                  gardenToday(), 60,
+                  { timezone: gardenTz, latitude: context.hemisphere === 'south' ? -1 : null },
+                  row => row.day_type === day_type,
+                  limit,
+                );
                 if (!data || data.length === 0) {
                   return { type: 'tool_result' as const, tool_use_id: b.id, content: 'אין נתונים זמינים.' };
                 }
@@ -1092,9 +1077,9 @@ export async function askChupChu(
                   }
                 }
 
-                // Use todayInIsrael() — not new Date() — to avoid UTC midnight off-by-one between
-                // 00:00–03:00 Israel time when the server runs in UTC.
-                const todayStr = todayInIsrael();
+                // Today in the GARDEN's timezone — not new Date(), which is the
+                // server's UTC date and off by one around local midnight.
+                const todayStr = gardenToday();
                 const todayMs  = new Date(todayStr).getTime();
 
                 const records: Record<string, { last_applied: string; days_ago: number }> = {};

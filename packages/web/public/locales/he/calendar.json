@@ -42,6 +42,8 @@
     "ascDesc": "ירח {{direction}} מ-{{time}}",
     "newMoon": "ירח חדש ב-{{time}}",
     "fullMoon": "ירח מלא ב-{{time}}",
+    "nodeAscending": "צומת עולה ב-{{time}}",
+    "nodeDescending": "צומת יורד ב-{{time}}",
     "direction": {
       "ascending": "עולה",
       "descending": "יורד"

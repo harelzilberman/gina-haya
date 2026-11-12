@@ -71,17 +71,20 @@ const DAY_TYPE_EN: Record<string, string> = {
   leaf:   'Leaf Day',
 };
 
+// Calendar dates ("YYYY-MM-DD") are already the user's local date (the daily
+// tip uses the user's home-zone calendar day), so they are formatted as plain
+// dates: parsed and printed in UTC, never shifted by a zone.
 function formatDateHe(dateStr: string): string {
-  return new Date(dateStr + 'T00:00:00').toLocaleDateString('he-IL', {
+  return new Date(dateStr + 'T00:00:00Z').toLocaleDateString('he-IL', {
     weekday: 'long', year: 'numeric', month: 'long', day: 'numeric',
-    timeZone: 'Asia/Jerusalem',
+    timeZone: 'UTC',
   });
 }
 
 function formatDateEn(dateStr: string): string {
-  return new Date(dateStr + 'T00:00:00').toLocaleDateString('en-US', {
+  return new Date(dateStr + 'T00:00:00Z').toLocaleDateString('en-US', {
     weekday: 'long', year: 'numeric', month: 'long', day: 'numeric',
-    timeZone: 'Asia/Jerusalem',
+    timeZone: 'UTC',
   });
 }
 
@@ -194,6 +197,7 @@ export async function sendCancellationRequestNotice(opts: {
 }): Promise<void> {
   const { customerEmail, customerName, tier, purchaseToken, periodEnd } = opts;
 
+  // Admin notice (to the Gina Haya team, in Hebrew) — Israel time on purpose.
   const periodEndStr = periodEnd.toLocaleDateString('he-IL', {
     year: 'numeric', month: 'long', day: 'numeric',
     timeZone: 'Asia/Jerusalem',
@@ -399,15 +403,18 @@ export async function sendRenewalReminder(opts: {
   tierNameHe:  string;
   expiresAt:   Date;
   language?:   'he' | 'en';
+  /** The user's home zone (getUserHomeZone); default Asia/Jerusalem. */
+  timeZone?:   string;
 }): Promise<void> {
   const { email, displayName, tierNameHe, expiresAt, language } = opts;
+  const timeZone = opts.timeZone ?? 'Asia/Jerusalem';
   // Default Hebrew — English only when explicitly set.
   const isHe = language !== 'en';
   const name = displayName || email;
 
   const expiryStr = expiresAt.toLocaleDateString(isHe ? 'he-IL' : 'en-US', {
     year: 'numeric', month: 'long', day: 'numeric',
-    timeZone: 'Asia/Jerusalem',
+    timeZone,
   });
 
   const pricingUrl = `${APP_URL}/pricing`;

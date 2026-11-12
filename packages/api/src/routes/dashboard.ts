@@ -1,8 +1,9 @@
 import { Router, type IRouter } from 'express';
 import { db } from '../db/client';
 import { verifyToken } from '../middleware/auth';
-import { getCalendarDay } from '../db/queries/calendar';
-import { todayInIsrael } from '@gina-haya/shared';
+import { getVariantDay } from '../db/queries/calendar';
+import { todayIn } from '@gina-haya/shared';
+import { getUserHomeZone, calendarLocationOf } from '../utils/zone';
 
 export const dashboardRouter: IRouter = Router();
 dashboardRouter.use(verifyToken);
@@ -58,10 +59,12 @@ function getAction(dayType: string): string {
 dashboardRouter.get('/today-actions', async (req: any, res) => {
   try {
     const userId = req.user.id;
-    const today = todayInIsrael();
+    // Person-scoped: the user's home zone (default garden, else first, else Israel).
+    const home = await getUserHomeZone(userId, req);
+    const today = todayIn(home.timezone);
 
     // 1. Calendar data
-    const calendarDay = await getCalendarDay(today);
+    const calendarDay = await getVariantDay(today, calendarLocationOf(home));
     const dayType = calendarDay?.dayType ?? 'leaf';
     const isNode = calendarDay?.nodeActive ?? false;
 

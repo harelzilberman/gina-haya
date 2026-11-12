@@ -3,6 +3,8 @@ import { timingSafeEqual } from 'crypto';
 import { verifyToken } from '../middleware/auth';
 import { db } from '../db/client';
 import webpush from 'web-push';
+import { todayIn } from '@gina-haya/shared';
+import { getHomeZonesForUsers, ISRAEL_ZONE } from '../utils/zone';
 
 export const pushRouter: IRouter = Router();
 
@@ -137,7 +139,8 @@ pushRouter.post('/send-daily', async (req, res) => {
 
     if (!subs || subs.length === 0) return res.json({ sent: 0 });
 
-    const today = new Date().toLocaleDateString('en-CA', { timeZone: 'Asia/Jerusalem' });
+    // "Today" per user, in their home zone (default garden → first → Israel).
+    const homeZones = await getHomeZonesForUsers(subs.map((s: any) => s.user_id));
     let sent = 0;
 
     for (const sub of subs) {
@@ -147,7 +150,7 @@ pushRouter.post('/send-daily', async (req, res) => {
           .from('garden_tasks')
           .select('title, type')
           .eq('user_id', sub.user_id)
-          .eq('date', today)
+          .eq('date', todayIn((homeZones.get(sub.user_id) ?? ISRAEL_ZONE).timezone))
           .eq('status', 'pending');
 
         if (!tasks || tasks.length === 0) continue;

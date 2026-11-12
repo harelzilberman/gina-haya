@@ -10,7 +10,8 @@ import { hemisphereOf } from '../services/geo';
 import { buildGardenFactsBlock, type GardenFactsInput, type GardenCalendarToday } from '../services/gardenFacts';
 import { getVariantRawRows, type CalendarLocation, type RawCalendarRow } from '../db/queries/calendar';
 import type { ChupChuMessage, ChupChuContext } from '@gina-haya/shared';
-import { todayInIsrael, startOfTodayIsrael, startOfCurrentMonthIsrael, localTodayISO, addDaysISO, resolveVariant, isValidIanaTimeZone } from '@gina-haya/shared';
+import { todayIn, startOfTodayIsrael, startOfCurrentMonthIsrael, localTodayISO, addDaysISO, resolveVariant, isValidIanaTimeZone } from '@gina-haya/shared';
+import { getGardenZoneById, getUserHomeZone } from '../utils/zone';
 import { getRecentCompletedTasks } from '../db/queries/tasks';
 import { getLimits } from '../config/tiers';
 import { checkVisionQuota, recordVisionUse, checkAndRecordVisionUse, recordFreeRetryVisionUse, buildVisionQuotaError } from '../services/visionQuota';
@@ -725,7 +726,7 @@ chupChuRouter.post('/full-diagnosis', async (req: any, res) => {
       try {
         const { data: trackerRow } = await db
           .from('plant_trackers')
-          .select('id')
+          .select('id, garden_id')
           .eq('id', tracker_id)
           .eq('user_id', req.user.id)
           .is('deleted_at', null)
@@ -740,7 +741,8 @@ chupChuRouter.post('/full-diagnosis', async (req: any, res) => {
           const { error: checkinErr } = await db.from('plant_tracker_checkins').insert({
             tracker_id:   tracker_id,
             user_id:      req.user.id,
-            checkin_date: todayInIsrael(),
+            // Today in the tracker's garden timezone
+            checkin_date: todayIn((await getGardenZoneById(trackerRow.garden_id, req.user.id)).timezone),
             growth_stage: aiAnalysis.growthStage,
             ai_analysis:  aiAnalysis,
             growing_plan: growingPlan,
@@ -846,7 +848,7 @@ chupChuRouter.post('/attach-diagnosis', async (req: any, res) => {
       try {
         const { data: trackerRow } = await db
           .from('plant_trackers')
-          .select('id')
+          .select('id, garden_id')
           .eq('id', validatedTrackerId)
           .eq('user_id', userId)
           .is('deleted_at', null)
@@ -857,7 +859,8 @@ chupChuRouter.post('/attach-diagnosis', async (req: any, res) => {
           const { error: checkinErr } = await db.from('plant_tracker_checkins').insert({
             tracker_id:   validatedTrackerId,
             user_id:      userId,
-            checkin_date: todayInIsrael(),
+            // Today in the tracker's garden timezone
+            checkin_date: todayIn((await getGardenZoneById(trackerRow.garden_id, userId)).timezone),
             growth_stage: aiAnalysis.growthStage,
             ai_analysis:  aiAnalysis,
             growing_plan: growingPlan,
@@ -1117,19 +1120,27 @@ chupChuRouter.post('/starter-tasks', async (req: any, res) => {
       }
     }
 
-    const today = todayInIsrael();
-
-    // Check auto_irrigation so we can suppress watering tasks for drip plants
+    // Check auto_irrigation so we can suppress watering tasks for drip plants.
+    // Task dates are relative to today in the plant's GARDEN timezone (the
+    // user's home zone when no plant is given).
     let autoIrrigation = false;
+    let starterGardenId: string | null = null;
     if (garden_plants_id) {
       const { data: gpRow, error: gpError } = await db
         .from('garden_plants')
-        .select('auto_irrigation')
+        .select('auto_irrigation, garden_id')
         .eq('id', String(garden_plants_id))
         .single();
       if (gpError) throw gpError;
       autoIrrigation = gpRow?.auto_irrigation === true;
+      starterGardenId = gpRow?.garden_id ?? null;
     }
+    const today = todayIn(
+      (starterGardenId
+        ? await getGardenZoneById(starterGardenId, userId)
+        : await getUserHomeZone(userId, req)
+      ).timezone,
+    );
 
     // Language: default Hebrew — English only when explicitly requested.
     // Flutter sends `language` in the JSON body for all Chupchu endpoints; if the
@@ -1541,6 +1552,8 @@ chupChuRouter.post('/chat', async (req: any, res) => {
       // Text-only turn: check daily quota first, then monthly.
       // Both checks are skipped entirely when LAUNCH_FREE_MODE is active (alpha testing bypass).
       if (!LAUNCH_FREE_MODE && (monthlyLimit !== null || dailyLimit !== null)) {
+        // Quota windows stay on Israel time on purpose: one server-wide
+        // accounting period, not movable by changing the default garden.
         const startOfMonth = startOfCurrentMonthIsrael();
         const startOfDay   = startOfTodayIsrael();
 
@@ -1606,11 +1619,6 @@ chupChuRouter.post('/chat', async (req: any, res) => {
     // A separate single-row fetch was previously used; replaced here to fix
     // the silent-error gap (INV-03: error field was discarded) and to fetch
     // tomorrow at no extra cost.
-    const today = todayInIsrael();
-    // Compute tomorrow in Israel time: parse YYYY-MM-DD, add 1 UTC day.
-    const _todayParts = today.split('-').map(Number);
-    const _tomorrowD  = new Date(Date.UTC(_todayParts[0], _todayParts[1] - 1, _todayParts[2] + 1));
-    const tomorrow    = _tomorrowD.toISOString().split('T')[0];
     // The calendar rows themselves are loaded in step 4a, once the garden is
     // known: they come from the garden's timezone/hemisphere variant and its
     // LOCAL today/tomorrow (calToday / calTomorrow), not Israel's.
@@ -1651,7 +1659,7 @@ chupChuRouter.post('/chat', async (req: any, res) => {
     // Variant = the garden's timezone (local today/tomorrow, UTC offset at
     // local noon) × hemisphere (south → Antipodean asc/desc). No garden or no
     // location → Israel defaults, identical to the legacy table. Missing
-    // variant rows fall back to biodynamic_calendar inside getVariantRawRows.
+    // calendar is read from biodynamic_calendar_variants only.
     const calendarLocationOf = (g: { timezone?: string | null; latitude?: number | null } | null): CalendarLocation => ({
       timezone: g && isValidIanaTimeZone(g.timezone) ? g.timezone : null,
       latitude: g?.latitude != null ? Number(g.latitude) : null,
@@ -1753,6 +1761,7 @@ chupChuRouter.post('/chat', async (req: any, res) => {
           p.irrigation_days  ?? null,
           p.irrigation_times ?? null,
           now,
+          gardenCalLoc.timezone, // irrigation times are the garden's wall-clock times
         );
         const manualDate = manualAtStr ? new Date(manualAtStr) : null;
         if (manualDate && scheduled) {
@@ -1996,14 +2005,13 @@ chupChuRouter.post('/chat', async (req: any, res) => {
       }
       // Resolved last watering (computed earlier in the volatile/per-request section).
       if (p.last_watering?.at) {
-        // Compare Israel calendar dates, not float-rounded hour deltas.
-        // Date-only strings (YYYY-MM-DD) are parsed as UTC midnight by the spec,
-        // so the subtraction correctly counts full calendar days.
-        const todayIsrael  = todayInIsrael(); // "YYYY-MM-DD"
-        const eventIsrael  = new Date(p.last_watering.at)
-          .toLocaleDateString('sv-SE', { timeZone: 'Asia/Jerusalem' }); // "YYYY-MM-DD"
+        // Compare calendar dates in the garden's timezone, not float-rounded
+        // hour deltas. Date-only strings (YYYY-MM-DD) are parsed as UTC midnight
+        // by the spec, so the subtraction correctly counts full calendar days.
+        const todayLocal = todayIn(gardenCalLoc.timezone); // "YYYY-MM-DD"
+        const eventLocal = todayIn(gardenCalLoc.timezone, new Date(p.last_watering.at));
         const calDays = Math.round(
-          (new Date(todayIsrael).getTime() - new Date(eventIsrael).getTime()) / 86_400_000
+          (new Date(todayLocal).getTime() - new Date(eventLocal).getTime()) / 86_400_000
         );
         const daysStr = calDays === 0
           ? (l === 'he' ? 'היום' : 'today')
@@ -2191,7 +2199,8 @@ chupChuRouter.post('/chat', async (req: any, res) => {
 
     const todayFormatted = new Date().toLocaleDateString(
       lang === 'he' ? 'he-IL' : 'en-US',
-      { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric', timeZone: 'Asia/Jerusalem' }
+      // The garden's own date (Israel when the garden has no location)
+      { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric', timeZone: gardenCalLoc.timezone ?? 'Asia/Jerusalem' }
     );
     const dateSection = lang === 'he'
       ? `## תאריך היום\nהיום הוא ${todayFormatted}. השתמש בתאריך זה לחישוב "מחר", "השבוע" וכו'.`
@@ -2208,16 +2217,6 @@ chupChuRouter.post('/chat', async (req: any, res) => {
       ? 'אין נתוני לוח ביודינמי לתאריך זה.'
       : 'No biodynamic data available for this date.';
 
-    const _formatChangeTime = (ts: string | null | undefined): string | null => {
-      if (!ts) return null;
-      try {
-        return new Date(ts).toLocaleTimeString('he-IL', {
-          hour: '2-digit', minute: '2-digit',
-          timeZone: 'Asia/Jerusalem', hour12: false,
-        });
-      } catch { return null; }
-    };
-
     const _formatBioDay = (row: any, isHe: boolean): string => {
       const lines: string[] = [];
       const dayTypeStr  = isHe ? (row.day_type_he  || row.day_type)  : row.day_type;
@@ -2229,8 +2228,8 @@ chupChuRouter.post('/chat', async (req: any, res) => {
         ? `יום ${dayTypeStr} — ${moonSignStr}, ${ascStr}, ציון שתילה: ${row.planting_score} (${row.score_colour})`
         : `${dayTypeStr} day — ${moonSignStr}, ${ascStr}, planting score: ${row.planting_score} (${row.score_colour})`);
 
-      // Variant rows: events inside the garden's local day, in local time.
-      const transitions: any[] = row.fromVariant && Array.isArray(row.transitions) ? row.transitions : [];
+      // Events inside the garden's local day, in local time.
+      const transitions: any[] = Array.isArray(row.transitions) ? row.transitions : [];
       for (const t of transitions) {
         if (t.type === 'sign_change') {
           lines.push(isHe
@@ -2244,15 +2243,11 @@ chupChuRouter.post('/chat', async (req: any, res) => {
           lines.push(isHe
             ? `(${t.local_time} שעון מקומי: ${t.label_he})`
             : `(${t.local_time} local time: ${t.type === 'new_moon' ? 'new moon' : 'full moon'})`);
+        } else if (t.type === 'node') {
+          lines.push(isHe
+            ? `(${t.local_time} שעון מקומי: ${t.label_he} — הימנע מעבודה בגינה כ-12 שעות לפני ואחרי)`
+            : `(${t.local_time} local time: ${String(t.label_en).toLowerCase()} — avoid garden work for ~12 hours either side)`);
         }
-      }
-
-      // Legacy rows (Israel table fallback) keep the Israel-time change line.
-      const changeTime = row.fromVariant ? null : _formatChangeTime(row.day_type_change_time);
-      if (changeTime) {
-        lines.push(isHe
-          ? `(שינוי סוג יום ב-${changeTime} שעון ישראל)`
-          : `(day type changes at ${changeTime} Israel time)`);
       }
 
       const flags: string[] = [];
@@ -2389,7 +2384,7 @@ chupChuRouter.post('/chat', async (req: any, res) => {
             }
           }
 
-          const todayStr = todayInIsrael();
+          const todayStr = todayIn(gardenCalLoc.timezone);
           const todayMs  = new Date(todayStr).getTime();
 
           const formatRow = (row: (typeof deduped)[number]): string => {
@@ -2766,10 +2761,18 @@ chupChuRouter.post('/execute-tool', async (req: any, res) => {
           }
         }
 
+        // Default date: today in the resolved garden's timezone (home zone otherwise)
+        let taskDefaultDate: string | null = null;
+        if (!params.due_date) {
+          const { gardenId: dateGardenId } = await resolveGardenId(userId, req.body.gardenId as string | null | undefined);
+          taskDefaultDate = todayIn(
+            (dateGardenId ? await getGardenZoneById(dateGardenId, userId) : await getUserHomeZone(userId, req)).timezone,
+          );
+        }
         const { error: taskInsertError } = await db.from('garden_tasks').insert({
           user_id:          userId,
           title:            params.title,
-          date:             (params.due_date as string | undefined) || todayInIsrael(),
+          date:             (params.due_date as string | undefined) || taskDefaultDate!,
           type:             'custom',
           status:           'pending',
           priority:         params.priority ?? 'medium',
@@ -2810,7 +2813,7 @@ chupChuRouter.post('/execute-tool', async (req: any, res) => {
           garden_id:  bdGardenId,
           user_id:    userId,
           event_type: 'bd_prep',
-          event_date: (params.date as string | undefined) || todayInIsrael(),
+          event_date: (params.date as string | undefined) || todayIn((await getGardenZoneById(bdGardenId, userId)).timezone),
           prep_name:  params.prep_name,
           created_at: new Date().toISOString(),
         });

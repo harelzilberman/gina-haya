@@ -1,15 +1,14 @@
 import { Router, type IRouter, type Request, type Response, type NextFunction } from 'express';
 import {
-  getCalendarDay,
-  getCalendarRange,
   getVariantDay,
   getVariantDays,
   datesBetween,
+  ISRAEL_CALENDAR_LOCATION,
   type CalendarLocation,
 } from '../db/queries/calendar';
 import { db } from '../db/client';
 import { verifyToken } from '../middleware/auth';
-import { todayInIsrael, localTodayISO, addDaysISO, isValidIanaTimeZone } from '@gina-haya/shared';
+import { localTodayISO, addDaysISO, isValidIanaTimeZone } from '@gina-haya/shared';
 
 export const calendarRouter: IRouter = Router();
 
@@ -21,10 +20,15 @@ export const calendarRouter: IRouter = Router();
 // With either, days come from biodynamic_calendar_variants (variant resolved
 // per date, so a DST change inside a range is handled), "today" is the local
 // date in that zone, and each day also carries transitions, utcOffsetHours,
-// hemisphere and timezone. With neither, behaviour is exactly as before:
-// biodynamic_calendar, Israel time — old app versions depend on it.
+// hemisphere and timezone. With neither (old app versions), the days come from
+// the same table for Israel / north (Asia/Jerusalem dates, verified identical
+// to the legacy biodynamic_calendar) in the legacy response shape — without
+// the variant-only fields. The API no longer reads biodynamic_calendar.
 
 const MAX_VARIANT_RANGE_DAYS = 400;
+/** Parameterless /range never had a limit; keep a generous one. */
+const MAX_LEGACY_RANGE_DAYS = 1000;
+const LEGACY = { legacyShape: true } as const;
 const ISO_DATE = /^\d{4}-\d{2}-\d{2}$/;
 
 /** verifyToken only when ?gardenId= is present (the endpoints stay public otherwise). */
@@ -89,7 +93,7 @@ calendarRouter.get('/today', authIfGarden, async (req, res) => {
       return res.json(day);
     }
 
-    const day = await getCalendarDay(todayInIsrael());
+    const day = await getVariantDay(localTodayISO(ISRAEL_CALENDAR_LOCATION.timezone), ISRAEL_CALENDAR_LOCATION, LEGACY);
     if (!day) return res.status(404).json({ error: 'No calendar data for today' });
     res.json(day);
   } catch (err: any) {
@@ -108,33 +112,35 @@ calendarRouter.get('/week', authIfGarden, async (req, res) => {
       return res.json(await getVariantDays(datesBetween(from, addDaysISO(from, 6)), where.loc));
     }
 
-    const from = todayInIsrael();
-    const toDate = new Date(from + 'T00:00:00');
-    toDate.setDate(toDate.getDate() + 6);
-    const to = toDate.toISOString().slice(0, 10);
-    const days = await getCalendarRange(from, to);
-    res.json(days);
+    const from = localTodayISO(ISRAEL_CALENDAR_LOCATION.timezone);
+    res.json(await getVariantDays(datesBetween(from, addDaysISO(from, 6)), ISRAEL_CALENDAR_LOCATION, LEGACY));
   } catch (err: any) {
     console.error('[GET /api/calendar/week]', err);
     res.status(500).json({ error: err.message });
   }
 });
 
-// GET /api/calendar/status — date range and row count of current calendar data
+// GET /api/calendar/status — date range and day count of current calendar data
+// (one variant — every variant covers the same dates)
 calendarRouter.get('/status', async (_req, res) => {
   try {
-    const { data, error } = await db
-      .from('biodynamic_calendar')
-      .select('date')
-      .order('date', { ascending: true });
-
+    const oneVariant = (head = false) => db
+      .from('biodynamic_calendar_variants')
+      .select('date', head ? { count: 'exact', head: true } : undefined)
+      .eq('utc_offset_hours', 2)
+      .eq('hemisphere', 'north');
+    const [countRes, minRes, maxRes] = await Promise.all([
+      oneVariant(true),
+      oneVariant().order('date', { ascending: true }).limit(1),
+      oneVariant().order('date', { ascending: false }).limit(1),
+    ]);
+    const error = countRes.error ?? minRes.error ?? maxRes.error;
     if (error) throw error;
 
-    const dates = (data ?? []).map((r: { date: string }) => r.date);
     res.json({
-      count: dates.length,
-      minDate: dates[0] ?? null,
-      maxDate: dates[dates.length - 1] ?? null,
+      count: countRes.count ?? 0,
+      minDate: minRes.data?.[0]?.date ?? null,
+      maxDate: maxRes.data?.[0]?.date ?? null,
     });
   } catch (err: any) {
     console.error('[GET /api/calendar/status]', err);
@@ -177,8 +183,14 @@ calendarRouter.get('/range', authIfGarden, async (req, res) => {
       return res.json(await getVariantDays(dates, where.loc));
     }
 
-    const days = await getCalendarRange(from, to);
-    res.json(days);
+    if (!ISO_DATE.test(from) || !ISO_DATE.test(to)) {
+      return res.status(400).json({ error: 'from and to must be YYYY-MM-DD' });
+    }
+    const dates = datesBetween(from, to);
+    if (dates.length > MAX_LEGACY_RANGE_DAYS) {
+      return res.status(400).json({ error: `range must be at most ${MAX_LEGACY_RANGE_DAYS} days` });
+    }
+    res.json(await getVariantDays(dates, ISRAEL_CALENDAR_LOCATION, LEGACY));
   } catch (err: any) {
     console.error('[GET /api/calendar/range]', err);
     res.status(500).json({ error: err.message });
@@ -200,7 +212,7 @@ calendarRouter.get('/:date', authIfGarden, async (req, res) => {
       return res.json(day);
     }
 
-    const day = await getCalendarDay(date);
+    const day = await getVariantDay(date, ISRAEL_CALENDAR_LOCATION, LEGACY);
     if (!day) return res.status(404).json({ error: 'No calendar data for this date' });
     res.json(day);
   } catch (err: any) {

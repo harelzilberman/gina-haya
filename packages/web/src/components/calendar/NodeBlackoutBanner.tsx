@@ -1,6 +1,7 @@
 import { useTranslation } from 'react-i18next';
 import type { BiodynamicDay } from '@gina-haya/shared';
 import { EN_HEADING } from '../../styles/fonts';
+import { useCalendarZone } from '../../hooks/useCalendarZone';
 
 interface Props {
   day: BiodynamicDay;
@@ -18,6 +19,7 @@ const BANNER_CSS = `
 
 export function NodeBlackoutBanner({ day }: Props) {
   const { t, i18n } = useTranslation('calendar');
+  const zone = useCalendarZone();
 
   if (!day.nodeActive) return null;
 
@@ -27,8 +29,9 @@ export function NodeBlackoutBanner({ day }: Props) {
       endTime = new Date(day.nodeBlackoutEnd).toLocaleTimeString(i18n.language === 'he' ? 'he-IL' : 'en-US', {
         hour:     '2-digit',
         minute:   '2-digit',
-        // Variant days carry the garden's zone; legacy rows are Israel time.
-        timeZone: day.timezone ?? 'Asia/Jerusalem',
+        // The day's own zone (variant days), else the active garden's zone.
+        // nodeBlackoutEnd = exact node moment + NODE_BLACKOUT_HOURS / 2.
+        timeZone: day.timezone ?? zone.timezone,
       });
     } catch {
       endTime = null;
