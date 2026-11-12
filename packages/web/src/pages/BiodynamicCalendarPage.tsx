@@ -49,6 +49,97 @@ function useWindowWidth() {
   return width;
 }
 
+/** Gap between the navbar / viewport bottom and the sticky panel. */
+const STICKY_GAP = 24;
+
+function navbarHeightPx(): number {
+  const v = parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--navbar-height'));
+  return Number.isFinite(v) ? v : 64;
+}
+
+/**
+ * Desktop day panel: a "sticky sidebar" with no scroll of its own — the page
+ * is the only scroll container. Shorter than the viewport → sticks below the
+ * navbar. Taller → scrolls with the page and sticks by its BOTTOM once its end
+ * is reached (top = min(navbar + gap, innerHeight − panelHeight − gap), may be
+ * negative). Recomputed on resize, on day change and when the content grows
+ * or shrinks. After a day change, if the panel's top is hidden, the page
+ * scrolls just enough to show the panel heading.
+ */
+function StickyDayAside({
+  selectedDate, headingId, children,
+}: {
+  selectedDate: string;
+  headingId: string;
+  children: React.ReactNode;
+}) {
+  const ref = useRef<HTMLElement>(null);
+  const [top, setTop] = useState<number | null>(null);
+
+  const recompute = useCallback(() => {
+    const el = ref.current;
+    if (!el) return;
+    const next = Math.min(
+      navbarHeightPx() + STICKY_GAP,
+      window.innerHeight - el.offsetHeight - STICKY_GAP,
+    );
+    setTop(prev => (prev === next ? prev : next));
+  }, []);
+
+  useEffect(() => {
+    const el = ref.current;
+    if (!el) return;
+    recompute();
+    window.addEventListener('resize', recompute);
+    const ro = typeof ResizeObserver !== 'undefined' ? new ResizeObserver(recompute) : null;
+    ro?.observe(el);
+    return () => {
+      window.removeEventListener('resize', recompute);
+      ro?.disconnect();
+    };
+  }, [recompute]);
+
+  // Day changed: recompute, then make sure the panel's top is visible.
+  const firstRender = useRef(true);
+  useEffect(() => {
+    recompute();
+    if (firstRender.current) { firstRender.current = false; return; }
+    const raf = requestAnimationFrame(() => {
+      const el = ref.current;
+      const container = el?.parentElement;
+      if (!el || !container) return;
+      const navbar = navbarHeightPx();
+      if (el.getBoundingClientRect().top >= navbar) return;
+      // Sticky can only push the panel down from its natural place (the top
+      // of the grid row), so the heading shows at navbar + gap once the
+      // natural top gets there.
+      const heading = document.getElementById(headingId);
+      const headingOffset = heading
+        ? heading.getBoundingClientRect().top - el.getBoundingClientRect().top
+        : 0;
+      const naturalTop = container.getBoundingClientRect().top;
+      const delta = naturalTop + headingOffset - (navbar + STICKY_GAP);
+      if (delta < 0) window.scrollBy({ top: delta, behavior: 'smooth' });
+    });
+    return () => cancelAnimationFrame(raf);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [selectedDate]);
+
+  return (
+    <aside
+      ref={ref}
+      aria-labelledby={headingId}
+      style={{
+        position: 'sticky',
+        // Before the first measurement: just below the navbar (CSS variable).
+        top: top != null ? `${top}px` : `calc(var(--navbar-height, 64px) + ${STICKY_GAP}px)`,
+      }}
+    >
+      {children}
+    </aside>
+  );
+}
+
 /**
  * First day of the week, 0 = Sunday … 6 = Saturday. Hebrew (Israel) weeks
  * start on Sunday; otherwise the browser locale's week info decides
@@ -1184,17 +1275,9 @@ export function BiodynamicCalendarPage() {
 
         {/* ── Selected day (end side, sticky) ── */}
         {isDesktop && (
-          <aside
-            aria-labelledby="day-panel-heading"
-            style={{
-              // --navbar-height is measured by the Navbar (ResizeObserver).
-              position: 'sticky', top: 'calc(var(--navbar-height, 64px) + 24px)',
-              maxHeight: 'calc(100vh - var(--navbar-height, 64px) - 40px)', overflowY: 'auto',
-              scrollbarWidth: 'thin', paddingInlineEnd: '2px',
-            }}
-          >
+          <StickyDayAside selectedDate={selectedDate} headingId="day-panel-heading">
             <DayPanel {...panelProps} headingId="day-panel-heading" />
-          </aside>
+          </StickyDayAside>
         )}
       </div>
 
