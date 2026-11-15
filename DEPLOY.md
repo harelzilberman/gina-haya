@@ -9,7 +9,7 @@
 - [ ] Calendar data seeded (`pnpm db:seed-calendar-placeholder`)
 - [ ] Plants data seeded (`pnpm db:seed-plants`)
 - [ ] Google OAuth configured with production domain (`https://gina-haya.com`)
-- [ ] Stripe webhook configured with production URL (`https://api.gina-haya.com/api/billing/webhook`)
+- [ ] Lemon Squeezy webhook configured with production URL (`https://api.gina-haya.com/api/billing/lemon/webhook`)
 - [ ] Resend domain verified (`gina-haya.com`)
 - [ ] Custom domain configured in Cloudflare Pages
 
@@ -39,11 +39,14 @@
 | `SUPABASE_SERVICE_ROLE_KEY` | Supabase service role key (server-side only) |
 | `JWT_SECRET` | Secret for signing JWTs |
 | `RESEND_API_KEY` | Resend API key for transactional email |
-| `STRIPE_SECRET_KEY` | Stripe secret key |
-| `STRIPE_WEBHOOK_SECRET` | Stripe webhook signing secret |
-| `STRIPE_PRICE_GROWER` | Stripe price ID for Grower plan |
-| `STRIPE_PRICE_GARDENER_PRO` | Stripe price ID for Gardener Pro plan |
-| `STRIPE_PRICE_PROFESSIONAL` | Stripe price ID for Professional plan |
+| `LEMONSQUEEZY_API_KEY` | Lemon Squeezy API key (checkouts, subscription changes) |
+| `LEMONSQUEEZY_STORE_ID` | Lemon Squeezy store ID |
+| `LEMONSQUEEZY_WEBHOOK_SECRET` | Signing secret of the Lemon Squeezy webhook (verifies `X-Signature`) |
+| `LEMONSQUEEZY_VARIANT_GARDENER_PRO_MONTHLY` / `_YEARLY` | Variant IDs for the Grower plan (`gardener_pro`) |
+| `LEMONSQUEEZY_VARIANT_ADVANCED_MONTHLY` / `_YEARLY` | Variant IDs for the Gardener plan (`advanced`) |
+| `LEMONSQUEEZY_VARIANT_PROFESSIONAL_MONTHLY` / `_YEARLY` | Variant IDs for the Professional plan |
+| `LEMONSQUEEZY_VARIANT_ANALYSIS_PACK_3` / `_6` / `_12` | Variant IDs for the AI-analysis credit packs (shop) |
+| `LEMONSQUEEZY_VARIANT_TRACKER_PACK_3` / `_6` / `_12` | Variant IDs for the tracker credit packs (shop) |
 | `APP_URL` | `https://gina-haya.com` |
 
 ---
@@ -106,12 +109,24 @@ Setup:
 7. DNS: `gina-haya.com` DNS is hosted on Cloudflare (nameservers were changed at the registrar, JetServer, to Cloudflare's).
 8. `gina-haya.com` redirects to `www.gina-haya.com` via a Cloudflare redirect rule (Rules → Redirect Rules).
 
-### 4. Stripe — webhooks
+### 4. Lemon Squeezy — payments and webhook
 
-1. In the Stripe dashboard → Developers → Webhooks → Add endpoint:
-   - URL: `https://api.gina-haya.com/api/billing/webhook`
-   - Events: `checkout.session.completed`, `customer.subscription.updated`, `customer.subscription.deleted`, `invoice.payment_failed`
-2. Copy the signing secret into Railway as `STRIPE_WEBHOOK_SECRET`.
+Plans (`POST /api/billing/checkout`) and shop credit packs (`POST /api/shop/checkout`)
+are sold through Lemon Squeezy checkouts. Without `LEMONSQUEEZY_API_KEY` and
+`LEMONSQUEEZY_STORE_ID` both endpoints answer `503 payments not configured`; a
+missing variant variable makes that one plan or pack unavailable.
+
+1. In Lemon Squeezy → Settings → API: create an API key → Railway `LEMONSQUEEZY_API_KEY`;
+   copy the store ID → `LEMONSQUEEZY_STORE_ID`.
+2. Copy each product's variant ID into the matching `LEMONSQUEEZY_VARIANT_*` variable (table above).
+3. Settings → Webhooks → add endpoint:
+   - URL: `https://api.gina-haya.com/api/billing/lemon/webhook`
+   - Signing secret: any strong value; set the same value in Railway as `LEMONSQUEEZY_WEBHOOK_SECRET`.
+   - Events handled by the API: `order_created` (credit packs), `subscription_created`,
+     `subscription_updated`, `subscription_resumed`, `subscription_cancelled`,
+     `subscription_expired`, `subscription_payment_success`.
+4. After a successful checkout Lemon Squeezy returns the user to `/billing?status=success`
+   (plans) or `/shop?status=success` (credit packs).
 
 ### 5. Resend — transactional email
 
@@ -140,10 +155,17 @@ Run these manually after every production deploy:
 - [ ] Sign in with Google → redirects to `/calendar`
 - [ ] `/calendar` → today's biodynamic score visible
 - [ ] `/moosh` → chat sends a message, Moosh responds
-- [ ] Upgrade flow → Stripe checkout opens
+- [ ] Upgrade flow → Lemon Squeezy checkout opens; after paying, `/billing?status=success` shows the new plan
+- [ ] Shop → buy a credit pack → Lemon Squeezy checkout opens; `/shop?status=success` shows the credits
+- [ ] Railway logs show `[lemon/webhook] event=…` for those purchases (no `Invalid signature`)
 - [ ] Daily tip email → verify test send in Resend dashboard
 
 ---
+
+## Possible later cleanup
+
+- `users.stripe_customer_id` (migration 035) is no longer read or written by any code (Stripe was
+  replaced by Lemon Squeezy). It can be dropped in a future migration.
 
 ## Rollback
 

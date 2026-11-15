@@ -5,4 +5,10 @@ watchPatterns = ["packages/api/**", "packages/shared/**", "packages/i18n/**", "p
 
 [deploy]
 startCommand = "node packages/api/dist/index.js"
+# GET /health answers from memory (no DB, no external calls).
+healthcheckPath = "/health"
+# Seconds Railway waits for /health to return 200 before failing the deploy.
+healthcheckTimeout = 120
+restartPolicyType = "ON_FAILURE"
+restartPolicyMaxRetries = 10
 watchPatterns = ["packages/api/**", "packages/shared/**", "packages/i18n/**", "packages/api/Dockerfile"]
