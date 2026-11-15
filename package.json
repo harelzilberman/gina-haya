@@ -13,7 +13,7 @@
     "sitemap": "node scripts/generate-sitemap.mjs",
     "db:migrate": "pnpm --filter @gina-haya/api db:migrate"
   },
-  "packageManager": "pnpm@8.15.9",
+  "packageManager": "pnpm@9.15.0",
   "engines": {
     "node": ">=22.0.0"
   },

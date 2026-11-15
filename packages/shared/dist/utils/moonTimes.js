@@ -135,27 +135,77 @@ function moonBrightLimbAngleAt(instant, latitude, longitude) {
     const a = (chi - q) % (2 * Math.PI);
     return a < 0 ? a + 2 * Math.PI : a;
 }
+/** Sun altitude below which it counts as dark: civil twilight (−6°). */
+const CIVIL_DARK = -6 * RAD;
+const NIGHT_STEP_MS = 5 * MINUTE_MS;
+/**
+ * The moment the moon is highest while the sky is dark (sun below −6°) during
+ * the night after `date` — from that date's sunset to the next sunrise, i.e.
+ * the dark part of local noon `date` → local noon `date + 1`. Sampled every
+ * 5 minutes, refined by ternary search when the peak is inside the dark span.
+ * Null when the moon never clears the horizon in darkness (around new moon)
+ * or there is no darkness at all (polar summer).
+ */
+function bestDarkMoment(date, zone, latitude, longitude) {
+    const start = Date.parse((0, date_1.localDateToUTCMidnight)(date, zone)) + 12 * HOUR_MS;
+    const steps = Math.round(24 * HOUR_MS / NIGHT_STEP_MS);
+    const isDark = (ms) => suncalc_1.default.getPosition(new Date(ms), latitude, longitude).altitude < CIVIL_DARK;
+    const alt = (ms) => moonAltitude(ms, latitude, longitude);
+    let bestMs = null;
+    let bestAlt = -Infinity;
+    for (let i = 0; i <= steps; i++) {
+        const t = start + i * NIGHT_STEP_MS;
+        if (!isDark(t))
+            continue;
+        const a = alt(t);
+        if (a > bestAlt) {
+            bestAlt = a;
+            bestMs = t;
+        }
+    }
+    if (bestMs === null || bestAlt <= HORIZON)
+        return null;
+    // Refine only when both neighbours are dark too (peak not at dusk/dawn).
+    const lo = bestMs - NIGHT_STEP_MS;
+    const hi = bestMs + NIGHT_STEP_MS;
+    if (isDark(lo) && isDark(hi)) {
+        let a = lo;
+        let b = hi;
+        for (let k = 0; k < 25; k++) {
+            const m1 = a + (b - a) / 3;
+            const m2 = b - (b - a) / 3;
+            if (alt(m1) < alt(m2))
+                a = m1;
+            else
+                b = m2;
+        }
+        const refined = (a + b) / 2;
+        if (alt(refined) > bestAlt)
+            bestMs = refined;
+    }
+    return bestMs;
+}
 /**
  * How the moon is oriented in the sky for the LOCAL day `date` ("YYYY-MM-DD")
  * at a location — the angle at which to draw the lit side.
  *
  * The instant used:
- *   • today (in `timeZone`): now, if the moon is above the horizon; otherwise
- *     its next upper transit (highest altitude);
- *   • any other date: that night's upper transit — the first one after local
- *     noon of `date`.
+ *   • today (in `timeZone`): now, if the moon is above the horizon;
+ *   • otherwise (and for any other date): the moment of maximum moon altitude
+ *     while the sun is below −6° during that date's night (sunset → next
+ *     sunrise); if the moon is never up in darkness that night (around new
+ *     moon), the moon's upper transit after local noon.
  */
 function moonDisplayAngle(date, latitude, longitude, timeZone, now = new Date()) {
     const zone = (0, calendarVariant_1.isValidIanaTimeZone)(timeZone) ? timeZone : calendarVariant_1.DEFAULT_CALENDAR_TIMEZONE;
     let atMs;
-    if (date === (0, calendarVariant_1.localTodayISO)(zone, now)) {
-        atMs = moonAltitude(now.getTime(), latitude, longitude) > HORIZON
-            ? now.getTime()
-            : nextUpperTransit(now.getTime(), latitude, longitude);
+    if (date === (0, calendarVariant_1.localTodayISO)(zone, now) && moonAltitude(now.getTime(), latitude, longitude) > HORIZON) {
+        atMs = now.getTime();
     }
     else {
         const localNoon = Date.parse((0, date_1.localDateToUTCMidnight)(date, zone)) + 12 * HOUR_MS;
-        atMs = nextUpperTransit(localNoon, latitude, longitude);
+        atMs = bestDarkMoment(date, zone, latitude, longitude)
+            ?? nextUpperTransit(localNoon, latitude, longitude);
     }
     const at = new Date(atMs);
     return {

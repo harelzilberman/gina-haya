@@ -45,10 +45,11 @@ export declare function moonBrightLimbAngleAt(instant: Date, latitude: number, l
  * at a location — the angle at which to draw the lit side.
  *
  * The instant used:
- *   • today (in `timeZone`): now, if the moon is above the horizon; otherwise
- *     its next upper transit (highest altitude);
- *   • any other date: that night's upper transit — the first one after local
- *     noon of `date`.
+ *   • today (in `timeZone`): now, if the moon is above the horizon;
+ *   • otherwise (and for any other date): the moment of maximum moon altitude
+ *     while the sun is below −6° during that date's night (sunset → next
+ *     sunrise); if the moon is never up in darkness that night (around new
+ *     moon), the moon's upper transit after local noon.
  */
 export declare function moonDisplayAngle(date: string, latitude: number, longitude: number, timeZone: string | null | undefined, now?: Date): MoonDisplayAngle;
 //# sourceMappingURL=moonTimes.d.ts.map

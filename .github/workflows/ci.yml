@@ -13,13 +13,8 @@ jobs:
     steps:
       - uses: actions/checkout@v7
 
+      # pnpm version comes from the root package.json "packageManager".
       - uses: pnpm/action-setup@v6
-        with:
-          version: 9
-          # v4+ refuses a "version" that differs from the root package.json
-          # "packageManager" (pnpm@8.15.9, while the lockfile is v9). Read the
-          # manifest from a package without that field so CI keeps pnpm 9.
-          package_json_file: packages/shared/package.json
 
       - uses: actions/setup-node@v7
         with:
@@ -44,13 +39,8 @@ jobs:
     steps:
       - uses: actions/checkout@v7
 
+      # pnpm version comes from the root package.json "packageManager".
       - uses: pnpm/action-setup@v6
-        with:
-          version: 9
-          # v4+ refuses a "version" that differs from the root package.json
-          # "packageManager" (pnpm@8.15.9, while the lockfile is v9). Read the
-          # manifest from a package without that field so CI keeps pnpm 9.
-          package_json_file: packages/shared/package.json
 
       - uses: actions/setup-node@v7
         with:
@@ -72,13 +62,8 @@ jobs:
     steps:
       - uses: actions/checkout@v7
 
+      # pnpm version comes from the root package.json "packageManager".
       - uses: pnpm/action-setup@v6
-        with:
-          version: 9
-          # v4+ refuses a "version" that differs from the root package.json
-          # "packageManager" (pnpm@8.15.9, while the lockfile is v9). Read the
-          # manifest from a package without that field so CI keeps pnpm 9.
-          package_json_file: packages/shared/package.json
 
       - uses: actions/setup-node@v7
         with:

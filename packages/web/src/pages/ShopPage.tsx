@@ -446,7 +446,7 @@ export function ShopPage() {
   const [searchParams] = useSearchParams();
   const status = searchParams.get('status');
 
-  // ── Cart — persisted to localStorage so it survives the redirect to Grow ──
+  // ── Cart — persisted to localStorage so it survives the Lemon Squeezy checkout redirect ──
   const [cart, setCart] = useState<CartItem[]>(() => {
     try {
       const saved = localStorage.getItem(CART_STORAGE_KEY);
@@ -463,7 +463,7 @@ export function ShopPage() {
   const [drawerOpen, setDrawerOpen]     = useState(false);
   const [checkoutOpen, setCheckoutOpen] = useState(false);
 
-  // ── Post-payment banner (shown when user returns from Grow via successUrl) ──
+  // ── Post-payment banner (shown when the user returns from Lemon Squeezy to /shop?status=success) ──
   const [paymentBanner, setPaymentBanner] = useState<'pending' | 'done' | null>(
     status === 'success' ? 'pending' : null
   );
@@ -515,7 +515,7 @@ export function ShopPage() {
 
   function handleCheckoutSuccess(_newCredits: Credits) {
     // Called only by the mock /purchase path (dev mode).
-    // In the Grow path the user is redirected away; success is handled via ?status=success above.
+    // In the Lemon Squeezy path the user is redirected away; success is handled via ?status=success above.
     refreshCredits();
     setCart([]);
     setDrawerOpen(false);

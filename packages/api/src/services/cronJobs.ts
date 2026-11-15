@@ -1,8 +1,7 @@
 import cron from 'node-cron';
 import { db } from '../db/client';
 import webpush from 'web-push';
-import { sendRenewalReminder, sendCronJobAlert } from './email';
-import { getLimits } from '@gina-haya/shared';
+import { sendCronJobAlert } from './email';
 import { reconcilePlaySubs } from './reconcilePlaySubs';
 import { getHomeZonesForUsers, localClock, ISRAEL_ZONE, type Zone } from '../utils/zone';
 
@@ -11,7 +10,6 @@ export function startCronJobs() {
   // THEIR home-zone local time (default garden → first garden → Israel)
   // reaches the send time:
   //   daily summary push      07:00 local  (de-duplicated by users.last_daily_summary_date)
-  //   annual renewal reminder 09:00 local
   // Operational jobs stay on Israel wall-clock time (node-cron handles DST):
   //   Play reconcile          03:30 Asia/Jerusalem
   //   reconcile watchdog      09:00 Asia/Jerusalem
@@ -25,11 +23,6 @@ export function startCronJobs() {
       await sendDailySummary();
     } catch (e) {
       console.error('[cron] Daily summary failed:', e);
-    }
-    try {
-      await sendAnnualRenewalReminders();
-    } catch (e) {
-      console.error('[cron] Annual renewal reminders failed:', e);
     }
   }, { timezone: 'UTC' });
 
@@ -56,15 +49,14 @@ export function startCronJobs() {
   const reconcileMin  = RECONCILE_SCHEDULE.split(' ')[0];
   const reconcileHour = RECONCILE_SCHEDULE.split(' ')[1];
   console.log(
-    `[cron] Jobs scheduled: daily summary ${DAILY_SUMMARY_AT.hour}:00 and renewal reminders ` +
-    `${RENEWAL_AT.hour}:00 in each user's home zone (checked every 15 min UTC); ` +
+    `[cron] Jobs scheduled: daily summary ${DAILY_SUMMARY_AT.hour}:00 ` +
+    `in each user's home zone (checked every 15 min UTC); ` +
     `Play reconcile at ${reconcileHour}:${reconcileMin} and watchdog at ${WATCHDOG_SCHEDULE.split(' ')[1]}:00 ${OPS_TZ}`
   );
 }
 
 /** Local send times; the 15-minute window matches the quarter-hourly tick. */
 const DAILY_SUMMARY_AT = { hour: 7, minute: 0 };
-const RENEWAL_AT       = { hour: 9, minute: 0 };
 const SEND_WINDOW_MIN  = 15;
 
 function inSendWindow(zone: Zone, at: { hour: number; minute: number }, now: Date): { inWindow: boolean; localDate: string } {
@@ -373,133 +365,6 @@ async function checkReconcileWatchdog(): Promise<void> {
     console.error('[cron/renewal] Watchdog check failed:', watchdogErr?.message);
   }
 
-}
-
-// In-process guard against a second reminder for the same user and local
-// date (the 15-minute window already allows only one tick per day).
-const renewalSentFor = new Set<string>();
-
-/**
- * Annual renewal reminders (email + push) for subscriptions expiring within 7
- * days, sent at 09:00 in each user's home zone. Runs every 15 minutes.
- * Exported so it can be invoked directly for manual testing; pass
- * { ignoreLocalTime: true } to send to everyone due regardless of the hour.
- */
-export async function sendAnnualRenewalReminders(
-  opts: { now?: Date; ignoreLocalTime?: boolean } = {},
-): Promise<void> {
-  const now = opts.now ?? new Date();
-  const in7Days = new Date(now.getTime() + 7 * 24 * 60 * 60 * 1000);
-
-  // Find active annual Grow subscriptions expiring within the next 7 days.
-  // base_plan_id = 'annual' is the queryable label set by the webhook handler.
-  const { data: expiring, error } = await db
-    .from('user_subscriptions')
-    .select('user_id, product_id, expires_at')
-    .eq('platform', 'grow')
-    .eq('base_plan_id', 'annual')
-    .eq('status', 'active')
-    .gte('expires_at', now.toISOString())
-    .lte('expires_at', in7Days.toISOString());
-
-  if (error) {
-    console.error('[cron/renewal] Failed to query expiring subscriptions:', error);
-    return;
-  }
-
-  if (!expiring || expiring.length === 0) return;
-
-  // Only users whose home-zone local time is 09:00–09:14 now (unless forced).
-  const zones = await getHomeZonesForUsers(expiring.map((r: any) => r.user_id));
-  const dueRows: Array<{ row: any; zone: Zone; localDate: string }> = [];
-  for (const row of expiring) {
-    const zone = zones.get(row.user_id) ?? ISRAEL_ZONE;
-    const { inWindow, localDate } = inSendWindow(zone, RENEWAL_AT, now);
-    if (!opts.ignoreLocalTime && !inWindow) continue;
-    const key = `${row.user_id}|${localDate}`;
-    if (renewalSentFor.has(key)) continue;
-    dueRows.push({ row, zone, localDate });
-  }
-  if (dueRows.length === 0) return;
-
-  console.log(`[cron/renewal] Found ${dueRows.length} subscriptions to remind (09:00 local)`);
-
-  let emailSent = 0;
-  let emailFailed = 0;
-  let pushSent = 0;
-
-  for (const { row, zone, localDate } of dueRows) {
-    renewalSentFor.add(`${row.user_id}|${localDate}`);
-    // Fetch user details for the email and language preference
-    const { data: user } = await db
-      .from('users')
-      .select('email, display_name, language_preference')
-      .eq('id', row.user_id)
-      .maybeSingle();
-
-    if (!user?.email) {
-      console.warn(`[cron/renewal] No email found for user_id=${row.user_id} — skipping`);
-      continue;
-    }
-
-    const tierNameHe = getLimits(row.product_id)?.displayNameHe ?? row.product_id;
-    const expiresAt  = new Date(row.expires_at);
-    const userLang   = (user.language_preference as 'he' | 'en') ?? 'he';
-    const renewalIsHe = userLang !== 'en';
-
-    // Primary channel: email (doesn't require push permission to be active)
-    try {
-      await sendRenewalReminder({
-        email:       user.email,
-        displayName: user.display_name ?? '',
-        tierNameHe,
-        expiresAt,
-        language:    userLang,
-        timeZone:    zone.timezone,
-      });
-      emailSent++;
-    } catch (err) {
-      console.error(`[cron/renewal] Email failed for user_id=${row.user_id}:`, err);
-      emailFailed++;
-    }
-
-    // Secondary channel: push notification (best-effort, stale subscriptions auto-cleaned)
-    try {
-      const { data: pushSub } = await db
-        .from('push_subscriptions')
-        .select('subscription')
-        .eq('user_id', row.user_id)
-        .maybeSingle();
-
-      if (pushSub?.subscription) {
-        const expiryStr = expiresAt.toLocaleDateString(renewalIsHe ? 'he-IL' : 'en-US', {
-          month: 'long', day: 'numeric', timeZone: zone.timezone,
-        });
-        await webpush.sendNotification(
-          pushSub.subscription,
-          JSON.stringify({
-            title: renewalIsHe
-              ? '🌿 המנוי השנתי שלך מסתיים בקרוב'
-              : '🌿 Your annual subscription is ending soon',
-            body: renewalIsHe
-              ? `תוכנית ${tierNameHe} מסתיימת ב-${expiryStr} — לחץ לחידוש`
-              : `Your ${tierNameHe} plan expires on ${expiryStr} — tap to renew`,
-            url:   '/pricing',
-          })
-        );
-        pushSent++;
-      }
-    } catch (e: any) {
-      // Remove stale push subscription — don't let it block the loop
-      if (e.statusCode === 404 || e.statusCode === 410) {
-        await db.from('push_subscriptions').delete().eq('user_id', row.user_id);
-      }
-    }
-  }
-
-  console.log(
-    `[cron/renewal] Done. email sent=${emailSent} failed=${emailFailed} push sent=${pushSent}`
-  );
 }
 
 export async function sendSmartReminder(userId: string, message: string) {
