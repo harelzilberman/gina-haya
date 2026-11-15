@@ -64,16 +64,11 @@ export async function attachTier(req: Request, res: Response, next: NextFunction
       .eq('id', userId)
       .single();
 
-    // LAUNCH MODE — everyone gets Pro access
-    // Remove this when payments are ready.
-    const LAUNCH_FREE_MODE = process.env.LAUNCH_FREE_MODE === 'true';
-    let tier = LAUNCH_FREE_MODE
-      ? 'professional'
-      : (data?.subscription_tier ?? 'free');
+    let tier: string = data?.subscription_tier ?? 'free';
 
     // Safety net: check Google Play and Lemon Squeezy subscriptions for silent expiry.
-    // Only runs when LAUNCH_FREE_MODE is off and the tier is a paid tier.
-    if (!LAUNCH_FREE_MODE && !FREE_TIERS.has(tier)) {
+    // Only runs for paid tiers.
+    if (!FREE_TIERS.has(tier)) {
       try {
         // Fetch both platform subscriptions in parallel (one query each).
         const [{ data: playSub }, { data: lsSub }] = await Promise.all([

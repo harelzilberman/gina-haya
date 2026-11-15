@@ -2,7 +2,7 @@ import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { useChupChuStore } from '../../stores/chupChuStore';
 import { EN_HEADING } from '../../styles/fonts';
-import { getLimits, TIER_PRICING } from '@gina-haya/shared';
+import { getLimits, isPaidTier as isPaidTierFn, TIER_PRICING } from '@gina-haya/shared';
 
 const FREE_L   = getLimits('free');
 const GP_L     = getLimits('gardener_pro');
@@ -29,10 +29,10 @@ export function RateLimitBanner({ tier }: Props) {
   }));
 
   // Determine which variant to show:
-  // • Paid-tier daily cap (gardener_pro / advanced / professional) — fair-use ceiling, no upsell
+  // • Paid-tier daily cap (any tier but free, owner included) — fair-use ceiling, no upsell
   // • Free-tier daily cap — come back tomorrow, soft upsell
   // • Free-tier monthly cap — full upsell
-  const isPaidTier  = tier === 'gardener_pro' || tier === 'advanced' || tier === 'professional';
+  const isPaidTier  = tier != null && isPaidTierFn(tier);
   // For free tier distinguish daily vs monthly: if rateLimitType is available use it directly,
   // otherwise fall back to comparing used count vs monthly cap.
   const isDaily = isPaidTier

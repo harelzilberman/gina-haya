@@ -54,10 +54,6 @@ export function UpgradeModal({ isOpen, onClose, limitType, currentTier = 'free',
   const { t, i18n } = useTranslation('billing');
   const isHe = i18n.language === 'he';
 
-  if (import.meta.env.PROD && import.meta.env.VITE_LAUNCH_FREE_MODE === 'true') {
-    return null;
-  }
-
   if (!isOpen) return null;
 
   const isDaily = limitType === 'analysis' && scope === 'daily';

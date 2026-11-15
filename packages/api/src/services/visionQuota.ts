@@ -77,14 +77,6 @@ export async function checkVisionQuota(
     effectiveTier = userRow?.subscription_tier ?? 'free';
   }
 
-  // LAUNCH_FREE_MODE: grant top-tier limits during launch period.
-  // Uses 'professional' (the real top-tier key in TIER_LIMITS) — not 'pro'
-  // which has no entry and falls back to free.
-  const LAUNCH_FREE_MODE = process.env.LAUNCH_FREE_MODE === 'true';
-  if (LAUNCH_FREE_MODE) {
-    effectiveTier = 'professional';
-  }
-
   // ── 2. Get limits for this tier ───────────────────────────────────────────
   const tierLimits    = getLimits(effectiveTier);
   const monthlyLimit  = tierLimits.maxVisionLooksPerMonth;

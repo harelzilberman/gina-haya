@@ -134,17 +134,13 @@ usersRouter.get('/usage', async (req: any, res) => {
   try {
     const userId = req.user.id;
 
-    // Mirror tierMiddleware: when LAUNCH_FREE_MODE is on, treat everyone as
-    // professional so display matches enforcement.  When off, use stored tier.
-    const LAUNCH_FREE_MODE = process.env.LAUNCH_FREE_MODE === 'true';
     const { data: userRow } = await db
       .from('users')
       .select('subscription_tier')
       .eq('id', userId)
       .single();
 
-    const storedTier = userRow?.subscription_tier ?? 'free';
-    const tier   = LAUNCH_FREE_MODE ? 'professional' : storedTier;
+    const tier   = userRow?.subscription_tier ?? 'free';
     const limits = getLimits(tier);
 
     const startOfMonth = new Date();
@@ -244,8 +240,8 @@ usersRouter.get('/usage', async (req: any, res) => {
 
 // ── GET /api/users/me/usage ─────────────────────────────────────────────────
 // Returns the authenticated user's current-month usage against their effective
-// tier limits.  Uses attachTier so LAUNCH_FREE_MODE is honoured the same way
-// the quota gates honour it.  Count queries are extracted from / identical to
+// tier limits.  Uses attachTier so the tier is resolved the same way the quota
+// gates resolve it.  Count queries are extracted from / identical to
 // the gate implementations — no parallel logic that can drift.
 //
 // Response includes per-garden plant counts (for overflow detection) and a
@@ -257,7 +253,6 @@ usersRouter.get('/me/usage', attachTier, async (req: any, res) => {
     const userId: string = req.user.id;
     const tier: string   = req.tier ?? 'free';
     const limits         = req.limits ?? getLimits(tier);
-    const LAUNCH_FREE_MODE = process.env.LAUNCH_FREE_MODE === 'true';
 
     // Period boundary — first of current month at midnight, same as quota gates.
     const startOfMonth = new Date();
@@ -297,10 +292,8 @@ usersRouter.get('/me/usage', attachTier, async (req: any, res) => {
     const visionUsed = await countVisionUsesThisMonth(userId);
 
     // ── Per-garden plant counts (for overflow detection) ──────────────────
-    // plant_limit mirrors LAUNCH_FREE_MODE semantics used by the create/restore
-    // gates: in launch mode the limit is not enforced, so we report null here too
-    // rather than a misleading finite number.
-    const plantLimit: number | null = LAUNCH_FREE_MODE ? null : (limits.maxPlantsPerGarden ?? null);
+    // plant_limit is the same limit the create/restore gates enforce (null = unlimited).
+    const plantLimit: number | null = limits.maxPlantsPerGarden ?? null;
 
     const { data: gardensList, error: gardensErr } = await db
       .from('gardens')
@@ -343,7 +336,6 @@ usersRouter.get('/me/usage', attachTier, async (req: any, res) => {
     res.json({
       tier,
       tier_label_he:    limits.displayNameHe,
-      launch_free_mode: LAUNCH_FREE_MODE,
       has_plant_overflow,
       chupchu: {
         used:        chupChuUsed,

@@ -1467,17 +1467,12 @@ chupChuRouter.post('/chat', async (req: any, res) => {
       '(body:', language ?? '(absent)', 'profile:', userProfile?.language_preference ?? '(null)', ')');
 
     // ── 2. Check monthly limits ───────────────────────────────────────────
-    // Fix 4: use 'professional' (the real top-tier key in TIER_LIMITS) so
-    // LAUNCH_FREE_MODE users get genuine unlimited limits, not the free fallback
-    // that 'pro' (a non-existent key) would produce via getLimits().
-    const LAUNCH_FREE_MODE = process.env.LAUNCH_FREE_MODE === 'true';
-    const effectiveTier = LAUNCH_FREE_MODE ? 'professional' : tier;
 
     // Image turns consume a vision look, not a text-message credit.
     // Check the vision quota instead and skip the chat-message counter entirely
     // — this prevents double-charging an image turn against both quotas.
     // monthlyLimit and dailyLimit declared here so they are in scope for the final res.json().
-    const tierLimits = getLimits(effectiveTier);
+    const tierLimits = getLimits(tier);
     const monthlyLimit = tierLimits.maxChupChuPerMonth;
     const dailyLimit   = tierLimits.maxChupChuPerDay;
 
@@ -1530,7 +1525,7 @@ chupChuRouter.post('/chat', async (req: any, res) => {
           retryVisionUseId = await recordFreeRetryVisionUse(userId, 'chat_image', retryOriginal.vision_use_id);
         } else {
           // Second retry onwards — check quota (record after success)
-          const quotaCheck = await checkVisionQuota(userId, effectiveTier);
+          const quotaCheck = await checkVisionQuota(userId, tier);
           if (!quotaCheck.allowed) {
             if (!hasText) {
               return res.json({ ok: false, reason: 'vision_quota_exceeded', used: quotaCheck.used, limit: quotaCheck.limit, limitType: quotaCheck.limitType, tier: quotaCheck.effectiveTier, monthlyRemaining: quotaCheck.monthlyRemaining });
@@ -1540,7 +1535,7 @@ chupChuRouter.post('/chat', async (req: any, res) => {
         }
       } else {
         // Normal (non-retry) image turn — check quota (record after success)
-        const quotaCheck = await checkVisionQuota(userId, effectiveTier);
+        const quotaCheck = await checkVisionQuota(userId, tier);
         if (!quotaCheck.allowed) {
           if (!hasText) {
             return res.json({ ok: false, reason: 'vision_quota_exceeded', used: quotaCheck.used, limit: quotaCheck.limit, limitType: quotaCheck.limitType, tier: quotaCheck.effectiveTier, monthlyRemaining: quotaCheck.monthlyRemaining });
@@ -1550,8 +1545,8 @@ chupChuRouter.post('/chat', async (req: any, res) => {
       }
     } else {
       // Text-only turn: check daily quota first, then monthly.
-      // Both checks are skipped entirely when LAUNCH_FREE_MODE is active (alpha testing bypass).
-      if (!LAUNCH_FREE_MODE && (monthlyLimit !== null || dailyLimit !== null)) {
+      // Both checks are skipped for tiers with no text-message limit.
+      if (monthlyLimit !== null || dailyLimit !== null) {
         // Quota windows stay on Israel time on purpose: one server-wide
         // accounting period, not movable by changing the default garden.
         const startOfMonth = startOfCurrentMonthIsrael();
@@ -2029,8 +2024,7 @@ chupChuRouter.post('/chat', async (req: any, res) => {
     };
 
     // Per-tier plant context cap: how many plants Claude sees in each request.
-    // LAUNCH_FREE_MODE uses professional's cap (180) — same effectiveTier used elsewhere.
-    const contextCap = getLimits(effectiveTier).maxPlantsInChupchuContext;
+    const contextCap = getLimits(tier).maxPlantsInChupchuContext;
 
     let gardenSection = '';
     if (garden) {
@@ -2657,11 +2651,10 @@ chupChuRouter.post('/chat', async (req: any, res) => {
     // This prevents the 200 and 429 from reporting different numbers when the
     // conversation-message count (updatedMessages) drifts from chat_uses (e.g.
     // image turns add to the conversation but not to chat_uses).
-    // For image turns and LAUNCH_FREE_MODE / unlimited tiers (where the gate was
-    // skipped), fall back to counting from the conversation history.
+    // For image turns and unlimited tiers (where the gate was skipped), fall back to counting from the conversation history.
     let messagesUsedThisMonth: number;
     let messagesUsedToday: number;
-    if (!hasImage && !LAUNCH_FREE_MODE && (monthlyLimit !== null || dailyLimit !== null)) {
+    if (!hasImage && (monthlyLimit !== null || dailyLimit !== null)) {
       messagesUsedToday     = savedCountToday  + 1;
       messagesUsedThisMonth = savedCountMonth  + 1;
     } else {

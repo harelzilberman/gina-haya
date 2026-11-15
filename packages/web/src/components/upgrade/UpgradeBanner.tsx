@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
+import { canUpgrade } from '@gina-haya/shared';
 import { EN_HEADING } from '../../styles/fonts';
 
 const GOLD = '#00e5c3';
@@ -26,8 +27,8 @@ export function UpgradeBanner({ type, current, limit, tier }: Props) {
 
   // Show at 80% capacity
   if (dismissed || current < limit * 0.8) return null;
-  // Don't show for unlimited tiers
-  if (tier === 'professional') return null;
+  // Nothing to upgrade to (top tier or owner)
+  if (!canUpgrade(tier)) return null;
 
   const resource = RESOURCE_LABELS[type];
   const label = isHe ? resource.he : resource.en;

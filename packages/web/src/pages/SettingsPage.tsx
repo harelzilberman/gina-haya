@@ -10,6 +10,7 @@ import { usePlanLimit } from '../hooks/usePlanLimit';
 import { useCredits } from '../hooks/useCredits';
 import { MIN_PASSWORD_LENGTH, mapAuthError } from '../utils/authErrors';
 import { EN_HEADING } from '../styles/fonts';
+import { canUpgrade } from '@gina-haya/shared';
 import { useGardenLocation } from '../hooks/useGardenLocation';
 import { GardenLocationModal } from '../components/garden/GardenLocationModal';
 import { LocationNameEditor } from '../components/garden/LocationNameEditor';
@@ -505,7 +506,7 @@ export function SettingsPage() {
             )}
 
             <div style={{ display: 'flex', gap: '8px' }}>
-              {tier !== 'professional' && (
+              {canUpgrade(tier) && (
                 <button
                   onClick={() => navigate('/pricing')}
                   style={{

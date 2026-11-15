@@ -622,10 +622,6 @@ For a lightweight, context-free plant identification:
 | `gardener_pro`  | **unlimited** (null) | 10      | unlimited     | 10       |
 | `professional`  | **unlimited** (null) | unlimited | unlimited   | unlimited |
 
-### `LAUNCH_FREE_MODE`
-
-If env var `LAUNCH_FREE_MODE=true`, all users are treated as `pro` tier — no rate limiting.
-
 ### How Counting Works
 
 - The server counts **user messages** (role = "user") in the current month from the `chupchu_conversations.messages` JSONB array, filtered by `timestamp >= start_of_month`.

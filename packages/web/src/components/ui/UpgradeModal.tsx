@@ -52,10 +52,6 @@ export function UpgradeModal() {
   const navigate                 = useNavigate();
   const [loading, setLoading]    = useState<string | null>(null);
 
-  if (import.meta.env.PROD && import.meta.env.VITE_LAUNCH_FREE_MODE === 'true') {
-    return null;
-  }
-
   // Returns display name for a tier in the current UI language.
   const tierDisplayName = (tier: string) =>
     isHe ? getLimits(tier as SubscriptionTier).displayNameHe : (TIER_NAMES_EN[tier] ?? tier);

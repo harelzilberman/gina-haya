@@ -1,7 +1,9 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.TIER_ORDER = exports.TIER_PRICING = exports.TIER_LIMITS = void 0;
+exports.OWNER_TIER = exports.TIER_ORDER = exports.TIER_PRICING = exports.TIER_LIMITS = void 0;
 exports.getLimits = getLimits;
+exports.isPaidTier = isPaidTier;
+exports.canUpgrade = canUpgrade;
 exports.TIER_LIMITS = {
     free: {
         maxGardens: 1,
@@ -95,4 +97,25 @@ exports.TIER_PRICING = {
 // Canonical tier ordering from lowest to highest — used for rank comparisons and upgrade paths.
 // All code that needs to order tiers should import this rather than defining its own array.
 exports.TIER_ORDER = ['free', 'gardener_pro', 'advanced', 'professional'];
+/** Internal owner tier (unlimited, never sold). Not in TIER_ORDER. */
+exports.OWNER_TIER = 'owner';
+/**
+ * True for every known tier except free (owner counts as paid). Missing or
+ * unknown tiers count as free, matching getLimits()' free fallback.
+ */
+function isPaidTier(tier) {
+    const t = tier ?? 'free';
+    return t !== 'free' && Object.prototype.hasOwnProperty.call(exports.TIER_LIMITS, t);
+}
+/**
+ * True when a higher tier exists in TIER_ORDER. Owner never upgrades.
+ * Unknown tiers rank as free, matching getLimits()' free fallback.
+ */
+function canUpgrade(tier) {
+    const t = tier ?? 'free';
+    if (t === exports.OWNER_TIER)
+        return false;
+    const idx = exports.TIER_ORDER.indexOf(t);
+    return (idx === -1 ? 0 : idx) < exports.TIER_ORDER.length - 1;
+}
 //# sourceMappingURL=tiers.js.map

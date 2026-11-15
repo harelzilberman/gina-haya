@@ -2,7 +2,7 @@ import 'dotenv/config';
 import crypto from 'crypto';
 import { Router, type IRouter, type Request } from 'express';
 import { OAuth2Client } from 'google-auth-library';
-import { TIER_PRICING } from '@gina-haya/shared';
+import { TIER_PRICING, TIER_ORDER } from '@gina-haya/shared';
 import { db } from '../db/client';
 import { verifyToken } from '../middleware/auth';
 import { sendGrantFailureAlert } from '../services/email';
@@ -21,7 +21,8 @@ import { classifyPlanChange, isPendingDue, type BillingInterval } from '../servi
 
 export const billingRouter: IRouter = Router();
 
-const TIER_ORDER = ['free', 'gardener_pro', 'advanced', 'professional'];
+/** Sellable tiers (shared TIER_ORDER; excludes the internal owner tier). */
+const SELLABLE_TIERS: readonly string[] = TIER_ORDER;
 
 const oidcClient = new OAuth2Client();
 
@@ -292,7 +293,7 @@ billingRouter.post('/checkout', verifyToken, async (req: any, res) => {
       interval?: 'monthly' | 'yearly';
     };
 
-    if (!tier || !TIER_ORDER.includes(tier) || tier === 'free') {
+    if (!tier || !SELLABLE_TIERS.includes(tier) || tier === 'free') {
       res.status(400).json({ error: 'Invalid tier' });
       return;
     }
@@ -728,7 +729,7 @@ billingRouter.post('/lemon/webhook', async (req: Request, res) => {
     // Resolve tier from the subscription's CURRENT variant. custom_data.tier is
     // frozen at checkout, so after a plan change it would point at the old plan.
     let tier: string | null = VARIANT_MAP[variantId]?.tier ?? null;
-    if (!tier && customData.tier && TIER_ORDER.includes(customData.tier)) {
+    if (!tier && customData.tier && SELLABLE_TIERS.includes(customData.tier)) {
       tier = customData.tier;
     }
 

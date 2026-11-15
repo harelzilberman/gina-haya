@@ -382,12 +382,9 @@ gardenRouter.post('/', async (req: any, res) => {
       return res.status(400).json({ error: loc.code ?? 'invalid_coords', message: loc.error });
     }
 
-    // Enforce per-tier garden limit.
-    // Explicit LAUNCH_FREE_MODE guard: when true, alpha testers bypass the cap entirely
-    // (professional now has a finite limit of 10, so we can't rely on null-check alone).
-    const LAUNCH_FREE_MODE = process.env.LAUNCH_FREE_MODE === 'true';
+    // Enforce per-tier garden limit (null = unlimited).
     const maxGardens = req.limits?.maxGardens ?? null;
-    if (!LAUNCH_FREE_MODE && maxGardens !== null) {
+    if (maxGardens !== null) {
       const { count } = await db
         .from('gardens')
         .select('id', { count: 'exact', head: true })
@@ -677,11 +674,8 @@ gardenRouter.post('/:id/plants', async (req: any, res) => {
     // Enforce per-tier plant-per-garden limit.
     // Only count active (non-archived) plants — archived plants do not consume
     // a slot and must not block new additions.
-    // Explicit LAUNCH_FREE_MODE guard: professional now has finite limit (60),
-    // so we can't rely on null-check alone to bypass for alpha testers.
-    const LAUNCH_FREE_MODE_PLANT = process.env.LAUNCH_FREE_MODE === 'true';
     const maxPlants = req.limits?.maxPlantsPerGarden ?? null;
-    if (!LAUNCH_FREE_MODE_PLANT && maxPlants !== null) {
+    if (maxPlants !== null) {
       const { count, error: countError } = await db
         .from('garden_plants')
         .select('id', { count: 'exact', head: true })
@@ -975,9 +969,8 @@ gardenRouter.patch('/garden-plants/:id', async (req: any, res) => {
 
       // Enforce per-tier limit when restoring an archived plant (same logic as creation).
       if (isRestoring) {
-        const LAUNCH_FREE_MODE_RESTORE = process.env.LAUNCH_FREE_MODE === 'true';
         const maxPlants = req.limits?.maxPlantsPerGarden ?? null;
-        if (!LAUNCH_FREE_MODE_RESTORE && maxPlants !== null) {
+        if (maxPlants !== null) {
           const { count, error: countError } = await db
             .from('garden_plants')
             .select('id', { count: 'exact', head: true })
@@ -1160,10 +1153,9 @@ gardenRouter.post('/garden-plants/:id/move', attachTier, async (req: any, res) =
 
     // ── 6. Tier check on TARGET — mirror creation check (garden.ts:445–465) ─
     // Archived plants do not consume a slot; count only active ones.
-    // LAUNCH_FREE_MODE bypasses the limit — same guard as plant creation.
-    const LAUNCH_FREE_MODE = process.env.LAUNCH_FREE_MODE === 'true';
+    // Same guard as plant creation (null = unlimited).
     const maxPlants = req.limits?.maxPlantsPerGarden ?? null;
-    if (!LAUNCH_FREE_MODE && maxPlants !== null) {
+    if (maxPlants !== null) {
       const { count, error: countErr } = await db
         .from('garden_plants')
         .select('id', { count: 'exact', head: true })

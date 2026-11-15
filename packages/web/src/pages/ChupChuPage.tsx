@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
+import { getLimits } from '@gina-haya/shared';
 import { useDirection } from '../hooks/useDirection';
 import { ChupChuChat } from '../components/chupchu/ChupChuChat';
 import { useChupChu } from '../hooks/useChupChu';
@@ -73,7 +74,9 @@ export function ChupChuPage() {
   }, [loadHistory, user]);
 
   const tier        = profile?.subscription_tier ?? 'free';
-  const isUnlimited = tier === 'gardener_pro' || tier === 'professional';
+  // Unlimited only when the plan has no Chupchu cap at all (TIER_LIMITS null).
+  const planLimits  = getLimits(tier);
+  const isUnlimited = planLimits.maxChupChuPerMonth == null && planLimits.maxChupChuPerDay == null;
   const isFree      = tier === 'free';
 
   // isAtLimit: true when either daily OR monthly cap is reached.

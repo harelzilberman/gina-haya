@@ -114,3 +114,26 @@ export const TIER_PRICING: Record<string, TierPricing> = {
 // Canonical tier ordering from lowest to highest — used for rank comparisons and upgrade paths.
 // All code that needs to order tiers should import this rather than defining its own array.
 export const TIER_ORDER = ['free', 'gardener_pro', 'advanced', 'professional'] as const;
+
+/** Internal owner tier (unlimited, never sold). Not in TIER_ORDER. */
+export const OWNER_TIER = 'owner';
+
+/**
+ * True for every known tier except free (owner counts as paid). Missing or
+ * unknown tiers count as free, matching getLimits()' free fallback.
+ */
+export function isPaidTier(tier: string | null | undefined): boolean {
+  const t = tier ?? 'free';
+  return t !== 'free' && Object.prototype.hasOwnProperty.call(TIER_LIMITS, t);
+}
+
+/**
+ * True when a higher tier exists in TIER_ORDER. Owner never upgrades.
+ * Unknown tiers rank as free, matching getLimits()' free fallback.
+ */
+export function canUpgrade(tier: string | null | undefined): boolean {
+  const t = tier ?? 'free';
+  if (t === OWNER_TIER) return false;
+  const idx = (TIER_ORDER as ReadonlyArray<string>).indexOf(t);
+  return (idx === -1 ? 0 : idx) < TIER_ORDER.length - 1;
+}
