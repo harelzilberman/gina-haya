@@ -235,5 +235,22 @@
     "save": "שמירה",
     "savedToast": "שם המקום עודכן 🌱",
     "saveError": "לא הצלחנו לשמור את שם המקום. נסה שוב."
+  },
+  "createGardenModal": {
+    "title": "גינה חדשה",
+    "close": "סגירה",
+    "nameLabel": "שם הגינה",
+    "namePlaceholder": "למשל: הגינה הקדמית, מרפסת דרום...",
+    "nameRequired": "יש להזין שם לגינה",
+    "locationLabel": "מיקום (אופציונלי)",
+    "sameAs": "אותו מקום כמו {{name}}",
+    "locationLaterHint": "אפשר לדלג ולהגדיר את המיקום אחר כך. הוא משמש לתחזית, לירח ולצ'ופצ'ו.",
+    "descriptionLabel": "תיאור (אופציונלי)",
+    "descriptionPlaceholder": "מספר מילים על הגינה...",
+    "cancel": "ביטול",
+    "submit": "צור גינה",
+    "submitting": "יוצר גינה...",
+    "createdToast": "הגינה '{{name}}' נוצרה בהצלחה! 🏡",
+    "createError": "לא ניתן ליצור גינה. נסה שוב."
   }
 }

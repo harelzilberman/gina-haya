@@ -1,4 +1,5 @@
 import { create } from 'zustand';
+import type { GardenLocationInput } from '@gina-haya/shared';
 import { useAuthStore } from './authStore';
 import { useGardenStore, type Garden } from './gardenStore';
 import { useTrackerStore } from './trackerStore';
@@ -6,9 +7,9 @@ import { api } from '../api/client';
 
 const LS_KEY = 'active_garden_id';
 
-export interface CreateGardenData {
+/** Body for POST /api/garden. Location is optional; the server resolves the timezone and place name. */
+export interface CreateGardenData extends Partial<GardenLocationInput> {
   name: string;
-  location?: string;
   description?: string;
 }
 

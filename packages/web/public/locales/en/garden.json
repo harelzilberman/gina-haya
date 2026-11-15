@@ -235,5 +235,22 @@
     "save": "Save",
     "savedToast": "Place name updated 🌱",
     "saveError": "We couldn't save the place name. Please try again."
+  },
+  "createGardenModal": {
+    "title": "New garden",
+    "close": "Close",
+    "nameLabel": "Garden name",
+    "namePlaceholder": "e.g. Front garden, south balcony…",
+    "nameRequired": "Please enter a garden name",
+    "locationLabel": "Location (optional)",
+    "sameAs": "Same place as {{name}}",
+    "locationLaterHint": "You can skip this and set the location later. It's used for weather, the moon and Chupchu.",
+    "descriptionLabel": "Description (optional)",
+    "descriptionPlaceholder": "A few words about the garden…",
+    "cancel": "Cancel",
+    "submit": "Create garden",
+    "submitting": "Creating garden…",
+    "createdToast": "Garden '{{name}}' created! 🏡",
+    "createError": "We couldn't create the garden. Please try again."
   }
 }
