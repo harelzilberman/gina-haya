@@ -34,6 +34,12 @@ API: http://localhost:3001/health
 - `packages/i18n`   — Translation files (Hebrew + English)
 - `scripts/`        — Database seeding and utilities
 
+## Deployment
+- **API** — Railway, configured by `railway.toml` (Dockerfile builder, `packages/api/Dockerfile`).
+- **Web** — Cloudflare Pages, building `packages/web` from the repo root.
+
+See [DEPLOY.md](DEPLOY.md) for environment variables and step-by-step setup.
+
 ## Documents
 All architecture, design, and strategy documents are in the project Documents folder.
 

@@ -69,19 +69,24 @@
 
 ### 2. Railway — API backend
 
-1. Create a new Railway project and connect this GitHub repo.
-2. Set the root directory to `/` (monorepo root — Railway reads `packages/api/railway.json`).
+Build and deploy are configured in code by **`/railway.toml`** (the only Railway
+config file). It uses the **Dockerfile builder** with `packages/api/Dockerfile`:
+
+- Base image `node:22-alpine`, pnpm `9.15.0` (same as `packageManager` in the root `package.json`).
+- Installs the workspace (`shared`, `api`, `i18n` manifests), then builds `shared` → `i18n` → `api`.
+- Starts with `node packages/api/dist/index.js` (`startCommand` in `railway.toml`).
+- `watchPatterns` in `railway.toml` limit redeploys to changes under `packages/api/**`,
+  `packages/shared/**`, `packages/i18n/**` and the Dockerfile — web-only commits don't redeploy the API.
+- `.dockerignore` (repo root) keeps `packages/web`, `node_modules` and `.env*` out of the build context.
+- To force a full rebuild when a deploy seems to run stale code, bump `ARG CACHE_BUST` in the Dockerfile.
+
+Setup:
+
+1. Create a Railway project and connect this GitHub repo; keep the root directory at `/` (monorepo root).
+2. Railway picks up `/railway.toml` automatically (service → Settings → Build shows the Dockerfile builder).
 3. Add all Railway environment variables from the table above in the Railway dashboard.
-4. Deploy. Railway will run:
-   ```
-   pnpm --filter @gina-haya/shared build && pnpm --filter @gina-haya/api build
-   ```
-   then start with:
-   ```
-   pnpm --filter @gina-haya/api start
-   ```
-5. Set a custom domain in Railway → Settings → Domains: `api.gina-haya.com`.
-6. Confirm health check passes: `curl https://api.gina-haya.com/health`
+4. Set a custom domain in Railway → Settings → Domains: `api.gina-haya.com`.
+5. Confirm the API is up: `curl https://api.gina-haya.com/health`
 
 ### 3. Cloudflare Pages — web frontend
 
