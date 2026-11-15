@@ -44,7 +44,7 @@ console.log('\nTest 2: Hebrew tier labels');
 assertEqual(TIER_LABEL_HE['gardener_pro'],  'גנן ביתי',    'gardener_pro label');
 assertEqual(TIER_LABEL_HE['advanced'],      'גנן מתקדם',   'advanced label');
 assertEqual(TIER_LABEL_HE['professional'],  'גנן מקצועי',  'professional label');
-assertEqual(TIER_LABEL_HE['free'],          'גנן מתחיל',   'free label');
+assertEqual(TIER_LABEL_HE['free'],          'גנן',         'free label');
 
 // ── Test 3: Unknown productId -> no tier (400 scenario) ──────────────────────
 console.log('\nTest 3: Unknown productId returns undefined (400)');

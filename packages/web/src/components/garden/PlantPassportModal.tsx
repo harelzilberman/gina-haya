@@ -306,7 +306,7 @@ export function PlantPassportModal({ plant, tracker, gardenName, gardenId, onClo
               </span>
             )}
             {plant.auto_irrigation && (
-              <IrrigationBadge plant={plant} onEditClick={() => { if (!isArchived) setShowEdit(true); }} isArchived={isArchived} tGarden={t} isHe={isHe} />
+              <IrrigationBadge plant={plant} onEditClick={() => { if (!isArchived) setShowEdit(true); }} isArchived={isArchived} tGarden={t} />
             )}
           </div>
         </div>
@@ -642,12 +642,11 @@ const ENTRY_EMOJI: Record<string, string> = {
 };
 
 // ── IrrigationBadge ───────────────────────────────────────────────────────────
-function IrrigationBadge({ plant, onEditClick, isArchived, tGarden, isHe }: {
+function IrrigationBadge({ plant, onEditClick, isArchived, tGarden }: {
   plant: GardenPlant;
   onEditClick: () => void;
   isArchived: boolean;
   tGarden: (key: string, opts?: any) => string;
-  isHe: boolean;
 }) {
   const activeDays = (plant.irrigation_days ?? []).filter(d => d >= 0 && d <= 6);
   const times      = plant.irrigation_times ?? [];

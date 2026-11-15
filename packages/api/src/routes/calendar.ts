@@ -8,7 +8,15 @@ import {
 } from '../db/queries/calendar';
 import { db } from '../db/client';
 import { verifyToken } from '../middleware/auth';
-import { localTodayISO, addDaysISO, isValidIanaTimeZone } from '@gina-haya/shared';
+import {
+  localTodayISO,
+  addDaysISO,
+  isValidIanaTimeZone,
+  moonDisplayAngle,
+  ISRAEL_DEFAULT_COORDS,
+  DEFAULT_CALENDAR_TIMEZONE,
+  type BiodynamicDay,
+} from '@gina-haya/shared';
 
 export const calendarRouter: IRouter = Router();
 
@@ -24,6 +32,10 @@ export const calendarRouter: IRouter = Router();
 // the same table for Israel / north (Asia/Jerusalem dates, verified identical
 // to the legacy biodynamic_calendar) in the legacy response shape — without
 // the variant-only fields. The API no longer reads biodynamic_calendar.
+//
+// Location-aware days also carry moonBrightLimbAngle + moonAngleAt: how the
+// moon is oriented in the sky there (garden coordinates; ?tz= callers may add
+// &lon= with &lat=; otherwise the Israel default coordinates).
 
 const MAX_VARIANT_RANGE_DAYS = 400;
 /** Parameterless /range never had a limit; keep a generous one. */
@@ -36,9 +48,11 @@ function authIfGarden(req: Request, res: Response, next: NextFunction) {
   return req.query.gardenId ? verifyToken(req, res, next) : next();
 }
 
+interface Coords { latitude: number; longitude: number }
+
 type LocationResult =
   | { kind: 'legacy' }
-  | { kind: 'location'; loc: CalendarLocation }
+  | { kind: 'location'; loc: CalendarLocation; coords: Coords }
   | { kind: 'error'; status: number; body: Record<string, string> };
 
 async function resolveCalendarLocation(req: Request): Promise<LocationResult> {
@@ -46,7 +60,7 @@ async function resolveCalendarLocation(req: Request): Promise<LocationResult> {
   if (gardenId) {
     const { data: garden, error } = await db
       .from('gardens')
-      .select('id, timezone, latitude')
+      .select('id, timezone, latitude, longitude')
       .eq('id', gardenId)
       .eq('user_id', req.user!.id)
       .maybeSingle();
@@ -61,6 +75,9 @@ async function resolveCalendarLocation(req: Request): Promise<LocationResult> {
         timezone: isValidIanaTimeZone(garden.timezone) ? garden.timezone : null,
         latitude: garden.latitude != null ? Number(garden.latitude) : null,
       },
+      coords: garden.latitude != null && garden.longitude != null
+        ? { latitude: Number(garden.latitude), longitude: Number(garden.longitude) }
+        : ISRAEL_DEFAULT_COORDS,
     };
   }
 
@@ -76,10 +93,33 @@ async function resolveCalendarLocation(req: Request): Promise<LocationResult> {
         return { kind: 'error', status: 400, body: { error: 'invalid_lat', message: 'lat must be between -90 and 90' } };
       }
     }
-    return { kind: 'location', loc: { timezone: tz, latitude } };
+    let coords: Coords = ISRAEL_DEFAULT_COORDS;
+    if (latitude !== null && typeof req.query.lon === 'string' && req.query.lon.trim() !== '') {
+      const longitude = Number(req.query.lon);
+      if (!Number.isFinite(longitude) || longitude < -180 || longitude > 180) {
+        return { kind: 'error', status: 400, body: { error: 'invalid_lon', message: 'lon must be between -180 and 180' } };
+      }
+      coords = { latitude, longitude };
+    }
+    return { kind: 'location', loc: { timezone: tz, latitude }, coords };
   }
 
   return { kind: 'legacy' };
+}
+
+/** Adds moonBrightLimbAngle / moonAngleAt (location-aware responses only). */
+function withMoonAngle<T extends BiodynamicDay>(day: T, coords: Coords, loc: CalendarLocation, now: Date): T {
+  const { angleRad, at } = moonDisplayAngle(
+    day.date, coords.latitude, coords.longitude, loc.timezone ?? DEFAULT_CALENDAR_TIMEZONE, now,
+  );
+  day.moonBrightLimbAngle = Math.round(angleRad * 10_000) / 10_000;
+  day.moonAngleAt = at.toISOString();
+  return day;
+}
+
+function withMoonAngles<T extends BiodynamicDay>(days: T[], coords: Coords, loc: CalendarLocation): T[] {
+  const now = new Date();
+  return days.map(d => withMoonAngle(d, coords, loc, now));
 }
 
 // GET /api/calendar/today — no auth required (auth only with ?gardenId=)
@@ -90,7 +130,7 @@ calendarRouter.get('/today', authIfGarden, async (req, res) => {
     if (where.kind === 'location') {
       const day = await getVariantDay(localTodayISO(where.loc.timezone), where.loc);
       if (!day) return res.status(404).json({ error: 'No calendar data for today' });
-      return res.json(day);
+      return res.json(withMoonAngle(day, where.coords, where.loc, new Date()));
     }
 
     const day = await getVariantDay(localTodayISO(ISRAEL_CALENDAR_LOCATION.timezone), ISRAEL_CALENDAR_LOCATION, LEGACY);
@@ -109,7 +149,8 @@ calendarRouter.get('/week', authIfGarden, async (req, res) => {
     if (where.kind === 'error') return res.status(where.status).json(where.body);
     if (where.kind === 'location') {
       const from = localTodayISO(where.loc.timezone);
-      return res.json(await getVariantDays(datesBetween(from, addDaysISO(from, 6)), where.loc));
+      const days = await getVariantDays(datesBetween(from, addDaysISO(from, 6)), where.loc);
+      return res.json(withMoonAngles(days, where.coords, where.loc));
     }
 
     const from = localTodayISO(ISRAEL_CALENDAR_LOCATION.timezone);
@@ -180,7 +221,7 @@ calendarRouter.get('/range', authIfGarden, async (req, res) => {
       if (dates.length > MAX_VARIANT_RANGE_DAYS) {
         return res.status(400).json({ error: `range must be at most ${MAX_VARIANT_RANGE_DAYS} days` });
       }
-      return res.json(await getVariantDays(dates, where.loc));
+      return res.json(withMoonAngles(await getVariantDays(dates, where.loc), where.coords, where.loc));
     }
 
     if (!ISO_DATE.test(from) || !ISO_DATE.test(to)) {
@@ -209,7 +250,7 @@ calendarRouter.get('/:date', authIfGarden, async (req, res) => {
     if (where.kind === 'location') {
       const day = await getVariantDay(date, where.loc);
       if (!day) return res.status(404).json({ error: 'No calendar data for this date' });
-      return res.json(day);
+      return res.json(withMoonAngle(day, where.coords, where.loc, new Date()));
     }
 
     const day = await getVariantDay(date, ISRAEL_CALENDAR_LOCATION, LEGACY);

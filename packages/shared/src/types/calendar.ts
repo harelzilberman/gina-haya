@@ -53,6 +53,14 @@ export interface BiodynamicDay {
   hemisphere?: 'north' | 'south';
   /** IANA zone the request was resolved for. */
   timezone?: string;
+  /**
+   * Location-aware requests only: zenith angle of the moon's bright limb in
+   * RADIANS (0 = lit at the top, π/2 = left, π = bottom, 3π/2 = right, as the
+   * observer sees the sky) — see moonDisplayAngle() in shared/utils/moonTimes.
+   */
+  moonBrightLimbAngle?: number;
+  /** UTC ISO instant moonBrightLimbAngle was computed for. */
+  moonAngleAt?: string;
 }
 
 /** One event inside a local calendar day (biodynamic_calendar_variants.transitions). */

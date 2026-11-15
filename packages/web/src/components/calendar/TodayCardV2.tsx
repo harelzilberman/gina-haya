@@ -3,7 +3,7 @@ import { useTranslation } from 'react-i18next';
 import { useDirection } from '../../hooks/useDirection';
 import { useGardenLocation } from '../../hooks/useGardenLocation';
 import { GardenLocationModal } from '../garden/GardenLocationModal';
-import type { BiodynamicDay } from '@gina-haya/shared';
+import { formatTimeInZone, type BiodynamicDay } from '@gina-haya/shared';
 import './today-card.css';
 import { EN_HEADING } from '../../styles/fonts';
 import { DayTransitions } from './DayTransitions';
@@ -81,6 +81,7 @@ export function inferPhaseAngle(phasePct: number, phaseNameHe: string): number {
 }
 
 /**
+ * FALLBACK only — used when the calendar day has no moonBrightLimbAngle.
  * Rotation (degrees, canvas-clockwise) of the northern-hemisphere moon drawing
  * for the observer's |latitude|. Southern latitudes use the same tilt for
  * |lat| and drawMoon() then mirrors the drawing horizontally, so the southern
@@ -96,12 +97,39 @@ export function getMoonTilt(phaseAngle: number, lat: number): number {
   return baseTilt + phaseTilt;
 }
 
-export function drawMoon(canvas: HTMLCanvasElement, phasePct: number, phaseAngle: number, tiltDeg: number, lat = 31.7) {
+/**
+ * Canvas rotation (radians, clockwise) that turns the drawing's lit side —
+ * right when waxing, left when waning — to the bright-limb zenith angle
+ * (0 = up, π/2 = left, π = down, 3π/2 = right, counter-clockwise as seen).
+ */
+function brightLimbRotation(brightLimbAngle: number, phaseAngle: number): number {
+  const target = Math.atan2(-Math.cos(brightLimbAngle), -Math.sin(brightLimbAngle));
+  const drawnLitSide = phaseAngle > 180 ? Math.PI : 0;
+  return target - drawnLitSide;
+}
+
+/**
+ * Draws the moon. With `brightLimbAngle` (calendar day's moonBrightLimbAngle)
+ * the lit side is rotated to where it appears in the sky at that location;
+ * without it, the old latitude tilt (+ southern mirror) is the fallback.
+ */
+export function drawMoon(
+  canvas: HTMLCanvasElement,
+  phasePct: number,
+  phaseAngle: number,
+  tiltDeg: number,
+  lat = 31.7,
+  brightLimbAngle?: number | null,
+) {
   const ctx = canvas.getContext('2d');
   if (!ctx) return;
   const size = canvas.offsetWidth || 165;
   const cx = size / 2, cy = size / 2, r = size / 2;
-  const southern = lat < 0;
+  const hasLimbAngle = brightLimbAngle != null && Number.isFinite(brightLimbAngle);
+  const southern = !hasLimbAngle && lat < 0;
+  const rotation = hasLimbAngle
+    ? brightLimbRotation(brightLimbAngle as number, phaseAngle)
+    : tiltDeg * Math.PI / 180;
 
   const render = () => {
     ctx.save();
@@ -113,7 +141,7 @@ export function drawMoon(canvas: HTMLCanvasElement, phasePct: number, phaseAngle
     // result is mirrored — the exact mirror image of the northern view.
     ctx.translate(cx, cy);
     if (southern) ctx.scale(-1, 1);
-    ctx.rotate(tiltDeg * Math.PI / 180);
+    ctx.rotate(rotation);
     ctx.translate(-cx, -cy);
 
     // Clip everything to the moon disc
@@ -443,13 +471,35 @@ export function MoonSignSVG() {
 // ─────────────────────────────────────────────
 // MOON PHASE DISPLAY COMPONENT
 // ─────────────────────────────────────────────
-export function MoonPhaseDisplay({ phaseAngle, phasePct, phaseHe, moonSignHe, ascending, lat = 31.5 }: {
+/** "as seen at HH:MM" under the moon, in the calendar day's timezone. */
+export function MoonSeenAtCaption({ at, timeZone }: { at?: string | null; timeZone?: string | null }) {
+  const { t, i18n } = useTranslation('calendar');
+  if (!at) return null;
+  const instant = new Date(at);
+  if (Number.isNaN(instant.getTime())) return null;
+  const time = formatTimeInZone(instant, timeZone, i18n.language === 'he' ? 'he-IL' : 'en-GB');
+  return (
+    <div style={{ fontFamily: EN_HEADING, fontSize: '11px', color: `${TEXT_MID}70`, textAlign: 'center' }}>
+      {t('moonSeenAt', { time })}
+    </div>
+  );
+}
+
+export function MoonPhaseDisplay({
+  phaseAngle, phasePct, phaseHe, moonSignHe, ascending, lat = 31.5,
+  brightLimbAngle, angleAt, timeZone,
+}: {
   phaseAngle: number;
   phasePct: number;
   phaseHe: string;
   moonSignHe: string;
   ascending: boolean;
   lat?: number;
+  /** Calendar day's moonBrightLimbAngle (radians); falls back to the latitude tilt. */
+  brightLimbAngle?: number | null;
+  /** Calendar day's moonAngleAt (UTC ISO) for the caption. */
+  angleAt?: string | null;
+  timeZone?: string | null;
 }) {
   const { i18n } = useTranslation('calendar');
   const isHe = i18n.language === 'he';
@@ -493,8 +543,8 @@ export function MoonPhaseDisplay({ phaseAngle, phasePct, phaseHe, moonSignHe, as
     canvas.style.height = '165px';
     const ctx = canvas.getContext('2d');
     if (ctx) ctx.scale(dpr, dpr);
-    drawMoon(canvas, phasePct, phaseAngle, tiltDeg, lat);
-  }, [phasePct, phaseAngle, tiltDeg, lat]);
+    drawMoon(canvas, phasePct, phaseAngle, tiltDeg, lat, brightLimbAngle);
+  }, [phasePct, phaseAngle, tiltDeg, lat, brightLimbAngle]);
 
   return (
     <div style={{
@@ -535,6 +585,8 @@ export function MoonPhaseDisplay({ phaseAngle, phasePct, phaseHe, moonSignHe, as
           </div>
         )}
       </div>
+
+      {brightLimbAngle != null && <MoonSeenAtCaption at={angleAt} timeZone={timeZone} />}
 
       <div style={{ fontFamily: FRANK, fontSize: '18px', fontWeight: 700, color: BIO_CYAN }}>
         {phaseNameLabel}
@@ -671,6 +723,9 @@ export function TodayCard({ day, showDate = true }: Props) {
           moonSignHe={day.moonSignHe ?? ''}
           ascending={day.ascendingDescending === 'ascending'}
           lat={displayLat}
+          brightLimbAngle={day.moonBrightLimbAngle}
+          angleAt={day.moonAngleAt}
+          timeZone={day.timezone}
         />
 
         {garden && !gardenHasCoords && (

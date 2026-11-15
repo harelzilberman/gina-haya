@@ -5,7 +5,7 @@ import { useToday } from '../hooks/useCalendar';
 import { useTasks } from '../hooks/useTasks';
 import { useAuthStore } from '../stores/authStore';
 import { useChupChuPanelStore } from '../stores/chupChuPanelStore';
-import { drawMoon, getMoonTilt, MoonSignSVG, inferPhaseAngle } from '../components/calendar/TodayCardV2';
+import { drawMoon, getMoonTilt, MoonSignSVG, MoonSeenAtCaption, inferPhaseAngle } from '../components/calendar/TodayCardV2';
 import { getBDPlainSummary, type BDPlainSummary, type DayType } from '../utils/bdPlainLanguage';
 import { useTodayActions, type TodayActionsData } from '../hooks/useTodayActions';
 import { useGardenLocation } from '../hooks/useGardenLocation';
@@ -182,10 +182,15 @@ function moonEmoji(pct: number): string {
 // ── Moon canvas (bare — no labels) ────────────────────────────────────────
 // Border/shadow are on the wrapper div, NOT on the canvas, to avoid
 // canvas.offsetWidth including the border and inflating drawMoon's size param.
-function MoonCanvas({ phasePct, phaseAngle }: { phasePct: number; phaseAngle: number }) {
+function MoonCanvas({ phasePct, phaseAngle, brightLimbAngle }: {
+  phasePct: number;
+  phaseAngle: number;
+  /** Calendar day's moonBrightLimbAngle; without it, the latitude tilt is the fallback. */
+  brightLimbAngle?: number | null;
+}) {
   const ref = useRef<HTMLCanvasElement>(null);
   const { lat } = useGardenLocation();
-  // Tilt for |lat|; drawMoon mirrors the drawing for southern latitudes.
+  // Fallback tilt for |lat| (drawMoon mirrors it for southern latitudes).
   const tilt = getMoonTilt(phaseAngle, lat);
   useEffect(() => {
     if (!ref.current) return;
@@ -197,8 +202,8 @@ function MoonCanvas({ phasePct, phaseAngle }: { phasePct: number; phaseAngle: nu
     canvas.style.height = '165px';
     const ctx = canvas.getContext('2d');
     if (ctx) ctx.scale(dpr, dpr);
-    drawMoon(canvas, phasePct, phaseAngle, tilt, lat);
-  }, [phasePct, phaseAngle, tilt, lat]);
+    drawMoon(canvas, phasePct, phaseAngle, tilt, lat, brightLimbAngle);
+  }, [phasePct, phaseAngle, tilt, lat, brightLimbAngle]);
   return (
     <canvas
       ref={ref}
@@ -903,7 +908,7 @@ export function DashboardPage() {
                 </div>
 
                 {/* Moon canvas — RTL end (left side visually) */}
-                <div style={{ flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                <div style={{ flexShrink: 0, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' }}>
                   <div style={{
                     position: 'relative', width: '165px', height: '165px',
                     borderRadius: '50%', overflow: 'hidden',
@@ -915,6 +920,7 @@ export function DashboardPage() {
                     <MoonCanvas
                       phasePct={day.moonPhasePct ?? 0}
                       phaseAngle={day.moonPhaseAngle ?? inferPhaseAngle(day.moonPhasePct ?? 0, day.moonPhaseNameHe ?? '')}
+                      brightLimbAngle={day.moonBrightLimbAngle}
                     />
                     {(day.moonPhasePct ?? 0) < 3 && (
                       <div style={{
@@ -926,6 +932,11 @@ export function DashboardPage() {
                       </div>
                     )}
                   </div>
+                  {day.moonBrightLimbAngle != null && (
+                    <div style={{ marginTop: '6px' }}>
+                      <MoonSeenAtCaption at={day.moonAngleAt} timeZone={day.timezone ?? calTimezone} />
+                    </div>
+                  )}
                 </div>
               </div>
 

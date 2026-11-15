@@ -11,7 +11,7 @@ import { TaskApprovalModal } from '../components/tracker/TaskApprovalModal';
 import { UpgradeBanner } from '../components/upgrade/UpgradeBanner';
 import { usePlanLimit } from '../hooks/usePlanLimit';
 import { EN_HEADING } from '../styles/fonts';
-import { getLimits, TIER_PRICING } from '@gina-haya/shared';
+import { TIER_PRICING } from '@gina-haya/shared';
 
 const GP_PRICE = TIER_PRICING.gardener_pro.monthly;
 

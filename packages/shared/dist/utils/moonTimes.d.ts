@@ -25,4 +25,30 @@ export interface MoonRiseSet {
 export declare function moonRiseSetForLocalDate(date: string, latitude: number, longitude: number, timeZone: string | null | undefined): MoonRiseSet;
 /** "HH:MM" for an instant in `timeZone` (24-hour for he, locale default otherwise). */
 export declare function formatTimeInZone(instant: Date, timeZone: string | null | undefined, locale: string): string;
+export interface MoonDisplayAngle {
+    /**
+     * Zenith angle of the moon's bright limb, in radians: the direction of the
+     * lit side's midpoint on the disc, measured from "straight up" (towards the
+     * observer's zenith) counter-clockwise as the observer sees the sky.
+     * 0 = lit at the top, π/2 = left, π = bottom, 3π/2 = right.
+     */
+    angleRad: number;
+    /** The instant the angle is computed for. */
+    at: Date;
+    /** That instant as "HH:MM" (24-hour) in the location's timezone. */
+    atLocalTime: string;
+}
+/** Zenith angle of the bright limb at an instant (suncalc: illumination.angle − parallacticAngle). */
+export declare function moonBrightLimbAngleAt(instant: Date, latitude: number, longitude: number): number;
+/**
+ * How the moon is oriented in the sky for the LOCAL day `date` ("YYYY-MM-DD")
+ * at a location — the angle at which to draw the lit side.
+ *
+ * The instant used:
+ *   • today (in `timeZone`): now, if the moon is above the horizon; otherwise
+ *     its next upper transit (highest altitude);
+ *   • any other date: that night's upper transit — the first one after local
+ *     noon of `date`.
+ */
+export declare function moonDisplayAngle(date: string, latitude: number, longitude: number, timeZone: string | null | undefined, now?: Date): MoonDisplayAngle;
 //# sourceMappingURL=moonTimes.d.ts.map

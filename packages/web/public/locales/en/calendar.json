@@ -45,6 +45,7 @@
   "moonset": "Moonset",
   "moonNoRise": "Doesn't rise today",
   "moonNoSet": "Doesn't set today",
+  "moonSeenAt": "as seen at {{time}}",
   "moonSign": "Moon Sign",
   "transitions": {
     "title": "Changes during the day",
