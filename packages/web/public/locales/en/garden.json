@@ -252,5 +252,50 @@
     "submitting": "Creating garden…",
     "createdToast": "Garden '{{name}}' created! 🏡",
     "createError": "We couldn't create the garden. Please try again."
+  },
+  "gardensPage": {
+    "title": "My gardens",
+    "count_one": "{{count}} garden",
+    "count_other": "{{count}} gardens",
+    "countOfMax": "{{count}} of {{max}} gardens",
+    "addGarden": "+ Add garden",
+    "empty": "No gardens yet",
+    "createFirst": "Create your first garden",
+    "active": "Active garden",
+    "defaultStar": "Default garden",
+    "makeDefault": "Make this the default garden",
+    "defaultSet": "'{{name}}' is now your default garden",
+    "defaultError": "We couldn't update the default garden. Please try again.",
+    "plants_one": "{{count}} plant",
+    "plants_other": "{{count}} plants",
+    "trackers_one": "{{count}} tracker",
+    "trackers_other": "{{count}} trackers",
+    "open": "Open garden",
+    "switchTo": "Switch to garden",
+    "rename": "Rename",
+    "nameLabel": "Garden name",
+    "save": "Save",
+    "saving": "Saving…",
+    "cancel": "Cancel",
+    "renamed": "Garden renamed",
+    "renameError": "We couldn't save. Please try again.",
+    "delete": "Delete",
+    "deleteTitle": "Delete garden",
+    "deleteConfirm": "Delete '{{name}}'?",
+    "deleteWarning": "All plants, trackers and tasks in this garden will be permanently deleted.",
+    "deleting": "Deleting…",
+    "deleted": "Garden '{{name}}' deleted",
+    "deleteNotEmpty": "This garden still has {{count}} plants. Move or remove them first.",
+    "deleteLast": "You can't delete your only garden.",
+    "deleteError": "We couldn't delete the garden. Please try again."
+  },
+  "gardenLimit": {
+    "message": "Your plan includes up to {{max}} gardens.",
+    "upgrade": "Upgrade for more"
+  },
+  "switcher": {
+    "title": "My gardens",
+    "loading": "Loading…",
+    "manage": "Manage gardens ⚙"
   }
 }

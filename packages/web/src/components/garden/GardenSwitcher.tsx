@@ -1,7 +1,9 @@
 import { useState, useRef, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { useGardenSwitcherStore } from '../../stores/gardenSwitcherStore';
 import { usePlanLimit } from '../../hooks/usePlanLimit';
+import { GardenLimitNotice } from './GardenLimitNotice';
 import { EN_HEADING } from '../../styles/fonts';
 
 const NIGHT_CARD = '#111f18';
@@ -16,13 +18,14 @@ interface Props {
 export function GardenSwitcher({ onCreateGarden }: Props) {
   const navigate = useNavigate();
   const { gardens, activeGardenId, switchGarden } = useGardenSwitcherStore();
-  const { limits } = usePlanLimit();
+  const { t } = useTranslation('garden');
+  const { limits, isAtGardenLimit } = usePlanLimit();
   const [open, setOpen] = useState(false);
   const [switchingId, setSwitchingId] = useState<string | null>(null);
   const ref = useRef<HTMLDivElement>(null);
 
   const activeGarden = gardens.find(g => g.id === activeGardenId) ?? gardens[0];
-  const atLimit = limits.maxGardens !== null && gardens.length >= limits.maxGardens;
+  const atLimit = isAtGardenLimit(gardens.length);
 
   useEffect(() => {
     function handleClick(e: MouseEvent) {
@@ -88,7 +91,7 @@ export function GardenSwitcher({ onCreateGarden }: Props) {
           {/* Header */}
           <div style={{ padding: '8px 14px 6px', borderBottom: '1px solid rgba(0,229,195,0.08)', marginBottom: '4px' }}>
             <span style={{ fontFamily: FRANK, fontSize: '12px', color: `${TEXT_MID}60`, letterSpacing: '0.05em' }}>
-              הגינות שלי
+              {t('switcher.title')}
             </span>
           </div>
 
@@ -140,12 +143,12 @@ export function GardenSwitcher({ onCreateGarden }: Props) {
                     textOverflow: 'ellipsis',
                     whiteSpace:   'nowrap',
                   }}>
-                    {switchingId === garden.id ? 'טוען...' : garden.name}
+                    {switchingId === garden.id ? t('switcher.loading') : garden.name}
                     {garden.is_default && (
-                      <span style={{ fontFamily: EN_HEADING, fontSize: '10px', color: `${TEXT_MID}50`, marginRight: '6px' }}> ★</span>
+                      <span style={{ fontFamily: EN_HEADING, fontSize: '10px', color: `${TEXT_MID}50`, marginInlineStart: '6px' }} aria-label={t('gardensPage.defaultStar')}>★</span>
                     )}
                   </div>
-                  {garden.location && (
+                  {(garden.location_name || garden.location) && (
                     <div style={{
                       fontFamily:   EN_HEADING,
                       fontSize:     '11px',
@@ -154,7 +157,7 @@ export function GardenSwitcher({ onCreateGarden }: Props) {
                       textOverflow: 'ellipsis',
                       whiteSpace:   'nowrap',
                     }}>
-                      {garden.location}
+                      {garden.location_name || garden.location}
                     </div>
                   )}
                 </div>
@@ -196,29 +199,10 @@ export function GardenSwitcher({ onCreateGarden }: Props) {
                   (e.currentTarget as HTMLElement).style.borderColor    = 'rgba(0,229,195,0.3)';
                 }}
               >
-                + הוסף גינה
+                {t('gardensPage.addGarden')}
               </button>
             ) : (
-              <button
-                onClick={() => { navigate('/shop'); setOpen(false); }}
-                style={{
-                  width:           '100%',
-                  padding:         '8px 10px',
-                  background:      'transparent',
-                  border:          '1px solid rgba(0,229,195,0.2)',
-                  borderRadius:    '6px',
-                  cursor:          'pointer',
-                  fontFamily:      EN_HEADING,
-                  fontSize:        '11px',
-                  color:           `${TEXT_MID}70`,
-                  display:         'flex',
-                  alignItems:      'center',
-                  justifyContent:  'center',
-                  gap:             '4px',
-                }}
-              >
-                הוסף חבילת גינות ←
-              </button>
+              <GardenLimitNotice max={limits.maxGardens ?? 0} onNavigate={() => setOpen(false)} compact />
             )}
 
             <button
@@ -238,7 +222,7 @@ export function GardenSwitcher({ onCreateGarden }: Props) {
                 justifyContent:  'center',
               }}
             >
-              ניהול גינות ⚙
+              {t('switcher.manage')}
             </button>
           </div>
         </div>

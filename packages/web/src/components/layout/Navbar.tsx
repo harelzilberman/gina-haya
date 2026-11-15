@@ -177,7 +177,6 @@ export function Navbar() {
   const { credits } = useCredits();
   const { gardens } = useGardenSwitcherStore();
   const [createGardenOpen, setCreateGardenOpen] = useState(false);
-  const isProUser = tier === 'gardener_pro' || tier === 'professional';
 
   const initials = (() => {
     const name = profile?.display_name || user?.email || '';
@@ -429,7 +428,7 @@ export function Navbar() {
                     </div>
                     <div style={{ height: '1px', backgroundColor: 'rgba(0,229,195,0.1)', marginBottom: '4px' }} />
 
-                    {isProUser && gardens.length > 0 && (
+                    {gardens.length > 0 && (
                       <>
                         <div style={{ padding: '4px 8px 4px' }}>
                           <GardenSwitcher onCreateGarden={() => { setDropdownOpen(false); setCreateGardenOpen(true); }} />

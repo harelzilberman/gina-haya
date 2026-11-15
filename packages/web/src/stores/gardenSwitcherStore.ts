@@ -105,19 +105,21 @@ export const useGardenSwitcherStore = create<GardenSwitcherState>((set, get) => 
     const token = getToken();
     if (!token) throw new Error('Not authenticated');
     await api.del(`/api/garden/${gardenId}`, token);
-    set(state => {
-      const gardens = state.gardens.filter(g => g.id !== gardenId);
-      const activeGardenId = state.activeGardenId === gardenId
-        ? (gardens.find(g => g.is_default)?.id ?? gardens[0]?.id ?? null)
-        : state.activeGardenId;
-      return { gardens, activeGardenId };
-    });
 
+    const wasActive = get().activeGardenId === gardenId;
+    set(state => ({
+      gardens: state.gardens.filter(g => g.id !== gardenId),
+      activeGardenId: wasActive ? null : state.activeGardenId,
+    }));
+
+    // Refetch: if the deleted garden was the default, the server promoted
+    // another one. loadGardens re-resolves the active garden (default → first)
+    // and syncs gardenStore.
+    await get().loadGardens();
+
+    // Deleted the active garden: switch fully (localStorage, profile, trackers).
     const { activeGardenId } = get();
-    if (activeGardenId) {
-      localStorage.setItem(LS_KEY, activeGardenId);
-      await resetAndReloadStores(activeGardenId);
-    }
+    if (wasActive && activeGardenId) await get().switchGarden(activeGardenId);
   },
 
   setDefaultGarden: async (gardenId: string) => {
