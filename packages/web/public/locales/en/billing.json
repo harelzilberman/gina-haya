@@ -55,7 +55,6 @@
     "gardenPackDesc": "10 extra gardens for ₪19/month. Multiple packs can be purchased.",
     "gardenPackExample": "Example: {{total}} gardens = ₪{{base}} + ₪19 + ₪19 = ₪{{sum}}/month",
     "gardenPackBtn": "Add Pack",
-    "providerNote": "Payment is processed by Lemon Squeezy.",
     "features": {
       "dailyCalendar": "Daily biodynamic calendar",
       "moonPhase": "Moon phase + sowing score",

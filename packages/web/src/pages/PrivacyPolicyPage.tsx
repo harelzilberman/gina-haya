@@ -3,8 +3,8 @@ const SAGE  = '#4A9C68';
 const CREAM = '#FDF6EC';
 
 const CONTACT_EMAIL = 'gina.haya.contact@gmail.com';
-const LAST_UPDATED_HE = '18 בספטמבר 2026';
-const LAST_UPDATED_EN = 'September 18, 2026';
+const LAST_UPDATED_HE = '18 בנובמבר 2026';
+const LAST_UPDATED_EN = 'November 18, 2026';
 
 interface Section { title: string; body: string | string[] }
 
@@ -18,7 +18,7 @@ const HE_SECTIONS: Section[] = [
       'דוחות ניתוח ומעקב — תוצאות הניתוחים, מצב הצמח לאורך זמן והשוואות בין בדיקות.',
       'הודעות שיחה עם צ\'ופצ\'ו — נשמרות לשמירת המשכיות השיחה; מעובדות ע"י ממשק Anthropic\'s Claude API, שהוא ספק שירות ה-AI שלנו.',
       'מיקום מקורב — אופציונלי, ברשותך בלבד; משמש לנתוני מזג אוויר מקומי ולוח ביודינמי. לא נשמרת היסטוריית מיקומים.',
-      'מצב מנוי/רכישה — מנויים באפליקציה מטופלים ע"י Google Play, ומנויים באתר מטופלים ע"י Lemon Squeezy; אנו מקבלים ושומרים את סטטוס המנוי בלבד (לא פרטי כרטיס האשראי שלך, שאנו אף פעם לא רואים).',
+      'מצב מנוי/רכישה — רכישת מנויים וחבילות דוחות מתבצעת כיום אך ורק באמצעות אפליקציית גינה חיה לאנדרואיד, והתשלום מעובד על ידי Google Play (Google LLC) בהתאם לתנאי השימוש ולמדיניות הפרטיות של Google Play. אנו מקבלים ושומרים את סטטוס המנוי והרכישה בלבד; גינה חיה אינה מקבלת ואינה שומרת את פרטי כרטיס האשראי שלך.',
       'מונים בסיסיים (כגון מספר ניתוחי AI שנוצלו) — לאכיפת מגבלות תוכנית.',
       'דוחות קריסה — כאשר האפליקציה נתקלת בשגיאה שלא טופלה, נאסף דוח טכני לצורך תיקון התקלה. ראה סעיף "דיווח על קריסות" למטה.',
     ],
@@ -29,7 +29,7 @@ const HE_SECTIONS: Section[] = [
   },
   {
     title: 'ספקי שירות',
-    body: 'אנחנו עובדים עם ספקי השירות הבאים, שמעבדים נתונים מטעמנו ולפי הוראותינו בלבד: Supabase (אחסון מסד נתונים, אימות זהות ואחסון תמונות), Anthropic (עיבוד AI — שיחות עם צ\'ופצ\'ו ותמונות צמחים הנשלחות לניתוח), Railway (אחסון שרת), Google Play (תשלומים ומנויים באפליקציה), Lemon Squeezy (תשלומים ומנויים באתר), Resend (דוא"ל תפעולי — הודעות חשבון ושירות), Sentry (דוחות קריסה ואבחון שגיאות). חלק מספקי השירות מעבדים נתונים מחוץ לישראל; ההעברה נעשית לצורך אספקת השירות בלבד.',
+    body: 'אנחנו עובדים עם ספקי השירות הבאים, שמעבדים נתונים מטעמנו ולפי הוראותינו בלבד: Supabase (אחסון מסד נתונים, אימות זהות ואחסון תמונות), Anthropic (עיבוד AI — שיחות עם צ\'ופצ\'ו ותמונות צמחים הנשלחות לניתוח), Railway (אחסון שרת), Google Play מבית Google LLC (עיבוד התשלומים עבור מנויים וחבילות דוחות הנרכשים באפליקציה), Resend (דוא"ל תפעולי — הודעות חשבון ושירות), Sentry (דוחות קריסה ואבחון שגיאות). חלק מספקי השירות מעבדים נתונים מחוץ לישראל; ההעברה נעשית לצורך אספקת השירות בלבד.',
   },
   {
     title: 'דיווח על קריסות',
@@ -67,7 +67,7 @@ const EN_SECTIONS: Section[] = [
       'Analysis and tracking records — analysis results, plant health over time, and comparisons between check-ins.',
       'Chat messages with Chupchu (צ\'ופצ\'ו) — stored to provide conversation continuity; processed by Anthropic\'s Claude API as our AI service provider.',
       'Location (approximate) — optional, with your permission; used for local weather and biodynamic calendar data. No location history is stored.',
-      'Purchase/subscription state — subscriptions bought in the app are processed by Google Play, and subscriptions bought on our website are processed by Lemon Squeezy; we receive and store subscription status only (not your payment card details, which we never see).',
+      'Purchase/subscription state — subscriptions and report packs can currently be purchased only through the Gina Haya Android app, and payments are processed by Google Play (Google LLC) under Google Play’s terms of service and privacy policy. We receive and store subscription and purchase status only; Gina Haya does not receive or store your payment card details.',
       'Basic usage counters (e.g. number of AI analyses used) — for enforcing plan limits.',
       'Crash reports — when the app encounters an unhandled error, a technical report is collected so we can fix the fault. See the "Crash reporting" section below.',
     ],
@@ -78,7 +78,7 @@ const EN_SECTIONS: Section[] = [
   },
   {
     title: 'Service providers',
-    body: 'We work with the following service providers, who process data on our behalf and on our instructions only: Supabase (database storage, authentication and image storage), Anthropic (AI processing — Chupchu conversations and plant photos submitted for analysis), Railway (server hosting), Google Play (payments and subscriptions in the app), Lemon Squeezy (payments and subscriptions on our website), Resend (transactional email — account and service notifications), Sentry (crash reports and error diagnostics). Some service providers process data outside Israel; any such transfer is made solely to provide the service.',
+    body: 'We work with the following service providers, who process data on our behalf and on our instructions only: Supabase (database storage, authentication and image storage), Anthropic (AI processing — Chupchu conversations and plant photos submitted for analysis), Railway (server hosting), Google Play, operated by Google LLC (payment processing for subscriptions and report packs purchased in the app), Resend (transactional email — account and service notifications), Sentry (crash reports and error diagnostics). Some service providers process data outside Israel; any such transfer is made solely to provide the service.',
   },
   {
     title: 'Crash reporting',

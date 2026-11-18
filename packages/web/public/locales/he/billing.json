@@ -55,7 +55,6 @@
     "gardenPackDesc": "10 גינות נוספות ב-₪19 לחודש. ניתן לרכוש מספר חבילות.",
     "gardenPackExample": "דוגמה: {{total}} גינות = ₪{{base}} + ₪19 + ₪19 = ₪{{sum}}/חודש",
     "gardenPackBtn": "הוסף חבילה",
-    "providerNote": "התשלום מעובד על ידי Lemon Squeezy.",
     "features": {
       "dailyCalendar": "לוח ביודינמי יומי",
       "moonPhase": "שלב ירח + ציון שתילה",

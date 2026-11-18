@@ -491,13 +491,6 @@ export function PricingPage() {
           </div>
         </div>
 
-        {/* ── Payment provider note ── */}
-        {WEB_CHECKOUT_ENABLED && <div style={{ maxWidth: '1160px', margin: '0 auto', padding: '0 20px 8px', textAlign: 'center' }}>
-          <p style={{ fontFamily: EN_HEADING, fontSize: '12px', color: MUTED, margin: 0, lineHeight: 1.5 }}>
-            {t('pricing.providerNote')}
-          </p>
-        </div>}
-
         {/* ── Garden pack addon ── */}
         <div style={{ maxWidth: '1160px', margin: '0 auto', padding: '0 20px 16px', animation: 'pricingFadeIn 0.5s ease 0.2s both' }}>
           <div style={{
