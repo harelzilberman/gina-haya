@@ -7,6 +7,8 @@ import { api } from '../api/client';
 import BIODYNAMIC_RAW from '../../../shared/data/biodynamic-products.json';
 import { EN_HEADING } from '../styles/fonts';
 import { getLimits, TIER_PRICING } from '@gina-haya/shared';
+import { WEB_CHECKOUT_ENABLED } from '../config/checkout';
+import { GooglePlayButton, PlayCheckoutNotice } from '../components/ui/GooglePlayButton';
 
 const GP_L     = getLimits('gardener_pro');
 const GP_PRICE = TIER_PRICING.gardener_pro;
@@ -423,7 +425,9 @@ function ProductCard({
       <div style={{ fontFamily: FRANK, fontSize: isBadge ? '36px' : '32px', color: GOLD, fontWeight: 700 }}>
         {product.priceStr}
       </div>
-      {inCart ? (
+      {!WEB_CHECKOUT_ENABLED ? (
+        <GooglePlayButton fullWidth />
+      ) : inCart ? (
         <button className="shop-remove-btn" onClick={onRemove}>
           הסר מהסל ✕
         </button>
@@ -577,7 +581,7 @@ export function ShopPage() {
     <>
       <style>{PAGE_CSS}</style>
 
-      {drawerOpen && (
+      {WEB_CHECKOUT_ENABLED && drawerOpen && (
         <CartDrawer
           cart={cart}
           onRemove={removeFromCart}
@@ -586,7 +590,7 @@ export function ShopPage() {
         />
       )}
 
-      {checkoutOpen && (
+      {WEB_CHECKOUT_ENABLED && checkoutOpen && (
         <CheckoutModal
           cart={cart}
           onClose={() => setCheckoutOpen(false)}
@@ -752,6 +756,8 @@ export function ShopPage() {
       )}
 
       <div dir="rtl" style={{ minHeight: '100vh', background: EARTH, fontFamily: EN_HEADING }}>
+
+        {!WEB_CHECKOUT_ENABLED && <PlayCheckoutNotice style={{ background: HEADER }} />}
 
         {/* ── Post-payment banners ── */}
         {paymentBanner === 'pending' && (
@@ -963,7 +969,7 @@ export function ShopPage() {
                 <ProductCard
                   key={p.id}
                   product={p}
-                  inCart={!!cart.find(i => i.productId === p.id)}
+                  inCart={WEB_CHECKOUT_ENABLED && !!cart.find(i => i.productId === p.id)}
                   onAdd={() => addToCart(p)}
                   onRemove={() => removeFromCart(p.id)}
                 />
@@ -1013,6 +1019,14 @@ export function ShopPage() {
                     </li>
                   ))}
                 </ul>
+                {!WEB_CHECKOUT_ENABLED ? (
+                  <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: '10px', marginBottom: '7px' }}>
+                    <span style={{ fontFamily: FRANK, fontSize: '18px', fontWeight: 700, color: GOLD }}>
+                      ₪{GP_PRICE.monthly} לחודש
+                    </span>
+                    <GooglePlayButton compact />
+                  </div>
+                ) : (
                 <Link
                   to="/pricing"
                   style={{
@@ -1028,6 +1042,7 @@ export function ShopPage() {
                 >
                   ₪{GP_PRICE.monthly} לחודש
                 </Link>
+                )}
                 <div style={{ fontFamily: EN_HEADING, fontSize: '12px', color: MUTED }}>
                   או ₪{GP_PRICE.annual} לשנה — חודשיים מתנה
                 </div>
@@ -1050,7 +1065,7 @@ export function ShopPage() {
                 <ProductCard
                   key={p.id}
                   product={p}
-                  inCart={!!cart.find(i => i.productId === p.id)}
+                  inCart={WEB_CHECKOUT_ENABLED && !!cart.find(i => i.productId === p.id)}
                   onAdd={() => addToCart(p)}
                   onRemove={() => removeFromCart(p.id)}
                 />
@@ -1410,7 +1425,7 @@ export function ShopPage() {
       </div>
 
       {/* ── Floating cart button ── */}
-      {cartCount > 0 && (
+      {WEB_CHECKOUT_ENABLED && cartCount > 0 && (
         <button
           onClick={() => setDrawerOpen(true)}
           style={{

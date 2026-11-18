@@ -6,6 +6,8 @@ import { useAuthStore } from '../stores/authStore';
 import { useTier } from '../hooks/useTier';
 import { api } from '../api/client';
 import { EN_HEADING } from '../styles/fonts';
+import { WEB_CHECKOUT_ENABLED } from '../config/checkout';
+import { GooglePlayButton } from '../components/ui/GooglePlayButton';
 
 const EARTH  = '#050d0a';
 const GOLD   = '#00e5c3';
@@ -325,6 +327,9 @@ export function BillingPage() {
               <p style={{ fontFamily: EN_HEADING, fontSize: '13px', color: `${PARCH}66`, margin: '0 0 16px' }}>
                 {t('upgradeDesc')}
               </p>
+              {!WEB_CHECKOUT_ENABLED ? (
+                <GooglePlayButton fullWidth />
+              ) : (
               <button
                 onClick={() => navigate('/pricing')}
                 style={{
@@ -345,6 +350,7 @@ export function BillingPage() {
               >
                 {t('upgradeCta')}
               </button>
+              )}
             </div>
           )}
 

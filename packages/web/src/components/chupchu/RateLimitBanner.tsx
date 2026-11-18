@@ -3,6 +3,8 @@ import { useTranslation } from 'react-i18next';
 import { useChupChuStore } from '../../stores/chupChuStore';
 import { EN_HEADING } from '../../styles/fonts';
 import { getLimits, isPaidTier as isPaidTierFn, TIER_PRICING } from '@gina-haya/shared';
+import { WEB_CHECKOUT_ENABLED } from '../../config/checkout';
+import { GooglePlayButton } from '../ui/GooglePlayButton';
 
 const FREE_L   = getLimits('free');
 const GP_L     = getLimits('gardener_pro');
@@ -85,7 +87,8 @@ export function RateLimitBanner({ tier }: Props) {
       <p style={{ fontFamily: EN_HEADING, fontSize: '13px', color: `${TEXT_MID}99`, margin: '0 0 14px', lineHeight: 1.5 }}>
         {body}
       </p>
-      {showUpgrade && (
+      {showUpgrade && !WEB_CHECKOUT_ENABLED && <GooglePlayButton compact />}
+      {showUpgrade && WEB_CHECKOUT_ENABLED && (
         <button
           onClick={() => navigate('/pricing')}
           style={{

@@ -9,6 +9,8 @@ import { getLimits, TIER_PRICING, TIER_ORDER } from '@gina-haya/shared';
 import type { SubscriptionTier } from '@gina-haya/shared';
 import { savePurchaseIntent } from '../../utils/purchaseIntent';
 import { EN_HEADING } from '../../styles/fonts';
+import { WEB_CHECKOUT_ENABLED } from '../../config/checkout';
+import { GooglePlayButton } from './GooglePlayButton';
 
 const EARTH    = '#050d0a';
 const SOIL     = '#111f18';
@@ -94,7 +96,7 @@ export function UpgradeModal() {
 
   // Called when a tier card's upgrade button is clicked.
   const handleUpgrade = (tier: SubscriptionTier) => {
-    if (tier === 'free') return;
+    if (tier === 'free' || !WEB_CHECKOUT_ENABLED) return;
 
     if (!session?.access_token) {
       savePurchaseIntent({ tier, billingPeriod, returnTo: '/pricing' });
@@ -295,6 +297,9 @@ export function UpgradeModal() {
                 >
                   {t('modal.cancel')}
                 </button>
+                {!WEB_CHECKOUT_ENABLED ? (
+                  <GooglePlayButton style={{ flex: 2 }} />
+                ) : (
                 <button
                   onClick={() => handleUpgrade(targetTier as SubscriptionTier)}
                   disabled={loading === targetTier}
@@ -319,6 +324,7 @@ export function UpgradeModal() {
                 >
                   {loading === targetTier ? '...' : t('modal.continueToPayment')}
                 </button>
+                )}
               </div>
             </div>
 
@@ -440,6 +446,8 @@ export function UpgradeModal() {
                       }}>
                         {isCurrent ? t('modal.currentPlanLabel') : t('modal.free')}
                       </div>
+                    ) : !WEB_CHECKOUT_ENABLED ? (
+                      <GooglePlayButton fullWidth compact />
                     ) : (
                       <button
                         onClick={() => handleUpgrade(tier)}

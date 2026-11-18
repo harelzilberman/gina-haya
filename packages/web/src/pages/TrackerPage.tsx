@@ -11,6 +11,8 @@ import { TaskApprovalModal } from '../components/tracker/TaskApprovalModal';
 import { UpgradeBanner } from '../components/upgrade/UpgradeBanner';
 import { usePlanLimit } from '../hooks/usePlanLimit';
 import { EN_HEADING } from '../styles/fonts';
+import { WEB_CHECKOUT_ENABLED } from '../config/checkout';
+import { GooglePlayButton } from '../components/ui/GooglePlayButton';
 import { TIER_PRICING } from '@gina-haya/shared';
 
 const GP_PRICE = TIER_PRICING.gardener_pro.monthly;
@@ -96,7 +98,9 @@ export function TrackerPage() {
             </p>
 
             {/* Add tracker button or upgrade CTA */}
-            {atLimit ? (
+            {atLimit && !WEB_CHECKOUT_ENABLED ? (
+              <GooglePlayButton compact />
+            ) : atLimit ? (
               <button
                 onClick={() => navigate('/pricing')}
                 style={{
@@ -221,6 +225,11 @@ export function TrackerPage() {
                     ? `שדרג את התכנית כדי לעקוב אחר צמחים נוספים — החל מ-₪${GP_PRICE} לחודש`
                     : `Upgrade your plan to track more plants — from ₪${GP_PRICE}/mo`}
                 </p>
+                {!WEB_CHECKOUT_ENABLED ? (
+                  <div style={{ display: 'flex', justifyContent: 'center', marginBottom: '12px' }}>
+                    <GooglePlayButton />
+                  </div>
+                ) : (
                 <button
                   onClick={() => navigate('/pricing')}
                   style={{
@@ -236,6 +245,7 @@ export function TrackerPage() {
                 >
                   {isHe ? 'שדרג עכשיו 🌿' : 'Upgrade now 🌿'}
                 </button>
+                )}
                 <p style={{ fontFamily: EN_HEADING, fontSize: '12px', color: `${PARCH}60`, margin: 0 }}>
                   {isHe
                     ? (<>או <a href="/shop" style={{ color: GOLD }}>רכוש חבילת מעקבים בחנות — החל מ-₪12</a></>)

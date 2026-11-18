@@ -363,7 +363,7 @@ export function AppPage() {
               </ul>
             </div>
 
-            {/* Pro plan */}
+            {/* Grower plan */}
             <div style={{
               background: NIGHT_LIFT,
               border: `1px solid ${BIO_CYAN}30`,

@@ -42,5 +42,11 @@
     "gardener_pro": "Grower",
     "advanced": "Gardener",
     "professional": "Professional"
+  },
+  "playCheckout": {
+    "notice": "Subscriptions and report packs are currently available through the Gina Haya app on Google Play. Anything you buy in the app also shows up in your account on the website.",
+    "ctaSmall": "Get it in the app",
+    "ctaStore": "Google Play",
+    "ariaLabel": "Get it in the Gina Haya app on Google Play (opens in a new tab)"
   }
 }

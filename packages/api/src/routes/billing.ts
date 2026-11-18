@@ -18,6 +18,7 @@ import {
 import { acknowledgeIfNeeded } from '../services/playAck';
 import { grantCredits } from './shop';
 import { classifyPlanChange, isPendingDue, type BillingInterval } from '../services/planChange';
+import { isWebCheckoutEnabled, sendWebCheckoutDisabled } from '../config/webCheckout';
 
 export const billingRouter: IRouter = Router();
 
@@ -282,6 +283,10 @@ async function changePlan(
 // New subscribers: creates a Lemon Squeezy checkout session.
 // Existing Lemon Squeezy subscribers: changes the plan in place (see changePlan).
 billingRouter.post('/checkout', verifyToken, async (req: any, res) => {
+  if (!isWebCheckoutEnabled()) {
+    sendWebCheckoutDisabled(res);
+    return;
+  }
   try {
     if (!lsConfigured()) {
       res.status(503).json({ error: 'payments not configured' });
@@ -527,7 +532,18 @@ billingRouter.post('/cancel', verifyToken, async (req: any, res) => {
 // ── POST /api/billing/lemon/webhook ──────────────────────────────────────────
 // PUBLIC route — no Bearer token.
 // Mounted with express.raw({ type: '*/*' }) in index.ts BEFORE express.json().
+// While WEB_CHECKOUT_ENABLED is off the route stays mounted but is a no-op:
+// it logs the delivery and acknowledges with 200 without touching the DB.
 billingRouter.post('/lemon/webhook', async (req: Request, res) => {
+  if (!isWebCheckoutEnabled()) {
+    console.log(
+      `[lemon/webhook] web checkout disabled — ignoring delivery ` +
+      `(event=${req.headers['x-event-name'] ?? 'unknown'})`
+    );
+    res.status(200).json({ received: true, ignored: 'web_checkout_disabled' });
+    return;
+  }
+
   const secret = process.env.LEMONSQUEEZY_WEBHOOK_SECRET;
   if (!secret) {
     console.warn('[lemon/webhook] LEMONSQUEEZY_WEBHOOK_SECRET not set');

@@ -2,6 +2,7 @@ import { Router, type IRouter } from 'express';
 import { db } from '../db/client';
 import { verifyToken } from '../middleware/auth';
 import { PRODUCTS, type ProductId } from '../config/products';
+import { isWebCheckoutEnabled, sendWebCheckoutDisabled } from '../config/webCheckout';
 
 export const shopRouter: IRouter = Router();
 
@@ -89,6 +90,10 @@ shopRouter.get('/credits', async (req: any, res) => {
 // Creates a Lemon Squeezy checkout for a single credit pack.
 // LS does not support multi-item carts; callers must invoke once per product.
 shopRouter.post('/checkout', async (req: any, res) => {
+  if (!isWebCheckoutEnabled()) {
+    sendWebCheckoutDisabled(res);
+    return;
+  }
   try {
     const apiKey   = process.env.LEMONSQUEEZY_API_KEY;
     const storeId  = process.env.LEMONSQUEEZY_STORE_ID;

@@ -1,4 +1,6 @@
-export const PLAY_STORE_ID = 'com.ginahaya.gina_haya';
+import { PLAY_STORE_ID } from '@gina-haya/shared';
+
+export { PLAY_STORE_ID };
 
 /**
  * Play Console only reads install attribution from a single `referrer`

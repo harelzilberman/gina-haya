@@ -10,6 +10,8 @@ import { usePlanLimit } from '../hooks/usePlanLimit';
 import { useCredits } from '../hooks/useCredits';
 import { MIN_PASSWORD_LENGTH, mapAuthError } from '../utils/authErrors';
 import { EN_HEADING } from '../styles/fonts';
+import { WEB_CHECKOUT_ENABLED } from '../config/checkout';
+import { GooglePlayButton } from '../components/ui/GooglePlayButton';
 import { canUpgrade } from '@gina-haya/shared';
 import { useGardenLocation } from '../hooks/useGardenLocation';
 import { GardenLocationModal } from '../components/garden/GardenLocationModal';
@@ -506,7 +508,10 @@ export function SettingsPage() {
             )}
 
             <div style={{ display: 'flex', gap: '8px' }}>
-              {canUpgrade(tier) && (
+              {canUpgrade(tier) && !WEB_CHECKOUT_ENABLED && (
+                <GooglePlayButton compact style={{ flex: 1 }} />
+              )}
+              {canUpgrade(tier) && WEB_CHECKOUT_ENABLED && (
                 <button
                   onClick={() => navigate('/pricing')}
                   style={{

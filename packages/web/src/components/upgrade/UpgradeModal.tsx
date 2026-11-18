@@ -2,6 +2,8 @@ import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { EN_HEADING } from '../../styles/fonts';
 import { getLimits, TIER_PRICING, TIER_ORDER, type TierLimits } from '@gina-haya/shared';
+import { WEB_CHECKOUT_ENABLED } from '../../config/checkout';
+import { GooglePlayButton } from '../ui/GooglePlayButton';
 
 const EARTH = '#050d0a';
 const GOLD  = '#00e5c3';
@@ -159,7 +161,10 @@ export function UpgradeModal({ isOpen, onClose, limitType, currentTier = 'free',
           </p>
 
           <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
-            {/* Primary CTA */}
+            {/* Primary CTA — while web checkout is off, plans and packs are sold in the Play app */}
+            {!WEB_CHECKOUT_ENABLED ? (
+              <GooglePlayButton fullWidth />
+            ) : (<>
             <button
               onClick={() => go('/pricing')}
               style={{
@@ -200,6 +205,7 @@ export function UpgradeModal({ isOpen, onClose, limitType, currentTier = 'free',
                 {secondaryLabel}
               </button>
             )}
+            </>)}
 
             {/* Dismiss */}
             <button

@@ -5,6 +5,7 @@ import { useAuthStore } from '../../stores/authStore';
 import type { Credits } from '../../hooks/useCredits';
 import type { ProductId } from '../../pages/ShopPage';
 import { EN_HEADING } from '../../styles/fonts';
+import { WEB_CHECKOUT_ENABLED } from '../../config/checkout';
 
 const EARTH = '#050d0a';
 const GOLD  = '#00e5c3';
@@ -43,7 +44,8 @@ export function CheckoutModal({ cart, onClose }: Props) {
   const hasMultiple = cart.length > 1;
 
   async function handleCheckout() {
-    if (!item) return;
+    // Defensive: ShopPage never opens this modal while web checkout is off.
+    if (!item || !WEB_CHECKOUT_ENABLED) return;
 
     if (!session?.access_token) {
       setError('כדי לשלם יש להתחבר לחשבון.');

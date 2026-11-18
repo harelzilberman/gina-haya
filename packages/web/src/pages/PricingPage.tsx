@@ -7,6 +7,8 @@ import { useToastStore } from '../stores/toastStore';
 import { getLimits, TIER_PRICING, TIER_ORDER } from '@gina-haya/shared';
 import { savePurchaseIntent, readPurchaseIntent, clearPurchaseIntent } from '../utils/purchaseIntent';
 import { EN_HEADING } from '../styles/fonts';
+import { WEB_CHECKOUT_ENABLED } from '../config/checkout';
+import { GooglePlayButton, PlayCheckoutNotice } from '../components/ui/GooglePlayButton';
 
 const NIGHT      = '#050d0a';
 const NIGHT_MID  = '#091410';
@@ -164,6 +166,8 @@ export function PricingPage() {
     if (!intent) return;
 
     clearPurchaseIntent();
+    // Web checkout off: the plan cards already link to the Play app instead.
+    if (!WEB_CHECKOUT_ENABLED) return;
 
     const currentIdx = (TIER_ORDER as ReadonlyArray<string>).indexOf(currentTier);
     const intentIdx  = (TIER_ORDER as ReadonlyArray<string>).indexOf(intent.tier);
@@ -218,7 +222,9 @@ export function PricingPage() {
     openUpgradeModal('pricing_page', isAnnual ? 'annual' : 'monthly', tier);
   };
 
-  const upgradeBtn = (tier: string) => (
+  const upgradeBtn = (tier: string) => !WEB_CHECKOUT_ENABLED ? (
+    <GooglePlayButton fullWidth />
+  ) : (
     <button
       onClick={() => handleUpgradeClick(tier)}
       style={{
@@ -243,6 +249,8 @@ export function PricingPage() {
       <ComingSoonToast visible={toastVisible} text={t('pricing.comingSoonToast')} />
 
       <div dir={isHe ? 'rtl' : 'ltr'} style={{ minHeight: '100vh', background: NIGHT, fontFamily: EN_HEADING }}>
+
+        {!WEB_CHECKOUT_ENABLED && <PlayCheckoutNotice style={{ maxWidth: '1160px', background: NIGHT_MID }} />}
 
         {/* ── Header ── */}
         <div style={{
@@ -484,11 +492,11 @@ export function PricingPage() {
         </div>
 
         {/* ── Payment provider note ── */}
-        <div style={{ maxWidth: '1160px', margin: '0 auto', padding: '0 20px 8px', textAlign: 'center' }}>
+        {WEB_CHECKOUT_ENABLED && <div style={{ maxWidth: '1160px', margin: '0 auto', padding: '0 20px 8px', textAlign: 'center' }}>
           <p style={{ fontFamily: EN_HEADING, fontSize: '12px', color: MUTED, margin: 0, lineHeight: 1.5 }}>
             {t('pricing.providerNote')}
           </p>
-        </div>
+        </div>}
 
         {/* ── Garden pack addon ── */}
         <div style={{ maxWidth: '1160px', margin: '0 auto', padding: '0 20px 16px', animation: 'pricingFadeIn 0.5s ease 0.2s both' }}>
